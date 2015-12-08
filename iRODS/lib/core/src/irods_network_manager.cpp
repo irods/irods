@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 #include "irods_network_manager.hpp"
+#include "irods_load_plugin.hpp"
 
 namespace irods {
 // =-=-=-=-=-=-=-

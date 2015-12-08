@@ -15947,7 +15947,6 @@ irods::error db_general_update_op(
 
 // =-=-=-=-=-=-=-
 //
-extern "C"
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
 #ifdef MY_ICAT
     char cml_res[ 100 ];
@@ -15993,7 +15992,7 @@ class postgres_database_plugin : public irods::database {
             bzero( &icss, sizeof( icss ) );
             properties_.set< icatSessionStruct >( ICSS_PROP, icss );
 
-            set_start_operation( "db_start_operation" );
+            set_start_operation( db_start_operation );
 
         } // ctor
 

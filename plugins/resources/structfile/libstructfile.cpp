@@ -80,19 +80,19 @@ extern irods::resource_manager resc_mgr;
 // =-=-=-=-=-=-=-
 // start operation used to allocate the FileDesc tables
 // must be C linkage for delay_load
-extern "C"
-void tarfilesystem_resource_start() {
+irods::error tarfilesystem_resource_start( irods::plugin_property_map& ) {
     memset( PluginStructFileDesc, 0, sizeof( structFileDesc_t ) * NUM_STRUCT_FILE_DESC );
     memset( PluginTarSubFileDesc, 0, sizeof( tarSubFileDesc_t ) * NUM_TAR_SUB_FILE_DESC );
+    return SUCCESS();
 }
 
 // =-=-=-=-=-=-=-
 // stop operation used to free the FileDesc tables
 // must be C linkage for delay_load
-extern "C"
-void tarfilesystem_resource_stop() {
+irods::error tarfilesystem_resource_stop( irods::plugin_property_map& ) {
     memset( PluginStructFileDesc, 0, sizeof( structFileDesc_t ) * NUM_STRUCT_FILE_DESC );
     memset( PluginTarSubFileDesc, 0, sizeof( tarSubFileDesc_t ) * NUM_TAR_SUB_FILE_DESC );
+    return SUCCESS();
 }
 
 // =-=-=-=-=-=-=-
@@ -110,7 +110,7 @@ void tarfilesystem_resource_stop() {
 // =-=-=-=-=-=-=-
 // helper function to check incoming parameters
 inline irods::error tar_check_params(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // ask the context if it is valid
     irods::error ret = _ctx.valid< irods::structured_object >();
@@ -802,7 +802,7 @@ int free_tar_sub_file_desc( int _idx ) {
 // =-=-=-=-=-=-=-
 // interface for POSIX create
 irods::error tar_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -903,7 +903,7 @@ irods::error tar_file_create(
 // =-=-=-=-=-=-=-
 // interface for POSIX Open
 irods::error tar_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1000,7 +1000,7 @@ irods::error tar_file_open(
 // =-=-=-=-=-=-=-
 // interface for POSIX Read
 irods::error tar_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     // =-=-=-=-=-=-=-
@@ -1051,7 +1051,7 @@ irods::error tar_file_read(
 // =-=-=-=-=-=-=-
 // interface for POSIX Write
 irods::error tar_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     // =-=-=-=-=-=-=-
@@ -1113,7 +1113,7 @@ irods::error tar_file_write(
 // =-=-=-=-=-=-=-
 // interface for POSIX Close
 irods::error tar_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1164,7 +1164,7 @@ irods::error tar_file_close(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error tar_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1251,7 +1251,7 @@ irods::error tar_file_unlink(
 // =-=-=-=-=-=-=-
 // interface for POSIX Stat
 irods::error tar_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                        _statbuf ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
@@ -1333,7 +1333,7 @@ irods::error tar_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX lseek
 irods::error tar_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long                        _offset,
     int                              _whence ) {
     // =-=-=-=-=-=-=-
@@ -1391,7 +1391,7 @@ irods::error tar_file_lseek(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error tar_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1480,7 +1480,7 @@ irods::error tar_file_mkdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error tar_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1565,7 +1565,7 @@ irods::error tar_file_rmdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX opendir
 irods::error tar_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1664,7 +1664,7 @@ irods::error tar_file_opendir(
 // =-=-=-=-=-=-=-
 // interface for POSIX closedir
 irods::error tar_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1712,7 +1712,7 @@ irods::error tar_file_closedir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error tar_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent**              _dirent_ptr ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
@@ -1757,7 +1757,7 @@ irods::error tar_file_readdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX rename
 irods::error tar_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _new_file_name ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
@@ -1856,7 +1856,7 @@ irods::error tar_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX truncate
 irods::error tar_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1952,7 +1952,7 @@ irods::error tar_file_truncate(
 // =-=-=-=-=-=-=-
 // interface to extract a tar file
 irods::error tar_file_extract(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
@@ -2459,7 +2459,7 @@ irods::error sync_cache_dir_to_tar_file( int         _index,
 // =-=-=-=-=-=-=-
 // interface for sync up of cache dir
 irods::error tar_file_sync(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -2593,7 +2593,7 @@ irods::error tar_file_sync(
 // =-=-=-=-=-=-=-
 // interface for getting freespace of the fs
 irods::error tar_file_getfs_freespace(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, "tar_file_getfs_freespace_plugin is not implemented" );
 
 } // tar_file_getfs_freespace_plugin
@@ -2601,7 +2601,7 @@ irods::error tar_file_getfs_freespace(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
 irods::error tar_file_registered(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     // NOOP
     return SUCCESS();
 }
@@ -2609,7 +2609,7 @@ irods::error tar_file_registered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
 irods::error tar_file_unregistered(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     // NOOP
     return SUCCESS();
 }
@@ -2617,7 +2617,7 @@ irods::error tar_file_unregistered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
 irods::error tar_file_modified(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     // NOOP
     return SUCCESS();
 }
@@ -2625,7 +2625,7 @@ irods::error tar_file_modified(
 // =-=-=-=-=-=-=-
 // tar_file_rebalance - code which would rebalance the subtree
 irods::error tar_file_rebalance(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return SUCCESS();
 
 } // tar_file_rebalance
@@ -2633,7 +2633,7 @@ irods::error tar_file_rebalance(
 // =-=-=-=-=-=-=-
 // tar_file_notify - code which would notify the subtree of a change
 irods::error tar_file_notify(
-    irods::resource_plugin_context&,
+    irods::plugin_context&,
     const std::string* ) {
     return SUCCESS();
 
@@ -2671,8 +2671,8 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4b1. set start and stop operations for alloc / free of tables
-    resc->set_start_operation( "tarfilesystem_resource_start" );
-    resc->set_stop_operation( "tarfilesystem_resource_stop" );
+    resc->set_start_operation( tarfilesystem_resource_start );
+    resc->set_stop_operation( tarfilesystem_resource_stop );
 
     // =-=-=-=-=-=-=-
     // 4b2. map function names to operations.  this map will be used to load
@@ -2682,120 +2682,120 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     using namespace std;
     resc->add_operation(
         RESOURCE_OP_CREATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_create ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPEN,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_open ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::resource_plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,int)>(
                 tar_file_read ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(resource_plugin_context&,void*,int)>(
+        function<error(plugin_context&,void*,int)>(
             tar_file_write ) );
 
     resc->add_operation(
         RESOURCE_OP_CLOSE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_close ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_unlink ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             tar_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_mkdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPENDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_opendir ) );
 
     resc->add_operation<struct rodsDirent**>(
         irods::RESOURCE_OP_READDIR,
-        function<error(resource_plugin_context&,struct rodsDirent**)>(
+        function<error(plugin_context&,struct rodsDirent**)>(
             tar_file_readdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             tar_file_rename ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_FREESPACE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_getfs_freespace ) );
 
     resc->add_operation<long long, int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(resource_plugin_context&, long long, int)>(
+        function<error(plugin_context&, long long, int)>(
             tar_file_lseek ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_RMDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_rmdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_CLOSEDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_closedir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_registered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNREGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_unregistered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MODIFIED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_modified ) );
 
     resc->add_operation<const std::string*>(
         irods::RESOURCE_OP_NOTIFY,
-        function<error(resource_plugin_context&, const std::string*)>(
+        function<error(plugin_context&, const std::string*)>(
             tar_file_notify ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_truncate ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_rebalance ) );
 
     // =-=-=-=-=-=-=-
     // struct file specific operations
     resc->add_operation(
         "extract",
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_extract ) );
 
     resc->add_operation(
         "sync",
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             tar_file_sync ) );
 
     // =-=-=-=-=-=-=-

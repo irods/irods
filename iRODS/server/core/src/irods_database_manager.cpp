@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_database_manager.hpp"
+#include "irods_load_plugin.hpp"
 
 namespace irods {
 // =-=-=-=-=-=-=-
@@ -51,6 +52,31 @@ namespace irods {
         }
 
     } // resolve
+
+    error database_manager::load_database_plugin(
+        database_ptr&      _plugin,
+        const std::string& _plugin_name,
+        const std::string& _inst_name,
+        const std::string& _context ) {
+
+        // =-=-=-=-=-=-=-
+        // call generic plugin loader
+        database* db = 0;
+        error ret = load_plugin< database >(
+                        db,
+                        _plugin_name,
+                        PLUGIN_TYPE_DATABASE,
+                        _inst_name,
+                        _context );
+        if ( ret.ok() && db ) {
+            _plugin.reset( db );
+            return SUCCESS();
+
+        }
+
+        return PASS( ret );
+
+    } // load_database_plugin
 
 // =-=-=-=-=-=-=-
 // public - given a type, load up a database plugin

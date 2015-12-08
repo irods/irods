@@ -3,6 +3,8 @@
 #include "irods_log.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_resource_plugin_impostor.hpp"
+#include "irods_load_plugin.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -64,6 +66,41 @@ namespace irods {
         }
 
     } // resolve
+
+    error resource_manager::load_resource_plugin( resource_ptr&     _plugin,
+                                const std::string _plugin_name,
+                                const std::string _inst_name,
+                                const std::string _context ) {
+        resource* resc = 0;
+        error ret = load_plugin< resource >(
+                        resc,
+                        _plugin_name,
+                        PLUGIN_TYPE_RESOURCE,
+                        _inst_name,
+                        _context );
+        if ( ret.ok() && resc ) {
+            _plugin.reset( resc );
+        }
+        else {
+            if ( ret.code() == PLUGIN_ERROR_MISSING_SHARED_OBJECT ) {
+                rodsLog(
+                    LOG_DEBUG,
+                    "loading impostor resource for [%s] of type [%s] with context [%s] and load_plugin message [%s]",
+                    _inst_name.c_str(),
+                    _plugin_name.c_str(),
+                    _context.c_str(),
+                    ret.result().c_str());
+                _plugin.reset(
+                    new impostor_resource(
+                        "impostor_resource", "" ) );
+            } else {
+                return PASS( ret );
+            }
+        }
+
+        return SUCCESS();
+
+    } // load_resource_plugin
 
 // =-=-=-=-=-=-=-
 // public - retrieve a resource given a vault path

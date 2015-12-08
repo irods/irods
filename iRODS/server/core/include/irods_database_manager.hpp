@@ -39,6 +39,12 @@ namespace irods {
                 const std::string&,   // context
                 database_ptr& ); // plugin instance
 
+            error load_database_plugin(
+                database_ptr&,        // plugin
+                const std::string&,   // plugin name
+                const std::string&,   // instance name
+                const std::string& ); // context string
+
         private:
             // =-=-=-=-=-=-=-
             // attributes

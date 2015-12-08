@@ -36,7 +36,7 @@
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
 inline irods::error univ_mss_check_param(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // ask the context if it is valid
     irods::error ret = _ctx.valid< DEST_TYPE >();
@@ -60,7 +60,7 @@ const std::string SCRIPT_PROP( "script" );
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX create
 irods::error univ_mss_file_create(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_create
@@ -68,7 +68,7 @@ irods::error univ_mss_file_create(
 // =-=-=-=-=-=-=-
 // interface for POSIX Open
 irods::error univ_mss_file_open(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_open
@@ -76,7 +76,7 @@ irods::error univ_mss_file_open(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Read
 irods::error univ_mss_file_read(
-    irods::resource_plugin_context& ,
+    irods::plugin_context& ,
     void*,
     int ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -86,7 +86,7 @@ irods::error univ_mss_file_read(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Write
 irods::error univ_mss_file_write(
-    irods::resource_plugin_context&,
+    irods::plugin_context&,
     void*,
     int ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -96,7 +96,7 @@ irods::error univ_mss_file_write(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Close
 irods::error univ_mss_file_close(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_close
@@ -104,7 +104,7 @@ irods::error univ_mss_file_close(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Unlink
 irods::error univ_mss_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check context
     irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
@@ -155,7 +155,7 @@ irods::error univ_mss_file_unlink(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Stat
 irods::error univ_mss_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                     _statbuf ) {
     // =-=-=-=-=-=-=-
     // check context
@@ -260,7 +260,7 @@ irods::error univ_mss_file_stat(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX lseek
 irods::error univ_mss_file_lseek(
-    irods::resource_plugin_context&,
+    irods::plugin_context&,
     long long,
     int ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
@@ -270,7 +270,7 @@ irods::error univ_mss_file_lseek(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX chmod
 irods::error univ_mss_file_chmod(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check context
     irods::error err = univ_mss_check_param< irods::data_object >( _ctx );
@@ -328,7 +328,7 @@ irods::error univ_mss_file_chmod(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX mkdir
 irods::error univ_mss_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check context
     irods::error err = univ_mss_check_param< irods::collection_object >( _ctx );
@@ -383,7 +383,7 @@ irods::error univ_mss_file_mkdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rmdir
 irods::error univ_mss_file_rmdir(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_rmdir
@@ -391,7 +391,7 @@ irods::error univ_mss_file_rmdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX opendir
 irods::error univ_mss_file_opendir(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_opendir
@@ -399,7 +399,7 @@ irods::error univ_mss_file_opendir(
 // =-=-=-=-=-=-=-
 /// @brief interface for POSIX closedir
 irods::error univ_mss_file_closedir(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_closedir
@@ -407,7 +407,7 @@ irods::error univ_mss_file_closedir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX readdir
 irods::error univ_mss_file_readdir(
-    irods::resource_plugin_context& ,
+    irods::plugin_context& ,
     struct rodsDirent** ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
@@ -416,7 +416,7 @@ irods::error univ_mss_file_readdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rename
 irods::error univ_mss_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _new_file_name ) {
     // =-=-=-=-=-=-=-
     // check context
@@ -456,11 +456,9 @@ irods::error univ_mss_file_rename(
             dirname,
             fco->resc_hier(),
             fco->mode(), 0 ) );
-    irods::resource_plugin_context context(
+    irods::plugin_context context(
         _ctx.prop_map(),
-        coll_obj, "",
-        _ctx.comm(),
-        _ctx.child_map() );
+        coll_obj, "" );
 
     // =-=-=-=-=-=-=-
     // create the directory on the MSS
@@ -494,7 +492,7 @@ irods::error univ_mss_file_rename(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX truncate
 irods::error univ_mss_file_truncate(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_truncate
@@ -502,7 +500,7 @@ irods::error univ_mss_file_truncate(
 /// =-=-=-=-=-=-=-
 /// @brief interface to determine free space on a device given a path
 irods::error univ_mss_file_getfs_freespace(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
 } // univ_mss_file_getfs_freespace
@@ -512,7 +510,7 @@ irods::error univ_mss_file_getfs_freespace(
 ///        Just copy the file from filename to cacheFilename. optionalInfo info
 ///        is not used.
 irods::error univ_mss_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // check context
@@ -573,7 +571,7 @@ irods::error univ_mss_file_stage_to_cache(
 ///        Just copy the file from cacheFilename to filename. optionalInfo info
 ///        is not used.
 irods::error univ_mss_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // check context
@@ -605,11 +603,9 @@ irods::error univ_mss_file_sync_to_arch(
             dirname,
             fco->resc_hier(),
             fco->mode(), 0 ) );
-    irods::resource_plugin_context context(
+    irods::plugin_context context(
         _ctx.prop_map(),
-        coll_obj, "",
-        _ctx.comm(),
-        _ctx.child_map() );
+        coll_obj, "" );
 
     // =-=-=-=-=-=-=-
     // create the directory on the MSS
@@ -663,7 +659,7 @@ irods::error univ_mss_file_sync_to_arch(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
 irods::error univ_mss_file_registered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // Check the operation parameters and update the physical path
     irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -678,7 +674,7 @@ irods::error univ_mss_file_registered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
 irods::error univ_mss_file_unregistered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // Check the operation parameters and update the physical path
     irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -693,7 +689,7 @@ irods::error univ_mss_file_unregistered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
 irods::error univ_mss_file_modified(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // Check the operation parameters and update the physical path
     irods::error ret = univ_mss_check_param< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -838,7 +834,7 @@ irods::error univ_mss_file_resolve_hierarchy_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error univ_mss_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -912,7 +908,7 @@ irods::error univ_mss_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // univ_mss__file_rebalance - code which would rebalance the subtree
 irods::error univ_mss_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return update_resource_object_count(
                _ctx.comm(),
                _ctx.prop_map() );
@@ -981,47 +977,47 @@ irods::resource* plugin_factory( const std::string& _inst_name,
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             univ_mss_file_unlink ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             univ_mss_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             univ_mss_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             univ_mss_file_mkdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             univ_mss_file_rename ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             univ_mss_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             univ_mss_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             univ_mss_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             univ_mss_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

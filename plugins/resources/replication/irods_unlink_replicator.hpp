@@ -15,7 +15,7 @@ namespace irods {
             unlink_replicator( const std::string& _child, const std::string& _resource );
             virtual ~unlink_replicator( void );
 
-            error replicate( resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
+            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
         private:
             std::string child_;
             std::string resource_;

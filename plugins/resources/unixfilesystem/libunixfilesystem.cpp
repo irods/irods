@@ -193,7 +193,7 @@ irods::error unix_generate_full_path(
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
 irods::error unix_check_path(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -219,7 +219,7 @@ irods::error unix_check_path(
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
 irods::error unix_check_params_and_path(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
 
     irods::error result = SUCCESS();
     irods::error ret;
@@ -238,7 +238,7 @@ irods::error unix_check_params_and_path(
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 irods::error unix_check_params_and_path(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
 
     irods::error result = SUCCESS();
     irods::error ret;
@@ -298,7 +298,7 @@ irods::error unix_file_mkdir_r(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
 irods::error unix_file_registered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // Check the operation parameters and update the physical path
@@ -312,7 +312,7 @@ irods::error unix_file_registered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
 irods::error unix_file_unregistered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // Check the operation parameters and update the physical path
@@ -326,7 +326,7 @@ irods::error unix_file_unregistered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file modification
 irods::error unix_file_modified(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // Check the operation parameters and update the physical path
@@ -340,7 +340,7 @@ irods::error unix_file_modified(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file operation
 irods::error unix_file_notify(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string* ) {
     irods::error result = SUCCESS();
     // Check the operation parameters and update the physical path
@@ -354,7 +354,7 @@ irods::error unix_file_notify(
 // =-=-=-=-=-=-=-
 // interface to determine free space on a device given a path
 irods::error unix_file_getfs_freespace(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -512,7 +512,7 @@ static bool replica_exceeds_high_water_mark(
 // =-=-=-=-=-=-=-
 // interface for POSIX create
 irods::error unix_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -625,7 +625,7 @@ irods::error unix_file_create(
 // =-=-=-=-=-=-=-
 // interface for POSIX Open
 irods::error unix_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -723,7 +723,7 @@ irods::error unix_file_open(
 // =-=-=-=-=-=-=-
 // interface for POSIX Read
 irods::error unix_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     irods::error result = SUCCESS();
@@ -762,7 +762,7 @@ irods::error unix_file_read(
 // =-=-=-=-=-=-=-
 // interface for POSIX Write
 irods::error unix_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     irods::error result = SUCCESS();
@@ -801,7 +801,7 @@ irods::error unix_file_write(
 // =-=-=-=-=-=-=-
 // interface for POSIX Close
 irods::error unix_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -836,7 +836,7 @@ irods::error unix_file_close(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error unix_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -872,7 +872,7 @@ irods::error unix_file_unlink(
 // =-=-=-=-=-=-=-
 // interface for POSIX Stat
 irods::error unix_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                        _statbuf ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
@@ -907,7 +907,7 @@ irods::error unix_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX lseek
 irods::error unix_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long                           _offset,
     int                                 _whence ) {
     irods::error result = SUCCESS();
@@ -941,7 +941,7 @@ irods::error unix_file_lseek(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error unix_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -980,7 +980,7 @@ irods::error unix_file_mkdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX rmdir
 irods::error unix_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1010,7 +1010,7 @@ irods::error unix_file_rmdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX opendir
 irods::error unix_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1057,7 +1057,7 @@ irods::error unix_file_opendir(
 // =-=-=-=-=-=-=-
 // interface for POSIX closedir
 irods::error unix_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1087,7 +1087,7 @@ irods::error unix_file_closedir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error unix_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent**                 _dirent_ptr ) {
     irods::error result = SUCCESS();
 
@@ -1148,7 +1148,7 @@ irods::error unix_file_readdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error unix_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                         _new_file_name ) {
     irods::error result = SUCCESS();
 
@@ -1210,7 +1210,7 @@ irods::error unix_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX truncate
 irods::error unix_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1243,7 +1243,7 @@ irods::error unix_file_truncate(
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
 irods::error unix_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _cache_file_name ) {
     irods::error result = SUCCESS();
 
@@ -1267,7 +1267,7 @@ irods::error unix_file_stage_to_cache(
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
 irods::error unix_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _cache_file_name ) {
     irods::error result = SUCCESS();
 
@@ -1479,7 +1479,7 @@ irods::error unix_resolve_hierarchy_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error unix_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -1543,7 +1543,7 @@ irods::error unix_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // unix_file_rebalance - code which would rebalance the subtree
 irods::error unix_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return update_resource_object_count(
                _ctx.comm(),
                _ctx.prop_map() );
@@ -1647,123 +1647,123 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     using namespace std;
     resc->add_operation(
         RESOURCE_OP_CREATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_create ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPEN,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_open ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::resource_plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,int)>(
                 unix_file_read ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(resource_plugin_context&,void*,int)>(
+        function<error(plugin_context&,void*,int)>(
             unix_file_write ) );
 
     resc->add_operation(
         RESOURCE_OP_CLOSE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_close ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_unlink ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             unix_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_mkdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPENDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_opendir ) );
 
     resc->add_operation<struct rodsDirent**>(
         irods::RESOURCE_OP_READDIR,
-        function<error(resource_plugin_context&,struct rodsDirent**)>(
+        function<error(plugin_context&,struct rodsDirent**)>(
             unix_file_readdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             unix_file_rename ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_FREESPACE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_getfs_freespace ) );
 
     resc->add_operation<long long, int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(resource_plugin_context&, long long, int)>(
+        function<error(plugin_context&, long long, int)>(
             unix_file_lseek ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_RMDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_rmdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_CLOSEDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_closedir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             unix_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             unix_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_registered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNREGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_unregistered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MODIFIED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_modified ) );
 
     resc->add_operation<const std::string*>(
         irods::RESOURCE_OP_NOTIFY,
-        function<error(resource_plugin_context&, const std::string*)>(
+        function<error(plugin_context&, const std::string*)>(
             unix_file_notify ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             unix_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             unix_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

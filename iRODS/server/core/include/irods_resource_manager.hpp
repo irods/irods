@@ -42,6 +42,13 @@ namespace irods {
                            resource_ptr& ); // resource out variable
 
             // =-=-=-=-=-=-=-
+            // @brief given the name of a resource, try to load the shared object
+            error load_resource_plugin( resource_ptr&, // plugin
+                                const std::string,     // plugin name
+                                const std::string,     // instance name
+                                const std::string );   // context string
+
+            // =-=-=-=-=-=-=-
             // @brief  resolve a resource from a match with a given property
             error validate_vault_path( std::string,       // physical path  of the data object
                                        rodsServerHost_t*, // host for which we find the path

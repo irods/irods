@@ -60,7 +60,7 @@ irods::error sockClientStart(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call< rodsEnv* >( irods::NETWORK_OP_CLIENT_START, _ptr, _env );
+    ret_err = net->call< rodsEnv* >( nullptr, irods::NETWORK_OP_CLIENT_START, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -93,7 +93,7 @@ irods::error sockClientStop(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call< rodsEnv* >( irods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
+    ret_err = net->call< rodsEnv* >( nullptr, irods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -124,7 +124,7 @@ irods::error sockAgentStart(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call( irods::NETWORK_OP_AGENT_START, _ptr );
+    ret_err = net->call( nullptr, irods::NETWORK_OP_AGENT_START, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -155,7 +155,7 @@ irods::error sockAgentStop(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     irods::network_ptr net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call( irods::NETWORK_OP_AGENT_STOP, _ptr );
+    ret_err = net->call( nullptr, irods::NETWORK_OP_AGENT_STOP, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -189,6 +189,7 @@ irods::error readMsgHeader(
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret_err = net->call< void*, struct timeval* >(
+                  nullptr,
                   irods::NETWORK_OP_READ_HEADER,
                   ptr,
                   tmp_buf,
@@ -260,6 +261,7 @@ irods::error readMsgBody(
     bytesBuf_t*,
     irodsProt_t,
     struct timeval* > (
+        nullptr,
         irods::NETWORK_OP_READ_BODY,
         ptr,
         _header,
@@ -464,6 +466,7 @@ irods::error writeMsgHeader(
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret = net->call< bytesBuf_t* >(
+              nullptr,
               irods::NETWORK_OP_WRITE_HEADER,
               ptr,
               header_buf );
@@ -1380,6 +1383,7 @@ irods::error sendRodsMsg(
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
     ret_err = net->call< const char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >(
+                  nullptr,
                   irods::NETWORK_OP_WRITE_BODY,
                   ptr,
                   _msg_type,

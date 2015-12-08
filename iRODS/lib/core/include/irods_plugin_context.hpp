@@ -20,10 +20,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // ctor
             plugin_context(
-                irods::plugin_property_map&   _prop_map,
-                first_class_object_ptr _fco,
-                const std::string&     _results )  :
-                comm_( 0 ),
+                irods::plugin_property_map& _prop_map,
+                first_class_object_ptr      _fco,
+                const std::string&          _results )  :
+                comm_( nullptr ),
                 prop_map_( _prop_map ),
                 fco_( _fco ),
                 results_( _results )  {
@@ -33,10 +33,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // ctor
             plugin_context(
-                rsComm_t*              _comm,
-                irods::plugin_property_map&   _prop_map,
-                first_class_object_ptr _fco,
-                const std::string&     _results )  :
+                rsComm_t*                   _comm,
+                irods::plugin_property_map& _prop_map,
+                first_class_object_ptr      _fco,
+                const std::string&          _results )  :
                 comm_( _comm ),
                 prop_map_( _prop_map ),
                 fco_( _fco ),

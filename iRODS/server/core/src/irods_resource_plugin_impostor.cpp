@@ -17,123 +17,123 @@
 
 
 irods::error impostor_file_registered(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return SUCCESS();
 }
 
 irods::error impostor_file_unregistered(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return SUCCESS();
 }
 
 irods::error impostor_file_modified(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return SUCCESS();
 }
 
 irods::error impostor_file_notify(
-    irods::resource_plugin_context&,
+    irods::plugin_context&,
     const std::string* ) {
     return SUCCESS();
 }
 
 irods::error impostor_file_getfs_freespace(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_getfs_freespace
 
 irods::error impostor_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_create
 
 irods::error impostor_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_open
 
 irods::error impostor_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*,
     int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_read
 
 irods::error impostor_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*,
     int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_write
 
 irods::error impostor_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_close
 
 irods::error impostor_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_unlink
 
 irods::error impostor_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat* ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_stat
 
 irods::error impostor_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long ,
     int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_lseek
 
 irods::error impostor_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_mkdir
 
 irods::error impostor_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_rmdir
 
 irods::error impostor_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_opendir
 
 irods::error impostor_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_closedir
 
 irods::error impostor_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent** ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_readdir
 
 irods::error impostor_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char* ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_rename
 
 irods::error impostor_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_truncate
 
 irods::error impostor_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char* ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_stage_to_cache
 
 irods::error impostor_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char* ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_sync_to_arch
@@ -321,7 +321,7 @@ irods::error impostor_file_resolve_hierarchy_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error impostor_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -380,7 +380,7 @@ irods::error impostor_file_resolve_hierarchy(
 } // impostor_file_resolve_hierarchy
 
 irods::error impostor_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     return update_resource_object_count(
                _ctx.comm(),
                _ctx.prop_map() );
@@ -398,123 +398,123 @@ namespace irods {
         using namespace std;
         add_operation(
             RESOURCE_OP_CREATE,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_create ) );
 
         add_operation(
             irods::RESOURCE_OP_OPEN,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_open ) );
 
         add_operation<void*,int>(
             irods::RESOURCE_OP_READ,
             std::function<
-                error(irods::resource_plugin_context&,void*,int)>(
+                error(irods::plugin_context&,void*,int)>(
                     impostor_file_read ) );
 
         add_operation<void*,int>(
             irods::RESOURCE_OP_WRITE,
-            function<error(resource_plugin_context&,void*,int)>(
+            function<error(plugin_context&,void*,int)>(
                 impostor_file_write ) );
 
         add_operation(
             RESOURCE_OP_CLOSE,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_close ) );
 
         add_operation(
             irods::RESOURCE_OP_UNLINK,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_unlink ) );
 
         add_operation<struct stat*>(
             irods::RESOURCE_OP_STAT,
-            function<error(resource_plugin_context&, struct stat*)>(
+            function<error(plugin_context&, struct stat*)>(
                 impostor_file_stat ) );
 
         add_operation(
             irods::RESOURCE_OP_MKDIR,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_mkdir ) );
 
         add_operation(
             irods::RESOURCE_OP_OPENDIR,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_opendir ) );
 
         add_operation<struct rodsDirent**>(
             irods::RESOURCE_OP_READDIR,
-            function<error(resource_plugin_context&,struct rodsDirent**)>(
+            function<error(plugin_context&,struct rodsDirent**)>(
                 impostor_file_readdir ) );
 
         add_operation<const char*>(
             irods::RESOURCE_OP_RENAME,
-            function<error(resource_plugin_context&, const char*)>(
+            function<error(plugin_context&, const char*)>(
                 impostor_file_rename ) );
 
         add_operation(
             irods::RESOURCE_OP_FREESPACE,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_getfs_freespace ) );
 
         add_operation<long long, int>(
             irods::RESOURCE_OP_LSEEK,
-            function<error(resource_plugin_context&, long long, int)>(
+            function<error(plugin_context&, long long, int)>(
                 impostor_file_lseek ) );
 
         add_operation(
             irods::RESOURCE_OP_RMDIR,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_rmdir ) );
 
         add_operation(
             irods::RESOURCE_OP_CLOSEDIR,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_closedir ) );
 
         add_operation<const char*>(
             irods::RESOURCE_OP_STAGETOCACHE,
-            function<error(resource_plugin_context&, const char*)>(
+            function<error(plugin_context&, const char*)>(
                 impostor_file_stage_to_cache ) );
 
         add_operation<const char*>(
             irods::RESOURCE_OP_SYNCTOARCH,
-            function<error(resource_plugin_context&, const char*)>(
+            function<error(plugin_context&, const char*)>(
                 impostor_file_sync_to_arch ) );
 
         add_operation(
             irods::RESOURCE_OP_REGISTERED,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_registered ) );
 
         add_operation(
             irods::RESOURCE_OP_UNREGISTERED,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_unregistered ) );
 
         add_operation(
             irods::RESOURCE_OP_MODIFIED,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_modified ) );
 
         add_operation<const std::string*>(
             irods::RESOURCE_OP_NOTIFY,
-            function<error(resource_plugin_context&, const std::string*)>(
+            function<error(plugin_context&, const std::string*)>(
                 impostor_file_notify ) );
 
         add_operation(
             irods::RESOURCE_OP_TRUNCATE,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_truncate ) );
 
         add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
             irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-            function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+            function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
                 impostor_file_resolve_hierarchy ) );
 
         add_operation(
             irods::RESOURCE_OP_REBALANCE,
-            function<error(resource_plugin_context&)>(
+            function<error(plugin_context&)>(
                 impostor_file_rebalance ) );
 
         // =-=-=-=-=-=-=-
@@ -550,7 +550,7 @@ namespace irods {
     }
 
     error impostor_resource::report_error(
-        resource_plugin_context& _ctx ) {
+        plugin_context& _ctx ) {
         std::string resc_name;
         error ret = _ctx.prop_map().get< std::string >( RESOURCE_NAME, resc_name );
         if ( !ret.ok() ) {

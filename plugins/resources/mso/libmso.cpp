@@ -66,7 +66,7 @@
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error mso_file_mkdir(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // stub out
@@ -77,7 +77,7 @@ irods::error mso_file_mkdir(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error mso_file_stat(
-    irods::resource_plugin_context& ,
+    irods::plugin_context& ,
     struct stat*                    _statbuf ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
@@ -96,7 +96,7 @@ irods::error mso_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error mso_file_rename(
-    irods::resource_plugin_context&,
+    irods::plugin_context&,
     const char* ) {
     // =-=-=-=-=-=-=-
     // stub out
@@ -107,7 +107,7 @@ irods::error mso_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error mso_file_truncate(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     // =-=-=-=-=-=-=-
     // stub out
     return SUCCESS();
@@ -117,7 +117,7 @@ irods::error mso_file_truncate(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error mso_file_unlink(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     // =-=-=-=-=-=-=-
     // stub out
     return SUCCESS();
@@ -127,7 +127,7 @@ irods::error mso_file_unlink(
 // =-=-=-=-=-=-=-
 // interface to stage files to cache resource from the archive
 irods::error mso_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _cache_file_name ) {
     using namespace boost;
     namespace fs = boost::filesystem;
@@ -218,7 +218,7 @@ irods::error mso_file_stage_to_cache(
 // =-=-=-=-=-=-=-
 // interface to sync file to the archive from the cache resource
 irods::error mso_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _cache_file_name ) {
     using namespace boost;
     namespace fs = boost::filesystem;
@@ -421,7 +421,7 @@ irods::error mso_file_resolve_hierarchy_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error mso_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -481,7 +481,7 @@ irods::error mso_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // mso_file_rebalance - code which would rebalance the subtree
 irods::error mso_file_rebalance(
-    irods::resource_plugin_context& ) {
+    irods::plugin_context& ) {
     return SUCCESS();
 
 } // mso_file_rebalance
@@ -565,47 +565,47 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mso_file_unlink ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mso_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mso_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mso_file_mkdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mso_file_rename ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             mso_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mso_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             mso_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mso_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

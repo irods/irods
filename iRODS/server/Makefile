@@ -434,7 +434,7 @@ $(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
 #
 $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.cpp $(DEPEND)
 	@echo "Compile server test `basename $@`..."
-	$(CC) -c $(CFLAGS) -DLINK_NO_OP_RE_MGR -o $@ $<
+	$(V_at)$(CC) -c $(CFLAGS) -DLINK_NO_OP_RE_MGR -o $@ $<
 
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
@@ -444,7 +444,7 @@ $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
 # chl
 $(svrTestBinDir)/test_chl: db_plugin_with_no_re $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(LIBRARY) $(DB_IFACE_OBJS)
 	@echo "Link server test `basename $@`..."
-	$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(LIB_CLIENT_EXEC) $(ICAT_HLR_OBJ_WITH_NO_RE) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(LDFLAGS)
+	$(V_at)$(LDR) -o $@ $(svrTestObjDir)/test_chl.o $(LIBRARY) $(LIB_CLIENT_EXEC) $(ICAT_HLR_OBJ_WITH_NO_RE) $(DB_PLUGIN_OBJ_WITH_NO_RE) $(DB_IFACE_OBJS) $(LDFLAGS)
 
 #
 # Rule Admin Targets

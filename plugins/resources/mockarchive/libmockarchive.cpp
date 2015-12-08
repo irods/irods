@@ -99,7 +99,7 @@ irods::error mock_archive_generate_full_path(
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
 irods::error unix_check_path(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     try {
         irods::data_object_ptr data_obj = boost::dynamic_pointer_cast< irods::data_object >( _ctx.fco() );
@@ -129,7 +129,7 @@ irods::error unix_check_path(
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
 irods::error unix_check_params_and_path(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
 
     irods::error result = SUCCESS();
     irods::error ret;
@@ -230,7 +230,7 @@ irods::error make_hashed_path(
 // =-=-=-=-=-=-=-
 // interface for POSIX mkdir
 irods::error mock_archive_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -267,7 +267,7 @@ irods::error mock_archive_file_mkdir(
 } // mock_archive_file_mkdir
 
 irods::error mock_archive_file_stat(
-    irods::resource_plugin_context& ,
+    irods::plugin_context& ,
     struct stat*                    _statbuf ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
@@ -286,7 +286,7 @@ irods::error mock_archive_file_stat(
 // =-=-=-=-=-=-=-
 // interface for POSIX readdir
 irods::error mock_archive_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _new_file_name ) {
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
@@ -335,7 +335,7 @@ irods::error mock_archive_file_rename(
 // =-=-=-=-=-=-=-
 // interface for POSIX Truncate
 irods::error mock_archive_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
@@ -364,7 +364,7 @@ irods::error mock_archive_file_truncate(
 // =-=-=-=-=-=-=-
 // interface for POSIX Unlink
 irods::error mock_archive_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
@@ -484,7 +484,7 @@ mockArchiveCopyPlugin(
 // Just copy the file from filename to cacheFilename. optionalInfo info
 // is not used.
 irods::error mock_archive_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _cache_file_name ) {
     irods::error result = SUCCESS();
 
@@ -522,7 +522,7 @@ irods::error mock_archive_file_stage_to_cache(
 // Just copy the file from cacheFilename to filename. optionalInfo info
 // is not used.
 irods::error mock_archive_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                     _cache_file_name ) {
     irods::error result = SUCCESS();
 
@@ -665,7 +665,7 @@ irods::error mock_archive_redirect_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error mock_archive_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -724,7 +724,7 @@ irods::error mock_archive_file_resolve_hierarchy(
 // =-=-=-=-=-=-=-
 // mock_archive_file_rebalance - code which would rebalance the subtree
 irods::error mock_archive_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
 
     return update_resource_object_count(
                _ctx.comm(),
@@ -811,47 +811,47 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mock_archive_file_unlink ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mock_archive_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mock_archive_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mock_archive_file_mkdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             mock_archive_file_rename ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             mock_archive_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mock_archive_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             mock_archive_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             mock_archive_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

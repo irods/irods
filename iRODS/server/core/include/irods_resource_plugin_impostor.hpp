@@ -16,7 +16,7 @@ namespace irods {
             error need_post_disconnect_maintenance_operation( bool& _b );
             error post_disconnect_maintenance_operation( pdmo_type& _op );
             static error report_error(
-                resource_plugin_context& );
+                plugin_context& );
 
     }; // class impostor_resource
 

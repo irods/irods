@@ -54,7 +54,7 @@ const std::string AUTO_REPL_POLICY_ENABLED( "on" );
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
 inline irods::error compound_check_param(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // ask the context if it is valid
     irods::error ret = _ctx.valid< DEST_TYPE >();
@@ -72,8 +72,8 @@ inline irods::error compound_check_param(
 ///        for use when forwarding an operation
 template< typename DEST_TYPE >
 irods::error get_next_child(
-    irods::resource_plugin_context& _ctx,
-    irods::resource_ptr&            _resc ) {
+    irods::plugin_context& _ctx,
+    irods::resource_ptr&   _resc ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< DEST_TYPE >( _ctx );
@@ -100,11 +100,16 @@ irods::error get_next_child(
         PASS( ret );
     }
 
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     // =-=-=-=-=-=-=-
     // extract the next resource from the child map
-    if ( _ctx.child_map().has_entry( child ) ) {
+    if ( cmap_ref->has_entry( child ) ) {
         std::pair< std::string, irods::resource_ptr > resc_pair;
-        ret = _ctx.child_map().get( child, resc_pair );
+        ret = cmap_ref->get( child, resc_pair );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -126,7 +131,7 @@ irods::error get_next_child(
 /// =-=-=-=-=-=-=-
 /// @brief helper function to get the cache resource
 irods::error get_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     irods::resource_ptr&            _resc ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
@@ -145,8 +150,13 @@ irods::error get_cache(
 
     // =-=-=-=-=-=-=-
     // extract the resource from the child map
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     std::pair< std::string, irods::resource_ptr > resc_pair;
-    ret = _ctx.child_map().get( resc_name, resc_pair );
+    ret = cmap_ref->get( resc_name, resc_pair );
     if ( !ret.ok() ) {
         std::stringstream msg;
         msg << "failed to get child resource [" << resc_name << "]";
@@ -164,8 +174,8 @@ irods::error get_cache(
 /// =-=-=-=-=-=-=-
 /// @brief helper function to get the archive resource
 irods::error get_archive(
-    irods::resource_plugin_context& _ctx,
-    irods::resource_ptr&               _resc ) {
+    irods::plugin_context& _ctx,
+    irods::resource_ptr&   _resc ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -183,8 +193,12 @@ irods::error get_archive(
 
     // =-=-=-=-=-=-=-
     // extract the resource from the child map
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
     std::pair< std::string, irods::resource_ptr > resc_pair;
-    ret = _ctx.child_map().get( resc_name, resc_pair );
+    ret = cmap_ref->get( resc_name, resc_pair );
     if ( !ret.ok() ) {
         std::stringstream msg;
         msg << "failed to get child resource [" << resc_name << "]";
@@ -202,7 +216,7 @@ irods::error get_archive(
 /// @brief Returns the cache resource making sure it corresponds to the fco resc hier
 template< typename DEST_TYPE >
 irods::error get_cache_resc(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     irods::resource_ptr&            _resc ) {
     irods::error result = SUCCESS();
     irods::error ret;
@@ -269,24 +283,28 @@ irods::error get_stage_policy(
 /// @brief start up operation - determine which child is the cache and which is the
 ///        archive.  cache those names in local variables for ease of use
 ///        must use C linkage for delay_load
-extern "C" 
 irods::error compound_start_operation(
-    irods::plugin_property_map& _prop_map,
-    irods::resource_child_map&  _cmap ) {
+    irods::plugin_property_map& _prop_map ) {
+
+    irods::resource_child_map* cmap_ref;
+    _prop_map.get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
+
     // =-=-=-=-=-=-=-
     // trap invalid number of children
-    if ( _cmap.size() == 0 || _cmap.size() > 2 ) {
+    if ( cmap_ref->size() == 0 || cmap_ref->size() > 2 ) {
         std::stringstream msg;
         msg << "compound resource: invalid number of children [";
-        msg << _cmap.size() << "]";
+        msg << cmap_ref->size() << "]";
         return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
     }
 
     // =-=-=-=-=-=-=-
     // child map is indexed by name, get first name
     std::string first_child_name;
-    irods::resource_child_map::iterator itr = _cmap.begin();
-    if ( itr == _cmap.end() ) {
+    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    if ( itr == cmap_ref->end() ) {
         return ERROR( -1, "child map is empty" );
     }
 
@@ -301,7 +319,7 @@ irods::error compound_start_operation(
     // get second name
     std::string second_child_name;
     itr++;
-    if ( itr == _cmap.end() ) {
+    if ( itr == cmap_ref->end() ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "child map has only one entry" );
     }
 
@@ -366,7 +384,7 @@ irods::error compound_start_operation(
 /// =-=-=-=-=-=-=-
 /// @brief replicate a given object for either a sync or a stage
 irods::error repl_object(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _stage_sync_kw ) {
     irods::error result = SUCCESS();
 
@@ -514,7 +532,7 @@ irods::error repl_object(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX create
 irods::error compound_file_create(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -539,7 +557,7 @@ irods::error compound_file_create(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Open
 irods::error compound_file_open(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -565,7 +583,7 @@ irods::error compound_file_open(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Read
 irods::error compound_file_read(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     // =-=-=-=-=-=-=-
@@ -592,7 +610,7 @@ irods::error compound_file_read(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Write
 irods::error compound_file_write(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     void*                               _buf,
     int                                 _len ) {
     // =-=-=-=-=-=-=-
@@ -619,7 +637,7 @@ irods::error compound_file_write(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Close
 irods::error compound_file_close(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -650,7 +668,7 @@ irods::error compound_file_close(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Unlink
 irods::error compound_file_unlink(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::data_object >( _ctx );
@@ -675,7 +693,7 @@ irods::error compound_file_unlink(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX Stat
 irods::error compound_file_stat(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct stat*                     _statbuf ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
@@ -701,7 +719,7 @@ irods::error compound_file_stat(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX lseek
 irods::error compound_file_lseek(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     long long                        _offset,
     int                              _whence ) {
     // =-=-=-=-=-=-=-
@@ -728,7 +746,7 @@ irods::error compound_file_lseek(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX mkdir
 irods::error compound_file_mkdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::collection_object >( _ctx );
@@ -753,7 +771,7 @@ irods::error compound_file_mkdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rmdir
 irods::error compound_file_rmdir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::collection_object >( _ctx );
@@ -778,7 +796,7 @@ irods::error compound_file_rmdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX opendir
 irods::error compound_file_opendir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::collection_object >( _ctx );
@@ -803,7 +821,7 @@ irods::error compound_file_opendir(
 // =-=-=-=-=-=-=-
 /// @brief interface for POSIX closedir
 irods::error compound_file_closedir(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::collection_object >( _ctx );
@@ -828,7 +846,7 @@ irods::error compound_file_closedir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX readdir
 irods::error compound_file_readdir(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     struct rodsDirent**                 _dirent_ptr ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
@@ -854,7 +872,7 @@ irods::error compound_file_readdir(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX rename
 irods::error compound_file_rename(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _new_file_name ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
@@ -880,7 +898,7 @@ irods::error compound_file_rename(
 /// =-=-=-=-=-=-=-
 /// @brief interface for POSIX truncate
 irods::error compound_file_truncate(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::data_object >( _ctx );
@@ -905,7 +923,7 @@ irods::error compound_file_truncate(
 /// =-=-=-=-=-=-=-
 /// @brief interface to determine free space on a device given a path
 irods::error compound_file_getfs_freespace(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // check the context for validity
     irods::error ret = compound_check_param< irods::data_object >( _ctx );
@@ -936,7 +954,7 @@ irods::error compound_file_getfs_freespace(
 ///        This routine is not supported from a coordinating node's perspective
 ///        the coordinating node would be calling this on a leaf when necessary
 irods::error compound_file_stage_to_cache(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
@@ -966,7 +984,7 @@ irods::error compound_file_stage_to_cache(
 ///        This routine is not supported from a coordinating node's perspective
 ///        the coordinating node would be calling this on a leaf when necessary
 irods::error compound_file_sync_to_arch(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const char*                      _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
@@ -994,7 +1012,7 @@ irods::error compound_file_sync_to_arch(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file registration
 irods::error compound_file_registered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // =-=-=-=-=-=-=-
     // Check the operation parameters and update the physical path
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
@@ -1011,7 +1029,7 @@ irods::error compound_file_registered(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file unregistration
 irods::error compound_file_unregistered(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     // Check the operation parameters and update the physical path
     irods::error ret = compound_check_param< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
@@ -1025,7 +1043,7 @@ irods::error compound_file_unregistered(
 } // compound_file_unregistered
 
 static bool auto_replication_is_enabled(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     std::string auto_repl;
     irods::error ret = _ctx.prop_map().get<std::string>(
                            AUTO_REPL_POLICY,
@@ -1043,7 +1061,7 @@ static bool auto_replication_is_enabled(
 ///        after the close operation and the icat should be up to date
 ///        at this point
 irods::error compound_file_modified(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1074,7 +1092,7 @@ irods::error compound_file_modified(
 /// =-=-=-=-=-=-=-
 /// @brief interface to notify of a file operation
 irods::error compound_file_notify(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*               _opr ) {
     irods::error result = SUCCESS();
 
@@ -1111,7 +1129,7 @@ irods::error compound_file_notify(
 // =-=-=-=-=-=-=-
 /// @brief - code to determine redirection for create operation
 irods::error compound_file_redirect_create(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string&               _operation,
     const std::string*               _curr_host,
     irods::hierarchy_parser*        _out_parser,
@@ -1223,7 +1241,7 @@ irods::error compound_file_redirect_unlink(
 // =-=-=-=-=-=-=-
 /// @brief - handler for prefer archive policy
 irods::error open_for_prefer_archive_policy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*               _curr_host,
     irods::hierarchy_parser*        _out_parser,
     float*                           _out_vote ) {
@@ -1390,7 +1408,7 @@ irods::error open_for_prefer_archive_policy(
 // =-=-=-=-=-=-=-
 /// @brief - handler for prefer cache policy
 irods::error open_for_prefer_cache_policy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*               _opr,
     const std::string*               _curr_host,
     irods::hierarchy_parser*        _out_parser,
@@ -1514,7 +1532,7 @@ irods::error open_for_prefer_cache_policy(
 ///          determine the user set policy for staging to cache
 ///          otherwise the default is to compare checksum
 irods::error compound_file_redirect_open(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*               _opr,
     const std::string*               _curr_host,
     irods::hierarchy_parser*        _out_parser,
@@ -1578,7 +1596,7 @@ irods::error compound_file_redirect_open(
 /// @brief - used to allow the resource to determine which host
 ///          should provide the requested operation
 irods::error compound_file_resolve_hierarchy(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
@@ -1663,12 +1681,16 @@ irods::error compound_file_resolve_hierarchy(
 /// =-=-=-=-=-=-=-
 /// @brief - code which would rebalance the subtree
 irods::error compound_file_rebalance(
-    irods::resource_plugin_context& _ctx ) {
+    irods::plugin_context& _ctx ) {
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+            irods::RESC_CHILD_MAP_PROP,
+            cmap_ref );
     // =-=-=-=-=-=-=-
     // forward request for rebalance to children
     irods::error result = SUCCESS();
-    irods::resource_child_map::iterator itr = _ctx.child_map().begin();
-    for ( ; itr != _ctx.child_map().end(); ++itr ) {
+    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    for ( ; itr != cmap_ref->end(); ++itr ) {
         irods::error ret = itr->second.second->call(
                                _ctx.comm(),
                                irods::RESOURCE_OP_REBALANCE,
@@ -1701,7 +1723,7 @@ class compound_resource : public irods::resource {
             irods::resource( _inst_name, _context ) {
             // =-=-=-=-=-=-=-
             // set the start operation to identify the cache and archive children
-            set_start_operation( "compound_start_operation" );
+            set_start_operation( compound_start_operation );
 
             // =-=-=-=-=-=-=-
             // parse context string into property pairs assuming a ; as a separator
@@ -1759,123 +1781,123 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     using namespace std;
     resc->add_operation(
         RESOURCE_OP_CREATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_create ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPEN,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_open ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::resource_plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,int)>(
                 compound_file_read ) );
 
     resc->add_operation<void*,int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(resource_plugin_context&,void*,int)>(
+        function<error(plugin_context&,void*,int)>(
             compound_file_write ) );
 
     resc->add_operation(
         RESOURCE_OP_CLOSE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_close ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNLINK,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_unlink ) );
 
     resc->add_operation<struct stat*>(
         irods::RESOURCE_OP_STAT,
-        function<error(resource_plugin_context&, struct stat*)>(
+        function<error(plugin_context&, struct stat*)>(
             compound_file_stat ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MKDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_mkdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_OPENDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_opendir ) );
 
     resc->add_operation<struct rodsDirent**>(
         irods::RESOURCE_OP_READDIR,
-        function<error(resource_plugin_context&,struct rodsDirent**)>(
+        function<error(plugin_context&,struct rodsDirent**)>(
             compound_file_readdir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_RENAME,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             compound_file_rename ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_FREESPACE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_getfs_freespace ) );
 
     resc->add_operation<long long, int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(resource_plugin_context&, long long, int)>(
+        function<error(plugin_context&, long long, int)>(
             compound_file_lseek ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_RMDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_rmdir ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_CLOSEDIR,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_closedir ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_STAGETOCACHE,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             compound_file_stage_to_cache ) );
 
     resc->add_operation<const char*>(
         irods::RESOURCE_OP_SYNCTOARCH,
-        function<error(resource_plugin_context&, const char*)>(
+        function<error(plugin_context&, const char*)>(
             compound_file_sync_to_arch ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_registered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_UNREGISTERED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_unregistered ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_MODIFIED,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_modified ) );
 
     resc->add_operation<const std::string*>(
         irods::RESOURCE_OP_NOTIFY,
-        function<error(resource_plugin_context&, const std::string*)>(
+        function<error(plugin_context&, const std::string*)>(
             compound_file_notify ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_TRUNCATE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_truncate ) );
 
     resc->add_operation<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
         irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-        function<error(resource_plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
+        function<error(plugin_context&,const std::string*, const std::string*, irods::hierarchy_parser*, float*)>(
             compound_file_resolve_hierarchy ) );
 
     resc->add_operation(
         irods::RESOURCE_OP_REBALANCE,
-        function<error(resource_plugin_context&)>(
+        function<error(plugin_context&)>(
             compound_file_rebalance ) );
 
     // =-=-=-=-=-=-=-

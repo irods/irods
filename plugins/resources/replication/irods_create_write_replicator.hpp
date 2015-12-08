@@ -18,7 +18,7 @@ namespace irods {
                 const std::string& _child );          // The hierarchy of the child.
             virtual ~create_write_replicator( void );
 
-            error replicate( resource_plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
+            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
 
         private:
             std::string root_resource_;
