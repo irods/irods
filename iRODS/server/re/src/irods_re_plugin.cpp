@@ -1,5 +1,4 @@
 #include "irods_re_plugin.hpp"
-#include "irods_re_home.hpp"
 #include "region.h"
 #include "irods_hashtable.h"
 #include "restructs.hpp"
@@ -10,6 +9,10 @@
 #include "irods_server_properties.hpp"
 int processReturnRes( Res *res );
 namespace irods{
+
+    // extern variable for the re plugin globals
+    struct global_re_plugin_mgr re_plugin_globals;
+
     void var_arg_to_list(std::list<boost::any>& _l) {
         (void) _l;
     }
@@ -39,20 +42,16 @@ namespace irods{
     std::vector<re_pack_inp<default_re_ctx> > init_global_re_packs() {
         std::vector<re_pack_inp<default_re_ctx> > ret;
         configuration_parser::array_t re_plugin_configs = get_re_configs();
-        for(auto itr = begin(re_plugin_configs); itr != end(re_plugin_configs); ++itr) {
-            ret.push_back(re_pack_inp<default_re_ctx>(
-                boost::any_cast< std::string> ((*itr)["instance_name"]),
-                boost::any_cast< std::string> ((*itr)["plugin_name"]),
-                UNIT));
+        for(auto&& itr : re_plugin_configs ) {
+            ret.emplace_back(
+                boost::any_cast< std::string> (itr["instance_name"]),
+                boost::any_cast< std::string> (itr["plugin_name"]),
+                UNIT);
         }
         return ret;
     }
 
 
-    microservice_manager<default_ms_ctx> global_ms_mgr;
-    auto global_re_packs = init_global_re_packs();
-    rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr = rule_engine_plugin_manager<default_re_ctx>(IRODS_RE_HOME);
-    rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
     template class pluggable_rule_engine<default_re_ctx>;
 
     Region *r = make_region(0, NULL);

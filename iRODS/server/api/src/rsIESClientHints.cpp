@@ -1,4 +1,5 @@
 
+#include "rcMisc.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"

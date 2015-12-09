@@ -3,6 +3,7 @@
 /* getXmsgTicket.c
  */
 
+#include "rcMisc.h"
 #include "getXmsgTicket.h"
 #include "xmsgLib.hpp"
 #include "irods_random.hpp"

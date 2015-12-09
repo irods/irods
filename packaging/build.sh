@@ -1416,11 +1416,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
         detected_irods_home=`./scripts/find_irods_home.sh`
     fi
     detected_irods_home=`dirname $detected_irods_home`
-    irods_re_home="$detected_irods_home/plugins/re/"
-    set_tmpfile
-    sed -e s,IRODSREPATH,$irods_re_home, ./lib/core/include/irods_re_home.hpp.src > $TMPFILE
-    rsync -c $TMPFILE ./lib/core/include/irods_re_home.hpp
-    rm -f $TMPFILE
     # =-=-=-=-=-=-=-
     # modify the irods_home_directory.hpp file with the proper path to the home directory
     irods_home_directory="$detected_irods_home/"

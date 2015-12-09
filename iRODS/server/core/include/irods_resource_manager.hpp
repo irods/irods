@@ -3,6 +3,7 @@
 
 // =-=-=-=-=-=-=-
 #include "rods.h"
+#include "rodsConnect.h"
 #include "irods_resource_plugin.hpp"
 #include "irods_first_class_object.hpp"
 

@@ -3,6 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjLock.h for a description of this API call.*/
 
+#include "rcMisc.h"
 #include "dataObjLock.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"

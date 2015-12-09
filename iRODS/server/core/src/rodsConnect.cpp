@@ -4,6 +4,7 @@
 /* initServer.cpp - Server initialization routines
  */
 
+#include "rcMisc.h"
 #include "rodsConnect.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"

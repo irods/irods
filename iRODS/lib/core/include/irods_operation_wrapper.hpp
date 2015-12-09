@@ -157,7 +157,8 @@ namespace irods {
 
                     // =-=-=-=-=-=-=-
                     // call the pep-rule for this op
-                    dynamic_operation_execution_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE> rex_mgr (std::shared_ptr<rule_engine_context_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE> > (new rule_engine_context_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE >(global_re_mgr, &rei)));
+                    dynamic_operation_execution_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE> rex_mgr (std::shared_ptr<rule_engine_context_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE> > (new rule_engine_context_manager<default_re_ctx, default_ms_ctx, DONT_AUDIT_RULE >(re_plugin_globals;
+                                    , &rei)));
                     error op_err = rex_mgr.call(instance_name_, operation_name_, std::function<error(plugin_context&, T1...)>(operation_), _ctx, _t1...);
 
                     // =-=-=-=-=-=-=-

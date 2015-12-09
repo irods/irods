@@ -3,6 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataCopy.h for a description of this API call.*/
 
+#include "rcMisc.h"
 #include "dataCopy.h"
 #include "rcPortalOpr.h"
 #include "miscServerFunct.hpp"

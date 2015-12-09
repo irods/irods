@@ -5,6 +5,7 @@
  */
 
 
+#include "rcMisc.h"
 #include "openCollection.h"
 #include "closeCollection.h"
 #include "rsGlobalExtern.hpp"

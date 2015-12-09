@@ -7,6 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "reGlobalsExtern.hpp"
+#include "rcMisc.h"
 #include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"

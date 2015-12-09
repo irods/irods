@@ -8,9 +8,12 @@ OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
 
 include ${IRODSDIR}/config/config.mk
 include ${IRODSDIR}/config/platform.mk
+include ${IRODSDIR}/../packaging/irods_externals_locations.mk
 
-GCC = g++ -DRODS_SERVER 
+GCC = $(CC) -DRODS_SERVER 
 
+JANSSON_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/include
+BOOST_INCLUDES = -I$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_BOOST)/include
 INC = -I${IRODSDIR}/lib/core/include/ \
       -I${IRODSDIR}/lib/api/include/ \
       -I${IRODSDIR}/lib/md5/include \
@@ -23,10 +26,13 @@ INC = -I${IRODSDIR}/lib/core/include/ \
       -I${IRODSDIR}/../plugins/api/include \
       -I$(LIBARCHIVE_DIR)/libarchive/ \
       -I../../../external/jansson-2.7/src/ \
-      -I$(BOOST_DIR) \
+      $(BOOST_INCLUDES) \
+      $(JANSSON_INCLUDES) \
       ${HEADERS}
 
 MY_CFLAG += ${INC}
+
+JANSSON_LIBS = -L$(IRODS_EXTERNALS_ROOT)/$(BUILD_SUBDIRECTORY_JANSSON)/lib -ljansson
 
 ifeq ($(OS_platform), osx_platform)
 LDADD += "-Wl,-undefined,dynamic_lookup"
@@ -34,7 +40,7 @@ else
 LDADD += "-Wl,-E"
 endif
 
-LDADD += ../../../external/jansson-2.7/src/.libs/libjansson.a
+LDADD += ${JANSSON_LIBS}
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
@@ -54,7 +60,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} -std=c++11 ${INC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/irods_plugin_base.o ${EXTRALIBS}
+	${GCC} -std=c++11 ${INC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
 
 ${OBJDIR}/%.o: %.cpp
 	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 

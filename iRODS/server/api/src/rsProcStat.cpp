@@ -5,6 +5,7 @@
  */
 
 /* script generated code */
+#include "rcMisc.h"
 #include "procStat.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"

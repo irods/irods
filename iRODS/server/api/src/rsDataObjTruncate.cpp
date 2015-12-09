@@ -3,6 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjTruncate.h for a description of this API call.*/
 
+#include "rcMisc.h"
 #include "dataObjTruncate.h"
 #include "rodsLog.h"
 #include "icatDefines.h"

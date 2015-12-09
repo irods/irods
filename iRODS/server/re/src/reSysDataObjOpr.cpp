@@ -8,6 +8,7 @@
 
 /* reSysDataObjOpr.c */
 
+#include "rcMisc.h"
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
 #include "getRescQuota.h"

@@ -6,6 +6,7 @@
 
 #include <unistd.h> // JMC - backport 4598
 #include <fcntl.h> // JMC - backport 4598
+#include "rcMisc.h"
 #include "rodsDef.h"
 #include "rodsConnect.h"
 #include "physPath.hpp"

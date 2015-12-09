@@ -3,6 +3,7 @@
 /* regColl.c
  */
 
+#include "rcMisc.h"
 #include "regColl.h"
 #include "icatHighLevelRoutines.hpp"
 #include "collection.hpp"

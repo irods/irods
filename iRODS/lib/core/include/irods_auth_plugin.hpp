@@ -2,7 +2,6 @@
 #define _AUTH_HPP_
 
 #include "irods_error.hpp"
-#include "irods_operation_wrapper.hpp"
 #include "irods_auth_types.hpp"
 #include "irods_load_plugin.hpp"
 #include "dlfcn.h"

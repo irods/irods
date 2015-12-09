@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 //
+#include "irods_operation_rule_execution_manager.hpp"
 #include "irods_resource_plugin_impostor.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_plugin.hpp"
@@ -523,22 +524,6 @@ namespace irods {
         set_property< int >( RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
     } // ctor
-
-    error impostor_resource::wire_op(
-        const std::string& _key,
-        plugin_operation   _op ) {
-        // =-=-=-=-=-=-=-
-        // add the operation via a wrapper to the operation map
-        oper_rule_exec_mgr_ptr rex_mgr(
-            new operation_rule_execution_manager(
-                "impostor_resource", _key ) );
-        operations_[ _key ] = operation_wrapper<void>(
-                                  rex_mgr,
-                                  "impostor_resource",
-                                  _key,
-                                  _op );
-        return SUCCESS();
-    } // wire_op
 
     error impostor_resource::need_post_disconnect_maintenance_operation( bool& _b ) {
         _b = false;

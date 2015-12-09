@@ -7,6 +7,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* reHelper.c */
 
+#include "rcMisc.h"
 #include "reFuncDefs.hpp"
 #include "msiHelper.hpp"
 /**

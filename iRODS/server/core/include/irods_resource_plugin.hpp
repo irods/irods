@@ -4,7 +4,6 @@
 // =-=-=-=-=-=-=-
 #include "irods_plugin_base.hpp"
 #include "irods_resource_constants.hpp"
-#include "irods_operation_wrapper.hpp"
 #include "irods_resource_types.hpp"
 
 #include <iostream>

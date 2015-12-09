@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* specColl.c - special collection (mounted and linked collections) routines */
 
+#include "rcMisc.h"
 #include "dataObjOpr.hpp"
 #include "specColl.hpp"
 #include "collection.hpp"

@@ -77,7 +77,7 @@ namespace irods {
         rei.condInputData = &_kvp; // give rule scope to our key value pairs
         rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 
-        rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE> re_ctx_mgr = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>(global_re_mgr, &rei);
+        rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE> re_ctx_mgr = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>(re_plugin_globals.global_re_mgr, &rei);
         
         // =-=-=-=-=-=-=-
         // determine if rule exists
