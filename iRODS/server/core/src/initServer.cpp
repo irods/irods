@@ -133,6 +133,7 @@ initServerInfo( rsComm_t *rsComm ) {
     if ( !ret.ok() ) {
         irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
         irods::log( log_err );
+        return ret.code();
     }
 
     return status;
