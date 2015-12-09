@@ -7,6 +7,8 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_plugin_home_directory.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "getRodsEnv.h"
+#include "rodsErrorTable.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -197,16 +199,6 @@ namespace irods {
             "load_plugin - loaded [%s]",
             _plugin_name.c_str() );
 
-        double plugin_version = _plugin->interface_version();
-
-        // =-=-=-=-=-=-=-
-        // Here is where we decide how to load the plugins based on the version...
-        if ( 1.0 == plugin_version ) {
-        }
-        else {
-            // do something else even more interesting here
-        }
-       
         return SUCCESS();
 
     } // load_plugin

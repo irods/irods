@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
+#include "rcMisc.h"
 #include "reServerLib.hpp"
 #include "rodsConnect.h"
 #include "ruleExecSubmit.h"

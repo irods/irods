@@ -1,7 +1,10 @@
 
-.PHONY : clean all auth network postgres mysql oracle nodb resources api microservices
+.PHONY : clean all auth network postgres mysql oracle nodb resources api microservices re
 
-nodb : api auth network resources microservices
+nodb : api auth network resources microservices re
+
+re :
+	@$(MAKE) -C re
 
 api :
 	@$(MAKE) -C api

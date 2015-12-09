@@ -152,6 +152,7 @@ namespace irods {
 
     // plugin types
     const std::string PLUGIN_TYPE_API( "api" );
+    const std::string PLUGIN_TYPE_RULE_ENGINE( "re" );
     const std::string PLUGIN_TYPE_AUTHENTICATION( "auth" );
     const std::string PLUGIN_TYPE_NETWORK( "network" );
     const std::string PLUGIN_TYPE_DATABASE( "database" );

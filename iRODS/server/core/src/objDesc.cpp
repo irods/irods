@@ -4,6 +4,7 @@
 /* objDesc.c - L1 type operation. Will call low level l1desc drivers
  */
 
+#include "rcMisc.h"
 #include "rodsDef.h"
 #include "objDesc.hpp"
 #include "dataObjOpr.hpp"

@@ -7,6 +7,7 @@
  *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
 /* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
+#include "rcMisc.h"
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.h"
 #include "phyBundleColl.h"

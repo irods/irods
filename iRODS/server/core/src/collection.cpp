@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* collection.c - collection operation */
 
+#include "rcMisc.h"
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "genQuery.h"

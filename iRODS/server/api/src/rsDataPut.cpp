@@ -3,6 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataPut.h for a description of this API call.*/
 
+#include "rcMisc.h"
 #include "dataPut.h"
 #include "rodsLog.h"
 #include "miscServerFunct.hpp"

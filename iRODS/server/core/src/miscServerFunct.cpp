@@ -16,6 +16,7 @@
 #include "QUANTAnet_rbudpReceiver_c.h"
 #include "dataObjOpen.h"
 #include "dataObjLseek.h"
+#include "rcMisc.h"
 #include "dataObjOpr.hpp"
 #include "dataObjClose.h"
 #include "dataObjWrite.h"

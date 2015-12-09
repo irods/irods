@@ -3,6 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataGet.h for a description of this API call.*/
 
+#include "rcMisc.h"
 #include "dataGet.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"

@@ -8,6 +8,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
+#include "rcGlobalExtern.h"
 #include "rodsClient.h"
 #include "sslSockComm.h"
 

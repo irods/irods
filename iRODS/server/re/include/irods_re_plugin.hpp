@@ -1,8 +1,12 @@
 #ifndef IRODS_RE_PLUGIN_HPP
 #define IRODS_RE_PLUGIN_HPP
 #include "irods_error.hpp"
-#include "irods_operation_wrapper.hpp"
 #include "irods_load_plugin.hpp"
+#include "irods_lookup_table.hpp"
+
+#include "reGlobalsExtern.hpp"
+
+#include <boost/any.hpp>
 #include <iostream>
 #include <list>
 #include <vector>
@@ -151,40 +155,52 @@ namespace irods {
 
 
     template<typename T>
-    class pluggable_rule_engine final : public plugin_base {
+    class pluggable_rule_engine final {
     public:
-        pluggable_rule_engine(const std::string &_instance_name, const std::string &_context) : plugin_base(_instance_name, _context) {
+
+        pluggable_rule_engine(const std::string &_instance_name, const std::string &_context) {
         }
 
-        error delay_load(void *_h) {
-            error err;
-            if(!(err=load_operation(_h, std::string("exec_rule"), std::string("exec_rule"))).ok()) { return err; }
-            if(!(err=load_operation(_h, std::string("rule_exists"), std::string("rule_exists"))).ok()) { return err; }
-            if(!(err=load_operation(_h, std::string("start"), std::string("start"))).ok()) { return err; }
-            return load_operation(_h, std::string("stop"), std::string("stop"));
+        template<typename... types_t>
+        error add_operation(
+                const std::string& _op,
+                std::function<error(types_t...)> _f ) {
+            if ( _op.empty() ) {
+                std::stringstream msg;
+                msg << "empty operation [" << _op << "]";
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+            }
+            operations_[_op] = _f;
+            return SUCCESS();
+
         }
 
         error start_operation(T& _in) {
-            return (reinterpret_cast<error(*)(T&)>( operations_["start"]))(_in);
+            auto fcn = boost::any_cast<std::function<error(T&)>>( operations_["start"] );
+            return fcn(_in);
         }
 
         error stop_operation(T& _in) {
-            return (reinterpret_cast<error(*)(T&)>( operations_["stop"]))(_in);
+            auto fcn = boost::any_cast<std::function<error(T&)>>( operations_["stop"] );
+            return fcn(_in);
         }
 
         error rule_exists(std::string _rn, T& _re_ctx, bool& _out) {
-            return (reinterpret_cast<error(*)(T&, std::string, bool&)>( operations_["rule_exists"]))(_re_ctx, _rn, _out);
+            auto fcn = boost::any_cast<std::function<error(T&,std::string,bool&)>>( operations_["rule_exists"] );
+            return fcn(_re_ctx, _rn, _out);
         }
 
         template<typename ...As>
         error exec_rule(std::string _rn, T& _re_ctx, As&&... _ps, callback _callback) {
             auto l = pack(std::forward<As>(_ps)...);
-            return (reinterpret_cast<error(*)(T&, std::string, std::list<boost::any> &, callback)>( operations_["exec_rule"]))(_re_ctx, _rn, l, _callback);
+            auto fcn = boost::any_cast<std::function<error(T&, std::string, std::list<boost::any> &, callback)>>( operations_["exec_rule"] );
+            return fcn(_re_ctx, _rn, l, _callback);
         }
 
-    protected:
+    private:
         error load_operation(void *handle, std::string _fcn, std::string _key);
-        std::map<std::string, re_plugin_operation<T> > operations_;
+        irods::lookup_table< boost::any > operations_;
+        std::string _instance_name;
     };
 
     template<typename T, typename C, rule_execution_manager_pack Audit>
@@ -255,6 +271,7 @@ namespace irods {
     template<typename T>
     class rule_engine_plugin_manager final {
     public:
+        double interface_version() { return 1.0; }
         rule_engine_plugin_manager(std::string _dir) : dir_(_dir) { }
 
         ~rule_engine_plugin_manager() {
@@ -266,6 +283,7 @@ namespace irods {
             if(itr == end(re_plugin_map_)) {
                 error err = load_plugin <pluggable_rule_engine<T> > (_re_ptr, _plugin_name, dir_, std::string(""), std::string("")); // don't use _instance_name and _context here
                 if (!err.ok()) {
+                    irods::log( PASS( err ) );
                     return err;
                 }
                 re_plugin_map_[_plugin_name] = _re_ptr;
@@ -288,9 +306,11 @@ namespace irods {
     class rule_engine_manager final {
     public:
         rule_engine_manager(rule_engine_plugin_manager <T>& _re_plugin_mgr, std::vector<re_pack_inp<T> > &_re_packs, microservice_manager<C> &_ms_mgr) : ms_mgr_(_ms_mgr), re_plugin_mgr_(_re_plugin_mgr) {
-
             std::for_each(begin(_re_packs), end(_re_packs), [this](re_pack_inp<T> &_inp) {
-                this->init_rule_engine(_inp);
+                error err = this->init_rule_engine(_inp);
+                if( !err.ok() ) {
+                    irods::log( PASS( err ) );
+                }
             });
         }
 
@@ -306,12 +326,12 @@ namespace irods {
 
             err = re_plugin_mgr_.resolve(_inp.plugin_name_, pre);
             if(!err.ok()) {
-                return err;
+                return PASS( err );
             }
 
             pre->start_operation(_inp.re_ctx_);
             if(!err.ok()) {
-                return err;
+                return PASS( err );
             }
 
             _inp.re_ = pre;
@@ -446,10 +466,6 @@ namespace irods {
     using default_re_ctx = unit;
     using default_ms_ctx = ruleExecInfo_t *;
 
-    extern microservice_manager<default_ms_ctx> global_ms_mgr;
-    extern rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr;
-    extern rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr;
-
     template<>
     class default_microservice_manager<default_ms_ctx> {
     public:
@@ -541,6 +557,16 @@ namespace irods {
         return oc;
     }
 
+    std::vector<re_pack_inp<default_re_ctx> > init_global_re_packs();
+    struct global_re_plugin_mgr {
+        microservice_manager<default_ms_ctx> global_ms_mgr;
+        std::vector<re_pack_inp<default_re_ctx> > global_re_packs = init_global_re_packs();
+        rule_engine_plugin_manager<default_re_ctx> global_re_plugin_mgr = rule_engine_plugin_manager<default_re_ctx>(PLUGIN_TYPE_RULE_ENGINE);
+        rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
+    };
+
+    extern struct global_re_plugin_mgr re_plugin_globals;
+
 }
 #define DEFINE_FACTORY \
     irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory(const std::string& _inst_name, const std::string& _context) { \
@@ -552,3 +578,4 @@ namespace irods {
     }
 
 #endif
+

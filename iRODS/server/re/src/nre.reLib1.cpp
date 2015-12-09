@@ -33,7 +33,7 @@ int
 applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
               ruleExecInfo_t *rei, int reiSaveFlag ) {
     (void) reiSaveFlag;
-    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::global_re_mgr, rei);
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals.global_re_mgr, rei);
     std::list<boost::any> args2;
     for(int i = 0; i<argc;i++) {
         args2.push_back(boost::any(std::string(args[i])));
@@ -60,7 +60,7 @@ applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, 
     }
     (void) reiSaveFlag;
     (void) inMsParamArray;
-    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::global_re_mgr, rei);
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals.global_re_mgr, rei);
     irods::error err = re_ctx_mgr.exec_rule(inAction);
     if(!err.ok()) {
         rodsLog(

@@ -1,4 +1,5 @@
 // =-=-=-=-=-=-=-
+#include "rcMisc.h"
 #include "irods_resource_manager.hpp"
 #include "irods_log.hpp"
 #include "irods_string_tokenize.hpp"
