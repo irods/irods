@@ -67,10 +67,11 @@ namespace irods {
 
     } // resolve
 
-    error resource_manager::load_resource_plugin( resource_ptr&     _plugin,
-                                const std::string _plugin_name,
-                                const std::string _inst_name,
-                                const std::string _context ) {
+    error resource_manager::load_resource_plugin(
+        resource_ptr&     _plugin,
+        const std::string _plugin_name,
+        const std::string _inst_name,
+        const std::string _context ) {
         resource* resc = 0;
         error ret = load_plugin< resource >(
                         resc,
