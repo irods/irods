@@ -47,12 +47,12 @@ def validate_dict(config_dict, schema_uri, name=None):
         e = jsonschema.exceptions
     except AttributeError:
         irods_six.reraise(ValidationWarning, ValidationWarning(
-                'WARNING: Validation failed for {0} -- jsonschema too old v[{1}]'.format(
+                'WARNING: Validation Failed for {0} -- jsonschema too old v[{1}]'.format(
                     name, jsonschema.__version__)),
             sys.exc_info()[2])
     except NameError:
         irods_six.reraise(ValidationWarning, ValidationWarning(
-                'WARNING: Validation failed for {0} -- jsonschema not installed'.format(
+                'WARNING: Validation Failed for {0} -- jsonschema not installed'.format(
                     name)),
             sys.exc_info()[2])
 
@@ -63,16 +63,18 @@ def validate_dict(config_dict, schema_uri, name=None):
         jsonschema.validate(config_dict, schema)
 
     except (jsonschema.exceptions.RefResolutionError,   # could not resolve recursive schema $ref
-            ValueError                                  # most network errors and 404s
+            ValueError,                                 # 404s and bad JSON
+            requests.exceptions.ConnectionError,        # network connection error
+            requests.exceptions.Timeout                 # timeout
     ) as e:
         irods_six.reraise(ValidationWarning, ValidationWarning('\n\t'.join([
                 'WARNING: Validation Failed for [{0}]:'.format(name),
                 'against [{0}]'.format(schema_uri),
                 '{0}: {1}'.format(e.__class__.__name__, e)])),
                 sys.exc_info()[2])
-    except (jsonschema.exceptions.ValidationError,
-            jsonschema.exceptions.SchemaError,
-            BaseException
+    except (jsonschema.exceptions.ValidationError,      # validation error
+            jsonschema.exceptions.SchemaError,          # schema error
+            BaseException                               # catch all
     ) as e:
         irods_six.reraise(ValidationError,  ValidationError('\n\t'.join([
                 'ERROR: Validation Failed for [{0}]:'.format(name),
@@ -100,10 +102,10 @@ def get_initial_schema(schema_uri):
 
 def get_initial_schema_from_web(schema_uri):
     try:
-        response = requests.get(schema_uri)
+        response = requests.get(schema_uri, timeout=5)
     except NameError:
         irods_six.reraise(ValidationError, ValidationError(
-            'WARNING: Validation failed for {0} -- requests not installed'.format(
+            'WARNING: Validation Failed for {0} -- requests not installed'.format(
                 name)),
                           sys.exc_info()[2])
 
