@@ -50,8 +50,9 @@ irods::error stop(irods::default_re_ctx& _u) {
 irods::error rule_exists(irods::default_re_ctx&, std::string _rn, bool& _ret) {
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
-            LOG_NOTICE,
-            "rule engine xre has not initialized, skip rule"
+            LOG_DEBUG,
+            "rule engine xre has not initialized, skip rule [%s]",
+            _rn.c_str()
         );
         _ret = false;
         return SUCCESS();
@@ -70,16 +71,17 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
-            LOG_NOTICE,
-            "rule engine xre has not initialized, skip rule"
-        );
+            LOG_DEBUG,
+            "rule engine xre has not initialized, skip rule [%s]",
+            _rn.c_str());
         return SUCCESS();
     }
 
     rodsLog(
-            LOG_NOTICE,
-            "applying rule %s", _rn.c_str()
-        );
+        LOG_DEBUG,
+        "applying rule %s",
+        _rn.c_str());
+        
     ruleExecInfo_t * rei;
     irods::error err;
     if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
@@ -103,7 +105,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         // because it only accepts one string param
         // but all operation parameters are passed here
         std::stringstream expr;
-        boost::any* arg0, *arg1;
+        boost::any* arg0 = nullptr, *arg1 = nullptr;
         std::string rule_ctx;
         int i = 0;
         for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
@@ -117,28 +119,39 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
                     }
                     break;
                 case 1:
-                    if(itr->type() == typeid(irods::plugin_context)) {
+                    if(itr->type() == typeid(irods::plugin_context) ) {
                         arg1 = &*itr;
                     } else {
-                        rodsLog(LOG_ERROR, "only plugin_context arguments are supported for rule_param");
+                        rodsLog(
+                            LOG_ERROR,
+                            "only plugin_context arguments are supported for rule_param [%s]",
+                            itr->type().name() );
                         return ERROR(-1, "only plugin_context arguments are supported for rule_param");
                     }
                     break;
             }
-
+            ++i;
         }
+
+        if( !arg1 ) {
+            rodsLog(
+                LOG_ERROR,
+                "%s:%d - did not find plugin_context in parameter list",
+                __FUNCTION__,
+               __LINE__ );
+            return ERROR(
+                    SYS_INVALID_INPUT_PARAM,
+                    "did not find plugin_context in parameter list" );
+        }
+
         std::string instance_name = boost::any_cast<std::string>(*arg0).c_str();
         irods::plugin_context plugin_ctx = boost::any_cast<irods::plugin_context>(*arg1);
         addMsParam(&(ar.msParamArray), "*OUT", STR_MS_T, (void *) plugin_ctx.rule_results().c_str(), NULL);
 
         expr << _rn << "(*OUT)";
         snprintf(rei->pluginInstanceName, MAX_NAME_LEN, "%s", instance_name.c_str());
-        rodsLog(
-                LOG_NOTICE,
-                "applying rule %s", _rn.c_str()
-            );
+        
         int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
-
 
         msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), "*OUT");
         if(msParam != NULL) {
@@ -150,13 +163,14 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
 
         rodsLog(
-                LOG_NOTICE,
+                LOG_DEBUG,
                 "rule engine return %d", ret
             );
 
         return ret == 0 ? SUCCESS() : CODE(ret);
 
-    } else {
+    } 
+    else {
         std::stringstream expr;
         expr << _rn << "(";
         int i = 0;
@@ -177,10 +191,6 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         }
         expr << ")";
 
-        rodsLog(
-                LOG_NOTICE,
-                "applying rule %s", _rn.c_str()
-            );
         int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
 
         i = 0;
@@ -205,7 +215,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
 
         rodsLog(
-                LOG_NOTICE,
+                LOG_DEBUG,
                 "rule engine return %d", ret
             );
 
