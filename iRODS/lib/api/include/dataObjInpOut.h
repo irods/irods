@@ -88,12 +88,12 @@ typedef struct DataObjInp {
  * \li int l1descInx - the opened data object descriptor from rcDataObjOpen
  *        or rcDataObjCreate
  * \li int len - the length (number of bytes) to read/write.
- * \li int whence - vaild only for rcDataObjLseek (similar to lseek of UNIX).
+ * \li int whence - valid only for rcDataObjLseek (similar to lseek of UNIX).
  *      Valid values are SEEK_SET, SEEK_CUR and SEEK_END.
  * \li int oprType - The operation type. Valid values are - PUT_OPR, GET_OPR,
  *      REPLICATE_OPR, ... See dataObjInpOut.h for more.
  * \li rodsLong_t offset - the offset.
- * \li rodsLong_t bytesWritten - Number of bytes wriitten (vaild for
+ * \li rodsLong_t bytesWritten - Number of bytes written (valid for
  *      rcDataObjClose).
  * \li keyValPair_t condInput -  keyword/value pair input. Valid keywords
  *      depend on the API.
