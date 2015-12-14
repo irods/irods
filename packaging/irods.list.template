@@ -276,6 +276,14 @@ END_POSTREMOVE
 
 f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json
 
+%if ICAT
+f 000 root root ${IRODS_HOME_DIR}/catalog.flag /dev/null
+%endif
+
+%if ICAT
+f 000 root root ${IRODS_HOME_DIR}/resource.flag /dev/null
+%endif
+
 d 755 root root ${IRODS_HOME_DIR}/log -
 
 d 755 root root ${IRODS_HOME_DIR}/tests -
@@ -294,8 +302,6 @@ f 755 root root ${IRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods.sh ./packaging/setup_irods.sh
-f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_service_account.sh ./packaging/setup_irods_service_account.sh
-f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods_configuration.sh ./packaging/setup_irods_configuration.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/update_json.py ./packaging/update_json.py
 f 755 root root ${IRODS_HOME_DIR}/packaging/convert_configuration_to_json.py ./packaging/convert_configuration_to_json.py
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
@@ -383,11 +389,6 @@ d 755 root root ${IRODS_HOME}/scripts/notify -
 f 644 root root ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
 f 755 root root ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl
 f 644 root root ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
-d 755 root root ${IRODS_HOME}/scripts/perl -
-f 644 root root ${IRODS_HOME}/scripts/perl/irods_setup.pl ./iRODS/scripts/perl/irods_setup.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/utils_file.pl ./iRODS/scripts/perl/utils_file.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
-f 644 root root ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/utils_print.pl
 f 644 root root ${IRODS_HOME}/scripts/README.txt ./iRODS/scripts/README.txt
 d 755 root root ${IRODS_HOME}/server -
 d 755 root root ${IRODS_HOME}/server/log -

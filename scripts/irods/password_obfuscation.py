@@ -85,7 +85,7 @@ def decode(s, uid=None):
 #encode passwords to store in the .irodsA file
 def encode(s, uid=None, mtime=None):
     #mtime & 65535 needs to be within 20 seconds of the
-    #filesystem mtime of the irodsA file & 65535
+    #.irodsA file's mtime & 65535
     if mtime is None:
         mtime = int(time.time())
 
@@ -119,6 +119,7 @@ def encode(s, uid=None, mtime=None):
     to_encode += chr(((mtime >> 12) & 0xf) + ord('a'))
     to_encode += chr(((mtime >> 8) & 0xf) + ord('a'))
 
+    #We also want to actually encode the passed string
     to_encode += s
 
     #Yeah, the string starts with a dot. Whatever.
@@ -127,6 +128,7 @@ def encode(s, uid=None, mtime=None):
     for c in to_encode:
         if ord(c) == 0:
             break
+
         #How far this character is from the target character in wheel
         #Referred to as "add_in" in the C code
         offset = ((seq >> bitshift) & 0x1f) + (uid & 0xf5f)

@@ -18,15 +18,6 @@ fi
 
 python scripts/setup_irods.py catalog -d$DATABASETYPE
 
-echo ""
-echo "-----------------------------"
-echo "Running irods_setup.pl..."
-perl iRODS/scripts/perl/irods_setup.pl icat
-
-# =-=-=-=-=-=-=-
-# run update_catalog_schema.py
-python scripts/setup_irods.py update_catalog_schema
-
 # =-=-=-=-=-=-=-
 # done
 exit 0

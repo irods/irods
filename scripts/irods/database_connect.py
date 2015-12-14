@@ -163,7 +163,6 @@ def get_connection(db_config):
         l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
 
     connection_string = get_connection_string(db_config)
-    l.info("Connecting with connection string:\n%s", connection_string)
     sync_odbc_ini(db_config)
     return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
 
@@ -182,6 +181,14 @@ def get_odbc_ini_path():
     if 'ODBCINI' in os.environ:
         return os.environ['ODBCINI']
     return os.path.join(os.path.expanduser('~'), '.odbc.ini')
+
+def execute_sql_statement(cursor, statement, *params, **kwargs):
+    l = logging.getLogger(__name__)
+    log_params = kwargs.get('log_params', True)
+    l.debug('Executing SQL statement:\n%s\nwith the following parameters:\n%s',
+            statement,
+            pprint.pformat(params) if log_params else '<hidden>')
+    return cursor.execute(statement, *params)
 
 def execute_sql_file(filepath, cursor):
     l = logging.getLogger(__name__)

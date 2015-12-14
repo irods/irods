@@ -1,10 +1,13 @@
 from __future__ import print_function
 import contextlib
+import grp
 import inspect
 import json
 import logging
 import os
+import pwd
 import sys
+import time
 
 from . import six
 from . import pypyodbc
@@ -73,6 +76,10 @@ class IrodsConfig(object):
         self._config_directory = value
 
     @property
+    def home_directory(self):
+        return os.path.expanduser(''.join(['~', self.irods_user]))
+
+    @property
     def binary_installation(self):
         if self._binary_installation is None:
             self._binary_installation = os.path.exists(
@@ -81,6 +88,11 @@ class IrodsConfig(object):
                         'packaging',
                         'binary_installation.flag'))
         return self._binary_installation
+
+    @property
+    def is_catalog(self):
+        return os.path.exists(os.path.join(self.top_level_directory,
+            'catalog.flag'))
 
     @property
     def core_re_directory(self):
@@ -176,12 +188,23 @@ class IrodsConfig(object):
             self._host_access_control_config = load_json_config(self.host_access_control_config_path)
         return self._host_access_control_config
 
+
+    @property
+    def password_file_path(self):
+        return os.path.join(
+            self.home_directory,
+            '.irods',
+            '.irodsA')
+
     @property
     def client_environment_path(self):
         if 'IRODS_ENVIRONMENT_FILE' in self.execution_environment:
             return self.execution_environment['IRODS_ENVIRONMENT_FILE']
         else:
-            return get_default_client_environment_path()
+            return os.path.join(
+                self.home_directory,
+                '.irods',
+                'irods_environment.json')
 
     @property
     def client_environment(self):
@@ -354,6 +377,34 @@ class IrodsConfig(object):
                     'packaging',
                     'schema_updates')
 
+    @property
+    def admin_password(self):
+        if not os.path.exists(os.path.dirname(self.password_file_path)):
+            return None
+        with open(self.password_file_path, 'rt') as f:
+            return decode(f.read())
+
+    @admin_password.setter
+    def admin_password(self, value):
+        if not os.path.exists(os.path.dirname(self.password_file_path)):
+            os.makedirs(os.path.dirname(self.password_file_path), mode=0o700)
+        mtime = int(time.time())
+        with open(self.password_file_path, 'wt') as f:
+            print(encode(value, mtime=mtime), end='', file=f)
+        os.utime(self.password_file_path, (mtime, mtime))
+
+    @property
+    def service_account_file_path(self):
+        return os.path.join(self.config_directory, 'service_account.config')
+
+    @property
+    def irods_user(self):
+        return pwd.getpwuid(os.stat(self.top_level_directory).st_uid).pw_name
+
+    @property
+    def irods_group(self):
+        return grp.getgrgid(os.stat(self.top_level_directory).st_gid).gr_name
+
     def get_database_connection(self):
         return database_connect.get_connection(self.database_config)
 
@@ -378,8 +429,7 @@ class IrodsConfig(object):
             l = logging.getLogger(__name__)
             query = "select option_value from R_GRID_CONFIGURATION where namespace='database' and option_name='schema_version';"
             try :
-                l.debug('Executing query: %s' % (query))
-                rows = cursor.execute(query).fetchall()
+                rows = database_connect.execute(cursor, query).fetchall()
             except pypyodbc.Error:
                 six.reraise(IrodsError,
                         IrodsError('pypyodbc encountered an error executing '
@@ -495,12 +545,6 @@ def load_json_config(path):
     else:
         raise IrodsError(
             'File %s does not exist.' % (path))
-
-def get_default_client_environment_path():
-    return os.path.join(
-        lib.get_home_directory(),
-        '.irods',
-        'irods_environment.json')
 
 def get_default_top_level_directory():
     scripts_directory = os.path.dirname(os.path.dirname(os.path.abspath(
