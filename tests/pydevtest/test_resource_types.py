@@ -1561,6 +1561,47 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(lib.get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree("rm -rf " + lib.get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
+    def test_irepl_as_admin__2988(self):
+        filename = "test_irepl_as_admin__2988_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.user1.assert_icommand("iput -R pydevtest_TestResc " + filename)
+
+        logical_path = os.path.join( self.user1.session_collection, filename )
+        self.admin.assert_icommand("irepl -M -R demoResc " + logical_path )
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+
+    def test_msiDataObjRepl_as_admin__2988(self):
+        filename = "test_msiDataObjRepl_as_admin__2988_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.user1.assert_icommand("iput -R pydevtest_TestResc " + filename)
+
+        logical_path = os.path.join( self.user1.session_collection, filename )
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        parameters['dest_resc'] = 'demoResc'
+        rule_file_path = 'test_msiDataObjRepl_as_admin__2988.r'
+        rule_str = '''
+test_msiDataObjRepl {{
+    *err = errormsg( msiDataObjRepl(*SourceFile,"destRescName=*Resource++++irodsAdmin=",*Status), *msg );
+    if( 0 != *err ) {{
+        writeLine( "stdout", "*err - *msg" );
+    }}
+}}
+
+INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # invoke rule
+        self.admin.assert_icommand('irule -F ' + rule_file_path)
+
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+
     def test_auto_repl_off__2941(self):
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
 
