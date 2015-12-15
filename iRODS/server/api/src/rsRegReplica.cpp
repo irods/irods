@@ -115,6 +115,11 @@ int _call_file_modified_for_replica(
         file_obj->in_pdmo( pdmo_kw );
     }
 
+    char* admin_kw = getValByKey( &regReplicaInp->condInput, ADMIN_KW );
+    if ( admin_kw != NULL ) {
+        addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );;
+    }
+
     irods::error ret = fileModified( rsComm, file_obj );
     if ( !ret.ok() ) {
         std::stringstream msg;
