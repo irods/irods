@@ -369,6 +369,12 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
             bindCnt ++;
             myPortNum ++;
         }
+        if ( bindCnt >= portRangeCount ) {
+            status = SYS_PORT_RANGE_EXHAUSTED;
+            rodsLog( LOG_ERROR,
+                "port range exhausted, errno = %d",
+                errno );
+        }
 
     }
     else {
