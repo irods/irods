@@ -120,9 +120,9 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
 int
 setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut ) {
-    portalOprOut_t *myDataObjPutOut;
-    int portalSock;
-    int proto;
+    portalOprOut_t *myDataObjPutOut = NULL;
+    int portalSock = 0;
+    int proto = 0;
 
     if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
         proto = SOCK_DGRAM;
@@ -153,12 +153,33 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         return 0;
     }
     else {
-        /* setup the portal */
-        portalSock = createSrvPortal( rsComm, &myDataObjPutOut->portList,
-                                      proto );
+        int svr_port_range_start = 0;
+        irods::error ret = irods::get_server_property<int>(
+                                irods::CFG_SERVER_PORT_RANGE_START_KW,
+                                svr_port_range_start );
+        if ( ! ret.ok() ) {
+            return ret.code();
+        }
+        int svr_port_range_end = 0;
+        ret = irods::get_server_property<int>(
+                                irods::CFG_SERVER_PORT_RANGE_END_KW,
+                                svr_port_range_end );
+        if ( ! ret.ok() ) {
+            return ret.code();
+        }
+        int port_range_count = svr_port_range_end - svr_port_range_start + 1;
+
+        /* setup the portal - try port_range_count times in case of bind collision */
+        for ( int i = 0; i < port_range_count; ++i ) {
+            portalSock = createSrvPortal( rsComm, &myDataObjPutOut->portList,
+                                        proto );
+            if ( 0 <= portalSock ) {
+                break;
+            }
+        }
         if ( portalSock < 0 ) {
             rodsLog( LOG_NOTICE,
-                     "setupSrvPortalForParaOpr: createSrvPortal error, ststus = %d",
+                     "setupSrvPortalForParaOpr: createSrvPortal error, status = %d",
                      portalSock );
             myDataObjPutOut->status = portalSock;
             return portalSock;
@@ -224,7 +245,12 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     thisPortList->portNum = lport;
     thisPortList->windowSize = rsComm->windowSize;
 
-    listen( lsock, SOMAXCONN );
+    if ( listen( lsock, SOMAXCONN ) < 0 ) {
+        rodsLog( LOG_NOTICE,
+                 "setupSrvPortal: listen failed, errno: %d",
+                 errno );
+        return SYS_SOCK_LISTEN_ERROR;
+    }
 
     if ( proto == SOCK_DGRAM ) {
         if ( ( udpsock = svrSockOpenForInConn( rsComm, &udpport, &udpaddr,
@@ -250,27 +276,31 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
     const int sockfd = getTcpSockFromPortList( thisPortList );
     const int nfds = sockfd + 1;
     fd_set basemask;
-    FD_ZERO( &basemask );
-    FD_SET( sockfd, &basemask );
-
     struct timeval selectTimeout;
+    int nSelected = 0;
+
     selectTimeout.tv_sec = SELECT_TIMEOUT_FOR_CONN;
     selectTimeout.tv_usec = 0;
-
-    int nSelected;
-    while ( ( nSelected = select( nfds, &basemask,
-                                  ( fd_set * ) NULL, ( fd_set * ) NULL, &selectTimeout ) ) < 0 ) {
-        if ( errno == EINTR ) {
-            rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted" );
+    while ( true ) {
+        FD_ZERO( &basemask );
+        FD_SET( sockfd, &basemask );
+        nSelected = select( nfds, &basemask, ( fd_set * ) NULL, ( fd_set * ) NULL, &selectTimeout );
+        if ( nSelected < 0 ) {
+            if ( errno == EINTR || errno == EAGAIN ) {
+                rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted, errno = %d", errno );
+            }
+            else {
+                rodsLog( LOG_ERROR, "acceptSrvPortal: select failed, errno = %d", errno );
+                return SYS_SOCK_SELECT_ERR - errno;
+            }
         }
         else {
-            rodsLog( LOG_ERROR, "acceptSrvPortal: select failed, errno = %d", errno );
+            break;
         }
     }
-
     if ( nSelected == 0 ) {
         rodsLog( LOG_ERROR, "acceptSrvPortal() -- select timed out" );
-        return SYS_SOCK_SELECT_ERR;
+        return SYS_SOCK_SELECT_ERR - errno;
     }
 
     const int saved_socket_flags = fcntl( sockfd, F_GETFL );
