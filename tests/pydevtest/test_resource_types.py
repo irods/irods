@@ -1561,6 +1561,54 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(lib.get_irods_top_level_dir() + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree("rm -rf " + lib.get_irods_top_level_dir() + "/cacheRescVault", ignore_errors=True)
 
+    def test_irsync__2976(self):
+        filename = "test_irsync__2976.txt"
+        filename_rsync = "test_irsync__2976.txt.rsync"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput -R demoResc " + filename)
+
+        logical_path = os.path.join( self.admin.session_collection, filename )
+        logical_path_rsync = os.path.join( self.admin.session_collection, filename_rsync )
+        self.admin.assert_icommand("irsync i:" + logical_path + " i:" + logical_path_rsync )
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', filename )
+        self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', filename_rsync )
+
+    def test_msiDataObjRsync__2976(self):
+        filename = "test_msiDataObjRsync__2976.txt"
+        filename_rsync = "test_msiDataObjRsync__2976.txt.rsync"
+
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput -R pydevtest_TestResc " + filename)
+        
+        logical_path = os.path.join( self.admin.session_collection, filename )
+        logical_path_rsync = os.path.join( self.admin.session_collection, filename_rsync )
+
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        parameters['logical_path_rsync'] = logical_path_rsync
+        parameters['dest_resc'] = 'null'
+        rule_file_path = 'test_msiDataObjRsync__2976.r'
+        rule_str = '''
+test_msiDataObjRepl {{
+    *err = errormsg( msiDataObjRsync(*SourceFile,"IRODS_TO_IRODS",*Resource,*DestFile,*status), *msg );
+    if( 0 != *err ) {{
+        writeLine( "stdout", "*err - *msg" );
+    }}
+}}
+
+INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # invoke rule
+        self.admin.assert_icommand('irule -F ' + rule_file_path)
+
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', filename )
+        self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', filename_rsync )
+
     def test_irepl_as_admin__2988(self):
         filename = "test_irepl_as_admin__2988_file.txt"
         filepath = lib.create_local_testfile(filename)
