@@ -252,6 +252,8 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     replDataObjInp( dataObjInp, &dataObjCopyInp.destDataObjInp );
     rstrcpy( dataObjCopyInp.destDataObjInp.objPath, destObjPath,
              MAX_NAME_LEN );
+    // we need the destination resource hierarchy to vote on the write
+    rmKeyVal( &dataObjCopyInp.destDataObjInp.condInput, RESC_HIER_STR_KW );
 
     /* use rsDataObjChksum because the path could in in remote zone */
     status = rsDataObjChksum( rsComm, &dataObjCopyInp.srcDataObjInp,
