@@ -153,8 +153,9 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
     // JMC :: consider empty host for coordinating nodes
     if ( irods::EMPTY_RESC_HOST != myHostName ) {
         beforeTime = time( 0 );
-        if ( ( hostEnt = gethostbyname( myHostName ) ) == NULL ) {
-            status = SYS_GET_HOSTNAME_ERR - errno;
+        status = gethostbyname_with_retry( myHostName, &hostEnt );
+        if ( status != 0 ) {
+            status = SYS_GET_HOSTNAME_ERR;
             if ( ProcessType == SERVER_PT ) {
                 rodsLog( LOG_NOTICE,
                          "queAddr: gethostbyname error for %s ,errno = %d\n",
@@ -1096,4 +1097,3 @@ getAndConnReHost( rsComm_t *rsComm, rodsServerHost_t **rodsServerHost ) {
         return status;
     }
 }
-

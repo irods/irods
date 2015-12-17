@@ -4618,3 +4618,39 @@ unsigned int getRandomInt() {
     getRandomBytes( &random, sizeof( random ) );
     return random;
 }
+
+int
+gethostbyname_with_retry(const char *_hostname, struct hostent **_hostent) {
+    *_hostent = 0;
+    const int max_retry = 300;
+    for (int i=0; i<max_retry; ++i) {
+        struct hostent *hostent = gethostbyname( _hostname );
+        if ( hostent == NULL ) {
+            const int h_errno_copy = h_errno;
+            if ( h_errno_copy != TRY_AGAIN ) {
+                rodsLog( LOG_ERROR, "gethostbyname unrecoverable NULL return. retry count: [%d] hostname: [%s] h_errno [%d] hstrerror [%s]", i, _hostname , h_errno_copy, hstrerror(h_errno_copy) );
+                return USER_RODS_HOSTNAME_ERR;
+            }
+
+            struct timespec ts_requested;
+            ts_requested.tv_sec = 0;
+            ts_requested.tv_nsec = 100000000; // 100 milliseconds
+            while ( 0 != nanosleep( &ts_requested, &ts_requested ) ) {
+                const int errno_copy = errno;
+                if ( errno_copy != EINTR ) {
+                    rodsLog( LOG_ERROR, "nanosleep error: errno [%d]", errno_copy );
+                    return USER_RODS_HOSTNAME_ERR - errno_copy;
+                }
+            }
+        } else if ( hostent->h_addrtype != AF_INET ) {
+            rodsLog( LOG_ERROR, "gethostbyname h_addrtype not AF_INET. hostname [%s], h_addrtype [%d]", _hostname, hostent->h_addrtype );
+            return USER_RODS_HOSTNAME_ERR;
+        } else {
+            *_hostent = hostent;
+            return 0;
+        }
+        rodsLog( LOG_DEBUG, "gethostbyname_with_retry retrying gethostbyname. retry count [%d] hostname [%s]", i, _hostname );
+    }
+    rodsLog( LOG_ERROR, "gethostbyname_with_retry address resolution timeout [%s]", _hostname );
+    return USER_RODS_HOSTNAME_ERR;
+}

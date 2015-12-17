@@ -232,9 +232,9 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     else {
         struct hostent *hostEnt;
         /* server. try to use what is configured */
-        if ( LocalServerHost != NULL &&
-                strcmp( LocalServerHost->hostName->name, "localhost" ) != 0 &&
-                ( hostEnt = gethostbyname( LocalServerHost->hostName->name ) ) != NULL ) {
+        if (    LocalServerHost != NULL
+             && strcmp( LocalServerHost->hostName->name, "localhost" ) != 0
+             && gethostbyname_with_retry( LocalServerHost->hostName->name, &hostEnt ) == 0 ) {
             rstrcpy( thisPortList->hostAddr, hostEnt->h_name, LONG_NAME_LEN );
         }
         else {

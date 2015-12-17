@@ -1413,19 +1413,19 @@ rodsSleep( int sec, int microSec ) {
 
 char *
 rods_inet_ntoa( struct in_addr in ) {
-    char *clHostAddr;
-
-    clHostAddr = inet_ntoa( in );
+    char *clHostAddr = inet_ntoa( in );
 
     if ( isLoopbackAddress( clHostAddr ) ||
             strcmp( clHostAddr, "0.0.0.0" ) == 0 ) { /* localhost */
         char sb[LONG_NAME_LEN];
-        struct hostent *phe;
 
         if ( gethostname( sb, sizeof( sb ) ) != 0 ) {
             return clHostAddr;
         }
-        if ( ( phe = gethostbyname( sb ) ) == NULL ) {
+
+        struct hostent *phe;
+        const int status = gethostbyname_with_retry( sb, &phe );
+        if ( status != 0 ) {
             return clHostAddr;
         }
         clHostAddr = inet_ntoa( *( struct in_addr* ) phe->h_addr );
