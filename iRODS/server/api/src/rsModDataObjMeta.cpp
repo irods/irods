@@ -206,6 +206,11 @@ int _call_file_modified_for_modification(
                     rsComm,
                     tmpDataObjInfo ) );
 
+            char* admin_kw = getValByKey( regParam, ADMIN_KW );
+            if ( admin_kw != NULL ) {
+                addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );
+            }
+
             char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
             if ( pdmo_kw != NULL ) {
                 file_obj->in_pdmo( pdmo_kw );
@@ -233,6 +238,11 @@ int _call_file_modified_for_modification(
             new irods::file_object(
                 rsComm,
                 dataObjInfo ) );
+
+        char* admin_kw = getValByKey( regParam, ADMIN_KW );
+        if ( admin_kw != NULL ) {
+            addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );
+        }
 
         char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
         if ( pdmo_kw != NULL ) {
