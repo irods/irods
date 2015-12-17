@@ -18,13 +18,13 @@
 #include <boost/chrono.hpp>
 
 
-// =-=-=-=-=-=-=-
 #include "irods_network_factory.hpp"
 
 #include "sockComm.h"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "rodsError.h"
+#include <time.h>
 
 rcComm_t *
 rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char *rodsZone,
@@ -227,18 +227,15 @@ setRhostInfo( rcComm_t *conn, const char *rodsHost, int rodsPort ) {
 int
 setSockAddr( struct sockaddr_in *remoteAddr, const char *rodsHost, int rodsPort ) {
     struct hostent *myHostent;
-    myHostent = gethostbyname( rodsHost );
-
-    if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
-        rodsLog( LOG_ERROR, "unknown hostname: [%s]", rodsHost );
-        return USER_RODS_HOSTNAME_ERR - errno;
+    const int status = gethostbyname_with_retry( rodsHost, &myHostent );
+    if ( status != 0 ) {
+        return status;
     }
 
     memcpy( &remoteAddr->sin_addr, myHostent->h_addr,
-            myHostent->h_length );
+                    myHostent->h_length );
     remoteAddr->sin_family = AF_INET;
     remoteAddr->sin_port = htons( ( unsigned short )( rodsPort ) );
-
     return 0;
 }
 
@@ -421,9 +418,9 @@ cliReconnManager( rcComm_t *conn ) {
         conn->reconnThrState = PROCESSING_STATE;
         /* connect to server's reconn thread */
 
-        myHostent = gethostbyname( conn->svrVersion->reconnAddr );
+        const int status = gethostbyname_with_retry( conn->svrVersion->reconnAddr, &myHostent );
 
-        if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
+        if ( status != 0 ) {
             rodsLog( LOG_ERROR, "cliReconnManager: unknown hostname: %s",
                      conn->svrVersion->reconnAddr );
             return;

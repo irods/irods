@@ -537,8 +537,9 @@ _resolveHostName(
     const char* _hostAddress,
     struct hostent *& _hostEnt ) {
 
-    _hostEnt = gethostbyname( _hostAddress );
-    if ( !_hostEnt ) {
+    const int status = gethostbyname_with_retry( _hostAddress, &_hostEnt );
+
+    if ( status != 0 ) {
         char errMsg[155];
         snprintf( errMsg, 150,
                   "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
@@ -2079,11 +2080,11 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, char *groupName, ch
 
 char *
 convertHostToIp( char *inputName ) {
-    struct hostent *myHostent;
     static char ipAddr[50];
-    myHostent = gethostbyname( inputName );
-    if ( myHostent == NULL || myHostent->h_addrtype != AF_INET ) {
-        printf( "unknown hostname: %s\n", inputName );
+    struct hostent *myHostent;
+    const int status = gethostbyname_with_retry( inputName, &myHostent );
+    if ( status != 0 ) {
+        rodsLog( LOG_ERROR, "convertHostToIp gethostbyname_with_retry error. status [%d]", status );
         return NULL;
     }
     snprintf( ipAddr, sizeof( ipAddr ), "%s",

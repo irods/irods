@@ -23,6 +23,7 @@
 #include "QUANTAnet_rbudpBase_c.h"
 #include "rodsLog.h"
 #include <stdarg.h>
+#include "rcMisc.h"
 
 // inline void TRACE_DEBUG( char *format, ...)
 void TRACE_DEBUG( char *format, ... ) {
@@ -101,7 +102,8 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
 
     // Use connected UDP to receive only from a specific host and port.
     bzero( &cliaddr, sizeof( cliaddr ) );
-    if ( ( phe = gethostbyname( host ) ) ) {
+    const int status = gethostbyname_with_retry( host, &phe );
+    if ( status == 0 ) {
         memcpy( &cliaddr.sin_addr, phe->h_addr, phe->h_length );
     }
     else if ( ( int )( cliaddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
@@ -131,7 +133,8 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
     /*Create a TCP connection */
     bzero( ( char * )&tcpServerAddr, sizeof( tcpServerAddr ) );
     tcpServerAddr.sin_family = AF_INET;
-    if ( ( phe = gethostbyname( host ) ) ) {
+    const int status = gethostbyname_with_retry( host, &phe );
+    if ( status == 0 ) {
         memcpy( &tcpServerAddr.sin_addr, phe->h_addr, phe->h_length );
     }
     else if ( ( int )( tcpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
@@ -163,7 +166,8 @@ int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     // udpServerAddr is class global variable, will be used to send data
     bzero( &rbudpBase->udpServerAddr, sizeof( rbudpBase->udpServerAddr ) );
     rbudpBase->udpServerAddr.sin_family = AF_INET;
-    if ( ( phe = gethostbyname( host ) ) ) {
+    const int status = gethostbyname_with_retry( host, &phe );
+    if ( status == 0 ) {
         memcpy( &rbudpBase->udpServerAddr.sin_addr, phe->h_addr, phe->h_length );
     }
     else if ( ( int )( rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
@@ -443,4 +447,3 @@ setUdpSockOpt( int udpSockfd ) {
     }
     return 0;
 }
-

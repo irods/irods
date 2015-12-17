@@ -320,6 +320,7 @@ getPathStMode( const char* p );
 
 void getRandomBytes( void * buf, int bytes );
 unsigned int getRandomInt();
+int gethostbyname_with_retry(const char *_hostname, struct hostent **_hostent);
 
 #ifdef __cplusplus
 }
