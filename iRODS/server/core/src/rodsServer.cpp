@@ -961,7 +961,12 @@ initServerMain( rsComm_t *svrComm ) {
         return svrComm->sock;
     }
 
-    listen( svrComm->sock, MAX_LISTEN_QUE );
+    if ( listen( svrComm->sock, MAX_LISTEN_QUE ) < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "initServerMain: listen failed, errno: %d",
+                 errno );
+        return SYS_SOCK_LISTEN_ERROR;
+    }
 
     rodsLog( LOG_NOTICE,
              "rodsServer Release version %s - API Version %s is up",
