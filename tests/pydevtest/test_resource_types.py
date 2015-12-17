@@ -1619,6 +1619,38 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_msiDataObjUnlink__2983(self):
+        filename = "test_test_msiDataObjUnlink__2983.txt"
+        filepath = lib.create_local_testfile(filename)
+        logical_path = os.path.join( self.admin.session_collection, filename )
+        
+        self.admin.assert_icommand("ireg " + filepath + " " + logical_path)
+
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        rule_file_path = 'test_msiDataObjUnlink__2983.r'
+        rule_str = '''
+test_msiDataObjUnlink {{
+    *err = errormsg( msiDataObjUnlink("objPath=*SourceFile++++unreg=",*Status), *msg );
+    if( 0 != *err ) {{
+        writeLine( "stdout", "*err - *msg" );
+    }}
+}}
+
+INPUT *SourceFile="{logical_path}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # invoke rule
+        self.admin.assert_icommand('irule -F ' + rule_file_path)
+        self.admin.assert_icommand_fail("ils -l " + logical_path, 'STDOUT_SINGLELINE', filename)
+
+        assert os.path.isfile(filepath)
+
     def test_msiDataObjRepl_as_admin__2988(self):
         filename = "test_msiDataObjRepl_as_admin__2988_file.txt"
         filepath = lib.create_local_testfile(filename)
