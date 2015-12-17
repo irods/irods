@@ -1609,6 +1609,16 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', filename )
         self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', filename_rsync )
 
+    def test_iphymv_as_admin__2995(self):
+        filename = "test_iphymv_as_admin__2995_file.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.user1.assert_icommand("iput -R pydevtest_TestResc " + filename)
+
+        logical_path = os.path.join( self.user1.session_collection, filename )
+        self.admin.assert_icommand("iphymv -M -R demoResc " + logical_path )
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+
     def test_irepl_as_admin__2988(self):
         filename = "test_irepl_as_admin__2988_file.txt"
         filepath = lib.create_local_testfile(filename)
