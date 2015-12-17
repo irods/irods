@@ -2201,7 +2201,12 @@ reconnManager( rsComm_t *rsComm ) {
         return;
     }
 
-    listen( rsComm->reconnSock, 1 );
+    if ( listen( rsComm->reconnSock, 1 ) < 0 ) {
+        rodsLog( LOG_ERROR,
+                 "reconnManager: listen failed, errno: %d",
+                 errno );
+        return;
+    }
 
     const int nSockets = rsComm->reconnSock + 1;
     fd_set basemask;
