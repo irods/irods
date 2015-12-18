@@ -11,22 +11,6 @@ update R_RESC_MAIN as r SET resc_objcount = ( select count(*) from R_DATA_MAIN a
 -- populate the resc_hier field
 update R_DATA_MAIN SET resc_hier=resc_name;
 
--- if necessary, create the extended filesystem data table
-create table IF NOT EXISTS R_OBJT_FILESYSTEM_META
-(
-   object_id bigint not null,
-   file_uid varchar(32),
-   file_gid varchar(32),
-   file_owner varchar(250),
-   file_group varchar(250),
-   file_mode varchar(32),
-   file_ctime varchar(32),
-   file_mtime varchar(32),
-   file_source_path varchar(2700),
-   create_ts varchar(32),
-   modify_ts varchar(32)
-);
-
 -- define and populate new configuration table
 create table R_GRID_CONFIGURATION
  (
