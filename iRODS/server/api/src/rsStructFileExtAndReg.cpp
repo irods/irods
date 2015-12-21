@@ -23,6 +23,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_file_object.hpp"
+#include "irods_random.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -190,7 +191,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         /* rename the phyBunDir */
         char tmp[MAX_NAME_LEN]; // JMC cppcheck - src & dst snprintf
         strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
-        snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-u", tmp, getRandomInt() ); // JMC cppcheck - src & dst snprintf
+        snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-u", tmp, irods::getRandom<unsigned int>() ); // JMC cppcheck - src & dst snprintf
         status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name,
                                   dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0,
                                   rescHier.c_str() );
@@ -542,4 +543,3 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
     }
     return status;
 }
-

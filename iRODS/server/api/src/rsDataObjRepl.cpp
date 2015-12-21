@@ -37,6 +37,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
+#include "irods_random.hpp"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -1229,7 +1230,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
         if ( status == 0 && tmpDataObjInfo.dataId != destDataObjInfo->dataId ) {
             /* someone is using it */
             char tmp_str[ MAX_NAME_LEN ];
-            snprintf( tmp_str, MAX_NAME_LEN, "%s.%-u", destDataObjInfo->filePath, getRandomInt() );
+            snprintf( tmp_str, MAX_NAME_LEN, "%s.%-u", destDataObjInfo->filePath, irods::getRandom<unsigned int>() );
             strncpy( destDataObjInfo->filePath, tmp_str, MAX_NAME_LEN );
         }
     }

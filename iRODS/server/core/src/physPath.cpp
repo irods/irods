@@ -38,6 +38,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_random.hpp"
 
 int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
@@ -197,7 +198,7 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
     char logicalFileName[MAX_NAME_LEN];
     int status;
 
-    unsigned int myRandom = getRandomInt();
+    unsigned int myRandom = irods::getRandom<unsigned int>();
     dir1 = myRandom & 0xf;
     dir2 = ( myRandom >> 4 ) & 0xf;
 
@@ -695,7 +696,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
     newPtr = fileRenameInp->newFileName + len;
 
     snprintf( newPtr, MAX_NAME_LEN - len, "/%s%s.%-u", newDir, oldPtr,
-              getRandomInt() );
+              irods::getRandom<unsigned int>() );
 
 
     if ( renameFlag > 0 ) {
@@ -1167,7 +1168,7 @@ rsMkOrphanPath( rsComm_t *rsComm, char *objPath, char *orphanPath ) {
     orphanPathPtr = orphanPath + strlen( orphanPath );
 
     snprintf( orphanPathPtr, strlen( childName ) + 20, "/%s.%-u",
-              childName, getRandomInt() );
+              childName, irods::getRandom<unsigned int>() );
 
     return 0;
 }
@@ -1407,4 +1408,3 @@ getLeafRescPathName(
 }
 
 // =-=-=-=-=-=-=-
-

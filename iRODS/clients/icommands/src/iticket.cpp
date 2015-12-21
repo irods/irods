@@ -9,6 +9,7 @@
 #include "irods_pack_table.hpp"
 #include "rods.h"
 #include "rodsClient.h"
+#include "irods_random.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -494,7 +495,7 @@ makeTicket( char *newTicket ) {
     // random_bytes must be (unsigned char[]) to guarantee that following
     // modulo result is positive (i.e. in [0, 61])
     unsigned char random_bytes[ticket_len];
-    getRandomBytes( random_bytes, ticket_len );
+    irods::getRandomBytes( random_bytes, ticket_len );
 
     const char characterSet[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G',
     'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',

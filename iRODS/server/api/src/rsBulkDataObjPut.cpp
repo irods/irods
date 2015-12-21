@@ -23,6 +23,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
+#include "irods_random.hpp"
 
 #include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
@@ -319,7 +320,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     do {
         snprintf( phyBunDir, MAX_NAME_LEN, "%s/%s.%u", dataObjInfo.filePath,
-                  TMP_PHY_BUN_DIR, getRandomInt() );
+                  TMP_PHY_BUN_DIR, irods::getRandom<unsigned int>() );
         path p( phyBunDir );
         if ( exists( p ) ) {
             status = 0;
@@ -882,4 +883,3 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     }
     return savedStatus;
 }
-

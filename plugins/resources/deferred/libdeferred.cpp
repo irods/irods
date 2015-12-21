@@ -15,6 +15,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_kvp_string_parser.hpp"
+#include "irods_random.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -152,7 +153,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // get the size of the map and deferredly pick an index into it
-            size_t target_index = getRandomInt() % _cmap.size();
+            size_t target_index = irods::getRandom<unsigned int>() % _cmap.size();
 
             // =-=-=-=-=-=-=-
             // child map is keyed by resource name so we need to count out the index
@@ -923,6 +924,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-

@@ -5,6 +5,7 @@
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_random.hpp"
 
 int
 rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
@@ -154,7 +155,7 @@ getReiFilePath( char *reiFilePath, char *userName ) {
         rei_dir.c_str(),
         REI_FILE_NAME,
         myUserName,
-        getRandomInt() );
+        irods::getRandom<unsigned int>() );
 
     return 0;
 }

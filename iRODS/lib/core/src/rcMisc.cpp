@@ -29,13 +29,13 @@
 #include <algorithm>
 #include <string>
 #include <openssl/md5.h>
-#include <openssl/rand.h>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_client_api_table.hpp"
+#include "irods_random.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -44,7 +44,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
-#include <boost/random.hpp>
 #include <boost/generator_iterator.hpp>
 using namespace boost::filesystem;
 
@@ -1378,7 +1377,7 @@ int get64RandomBytes( char *buf ) {
     const int num_random_bytes = 32;
     const int num_hex_bytes = 2 * num_random_bytes;
     unsigned char random_bytes[num_random_bytes];
-    getRandomBytes( random_bytes, sizeof(random_bytes) );
+    irods::getRandomBytes( random_bytes, sizeof(random_bytes) );
 
     std::stringstream ss;
     for ( size_t i = 0; i < sizeof(random_bytes); ++i ) {
@@ -2363,7 +2362,7 @@ appendRandomToPath( char * trashPath ) {
         return SYS_INVALID_FILE_PATH;
     }
     tmpPtr = trashPath + len;
-    sprintf( tmpPtr, ".%u", getRandomInt() );
+    sprintf( tmpPtr, ".%u", irods::getRandom<unsigned int>() );
 
     return 0;
 }
@@ -4602,22 +4601,7 @@ hasSymlinkInPath( const char * myPath ) {
     return status;
 }
 
-void getRandomBytes( void * buf, int bytes ) {
-    if ( RAND_bytes( ( unsigned char * )buf, bytes ) != 1 ) {
-        static boost::mt19937 generator( std::time( 0 ) ^ ( getpid() << 16 ) );
-        static boost::uniform_int<unsigned char> byte_range( 0, 0xff );
-        static boost::variate_generator<boost::mt19937, boost::uniform_int<unsigned char> > random_byte( generator, byte_range );
-        for ( int i = 0; i < bytes; i++ ) {
-            ( ( unsigned char * ) buf )[i] = random_byte();
-        }
-    }
-}
 
-unsigned int getRandomInt() {
-    unsigned int random;
-    getRandomBytes( &random, sizeof( random ) );
-    return random;
-}
 
 int
 gethostbyname_with_retry(const char *_hostname, struct hostent **_hostent) {

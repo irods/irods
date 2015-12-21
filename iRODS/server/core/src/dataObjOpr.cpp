@@ -30,7 +30,7 @@
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
-
+#include "irods_random.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -654,7 +654,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
     tmpDataObjInfo = *dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
         if ( tmpCnt > 1 ) {
-            order = getRandomInt() % tmpCnt;
+            order = irods::getRandom<unsigned int>() % tmpCnt;
         }
         else {
             order = 0;

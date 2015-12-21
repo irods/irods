@@ -14,6 +14,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_random.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -188,7 +189,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // get the size of the map and randomly pick an index into it
-            size_t target_index = getRandomInt() % _cmap.size();
+            size_t target_index = irods::getRandom<unsigned int>() % _cmap.size();
 
             // =-=-=-=-=-=-=-
             // child map is keyed by resource name so we need to count out the index
@@ -729,7 +730,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // generate random index
-            size_t rand_index = getRandomInt() % candidate_resources.size();
+            size_t rand_index = irods::getRandom<unsigned int>() % candidate_resources.size();
 
             // =-=-=-=-=-=-=-
             // pick resource in pool at random index
@@ -952,6 +953,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-

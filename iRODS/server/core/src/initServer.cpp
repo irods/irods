@@ -28,6 +28,7 @@
 #include "irods_log.hpp"
 #include "irods_threads.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_random.hpp"
 
 #include <vector>
 #include <set>
@@ -728,7 +729,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
             rsComm->reconnAddr = NULL;
         }
         else {
-            rsComm->cookie = ( int )( getRandomInt() >> 1 );
+            rsComm->cookie = ( int )( irods::getRandom<unsigned int>() >> 1 );
         }
         try {
             rsComm->thread_ctx->lock      = new boost::mutex;

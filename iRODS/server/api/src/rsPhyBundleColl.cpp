@@ -28,7 +28,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
-
+#include "irods_random.hpp"
 
 static rodsLong_t OneGig = ( 1024 * 1024 * 1024 );
 
@@ -694,7 +694,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
         bzero( dataObjInp, sizeof( dataObjInp_t ) );
         while ( 1 ) {
             status = rsMkBundlePath( rsComm, collection, dataObjInp->objPath,
-                                     getRandomInt() );
+                                     irods::getRandom<unsigned int>() );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "createPhyBundleFile: getPhyBundlePath err for %s.stat = %d",
@@ -839,4 +839,3 @@ remotePhyBundleColl( rsComm_t *rsComm,
     status = rcPhyBundleColl( rodsServerHost->conn, phyBundleCollInp );
     return status;
 }
-

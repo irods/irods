@@ -108,6 +108,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/hashtable.o \
 		$(libCoreObjDir)/region.o \
 		$(libCoreObjDir)/irods_exception.o  \
+		$(libCoreObjDir)/irods_random.o  \
 		$(libCoreObjDir)/apiHandler.o
 
 INCLUDES +=	-I$(libCoreIncDir)
@@ -119,7 +120,7 @@ endif
 
 # client_exec
 LIB_CLIENT_EXEC_OBJS = \
-		$(libClientExecObjDir)/irods_client_rule_execution_manager_factory.o 
+		$(libClientExecObjDir)/irods_client_rule_execution_manager_factory.o
 INCLUDES +=	-I$(libClientExecIncDir)
 
 
@@ -186,7 +187,7 @@ libs:	$(CONFIG) $(LIBRARY) $(LIB_CLIENT_EXEC_OBJS)
 
 $(LIBRARY): $(OBJS) $(BOOST_LIBS)
 #	@rm -f $(LIBRARY)
-#	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
+#	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS)
 	@echo "Building lib$(LIBRARY_NAME).a"
 	@rm -f $(LIBRARY)
 	$(V_at)$(AR) $(AROPT) $(LIBRARY) $^

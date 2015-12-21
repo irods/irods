@@ -5,6 +5,7 @@
 
 #include "getXmsgTicket.h"
 #include "xmsgLib.hpp"
+#include "irods_random.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];
 
@@ -37,7 +38,7 @@ rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
     }
     ( *outXmsgTicketInfo )->flag = getXmsgTicketInp->flag;
     while ( 1 ) {
-        ( *outXmsgTicketInfo )->rcvTicket = getRandomInt();
+        ( *outXmsgTicketInfo )->rcvTicket = irods::getRandom<unsigned int>();
         ( *outXmsgTicketInfo )->sendTicket = ( *outXmsgTicketInfo )->rcvTicket;
         hashSlotNum = ticketHashFunc( ( *outXmsgTicketInfo )->rcvTicket );
         status = addTicketToHQue(
@@ -54,4 +55,3 @@ rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
 
     return status;
 }
-

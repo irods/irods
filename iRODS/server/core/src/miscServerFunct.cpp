@@ -49,6 +49,7 @@ char *__loc1;
 #include "irods_home_directory.hpp"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "irods_random.hpp"
 
 #include <iomanip>
 #include <fstream>
@@ -225,7 +226,7 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     }
 
     thisPortList->sock = lsock;
-    thisPortList->cookie = ( int )( getRandomInt() >> 1 );
+    thisPortList->cookie = ( int )( irods::getRandom<unsigned int>() >> 1 );
     if ( ProcessType == CLIENT_PT ) {
         rstrcpy( thisPortList->hostAddr, laddr, LONG_NAME_LEN );
     }

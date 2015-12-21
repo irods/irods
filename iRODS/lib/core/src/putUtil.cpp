@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
+#include "irods_random.hpp"
 
 #include "sockComm.h"
 #include <boost/filesystem/operations.hpp>
@@ -784,7 +785,7 @@ int
 getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
     while ( 1 ) {
         snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%u", phyBunRootDir,
-                  userName, getRandomInt() );
+                  userName, irods::getRandom<unsigned int>() );
         boost::filesystem::path p( outPhyBunDir );
         if ( !exists( p ) ) {
             break;
@@ -942,4 +943,3 @@ clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo ) {
 
     return 0;
 }
-
