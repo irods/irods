@@ -109,6 +109,7 @@ extern "C" {
                             std::string password = "";
                             getline( std::cin, password );
                             strncpy( new_password, password.c_str(), MAX_PASSWORD_LEN );
+                            printf( "\n" );
 #ifdef WIN32
                             if ( !SetConsoleMode( hStdin, lastMode ) ) {
                                 printf( "Error reinstating echo mode." );
