@@ -935,6 +935,7 @@ irods::error get_config_dir(
             if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
                     std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
                     std::string::npos != name.find( HOST_CONFIG_FILE ) ||
+                    std::string::npos != name.find( HOST_ACCESS_CONTROL_FILE ) ||
                     std::string::npos != name.find( "irods.config" )
                ) {
                 continue;
