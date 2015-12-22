@@ -341,6 +341,9 @@ int showRescTree( char *name ) {
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT, 1 );
 
+    if ( zoneArgument[0] != '\0' ) {
+        addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
+    }
 
     // set up query condition (resc_name != 'bundleResc')
     snprintf( collQCond, MAX_NAME_LEN, "!='%s'", BUNDLE_RESC );
