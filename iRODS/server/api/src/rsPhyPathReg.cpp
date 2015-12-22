@@ -245,7 +245,6 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 
     std::string last_resc;
     parser.last_resc( last_resc );
-
     std::string location;
     irods::error ret = irods::get_resource_property< std::string >(
                            last_resc,
@@ -253,7 +252,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                            location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in get_resource_property", ret ) );
-        return -1;
+        return ret.code();
     }
 
     memset( &addr, 0, sizeof( addr ) );
@@ -343,7 +342,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     }
     else {
         rodsLog( LOG_NOTICE, "_rsPhyPathReg :: RESC_HIER_STR_KW is NULL" );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
 
@@ -360,7 +359,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
         if ( !ret.ok() ) {
             irods::log( PASSMSG( "_rsPhyPathReg - failed in get_loc_for_hier_string", ret ) );
-            return -1;
+            return ret.code();
         }
 
         rstrcpy( chkNVPathPermInp.addr.hostAddr, location.c_str(), NAME_LEN );
@@ -408,7 +407,6 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     else {
         if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
             status = filePathRegRepl( rsComm, phyPathRegInp, filePath, _resc_name );
-
         }
         else {
             status = filePathReg( rsComm, phyPathRegInp, _resc_name );
@@ -424,6 +422,12 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
     regReplica_t regReplicaInp;
     int status;
+
+    char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
+    if ( !resc_hier ) {
+        rodsLog( LOG_NOTICE, "filePathRegRepl - RESC_HIER_STR_KW is NULL" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
     status = getDataObjInfo( rsComm, phyPathRegInp, &dataObjInfoHead,
                              ACCESS_READ_OBJECT, 0 );
@@ -443,9 +447,11 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             return status; // JMC cppcheck - nullptr
         }
     }
+
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
+    rstrcpy( destDataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
 
     memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
@@ -480,7 +486,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
         rodsLog( LOG_NOTICE, "filePathReg - RESC_HIER_STR_KW is NULL" );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
@@ -552,7 +558,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
         rodsLog( LOG_NOTICE, "dirPathReg - RESC_HIER_STR_KW is NULL" );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-
@@ -561,7 +567,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "dirPathReg - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
@@ -726,7 +732,7 @@ int mountFileDir( rsComm_t*     rsComm,
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
         rodsLog( LOG_NOTICE, "mountFileDir - RESC_HIER_STR_KW is NULL" );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     // =-=-=-=-=-=-=-
@@ -735,7 +741,7 @@ int mountFileDir( rsComm_t*     rsComm,
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "mountFileDir - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+        return ret.code();
     }
 
     if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4832
@@ -991,7 +997,7 @@ int structFileReg(
     char* tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !tmp_hier ) {
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
     irods::hierarchy_parser parser;
     parser.set_string( std::string( tmp_hier ) );
@@ -1053,7 +1059,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "structFileSupport - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+        return ret.code();
     }
 
     irods::hierarchy_parser parser;

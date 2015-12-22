@@ -72,7 +72,6 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand("ireg -R demoResc " + ABSPATHTESTDIR + '/file3 ' + self.admin.home_collection + '/file3')
 
-    @unittest.skip('not fixed yet')
     def test_ireg_new_replica__2847(self):
         filename = 'regfile.txt'
         filename2 = filename+'2'
