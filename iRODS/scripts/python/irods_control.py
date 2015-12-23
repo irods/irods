@@ -618,28 +618,29 @@ def execute_command(args, **kwargs):
     return (out, err)
 
 def get_pids_executing_binary_file(binary_file_path):
-    out, err, returncode = execute_command_permissive(
-            ['lsof', '-F', 'pf', binary_file_path])
-    out = out if returncode == 0 else ''
-    parsed_out = parse_formatted_lsof_output(out)
+    username = ''
     try:
-        # we only want pids in executing state
-        return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
-    except (ValueError, KeyError):
-        irods_six.reraise(IrodsControllerError, IrodsControllerError('\n\t'.join([
-            'non-conforming lsof output:',
-            '{0}'.format(out),
-            '{0}'.format(err)])),
-                          sys.exc_info()[2])
+        usename = os.environ['USER']
+    except KeyError:
+        print('USER environment variable is not set')
+        return []
 
-def parse_formatted_lsof_output(output):
-    parsed_output = []
-    if output.strip():
-        for line in output.split():
-            if line[0] == output[0]:
-                parsed_output.append({})
-            parsed_output[-1][line[0]] = line[1:]
-    return parsed_output
+    out, err, returncode = execute_command_permissive(
+            ['lsof', '-b', '-w', '-u', username])
+    out = out if returncode == 0 else ''
+    pid = parse_formatted_lsof_output(out, binary_file_path)
+    return pid
+
+def parse_formatted_lsof_output(output,binary_file_path):
+    lines = output.split('\n')
+    for line in lines:
+        columns = line.split()
+        for c in columns:
+            if -1 != c.find(binary_file_path):
+                for d in columns:
+                    if -1 != d.find('txt'):
+                        return [int(columns[1])]
+    return []
 
 def kill_pid(pid):
     p = psutil.Process(pid)
