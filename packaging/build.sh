@@ -1102,8 +1102,10 @@ if [ "$RUNINPLACE" == "1" ] ; then
             check_package_installed "dpkg -s" "python-jsonschema"
         fi
         # externals
-        check_package_installed "dpkg -s" "libmysqlclient-dev"
-        check_package_installed "dpkg -s" "libpcre3-dev"
+        if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+		check_package_installed "dpkg -s" "libmysqlclient-dev"
+		check_package_installed "dpkg -s" "libpcre3-dev"
+        fi
         check_package_installed "dpkg -s" "libtool"
         check_package_installed "dpkg -s" "automake"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
@@ -1117,8 +1119,10 @@ if [ "$RUNINPLACE" == "1" ] ; then
         check_package_installed "rpm -q" "fuse-libs"
         check_package_installed "rpm -q" "perl-JSON"
         # externals
-        check_package_installed "rpm -q" "mysql-devel"
-        check_package_installed "rpm -q" "pcre-devel"
+        if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+            check_package_installed "rpm -q" "mysql-devel"
+            check_package_installed "rpm -q" "pcre-devel"
+        fi
         check_package_installed "rpm -q" "libtool"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         # all os
@@ -1132,8 +1136,10 @@ if [ "$RUNINPLACE" == "1" ] ; then
         check_package_installed "rpm -q" "libfuse2"
         check_package_installed "rpm -q" "perl-JSON"
         # externals
-        check_package_installed "rpm -q" "libmysqlclient-devel"
-        check_package_installed "rpm -q" "pcre-devel"
+        if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+            check_package_installed "rpm -q" "libmysqlclient-devel"
+            check_package_installed "rpm -q" "pcre-devel"
+        fi
         check_package_installed "rpm -q" "libtool"
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         # externals
@@ -1150,8 +1156,10 @@ if [ "$RUNINPLACE" == "1" ] ; then
                 exit 1
             fi
         fi
-        check_package_installed "brew list" "mysql"
-        check_package_installed "brew list" "pcre"
+        if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
+            check_package_installed "brew list" "mysql"
+            check_package_installed "brew list" "pcre"
+        fi
     fi
 
 fi
