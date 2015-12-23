@@ -1,7 +1,16 @@
 #!/bin/bash
 
-if [ $ORACLE_HOME ] ; then
-    echo ${ORACLE_HOME}
+if [ ${ORACLE_HOME} ] ; then
+    oci=`find $ORACLE_HOME -name "oci.h"`
+    if [ ! -z ${oci} ] ; then
+        if [ -e ${oci} ] ; then
+            echo ${ORACLE_HOME}
+	    else
+		echo "/usr/include/oracle/11.2/client64"
+	    fi
+    else
+	echo "/usr/include/oracle/11.2/client64"
+    fi
 else
-    echo /usr/include/oracle/11.2/client64
+    echo "/usr/include/oracle/11.2/client64"
 fi
