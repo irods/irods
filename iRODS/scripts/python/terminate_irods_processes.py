@@ -11,31 +11,59 @@ import itertools
 # checks their executing state, then pauses and kills each one.
 #
 
-def get_pids_executing_binary_file(binary_file_path):
-    # get lsof listing of pids
-    p = subprocess.Popen(['lsof', '-F', 'pf', binary_file_path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-    out, err = p.communicate()
-    out = out.decode() if p.returncode == 0 else ''
-    parsed_out = parse_formatted_lsof_output(out)
-    try:
-        # we only want pids in executing state
-        return [int(d['p']) for d in parsed_out if d['f'] == 'txt']
-    except (ValueError, KeyError):
-        raise Exception('\n\t'.join([
-            'non-conforming lsof output:',
-            '{0}'.format(out),
-            '{0}'.format(err)]))
+def execute_command_nonblocking(args, **kwargs):
+    if 'env' in kwargs:
+        kwargs_without_env = copy.copy(kwargs)
+        kwargs_without_env['env'] = 'HIDDEN'
+    else :
+        kwargs_without_env = kwargs
+    try :
+        return subprocess.Popen(args, **kwargs)
+    except OSError as e:
+        irods_six.reraise(IrodsControllerError,
+            IrodsControllerError('\n'.join([
+                'Call to open process with {0} failed:'.format(
+                    args),
+                indent(
+                    'Could not find the requested executable \'{0}\'; '
+                    'please ensure \'{0}\' is installed and in the path.'.format(
+                        args[0]))])),
+            sys.exc_info()[2])
 
-def parse_formatted_lsof_output(output):
-    parsed_output = []
-    if output.strip():
-        for line in output.split():
-            if line[0] == output[0]:
-                parsed_output.append({})
-            parsed_output[-1][line[0]] = line[1:]
-    return parsed_output
+def execute_command_permissive(args, **kwargs):
+    if 'stdout' not in kwargs:
+        kwargs['stdout'] = subprocess.PIPE
+    if 'stderr' not in kwargs:
+        kwargs['stderr'] = subprocess.PIPE
+
+    p = execute_command_nonblocking(args, **kwargs)
+
+    out, err = [t.decode() for t in p.communicate()]
+    return (out, err, p.returncode)
+
+def get_pids_executing_binary_file(binary_file_path):
+    username = ''
+    try:
+        usename = os.environ['USER']
+    except KeyError:
+        print('USER environment variable is not set')
+        return []
+
+    out, err, returncode = execute_command_permissive(['lsof', '-b', '-w', '-u', username])
+    out = out if returncode == 0 else ''
+    pid = parse_formatted_lsof_output(out, binary_file_path)
+    return pid
+
+def parse_formatted_lsof_output(output,binary_file_path):
+    lines = output.split('\n')
+    for line in lines:
+        columns = line.split()
+        for c in columns:
+            if -1 != c.find(binary_file_path):
+                for d in columns:
+                    if -1 != d.find('txt'):
+                        return [int(columns[1])]
+    return []
 
 p = subprocess.Popen(['which', 'lsof'],
         stdout=subprocess.PIPE,
