@@ -89,6 +89,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         addKeyVal( &destDataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
     }
 
+    destDataObjInp->oprType = COPY_DEST;
     destL1descInx = rsDataObjCreate( rsComm, destDataObjInp );
     if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
         /* collection does not exist. make one */
