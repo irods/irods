@@ -742,7 +742,7 @@ extern "C" {
                     _ctx.fco(), _opr, _curr_host, _out_parser,
                     _out_vote );
             // Found a valid child
-            if ( ret.ok() && _out_vote != 0 ) {
+            if ( ret.ok() && *_out_vote != 0 ) {
                 child_found = true;
             }
             else {
