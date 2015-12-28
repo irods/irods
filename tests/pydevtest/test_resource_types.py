@@ -1609,6 +1609,54 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', filename )
         self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', filename_rsync )
 
+    def test_irsync_for_collection__2976(self):
+        dir_name = 'test_irsync_for_collection__2976'
+        dir_name_rsync = dir_name + '_rsync'
+        lib.create_directory_of_small_files(dir_name,10)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+
+        logical_path = os.path.join( self.admin.session_collection, dir_name )
+        logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
+
+        self.admin.assert_icommand("irsync -r i:" + logical_path + " i:" + logical_path_rsync )
+        self.admin.assert_icommand("ils -lr " + logical_path, 'STDOUT_SINGLELINE', dir_name )
+        self.admin.assert_icommand("ils -lr " + logical_path_rsync, 'STDOUT_SINGLELINE', dir_name_rsync )
+
+    def test_msiCollRsync__2976(self):
+        dir_name = 'test_irsync_for_collection__2976'
+        dir_name_rsync = dir_name + '_rsync'
+        lib.create_directory_of_small_files(dir_name,10)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+
+        logical_path = os.path.join( self.admin.session_collection, dir_name )
+        logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
+
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        parameters['logical_path_rsync'] = logical_path_rsync
+        parameters['dest_resc'] = 'demoResc'
+        rule_file_path = 'test_msiDataObjRsync__2976.r'
+        rule_str = '''
+test_msiCollRepl {{
+    *err = errormsg( msiCollRsync(*SourceColl,*DestColl,*Resource,"IRODS_TO_IRODS",*status), *msg );
+    if( 0 != *err ) {{
+        writeLine( "stdout", "*err - *msg" );
+    }}
+}}
+
+INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # invoke rule
+        self.admin.assert_icommand('irule -F ' + rule_file_path)
+
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', dir_name )
+        self.admin.assert_icommand("ils -l " + logical_path_rsync, 'STDOUT_SINGLELINE', dir_name_rsync )
+
     def test_iphymv_as_admin__2995(self):
         filename = "test_iphymv_as_admin__2995_file.txt"
         filepath = lib.create_local_testfile(filename)
