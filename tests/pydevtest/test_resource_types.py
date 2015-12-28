@@ -662,6 +662,15 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
         shutil.rmtree(lib.get_irods_top_level_dir() + "/demoRescVault", ignore_errors=True)
 
+    def test_unix_filesystem_highwater_mark__2981(self):
+        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark=100")
+
+        filename = 'test_unix_filesystem_highwater_mark__2981.txt'
+        filesize = 64*1024*1024
+        lib.make_file(filename, filesize)
+
+        self.admin.assert_icommand_fail('iput ' + filename + ' file1', 'STDOUT_SINGLELINE', 'USER_FILE_TOO_LARGE')
+
     def test_key_value_passthru(self):
         env = os.environ.copy()
         env['spLogLevel'] = '11'
