@@ -1,10 +1,5 @@
 BASEDIRS = \
-           msiobjget_slink \
-           msiobjput_slink \
-           msiobjget_irods \
-           msiobjput_irods \
-           msiobjget_http \
-           msiobjput_http
+           msisync_to_archive
 
 ######################################################################
 # Configuration should occur above this line
@@ -34,7 +29,7 @@ default: ${SUBS}
 
 ${SUBS}:
 	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
-	echo "Compile microservice plugin `basename $@`..."
+	@echo "Compile microservice plugin `basename $@`..."
 	@${MAKE} -C $@
 
 clean:

@@ -1,4 +1,5 @@
-BASEDIRS = mso_drivers
+BASEDIRS = mso_drivers \
+		   administration
 
 ######################################################################
 # Configuration should occur above this line

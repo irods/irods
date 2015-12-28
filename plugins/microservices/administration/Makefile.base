@@ -1,0 +1,50 @@
+#From caller
+IRODSDIR = ../$(IRODSTOPDIR)
+SODIR = ../../$(SOTOPDIR)
+
+FULLTARGET = $(SODIR)/$(TARGET)
+
+OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
+
+include $(IRODSDIR)/config/config.mk
+include $(IRODSDIR)/config/platform.mk
+
+GCC = g++ -DRODS_SERVER 
+
+INC = -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
+      -I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
+      -I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
+	  -I$(IRODSDIR)/lib/rbudp/include -I$(IRODSDIR)/../external/jansson-2.7/src/
+
+
+MY_CFLAG += $(INC)
+
+
+ifeq ($(OS_platform), osx_platform)
+LDADD += "-Wl,-undefined,dynamic_lookup"
+else
+LDADD += "-Wl,-E"
+endif
+
+ifeq ($(IRODS_BUILD_COVERAGE), 1)
+GCC += -fprofile-arcs -ftest-coverage -lgcov
+OBJS = $(patsubst %.cpp, %.o, $(SRCS))
+%.o: %.cpp
+	$(V_at)$(GCC) $(CFLAGS) $(INC) -D$(OS_platform) -fPIC -c -g -o $@ $<
+endif
+
+.PHONY: clean
+
+default: $(FULLTARGET)
+
+clean:
+	@-rm -f $(FULLTARGET) > /dev/null 2>&1
+	@-rm -f $(OBJS) > /dev/null 2>&1
+	@-rm -f *.o > /dev/null 2>&1
+
+$(FULLTARGET): $(OBJS)
+	@-mkdir -p $(SODIR) > /dev/null 2>&1
+	$(V_at)$(GCC) $(LDRFLAGS) -D$(OS_platform) -fPIC $(LDADD) -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS)
+
+$(OBJDIR)/%.o: %.cpp
+	$(V_at)$(GCC) $(MY_CFLAG) -D$(OS_platform) -fPIC -c -g -o $@ $<
