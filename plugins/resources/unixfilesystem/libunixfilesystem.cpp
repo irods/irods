@@ -32,6 +32,7 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -79,6 +80,7 @@
 // =-=-=-=-=-=-=-
 // 1. Define utility functions that the operations might need
 const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
+const std::string HIGH_WATER_MARK( "high_water_mark" );
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
@@ -416,6 +418,54 @@ extern "C" {
 
     } // unix_file_get_fsfreespace_plugin
 
+    static bool replica_passes_high_water_mark(
+        irods::resource_plugin_context& _ctx,
+        rodsLong_t                      _file_size ) {
+        namespace bt = boost;
+        namespace fs = boost::filesystem;
+
+        std::string hwm_str;
+        irods::error ret = _ctx.prop_map().get<std::string>(
+                               HIGH_WATER_MARK,
+                               hwm_str );
+        if( !ret.ok() ) {
+            return false;
+        }
+
+        rodsLong_t hwm_val = 0;
+        try {
+            hwm_val = bt::lexical_cast<rodsLong_t>(hwm_str);
+        } catch ( const bt::bad_lexical_cast& ) {
+            rodsLog(
+                LOG_ERROR,
+                "malformed high water mark [%s]",
+                hwm_str.c_str() );
+            return false;
+        }
+
+        std::string vault_path;
+        ret = _ctx.prop_map().get<std::string>(
+                  irods::RESOURCE_PATH,
+                  vault_path );
+        if( !ret.ok() ) {
+            rodsLog(
+                LOG_ERROR,
+                "missing vault path" );
+            return false;
+        }
+
+        fs::space_info si = fs::space( vault_path );
+
+        uintmax_t used_space = si.capacity - si.free;
+        uintmax_t new_used_space = _file_size + used_space;
+        if( new_used_space > hwm_val ) {
+            return true;
+        }
+
+        return false;
+
+    } // replica_passes_high_water_mark
+
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     irods::error unix_file_create_plugin(
@@ -457,6 +507,14 @@ extern "C" {
             ret = unix_file_get_fsfreespace_plugin( _ctx );
             if ( ( result = ASSERT_PASS( ret, "Error determining freespace on system." ) ).ok() ) {
                 rodsLong_t file_size = fco->size();
+                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+                    std::stringstream msg;
+                    msg << "file size " << file_size << " passes high water mark";
+                    return ERROR(
+                               USER_FILE_TOO_LARGE,
+                               msg.str() );
+                }
+
                 if ( ( result = ASSERT_ERROR( file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
                                               file_size, ret.code() ) ).ok() ) {
                     // =-=-=-=-=-=-=-
@@ -1191,16 +1249,16 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_create - code to determine redirection for create operation
     irods::error unix_file_redirect_create(
-        irods::plugin_property_map&   _prop_map,
-        const std::string&             _resc_name,
-        const std::string&             _curr_host,
-        float&                         _out_vote ) {
+        irods::resource_plugin_context& _ctx,
+        const std::string&              _resc_name,
+        const std::string&              _curr_host,
+        float&                          _out_vote ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // determine if the resource is down
         int resc_status = 0;
-        irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
+        irods::error get_ret = _ctx.prop_map().get< int >( irods::RESOURCE_STATUS, resc_status );
         if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
@@ -1211,11 +1269,18 @@ extern "C" {
                 // result = PASS( result );
             }
             else {
+                // vote no if the file size passes the high water mark
+                irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+                rodsLong_t file_size = fco->size();
+                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+                    _out_vote = 0.0;
+                    return SUCCESS();
+                }
 
                 // =-=-=-=-=-=-=-
                 // get the resource host for comparison to curr host
                 std::string host_name;
-                get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
+                get_ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_LOCATION, host_name );
                 if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
 
                     // =-=-=-=-=-=-=-
@@ -1395,9 +1460,6 @@ extern "C" {
                 std::string resc_name;
                 ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
                 if ( ( result = ASSERT_PASS( ret, "Failed in get property for name." ) ).ok() ) {
-                    // =-=-=-=-=-=-=-
-                    // add ourselves to the hierarchy parser by default
-                    _out_parser->add_child( resc_name );
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
@@ -1412,7 +1474,7 @@ extern "C" {
                     else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
-                        ret = unix_file_redirect_create( _ctx.prop_map(), resc_name, ( *_curr_host ), ( *_out_vote ) );
+                        ret = unix_file_redirect_create( _ctx, resc_name, ( *_curr_host ), ( *_out_vote ) );
                         result = ASSERT_PASS( ret, "Failed redirecting for create." );
                     }
 
@@ -1421,6 +1483,12 @@ extern "C" {
                         // must have been passed a bad operation
                         result = ASSERT_ERROR( false, INVALID_OPERATION, "Operation not supported." );
                     }
+                }
+
+                // add ourselves to the hierarchy if we have any vote
+                if( *_out_vote > 0 && result.ok() ) {
+                    _out_parser->add_child( resc_name );
+                } else {
                 }
             }
         }
@@ -1481,16 +1549,29 @@ extern "C" {
                     _inst_name,
                     _context ) {
                 properties_.set<mode_t>( DEFAULT_VAULT_DIR_MODE, 0750 );
+                // =-=-=-=-=-=-=-
+                // parse context string into property pairs assuming a ; as a separator
+                std::vector< std::string > props;
+                irods::kvp_map_t kvp;
+                irods::parse_kvp_string(
+                    _context,
+                    kvp );
 
+                // =-=-=-=-=-=-=-
+                // copy the properties from the context to the prop map
+                irods::kvp_map_t::iterator itr = kvp.begin();
+                for( ; itr != kvp.end(); ++itr ) {
+                    properties_.set< std::string >(
+                        itr->first,
+                        itr->second );
+                } // for itr
 
             } // ctor
-
 
             irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
                 _b = false;
                 return SUCCESS();
             }
-
 
             // =-=-=-=-=-=-=-
             // 3b. pass along a functor for maintenance work after
