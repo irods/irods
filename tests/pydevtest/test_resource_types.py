@@ -3307,6 +3307,22 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
 
+    def test_unix_filesystem_highwater_mark__2981(self):
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark=100")
+
+        filename = 'test_unix_filesystem_highwater_mark__2981.txt'
+        filesize = 64*1024*1024
+        lib.make_file(filename, filesize)
+
+        self.admin.assert_icommand('iput ' + filename + ' file1')
+        self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', 'unix1Resc')
+
+        self.admin.assert_icommand('iput ' + filename + ' file2')
+        self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', 'unix1Resc')
+
+        self.admin.assert_icommand('iput ' + filename + ' file3')
+        self.admin.assert_icommand('ils -L file3', 'STDOUT_SINGLELINE', 'unix1Resc')
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
