@@ -957,19 +957,22 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief find the next valid child resource for create operation
     irods::error get_next_valid_child_resource(
-        irods::plugin_property_map& _prop_map,
-        irods::resource_child_map&  _cmap,
-        irods::resource_ptr&        _resc ) {
+        irods::resource_plugin_context& _ctx,
+        const std::string*              _opr,
+        const std::string*              _curr_host,
+        irods::hierarchy_parser*        _out_parser,
+        float*                          _out_vote ) {
+
         // =-=-=-=-=-=-=-
         // counter and flag
-        int child_ctr   = 0;
-        bool   child_found = false;
+        int  child_ctr   = 0;
+        bool child_found = false;
 
         // =-=-=-=-=-=-=-
         // while we have not found a child and have not
         // exhausted all the children in the map
         while ( !child_found &&
-                child_ctr < _cmap.size() ) {
+                child_ctr < _ctx.child_map().size() ) {
             // =-=-=-=-=-=-=-
             // increment child counter
             child_ctr++;
@@ -977,15 +980,17 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // get the next_child property
             std::string next_child;
-            irods::error err = _prop_map.get< std::string >( NEXT_CHILD_PROP, next_child );
+            irods::error err = _ctx.prop_map().get< std::string >(
+                                   NEXT_CHILD_PROP,
+                                   next_child );
             if ( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - get property for 'next_child' failed.", err );
+                return PASSMSG( "get property for 'next_child' failed.", err );
 
             }
 
             // =-=-=-=-=-=-=-
             // get the next_child resource
-            if ( !_cmap.has_entry( next_child ) ) {
+            if ( !_ctx.child_map().has_entry( next_child ) ) {
                 std::stringstream msg;
                 msg << "child map has no child by name [";
                 msg << next_child << "]";
@@ -995,7 +1000,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // request our child resource to test it
-            irods::resource_ptr resc = _cmap[ next_child ].second;
+            irods::resource_ptr resc = _ctx.child_map()[ next_child ].second;
 
             // =-=-=-=-=-=-=-
             // get the resource's status
@@ -1007,23 +1012,38 @@ extern "C" {
             }
 
             // =-=-=-=-=-=-=-
-            // determine if the resource is up and available
-            if ( INT_RESC_STATUS_DOWN != resc_status ) {
+            // forward the 'put' redirect to the appropriate child
+            err = resc->call < const std::string*,
+                const std::string*,
+                irods::hierarchy_parser*,
+                float* > (
+                        _ctx.comm(),
+                        irods::RESOURCE_OP_RESOLVE_RESC_HIER,
+                        _ctx.fco(),
+                        _opr,
+                        _curr_host,
+                        _out_parser,
+                        _out_vote );
+            if ( !err.ok() ) {
+                rodsLog(
+                        LOG_ERROR,
+                        "forward of put redirect failed" );
+                continue;
+
+            }
+
+            if( *_out_vote > 0 ) {
                 // =-=-=-=-=-=-=-
                 // we found a valid child, set out variable
-                _resc = resc;
                 child_found = true;
-
             }
             else {
                 // =-=-=-=-=-=-=-
                 // update the next_child as we do not have a valid child yet
-                err = update_next_child_resource( _prop_map );
+                err = update_next_child_resource( _ctx.prop_map() );
                 if ( !err.ok() ) {
                     return PASSMSG( "update_next_child_resource failed", err );
-
                 }
-
             }
 
         } // while
@@ -1032,11 +1052,11 @@ extern "C" {
         // return appropriately
         if ( child_found ) {
             return SUCCESS();
-
         }
         else {
-            return ERROR( NO_NEXT_RESC_FOUND, "no valid child found" );
-
+            return ERROR(
+                       NO_NEXT_RESC_FOUND,
+                       "no valid child found" );
         }
 
     } // get_next_valid_child_resource
@@ -1046,10 +1066,10 @@ extern "C" {
     ///        should provide the requested operation
     irods::error round_robin_redirect(
         irods::resource_plugin_context& _ctx,
-        const std::string*               _opr,
-        const std::string*               _curr_host,
+        const std::string*              _opr,
+        const std::string*              _curr_host,
         irods::hierarchy_parser*        _out_parser,
-        float*                           _out_vote ) {
+        float*                          _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         irods::error err = round_robin_check_params< irods::file_object >( _ctx );
@@ -1142,44 +1162,26 @@ extern "C" {
         else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
             // =-=-=-=-=-=-=-
             // get the next available child resource
-            irods::resource_ptr resc;
             irods::error err = get_next_valid_child_resource(
-                                   _ctx.prop_map(),
-                                   _ctx.child_map(),
-                                   resc );
+                    _ctx,
+                    _opr,
+                    _curr_host,
+                    _out_parser,
+                    _out_vote );
             if ( !err.ok() ) {
+                ( *_out_vote ) = 0.0;
                 return PASS( err );
-
-            }
-
-            // =-=-=-=-=-=-=-
-            // forward the 'put' redirect to the appropriate child
-            err = resc->call < const std::string*,
-            const std::string*,
-            irods::hierarchy_parser*,
-            float* > (
-                _ctx.comm(),
-                irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-                _ctx.fco(),
-                _opr,
-                _curr_host,
-                _out_parser,
-                _out_vote );
-            if ( !err.ok() ) {
-                return PASSMSG( "forward of put redirect failed", err );
 
             }
 
             std::string hier;
             _out_parser->str( hier );
-            rodsLog(
-                LOG_DEBUG,
-                "round robin - create :: resc hier [%s] vote [%f]",
-                hier.c_str(),
-                _out_vote );
 
-            std::string new_hier;
-            _out_parser->str( new_hier );
+            rodsLog(
+                    LOG_DEBUG,
+                    "round robin - create :: resc hier [%s] vote [%f]",
+                    hier.c_str(),
+                    *_out_vote );
 
             return SUCCESS();
         }
