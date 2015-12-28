@@ -1750,6 +1750,47 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc')
 
+    def test_msisync_to_archive__2962(self):
+        self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=off\"" )
+
+        filename = "test_msisync_to_archive__2962.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput " + filename)
+
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'cacheResc')
+
+        physical_path = os.path.join(lib.get_irods_top_level_dir(), 'cacheRescVault')
+        physical_path = os.path.join(physical_path,os.path.basename(self.admin.session_collection))
+        physical_path = os.path.join(physical_path,filename)
+
+        logical_path = os.path.join( self.admin.session_collection, filename )
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        parameters['physical_path'] = physical_path
+        parameters['resc_hier'] = 'demoResc;cacheResc'
+
+        rule_file_path = 'test_msiDataObjRepl_as_admin__2988.r'
+        rule_str = '''
+test_msiDataObjRepl {{
+    *err = errormsg( msisync_to_archive(*RescHier,*PhysicalPath,*LogicalPath), *msg );
+    if( 0 != *err ) {{
+        writeLine( "stdout", "*err - *msg" );
+    }}
+}}
+
+INPUT *LogicalPath="{logical_path}", *PhysicalPath="{physical_path}",*RescHier="{resc_hier}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # invoke rule
+        self.admin.assert_icommand('irule -F ' + rule_file_path)
+
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+
     def test_auto_repl_on__2941(self):
         self.admin.assert_icommand("iadmin modresc demoResc context \"auto_repl=on\"" )
 
