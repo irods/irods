@@ -1326,9 +1326,9 @@ extern "C" {
     /// @brief - handler for prefer cache policy
     irods::error open_for_prefer_cache_policy(
         irods::resource_plugin_context& _ctx,
-        const std::string*               _curr_host,
+        const std::string*              _curr_host,
         irods::hierarchy_parser*        _out_parser,
-        float*                           _out_vote ) {
+        float*                          _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if ( !_curr_host ) {
@@ -1345,6 +1345,14 @@ extern "C" {
         // get the cache resource
         irods::resource_ptr cache_resc;
         irods::error ret = get_cache( _ctx, cache_resc );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        std::string cache_resc_name;
+        ret = cache_resc->get_property<std::string>(
+                irods::RESOURCE_NAME,
+                cache_resc_name );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1366,7 +1374,6 @@ extern "C" {
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
             &irods::OPEN_OPERATION, _curr_host,
             &cache_check_parser, &cache_check_vote );
-
         // =-=-=-=-=-=-=-
         // if the vote is 0 then the cache doesnt have it so it will need be staged
         if ( 0.0 == cache_check_vote ) {
@@ -1421,9 +1428,11 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // now that the repl happend, we will assume that the
             // object is in the cache as to not hit the DB again
+            // the first vote was zero so we must add the name to
+            // the resource hierarchy
+            cache_check_parser.add_child( cache_resc_name );
             ( *_out_parser ) = cache_check_parser;
             ( *_out_vote ) = arch_check_vote;
-
         }
         else {
             // =-=-=-=-=-=-=-
@@ -1564,14 +1573,12 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
             return compound_file_redirect_open( _ctx, _curr_host, _out_parser, _out_vote );
-
         }
         else if ( irods::CREATE_OPERATION == ( *_opr )
                 ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
             return compound_file_redirect_create( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
-
         }
 
         // =-=-=-=-=-=-=-

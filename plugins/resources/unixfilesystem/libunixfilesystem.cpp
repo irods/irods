@@ -1494,7 +1494,6 @@ extern "C" {
                 // add ourselves to the hierarchy if we have any vote
                 if( *_out_vote > 0 && result.ok() ) {
                     _out_parser->add_child( resc_name );
-                } else {
                 }
             }
         }
