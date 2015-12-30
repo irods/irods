@@ -418,6 +418,41 @@ extern "C" {
 
     } // unix_file_get_fsfreespace_plugin
 
+    irods::error stat_vault_path(
+            const std::string& _path,
+            struct statfs&     _sb ) {
+        namespace bfs = boost::filesystem;
+
+        bfs::path vp( _path );
+
+        // walk the vault path until we find an
+        // existing directory which we can stat
+        while( !bfs::exists( vp ) ) {
+            vp = vp.parent_path();
+        }
+
+        if( vp.empty() ) {
+            std::string msg( "path does not exist [" );
+            msg += _path + "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
+        }
+
+        int err = statfs( vp.string().c_str(), &_sb );
+        if( err < 0 ) {
+            std::stringstream msg;
+            msg << "statfs failed for ["
+                << _path << "] errno " << errno;
+            return ERROR(
+                    errno,
+                    msg.str() );
+        }
+
+        return SUCCESS();
+
+    } // stat_vault_path
+
     static bool replica_passes_high_water_mark(
         irods::resource_plugin_context& _ctx,
         rodsLong_t                      _file_size ) {
@@ -454,9 +489,19 @@ extern "C" {
             return false;
         }
 
-        fs::space_info si = fs::space( vault_path );
+        struct statfs sb;
+        ret = stat_vault_path(
+                  vault_path,
+                  sb );
+        if( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return false;
+        }
 
-        uintmax_t used_space = si.capacity - si.free;
+        fsblkcnt_t cap  = sb.f_bsize * sb.f_blocks;
+        fsblkcnt_t free = sb.f_bsize * sb.f_bavail;
+
+        uintmax_t used_space = cap - free;
         uintmax_t new_used_space = _file_size + used_space;
         if( new_used_space > hwm_val ) {
             return true;
