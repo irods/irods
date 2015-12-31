@@ -18,6 +18,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_redirect.hpp"
 
+#include "boost/lexical_cast.hpp"
 int
 rsStructFileBundle( rsComm_t *rsComm,
                     structFileExtAndRegInp_t *structFileBundleInp ) {
@@ -154,6 +155,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     //    }
     //}
 
+    // convert resc id to a string for the cond input
+    std::string resc_id_str = boost::lexical_cast<std::string>(L1desc[l1descInx].dataObjInfo->rescId);
+
     // =-=-=-=-=-=-=-
     // check object permissions / stat
     chkObjPermAndStat_t chkObjPermAndStatInp;
@@ -161,6 +165,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     rstrcpy( chkObjPermAndStatInp.objPath, structFileBundleInp->collection, MAX_NAME_LEN );
     chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
     addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,     L1desc[l1descInx].dataObjInfo->rescName );
+    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_ID_KW, resc_id_str.c_str());
 
     // =-=-=-=-=-=-=-
     // get the resc hier string
@@ -173,7 +178,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier_ptr );
         resc_hier = resc_hier_ptr;
     }
-
     status = rsChkObjPermAndStat( rsComm, &chkObjPermAndStatInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
@@ -195,9 +199,11 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     bzero( &collInp, sizeof( collInp ) );
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG | INCLUDE_CONDINPUT_IN_QUERY;
     rstrcpy( collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN );
-    addKeyVal( &collInp.condInput, RESC_NAME_KW, L1desc[ l1descInx ].dataObjInfo->rescName );
-
-    rodsLog( LOG_DEBUG, "rsStructFileBundle: calling rsOpenCollection for [%s]", structFileBundleInp->collection );
+    addKeyVal( &collInp.condInput, RESC_ID_KW, resc_id_str.c_str() );
+    rodsLog(
+        LOG_NOTICE,//LOG_DEBUG,
+        "rsStructFileBundle: calling rsOpenCollection for [%s]",
+        structFileBundleInp->collection );
 
     // =-=-=-=-=-=-=-
     // open the collection from which we will bundle
@@ -236,6 +242,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
 
     }
 
+
     // =-=-=-=-=-=-=-
     // preserve the collection path?
     collEnt_t* collEnt = NULL;
@@ -246,7 +253,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 "rsStructFileBundle: collEnt is NULL" );
             continue;
         }
-
         // =-=-=-=-=-=-=-
         // entry is a data object
         if ( collEnt->objType == DATA_OBJ_T ) {
@@ -254,7 +260,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // filter out any possible replicas that are not on this resource
             if ( resc_hier != collEnt->resc_hier ) {
                 rodsLog(
-                    LOG_DEBUG,
+                    LOG_NOTICE,//LOG_DEBUG,
                     "_rsStructFileBundle - skipping [%s] on resc [%s]",
                     collEnt->phyPath,
                     collEnt->resc_hier );

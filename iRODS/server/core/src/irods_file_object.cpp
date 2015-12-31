@@ -21,6 +21,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     file_object::file_object() :
+        data_object(),
         comm_( NULL ),
         file_descriptor_( -1 ),
         l1_desc_idx_( -1 ),
@@ -44,8 +45,34 @@ namespace irods {
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
-
     } // cctor
+
+// =-=-=-=-=-=-=-
+// public - ctor
+    file_object::file_object(
+        rsComm_t* _c,
+        const std::string& _logical_path,
+        const std::string& _fn,
+        rodsLong_t         _resc_id,
+        int _fd,
+        int _m,
+        int _f ) :
+        data_object(
+            _fn,
+            _resc_id,
+            _m,
+            _f ),
+        comm_( _c ),
+        logical_path_( _logical_path ),
+        data_type_( "" ),
+        file_descriptor_( _fd ),
+        l1_desc_idx_( -1 ),
+        size_( 0 ),
+        repl_requested_( -1 ) {
+        // =-=-=-=-=-=-=-
+        // explicit initialization
+        replicas_.clear();
+    } // file_object
 
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -74,6 +101,7 @@ namespace irods {
         replicas_.clear();
     } // file_object
 
+
 // from dataObjInfo
     file_object::file_object(
         rsComm_t*            _rsComm,
@@ -84,6 +112,7 @@ namespace irods {
         logical_path_   = _dataObjInfo->objPath;
         physical_path_  = _dataObjInfo->filePath;
         resc_hier_      = _dataObjInfo->rescHier;
+        resc_id_        = _dataObjInfo->rescId;
         flags_          = _dataObjInfo->flags;
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.clear();
@@ -334,7 +363,9 @@ namespace irods {
             obj.r_comment( info_ptr->dataComments );
             obj.create_ts( info_ptr->dataCreate );
             obj.modify_ts( info_ptr->dataModify );
+
             obj.resc_hier( info_ptr->rescHier );
+            obj.resc_id( info_ptr->rescId );
 
             objects.push_back( obj );
             info_ptr = info_ptr->next;

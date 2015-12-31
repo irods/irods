@@ -613,7 +613,10 @@ static irods::apidef_t client_api_table_inp[] = {
         IES_CLIENT_HINTS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         NULL, 0,  "BytesBuf_PI", 0, ( funcPtr ) RS_IES_CLIENT_HINTS, irods::clearInStruct_noop
     },
-
+    {
+        GET_HIER_FROM_LEAF_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+        "GetHierInp_PI", 0,  "GetHierOut_PI", 0, ( funcPtr ) RS_GET_HIER_FROM_LEAF_ID, irods::clearInStruct_noop
+    },
 }; // _api_table_inp
 
 

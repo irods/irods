@@ -3786,13 +3786,12 @@ initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
         ( char * )malloc( NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bzero( bulkDataObjRegInp->sqlResult[8].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-    bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_RESC_HIER;
+    bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_RESC_ID;
     bulkDataObjRegInp->sqlResult[9].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
         ( char * )malloc( MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
     bzero( bulkDataObjRegInp->sqlResult[9].value,
            MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES );
-
 
     bulkDataObjRegInp->continueInx = -1;
 
@@ -3824,60 +3823,6 @@ initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
     myBulkDataObjRegOut->continueInx = -1;
-    return 0;
-}
-
-int
-fillBulkDataObjRegInp( const char * rescName, const char* rescHier, char * objPath,
-                       char * filePath, char * dataType, rodsLong_t dataSize, int dataMode,
-                       int modFlag, int replNum, char * chksum, genQueryOut_t * bulkDataObjRegInp ) {
-
-    int rowCnt;
-
-    if ( bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL ||
-            filePath == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    rowCnt = bulkDataObjRegInp->rowCnt;
-
-    if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
-        return SYS_BULK_REG_COUNT_EXCEEDED;
-    }
-
-    rstrcpy( &bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
-             objPath, MAX_NAME_LEN );
-    rstrcpy( &bulkDataObjRegInp->sqlResult[1].value[NAME_LEN * rowCnt],
-             dataType, NAME_LEN );
-    snprintf( &bulkDataObjRegInp->sqlResult[2].value[NAME_LEN * rowCnt],
-              NAME_LEN, "%lld", dataSize );
-    rstrcpy( &bulkDataObjRegInp->sqlResult[3].value[NAME_LEN * rowCnt],
-             rescName, NAME_LEN );
-    rstrcpy( &bulkDataObjRegInp->sqlResult[4].value[MAX_NAME_LEN * rowCnt],
-             filePath, MAX_NAME_LEN );
-    snprintf( &bulkDataObjRegInp->sqlResult[5].value[NAME_LEN * rowCnt],
-              NAME_LEN, "%d", dataMode );
-    if ( modFlag == 1 ) {
-        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
-                 MODIFY_OPR, NAME_LEN );
-    }
-    else {
-        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
-                 REGISTER_OPR, NAME_LEN );
-    }
-    snprintf( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
-              NAME_LEN, "%d", replNum );
-    if ( chksum != NULL && strlen( chksum ) > 0 ) {
-        rstrcpy( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
-                 chksum, NAME_LEN );
-    }
-    else {
-        bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt] = '\0';
-    }
-    snprintf( &bulkDataObjRegInp->sqlResult[9].value[MAX_NAME_LEN * rowCnt],
-              MAX_NAME_LEN, "%s", rescHier );
-    bulkDataObjRegInp->rowCnt++;
-
     return 0;
 }
 

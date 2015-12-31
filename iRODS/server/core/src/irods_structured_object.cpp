@@ -181,7 +181,7 @@ namespace irods {
 
         resc_ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
-        resc_ptr->set_property<long>( RESOURCE_ID, -1 );
+        resc_ptr->set_property<rodsLong_t>( RESOURCE_ID, -1 );
         resc_ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
         resc_ptr->set_property<long>( RESOURCE_QUOTA, -1 );
 

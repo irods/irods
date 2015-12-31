@@ -3067,12 +3067,12 @@ checkModArgType( const char *arg ) {
     }
 }
 
-/// =-=-=-=-=-=-=-
-/// @brief get number of data object under management of a resource
-irods::error get_current_resource_object_count(
-    rsComm_t*          _comm,
-    const std::string& _resc_name,
-    int&               _count ) {
+
+irods::error get_object_count_for_leaf_resource(
+    rsComm_t*           _comm,
+    rodsLong_t          _resc_id,
+    int&                _count ) {
+
     // =-=-=-=-=-=-=-
     // build a general query
     genQueryOut_t* gen_out = 0;
@@ -3084,37 +3084,19 @@ irods::error get_current_resource_object_count(
     // =-=-=-=-=-=-=-
     // build the condition string, child is either a leaf
     // or an internal node so test for both
-    std::string single_cond = _resc_name;
-
-    std::string root_cond = _resc_name +
-                            irods::hierarchy_parser::delimiter();
-
-
-    std::string leaf_cond = irods::hierarchy_parser::delimiter() +
-                            _resc_name;
-
-    std::string mid_cond = irods::hierarchy_parser::delimiter() +
-                           _resc_name                           +
-                           irods::hierarchy_parser::delimiter();
-
-    std::string cond_str = "='"            + single_cond +
-                           "'  || like '%" + mid_cond    +
-                           "%' || like '%" + leaf_cond   +
-                           "'  || like '"  + root_cond   +
-                           "%'";
-
+    std::stringstream cond_str;
+    cond_str << "=" << _resc_id;
 
     // =-=-=-=-=-=-=-
     // add condition string matching above madness
     addInxVal( &gen_inp.sqlCondInp,
-               COL_D_RESC_HIER,
-               cond_str.c_str() );
+               COL_D_RESC_ID,
+               cond_str.str().c_str() );
 
     // =-=-=-=-=-=-=-
     // request the data id
     addInxIval( &gen_inp.selectInp,
                 COL_D_DATA_ID, 1 );
-
 
     // =-=-=-=-=-=-=-
     // execute the query
@@ -3159,13 +3141,79 @@ irods::error get_current_resource_object_count(
     clearGenQueryInp( &gen_inp );
 
     // =-=-=-=-=-=-=-
-    // set out variable
-    _count = num_data_obj;
+    // accumulate object count
+    _count += num_data_obj;
+
+    return SUCCESS();
+
+} // get_current_resource_object_count_impl
+
+irods::error get_current_resource_object_count_impl(
+    rsComm_t*           _comm,
+    irods::resource_ptr _resc,
+    int&                _count ) {
+    // =-=-=-=-=-=-=-
+    // if we have a branch ( coordinating ) node recurse as they do
+    // not hold any actual replicas
+    if( _resc->num_children() != 0 ) {
+        irods::resource_child_map cmap;
+        irods::error ret = _resc->get_property<irods::resource_child_map>(
+                               irods::RESC_CHILD_MAP_PROP,
+                               cmap );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        for( auto child : cmap ) {
+            ret = get_current_resource_object_count_impl(
+                      _comm,
+                      child.second.second,
+                      _count );
+        }
+    } else {
+        rodsLong_t resc_id;
+        irods::error ret = _resc->get_property<rodsLong_t>(
+                               irods::RESOURCE_ID,
+                               resc_id );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        return get_object_count_for_leaf_resource(
+                   _comm,
+                   resc_id,
+                   _count );
+    }
+
+    return SUCCESS();
+
+} // get_current_resource_object_count_impl
+
+irods::error get_current_resource_object_count(
+    rsComm_t*          _comm,
+    const std::string& _resc_name,
+    int&               _count ) {
+
+    irods::resource_ptr resc;
+    irods::error ret = resc_mgr.resolve(
+                           _resc_name,
+                           resc );
+    if( !ret.ok() ) {
+        return PASS(ret);
+    }
+
+    _count = 0;
+    ret = get_current_resource_object_count_impl(
+              _comm,
+              resc,
+              _count );
+    if( !ret.ok() ) {
+        return PASS(ret);
+    }
 
     return SUCCESS();
 
 } // get_current_resource_object_count
-
 
 /// =-=-=-=-=-=-=-
 /// @brief compute obj count for a resource and update icat if necessary

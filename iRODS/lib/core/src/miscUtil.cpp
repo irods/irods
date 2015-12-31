@@ -12,7 +12,7 @@
 
 #include "irods_stacktrace.hpp"
 
-
+#include "get_hier_from_leaf_id.h"
 
 #include <fstream>
 #include <boost/filesystem/operations.hpp>
@@ -325,6 +325,7 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
     char collQCond[MAX_NAME_LEN];
     int status;
     char *rescName = NULL;
+    char *resc_id = NULL;
 
     if ( collection == NULL || genQueryOut == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -343,9 +344,19 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
 
     if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
             condInput != NULL &&
-            ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL ) {
-        snprintf( collQCond, MAX_NAME_LEN, " = '%s'", rescName );
-        addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond );
+            ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL &&
+            ( resc_id = getValByKey( condInput, RESC_ID_KW ) ) == NULL ) {
+        rodsLog(
+            LOG_ERROR,
+            "RESC_NAME_KW no longer used for INCLUDE_CONDINPUT_IN_QUERY, use RESC_ID_KW");
+        irods::stacktrace st; st.trace(); st.dump(); 
+    }
+
+    if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
+            condInput != NULL &&
+            ( resc_id = getValByKey( condInput, RESC_ID_KW ) ) != NULL ) {
+        snprintf( collQCond, MAX_NAME_LEN, " = '%s'", resc_id );
+        addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_ID, collQCond );
     }
 
     setQueryInpForData( flags, genQueryInp );
@@ -377,7 +388,7 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
     if ( ( flags & LONG_METADATA_FG ) != 0 ||
             ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_NAME, 1 );
-        addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
+        addInxIval( &genQueryInp->selectInp, COL_D_RESC_ID, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_OWNER_NAME, 1 );
         addInxIval( &genQueryInp->selectInp, COL_DATA_REPL_NUM, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_REPL_STATUS, 1 );
@@ -874,6 +885,9 @@ clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
     if ( dataObjSqlResult->resource.value != NULL ) {
         free( dataObjSqlResult->resource.value );
     }
+    if ( dataObjSqlResult->resc_id.value != NULL ) {
+        free( dataObjSqlResult->resc_id.value );
+    }
     if ( dataObjSqlResult->resc_hier.value != NULL ) {
         free( dataObjSqlResult->resc_hier.value );
     }
@@ -899,7 +913,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
                          dataObjSqlResult_t *dataObjSqlResult ) {
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
-                *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_hier, *phyPath,
+                *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_id, *phyPath,
                 *ownerName, *replNum, *dataType; // JMC - backport 4636
 
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
@@ -1000,13 +1014,13 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
         dataObjSqlResult->resource = *resource;
     }
 
-    if ( ( resc_hier = getSqlResultByInx( myGenQueryOut, COL_D_RESC_HIER ) )
+    if ( ( resc_id = getSqlResultByInx( myGenQueryOut, COL_D_RESC_ID ) )
             == NULL ) {
-        setSqlResultValue( &dataObjSqlResult->resc_hier, COL_D_RESC_HIER,
+        setSqlResultValue( &dataObjSqlResult->resc_id, COL_D_RESC_ID,
                            "", myGenQueryOut->rowCnt );
     }
     else {
-        dataObjSqlResult->resc_hier = *resc_hier;
+        dataObjSqlResult->resc_id = *resc_id;
     }
 
     if ( ( dataType = getSqlResultByInx( myGenQueryOut, COL_DATA_TYPE_NAME ) ) // JMC - backport 4636
@@ -1490,6 +1504,57 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     return status;
 }
 
+int get_resc_hier_from_leaf_id(
+    queryHandle_t* _query_handle,
+    rodsLong_t     _resc_id,
+    char*          _resc_hier ) {
+    if( !_query_handle ) {
+        rodsLog(
+           LOG_ERROR,
+          "null query_handle ptr");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if( !_resc_hier ) {
+        rodsLog(
+           LOG_ERROR,
+          "null resc_hier ptr");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if( _resc_id <= 0 ) {
+        rodsLog(
+           LOG_ERROR,
+          "resc_id is invalid");
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    get_hier_inp_t  inp;
+    inp.resc_id_ = _resc_id;
+
+    get_hier_out_t* out = NULL;
+
+    // due to client-server blending of query handles and 
+    // point of call.  sometimes its on the server, sometimes
+    // it is called from the client.
+    int status = _query_handle->getHierForId(
+                     _query_handle->conn,
+                     &inp, 
+                     &out );
+    if( status < 0 ) {
+        return status;
+    }
+
+    if(out) {
+        rstrcpy( _resc_hier, out->hier_, MAX_NAME_LEN );
+    }
+    else {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    return 0;
+} // get_resc_hier_from_leaf_id
+
 int
 getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     int status;
@@ -1651,9 +1716,27 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
         len = dataObjSqlResult->resource.len;
         outCollEnt->resource = &value[len * selectedInx];
 
-        value = dataObjSqlResult->resc_hier.value;
-        len = dataObjSqlResult->resc_hier.len;
-        outCollEnt->resc_hier = &value[len * selectedInx];
+        value = dataObjSqlResult->resc_id.value;
+        len = dataObjSqlResult->resc_id.len;
+
+        rodsLong_t resc_id = strtoll(&value[len * selectedInx], 0, 0);
+        if( resc_id > 0 ) {
+            // no longer allocated by query, allocate here to give collEnt
+            // something to point at for the resource hierarchy
+            dataObjSqlResult->resc_hier.len = MAX_NAME_LEN;
+            dataObjSqlResult->resc_hier.value = (char*)malloc( sizeof(char)*MAX_NAME_LEN);
+            outCollEnt->resc_hier = dataObjSqlResult->resc_hier.value;
+            int ret = get_resc_hier_from_leaf_id(
+                          &collHandle->queryHandle,
+                          resc_id,
+                          outCollEnt->resc_hier );
+            if( ret < 0 ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "get_resc_hier_from_leaf_id failed %d",
+                    ret );
+            }
+        }
 
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
@@ -1694,6 +1777,7 @@ rclInitQueryHandle( queryHandle_t *queryHandle, rcComm_t *conn ) {
     queryHandle->connType = RC_COMM;
     queryHandle->querySpecColl = ( funcPtr ) rcQuerySpecColl;
     queryHandle->genQuery = ( funcPtr ) rcGenQuery;
+    queryHandle->getHierForId = ( funcPtr ) rcGetHierFromLeafId;
 
     return 0;
 }

@@ -28,6 +28,41 @@ namespace irods {
 // public - ctor
     collection_object::collection_object(
         const std::string& _fn,
+        rodsLong_t _resc_id,
+        int _m,
+        int _f ) :
+        data_object(
+            _fn,
+            _resc_id,
+            _m,
+            _f ),
+        directory_pointer_( 0 ) {
+
+    } // collection_object
+
+
+// =-=-=-=-=-=-=-
+// public - ctor
+    collection_object::collection_object(
+        const std::string& _fn,
+        rodsLong_t _resc_id,
+        int _m,
+        int _f,
+        const keyValPair_t& _cond_input ) :
+        data_object(
+            _fn,
+            _resc_id,
+            _m,
+            _f,
+            _cond_input ),
+        directory_pointer_( 0 ) {
+
+    } // collection_object
+
+// =-=-=-=-=-=-=-
+// public - ctor
+    collection_object::collection_object(
+        const std::string& _fn,
         const std::string& _resc_hier,
         int _m,
         int _f ) :

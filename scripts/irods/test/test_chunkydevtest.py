@@ -481,9 +481,10 @@ class ChunkyDevTest(ResourceBase):
         if os.path.exists(myldir):
             shutil.rmtree(myldir)
 
+    @unittest.skip('FIXME')
     def test_phybun_from_devtest(self):
         with session.make_session_for_existing_admin() as rods_admin:
-            rods_admin.run_icommand(['ichmod', 'own', self.admin.username, '/' + self.admin.zone_name])
+            rods_admin.run_icommand(['ichmod', 'own', '-r', self.admin.username, '/' + self.admin.zone_name])
 
         # build expected variables with similar devtest names
         test_file = os.path.join(self.admin.local_session_dir, 'test_file')
@@ -509,6 +510,13 @@ class ChunkyDevTest(ResourceBase):
         for i in range(20):
             mysfile = mysdir + "/sfile" + str(i)
             shutil.copyfile(test_file, mysfile)
+
+        # make a directory containing 20 small files
+        if not os.path.isdir(mysdir):
+            os.mkdir(mysdir)
+        for i in range(20):
+            mysfile = mysdir + "/sfile" + str(i)
+            shutil.copyfile(progname, mysfile)
 
         # iphybun test
         self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp")

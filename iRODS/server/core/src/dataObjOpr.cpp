@@ -36,6 +36,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/lexical_cast.hpp>
 using namespace boost::filesystem;
 
 // =-=-=-=-=-=-=-
@@ -93,14 +94,15 @@ getDataObjInfo(
     char condStr[MAX_NAME_LEN];
     char *tmpStr;
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
-                *rescName, *hierString, *filePath, *dataOwnerName, *dataOwnerZone,
+                *rescIdString, *filePath, *dataOwnerName, *dataOwnerZone,
                 *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId,
                 *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType,
-         *tmpDataSize, *tmpRescName, *tmpHierString, *tmpFilePath,
+         *tmpDataSize, *tmpFilePath,
          *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString,
          *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments,
-         *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
+         *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName,
+         *tmpIdString;
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
     int writeFlag;
@@ -114,22 +116,6 @@ getDataObjInfo(
         return qcondCnt;
     }
 
-    /* need to do RESC_NAME_KW here because not all query need this */
-    if ( ignoreCondInput == 0 && ( tmpStr =
-                                       getValByKey( &dataObjInp->condInput, RESC_NAME_KW ) ) != NULL ) {
-        snprintf( condStr, NAME_LEN, "='%s'", tmpStr );
-        addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr );
-        qcondCnt++;
-    }
-
-    /* need to do RESC_HIER_STR_KW here because not all query need this */
-    if ( false && ignoreCondInput == 0 &&
-            ( tmpStr = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) ) != NULL ) {
-        snprintf( condStr, MAX_NAME_LEN, "='%s'", tmpStr );
-        addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_HIER, condStr );
-        qcondCnt++;
-    }
-
     addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_COLL_NAME, 1 );
@@ -138,7 +124,6 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_DATA_VERSION, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_SIZE, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_D_RESC_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_DATA_PATH, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_OWNER_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_OWNER_ZONE, 1 );
@@ -151,7 +136,7 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_D_CREATE_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_MODIFY_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_MODE, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_D_RESC_ID, 1 );
 
     if ( accessPerm != NULL ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );
@@ -257,17 +242,10 @@ getDataObjInfo(
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) ) ==
+    if ( ( rescIdString = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_RESC_NAME failed" );
-        return UNMATCHED_KEY_OR_INDEX;
-    }
-
-    if ( ( hierString = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
-            NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_RESC_HIER failed" );
+                 "getDataObjInfo: getSqlResultByInx for COL_D_RESC_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -360,8 +338,7 @@ getDataObjInfo(
         tmpVersion = &version->value[version->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
-        tmpRescName = &rescName->value[rescName->len * i];
-        tmpHierString = &hierString->value[hierString->len * i];
+        tmpIdString = &rescIdString->value[rescIdString->len * i];
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataOwnerName = &dataOwnerName->value[dataOwnerName->len * i];
         tmpDataOwnerZone = &dataOwnerZone->value[dataOwnerZone->len * i];
@@ -378,11 +355,21 @@ getDataObjInfo(
         tmpCollName = &collName->value[collName->len * i];
 
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
-        rstrcpy( dataObjInfo->rescName, tmpRescName, NAME_LEN );
-        rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
 
-        std::string hier( tmpHierString );
-        std::string resc( tmpRescName );
+        dataObjInfo->rescId = boost::lexical_cast<rodsLong_t>( tmpIdString );
+        std::string resc_hier;
+        irods::error ret = resc_mgr.leaf_id_to_hier( dataObjInfo->rescId, resc_hier );
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        rstrcpy( dataObjInfo->rescHier, resc_hier.c_str(), MAX_NAME_LEN );
+
+        irods::hierarchy_parser parser;
+        parser.set_string( resc_hier );
+        std::string leaf;
+        parser.last_resc( leaf );
+        rstrcpy( dataObjInfo->rescName, leaf.c_str(), NAME_LEN );
 
         rstrcpy( dataObjInfo->dataType, tmpDataType, NAME_LEN );
         dataObjInfo->dataSize = strtoll( tmpDataSize, 0, 0 );
@@ -446,7 +433,7 @@ sortObjInfo(
             topFlag = 0;
 
         }
-        else if ( !irods::is_resc_live( tmpDataObjInfo->rescName ).ok() ) {
+        else if ( !irods::is_resc_live( tmpDataObjInfo->rescId ).ok() ) {
             /* the resource is down */
             if ( tmpDataObjInfo->replStatus > 0 ) {
                 queDataObjInfo( downCurrentInfo, tmpDataObjInfo, 1, 1 );
@@ -460,9 +447,8 @@ sortObjInfo(
             continue;
         }
         else {
-//            rodsServerHost_t *rodsServerHost = ( rodsServerHost_t * ) tmpDataObjInfo->rescInfo->rodsServerHost;
             rodsServerHost_t *rodsServerHost = NULL;
-            irods::get_resource_property< rodsServerHost_t* >( tmpDataObjInfo->rescName, irods::RESOURCE_HOST, rodsServerHost );
+            irods::get_resource_property< rodsServerHost_t* >( tmpDataObjInfo->rescId, irods::RESOURCE_HOST, rodsServerHost );
 
             if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST ) {
                 topFlag = 0;
@@ -475,7 +461,7 @@ sortObjInfo(
 
         std::string class_type;
         irods::error prop_err = irods::get_resource_property<std::string>(
-                                    tmpDataObjInfo->rescName,
+                                    tmpDataObjInfo->rescId,
                                     irods::RESOURCE_CLASS,
                                     class_type );
 
@@ -782,7 +768,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     tmpDataObjInfo = *dataObjInfoHead;
     if ( tmpDataObjInfo->next == NULL ) {
         /* just one */
-        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ) {
+        if ( strstr(tmpDataObjInfo->rescHier,preferredResc ) != 0 ) {
             return 0;
         }
         else {
@@ -791,8 +777,7 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     }
     prevDataObjInfo = NULL;
     while ( tmpDataObjInfo != NULL ) {
-
-        if ( strcmp( preferredResc, tmpDataObjInfo->rescName ) == 0 ) {
+        if ( strstr(tmpDataObjInfo->rescHier,preferredResc) != 0 ) {
             if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
                 if ( prevDataObjInfo != NULL ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
@@ -865,7 +850,8 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
     while ( tmpDataObjInfo != NULL ) {
         // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
         // match as well. - hcj
-        if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 &&
+        // XXXX  - if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 &&
+        if ( strstr( tmpDataObjInfo->rescHier, _resc_name.c_str() ) != 0 &&
                 ( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
             if ( prev != NULL ) {
                 prev->next = tmpDataObjInfo->next;
@@ -909,7 +895,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
     while ( tmpDataObjInfo != NULL ) {
         nextDataObjInfo = tmpDataObjInfo->next;
 
-        if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 ) {
+        if ( strstr( _resc_name.c_str(), tmpDataObjInfo->rescHier  ) != 0 ) {
 
             if ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) {
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
@@ -942,7 +928,7 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             if ( ( trimjFlag & TRIM_UNMATCHED_OBJ_INFO ) ||
                     ( ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) &&
                       !_resc_name.empty() &&
-                      strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 ) ) {
+                      strstr( _resc_name.c_str(), tmpDataObjInfo->rescName ) != 0 ) ) {
                 /* take it out */
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
                     *dataObjInfoHead = tmpDataObjInfo->next;
@@ -1150,24 +1136,40 @@ chkOrphanFile(
     if ( strncmp( ANONYMOUS_USER, rsComm->clientUser.userName, NAME_LEN ) == 0 ) {
         return SYS_USER_NO_PERMISSION;
     }
-
+    
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int status;
     char condStr[MAX_NAME_LEN];
 
+    rodsLong_t resc_id;
+    irods::error ret = resc_mgr.hier_to_leaf_id(rescName,resc_id);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();    
+    }
+    std::string resc_id_str = boost::lexical_cast<std::string>(resc_id);;
+
+    // resc name should be leaf name, not root name of the hier
+    std::string resc_hier;
+    ret = resc_mgr.leaf_id_to_hier(resc_id, resc_hier);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();    
+    }
+
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     snprintf( condStr, MAX_NAME_LEN, "='%s'", filePath );
     addInxVal( &genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr );
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", rescName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr );
+    snprintf( condStr, MAX_NAME_LEN, "='%s'", resc_id_str.c_str() );
+    addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_ID, condStr );
 
     addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_COLL_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_NAME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_REPL_NUM, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_D_RESC_ID, 1 );
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -1213,8 +1215,8 @@ chkOrphanFile(
         }
     }
     else {
-        sqlResult_t *dataId, *replNum, *dataName, *collName, *rescHier;
-        rsComm->perfStat.nonOrphanCnt ++;
+        sqlResult_t *dataId, *replNum, *dataName, *collName;
+        rsComm->perfStat.nonOrphanCnt++;
 
         if ( ( collName =
                     getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
@@ -1243,20 +1245,12 @@ chkOrphanFile(
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
-
-                NULL ) {
-            rodsLog( LOG_NOTICE,
-                     "chkOrphanFile: getSqlResultByInx for COL_D_RESC_HIER failed" );
-            return UNMATCHED_KEY_OR_INDEX;
-        }
-
         if ( dataObjInfo != NULL ) {
             dataObjInfo->dataId = strtoll( dataId->value, 0, 0 );
             dataObjInfo->replNum = atoi( replNum->value );
             snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
                       collName->value, dataName->value );
-            rstrcpy( dataObjInfo->rescHier, rescHier->value, MAX_NAME_LEN );
+            rstrcpy( dataObjInfo->rescHier, resc_hier.c_str(), MAX_NAME_LEN );
         }
 
         freeGenQueryOut( &genQueryOut );
@@ -1531,7 +1525,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strcmp( rescName, tmpDataObjInfo->rescName ) == 0 ) ) {
+                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
             if ( prevDataObjInfo != NULL ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
@@ -1572,7 +1566,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strcmp( rescName, tmpDataObjInfo->rescName ) ) == 0 ) {
+                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
             if ( prevDataObjInfo != NULL ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
@@ -1652,7 +1646,6 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
     matchedInfoCnt = getDataObjInfoCnt( matchedDataObjInfo );
     unmatchedInfoCnt = getDataObjInfoCnt( *dataObjInfoHead );
     unmatchedOldInfoCnt = getDataObjInfoCnt( oldDataObjInfoHead );
-
     /* free the unmatched one first */
 
     freeAllDataObjInfo( *dataObjInfoHead );

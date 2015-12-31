@@ -27,6 +27,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "get_hier_from_leaf_id.h"
 
 int
 initL1desc() {
@@ -225,6 +226,11 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
         rstrcpy( dataObjInfo->rescHier, rescName, MAX_NAME_LEN ); // in kw else
     }
 
+    irods::error ret = resc_mgr.hier_to_leaf_id(dataObjInfo->rescHier,dataObjInfo->rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
+
     snprintf( dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode );
 
     dataType = getValByKey( condInput, DATA_TYPE_KW );
@@ -310,13 +316,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             return -1;
         }
 
-        irods::hierarchy_parser parser;
-        parser.set_string( destRescHier );
-
-        std::string last_resc;
-        parser.last_resc( last_resc );
-
-        irods::error err = irods::is_resc_live( last_resc.c_str() );
+        irods::error err = irods::is_hier_live( destRescHier );
         if ( err.ok() ) {
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
 
@@ -352,14 +352,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             return -1;
         }
 
-        irods::hierarchy_parser parser;
-        parser.set_string( srcRescHier );
-
-        std::string last_resc;
-        parser.last_resc( last_resc );
-
-        irods::error err = irods::is_resc_live( last_resc.c_str() );
-
+        irods::error err = irods::is_hier_live( srcRescHier );
         if ( err.ok() ) {
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
             if ( status < 0 ) {
@@ -518,7 +511,10 @@ initDataObjInfoForRepl(
 
     // initialize the destination resource hierarchy to the root resource
     rstrcpy( destDataObjInfo->rescHier, _resc_name, MAX_NAME_LEN ); // orphan right now
-
+    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_name,destDataObjInfo->rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
 
@@ -587,6 +583,7 @@ rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm ) {
     queryHandle->connType = RS_COMM;
     queryHandle->querySpecColl = ( funcPtr ) rsQuerySpecColl;
     queryHandle->genQuery = ( funcPtr ) rsGenQuery;
+    queryHandle->getHierForId = ( funcPtr ) rsGetHierFromLeafId;
 
     return 0;
 }

@@ -146,7 +146,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
     addInxIval( &genQueryInp2.selectInp, COL_R_ZONE_NAME, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_DATA_NAME, 1 );
     addInxIval( &genQueryInp2.selectInp, COL_COLL_NAME, 1 );
-    addInxIval( &genQueryInp2.selectInp, COL_D_RESC_HIER, 1 );
+    addInxIval( &genQueryInp2.selectInp, COL_D_RESC_ID, 1 );
     genQueryInp2.maxRows = MAX_SQL_ROWS;
 
     if ( isColl ) {
@@ -199,10 +199,10 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         sqlResult_t *zoneStruct = getSqlResultByInx( genQueryOut2, COL_R_ZONE_NAME );
         sqlResult_t *dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
         sqlResult_t *collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
-        sqlResult_t *rescHierStruct = getSqlResultByInx( genQueryOut2, COL_D_RESC_HIER );
+        sqlResult_t *rescIDStruct = getSqlResultByInx( genQueryOut2, COL_D_RESC_ID );
         if ( dataPathStruct == NULL || dataSizeStruct == NULL || locStruct == NULL ||
                 zoneStruct == NULL || dataNameStruct == NULL || collNameStruct == NULL ||
-                rescHierStruct == NULL ) {
+                rescIDStruct == NULL ) {
             printf( "getSqlResultByInx returned null in statPhysFile." );
             return -1;
         }
@@ -212,14 +212,14 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         char *zone = &zoneStruct->value[zoneStruct->len * i];
         char *dataName = &dataNameStruct->value[dataNameStruct->len * i];
         char *collName = &collNameStruct->value[collNameStruct->len * i];
-        char *rescHier = &rescHierStruct->value[rescHierStruct->len * i];
+        char *rescID = &rescIDStruct->value[rescIDStruct->len * i];
 
         /* check if the physical file does exist on the filesystem */
         fileStatInp_t fileStatInp;
         rstrcpy( fileStatInp.addr.hostAddr, loc, sizeof( fileStatInp.addr.hostAddr ) );
         rstrcpy( fileStatInp.addr.zoneName, zone, sizeof( fileStatInp.addr.zoneName ) );
         rstrcpy( fileStatInp.fileName, dataPath, sizeof( fileStatInp.fileName ) );
-        rstrcpy( fileStatInp.rescHier, rescHier, sizeof( fileStatInp.rescHier ) );
+        fileStatInp.rescId = strtoll( rescID, 0, 0 );
         snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName );
         rodsStat_t *fileStatOut;
         int status = rcFileStat( conn, &fileStatInp, &fileStatOut );

@@ -22,15 +22,39 @@ rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
 
     *fileStatOut = NULL;
 
-    //remoteFlag = resolveHost (&fileStatInp->addr, &rodsServerHost);
-    irods::error ret = irods::get_host_for_hier_string( fileStatInp->rescHier, remoteFlag, rodsServerHost );
+    if( 0 == fileStatInp->rescId ) {
+        if( 0 == strlen(fileStatInp->rescHier) ) {
+            rodsLog(
+                LOG_ERROR,
+                "rsFileStat - rescId and rescHier are invalid");
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        irods::error ret = resc_mgr.hier_to_leaf_id(
+                               fileStatInp->rescHier,
+                               fileStatInp->rescId);
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+    }
+
+    irods::resource_ptr resc;
+    irods::error ret = resc_mgr.resolve(fileStatInp->rescId,resc);
     if ( !ret.ok() ) {
-        irods::log( PASSMSG( "rsFileStat - failed in call to irods::get_host_for_hier_string", ret ) );
+        irods::log(PASS(ret));
         return ret.code();
     }
 
-    if ( remoteFlag < 0 ) {
-        return remoteFlag;
+    ret = resc->get_property<rodsServerHost_t*>(
+              irods::RESOURCE_HOST,
+              rodsServerHost );
+    if ( !ret.ok() ) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
+    if ( rodsServerHost->localFlag < 0 ) {
+        return rodsServerHost->localFlag;
     }
     else {
         status = rsFileStatByHost( rsComm, fileStatInp, fileStatOut,
@@ -120,7 +144,7 @@ int _rsFileStat(
             _comm,
             _stat_inp->objPath,
             _stat_inp->fileName,
-            _stat_inp->rescHier,
+            _stat_inp->rescId,
             0, 0, 0 ) );
     irods::error stat_err = fileStat( _comm, file_obj, &myFileStat );
 

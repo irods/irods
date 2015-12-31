@@ -182,6 +182,7 @@ primary ordering column.
 #define COL_D_MODIFY_TIME 420
 #define COL_DATA_MODE 421
 #define COL_D_RESC_HIER 422
+#define COL_D_RESC_ID 423
 
 /* R_COLL_MAIN */
 #define COL_COLL_ID 500

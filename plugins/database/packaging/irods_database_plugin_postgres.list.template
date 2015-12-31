@@ -198,3 +198,5 @@ d 755 root root ${IRODS_HOME_DIR}/packaging/schema_updates -
 f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/2.postgres.sql ./packaging/schema_updates/2.postgres.mysql.oracle.sql
 f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/3.postgres.sql ./packaging/schema_updates/3.postgres.mysql.oracle.sql
 f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/4.postgres.sql ./packaging/schema_updates/4.postgres.oracle.sql
+f 644 root root ${IRODS_HOME_DIR}/packaging/schema_updates/5.postgres.mysql.oracle.sql ./packaging/schema_updates/5.postgres.mysql.oracle.sql
+

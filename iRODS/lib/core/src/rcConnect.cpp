@@ -513,6 +513,10 @@ cliReconnManager( rcComm_t *conn ) {
 
 int
 cliChkReconnAtSendStart( rcComm_t *conn ) {
+    if( !conn ) {
+        printf( "cliChkReconnAtSendStart - null conn\n" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
     if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
         boost::unique_lock<boost::mutex> boost_lock;

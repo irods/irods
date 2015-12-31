@@ -131,6 +131,10 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
         strncpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+        irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,dataObjInfo->rescId);
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+        }
     }
 
     l3descInx = l3Opendir( rsComm, dataObjInfo );

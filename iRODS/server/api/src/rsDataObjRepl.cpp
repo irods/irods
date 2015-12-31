@@ -108,7 +108,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // make sure tmp_dest_resc exists and is available
     if ( !tmp_dest_resc.empty() ) {
-        irods::error resc_err = irods::is_resc_live( tmp_dest_resc );
+        irods::error resc_err = irods::is_hier_live( tmp_dest_resc );
         if ( !resc_err.ok() ) {
             irods::log( resc_err );
             return resc_err.code();
@@ -214,7 +214,7 @@ _rsDataObjRepl(
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfo = NULL;
-    std::string resc_name;
+    std::string root_resc_name;
     ruleExecInfo_t rei;
     int multiCopyFlag;
     char *accessPerm;
@@ -309,7 +309,7 @@ _rsDataObjRepl(
 
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
-    status = getRescForCreate( rsComm, dataObjInp, resc_name );
+    status = getRescForCreate( rsComm, dataObjInp, root_resc_name );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__ );
         return status;
@@ -324,7 +324,7 @@ _rsDataObjRepl(
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
-                                        resc_name, &destDataObjInfo,
+                                        root_resc_name, &destDataObjInfo,
                                         &dataObjInp->condInput );
 
         if ( status == HAVE_GOOD_COPY ) {
@@ -394,10 +394,10 @@ _rsDataObjRepl(
         }
     }
 
-    if ( !resc_name.empty() ) {
+    if ( !root_resc_name.empty() ) {
         /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
-                                        resc_name, transStat,
+                                        root_resc_name, transStat,
                                         outDataObjInfo );
         if ( status < 0 ) {
             savedStatus = status;
@@ -524,7 +524,7 @@ _rsDataObjReplNewCopy(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
     dataObjInfo_t *srcDataObjInfoHead,
-    const std::string& _resc_name,
+    const std::string& _root_resc_name,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
     // =-=-=-=-=-=-=-
@@ -546,7 +546,7 @@ _rsDataObjReplNewCopy(
 
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
-        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _resc_name.c_str(), outDataObjInfo, 0 );
+        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _root_resc_name.c_str(), outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }
@@ -587,7 +587,7 @@ _rsDataObjReplS(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * srcDataObjInfo,
-    const char * _resc_name,
+    const char * _root_resc_name,
     dataObjInfo_t * destDataObjInfo,
     int updateFlag ) {
     // =-=-=-=-=-=-=-
@@ -598,7 +598,7 @@ _rsDataObjReplS(
     dataObjInfo_t *myDestDataObjInfo = NULL;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
-                                    _resc_name, destDataObjInfo, updateFlag );
+                                    _root_resc_name, destDataObjInfo, updateFlag );
     if ( l1descInx < 0 ) {
         return l1descInx;
     }
@@ -675,25 +675,25 @@ dataObjOpenForRepl(
     rsComm_t * rsComm,
     dataObjInp_t * dataObjInp,
     dataObjInfo_t * inpSrcDataObjInfo,
-    const char* _resc_name,
+    const char* _root_resc_name,
     dataObjInfo_t * inpDestDataObjInfo,
     int updateFlag ) {
 
     irods::error resc_err;
     const char *my_resc_name; // replaces myDestRescInfo
-    if ( _resc_name && strlen( _resc_name ) ) {
-        my_resc_name = _resc_name;
+    if ( _root_resc_name && strlen( _root_resc_name ) ) {
+        my_resc_name = _root_resc_name;
     }
     else {
         my_resc_name = inpDestDataObjInfo->rescName;
     }
 
-    resc_err = irods::is_resc_live( my_resc_name );
+    resc_err = irods::is_hier_live( my_resc_name );
     if ( !resc_err.ok() ) {
         return resc_err.code();
     }
 
-    resc_err = irods::is_resc_live( inpSrcDataObjInfo->rescName );
+    resc_err = irods::is_hier_live( inpSrcDataObjInfo->rescName );
     if ( !resc_err.ok() ) {
         return resc_err.code();
     }
@@ -760,7 +760,7 @@ dataObjOpenForRepl(
         // set a creation operation
         op_name = irods::CREATE_OPERATION;
 
-        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, _resc_name );
+        initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, _root_resc_name );
         replStatus = srcDataObjInfo->replStatus;
     }
 
@@ -802,8 +802,18 @@ dataObjOpenForRepl(
 
     // =-=-=-=-=-=-=-
     // expected by fillL1desc
-    //rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
+    // repave the rescName with the leaf name as it was initialized to the root name
+    irods::hierarchy_parser parser;
+    parser.set_string( hier );
+    std::string leaf_resc;
+    parser.last_resc(leaf_resc);
     rstrcpy( myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN );
+    rstrcpy( myDestDataObjInfo->rescName, leaf_resc.c_str(), NAME_LEN );
+
+    rodsLong_t dst_resc_id;
+    resc_mgr.hier_to_leaf_id( hier, dst_resc_id );
+    myDestDataObjInfo->rescId = dst_resc_id;
+
     // =-=-=-=-=-=-=-
     // JMC :: [ ticket 1746 ] this should always be set - this was overwriting the KW
     //     :: in the incoming dataObjInp leaving this here for future consideration if issues arise
@@ -915,6 +925,10 @@ dataObjOpenForRepl(
 
     /* open the src */
     rstrcpy( srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN );
+    ret = resc_mgr.hier_to_leaf_id(inpSrcDataObjInfo->rescHier,srcDataObjInfo->rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
 
     int srcL1descInx = allocL1desc();
     if ( srcL1descInx < 0 ) {
@@ -1218,8 +1232,10 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
     int dst_create_path = 0;
-    irods::error err = irods::get_resource_property< int >( destDataObjInfo->rescName,
-                       irods::RESOURCE_CREATE_PATH, dst_create_path );
+    irods::error err = irods::get_resource_property< int >(
+                           destDataObjInfo->rescId,
+                           irods::RESOURCE_CREATE_PATH,
+                           dst_create_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
     }
@@ -1312,6 +1328,7 @@ _l3FileStage( rsComm_t * rsComm, dataObjInfo_t * srcDataObjInfo, // JMC - backpo
     rstrcpy( file_stage.filename,      srcDataObjInfo->filePath,  MAX_NAME_LEN );
     rstrcpy( file_stage.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
     rstrcpy( file_stage.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
+
     file_stage.mode = mode;
     status = rsFileStageToCache( rsComm, &file_stage );
     return status;

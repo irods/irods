@@ -3,9 +3,10 @@
 
 // =-=-=-=-=-=-=-
 #include "rods.h"
-#include "rodsConnect.h"
 #include "irods_resource_plugin.hpp"
 #include "irods_first_class_object.hpp"
+
+#include <functional>
 
 namespace irods {
 
@@ -43,11 +44,9 @@ namespace irods {
                            resource_ptr& ); // resource out variable
 
             // =-=-=-=-=-=-=-
-            // @brief given the name of a resource, try to load the shared object
-            error load_resource_plugin( resource_ptr&, // plugin
-                                const std::string,     // plugin name
-                                const std::string,     // instance name
-                                const std::string );   // context string
+            // @brief  resolve a resource from a key into the resource table
+            error resolve( rodsLong_t,      // resource id
+                           resource_ptr& ); // resource out variable
 
             // =-=-=-=-=-=-=-
             // @brief  resolve a resource from a match with a given property
@@ -88,6 +87,14 @@ namespace irods {
             int call_maintenance_operations( rcComm_t* );
 
             // =-=-=-=-=-=-=-
+            /// @brief get the resc id of the leaf resource in the hierarchy
+            error hier_to_leaf_id( const std::string&, rodsLong_t& );
+
+            // =-=-=-=-=-=-=-
+            /// @brief get the resc hier of the resource given an id
+            error leaf_id_to_hier( const rodsLong_t&, std::string& );
+
+            // =-=-=-=-=-=-=-
             /// @brief resolve a resource from a match with a given property
             template< typename value_type >
             error resolve_from_property( std::string   _prop,    // property key
@@ -99,14 +106,14 @@ namespace irods {
 
                 // =-=-=-=-=-=-=-
                 // quick check on the resource table
-                if ( resources_.empty() ) {
+                if ( resource_name_map_.empty() ) {
                     return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
                 }
 
                 // =-=-=-=-=-=-=-
                 // iterate through the map and search for our path
-                lookup_table< resource_ptr >::iterator itr = resources_.begin();
-                for ( ; itr != resources_.end(); ++itr ) {
+                lookup_table< resource_ptr >::iterator itr = resource_name_map_.begin();
+                for ( ; itr != resource_name_map_.end(); ++itr ) {
                     // =-=-=-=-=-=-=-
                     // query resource for the property value
                     value_type value = NULL;
@@ -155,10 +162,18 @@ namespace irods {
             } // resolve_from_property
 
             typedef lookup_table< resource_ptr >::iterator iterator;
-            iterator begin() { return resources_.begin(); }
-            iterator end()   { return resources_.end();   }
+            iterator begin() { return resource_name_map_.begin(); }
+            iterator end()   { return resource_name_map_.end();   }
 
         private:
+            // =-=-=-=-=-=-=-
+            /// @brief load a resource plugin from a dynamic shared object
+            error load_resource_plugin(
+                resource_ptr&,
+                const std::string,
+                const std::string,
+                const std::string);
+
             // =-=-=-=-=-=-=-
             /// @brief take results from genQuery, extract values and create resources
             error process_init_results( genQueryOut_t* );
@@ -189,7 +204,8 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Attributes
-            lookup_table< resource_ptr >            resources_;
+            lookup_table< resource_ptr >                        resource_name_map_;
+            lookup_table< resource_ptr, long, std::hash<long> > resource_id_map_;
             std::vector< std::vector< pdmo_type > > maintenance_operations_;
 
     }; // class resource_manager

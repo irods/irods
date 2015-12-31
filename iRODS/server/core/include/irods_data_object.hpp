@@ -26,6 +26,17 @@ namespace irods {
             data_object();
             data_object(
                 const std::string&,		// phy path
+                rodsLong_t,             // resc id
+                int,                	// mode
+                int );					// flags
+            data_object(
+                const std::string&,		// phy path
+                rodsLong_t,             // resc id
+                int,                	// mode
+                int,					// flags
+                const keyValPair_t& );	// cond_input
+            data_object(
+                const std::string&,		// phy path
                 const std::string&,		// resc hier
                 int,                	// mode
                 int );					// flags
@@ -35,6 +46,8 @@ namespace irods {
                 int,                	// mode
                 int,					// flags
                 const keyValPair_t& );	// cond_input
+
+
             data_object( const data_object& );
 
             // =-=-=-=-=-=-=-
@@ -73,6 +86,9 @@ namespace irods {
             virtual const keyValPair_t& cond_input()	const {
                 return cond_input_;
             }
+            virtual rodsLong_t resc_id() const {
+                return resc_id_;
+            }
 
             // =-=-=-=-=-=-=-
             // Mutators
@@ -91,6 +107,9 @@ namespace irods {
             virtual void cond_input( const keyValPair_t& _cond_input ) {
                 replKeyVal( &_cond_input, &cond_input_ );
             }
+            virtual void resc_id( rodsLong_t _id ) {
+                resc_id_ = _id;
+            }
 
             friend void add_key_val(
                 data_object_ptr&   _do,
@@ -107,11 +126,12 @@ namespace irods {
             // NOTE :: These are not guaranteed to be properly populated right now
             //      :: that will need be done later when these changes are pushed
             //      :: higher in the original design
-            std::string physical_path_;		// full physical path in the vault
-            std::string resc_hier_;			// where this lives in the resource hierarchy
-            int         mode_;				// mode when opened or modified
-            int         flags_;				// flags for object operations
-            keyValPair_t cond_input_;		// input key-value pairs
+            std::string  physical_path_; // full physical path in the vault
+            std::string  resc_hier_;     // where this lives in the resource hierarchy
+            int          mode_;	         // mode when opened or modified
+            int          flags_;         // flags for object operations
+            keyValPair_t cond_input_;    // input key-value pairs
+            rodsLong_t   resc_id_;       // leaf resource id used to generate hierarchy
 
     }; // class data_object
 

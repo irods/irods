@@ -45,6 +45,9 @@
 #include <iostream>
 #include <vector>
 #include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+
+extern irods::resource_manager resc_mgr;
 
 extern int get64RandomBytes( char *buf );
 extern int icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 );
@@ -2525,7 +2528,8 @@ irods::error db_mod_data_obj_meta_op(
         DATA_OWNER_ZONE_KW, REPL_STATUS_KW,     CHKSUM_KW,
         DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
         DATA_MODIFY_KW,     DATA_MODE_KW,       RESC_HIER_STR_KW,
-        "END"
+        RESC_ID_KW, "END"
+        
     };
 
     /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
@@ -2535,7 +2539,8 @@ irods::error db_mod_data_obj_meta_op(
         "resc_name",       "data_path",      "data_owner_name",
         "data_owner_zone", "data_is_dirty",  "data_checksum",
         "data_expiry_ts",  "r_comment",      "create_ts",
-        "modify_ts",       "data_mode",      "resc_hier"
+        "modify_ts",       "data_mode",      "resc_hier",
+        "resc_id"
     };
     int DATA_EXPIRY_TS_IX = 9; /* must match index in above colNames table */
     int MODIFY_TS_IX = 12;   /* must match index in above colNames table */
@@ -2556,16 +2561,31 @@ irods::error db_mod_data_obj_meta_op(
         adminMode = 1;
     }
 
-    bool update_resc_hier = false;
+    std::string update_resc_id_str;
+
+    bool update_resc_id = false;
     /* Set up the updateCols and updateVals arrays */
     for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
         theVal = getValByKey( _reg_param, regParamNames[i] );
         if ( theVal != NULL ) {
-            updateCols.push_back( colNames[i] );
-            updateVals.push_back( theVal );
+            if( std::string( "resc_name") == colNames[i]) {
+                continue;
+            }
+            else if( std::string( "resc_hier") == colNames[i]) {
+                updateCols.push_back( "resc_id" );
 
-            if ( std::string( "resc_hier" ) == colNames[i] ) {
-                update_resc_hier = true;
+                rodsLong_t resc_id;
+                resc_mgr.hier_to_leaf_id(theVal,resc_id);
+
+                update_resc_id_str = boost::lexical_cast<std::string>(resc_id);
+                updateVals.push_back( update_resc_id_str.c_str() );
+            } else {
+                updateCols.push_back( colNames[i] );
+                updateVals.push_back( theVal );
+            }
+
+            if ( std::string( "resc_id" ) == colNames[i] || std::string( "resc_hier") == colNames[i]) {
+                update_resc_id = true;
             }
 
             if ( i == DATA_EXPIRY_TS_IX ) {
@@ -2769,12 +2789,13 @@ irods::error db_mod_data_obj_meta_op(
      * this change to all replicas (by not restricting the update to
      * only one).
      */
+    std::string where_resc_id_str;
     if ( getValByKey( _reg_param, ALL_KW ) == NULL ) {
-        // use resc_hier instead of replNum as it is
-        // always set, unless resc_hier is to be
+        // use resc_id instead of replNum as it is
+        // always set, unless resc_id is to be
         // updated.  replNum is sometimes 0 in various
         // error cases
-        if ( update_resc_hier || strlen( _data_obj_info->rescHier ) <= 0 ) {
+        if ( update_resc_id || strlen( _data_obj_info->rescHier ) <= 0 ) {
             j = numConditions;
             whereColsAndConds[j] = "data_repl_num=";
             snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
@@ -2783,9 +2804,12 @@ irods::error db_mod_data_obj_meta_op(
 
         }
         else {
+            rodsLong_t id = 0;
+            resc_mgr.hier_to_leaf_id( _data_obj_info->rescHier, id );
+            where_resc_id_str = boost::lexical_cast<std::string>(id);
             j = numConditions;
-            whereColsAndConds[j] = "resc_hier=";
-            whereValues[j] = _data_obj_info->rescHier;
+            whereColsAndConds[j] = "resc_id=";
+            whereValues[j] = where_resc_id_str.c_str();
             numConditions++;
         }
     }
@@ -2814,14 +2838,15 @@ irods::error db_mod_data_obj_meta_op(
         id_stream << _data_obj_info->dataId;
         std::stringstream repl_stream;
         repl_stream << _data_obj_info->replNum;
-        char resc_hier[MAX_NAME_LEN];
+        rodsLong_t resc_id = 0;
+        std::string resc_hier;
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( id_stream.str() );
             bindVars.push_back( repl_stream.str() );
-            status = cmlGetStringValueFromSql(
-                         "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                         resc_hier, MAX_NAME_LEN, bindVars, &icss );
+            status = cmlGetIntegerValueFromSql(
+                         "select resc_id from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                         &resc_id, bindVars, &icss );
         }
         if ( status != 0 ) {
             std::stringstream msg;
@@ -2834,17 +2859,19 @@ irods::error db_mod_data_obj_meta_op(
             return ERROR(
                        status,
                        msg.str() );
-        }
-        // TODO - Address this in terms of resource hierarchies
-        else if ( ( status = _updateObjCountOfResources( &icss, resc_hier, zone.c_str(), -1 ) ) != 0 ) {
-            return ERROR(
-                       status,
-                       "_updateObjCountOfResources failed" );
-        }
-        else if ( ( status = _updateObjCountOfResources( &icss, new_resc_hier, zone.c_str(), +1 ) ) != 0 ) {
-            return ERROR(
-                       status,
-                       "_updateObjCountOfResources failed" );
+        } else {
+            resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
+            // TODO - Address this in terms of resource hierarchies
+            if ( ( status = _updateObjCountOfResources( &icss, resc_hier, zone.c_str(), -1 ) ) != 0 ) {
+                return ERROR(
+                           status,
+                           "_updateObjCountOfResources failed" );
+            }
+            else if ( ( status = _updateObjCountOfResources( &icss, new_resc_hier, zone.c_str(), +1 ) ) != 0 ) {
+                return ERROR(
+                           status,
+                           "_updateObjCountOfResources failed" );
+            }
         }
     }
 
@@ -3065,6 +3092,7 @@ irods::error db_reg_data_obj_op(
     snprintf( dataSizeNum, MAX_NAME_LEN, "%lld", _data_obj_info->dataSize );
     getNowStr( myTime );
 
+    std::string resc_id_str = boost::lexical_cast<std::string>(_data_obj_info->rescId);
     cllBindVars[0] = dataIdNum;
     cllBindVars[1] = collIdNum;
     cllBindVars[2] = logicalFileName;
@@ -3072,23 +3100,23 @@ irods::error db_reg_data_obj_op(
     cllBindVars[4] = _data_obj_info->version;
     cllBindVars[5] = _data_obj_info->dataType;
     cllBindVars[6] = dataSizeNum;
-    cllBindVars[7] = _data_obj_info->rescName;
-    cllBindVars[8] = _data_obj_info->rescHier;
-    cllBindVars[9] = _data_obj_info->filePath;
-    cllBindVars[10] = _ctx.comm()->clientUser.userName;
-    cllBindVars[11] = _ctx.comm()->clientUser.rodsZone;
-    cllBindVars[12] = dataStatusNum;
-    cllBindVars[13] = _data_obj_info->chksum;
-    cllBindVars[14] = _data_obj_info->dataMode;
+    cllBindVars[7] = resc_id_str.c_str();
+    cllBindVars[8] = _data_obj_info->filePath;
+    cllBindVars[9] = _ctx.comm()->clientUser.userName;
+    cllBindVars[10] = _ctx.comm()->clientUser.rodsZone;
+    cllBindVars[11] = dataStatusNum;
+    cllBindVars[12] = _data_obj_info->chksum;
+    cllBindVars[13] = _data_obj_info->dataMode;
+    cllBindVars[14] = myTime;
     cllBindVars[15] = myTime;
-    cllBindVars[16] = myTime;
-    cllBindVars[17] = data_expiry_ts;
+    cllBindVars[16] = data_expiry_ts;
+    cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVarCount = 18;
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegDataObj SQL 6" );
     }
     status =  cmlExecuteNoAnswerSql(
-                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -3233,20 +3261,43 @@ irods::error db_reg_replica_op(
     int statementNumber;
     int nextReplNum;
     char nextRepl[30];
-    char theColls[] = "data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, data_mode, r_comment, create_ts, modify_ts";
+    char theColls[] = "data_id, \
+                       coll_id,  \
+                       data_name, \
+                       data_repl_num, \
+                       data_version, \
+                       data_type_name, \
+                       data_size, \
+                       resc_group_name, \
+                       resc_name, \
+                       resc_hier, \
+                       resc_id, \
+                       data_path, \
+                       data_owner_name, \
+                       data_owner_zone, \
+                       data_is_dirty, \
+                       data_status, \
+                       data_checksum, \
+                       data_expiry_ts, \
+                       data_map_id, \
+                       data_mode, \
+                       r_comment, \
+                       create_ts, \
+                       modify_ts";
     int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
     int IX_RESC_NAME = 8;    /* index into theColls */
-    int IX_RESC_HIER = 9;
-    int IX_DATA_PATH = 10;    /* index into theColls */
+    int IX_RESC_HIER = 9;    /* index into theColls */
+    int IX_RESC_ID = 10;
+    int IX_DATA_PATH = 11;    /* index into theColls */
 
-    int IX_DATA_MODE = 18;
-    int IX_CREATE_TS = 20;
-    int IX_MODIFY_TS = 21;
-    int IX_RESC_NAME2 = 22;
-    int IX_DATA_PATH2 = 23;
-    int IX_DATA_ID2 = 24;
-    int nColumns = 25;
+    int IX_DATA_MODE = 19;
+    int IX_CREATE_TS = 21;
+    int IX_MODIFY_TS = 22;
+    int IX_RESC_NAME2 = 23;
+    int IX_DATA_PATH2 = 24;
+    int IX_DATA_ID2 = 25;
+    int nColumns = 26;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -3332,21 +3383,21 @@ irods::error db_reg_replica_op(
     }
     statementNumber = status;
 
+    std::string resc_id_str = boost::lexical_cast<std::string>(_dst_data_obj_info->rescId);
+
     cVal[IX_DATA_REPL_NUM]   = nextRepl;
-    cVal[IX_RESC_NAME]       = _dst_data_obj_info->rescName;
-    cVal[IX_RESC_HIER]       = _dst_data_obj_info->rescHier;
+    //cVal[IX_RESC_NAME]       = _dst_data_obj_info->rescName;
+    cVal[IX_RESC_ID]       = (char*)resc_id_str.c_str();
     cVal[IX_DATA_PATH]       = _dst_data_obj_info->filePath;
     cVal[IX_DATA_MODE]       = _dst_data_obj_info->dataMode;
-
 
     getNowStr( myTime );
     cVal[IX_MODIFY_TS] = myTime;
     cVal[IX_CREATE_TS] = myTime;
 
-    cVal[IX_RESC_NAME2] = _dst_data_obj_info->rescHier; // JMC - backport 4669
+    cVal[IX_RESC_NAME2] = (char*)resc_id_str.c_str();//_dst_data_obj_info->rescName; // JMC - backport 4669
     cVal[IX_DATA_PATH2] = _dst_data_obj_info->filePath; // JMC - backport 4669
     cVal[IX_DATA_ID2] = objIdString; // JMC - backport 4669
-
 
     for ( i = 0; i < nColumns; i++ ) {
         cllBindVars[i] = cVal[i];
@@ -3354,11 +3405,11 @@ irods::error db_reg_replica_op(
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_hier=? and data_path=? and data_id=?)",
+    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
               theColls );
 #else
     /* Postgres */
-    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_hier=? and data_path=? and data_id=?)",
+    snprintf( tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_id=? and data_path=? and data_id=?)",
               theColls );
 
 #endif
@@ -3565,15 +3616,16 @@ irods::error db_unreg_replica_op(
     // Get the resource name so we can update its data object count later
     std::string resc_hier;
     if ( strlen( _data_obj_info->rescHier ) == 0 ) {
+        rodsLong_t resc_id = 0;
         if ( _data_obj_info->replNum >= 0 ) {
             snprintf( replNumber, sizeof replNumber, "%d", _data_obj_info->replNum );
             {
                 std::vector<std::string> bindVars;
                 bindVars.push_back( dataObjNumber );
                 bindVars.push_back( replNumber );
-                status = cmlGetStringValueFromSql(
-                             "select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
-                             cVal, sizeof cVal, bindVars, &icss );
+                status = cmlGetIntegerValueFromSql(
+                             "select resc_id from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                             &resc_id, bindVars, &icss );
             }
             if ( status != 0 ) {
                 return ERROR( status, "cmlGetStringValueFromSql failed" );
@@ -3583,15 +3635,15 @@ irods::error db_unreg_replica_op(
             {
                 std::vector<std::string> bindVars;
                 bindVars.push_back( dataObjNumber );
-                status = cmlGetStringValueFromSql(
-                             "select resc_hier from R_DATA_MAIN where data_id=?",
-                             cVal, sizeof cVal, bindVars, &icss );
+                status = cmlGetIntegerValueFromSql(
+                             "select resc_id from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                             &resc_id, bindVars, &icss );
             }
             if ( status != 0 ) {
                 return ERROR( status, "cmlGetStringValueFromSql failed" );
             }
         }
-        resc_hier = std::string( cVal );
+        resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
     }
     else {
         resc_hier = std::string( _data_obj_info->rescHier );
@@ -5378,6 +5430,7 @@ irods::error db_reg_coll_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegColl SQL 1 " );
     }
+
     status = cmlCheckDirAndGetInheritFlag( logicalParentDirName,
                                            _ctx.comm()->clientUser.userName,
                                            _ctx.comm()->clientUser.rodsZone,

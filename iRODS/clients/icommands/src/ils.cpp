@@ -72,7 +72,7 @@ main( int argc, char **argv ) {
     if ( conn == NULL ) {
         exit( 2 );
     }
-#if 1
+#if 0
     init_client_api_table();
 #else
     // =-=-=-=-=-=-=-

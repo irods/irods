@@ -403,3 +403,5 @@ LIB_API_OBJS += $(libApiObjDir)/rcClientHints.o
 SVR_API_OBJS += $(svrApiObjDir)/rsIESClientHints.o
 LIB_API_OBJS += $(libApiObjDir)/rcIESClientHints.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsGetHierFromLeafId.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetHierFromLeafId.o

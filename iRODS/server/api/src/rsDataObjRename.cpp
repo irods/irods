@@ -531,6 +531,10 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
     rstrcpy( destDataObjInfo.rescName, srcDataObjInfo->rescName, NAME_LEN );
     rstrcpy( destDataObjInfo.rescHier, srcDataObjInfo->rescHier, MAX_NAME_LEN );
+    irods::error ret = resc_mgr.hier_to_leaf_id(srcDataObjInfo->rescHier,destDataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
     status = getFilePathName( rsComm, &destDataObjInfo, destDataObjInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

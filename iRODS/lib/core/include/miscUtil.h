@@ -45,6 +45,7 @@ typedef struct DataObjSqlResult {
     sqlResult_t replStatus;
     sqlResult_t dataId;
     sqlResult_t resource;
+    sqlResult_t resc_id;
     sqlResult_t resc_hier;
     sqlResult_t phyPath;
     sqlResult_t ownerName;
@@ -82,6 +83,7 @@ typedef struct QueryHandle {
     connType_t connType;
     funcPtr querySpecColl; // rcQuerySpecColl or rsQuerySpecColl
     funcPtr genQuery;      // rcGenQuery or rsGenQuery
+    funcPtr getHierForId;  // rc/rs GetHierForRescId
 } queryHandle_t;
 
 // definition for flag in rclOpenCollection and collHandle_t
@@ -265,6 +267,10 @@ void
 freePathnamePatterns( pathnamePatterns_t *pp );
 int
 matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
+int get_resc_hier_from_leaf_id(
+    queryHandle_t* _query_handle,
+    rodsLong_t     _resc_id,
+    char*          _resc_hier );
 #ifdef __cplusplus
 }
 #endif

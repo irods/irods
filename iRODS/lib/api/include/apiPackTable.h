@@ -98,6 +98,8 @@ packInstructArray_t api_pack_table_init[] = {
     {"fileRenameOut_PI", fileRenameOut_PI, irods::clearInStruct_noop},
     {"fileCreateOut_PI", fileCreateOut_PI, irods::clearInStruct_noop},
     {"filePutOut_PI", filePutOut_PI, irods::clearInStruct_noop},
+    {"GetHierInp_PI",GetHierInp_PI,irods::clearInStruct_noop},
+    {"GetHierOut_PI",GetHierOut_PI,irods::clearInStruct_noop},
     {PACK_TABLE_END_PI, ( char * ) NULL, irods::clearInStruct_noop},
 };
 

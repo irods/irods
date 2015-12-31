@@ -434,6 +434,10 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         rstrcpy( myDataObjInfo->rescName, specColl->resource, NAME_LEN );
         rstrcpy( myDataObjInfo->rescHier, specColl->rescHier, MAX_NAME_LEN );
         rstrcpy( myDataObjInfo->dataType, "generic", NAME_LEN );
+        irods::error ret = resc_mgr.hier_to_leaf_id(myDataObjInfo->rescHier,myDataObjInfo->rescId);
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+        }
 
         status = getMountedSubPhyPath( specColl->collection,
                                        specColl->phyPath, subPath, myDataObjInfo->filePath );
@@ -554,8 +558,8 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         if ( strlen( specColl->resource ) > 0 ) {
             if ( requeDataObjInfoByResc( dataObjInfo, specColl->resource,
                                          0, 1 ) >= 0 ) {
-                if ( strcmp( specColl->resource,
-                             ( *dataObjInfo )->rescName ) != 0 ) {
+                if ( strstr( ( *dataObjInfo )->rescHier,
+                             specColl->resource ) == 0 ) {
                     rodsLog( LOG_ERROR,
                              "specCollSubStat: %s in %s does not match cache resc %s",
                              myDataObjInp.objPath, ( *dataObjInfo )->rescName,
