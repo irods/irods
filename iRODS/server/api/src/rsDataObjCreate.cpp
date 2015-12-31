@@ -385,30 +385,37 @@ _rsDataObjCreateWithResc(
     if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != NULL ) { // JMC - backport 4537
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
-
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( resc_hier ) {
         // we need to favor the results from the PEP acSetRescSchemeForCreate
         irods::hierarchy_parser parse;
         parse.set_string( resc_hier );
-        std::string root_resc;
-        parse.first_resc( root_resc );
+        
+        std::string root;
+        parse.first_resc( root );
 
-        if ( root_resc == _resc_name ) {
+        std::string leaf;
+        parse.last_resc( leaf );
+
+        if ( root == _resc_name ) {
             // backwards compatibility
-            rstrcpy( dataObjInfo->rescName, root_resc.c_str(), NAME_LEN );
+            rstrcpy( dataObjInfo->rescName, leaf.c_str(), NAME_LEN );
             rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
         }
         else {
-            // backwards compatibility
-            rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
-            rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
+            rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );// backwards compatibility
+            rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );// backwards compatibility
         }
     }
     else {
-        // backwards compatibility
-        rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );
-        rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );
+        rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );// backwards compatibility
+        rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );// backwards compatibility
+    }
+
+    irods::error ret = resc_mgr.hier_to_leaf_id(dataObjInfo->rescHier, dataObjInfo->rescId );
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
 
     dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754

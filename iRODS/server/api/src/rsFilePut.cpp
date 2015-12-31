@@ -37,6 +37,7 @@ rsFilePut(
     //remoteFlag = resolveHost (&filePutInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( filePutInp->resc_hier_, remoteFlag, rodsServerHost );
     if ( !ret.ok() ) {
+        irods::stacktrace st; st.trace(); st.dump();
         irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
         return -1;
     }

@@ -460,7 +460,6 @@ _cllExecSqlNoResult(
     icatSessionStruct* icss,
     const char*        sql,
     int                option ) {
-
     rodsLog( LOG_DEBUG1, sql );
 
     HDBC myHdbc = icss->connectPtr;

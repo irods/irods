@@ -176,9 +176,9 @@ int
 printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
              genQueryOut_t *genQueryOut ) {
     int i = 0;
-    sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0, *rescHier = 0,
+    sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0,
                  *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
-    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0; // JMC - backport 4636
+    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescId; // JMC - backport 4636
     char *tmpDataId = 0;
     int queryFlags = 0;
 
@@ -242,13 +242,6 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == NULL ) {
-        // If the index is not found then COL_D_RESC_HIER was most likely stripped
-        // from the query input to talk to an older zone.
-        // use resource name instead
-        rescHier = rescName;
-    }
-
     if ( ( replStatus = getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
@@ -270,6 +263,15 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    if ( ( rescId = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) ) ==
+            NULL ) {
+        rodsLog( LOG_ERROR,
+                 "printLsLong: getSqlResultByInx for COL_D_RESC_ID failed" );
+        return UNMATCHED_KEY_OR_INDEX;
+    }
+
+    queryHandle_t query_handle;
+    rclInitQueryHandle( &query_handle, conn );
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
         collEnt_t collEnt;
 
@@ -279,10 +281,17 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         collEnt.replNum = atoi( &replNum->value[replNum->len * i] );
         collEnt.dataSize = strtoll( &dataSize->value[dataSize->len * i], 0, 0 );
         collEnt.resource = &rescName->value[rescName->len * i];
-        collEnt.resc_hier = &rescHier->value[rescHier->len * i];
         collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
         collEnt.replStatus = atoi( &replStatus->value[replStatus->len * i] );
         collEnt.modifyTime = &dataModify->value[dataModify->len * i];
+
+        rodsLong_t resc_id = strtoll(&rescId->value[rescId->len*i],0,0);
+        char resc_hier[MAX_NAME_LEN];
+        get_resc_hier_from_leaf_id(
+            &query_handle,
+            resc_id,
+            resc_hier );
+            collEnt.resc_hier = resc_hier;
         if ( rodsArgs->veryLongOption == True ) {
             collEnt.chksum = &chksumStr->value[chksumStr->len * i];
             collEnt.phyPath = &dataPath->value[dataPath->len * i];
@@ -517,16 +526,15 @@ printCollCollEnt( collEnt_t *collEnt, int flags ) {
         else {
             if ( collEnt->specColl.collClass == MOUNTED_COLL ||
                     collEnt->specColl.collClass == LINKED_COLL ) {
-                printf( "  C- %s  %6.6s  %s  %s   %s\n",
+                printf( "  C- %s  %6.6s  %s  %s\n",
                         collEnt->collName, typeStr,
-                        collEnt->specColl.objPath, collEnt->specColl.phyPath,
-                        collEnt->specColl.rescHier );
+                        collEnt->specColl.objPath, collEnt->specColl.phyPath);
             }
             else {
-                printf( "  C- %s  %6.6s  %s  %s;;;%s;;;%d\n",
+                printf( "  C- %s  %6.6s  %s  %s;;;%d\n",
                         collEnt->collName, typeStr,
                         collEnt->specColl.objPath, collEnt->specColl.cacheDir,
-                        collEnt->specColl.rescHier, collEnt->specColl.cacheDirty );
+                        collEnt->specColl.cacheDirty );
             }
         }
     }

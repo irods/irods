@@ -73,7 +73,7 @@ columnName_t columnNames[] = {
     { COL_D_COMMENTS,       "DATA_COMMENTS", },
     { COL_D_CREATE_TIME,    "DATA_CREATE_TIME", },
     { COL_D_MODIFY_TIME,    "DATA_MODIFY_TIME", },
-    { COL_D_RESC_HIER,    "DATA_RESC_HIER", },
+    { COL_D_RESC_ID,        "DATA_RESC_ID", },
 
     { COL_DATA_ACCESS_TYPE,     "DATA_ACCESS_TYPE", },
     { COL_DATA_ACCESS_NAME,     "DATA_ACCESS_NAME", },

@@ -544,8 +544,12 @@ filePathTypeInResc(
 
     memset( &fileStatInp, 0, sizeof( fileStatInp ) );
     rstrcpy( fileStatInp.fileName, fileName.c_str(), MAX_NAME_LEN );
-    rstrcpy( fileStatInp.rescHier, rescHier.c_str(), MAX_NAME_LEN );
+
+    rodsLong_t resc_id;
+    resc_mgr.hier_to_leaf_id( rescHier, resc_id );
+
     rstrcpy( fileStatInp.objPath,  objPath.c_str(),  MAX_NAME_LEN );
+    rstrcpy( fileStatInp.rescHier, rescHier.c_str(),  MAX_NAME_LEN );
     rstrcpy( fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     status = rsFileStat( rsComm, &fileStatInp, &myStat );
 

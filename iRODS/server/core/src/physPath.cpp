@@ -111,7 +111,7 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     int chk_path = 0;
     irods::error err = irods::get_resource_property< int >(
-                           dataObjInfo->rescName,
+                           dataObjInfo->rescId,
                            irods::RESOURCE_CHECK_PATH_PERM, chk_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
@@ -343,7 +343,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
 
             int chk_path = 0;
-            irods::error err = irods::get_resource_property< int >( dataObjInfo->rescName,
+            irods::error err = irods::get_resource_property< int >( dataObjInfo->rescId,
                                irods::RESOURCE_CHECK_PATH_PERM, chk_path );
             if ( !err.ok() ) {
                 irods::log( PASS( err ) );
@@ -774,7 +774,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     int create_path = 0;
     err = irods::get_resource_property< int >(
-              dataObjInfo->rescName,
+              dataObjInfo->rescId,
               irods::RESOURCE_CREATE_PATH, create_path );
     if ( !err.ok() ) {
         irods::log( PASS( err ) );
@@ -803,7 +803,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
     }
 
-    err = irods::is_resc_live( dataObjInfo->rescName );
+    err = irods::is_resc_live( dataObjInfo->rescId );
     if ( !err.ok() ) {
         irods::log( PASSMSG( "syncDataObjPhyPathS - failed in is_resc_live", err ) );
         return err.code();
@@ -924,9 +924,9 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
 
     while ( status >= 0 ) {
         sqlResult_t *dataIdRes, *subCollRes, *dataNameRes, *replNumRes,
-                    *rescNameRes, *filePathRes, *rescHierRes;
+                    *rescNameRes, *filePathRes, *rescIDRes;
         char *tmpDataId, *tmpDataName, *tmpSubColl, *tmpReplNum,
-             *tmpRescName, *tmpFilePath, *tmpRescHier;
+             *tmpRescName, *tmpFilePath, *tmpRescID;
         dataObjInfo_t dataObjInfo;
 
         memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
@@ -967,10 +967,10 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
-        if ( ( rescHierRes = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) )
+        if ( ( rescIDRes = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
-                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed" );
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -981,14 +981,22 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             tmpReplNum = &replNumRes->value[replNumRes->len * i];
             tmpRescName = &rescNameRes->value[rescNameRes->len * i];
             tmpFilePath = &filePathRes->value[filePathRes->len * i];
-            tmpRescHier = &rescHierRes->value[rescHierRes->len * i];
+            tmpRescID = &rescIDRes->value[rescIDRes->len * i];
 
             dataObjInfo.dataId = strtoll( tmpDataId, 0, 0 );
             snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
                       tmpSubColl, tmpDataName );
             dataObjInfo.replNum = atoi( tmpReplNum );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
-            rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
+
+            dataObjInfo.rescId = strtoll(tmpRescID,0,0);
+            std::string resc_hier;
+            irods::error ret = resc_mgr.leaf_id_to_hier(dataObjInfo.rescId,resc_hier);
+            if( !ret.ok() ) {
+                irods::log(PASS(ret));
+            } else {
+                rstrcpy( dataObjInfo.rescHier, resc_hier.c_str(), MAX_NAME_LEN );
+            }
 
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 
@@ -1388,36 +1396,22 @@ int
 getLeafRescPathName(
     const std::string& _resc_hier,
     std::string& _ret_string ) {
-    int result = 0;
-    irods::hierarchy_parser hp;
-    irods::error ret;
-    ret = hp.set_string( _resc_hier );
+    rodsLong_t resc_id=0; 
+    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_hier,resc_id);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+        
+    ret = irods::get_resource_property<std::string>( resc_id, irods::RESOURCE_PATH, _ret_string );
     if ( !ret.ok() ) {
         std::stringstream msg;
-        msg << "Unable to parse hierarchy string: \"" << _resc_hier << "\"";
+        msg << "Unable to get vault path for leaf: \"" << _resc_hier << "\"";
         irods::log( LOG_ERROR, msg.str() );
-        result = ret.code();
+        return ret.code();
     }
-    else {
-        std::string leaf;
-        ret = hp.last_resc( leaf );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "Unable to retrieve last resource from hierarchy string: \"" << _resc_hier << "\"";
-            irods::log( LOG_ERROR, msg.str() );
-            result = ret.code();
-        }
-        else {
-            ret = irods::get_resource_property<std::string>( leaf, irods::RESOURCE_PATH, _ret_string );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "Unable to get vault path from resource: \"" << leaf << "\"";
-                irods::log( LOG_ERROR, msg.str() );
-                result = ret.code();
-            }
-        }
-    }
-    return result;
+
+    return 0;
 }
 
 // =-=-=-=-=-=-=-

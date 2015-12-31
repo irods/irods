@@ -14,12 +14,8 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // helper functions for knitting back into legacy irods code
     error resource_to_kvp(resource_ptr&, keyValPair_t*);
-#if 0   // #1472
-    error resource_to_resc_grp_info( rescGrpInfo_t&, resource_ptr& );
-    error get_resc_grp_info( std::string, rescGrpInfo_t& );
-#endif
     error get_resc_properties_as_kvp(const std::string&, keyValPair_t*);
-    error is_resc_live( const std::string& );
+    error is_resc_live( rodsLong_t );
     error is_hier_live( const std::string& );
     error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, std::string& );
     error resolve_resource_name( std::string, keyValPair_t*, std::string& );
@@ -37,11 +33,11 @@ namespace irods {
         std::string& _loc );// location
 
     template< typename T >
-    error get_resource_property( std::string _name, const std::string& _prop_name, T& _prop ) {
+    error get_resource_property( rodsLong_t _resc_id, const std::string& _prop_name, T& _prop ) {
         // =-=-=-=-=-=-=-
         // resolve the resource by name
         resource_ptr resc;
-        error res_err = resc_mgr.resolve( _name, resc );
+        error res_err = resc_mgr.resolve( _resc_id, resc );
         if ( !res_err.ok() ) {
             std::stringstream msg;
             msg << "failed to resolve resource [";

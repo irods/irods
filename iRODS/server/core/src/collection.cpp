@@ -110,7 +110,7 @@ int trySpecificQueryDataObjInCollReCur(
             result->sqlResult[3].attriInx = COL_DATA_REPL_NUM;
             result->sqlResult[4].attriInx = COL_D_RESC_NAME;
             result->sqlResult[5].attriInx = COL_D_DATA_PATH;
-            result->sqlResult[6].attriInx = COL_D_RESC_HIER;
+            result->sqlResult[6].attriInx = COL_D_RESC_ID;
         }
     }
     return status;
@@ -146,9 +146,8 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
         addInxIval( &genQueryInp->selectInp, COL_DATA_REPL_NUM, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_NAME, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_DATA_PATH, 1 );
+        addInxIval( &genQueryInp->selectInp, COL_D_RESC_ID, 1 );
     }
-
-    addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
 
     if ( accessPerm != NULL ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );

@@ -22,15 +22,26 @@ namespace irods {
             // Constructors
             file_object();
             file_object( const file_object& );
-            file_object( rsComm_t* _comm,
-                         const std::string& _logical_name,
-                         const std::string& _filename,
-                         const std::string& _resc_hier,
-                         int _fd,
-                         int _mode,
-                         int _flags );
-            file_object( rsComm_t* _comm,
-                         const dataObjInfo_t* _dataObjInfo );
+            file_object(
+                rsComm_t* _comm,
+                const std::string& _logical_name,
+                const std::string& _filename,
+                rodsLong_t _resc_id,
+                int _fd,
+                int _mode,
+                int _flags );
+            file_object(
+                rsComm_t* _comm,
+                const std::string& _logical_name,
+                const std::string& _filename,
+                const std::string& _resc_hier,
+                int _fd,
+                int _mode,
+                int _flags );
+
+            file_object(
+                rsComm_t* _comm,
+                const dataObjInfo_t* _dataObjInfo );
 
             // =-=-=-=-=-=-=-
             // Destructor

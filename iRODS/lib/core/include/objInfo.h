@@ -161,6 +161,7 @@ typedef struct DataObjInfo {
     keyValPair_t condInput;
     char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
     struct DataObjInfo *next;
+    rodsLong_t rescId;
 } dataObjInfo_t ;
 
 /* collInfo_t definitions:

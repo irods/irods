@@ -239,18 +239,17 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     // =-=-=-=-=-=-=-
-    irods::hierarchy_parser parser;
-    parser.set_string( hier );
-    std::string resc_name;
-    parser.first_resc( resc_name );
+    rodsLong_t resc_id = 0;
+    irods::error ret = resc_mgr.hier_to_leaf_id(hier,resc_id);
+    if(!ret.ok()) {
+        return ret.code();
+    }
 
-    std::string last_resc;
-    parser.last_resc( last_resc );
     std::string location;
-    irods::error ret = irods::get_resource_property< std::string >(
-                           last_resc,
-                           irods::RESOURCE_LOCATION,
-                           location );
+    ret = irods::get_resource_property< std::string >(
+              resc_id,
+              irods::RESOURCE_LOCATION,
+              location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in get_resource_property", ret ) );
         return ret.code();
@@ -261,7 +260,11 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     remoteFlag = resolveHost( &addr, &rodsServerHost );
 
     if ( remoteFlag == LOCAL_HOST ) {
-        status = _rsPhyPathReg( rsComm, phyPathRegInp, resc_name.c_str(), rodsServerHost );
+        irods::hierarchy_parser p;
+        p.set_string(hier);
+        std::string leaf_resc;
+        p.last_resc(leaf_resc);
+        status = _rsPhyPathReg( rsComm, phyPathRegInp, leaf_resc.c_str(), rodsServerHost );
 
     }
     else if ( remoteFlag == REMOTE_HOST ) {
@@ -346,6 +349,10 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         return SYS_INVALID_INPUT_PARAM;
     }
 
+    irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,dataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
 
     if ( getValByKey( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW ) == NULL &&
             ( chkType = getchkPathPerm( rsComm, phyPathRegInp, &dataObjInfo ) ) != NO_CHK_PATH_PERM ) { // JMC - backport 4774
@@ -393,10 +400,15 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
     }
     else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != NULL && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
+        rodsLong_t resc_id = 0;
+        ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
+        if(!ret.ok()) {
+            return ret.code();
+        }
 
         // Get resource path
         std::string resc_vault_path;
-        irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_PATH, resc_vault_path );
+        irods::error ret = irods::get_resource_property< std::string >( resc_id, irods::RESOURCE_PATH, resc_vault_path );
         if ( !ret.ok() ) {
             irods::log PASSMSG( "_rsPhyPathReg - failed in get_resource_property", ret );
             return ret.code();
@@ -491,6 +503,10 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
     }
 
     rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
+    irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,dataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
 
     if ( dataObjInfo.dataSize <= 0 &&
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
@@ -594,8 +610,13 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rstrcpy( fileStatInp.fileName, filePath, MAX_NAME_LEN );
 
         // Get resource location
+        rodsLong_t resc_id = 0;
+        ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
+        if(!ret.ok()) {
+            return ret.code();
+        }
         std::string location;
-        irods::error ret = irods::get_resource_property< std::string >( _resc_name, irods::RESOURCE_LOCATION, location );
+        irods::error ret = irods::get_resource_property< std::string >( resc_id, irods::RESOURCE_LOCATION, location );
         if ( !ret.ok() ) {
             irods::log PASSMSG( "dirPathReg - failed in get_resource_property", ret );
             return ret.code();

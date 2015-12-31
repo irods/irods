@@ -93,7 +93,6 @@ irods::error get_next_child(
     irods::hierarchy_parser parser;
     boost::shared_ptr< DEST_TYPE > dst_obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
     parser.set_string( dst_obj->resc_hier() );
-
     std::string child;
     ret = parser.next( name, child );
     if ( !ret.ok() ) {
@@ -1323,8 +1322,16 @@ irods::error open_for_prefer_archive_policy(
     // and will need refactored later with an improved object model
     std::string arch_hier;
     arch_check_parser.str( arch_hier );
-
     f_ptr->resc_hier( arch_hier );
+
+    // repave the resc id with the new leaf id
+    rodsLong_t resc_id = 0;
+    ret = resc_mgr.hier_to_leaf_id(arch_hier,resc_id);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+    f_ptr->resc_id(resc_id);
+
     irods::data_object_ptr d_ptr = boost::dynamic_pointer_cast <
                                    irods::data_object > ( f_ptr );
     add_key_val(

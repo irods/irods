@@ -8,6 +8,7 @@
 #include "objMetaOpr.hpp"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
+#include "irods_stacktrace.hpp"
 
 int
 rsReadCollection( rsComm_t*, int *handleInxInp,

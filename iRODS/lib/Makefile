@@ -138,7 +138,7 @@ LIB_RBUDP_OBJS =  \
 
 # API (see api.mk, which is automatically generated)
 include $(buildDir)/config/api.mk
-INCLUDES +=	-I$(libApiIncDir)
+INCLUDES +=	-I$(libApiIncDir) -I$(buildDir)/../plugins/api/include
 
 # All objects
 OBJS =  $(LIB_CORE_OBJS) \

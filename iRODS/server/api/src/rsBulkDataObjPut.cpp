@@ -28,6 +28,8 @@
 #include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/lexical_cast.hpp>
+
 using namespace boost::filesystem;
 
 
@@ -298,6 +300,11 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( dataObjInfo.rescHier, _resc_name, NAME_LEN ); // in kw else
     }
 
+    irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,dataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
+
     if ( specColl != NULL ) {
         status = getMountedSubPhyPath( specColl->collection,
                                        specColl->phyPath, dataObjInp->objPath, phyBunDir );
@@ -491,6 +498,11 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
     dataObjInfo.dataSize = dataSize;
 
+    irods::error ret = resc_mgr.hier_to_leaf_id(rescHier,dataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
+
     status = getFilePathName( rsComm, &dataObjInfo, &dataObjInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -602,6 +614,79 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
                              dataObjInfo.replNum, myChksum, bulkDataObjRegInp, renamedPhyFiles );
 
     return status;
+}
+
+int
+fillBulkDataObjRegInp( const char * rescName, const char* rescHier, char * objPath,
+                       char * filePath, char * dataType, rodsLong_t dataSize, int dataMode,
+                       int modFlag, int replNum, char * chksum, genQueryOut_t * bulkDataObjRegInp ) {
+
+    int rowCnt;
+
+    if ( bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL ||
+            filePath == NULL ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    rowCnt = bulkDataObjRegInp->rowCnt;
+
+    if ( rowCnt >= MAX_NUM_BULK_OPR_FILES ) {
+        return SYS_BULK_REG_COUNT_EXCEEDED;
+    }
+
+    rstrcpy( &bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
+             objPath, MAX_NAME_LEN );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[1].value[NAME_LEN * rowCnt],
+             dataType, NAME_LEN );
+    snprintf( &bulkDataObjRegInp->sqlResult[2].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%lld", dataSize );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[3].value[NAME_LEN * rowCnt],
+             rescName, NAME_LEN );
+    rstrcpy( &bulkDataObjRegInp->sqlResult[4].value[MAX_NAME_LEN * rowCnt],
+             filePath, MAX_NAME_LEN );
+    snprintf( &bulkDataObjRegInp->sqlResult[5].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", dataMode );
+    if ( modFlag == 1 ) {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+                 MODIFY_OPR, NAME_LEN );
+    }
+    else {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+                 REGISTER_OPR, NAME_LEN );
+    }
+    snprintf( &bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
+              NAME_LEN, "%d", replNum );
+    if ( chksum != NULL && strlen( chksum ) > 0 ) {
+        rstrcpy( &bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
+                 chksum, NAME_LEN );
+    }
+    else {
+        bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt] = '\0';
+    }
+
+    rodsLong_t resc_id = 0;
+    irods::error ret = resc_mgr.hier_to_leaf_id(rescHier,resc_id);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
+    try {
+        std::string resc_id_str = boost::lexical_cast<std::string>(resc_id);
+        snprintf( &bulkDataObjRegInp->sqlResult[9].value[MAX_NAME_LEN * rowCnt],
+                  MAX_NAME_LEN, "%s", resc_id_str.c_str() );
+    }
+    catch( boost::bad_lexical_cast& ) {
+        rodsLog(
+            LOG_ERROR,
+            "failed to cast [%Ld] to a string",
+            resc_id );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    bulkDataObjRegInp->rowCnt++;
+
+    return 0;
 }
 
 int

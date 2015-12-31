@@ -159,7 +159,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
         std::string resc_class;
         irods::error err = irods::get_resource_property< std::string >(
-                               tmpDataObjInfo->rescName,
+                               tmpDataObjInfo->rescId,
                                irods::RESOURCE_CLASS,
                                resc_class );
         if ( !err.ok() ) {

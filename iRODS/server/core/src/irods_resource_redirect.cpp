@@ -743,24 +743,25 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
-        // parse out the leaf resource for redirection
-        std::string last_resc;
-        hierarchy_parser parser;
-        parser.set_string( resc_hier );
-        parser.last_resc( last_resc );
+        // parse out the leaf resource id for redirection
+        rodsLong_t resc_id = 0;
+        irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,resc_id);
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
 
         // =-=-=-=-=-=-=-
         // get the host property from the last resc and get the
         // host name from that host
         rodsServerHost_t* last_resc_host = NULL;
         error err = get_resource_property< rodsServerHost_t* >(
-                        last_resc,
+                        resc_id,
                         RESOURCE_HOST,
                         last_resc_host );
         if ( !err.ok() || NULL == last_resc_host ) {
             std::stringstream msg;
             msg << "resource_redirect :: failed in get_resource_property call ";
-            msg << "for [" << last_resc << "]";
+            msg << "for [" << resc_hier << "]";
             return PASSMSG( msg.str(), err );
         }
 

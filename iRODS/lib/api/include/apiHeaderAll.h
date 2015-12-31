@@ -147,4 +147,6 @@
 #include "authPluginRequest.h"
 #include "getHierarchyForResc.h"
 
+#include "get_hier_from_leaf_id.h"
+
 #endif	// API_HEADER_ALL_H__

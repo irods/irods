@@ -166,7 +166,6 @@ namespace irods {
                 // =-=-=-=-=-=-=-
                 // given a shared object, load the plugin from it
                 std::string name  = it->path().stem().string();
-
                 // =-=-=-=-=-=-=-
                 // if client side, skip server plugins, etc.
                 if ( _cli_flg ) {
@@ -204,9 +203,10 @@ namespace irods {
                     //
                     rodsLog(
                         LOG_DEBUG,
-                        "init_api_table :: adding %d - [%s]",
+                        "init_api_table :: adding %d - [%s] - [%s]",
                         entry->apiNumber,
-                        entry->fcn_name_.c_str() );
+                        entry->fcn_name_.c_str(),
+                        name.c_str() );
 
                     // =-=-=-=-=-=-=-
                     // ask the plugin to fill in the api and pack

@@ -53,8 +53,8 @@ namespace irods {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
         }
 
-        if ( resources_.has_entry( _key ) ) {
-            _value = resources_[ _key ];
+        if ( resource_name_map_.has_entry( _key ) ) {
+            _value = resource_name_map_[ _key ];
             return SUCCESS();
 
         }
@@ -62,6 +62,26 @@ namespace irods {
             std::stringstream msg;
             msg << "no resource found for name ["
                 << _key << "]";
+            return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
+
+        }
+
+    } // resolve
+
+// =-=-=-=-=-=-=-
+// public - retrieve a resource given its key
+    error resource_manager::resolve(
+        rodsLong_t    _resc_id,
+        resource_ptr& _value ) {
+        if ( resource_id_map_.has_entry( _resc_id ) ) {
+            _value = resource_id_map_[ _resc_id ];
+            return SUCCESS();
+
+        }
+        else {
+            std::stringstream msg;
+            msg << "no resource found for name ["
+                << _resc_id << "]";
             return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
 
         }
@@ -116,7 +136,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // quick check on the resource table
-        if ( resources_.empty() ) {
+        if ( resource_name_map_.empty() ) {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
         }
 
@@ -128,8 +148,8 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // iterate through the map and search for our path
-        lookup_table< resource_ptr >::iterator itr = resources_.begin();
-        for ( ; !found && itr != resources_.end(); ++itr ) {
+        lookup_table< resource_ptr >::iterator itr = resource_name_map_.begin();
+        for ( ; !found && itr != resource_name_map_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // get the host pointer from the resource
             rodsServerHost_t* svr_host = 0;
@@ -194,7 +214,7 @@ namespace irods {
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
         // =-=-=-=-=-=-=-
         // clear existing resource map and initialize
-        resources_.clear();
+        resource_name_map_.clear();
 
         // =-=-=-=-=-=-=-
         // set up data structures for a gen query
@@ -326,8 +346,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // iterate over all resources in the table
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
-        for ( itr =  resources_.begin();
-                itr != resources_.end();
+        for ( itr =  resource_name_map_.begin();
+                itr != resource_name_map_.end();
                 ++itr ) {
             itr->second->stop_operation();
 
@@ -344,8 +364,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // iterate over all resources in the table
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
-        for ( itr =  resources_.begin();
-                itr != resources_.end();
+        for ( itr =  resource_name_map_.begin();
+                itr != resource_name_map_.end();
                 ++itr ) {
             resource_ptr resc = itr->second;
             resource_ptr parent_ptr;
@@ -505,7 +525,8 @@ namespace irods {
                 resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, 0 );
             }
 
-            resc->set_property<long>( RESOURCE_ID, strtoll( tmpRescId.c_str(), 0, 0 ) );
+            rodsLong_t resource_id = strtoll( tmpRescId.c_str(), 0, 0 );
+            resc->set_property<rodsLong_t>( RESOURCE_ID, resource_id );
             resc->set_property<long>( RESOURCE_FREESPACE, strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
             resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
@@ -533,7 +554,8 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // add new resource to the map
-            resources_[ tmpRescName ] = resc;
+            resource_name_map_[ tmpRescName ] = resc;
+            resource_id_map_[ resource_id ] = resc;
 
         } // for i
 
@@ -556,7 +578,7 @@ namespace irods {
             return PASSMSG( "Failed to load Resource Plugin", ret );
         }
 
-        resources_[ _key ] = _resc;
+        resource_name_map_[ _key ] = _resc;
 
         return SUCCESS();
 
@@ -606,7 +628,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // start filling in the properties
-        resc->set_property<long>( RESOURCE_ID, 999 );
+        resc->set_property<rodsLong_t>( RESOURCE_ID, 999 );
         resc->set_property<long>( RESOURCE_FREESPACE, 999 );
         resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
@@ -627,7 +649,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // assign to the map
-        resources_[ LOCAL_USE_ONLY_RESOURCE ] = resc;
+        resource_name_map_[ LOCAL_USE_ONLY_RESOURCE ] = resc;
 
         return SUCCESS();
 
@@ -640,7 +662,7 @@ namespace irods {
 
         // Iterate over all the resources
         lookup_table< boost::shared_ptr< resource > >::iterator it;
-        for ( it = resources_.begin(); it != resources_.end(); ++it ) {
+        for ( it = resource_name_map_.begin(); it != resource_name_map_.end(); ++it ) {
             resource_ptr resc = it->second;
 
             // Get the children string and resource name
@@ -673,8 +695,8 @@ namespace irods {
                             std::string context = itr->second;
 
                             // Lookup the child resource pointer
-                            lookup_table< boost::shared_ptr< resource > >::iterator child_itr = resources_.find( child );
-                            if ( child_itr == resources_.end() ) {
+                            lookup_table< boost::shared_ptr< resource > >::iterator child_itr = resource_name_map_.find( child );
+                            if ( child_itr == resource_name_map_.end() ) {
                                 std::stringstream msg;
                                 msg << "Failed to find child \"" << child << "\" in resources.";
                                 result = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
@@ -703,7 +725,7 @@ namespace irods {
 // public - print the list of local resources out to stderr
     void resource_manager::print_local_resources() {
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
-        for ( itr = resources_.begin(); itr != resources_.end(); ++itr ) {
+        for ( itr = resource_name_map_.begin(); itr != resource_name_map_.end(); ++itr ) {
             std::string loc, path, name;
             error path_err = itr->second->get_property< std::string >( RESOURCE_PATH, path );
             error loc_err  = itr->second->get_property< std::string >( RESOURCE_LOCATION, loc );
@@ -727,7 +749,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // iterate over all of the resources
         lookup_table< boost::shared_ptr< resource > >::iterator resc_itr;
-        for ( resc_itr = resources_.begin(); resc_itr != resources_.end(); ++resc_itr ) {
+        for ( resc_itr = resource_name_map_.begin(); resc_itr != resource_name_map_.end(); ++resc_itr ) {
             resource_ptr& resc = resc_itr->second;
 
             // =-=-=-=-=-=-=-
@@ -810,7 +832,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // lookup the child resource pointer
             resource_ptr resc;
-            error get_err = resources_.get( child, resc );
+            error get_err = resource_name_map_.get( child, resc );
             if ( get_err.ok() ) {
                 // =-=-=-=-=-=-=-
                 // cache operation if there is one
@@ -843,7 +865,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // lookup the child resource pointer
             resource_ptr resc;
-            error get_err = resources_.get( child, resc );
+            error get_err = resource_name_map_.get( child, resc );
             if ( get_err.ok() ) {
                 std::string child_str;
                 error child_err = resc->get_property< std::string >( RESOURCE_CHILDREN, child_str );
@@ -872,8 +894,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // iterate through resource plugins
         lookup_table< resource_ptr >::iterator itr;
-        for ( itr  = resources_.begin();
-                itr != resources_.end();
+        for ( itr  = resource_name_map_.begin();
+                itr != resource_name_map_.end();
                 ++itr ) {
             // =-=-=-=-=-=-=-
             // if any resources need a pdmo, return true;
@@ -897,8 +919,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // iterate through resource plugins
         lookup_table< resource_ptr >::iterator itr;
-        for ( itr  = resources_.begin();
-                itr != resources_.end();
+        for ( itr  = resource_name_map_.begin();
+                itr != resource_name_map_.end();
                 ++itr ) {
             // =-=-=-=-=-=-=-
             // if any resources need a pdmo, return true;
@@ -952,6 +974,86 @@ namespace irods {
 
         return result;
     } // call_maintenance_operations
+
+    error resource_manager::hier_to_leaf_id(
+        const std::string& _hier,
+        rodsLong_t&        _id ) {
+        if(_hier.empty()) {
+            return ERROR(
+                       HIERARCHY_ERROR,
+                       "empty hierarchy string" );
+        }
+
+        hierarchy_parser p;
+        p.set_string( _hier );
+
+        std::string leaf;
+        p.last_resc( leaf );
+
+        if( !resource_name_map_.has_entry(leaf) ) {
+            return ERROR(
+                       SYS_RESC_DOES_NOT_EXIST,
+                       _hier );
+        }
+
+        resource_ptr resc = resource_name_map_[leaf];
+
+        rodsLong_t id = 0;
+        error ret = resc->get_property<rodsLong_t>(
+                        RESOURCE_ID,
+                        id );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        _id = id;
+
+        return SUCCESS();
+
+    } // hier_to_leaf_id
+
+    error resource_manager::leaf_id_to_hier(
+        const rodsLong_t& _id,
+        std::string&      _hier ) {
+        if( !resource_id_map_.has_entry(_id) ) {
+            std::stringstream msg;
+            msg << "invalid resource id: " << _id;
+            return ERROR(
+                       SYS_RESC_DOES_NOT_EXIST,
+                       msg.str() );
+        }
+
+        resource_ptr resc = resource_id_map_[ _id ];
+
+        std::string hier;
+        error ret = resc->get_property<std::string>(
+                        RESOURCE_NAME,
+                        hier );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        resc->get_parent(resc);
+        while( resc.get() ) {
+            std::string name;
+            error ret = resc->get_property<std::string>(
+                            RESOURCE_NAME,
+                            name );
+            if( !ret.ok() ) {
+                return PASS(ret);
+            }
+
+            hier.insert( 0, ";" );
+            hier.insert( 0, name);
+         
+            resc->get_parent(resc);
+        }
+
+        _hier = hier;
+
+        return SUCCESS();
+
+    } // leaf_id_to_hier
 
 }; // namespace irods
 

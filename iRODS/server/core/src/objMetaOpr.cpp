@@ -21,6 +21,8 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#include "boost/lexical_cast.hpp"
+
 int
 svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
     genQueryInp_t genQueryInp;
@@ -145,9 +147,11 @@ getPhyPath(
     addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
 
     // =-=-=-=-=-=-=-
-    // add query to the struct for the resource hierarchy
-    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", resc_hier.c_str() );
-    addInxVal( &gen_inp.sqlCondInp, COL_D_RESC_HIER, tmp_str );
+    // add query to the struct for the resource id
+    rodsLong_t resc_id;
+    resc_mgr.hier_to_leaf_id( resc_hier, resc_id );
+    snprintf( tmp_str, MAX_NAME_LEN, "='%Ld'", resc_id );
+    addInxVal( &gen_inp.sqlCondInp, COL_D_RESC_ID, tmp_str );
 
     // =-=-=-=-=-=-=-
     // include request for data path and resource hierarchy
@@ -172,7 +176,6 @@ getPhyPath(
         strncpy( _phy_path,  phy_path_res->value, MAX_NAME_LEN );
         strncpy( _resource,  root_resc.c_str(),   root_resc.size() );
         strncpy( _resc_hier, resc_hier.c_str(),   resc_hier.size() );
-
     }
 
     freeGenQueryOut( &gen_out );
@@ -649,8 +652,17 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
 
     bzero( &genQueryInp, sizeof( genQueryInp_t ) );
 
-    snprintf( tmpStr, MAX_NAME_LEN, "='%s'", rescName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_NAME, tmpStr );
+    rodsLong_t resc_id;
+    irods::error ret = resc_mgr.hier_to_leaf_id(rescName,resc_id);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();    
+    }
+
+    std::string resc_id_str = boost::lexical_cast<std::string>(resc_id);
+    
+    snprintf( tmpStr, MAX_NAME_LEN, "='%s'", resc_id_str.c_str() );
+    addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_ID, tmpStr );
     snprintf( tmpStr, MAX_NAME_LEN, "='%s'", filePath );
     addInxVal( &genQueryInp.sqlCondInp, COL_D_DATA_PATH, tmpStr );
     snprintf( tmpStr, MAX_NAME_LEN, "='%lld'", dataId );

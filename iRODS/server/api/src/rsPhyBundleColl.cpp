@@ -444,6 +444,9 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
              L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN );
     rstrcpy( regReplicaInp.destDataObjInfo->rescHier,
              L1desc[l1descInx].dataObjInfo->rescHier, MAX_NAME_LEN );
+
+    regReplicaInp.destDataObjInfo->rescId = L1desc[l1descInx].dataObjInfo->rescId;
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
     if ( chksumFlag != 0 ) {
@@ -483,6 +486,7 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
             regReplicaInp.destDataObjInfo->dataId =
                 tmpBunReplCache->dataId;
         regReplicaInp.srcDataObjInfo->replNum = tmpBunReplCache->srcReplNum;
+
         status = rsRegReplica( rsComm, &regReplicaInp );
         if ( status < 0 ) {
             savedStatus = status;
@@ -680,9 +684,16 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
+    rodsLong_t resc_id = 0;
+    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
+    if( !ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
     std::string type;
     irods::error err = irods::get_resource_property< std::string >(
-                           _resc_name,
+                           resc_id,
                            irods::RESOURCE_TYPE,
                            type );
     if ( !err.ok() ) {

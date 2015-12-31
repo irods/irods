@@ -10,6 +10,8 @@
 #include <string>
 #include "boost/regex.hpp"
 
+#include "irods_stacktrace.hpp"
+
 char *rmemmove( void *dest, const void *src, int strLen, int maxLen ) {
 
     if ( dest == NULL || src == NULL ) {
@@ -58,9 +60,10 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
         return dest;
     }
     else if ( status >= 0 ) {
+        irods::stacktrace st; st.trace(); st.dump();
         rodsLog( LOG_ERROR,
-                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
-                 status, maxLen );
+                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d src [%s]",
+                 status, maxLen, src );
         return NULL;
     }
     else {

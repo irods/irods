@@ -33,7 +33,7 @@ rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
-    irods::error resc_err = irods::is_resc_live( resc_name );
+    irods::error resc_err = irods::is_hier_live( resc_name );
     if ( !resc_err.ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
@@ -198,7 +198,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
         }
         requeDataObjInfoByResc( &dataObjInfoHead, _resc_name, 1, 1 );
         /* The copy in DEST_RESC_NAME_KW should be on top */
-        if ( strcmp( dataObjInfoHead->rescName, _resc_name ) != 0 ) {
+        if ( strstr(_resc_name, dataObjInfoHead->rescHier) != 0 ) {
             /* no copy. stage it */
             status = regPhySubFile( rsComm, subfilePath, bunDataObjInfo, _resc_name );
             unlink( subfilePath );

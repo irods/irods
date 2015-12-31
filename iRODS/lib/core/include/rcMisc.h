@@ -264,10 +264,6 @@ initBulkDataObjRegInp( genQueryOut_t *bulkDataObjRegInp );
 int
 initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut );
 int
-fillBulkDataObjRegInp( const char *rescName, const char* rescHier, char *objPath,
-                       char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
-                       int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp );
-int
 untarBuf( char *phyBunDir, bytesBuf_t *tarBBuf );
 int
 tarToBuf( char *phyBunDir, bytesBuf_t *tarBBuf );

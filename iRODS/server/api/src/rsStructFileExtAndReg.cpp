@@ -401,6 +401,12 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
     rstrcpy( dataObjInfo.rescHier, rescHier, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
 
+    irods::error ret = resc_mgr.hier_to_leaf_id(rescHier,dataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
+
+
     dataObjInfo.dataSize = dataSize;
     dataObjInfo.replStatus = 1;
 

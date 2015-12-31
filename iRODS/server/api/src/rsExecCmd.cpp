@@ -119,7 +119,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         // =-=-=-=-=-=-=-
         // extract zone name from resource hierarchy
         std::string zone_name;
-        err = irods::get_resc_hier_property<std::string>( dataObjInfoHead->rescHier, irods::RESOURCE_ZONE, zone_name );
+        err = irods::get_resource_property<std::string>( dataObjInfoHead->rescId, irods::RESOURCE_ZONE, zone_name );
         if ( !err.ok() ) {
             irods::log( PASSMSG( "rsExecCmd - failed in get_resc_hier_property", err ) );
             return err.code();

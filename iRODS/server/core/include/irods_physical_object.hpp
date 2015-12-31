@@ -4,7 +4,7 @@
 // =-=-=-=-=-=-=-
 // stl includes
 #include <string>
-
+#include "rodsType.h"
 namespace irods {
 
     class physical_object {
@@ -87,6 +87,9 @@ namespace irods {
             inline std::string resc_hier()       const {
                 return resc_hier_;
             }
+            inline rodsLong_t resc_id()          const {
+                return resc_id_;
+            }
 
             // =-=-=-=-=-=-=-
             // mutators
@@ -153,6 +156,9 @@ namespace irods {
             inline void resc_hier( const std::string& _v )       {
                 resc_hier_       = _v;
             }
+            inline void resc_id( rodsLong_t _id )                  {
+                resc_id_ = _id;
+            }
 
         private:
             int         is_dirty_;
@@ -176,6 +182,7 @@ namespace irods {
             std::string create_ts_;
             std::string modify_ts_;
             std::string resc_hier_;
+            rodsLong_t  resc_id_;
 
     }; // physical_object
 

@@ -74,22 +74,21 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
-    }
-
+    
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         dataObjInfo_t dataObjInfo;
-        sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescHier, *filePath,
+        sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescID, *filePath,
                     *dataMode, *oprType, *replNum, *chksum;
-        char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpRescHier, *tmpFilePath,
+        char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpRescID, *tmpFilePath,
              *tmpDataMode, *tmpOprType, *tmpReplNum, *tmpChksum;
         sqlResult_t *objId;
         char *tmpObjId;
         int status, i;
 
-        if ( ( rescHier =
-                    getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_HIER ) ) == NULL ) {
+        if ( ( rescID =
+                    getSqlResultByInx( bulkDataObjRegInp, COL_D_RESC_ID ) ) == NULL ) {
             rodsLog( LOG_NOTICE,
-                     "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_HIER failed" );
+                     "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -157,15 +156,13 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             rodsLog( LOG_ERROR,
                      "rsBulkDataObjReg: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
-        }
-
         ( *bulkDataObjRegOut )->rowCnt = bulkDataObjRegInp->rowCnt;
         for ( i = 0; i < bulkDataObjRegInp->rowCnt; i++ ) {
             tmpObjPath = &objPath->value[objPath->len * i];
             tmpDataType = &dataType->value[dataType->len * i];
             tmpDataSize = &dataSize->value[dataSize->len * i];
             tmpRescName = &rescName->value[rescName->len * i];
-            tmpRescHier = &rescHier->value[rescHier->len * i];
+            tmpRescID   = &rescID->value[rescID->len * i];
             tmpFilePath = &filePath->value[filePath->len * i];
             tmpDataMode = &dataMode->value[dataMode->len * i];
             tmpOprType = &oprType->value[oprType->len * i];
@@ -178,7 +175,16 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             rstrcpy( dataObjInfo.dataType, tmpDataType, NAME_LEN );
             dataObjInfo.dataSize = strtoll( tmpDataSize, 0, 0 );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
-            rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
+
+            dataObjInfo.rescId = strtoll(tmpRescID, 0, 0);
+            std::string resc_hier;
+            irods::error ret = resc_mgr.leaf_id_to_hier(dataObjInfo.rescId, resc_hier);
+            if( !ret.ok() ) {
+                irods::log(PASS(ret));
+            }
+            else {
+                rstrcpy( dataObjInfo.rescHier, resc_hier.c_str(), MAX_NAME_LEN );
+            }
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
             rstrcpy( dataObjInfo.dataMode, tmpDataMode, SHORT_STR_LEN );
             dataObjInfo.replNum = atoi( tmpReplNum );

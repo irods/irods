@@ -236,7 +236,7 @@ icatGeneralQuerySetup() {
     sColumn( COL_DATA_VERSION, "R_DATA_MAIN", "data_version" );
     sColumn( COL_DATA_TYPE_NAME, "R_DATA_MAIN", "data_type_name" );
     sColumn( COL_DATA_SIZE, "R_DATA_MAIN", "data_size" );
-    sColumn( COL_D_RESC_NAME, "R_DATA_MAIN", "resc_name" );
+    sColumn( COL_D_RESC_NAME, "R_RESC_MAIN", "resc_name" );
     sColumn( COL_D_DATA_PATH, "R_DATA_MAIN", "data_path" );
     sColumn( COL_D_OWNER_NAME, "R_DATA_MAIN", "data_owner_name" );
     sColumn( COL_D_OWNER_ZONE, "R_DATA_MAIN", "data_owner_zone" );
@@ -249,8 +249,8 @@ icatGeneralQuerySetup() {
     sColumn( COL_D_CREATE_TIME, "R_DATA_MAIN", "create_ts" );
     sColumn( COL_D_MODIFY_TIME, "R_DATA_MAIN", "modify_ts" );
     sColumn( COL_DATA_MODE, "R_DATA_MAIN", "data_mode" );
-    sColumn( COL_D_RESC_HIER, "R_DATA_MAIN", "resc_hier" );
 
+    sColumn( COL_D_RESC_ID, "R_DATA_MAIN", "resc_id" );
 
     sColumn( COL_DATA_ACCESS_TYPE, "r_data_access", "access_type_id" );
     sColumn( COL_DATA_ACCESS_NAME, "r_data_tokn_accs", "token_name" );
@@ -580,7 +580,8 @@ icatGeneralQuerySetup() {
     sFklink( "R_COLL_MAIN", "R_DATA_MAIN", "R_COLL_MAIN.coll_id = R_DATA_MAIN.coll_id" );
     sFklink( "R_RESC_GROUP", "R_RESC_MAIN", "R_RESC_GROUP.resc_id = R_RESC_MAIN.resc_id" );
     sFklink( "R_RESC_MAIN", "r_resc_metamap", "R_RESC_MAIN.resc_id = r_resc_metamap.object_id" );
-    sFklink( "R_RESC_MAIN", "R_DATA_MAIN", "R_RESC_MAIN.resc_name = R_DATA_MAIN.resc_name" );
+//    sFklink( "R_RESC_MAIN", "R_DATA_MAIN", "R_RESC_MAIN.resc_name = R_DATA_MAIN.resc_name" );
+    sFklink( "R_RESC_MAIN", "R_DATA_MAIN", "R_RESC_MAIN.resc_id = R_DATA_MAIN.resc_id" );
     sFklink( "R_RESC_GROUP", "r_resc_grp_metamap", "R_RESC_GROUP.resc_group_id = r_resc_grp_metamap.object_id" );
     sFklink( "R_COLL_MAIN", "r_coll_metamap", "R_COLL_MAIN.coll_id = r_coll_metamap.object_id" );
     sFklink( "R_DATA_MAIN", "r_data_metamap", "R_DATA_MAIN.data_id = r_data_metamap.object_id" );
