@@ -8,7 +8,6 @@ import pprint
 import sys
 
 from . import pypyodbc
-
 from . import six
 
 from . import lib
@@ -156,47 +155,26 @@ def get_connection_string(db_config):
 
     return ';'.join(itertools.chain(['DSN=iRODS Catalog'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
 
-def get_connection(db_config):
-    l = logging.getLogger(__name__)
-    if db_config['catalog_database_type'] == 'oracle':
-        os.environ['TWO_TASK'] = get_two_task_for_oracle(db_config)
-        l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
-
-    connection_string = get_connection_string(db_config)
-    sync_odbc_ini(db_config)
-    return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
-
-def sync_odbc_ini(db_config):
-    odbc_dict = get_odbc_entry(db_config)
-
-    #The 'Driver' keyword must be first
-    keys = [k for k in odbc_dict.keys()]
-    keys[keys.index('Driver')] = keys[0]
-    keys[0] = 'Driver'
-
-    template = '\n'.join(itertools.chain(['[iRODS Catalog]'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
-    lib.execute_command(['odbcinst', '-i', '-s', '-h', '-r'], input=template)
-
-def get_odbc_ini_path():
-    if 'ODBCINI' in os.environ:
-        return os.environ['ODBCINI']
-    return os.path.join(os.path.expanduser('~'), '.odbc.ini')
-
 def execute_sql_statement(cursor, statement, *params, **kwargs):
     l = logging.getLogger(__name__)
     log_params = kwargs.get('log_params', True)
     l.debug('Executing SQL statement:\n%s\nwith the following parameters:\n%s',
             statement,
             pprint.pformat(params) if log_params else '<hidden>')
-    return cursor.execute(statement, *params)
+    return cursor.execute(statement, params)
 
-def execute_sql_file(filepath, cursor):
+def execute_sql_file(filepath, cursor, by_line=False):
     l = logging.getLogger(__name__)
     l.debug('Executing SQL in %s', filepath)
     with open(filepath, 'r') as f:
-        cursor.execute(f.read())
-    l.debug('Committing...')
-    cursor.commit()
+        if by_line:
+            for line in f.readlines():
+                if not line:
+                    continue
+                l.debug('Executing SQL statement:\n%s', line)
+                cursor.execute(line)
+        else:
+            cursor.execute(f.read())
 
 #def main():
 #    l = logging.getLogger(__name__)

@@ -23,13 +23,12 @@ from .exceptions import IrodsError, IrodsWarning
 
 class IrodsController(object):
     def __init__(self, irods_config=IrodsConfig()):
-
         self.config = irods_config
 
     def check_config(self):
         # load the configuration to ensure it exists
-        temp_dict = self.config.server_config
-        temp_dict = self.config.version
+        _ = self.config.server_config
+        _ = self.config.version
 
     def start(self):
         l = logging.getLogger(__name__)
@@ -39,8 +38,7 @@ class IrodsController(object):
         if not os.path.exists(self.config.server_executable):
             raise IrodsError(
                 'Configuration problem:\n'
-                '\tThe \'%s\' application could not be found.  Have the'
-                'iRODS servers been compiled?' % (
+                '\tThe \'%s\' application could not be found.' % (
                     os.path.basename(self.config.server_executable)))
 
         try:
@@ -52,8 +50,7 @@ class IrodsController(object):
             six.reraise(IrodsError, IrodsError(
                     'Configuration problem:\n'
                     'The server log directory, \'%s\''
-                    'is not writeable.  Please change its permissions'
-                    'and retry.' % (
+                    'is not writeable.' % (
                         self.config.server_log_directory)),
                     sys.exc_info()[2])
 
@@ -61,14 +58,6 @@ class IrodsController(object):
             self.config.validate_configuration()
         except IrodsWarning:
             l.warn('Warning encountered in validation:', exc_info=True)
-
-        if self.config.database_config:
-            if not self.check_database_schema_version():
-                raise IrodsError('\n\t'.join([
-                    'Preflight Check problem:',
-                    'Database Schema in the database is ahead',
-                    'of {0} - Please upgrade.'.format(
-                        os.path.basename(self.config.version_path))]))
 
         try:
             irods_port = int(self.config.server_config['zone_port'])
@@ -83,8 +72,37 @@ class IrodsController(object):
                             sys.exc_info()[2])
             l.debug('Socket %s bound and released successfully.')
 
-            l.debug('Syncing .odbc.ini file...')
-            database_connect.sync_odbc_ini(self.config.database_config)
+            if self.config.is_catalog:
+                l.debug('Syncing .odbc.ini file...')
+                self.config.sync_odbc_ini()
+
+                if self.config.database_config['catalog_database_type'] == 'oracle':
+                    two_task = database_connect.get_two_task_for_oracle(self.config.database_config)
+                    l.debug('Setting TWO_TASK for oracle...')
+                    self.config.execution_environment['TWO_TASK'] = two_task
+
+                with contextlib.closing(self.config.get_database_connection()) as connection:
+                    connection.autocommit = False
+                    with contextlib.closing(connection.cursor()) as cursor:
+                        if self.config.get_schema_version_in_database(cursor) < self.config.version['catalog_schema_version']:
+                            try:
+                                self.config.update_catalog_schema(cursor)
+                                l.debug('Committing database changes...')
+                                cursor.commit()
+                            except:
+                                cursor.rollback()
+                                raise
+                        if self.config.get_schema_version_in_database(cursor) > self.config.version['catalog_schema_version']:
+                            l.error('catalog_schema_version in database [%d], '
+                                    'catalog_schema_version in %s [%d]' % (
+                                        int(schema_version_in_db),
+                                        self.get_version_path(),
+                                        int(schema_version_in_file)))
+                            raise IrodsError('\n\t'.join([
+                                'Preflight Check problem:',
+                                'Database Schema in the database is ahead',
+                                'of {0} - Please upgrade.'.format(
+                                    os.path.basename(self.config.version_path))]))
 
             l.info('Starting iRODS server...')
             lib.execute_command(
@@ -92,10 +110,11 @@ class IrodsController(object):
                 cwd=self.config.server_bin_directory,
                 env=self.config.execution_environment)
 
-            retry_count = 100
+            try_count = 1
+            max_retries = 100
             while True:
                 l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                        irods_port, 101 - retry_count)
+                        irods_port, try_count)
                 with contextlib.closing(socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM)) as s:
                     if s.connect_ex(('127.0.0.1', irods_port)) == 0:
@@ -104,10 +123,10 @@ class IrodsController(object):
                             l.debug('Successfully connected to port %s.', irods_port)
                             break
                         else:
-                            retry_count = 0
-                if retry_count <= 0:
+                            try_count = max_retries
+                if try_count >= max_retries:
                     raise IrodsError('iRODS server failed to start.')
-                retry_count = retry_count - 1
+                try_count += 1
                 time.sleep(1)
         except IrodsError as e:
             l.info('Failure')
@@ -214,23 +233,6 @@ class IrodsController(object):
         else:
             l.info(format_binary_to_pids_dict(binary_to_pids_dict))
         return binary_to_pids_dict
-
-    def check_database_schema_version(self,
-            schema_version_in_db=None,
-            cursor=None):
-        l = logging.getLogger(__name__)
-
-        if schema_version_in_db is None:
-            schema_version_in_db = self.config.get_schema_version_in_database(cursor)
-        if int(schema_version_in_db) > int(self.config.version['catalog_schema_version']):
-            l.error('catalog_schema_version in database [%d], '
-                    'catalog_schema_version in %s [%d]' % (
-                        int(schema_version_in_db),
-                        self.get_version_path(),
-                        int(schema_version_in_file)))
-            return False
-        l.info('Confirming catalog_schema_version... Success')
-        return True
 
     def get_binary_to_pids_dict(self, binaries=None):
         if binaries is None:

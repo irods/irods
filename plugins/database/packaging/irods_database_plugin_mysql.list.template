@@ -130,7 +130,7 @@ if [ "$$UPGRADE_FLAG" = "false" ] ; then
     echo ""
     echo "After restarting your MySQL server with the new configuration,"
     echo "please run the following setup script:"
-    echo "  sudo /var/lib/irods/packaging/setup_irods.sh"
+    echo "  sudo /var/lib/irods/scripts/setup_irods.py"
     echo ""
     echo "======================================================================="
     echo ""

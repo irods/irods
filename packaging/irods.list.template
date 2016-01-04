@@ -280,7 +280,7 @@ f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json
 f 000 root root ${IRODS_HOME_DIR}/catalog.flag /dev/null
 %endif
 
-%if ICAT
+%if RESOURCE
 f 000 root root ${IRODS_HOME_DIR}/resource.flag /dev/null
 %endif
 
@@ -301,7 +301,6 @@ d 755 root root ${IRODS_HOME_DIR}/packaging -
 f 755 root root ${IRODS_HOME_DIR}/packaging/find_os.sh ./packaging/find_os.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
-f 755 root root ${IRODS_HOME_DIR}/packaging/setup_irods.sh ./packaging/setup_irods.sh
 f 755 root root ${IRODS_HOME_DIR}/packaging/update_json.py ./packaging/update_json.py
 f 755 root root ${IRODS_HOME_DIR}/packaging/convert_configuration_to_json.py ./packaging/convert_configuration_to_json.py
 f 644 root root ${IRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt

@@ -5,7 +5,7 @@ SRCS = db_plugin.cpp                \
        general_update.cpp           \
        general_query_setup.cpp      \
        mid_level_routines.cpp       \
-       low_level_oracle.cpp         \
+       low_level_odbc.cpp         \
        irods_catalog_properties.cpp \
        irods_sql_logger.cpp
 
@@ -15,7 +15,7 @@ ORACLE_HOME_LIB=`../packaging/find_oracle_lib.sh`
 HEADERS =
 
 CLL_OBJS = \
-	$(OBJDIR)/low_level_oracle.o
+	$(OBJDIR)/low_level_odbc.o
 
 GENQ_OBJS = \
 	$(OBJDIR)/general_query.o \

@@ -8,7 +8,7 @@ This installation of a resource server is currently incomplete.
 The following script will prompt for necessary iRODS iCAT server
 information and then populate your server_config.json accordingly:
 
-  sudo /var/lib/irods/packaging/setup_irods.sh
+  sudo /var/lib/irods/scripts/setup_irods.py
 
 This will result in a running resource server with a default
 resource named with your hostname concatenated with "Resource"

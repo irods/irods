@@ -125,7 +125,7 @@ if [ "$$UPGRADE_FLAG" = "false" ] ; then
     echo " - permissions for existing user on existing database"
     echo ""
     echo "Then run the following setup script:"
-    echo "  sudo /var/lib/irods/packaging/setup_irods.sh"
+    echo "  sudo /var/lib/irods/scripts/setup_irods.py"
     echo ""
     echo "======================================================================="
     echo ""

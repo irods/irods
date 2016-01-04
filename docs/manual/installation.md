@@ -92,18 +92,18 @@ To configure this plugin, the following prerequisites need to be met:
  - permissions for existing user on existing database
 
 Please run the following setup script:
-  sudo /var/lib/irods/packaging/setup_irods.sh
+  sudo /var/lib/irods/scripts/setup_irods.py
 
 =======================================================================
 ~~~
 
-The `setup_irods.sh` script below will prompt for, and then create, if necessary, a service account and service group which will own and operate the iRODS server:
+The `setup_irods.py` script below will prompt for, and then create, if necessary, a service account and service group which will own and operate the iRODS server:
 
 ~~~
-$ (sudo) /var/lib/irods/packaging/setup_irods.sh
+$ (sudo) /var/lib/irods/scripts/setup_irods.py
 ~~~
 
-The `setup_irods.sh` script will ask for the following nineteen pieces of information before starting the iRODS server:
+The `setup_irods.py` script will ask for the following nineteen pieces of information before starting the iRODS server:
 
 1. Service Account Name
 2. Service Account Group
@@ -147,17 +147,17 @@ The irods-resource package installs the iRODS binaries and management scripts.
 
 There are no required additional packages, but the administrator will need to run a short setup script that will prompt for iRODS connection information and configure the server.
 
-The `setup_irods.sh` script below will prompt for, and then create if necessary, a service account and service group which will own and operate the iRODS server.
+The `setup_irods.py` script below will prompt for, and then create if necessary, a service account and service group which will own and operate the iRODS server.
 
 Installation of the Resource RPM:
 
 ~~~
 - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
  $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-centos6-x86_64.rpm
- $ (sudo) /var/lib/irods/packaging/setup_irods.sh
+ $ (sudo) /var/lib/irods/scripts/setup_irods.py
 ~~~
 
-The `setup_irods.sh` script will ask for the following fifteen pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
+The `setup_irods.py` script will ask for the following fifteen pieces of information about the existing Zone that the iRODS resource server will need in order to stand up and then connect to its configured iCAT Zone:
 
 1. Service Account Name
 2. Service Account Group

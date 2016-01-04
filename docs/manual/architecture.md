@@ -753,7 +753,7 @@ To implement a new database plugin, a developer will need to provide the existin
 
 ### Installing lib_mysqludf_preg
 
-To use the iRODS MySQL database plugin, the MySQL server must have the [lib_mysqludf_preg functions](https://github.com/mysqludf/lib_mysqludf_preg) installed and available to iRODS. iRODS installation (`setup_irods.sh`) will fail if these functions are not installed on the database.
+To use the iRODS MySQL database plugin, the MySQL server must have the [lib_mysqludf_preg functions](https://github.com/mysqludf/lib_mysqludf_preg) installed and available to iRODS. iRODS installation (`setup_irods.py`) will fail if these functions are not installed on the database.
 
 The steps for installing `lib_mysqludf_preg` on Ubuntu 14.04 are:
 
