@@ -887,7 +887,9 @@ cllGetRow( icatSessionStruct *icss, int statementNumber ) {
 */
 int
 cllNextValueString( const char *itemName, char *outString, int maxSize ) {
-#ifdef MY_ICAT
+#ifdef ORA_ICAT
+    snprintf( outString, maxSize, "%s.nextval", itemName );
+#elif MY_ICAT
     snprintf( outString, maxSize, "%s_nextval()", itemName );
 #else
     snprintf( outString, maxSize, "nextval('%s')", itemName );
@@ -915,7 +917,9 @@ cllGetRowCount( icatSessionStruct *icss, int statementNumber ) {
 
 int
 cllCurrentValueString( const char *itemName, char *outString, int maxSize ) {
-#ifdef MY_ICAT
+#ifdef ORA_ICAT
+    snprintf( outString, maxSize, "%s.currval", itemName );
+#elif MY_ICAT
     snprintf( outString, maxSize, "%s_currval()", itemName );
 #else
     snprintf( outString, maxSize, "currval('%s')", itemName );

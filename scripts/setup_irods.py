@@ -416,7 +416,12 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     timestamp = '{0:011d}'.format(int(time.time()))
 
     def get_next_object_id():
-        return irods.database_connect.execute_sql_statement(cursor, "select nextval('R_OBJECTID');").fetchone()[0]
+        if irods_config.database_config['catalog_database_type'] == 'postgres':
+            return irods.database_connect.execute_sql_statement(cursor, "select nextval('R_OBJECTID');").fetchone()[0]
+        elif irods_config.database_config['catalog_database_type'] == 'mysql':
+            return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID_nextval();").fetchone()[0]
+        elif irods_config.database_config['catalog_database_type'] == 'oracle':
+            return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID.nextval from DUAL;").fetchone()[0]
 
     #zone
     zone_id = get_next_object_id()
