@@ -634,7 +634,7 @@ def default_prompt(*args, **kwargs):
                 else:
                     user_input = prompt('New value', **kwargs)
         else:
-            message = args[0] % tuple(args[1:])
+            user_input = prompt(*args, **kwargs)
         try :
             return input_filter(user_input)
         except InputFilterError as e:
