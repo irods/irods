@@ -3,6 +3,7 @@ import base64
 import contextlib
 import copy
 import errno
+import grp
 import hashlib
 import itertools
 import json
@@ -12,6 +13,7 @@ import os
 import platform
 import pprint
 import psutil
+import pwd
 import re
 import shlex
 import shutil
@@ -322,6 +324,14 @@ def files_in_dir(path):
     for file in os.listdir(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
+
+def switch_user(user, group=None):
+    pw_record = pwd.getpwnam(user)
+    os.environ['HOME'] = pw_record.pw_dir
+    os.environ['LOGNAME'] = pw_record.pw_name
+    os.environ['USER'] = pw_record.pw_name
+    os.setgid(pw_record.pw_gid if group is None else grp.getgrnam(group).gr_gid)
+    os.setuid(pw_record.pw_uid)
 
 @contextlib.contextmanager
 def file_backed_up(filename):

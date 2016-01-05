@@ -41,7 +41,7 @@ def setup_server(irods_config):
     setup_service_account(irods_config)
 
     #Do the rest of the setup as the irods user
-    os.setuid(pwd.getpwnam(irods_config.irods_user).pw_uid)
+    irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
     if irods_config.is_catalog:
         setup_database_config(irods_config)
