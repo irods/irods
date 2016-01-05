@@ -109,7 +109,7 @@ def setup_service_account(irods_config):
     else:
         l.info('Existing Group Detected: %s', irods_group)
 
-    if irods_user not in [u.pw_name for u in pwd.getpwall()]:
+    if irods.lib.execute_command_permissive(['id', irods_user])[2] != 0:
         l.info('Creating Service Account: %s', irods_group)
         irods.lib.execute_command([
             'useradd',
@@ -597,7 +597,7 @@ def get_header(message):
     for line in lines:
         length = max(length, len(line))
     edge = '+' + '-' * (length + 2) + '+'
-    format_string = '{:<' + str(length) + '}'
+    format_string = '{0:<' + str(length) + '}'
     header_lines = ['', edge]
     for line in lines:
         header_lines.append('| ' + format_string.format(line) + ' |')
