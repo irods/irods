@@ -699,10 +699,10 @@ extern "C" {
         return 0;
     }
 
-    int printRodsEnv( 
+    int printRodsEnv(
         FILE*    _fout ) {
         if( !_fout ) {
-            fprintf( 
+            fprintf(
                 stderr,
                 "printRodsEnv :: null input param(s)\n" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -721,7 +721,7 @@ extern "C" {
 
         fprintf(
             _fout,
-            "irods_version - %d.%d.%d",
+            "irods_version - %d.%d.%d\n",
             IRODS_VERSION_MAJOR,
             IRODS_VERSION_MINOR,
             IRODS_VERSION_PATCHLEVEL);
