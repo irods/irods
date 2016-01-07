@@ -100,8 +100,8 @@ iadmin aua newuser newuser@EXAMPLE.ORG
 The `/etc/irods/server_config.json` must be updated to include:
 
 ~~~
-kerberos_service_principal=irodsserver/serverhost.example.org@EXAMPLE.ORG
-kerberos_keytab=/var/lib/irods/irods.keytab
+"kerberos_service_principal"="irodsserver/serverhost.example.org@EXAMPLE.ORG",
+"kerberos_keytab"="/var/lib/irods/irods.keytab",
 ~~~
 
 On the client side, the user's 'irods_authentication_scheme' must be set to 'KRB'.  This can be configured via an `irods_environment.json` property:
