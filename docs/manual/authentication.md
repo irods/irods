@@ -104,6 +104,12 @@ The `/etc/irods/server_config.json` must be updated to include:
 "kerberos_keytab"="/var/lib/irods/irods.keytab",
 ~~~
 
+Please note that if 4.0.x clients are connecting to a 4.1+ server, it may be necessary to also include the old key syntax:
+
+~~~
+"KerberosServicePrincipal": "irodsserver/serverhost.example.org@EXAMPLE.ORG",
+~~~
+
 On the client side, the user's 'irods_authentication_scheme' must be set to 'KRB'.  This can be configured via an `irods_environment.json` property:
 
 ~~~
