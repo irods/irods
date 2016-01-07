@@ -232,7 +232,7 @@ main( int, char ** ) {
         }
     }
 
-    /* send the server version and atatus as part of the protocol. Put
+    /* send the server version and status as part of the protocol. Put
      * rsComm.reconnPort as the status */
     ret = sendVersion( net_obj, status, rsComm.reconnPort,
                        rsComm.reconnAddr, rsComm.cookie );
