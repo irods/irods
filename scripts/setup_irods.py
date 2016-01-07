@@ -193,25 +193,10 @@ def setup_server_config(irods_config):
             default=[server_config.get('server_port_range_end', 20199)],
             input_filter=int_filter(field='Port'))
 
-        server_config['zone_key'] = prompt(
-            'iRODS server\'s zone key',
-            input_filter=character_count_filter(minimum=1, field='Zone key'),
-            echo=False)
-
-        server_config['negotiation_key'] = prompt(
-            'iRODS server\'s negotiation key',
-            input_filter=character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
-            echo=False)
-
         server_config['server_control_plane_port'] = default_prompt(
             'Control Plane port',
             default=[server_config.get('server_control_plane_port', 1248)],
             input_filter=int_filter(field='Port'))
-
-        server_config['server_control_plane_key'] = prompt(
-            'Control Plane key',
-            input_filter=character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
-            echo=False)
 
         server_config['schema_validation_base_uri'] = default_prompt(
             'Schema Validation Base URI (or off)',
@@ -231,10 +216,7 @@ def setup_server_config(irods_config):
                 'iRODS server port:          %d\n',
                 'iRODS port range (begin):   %d\n',
                 'iRODS port range (end):     %d\n',
-                'Zone key:                   %s\n',
-                'Negotiation key:            %s\n',
                 'Control plane port:         %d\n',
-                'Control plane key:          %s\n',
                 'Schema validation base URI: %s\n',
                 'iRODS server administrator: %s\n',
                 '-------------------------------------------\n\n',
@@ -244,16 +226,28 @@ def setup_server_config(irods_config):
                     server_config['zone_port'],
                     server_config['server_port_range_start'],
                     server_config['server_port_range_end'],
-                    server_config['zone_key'],
-                    server_config['negotiation_key'],
                     server_config['server_control_plane_port'],
-                    server_config['server_control_plane_key'],
                     server_config['schema_validation_base_uri'],
                     server_config['zone_user']
                     )
 
         if default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
             break
+
+    server_config['zone_key'] = prompt(
+        'iRODS server\'s zone key',
+        input_filter=character_count_filter(minimum=1, field='Zone key'),
+        echo=False)
+
+    server_config['negotiation_key'] = prompt(
+        'iRODS server\'s negotiation key',
+        input_filter=character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
+        echo=False)
+
+    server_config['server_control_plane_key'] = prompt(
+        'Control Plane key',
+        input_filter=character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
+        echo=False)
 
     irods_config.commit(server_config, irods_config.server_config_path)
 

@@ -11,13 +11,13 @@ tempZone
 1247
 20000
 20199
-TEMPORARY_ZONE_KEY
-32_byte_server_negotiation_key__
 1248
-32_byte_server_control_plane_key
 https://schemas.irods.org/configuration
 rods
 y
+TEMPORARY_ZONE_KEY
+32_byte_server_negotiation_key__
+32_byte_server_control_plane_key
 rods
 /var/lib/irods/iRODS/Vault
 
