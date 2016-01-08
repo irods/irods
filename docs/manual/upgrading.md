@@ -40,8 +40,8 @@ Migrating from iRODS 3.3.x (run-in-place) to iRODS 4.0+ is not supported with an
 
 <span style="color:red">For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.</span>
 
-1. Port any custom development to plugins: Microservices, Resources, Authentication
-2. Make a backup of the iCAT database & configuration files: core.re, core.fnm, core.dvm, etc.
+1. Port any existing custom development to plugins: Microservices, Resources, Authentication
+2. Make a backup of the iCAT database, and all iRODS configuration files: core.re, core.fnm, core.dvm, server.config, custom rulefiles, server's .irodsEnv
 3. Declare a Maintenance Window
 4. Remove resources from resource groups
 5. Remove resource groups (confirm: `iadmin lrg` returns no results)
