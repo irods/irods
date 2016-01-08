@@ -7,7 +7,7 @@ All servers in a Zone must be running the same version of iRODS.  First, upgrade
 ## RPM based systems
 
 ~~~
-$ (sudo) rpm -U irods-database-plugin-postgres-1.7-opensuse13-x86_64.rpm
+$ (sudo) rpm -U irods-database-plugin-postgres-1.8-opensuse13-x86_64.rpm
 $ (sudo) rpm -U irods-icat-TEMPLATE_IRODSVERSION-opensuse13-x86_64.rpm
 ~~~
 
@@ -16,7 +16,7 @@ The database plugin must be upgraded first when installing RPMs.
 ## DEB based systems
 
 ~~~
-$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.7-ubuntu14-x86_64.deb
+$ (sudo) dpkg -i irods-icat-TEMPLATE_IRODSVERSION-ubuntu14-x86_64.deb irods-database-plugin-postgres-1.8-ubuntu14-x86_64.deb
 ~~~
 
 The database plugin should be upgraded first or at the same time.  Listing them on the same line will allow dpkg to satisfy its depdendencies.
@@ -56,11 +56,12 @@ Migrating from iRODS 3.3.x (run-in-place) to iRODS 4.0+ is not supported with an
 14. Confirm all local at-rest data (any local iRODS Vault paths) have read and write permissions for the new (default) 'irods' unix service account.
 15. Start new 4.0+ iCAT server (`irodsctl start`)
 16. On all resource servers in the same Zone, install and setup 4.0+.  Existing configuration details should be ported as well ('server.config', 'core.re', Vault permissions).
-17. Rebuild Resource Hierarchies from previous Resource Group configurations (`iadmin addchildtoresc`) (See [Composable Resources](#composable-resources))
-18. Install Custom Plugins (Microservice & Resources)
-19. Conformance Testing
+17. Rebuild Resource Hierarchies from previous Resource Group configurations (`iadmin addchildtoresc`) (See [Composable Resources](architecture.md#composable-resources))
+18. Install any custom plugins (Microservice, Resources, Authentication)
+19. Perform your conformance testing
 20. Sunset 3.3.x server(s)
-21. Close Maintenance Window
+21. Close your Maintenance Window
+22. Update your users with any relevant changes to their connection credentials (possibly nothing to do here).
 
 !!! Note
     Migrating from in-place 3.3.x to a ['--run-in-place' production installation of 4.0+](#run-in-place-systems) is not recommended.
