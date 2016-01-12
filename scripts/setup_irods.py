@@ -387,6 +387,21 @@ def create_database_tables(irods_config, cursor=None, default_resource_directory
     if irods_table_names:
         l.info('The following tables already exist in the database, table creation will be skipped:\n%s', pprint.pformat(irods_table_names))
     else:
+        if irods_config.database_config['catalog_database_type'] == 'mysql':
+            l.info('Defining mysql functions...')
+            with tempfile.NamedTemporaryFile() as f:
+                f.write('\n'.join([
+                        '[client]',
+                        '='.join(['user', irods_config.database_config['db_username']]),
+                        '='.join(['password', irods_config.database_config['db_password']]),
+                        '='.join(['port', str(irods_config.database_config['db_port'])]),
+                        '='.join(['host', irods_config.database_config['db_host']])
+                    ]))
+                f.flush()
+                with open(os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'mysql_functions.sql'), 'r') as sql_file:
+                    irods.lib.execute_command(
+                        ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
+                        stdin=sql_file)
         l.info('Creating database tables...')
         sql_files = [os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
                 os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysInserts.sql')
@@ -656,6 +671,8 @@ def prompt(*args, **kwargs):
             else:
                 print('Warning: Cannot control echo output on the terminal (stdin is not a tty). Input may be echoed.', file=sys.stderr)
                 user_input = sys.stdin.readline().rstrip('\n')
+        if not sys.stdin.isatty():
+            print('\n', end='')
         try :
             return input_filter(user_input)
         except InputFilterError as e:

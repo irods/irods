@@ -194,6 +194,7 @@ f 644 root root ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./src/icatDr
 f 644 root root ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./src/icatSysInserts.sql
 f 644 root root ${IRODS_HOME}/server/icat/src/icatPurgeRecycleBin.sql ./src/icatPurgeRecycleBin.sql
 f 755 root root ${IRODS_HOME}/server/icat/src/convertSql.pl ./src/convertSql.pl
+f 755 root root ${IRODS_HOME}/server/icat/src/mysql_functions.sql ./src/mysql_functions.sql
 
 f 755 root root ${IRODS_HOME}/server/test/bin/test_cll ./test_cll
 f 755 root root ${IRODS_HOME}/server/test/bin/test_genu ./test_genu
