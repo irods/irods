@@ -1457,6 +1457,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
             echo "To complete your installation, please run:"
             echo "  ./plugins/database/packaging/setup_irods_database.sh"
         fi
+
+        # generate development package archive file
+        echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
+        cd $BUILDDIR
+        ./packaging/make_irods_dev_archive.sh
+
         # boilerplate
         print_script_finish_box
         exit 0
