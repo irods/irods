@@ -392,15 +392,17 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // query for remaining items which need re-replicated to this child
-        int query_status = chlGetDistinctDataObjsMissingFromChildGivenParent(
-                               _parent_resc,
-                               _child_resc,
-                               mod_limit,
-                               _results );
-        if ( CAT_NO_ROWS_FOUND != query_status ) {
-            return ERROR(
-                       query_status,
-                       "chlGetDistinctDataObjsMissingFromChildGivenParent failed." );
+        if (mod_limit > 0) {
+			int query_status = chlGetDistinctDataObjsMissingFromChildGivenParent(
+								   _parent_resc,
+								   _child_resc,
+								   mod_limit,
+								   _results );
+			if ( CAT_NO_ROWS_FOUND != query_status ) {
+				return ERROR(
+						   query_status,
+						   "chlGetDistinctDataObjsMissingFromChildGivenParent failed." );
+			}
         }
 
 
