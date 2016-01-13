@@ -26,7 +26,7 @@ namespace irods {
         const std::string& _dst_resc,
         int                _mode ) {
         // =-=-=-=-=-=-=-
-        // generate a resource hierachy that ends at this resource for pdmo
+        // generate a resource hierarchy that ends at this resource for pdmo
         hierarchy_parser parser;
         parser.set_string( _src_hier );
         std::string sub_hier;

@@ -499,7 +499,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         local_zone = test_session.zone_name
         user_name = test_session.username
         local_home_collection = test_session.home_collection
-        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
+        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **locals())
 
         # make test file
         filename = 'icp_test_file'
@@ -549,7 +550,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         local_zone = test_session.zone_name
         user_name = test_session.username
         local_home_collection = test_session.home_collection
-        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
+        remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **locals())
 
         # make test file
         filename = 'icp_test_file'
@@ -818,6 +820,62 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         test_session.assert_icommand(
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
+
+    def test_irsync_passthru_3016(self):
+        # pick session(s) for the test
+        test_session = self.user_sessions[0]
+
+        # make test file
+        filename = 'irsync_test_file'
+        filesize = self.config['test_file_size']
+        filepath = os.path.join(self.local_test_dir_path, filename)
+        lib.make_file(filepath, filesize)
+
+        # test specific parameters
+        parameters = self.config.copy()
+        parameters['filepath'] = filepath
+        parameters['filename'] = filename
+        parameters['user_name'] = test_session.username
+        parameters['local_home_collection'] = test_session.home_collection
+        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **parameters)
+
+        # extract root resources from hierarchies
+        parameters['local_pt_resc'] = parameters[
+            'local_pt_resc_hier'].split(';')[0]
+        parameters['remote_pt_resc'] = parameters[
+            'remote_pt_resc_hier'].split(';')[0]
+
+        # checksum local file
+        orig_md5 = commands.getoutput('md5sum ' + filepath)
+
+        # put file in local collection, using local passthru resource
+        test_session.assert_icommand(
+            "iput -R {local_pt_resc} {filepath} {local_home_collection}/".format(**parameters))
+
+        # remove local file
+        os.remove(filepath)
+
+        # rsync file into remote coll, using remote passthru resource
+        test_session.assert_icommand(
+            "irsync -R {remote_pt_resc} i:{local_home_collection}/{filename} i:{remote_home_collection}/{filename}".format(**parameters))
+
+        # check that file is on remote zone's resource hierarchy
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**parameters),  'STDOUT_MULTILINE', [filename, parameters['remote_pt_resc_hier']])
+
+        # get file back and compare checksums
+        test_session.assert_icommand(
+            "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
+        new_md5 = commands.getoutput('md5sum ' + filepath)
+        self.assertEqual(orig_md5, new_md5)
+
+        # cleanup
+        test_session.assert_icommand(
+            "irm -f {local_home_collection}/{filename}".format(**parameters))
+        test_session.assert_icommand(
+            "irm -f {remote_home_collection}/{filename}".format(**parameters))
+        os.remove(filepath)
 
     def test_ilsresc_z(self):
         # pick session(s) for the test
