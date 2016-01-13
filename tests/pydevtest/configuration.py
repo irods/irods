@@ -15,9 +15,14 @@ class FEDERATION(object):
     IRODS_DIR = '/var/lib/irods/iRODS'
     REMOTE_ZONE = 'buntest'
     REMOTE_HOST = 'buntest'
-    REMOTE_RESOURCE = 'demoResc'
     REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
     TEST_FILE_SIZE = 4*1024*1024
     LARGE_FILE_SIZE = 64*1024*1024
     TEST_FILE_COUNT = 300
     MAX_THREADS = 16
+    
+    # resource hierarchies
+    REMOTE_PT_RESC_HIER = 'other_pt;leaf'
+    LOCAL_PT_RESC_HIER = 'pt;leaf'
+    REMOTE_DEF_RESOURCE = 'demoResc'
+#     LOCAL_DEF_RESOURCE = 'demoResc'
