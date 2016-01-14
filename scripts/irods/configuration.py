@@ -417,7 +417,7 @@ class IrodsConfig(object):
             schema_update_path = self.get_next_schema_update_path(cursor)
             l.info('Running update to schema version %d...', int(os.path.basename(schema_update_path).partition('.')[0]))
             try:
-                database_connect.execute_sql_file(schema_update_path, cursor)
+                database_connect.execute_sql_file(schema_update_path, cursor, by_line=True)
             except pypyodbc.Error as e:
                 six.reraise(IrodsError,
                         IrodsError('Updating database schema version failed while running %s' % (schema_update_path)),

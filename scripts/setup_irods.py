@@ -408,7 +408,7 @@ def create_database_tables(irods_config, cursor=None, default_resource_directory
             ]
         for sql_file in sql_files:
             try:
-                irods.database_connect.execute_sql_file(sql_file, cursor, by_line=False)
+                irods.database_connect.execute_sql_file(sql_file, cursor, by_line=True)
             except pypyodbc.Error as e:
                 six.reraise(IrodsError,
                         IrodsError('Database setup failed while running %s' % (sql_file)),

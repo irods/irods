@@ -169,7 +169,7 @@ def execute_sql_file(filepath, cursor, by_line=False):
     with open(filepath, 'r') as f:
         if by_line:
             for line in f.readlines():
-                if not line:
+                if not line.strip():
                     continue
                 l.debug('Executing SQL statement:\n%s', line)
                 cursor.execute(line)
