@@ -546,9 +546,17 @@ A few other coordinating resource types have been brainstormed but are not funct
 
 Storage resources represent storage interfaces and include the file driver information to talk with different types of storage.
 
-#### Unix File System
+#### UnixFileSystem
 
-The unix file system storage resource is the default resource type that can communicate with a device through the standard POSIX interface.
+The unixfilesystem storage resource is the default resource type that can communicate with a device through the standard POSIX interface.
+
+A high water mark capability has been added to the unixfilesystem resource in 4.1.8.  The high water mark can be configured with the context string using the following syntax:
+
+```
+irods@hostname:~/ $ iadmin modresc unixResc context 'high_water_mark=1000'
+```
+
+The value is the number of bytes on disk.  If a create operation would result in the number of bytes on disk to be larger than the high water mark, then the resource will vote `0` and the create will not occur.  This feature allows administrators to protect their systems from absolute disk full events.  Writing to, or extending, existing file objects is still allowed.
 
 #### Structured File Type (tar, zip, gzip, bzip)
 
