@@ -185,13 +185,22 @@ namespace irods {
                 }
 
                 // =-=-=-=-=-=-=-
-                // clip off the lib to remain compliant with
+                // strip name to remain compliant with
                 // load_plugin's expected behavior
+
+                // remove 'lib'
                 size_t pos = name.find( "lib" );
                 if ( std::string::npos == pos ) {
                     continue;
                 }
                 name = name.substr( 3 );
+
+                // remove '.so'
+                pos = name.find_last_of(".");
+                if ( std::string::npos == pos ) {
+                    continue;
+                }
+                name = name.substr( 0, pos );
 
                 api_entry*  entry = 0;
                 error ret = load_plugin< api_entry >(

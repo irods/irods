@@ -591,7 +591,7 @@ if [ "$1" == "docs" ] ; then
             PREFLIGHT="$PREFLIGHT"
             # should have distribute included already
         else
-            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
+            PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://pypi.python.org/pypi/setuptools/"
         fi
     else
         echo "Detected easy_install [$EASYINSTALL]"
@@ -741,6 +741,22 @@ fi
 #rm -f $TMPFILE
 
 ################################################################################
+# detect server_type
+if [ $1 == "icat" ] ; then
+    # set up variables for icat configuration
+    SERVER_TYPE="ICAT"
+    SERVER_TYPE_LOWERCASE="icat"
+elif [ $1 == "resource" ] ; then
+    # set up variables for resource configuration
+    SERVER_TYPE="RESOURCE"
+#     SERVER_TYPE_LOWERCASE="resource"
+elif [ $1 == "icommands" ] ; then
+    # set up variables for icommands
+    SERVER_TYPE="ICOMMANDS"
+    SERVER_TYPE_LOWERCASE="icommands"
+fi
+
+################################################################################
 # use error codes to determine dependencies
 # does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
@@ -805,7 +821,7 @@ if [[ "$?" != "0" || `echo $CURL | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT curl"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://curl.haxx.se/download.html"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://curl.haxx.se/download.html"
     fi
 else
     CURLVERSION=`curl --version | head -n1 | awk '{print $2}'`
@@ -825,7 +841,7 @@ if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/wget/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.gnu.org/software/wget/"
     fi
 else
     WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
@@ -845,8 +861,8 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/help2man/"
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      ::                http://mirrors.kernel.org/gnu/help2man/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.gnu.org/software/help2man/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      ::                http://mirrors.kernel.org/gnu/help2man/"
     fi
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
@@ -873,7 +889,7 @@ if [ "$?" != "0" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         : # using --run-in-place, nothing to install
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.unixodbc.org/download.html"
     fi
 else
     echo "Detected unixODBC library [$UNIXODBC]"
@@ -892,7 +908,7 @@ if [ "$LIBFUSEDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         : # using --run-in-place, nothing to install
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/fuse/files/fuse-2.X/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://sourceforge.net/projects/fuse/files/fuse-2.X/"
     fi
 else
     echo "Detected libfuse library [$LIBFUSEDEV]"
@@ -908,8 +924,10 @@ if [ "$LIBCURLDEV" == "" ] ; then
         PREFLIGHT="$PREFLIGHT libcurl-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT curl_devel"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT curl"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://curl.haxx.se/download.html"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://curl.haxx.se/download.html"
     fi
 else
     echo "Detected libcurl library [$LIBCURLDEV]"
@@ -926,13 +944,13 @@ if [ "$BZIP2DEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libbz2_dev"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.bzip.org/downloads.html"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.bzip.org/downloads.html"
     fi
 else
     echo "Detected bzip2 library [$BZIP2DEV]"
 fi
 
-ZLIBDEV=`find /usr/include -name zlib.h 2> /dev/null`
+ZLIBDEV=`find /usr/include /usr/local -name zlib.h 2> /dev/null`
 if [ "$ZLIBDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT zlib1g-dev"
@@ -942,13 +960,13 @@ if [ "$ZLIBDEV" == "" ] ; then
         PREFLIGHT="$PREFLIGHT zlib-devel"
     # Solaris comes with SUNWzlib which provides /usr/include/zlib.h
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://zlib.net/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://zlib.net/"
     fi
 else
     echo "Detected zlib library [$ZLIBDEV]"
 fi
 
-PAMDEV=`find /usr/include -name pam_appl.h 2> /dev/null`
+PAMDEV=`find /usr/include /usr/local /Applications/Xcode.app/Contents/Developer -name pam_appl.h 2> /dev/null`
 if [ "$PAMDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libpam0g-dev"
@@ -957,14 +975,15 @@ if [ "$PAMDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT pam-devel"
     # Solaris comes with SUNWhea which provides /usr/include/security/pam_appl.h
+    # Mac OSX provides /Applications/Xcode.app/...../usr/include/security/pam_appl.h
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/openpam/files/openpam/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://sourceforge.net/projects/openpam/files/openpam/"
     fi
 else
     echo "Detected pam library [$PAMDEV]"
 fi
 
-OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
+OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl /usr/local -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libssl-dev"
@@ -974,8 +993,10 @@ if [ "$OPENSSLDEV" == "" ] ; then
         PREFLIGHT="$PREFLIGHT libopenssl-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libssl_dev"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT openssl"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.openssl.org/source/"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.openssl.org/source/"
     fi
 else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
@@ -994,7 +1015,7 @@ if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
         elif [ "$DETECTEDOS" == "Solaris" ] ; then
             PREFLIGHT="$PREFLIGHT mysql_dev"
         else
-            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://dev.mysql.com/downloads/"
+            PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://dev.mysql.com/downloads/"
         fi
     else
         echo "Detected mysql library [$MYSQLDEV]"
@@ -1012,7 +1033,7 @@ if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
         elif [ "$DETECTEDOS" == "Solaris" ] ; then
             PREFLIGHT="$PREFLIGHT libpcre_dev"
         else
-            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.pcre.org/"
+            PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.pcre.org/"
         fi
     else
         echo "Detected pcre library [$PCREDEV]"
@@ -1020,7 +1041,7 @@ if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
 fi
 
 # needed for libs3
-LIBXML2DEV=`find /usr/include/libxml2 /opt/csw/include/libxml2 -name parser.h 2> /dev/null`
+LIBXML2DEV=`find /usr/include/libxml2 /opt/csw/include/libxml2 /usr/local/Cellar/libxml2 -name parser.h 2> /dev/null`
 if [ "$LIBXML2DEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libxml2-dev"
@@ -1031,28 +1052,30 @@ if [ "$LIBXML2DEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libxml2_dev"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.xmlsoft.org/downloads.html"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://www.xmlsoft.org/downloads.html"
     fi
 else
     echo "Detected libxml2 library [$LIBXML2DEV]"
 fi
 
-# needed for gsi auth capabilities
-KRB5DEV=`find /usr/include /opt/csw/include -name gssapi.h 2> /dev/null`
-if [ "$KRB5DEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-        PREFLIGHT="$PREFLIGHT libkrb5-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT krb5-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT krb5-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT libkrb5_dev"
+if [ "$SERVER_TYPE" != "ICOMMANDS" ] ; then
+    # needed for gsi auth capabilities on the server
+    KRB5DEV=`find /usr/include /opt/csw/include -name gssapi.h 2> /dev/null`
+    if [ "$KRB5DEV" == "" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+            PREFLIGHT="$PREFLIGHT libkrb5-dev"
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT krb5-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT krb5-devel"
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            PREFLIGHT="$PREFLIGHT libkrb5_dev"
+#        else
+#            PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://web.mit.edu/kerberos/dist/index.html"
+        fi
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://web.mit.edu/kerberos/dist/index.html"
+        echo "Detected krb5 library [$KRB5DEV]"
     fi
-else
-    echo "Detected krb5 library [$KRB5DEV]"
 fi
 
 PERLJSON=`perl -e "require JSON" 2> /dev/null`
@@ -1068,7 +1091,7 @@ if [ "$?" != "0" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         : # using --run-in-place, nothing to install
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://search.cpan.org/search?query=json"
+        PREFLIGHTDOWNLOAD=$PREFLIGHTDOWNLOAD$'\n'"      :: download from: http://search.cpan.org/search?query=json"
     fi
 else
     echo "Detected perl module [JSON]"
@@ -1166,6 +1189,8 @@ if [ "$RUNINPLACE" == "1" ] ; then
             check_package_installed "brew list" "mysql"
             check_package_installed "brew list" "pcre"
         fi
+        check_package_installed "brew list" "automake"
+        check_package_installed "brew list" "libtool"
     fi
 
 fi
@@ -1216,19 +1241,6 @@ sed -e "s,TEMPLATE_IRODS_BUILD_DATE_STRING,$TEMPLATE_IRODS_BUILD_DATE_STRING,g" 
 rsync -c $TMPFILE $IRODS_VERSION_H_FILE
 
 cd $BUILDDIR/iRODS
-if [ $1 == "icat" ] ; then
-    # set up variables for icat configuration
-    SERVER_TYPE="ICAT"
-    SERVER_TYPE_LOWERCASE="icat"
-elif [ $1 == "resource" ] ; then
-    # set up variables for resource configuration
-    SERVER_TYPE="RESOURCE"
-#     SERVER_TYPE_LOWERCASE="resource"
-elif [ $1 == "icommands" ] ; then
-    # set up variables for icommands
-    SERVER_TYPE="ICOMMANDS"
-    SERVER_TYPE_LOWERCASE="icommands"
-fi
 # write down the server type for later use
 echo "SERVER_TYPE=$SERVER_TYPE" > $BUILDDIR/packaging/server_type.sh
 
@@ -1459,10 +1471,12 @@ if [ "$BUILDIRODS" == "1" ] ; then
         fi
 
         # generate development package archive file
-        echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
-        cd $BUILDDIR
-        ./packaging/make_irods_dev_archive.sh
-
+        if [ "$SERVER_TYPE" == "ICAT" ] && [ "$FAST" == "0" ] ; then
+            echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
+            cd $BUILDDIR
+            ./packaging/make_irods_dev_archive.sh
+        fi
+        
         # boilerplate
         print_script_finish_box
         exit 0
@@ -1522,7 +1536,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
     fi
 
     # generate development package archive file
-    if [ "$1" == "icat" ] && [ "$FAST" == "0" ] ; then
+    if [ "$SERVER_TYPE" == "ICAT" ] && [ "$FAST" == "0" ] ; then
         echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
         ./packaging/make_irods_dev_archive.sh
