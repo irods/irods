@@ -4,6 +4,8 @@
 
 Release Date: 2015-11-18
 
+### Bug Fixes
+
  - Fix for irods-grid --hosts option [#2765]
 
  - Fixes for memory management [#2928] [#2929] [#2942] [#2954]
@@ -27,6 +29,8 @@ Release Date: 2015-11-18
 ## 4.1.6
 
 Release Date: 2015-10-01
+
+### Bug Fixes
 
  - Fix for startupPack [#2862]
 
