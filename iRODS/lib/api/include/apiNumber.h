@@ -159,5 +159,6 @@
 #define AUTH_PLUG_RESP_AN	     1202
 #define GET_HIER_FOR_RESC_AN	 1203
 #define GET_HIER_FROM_LEAF_ID_AN 1204
+#define SET_RR_CTX_AN            1205
 
 #endif	// API_NUMBER_H__

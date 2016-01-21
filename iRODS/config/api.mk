@@ -405,3 +405,10 @@ LIB_API_OBJS += $(libApiObjDir)/rcIESClientHints.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGetHierFromLeafId.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetHierFromLeafId.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSetRoundRobinContext.o
+LIB_API_OBJS += $(libApiObjDir)/rcSetRoundRobinContext.o
+
+
+
+

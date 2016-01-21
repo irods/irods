@@ -615,7 +615,13 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         GET_HIER_FROM_LEAF_ID_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "GetHierInp_PI", 0,  "GetHierOut_PI", 0, ( funcPtr ) RS_GET_HIER_FROM_LEAF_ID, irods::clearInStruct_noop
+        "GetHierInp_PI", 0,  "GetHierOut_PI", 0, ( funcPtr ) RS_GET_HIER_FROM_LEAF_ID,
+        irods::clearInStruct_noop
+    },
+    {
+        SET_RR_CTX_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
+        "SetRoundRobinContextInp_PI", 0,  NULL, 0, ( funcPtr ) RS_SET_ROUNDROBIN_CONTEXT,
+        irods::clearInStruct_noop
     },
 }; // _api_table_inp
 

@@ -5,16 +5,15 @@
 #include "reGlobalsExtern.hpp"
 #include "apiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "rs_set_round_robin_context.hpp"
 #include "irods_resource_manager.hpp"
+#include "set_round_robin_context.h"
 
 extern irods::resource_manager resc_mgr;
 
-extern "C" {
 #ifdef RODS_SERVER
     // =-=-=-=-=-=-=-
     // actual implementation of the API plugin
-    int set_round_robin_context(
+    int rsSetRoundRobinContext(
         rsComm_t*                  _comm,
         setRoundRobinContextInp_t* _inp ) {
         rodsLog( LOG_DEBUG, "rsSetRoundRobinContex" );
@@ -138,7 +137,7 @@ extern "C" {
 
         return status;
 
-    } // set_round_robin_context
+    } // rsSetRoundRobinContext
 
 #endif // RODS_SERVER
 
@@ -179,7 +178,6 @@ extern "C" {
 
     } // plugin_factory
 
-}; // extern "C"
 
 
 
