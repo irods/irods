@@ -15,7 +15,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_api_call.hpp"
-#include "rs_set_round_robin_context.hpp"
+#include "set_round_robin_context.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -947,14 +947,9 @@ irods::error round_robin_file_modified(
             inp.context_,
             sizeof( inp.context_ ),
             "%s", next_child.c_str() );
-        int status = irods::server_api_call(
-                         SET_RR_CTX_AN,
+        int status = rsSetRoundRobinContext(
                          _ctx.comm(),
-                         &inp,
-                         NULL,
-                         ( void** ) NULL,
-                         NULL );
-
+                         &inp );
         if ( status < 0 ) {
             std::stringstream msg;
             msg << "failed to update round robin context for [";

@@ -7,8 +7,7 @@ IRODSDIR=$(IRODS_BUILD_DIR)/iRODS
 SRCDIR = src
 
 SRCS= \
-    $(SRCDIR)/helloworld.cpp \
-    $(SRCDIR)/rsSetRoundRobinContext.cpp
+    $(SRCDIR)/helloworld.cpp
 
 MAKEFLAGS += --no-print-directory
 
