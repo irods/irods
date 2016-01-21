@@ -1,5 +1,29 @@
 # Release Notes
 
+## 4.1.7
+
+Release Date: 2015-11-18
+
+ - Fix for irods-grid --hosts option [#2765]
+
+ - Fixes for memory management [#2928] [#2929] [#2942] [#2954]
+
+ - Fixes for compound resource behavior [#2930] [#2939] [#2941]
+
+ - Fix for iphymv targeting child resource [#2933]
+
+ - Fix for python2.6 compatibility [#2940]
+
+ - Refactoring of development libraries [#2945] [#2959]
+
+ - Fix for documentation [#2947]
+
+ - Fix for connection failure messages [#2948]
+
+ - Release of Oracle database plugin for Ubuntu [#2949]
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.7)
+
 ## 4.1.6
 
 Release Date: 2015-10-01
