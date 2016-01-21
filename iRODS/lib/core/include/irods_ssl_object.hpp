@@ -7,7 +7,7 @@
 
 // =-=-=-=-=-=-=-
 // ssl includes
-#include "ssl.h"
+#include "openssl/ssl.h"
 
 namespace irods {
 

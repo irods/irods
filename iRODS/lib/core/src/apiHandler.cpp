@@ -7,6 +7,7 @@
 #include "irods_client_api_table.hpp"
 #include "irods_operation_rule_execution_manager_no_op.hpp"
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 namespace irods {
 
     void clearInStruct_noop( void* ) {};
@@ -162,6 +163,11 @@ namespace irods {
                     it != boost::filesystem::directory_iterator();
                     ++it ) {
 
+                // =-=-=-=-=-=-=-
+                // skip if this file does not end in .so
+                if ( ! boost::ends_with(it->path().string(), ".so")) {
+                    continue;
+                }
 
                 // =-=-=-=-=-=-=-
                 // given a shared object, load the plugin from it
@@ -185,8 +191,10 @@ namespace irods {
                 }
 
                 // =-=-=-=-=-=-=-
-                // clip off the lib to remain compliant with
+                // strip name to remain compliant with
                 // load_plugin's expected behavior
+
+                // remove 'lib'
                 size_t pos = name.find( "lib" );
                 if ( std::string::npos == pos ) {
                     continue;
