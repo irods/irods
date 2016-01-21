@@ -1,8 +1,83 @@
 # Release Notes
 
+## 4.1.8
+
+Release Date: 2016-02
+
+### Features
+
+ - Added High Water Mark for unixfilesystem resources [#2981]
+
+ - Include msisync_to_archive from contrib repository [#2962]
+
+!!! Note
+    This inclusion will cause a package conflict with the existing
+    'administration' microservices plugin package available from the
+    irods/contrib repository.  If you have an ongoing need for any
+    of the other microservices from that repository, you will need
+    to compile them yourself.
+
+### Bug Fixes
+
+ - Fixes for Jargon tests [#2323] [#2341] [#2694] [#2878]
+
+ - Fix for SSL configuration settings [#2564]
+
+ - Fixes for checking error codes properly [#2803] [#2997] [#2998]
+
+ - Update scenario for when to skip schema validation [#2812]
+
+ - Fix for new replica honoring targeted resource [#2847]
+
+ - Update to Kerberos documentation [#2850]
+
+ - Fix for PAM auth output [#2900]
+
+ - Fix for included files in zone report [#2926]
+
+ - Fix for lsof hanging on NFS mounts [#2964]
+
+ - Fixes for run-in-place upgrades [#2965] [#2968] [#2970] [#2971] [#2987]
+
+ - Fixes to JSON documentation [#2973] [#3015] [#3020] [#3021]
+
+ - Fixes for upgrade documentation [#2975] [#2982] [#2989] [#2990] [#2991] [#2994]
+
+ - Fixes for msiDataObjRsync and msiCollRsync [#2976]
+
+ - Fix for msiDataObjUnlink and unreg keyword [#2983]
+
+ - Fix for irodsctl schema connection warnings [#2984]
+
+ - Fix for replication by admin for another user [#2988]
+
+ - Fix for federation rsync [#2993]
+
+ - Fix for iphymv by admin for another user [#2995]
+
+ - Fix for default numThreads [#2996]
+
+ - Fixes for federation listings [#3002] [#3013]
+
+ - Fix for resource server setup warning [#3003]
+
+ - Fixes for resource reliability [#3004] [#3005]
+
+ - Fixes for C clients [#3006] [#3009]
+
+ - Fixes for OSX 10.11 icommands [#3011]
+
+ - Fix for rebalance operation [#3022]
+
+ - Fix to restore session variables [#3024]
+
+[Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.8)
+
 ## 4.1.7
 
 Release Date: 2015-11-18
+
+### Bug Fixes
 
  - Fix for irods-grid --hosts option [#2765]
 
@@ -27,6 +102,8 @@ Release Date: 2015-11-18
 ## 4.1.6
 
 Release Date: 2015-10-01
+
+### Bug Fixes
 
  - Fix for startupPack [#2862]
 
