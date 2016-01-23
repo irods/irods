@@ -122,7 +122,7 @@ usage() {
         " -V  Very verbose",
         "--age age_in_minutes - The minimum age of the copy in minutes for trimming.",
         "     i.e., a copy will not be trimmed if its age is less.",
-        "--dryrun - Do a dry run. No copy will atually be trimmed.",
+        "--dryrun - Do a dry run. No copy will actually be trimmed.",
         " -h  this help",
         ""
     };

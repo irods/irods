@@ -58,7 +58,7 @@
  *    \n RESC_NAME_KW - delete replica stored in this resource.
  *    \n AGE_KW - specifiies the age in minutes. Only delete replicas with age
  *           greater than this value.
- *    \n DRYRUN_KW - Do a dry run. No copy will atually be trimmed.
+ *    \n DRYRUN_KW - Do a dry run. No copy will actually be trimmed.
  *            This keyWd has no value.
  *
  * \return integer
