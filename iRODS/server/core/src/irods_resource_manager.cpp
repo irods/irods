@@ -481,7 +481,8 @@ namespace irods {
             resource_ptr resc;
             error ret = load_resource_plugin( resc, tmpRescType, tmpRescName, tmpRescContext );
             if ( !ret.ok() ) {
-                return PASSMSG( "Failed to load Resource Plugin", ret );
+                irods::log(PASS(ret));
+                continue;
             }
 
             // =-=-=-=-=-=-=-
