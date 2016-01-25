@@ -162,7 +162,7 @@ namespace irods{
             Res *res = node->func( ar.args, nargs, NULL, rei, NO_SAVE_REI, ar.env, &rei->rsComm->rError, ar.rNew);
             int ret = processReturnRes(res);
             if(ret) {
-                return CODE(ret);
+                return ERROR(ret,"processReturnRes failed");
             } else {
                 i = 0;
                 for(auto itr = begin(ar.myArgv); itr != end(ar.myArgv); ++itr) {
@@ -220,7 +220,7 @@ namespace irods{
                         myArgv[8], myArgv [9], rei );
 
             if ( ii < 0 ) {
-                return CODE (ii);
+                return ERROR(ii,"exec_microservice_adapter failed");
             }
         }
         i = 0;
