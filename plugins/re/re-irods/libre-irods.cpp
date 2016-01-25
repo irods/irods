@@ -167,7 +167,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
                 "rule engine return %d", ret
             );
 
-        return ret == 0 ? SUCCESS() : CODE(ret);
+        return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
 
     } 
     else {
@@ -219,7 +219,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
                 "rule engine return %d", ret
             );
 
-        return ret == 0 ? SUCCESS() : CODE(ret);
+        return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
     }
 
 
