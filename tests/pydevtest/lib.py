@@ -115,7 +115,7 @@ def make_file(f_name, f_size, contents='zero'):
     source = {'zero': '/dev/zero',
               'random': '/dev/urandom'}[contents]
 
-    subprocess.check_call(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
+    subprocess.check_call(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def ils_output_to_entries(stdout):
     raw = stdout.strip().split('\n')
@@ -635,7 +635,7 @@ class IrodsSession(object):
         else:
             icommand = arg[0]
             log_string = ' '.join(arg)
-        
+
         message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(
             self.username, log_string)
         write_to_log('server', message)
