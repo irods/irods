@@ -556,7 +556,7 @@ A high water mark capability has been added to the unixfilesystem resource in 4.
 irods@hostname:~/ $ iadmin modresc unixResc context 'high_water_mark=1000'
 ```
 
-The value is the number of bytes on disk.  If a create operation would result in the number of bytes on disk to be larger than the high water mark, then the resource will vote `0` and the create will not occur.  This feature allows administrators to protect their systems from absolute disk full events.  Writing to, or extending, existing file objects is still allowed.
+The value is the total disk space used in bytes.  If a create operation would result in the total bytes on disk being larger than the high water mark, then the resource will return `USER_FILE_TOO_LARGE` and the create operation will not occur.  This feature allows administrators to protect their systems from absolute disk full events.  Writing to, or extending, existing file objects is still allowed.
 
 #### Structured File Type (tar, zip, gzip, bzip)
 
