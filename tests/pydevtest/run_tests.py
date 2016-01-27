@@ -44,6 +44,12 @@ def optparse_callback_topology_test(option, opt_str, value, parser):
     configuration.HOSTNAME_3 = 'resource3.example.org'
     configuration.ICAT_HOSTNAME = 'icat.example.org'
 
+def optparse_callback_federation(option, opt_str, value, parser):
+    import configuration
+    configuration.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
+    configuration.FEDERATION.REMOTE_ZONE = value[1]
+    configuration.FEDERATION.REMOTE_HOST = value[2]
+
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
     suites = [loader.loadTestsFromName(name) for name in names]
@@ -77,6 +83,7 @@ if __name__ == '__main__':
     parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
     parser.add_option('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
     parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
+    parser.add_option('--federation', type='str', nargs=3, action='callback', callback=optparse_callback_federation, metavar='<remote irods version, remote zone, remote host>')
     options, _ = parser.parse_args()
 
     if len(sys.argv) == 1:
