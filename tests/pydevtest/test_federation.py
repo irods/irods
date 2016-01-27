@@ -6,36 +6,33 @@ else:
 import os
 import time
 import shutil
+import tempfile
 import commands
-from configuration import FEDERATION
-if FEDERATION.LOCAL_IRODS_VERSION < (4, 1, 0):
-    import lib_pre410 as lib
-else:
-    import lib
+
+import configuration
+import lib
 
 SessionsMixin = lib.make_sessions_mixin(
-    FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
+    configuration.FEDERATION.RODSADMIN_NAME_PASSWORD_LIST, configuration.FEDERATION.RODSUSER_NAME_PASSWORD_LIST)
 
 
 class Test_ICommands(SessionsMixin, unittest.TestCase):
-
     def setUp(self):
+        super(Test_ICommands, self).setUp()
+
         # make local test directory
         self.local_test_dir_path = '/tmp/federation_test_stuff'
         os.mkdir(self.local_test_dir_path)
 
         # load federation settings in dictionary (all lower case)
         self.config = {}
-        for key, val in FEDERATION.__dict__.items():
+        for key, val in configuration.FEDERATION.__dict__.items():
             if not key.startswith('__'):
                 self.config[key.lower()] = val
-
-        super(Test_ICommands, self).setUp()
+        self.config['local_zone'] = self.user_sessions[0].zone_name
 
     def tearDown(self):
-        # delete local test dir
         shutil.rmtree(self.local_test_dir_path)
-
         super(Test_ICommands, self).tearDown()
 
     def test_ils_l(self):
@@ -43,41 +40,23 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         test_session = self.user_sessions[0]
 
         # make test file
-        filename = 'ils_test_file'
-        filesize = self.config['test_file_size']
-        filepath = os.path.join(self.local_test_dir_path, filename)
-        lib.make_file(filepath, filesize)
+        with tempfile.NamedTemporaryFile() as f:
+            filename = os.path.basename(f.name)
+            filesize = configuration.FEDERATION.TEST_FILE_SIZE
+            lib.make_file(f.name, filesize, 'arbitrary')
+            remote_home_collection = test_session.remote_home_collection(configuration.FEDERATION.REMOTE_ZONE)
 
-        # test specific parameters
-        parameters = self.config.copy()
-        parameters['filepath'] = filepath
-        parameters['filename'] = filename
-        parameters['user_name'] = test_session.username
-        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
-            **parameters)
+            test_session.assert_icommand(['ils', '-L', remote_home_collection], 'STDOUT_SINGLELINE', remote_home_collection)
+            test_session.assert_icommand(['iput', f.name, remote_home_collection])
 
-        # list remote home collection
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_home_collection'])
+            # list file info
+            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', filename)
+            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', str(filesize))
+            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_RESOURCE)
+            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_VAULT)
 
-        # put file in remote collection
-        test_session.assert_icommand(
-            "iput {filepath} {remote_home_collection}/".format(**parameters))
-
-        # list file info
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', filename)
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', str(filesize))
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_resource'])
-        test_session.assert_icommand(
-            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', parameters['remote_vault'])
-
-        # cleanup
-        test_session.assert_icommand(
-            "irm -f {remote_home_collection}/{filename}".format(**parameters))
-        os.remove(filepath)
+            # cleanup
+            test_session.assert_icommand(['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
 
     def test_iput(self):
         # pick session(s) for the test
@@ -308,7 +287,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
-    @unittest.skipIf(FEDERATION.LOCAL_IRODS_VERSION < (4, 0, 3) or FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
+    @unittest.skipIf(lib.get_irods_version() < (4, 0, 3) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 3), 'Fixed in 4.0.3')
     def test_iget_from_bundle(self):
         '''
         WIP
@@ -325,7 +304,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # make session for existing *remote* user
         user, password = 'rods', 'rods'
         remote_session = lib.make_session_for_existing_user(
-            user, password, FEDERATION.REMOTE_HOST, FEDERATION.REMOTE_ZONE)
+            user, password, configuration.FEDERATION.REMOTE_HOST, configuration.FEDERATION.REMOTE_ZONE)
 
         # test specific parameters
         parameters = self.config.copy()
@@ -491,8 +470,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
     def test_icp_large(self):
         # test settings
         remote_zone = self.config['remote_zone']
-        local_zone = self.config['local_zone']
         test_session = self.user_sessions[0]
+        local_zone = test_session.zone_name
         user_name = test_session.username
         local_home_collection = test_session.home_collection
         remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
@@ -541,8 +520,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
     def test_icp_f_large(self):
         # test settings
         remote_zone = self.config['remote_zone']
-        local_zone = self.config['local_zone']
         test_session = self.user_sessions[0]
+        local_zone = test_session.zone_name
         user_name = test_session.username
         local_home_collection = test_session.home_collection
         remote_home_collection = "/{remote_zone}/home/{user_name}#{local_zone}".format(**locals())
@@ -838,9 +817,10 @@ class Test_Admin_Commands(unittest.TestCase):
 
         # load federation settings in dictionary (all lower case)
         self.config = {}
-        for key, val in FEDERATION.__dict__.items():
+        for key, val in configuration.FEDERATION.__dict__.items():
             if not key.startswith('__'):
                 self.config[key.lower()] = val
+        self.config['local_zone'] = self.admin_session.zone_name
 
         super(Test_Admin_Commands, self).setUp()
 
@@ -870,17 +850,18 @@ class Test_Admin_Commands(unittest.TestCase):
 class Test_Microservices(SessionsMixin, unittest.TestCase):
 
     def setUp(self):
+        super(Test_Microservices, self).setUp()
+
         # make local test directory
         self.local_test_dir_path = os.path.abspath('federation_test_stuff.tmp')
         os.mkdir(self.local_test_dir_path)
 
         # load federation settings in dictionary (all lower case)
         self.config = {}
-        for key, val in FEDERATION.__dict__.items():
+        for key, val in configuration.FEDERATION.__dict__.items():
             if not key.startswith('__'):
                 self.config[key.lower()] = val
-
-        super(Test_Microservices, self).setUp()
+        self.config['local_zone'] = self.user_sessions[0].zone_name
 
     def tearDown(self):
         # remove test directory
@@ -888,7 +869,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
         super(Test_Microservices, self).tearDown()
 
-    @unittest.skipIf(FEDERATION.LOCAL_IRODS_VERSION < (4, 1, 0), 'Fixed in 4.1.0')
+    @unittest.skipIf(lib.get_irods_version() < (4, 1, 0), 'Fixed in 4.1.0')
     def test_msirmcoll(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
