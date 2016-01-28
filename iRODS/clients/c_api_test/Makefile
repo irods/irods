@@ -10,10 +10,9 @@ include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 include $(buildDir)/../packaging/irods_externals_locations.mk
 
-GCC = gcc
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
-GCC += -fprofile-arcs -ftest-coverage -lgcov
+C_CC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
 LDFLAGS += $(LIBRARY) $(LIB_CLIENT_EXEC)
@@ -60,7 +59,7 @@ LDFLAGS += -lstdc++
 LDFLAGS += -rdynamic
 
 default:
-	$(V_at)$(GCC) $(CFLAGS) -o mytest test.c $(LDFLAGS)
+	$(V_at)$(C_CC) $(CFLAGS) -o mytest test.c $(LDFLAGS)
 
 clean:
 	@echo "Cleaning C API test..."

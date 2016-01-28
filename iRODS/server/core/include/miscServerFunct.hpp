@@ -150,8 +150,8 @@ irods::error readStartupPack(
 
 irods::error get_current_resource_object_count(
     rsComm_t*,          // comm handle
-    const std::string&, // resource name
-    int& );             // out var - count
+    rodsLong_t,         // resc id
+    rodsLong_t& );      // out var - count
 
 irods::error update_resource_object_count(
     rsComm_t*,                     // server comm handle

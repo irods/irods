@@ -74,7 +74,8 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
-    
+    }
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         dataObjInfo_t dataObjInfo;
         sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescID, *filePath,
@@ -156,6 +157,8 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             rodsLog( LOG_ERROR,
                      "rsBulkDataObjReg: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
+        }
+
         ( *bulkDataObjRegOut )->rowCnt = bulkDataObjRegInp->rowCnt;
         for ( i = 0; i < bulkDataObjRegInp->rowCnt; i++ ) {
             tmpObjPath = &objPath->value[objPath->len * i];

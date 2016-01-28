@@ -1563,28 +1563,60 @@ irods::error repl_file_resolve_hierarchy(
 
 } // repl_file_resolve_hierarchy
 
+static
+irods::error get_child_name_from_bundle(
+    const std::string&   _resc_name,
+    const leaf_bundle_t& _bundle,
+    std::string&         _child_name ) {
+
+    std::string hier;
+    
+    irods::error ret = resc_mgr.leaf_id_to_hier(
+                           _bundle[0],
+                           hier); 
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    irods::hierarchy_parser parse;
+    ret = parse.set_string(hier);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    ret = parse.next(_resc_name,_child_name);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    return SUCCESS();
+
+} // get_child_name_from_bundle
+
 // =-=-=-=-=-=-=-
 // repl_file_rebalance - code which would rebalance the subtree
 irods::error repl_file_rebalance(
     irods::plugin_context& _ctx ) {
+    using namespace irods;
+
     // =-=-=-=-=-=-=-
     // forward request for rebalance to children first, then
     // rebalance ourselves.
 
-    irods::resource_child_map* cmap_ref;
-    _ctx.prop_map().get< irods::resource_child_map* >(
-            irods::RESC_CHILD_MAP_PROP,
+    resource_child_map* cmap_ref;
+    _ctx.prop_map().get< resource_child_map* >(
+            RESC_CHILD_MAP_PROP,
             cmap_ref );
 
-    irods::error result = SUCCESS();
-    irods::resource_child_map::iterator itr = cmap_ref->begin();
+    error result = SUCCESS();
+    resource_child_map::iterator itr = cmap_ref->begin();
     for ( ; itr != cmap_ref->end(); ++itr ) {
-        irods::error ret = itr->second.second->call(
+        error ret = itr->second.second->call(
                                _ctx.comm(),
-                               irods::RESOURCE_OP_REBALANCE,
+                               RESOURCE_OP_REBALANCE,
                                _ctx.fco() );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+            log( PASS( ret ) );
             result = ret;
         }
     }
@@ -1598,8 +1630,8 @@ irods::error repl_file_rebalance(
     // =-=-=-=-=-=-=-
     // get the property 'name' of this resource
     std::string resc_name;
-    irods::error ret = _ctx.prop_map().get< std::string >(
-                           irods::RESOURCE_NAME,
+    error ret = _ctx.prop_map().get< std::string >(
+                           RESOURCE_NAME,
                            resc_name );
     if ( !ret.ok() ) {
         return PASS( ret );
@@ -1609,15 +1641,15 @@ irods::error repl_file_rebalance(
     // determine limit size
     int limit = DEFAULT_LIMIT;
     if ( !_ctx.rule_results().empty() ) {
-        irods::kvp_map_t kvp;
-        irods::error kvp_err = irods::parse_kvp_string(
+        kvp_map_t kvp;
+        error kvp_err = parse_kvp_string(
                                    _ctx.rule_results(),
                                    kvp );
         if ( !kvp_err.ok() ) {
             return PASS( kvp_err );
         }
 
-        std::string limit_str = kvp[ irods::REPL_LIMIT_KEY ];
+        std::string limit_str = kvp[ REPL_LIMIT_KEY ];
         if ( !limit_str.empty() ) {
             try {
                 limit = boost::lexical_cast<int>( limit_str );
@@ -1637,7 +1669,7 @@ irods::error repl_file_rebalance(
     } // if rule results not empty
 
     // =-=-=-=-=-=-=-
-    // determine distinct root count
+    // determine distinct root count ( may have changed )
     int status = 0;
     long long root_count = 0;
     status = chlGetDistinctDataObjCountOnResource(
@@ -1650,48 +1682,55 @@ irods::error repl_file_rebalance(
             << "]";
         return ERROR( status, msg.str().c_str() );
     }
-
+    
     // =-=-=-=-=-=-=-
-    // iterate over the children, if one does not have a matching
-    // distinct count then we need to rebalance
+    // gather bundles of leaf ids
+    std::vector<leaf_bundle_t> leaf_bundles;
+    ret = resc_mgr.gather_leaf_bundles_for_resc(
+              resc_name,
+              leaf_bundles);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+    
+    // =-=-=-=-=-=-=-
+    // iterate over the leaf bundles
+    for( size_t idx = 0;
+         idx < leaf_bundles.size();
+         ++idx ) {
+        std::string child_name;
+        error get_ret = get_child_name_from_bundle(
+                            resc_name,
+                            leaf_bundles[idx],
+                            child_name );
+        if(!get_ret.ok() ) {
+            irods::log(PASS(get_ret));
+            continue; // XXXX - error out?
+        }
 
-    irods::resource_child_map::iterator c_itr;
-    for ( c_itr  = cmap_ref->begin();
-          c_itr != cmap_ref->end();
-          ++c_itr ) {
-        // =-=-=-=-=-=-=-
-        // get list of distinct missing data ids or dirty repls, iterate
-        // until query fails - no more repls necessary for child
-        dist_child_result_t results( 1 );
-        while ( !results.empty() ) {
-            irods::error ga_ret = irods::gather_data_objects_for_rebalance(
-                                      _ctx.comm(),
-                                      resc_name,
-                                      c_itr->first,
-                                      limit,
-                                      results );
-            if ( ga_ret.ok() ) {
-                if ( !results.empty() ) {
-                    // =-=-=-=-=-=-=-
-                    // if the results are not empty call our processing function
-                    irods::error proc_ret = irods::proc_results_for_rebalance(
-                                                _ctx.comm(),  // comm ptr
-                                                resc_name,    // parent resc name
-                                                c_itr->first, // child resc name
-                                                results );    // result set
-                    if ( !proc_ret.ok() ) {
-                        return PASS( proc_ret );
-                    }
+        dist_child_result_t results;
+        error ga_ret = gather_data_objects_for_rebalance(
+                                  _ctx.comm(),
+                                  limit,
+                                  idx,
+                                  leaf_bundles,
+                                  results );
+        if ( !ga_ret.ok() ) {
+            return PASS(ga_ret);
+        }
 
-                } // if results
-
+        if( !results.empty() ) {
+            error proc_ret = proc_results_for_rebalance(
+                                 _ctx.comm(),
+                                 resc_name,
+                                 child_name,
+                                 idx,
+                                 leaf_bundles,
+                                 results );
+            if ( !proc_ret.ok() ) {
+                return PASS( proc_ret );
             }
-            else {
-                return PASS( ga_ret );
-
-            }
-
-        } // while
+        }
 
     } // for c_itr
 

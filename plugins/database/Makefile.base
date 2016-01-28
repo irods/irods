@@ -112,13 +112,13 @@ clean:
 $(FULLTARGET): $(OBJS)
 	@echo "Building Database Plugins"
 	@-mkdir -p $(SODIR) > /dev/null 2>&1
-	@$(GCC) -DENABLE_RE -std=c++11 $(INC) -D$(OS_platform) $(CFLAGS) $(LDRFLAGS) -fPIC $(LDADD)  -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) $(EXTRA_LDRFLAGS) $(DBMS_LIB)
+	@$(GCC) -DENABLE_RE $(INC) -D$(OS_platform) $(CFLAGS) $(LDRFLAGS) -fPIC $(LDADD)  -shared -o $(FULLTARGET) $(OBJS) $(EXTRALIBS) $(EXTRA_LDRFLAGS) $(DBMS_LIB)
 
 $(SVR_ICAT_OBJS_NO_RE): $(SVR_ICAT_OBJS_NO_RE_SRC)
-	@$(GCC) -std=c++11 $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	@$(GCC) $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
 
 $(OBJDIR)/%.o: ../src/%.cpp
-	@$(GCC) -DENABLE_RE -std=c++11 $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
+	@$(GCC) -DENABLE_RE $(INC) $(EXTRA_CFLAGS) -D$(OS_platform) -fPIC -c -g -o $@ $<
 
 $(ICAT_HLR_OBJ_WITH_NO_RE): $(DB_PLUGIN_SRC)
 	$(CC) $(CFLAGS) $(INC) -c $(ICAT_HLR_SRC) -o $(ICAT_HLR_OBJ_WITH_NO_RE)
