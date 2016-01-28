@@ -885,6 +885,10 @@ int chlAddChildResc(
               ptr,
               &_resc_input );
 
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+
     return ret.code();
 
 } // chlAddChildResc
@@ -984,6 +988,10 @@ int chlDelChildResc(
               irods::DATABASE_OP_DEL_CHILD_RESC,
               ptr,
               &_resc_input );
+
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
 
     return ret.code();
 
@@ -4731,4 +4739,58 @@ int chlGeneralUpdate(
     return ret.code();
 
 } // chlGeneralUpdate
+
+int chlGetReplListForLeafBundles(
+    rodsLong_t                  _count,
+    size_t                      _child_idx,
+    std::vector<leaf_bundle_t>* _bundles,
+    dist_child_result_t*        _results ) {
+    // =-=-=-=-=-=-=-
+    // call factory for database object
+    irods::database_object_ptr db_obj_ptr;
+    irods::error ret = irods::database_factory(
+                           database_plugin_type,
+                           db_obj_ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a plugin for that object
+    irods::plugin_ptr db_plug_ptr;
+    ret = db_obj_ptr->resolve(
+              irods::DATABASE_INTERFACE,
+              db_plug_ptr );
+    if ( !ret.ok() ) {
+        irods::log(
+            PASSMSG(
+                "failed to resolve database interface",
+                ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast plugin and object to db and fco for call
+    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
+                                        irods::first_class_object > ( db_obj_ptr );
+    irods::database_ptr           db = boost::dynamic_pointer_cast <
+                                       irods::database > ( db_plug_ptr );
+
+    ret = db->call<
+              rodsLong_t,
+              size_t,
+              std::vector<leaf_bundle_t>*,
+              dist_child_result_t* >(
+                  0,
+                  irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
+                  ptr,
+                  _count,
+                  _child_idx,
+                  _bundles,
+                  _results );
+    return ret.code();
+
+} // chlGetReplListForLeafBundles
+
 

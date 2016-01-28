@@ -13,6 +13,8 @@
 #include "specificQuery.h"
 #include "phyBundleColl.h"
 #include "readServerConfig.hpp"
+#include "irods_resource_manager.hpp"
+using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -222,5 +224,11 @@ int chlCheckAndGetObjectID(
     char* );   // access
 
 int chlGetRcs( icatSessionStruct** );
+
+int chlGetReplListForLeafBundles(
+    rodsLong_t                  _count,
+    size_t                      _child_idx,
+    std::vector<leaf_bundle_t>* _bundles,
+    dist_child_result_t*        _results );
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

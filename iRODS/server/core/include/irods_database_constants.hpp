@@ -110,7 +110,7 @@ namespace irods {
     const std::string DATABASE_OP_GET_HIERARCHY_FOR_RESC( "database_get_hierarchy_for_resc" );
     const std::string DATABASE_OP_CHECK_AND_GET_OBJ_ID( "database_check_and_get_obj_id" );
     const std::string DATABASE_OP_GET_RCS( "database_get_rcs" );
-
+    const std::string DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES( "database_get_repl_list_for_leaf_bundles" );
 }; // namespace irods
 
 #endif // __IRODS_DATABASE_CONSTANTS_HPP__

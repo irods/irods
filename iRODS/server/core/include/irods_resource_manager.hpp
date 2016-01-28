@@ -75,6 +75,15 @@ namespace irods {
             error get_root_resources( std::vector< std::string >& );
 
             // =-=-=-=-=-=-=-
+            /// @brief create a partial hier string for a given resource to the root
+            error get_hier_to_root_for_resc( const std::string&, std::string& );
+            
+            // =-=-=-=-=-=-=-
+            /// @brief gather vectors of leaf ids for each child of the given resource
+            typedef std::vector<rodsLong_t> leaf_bundle_t;
+            error gather_leaf_bundles_for_resc( const std::string&, std::vector<leaf_bundle_t>& );
+
+            // =-=-=-=-=-=-=-
             /// @brief print the list of local resources out to stderr
             void print_local_resources();
 
@@ -201,6 +210,10 @@ namespace irods {
             // =-=-=-=-=-=-=-
             /// @brief initalize the special local file system resource
             error init_local_file_system_resource( void );
+            
+            // =-=-=-=-=-=-=-
+            /// @brief helper function for gather_leaf_bundles_for_resc
+            error gather_leaf_bundle_for_child( const std::string&, leaf_bundle_t& );
 
             // =-=-=-=-=-=-=-
             // Attributes

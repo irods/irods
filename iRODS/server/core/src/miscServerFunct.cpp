@@ -50,8 +50,11 @@ char *__loc1;
 #include "irods_hierarchy_parser.hpp"
 #include "irods_home_directory.hpp"
 #include "irods_threads.hpp"
+#include "irods_lexical_cast.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "irods_random.hpp"
+#include "irods_resource_manager.hpp"
+using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 #include <iomanip>
 #include <fstream>
@@ -3067,11 +3070,10 @@ checkModArgType( const char *arg ) {
     }
 }
 
-
-irods::error get_object_count_for_leaf_resource(
-    rsComm_t*           _comm,
-    rodsLong_t          _resc_id,
-    int&                _count ) {
+irods::error get_resource_object_count_from_catalog(
+    rsComm_t*   _comm,
+    rodsLong_t  _resc_id,
+    rodsLong_t& _obj_count ) {
 
     // =-=-=-=-=-=-=-
     // build a general query
@@ -3082,10 +3084,9 @@ irods::error get_object_count_for_leaf_resource(
     gen_inp.maxRows = MAX_SQL_ROWS;
 
     // =-=-=-=-=-=-=-
-    // build the condition string, child is either a leaf
-    // or an internal node so test for both
+    // build the condition string for a resc id
     std::stringstream cond_str;
-    cond_str << "=" << _resc_id;
+    cond_str << "= '" << _resc_id << "'";
 
     // =-=-=-=-=-=-=-
     // add condition string matching above madness
@@ -3096,7 +3097,8 @@ irods::error get_object_count_for_leaf_resource(
     // =-=-=-=-=-=-=-
     // request the data id
     addInxIval( &gen_inp.selectInp,
-                COL_D_DATA_ID, 1 );
+                COL_R_RESC_OBJCOUNT,
+                1 );
 
     // =-=-=-=-=-=-=-
     // execute the query
@@ -3114,31 +3116,109 @@ irods::error get_object_count_for_leaf_resource(
     }
 
     // =-=-=-=-=-=-=-
-    // loop over result sets
-    int num_data_obj = 0;
-    while ( status >= 0 ) {
-        // =-=-=-=-=-=-=-
-        // accumulate the row counts
-        num_data_obj += gen_out->rowCnt;
-
-        // =-=-=-=-=-=-=-
-        // call genquery again if there are more
-        // results to be had
-        int cont_inx = gen_out->continueInx;
+    // extract count and set out variable
+    sqlResult_t* obj_count_ptr = getSqlResultByInx(
+                                     gen_out,
+                                     COL_R_RESC_OBJCOUNT );
+    if( !obj_count_ptr ) {
         freeGenQueryOut( &gen_out );
-        if ( cont_inx > 0 ) {
-            gen_inp.continueInx = cont_inx;
-            status = rsGenQuery( _comm, &gen_inp, &gen_out );
+        clearGenQueryInp( &gen_inp );
+        return ERROR(
+                   SYS_INTERNAL_NULL_INPUT_ERR,
+                   "failed to get obj_count_ptr" );
+    }
 
-        }
-        else {
-            status = -1;
-        }
-
-    } // while
+    char* obj_count_str = &obj_count_ptr->value[0];
+    irods::error ret = irods::lexical_cast<rodsLong_t>(
+                           obj_count_str,
+                           _obj_count );
 
     freeGenQueryOut( &gen_out );
     clearGenQueryInp( &gen_inp );
+
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    return SUCCESS();
+
+} // get_resource_object_count_from_catalog
+
+irods::error get_object_count_for_leaf_resources(
+    rsComm_t*                         _comm,
+    const std::vector<leaf_bundle_t>& _bundles,
+    rodsLong_t&                       _count ) {
+
+    // =-=-=-=-=-=-=-
+    // build a general query
+    genQueryOut_t* gen_out = 0;
+    genQueryInp_t  gen_inp;
+    memset( &gen_inp, 0, sizeof( gen_inp ) );
+
+    gen_inp.maxRows = MAX_SQL_ROWS;
+
+    // =-=-=-=-=-=-=-
+    // build the condition string for a resc id
+    std::stringstream cond_ss;
+    for( auto bun : _bundles ) {
+        for( auto id : bun ) {
+            cond_ss << "='" << id << "' || ";
+        }
+    }
+
+    std::string cond_str = cond_ss.str();
+    cond_str = cond_str.substr(0,cond_str.size()-4); // trim ||
+
+    // =-=-=-=-=-=-=-
+    // add condition string matching above madness
+    addInxVal( &gen_inp.sqlCondInp,
+               COL_D_RESC_ID,
+               cond_str.c_str() );
+
+    // =-=-=-=-=-=-=-
+    // request the data id
+    addInxIval( &gen_inp.selectInp,
+                COL_D_DATA_ID,
+                SELECT_COUNT );
+
+    // =-=-=-=-=-=-=-
+    // execute the query
+    int status = rsGenQuery( _comm, &gen_inp, &gen_out );
+    if ( CAT_NO_ROWS_FOUND == status ) {
+        // =-=-=-=-=-=-=-
+        // hopefully this resource is empty
+		freeGenQueryOut( &gen_out );
+        return SUCCESS();
+
+    }
+    else if ( status < 0 || 0 == gen_out ) {
+        return ERROR( status, "genQuery failed." );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // extract count and set out variable
+    sqlResult_t* data_id_count_ptr = getSqlResultByInx( gen_out, COL_D_DATA_ID );
+    if( !data_id_count_ptr ) {
+        freeGenQueryOut( &gen_out );
+        clearGenQueryInp( &gen_inp );
+        return ERROR(
+                   SYS_INTERNAL_NULL_INPUT_ERR,
+                   "failed to get data_id_count_ptr" );
+    }
+
+    rodsLong_t num_data_obj = 0;
+    char* data_id_count_str = &data_id_count_ptr->value[0];
+    irods::error ret = irods::lexical_cast<rodsLong_t>(
+                           data_id_count_str,
+                           num_data_obj );
+
+    freeGenQueryOut( &gen_out );
+    clearGenQueryInp( &gen_inp );
+
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
 
     // =-=-=-=-=-=-=-
     // accumulate object count
@@ -3146,66 +3226,53 @@ irods::error get_object_count_for_leaf_resource(
 
     return SUCCESS();
 
-} // get_current_resource_object_count_impl
+} // get_object_count_for_leaf_resources
 
-irods::error get_current_resource_object_count_impl(
-    rsComm_t*           _comm,
-    irods::resource_ptr _resc,
-    int&                _count ) {
-    // =-=-=-=-=-=-=-
-    // if we have a branch ( coordinating ) node recurse as they do
-    // not hold any actual replicas
-    if( _resc->num_children() != 0 ) {
-        irods::resource_child_map cmap;
-        irods::error ret = _resc->get_property<irods::resource_child_map>(
-                               irods::RESC_CHILD_MAP_PROP,
-                               cmap );
-        if( !ret.ok() ) {
-            return PASS(ret);
-        }
-
-        for( auto child : cmap ) {
-            ret = get_current_resource_object_count_impl(
-                      _comm,
-                      child.second.second,
-                      _count );
-        }
-    } else {
-        rodsLong_t resc_id;
-        irods::error ret = _resc->get_property<rodsLong_t>(
-                               irods::RESOURCE_ID,
-                               resc_id );
-        if( !ret.ok() ) {
-            return PASS(ret);
-        }
-
-        return get_object_count_for_leaf_resource(
-                   _comm,
-                   resc_id,
-                   _count );
-    }
-
-    return SUCCESS();
-
-} // get_current_resource_object_count_impl
-
-irods::error get_current_resource_object_count(
+irods::error compute_current_resource_object_count(
     rsComm_t*          _comm,
     const std::string& _resc_name,
-    int&               _count ) {
+    rodsLong_t&        _count ) {
+    
+    _count = 0;
 
-    irods::resource_ptr resc;
-    irods::error ret = resc_mgr.resolve(
+    std::vector<leaf_bundle_t> leaf_bundles;
+    irods::error ret = resc_mgr.gather_leaf_bundles_for_resc(
                            _resc_name,
-                           resc );
-    if( !ret.ok() ) {
+                           leaf_bundles );
+    if(!ret.ok()) {
         return PASS(ret);
     }
 
-    _count = 0;
-    ret = get_current_resource_object_count_impl(
+    if( leaf_bundles.empty() ) {
+        rodsLog(
+            LOG_NOTICE,
+            "no leaves found for [%s]",
+            _resc_name.c_str() );
+
+        irods::resource_ptr resc;
+        ret = resc_mgr.resolve(
+                 _resc_name,
+                 resc);
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        rodsLong_t resc_id;
+        ret = resc->get_property<rodsLong_t>(
+                  irods::RESOURCE_ID,
+                  resc_id );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        leaf_bundle_t bun;
+        bun.push_back( resc_id );
+        leaf_bundles.push_back( bun );
+    }
+
+    ret = get_object_count_for_leaf_resources(
               _comm,
-              resc,
+              leaf_bundles,
               _count );
     if( !ret.ok() ) {
         return PASS(ret);
@@ -3213,7 +3280,7 @@ irods::error get_current_resource_object_count(
 
     return SUCCESS();
 
-} // get_current_resource_object_count
+} // compute_current_resource_object_count
 
 /// =-=-=-=-=-=-=-
 /// @brief compute obj count for a resource and update icat if necessary
@@ -3229,27 +3296,33 @@ irods::error update_resource_object_count(
     if ( !ret.ok() ) {
         return PASS( ret );
     }
+    
+    // =-=-=-=-=-=-=-
+    // get the resource id
+    rodsLong_t resc_id;
+    ret = _prop_map.get<rodsLong_t>(
+              irods::RESOURCE_ID,
+              resc_id );
+    if( !ret.ok() ) {
+        return PASS(ret);
+    }
 
     // =-=-=-=-=-=-=-
     // get the resource's objcount in the DB
-    std::string resc_objcount;
-    ret = _prop_map.get< std::string >(
-              irods::RESOURCE_OBJCOUNT,
-              resc_objcount );
+    rodsLong_t old_obj_count = 0;
+    ret = get_resource_object_count_from_catalog(
+              _comm,
+              resc_id,
+              old_obj_count );
     if ( !ret.ok() ) {
         return PASS( ret );
-    }
-
-    int old_obj_count = 0;
-    if ( !resc_objcount.empty() )  {
-        old_obj_count = boost::lexical_cast<int>( resc_objcount );
     }
 
     // =-=-=-=-=-=-=-
     // get the count of the resource's data objects
     // currently listed under management
-    int new_obj_count = 0;
-    ret = get_current_resource_object_count(
+    rodsLong_t new_obj_count = 0;
+    ret = compute_current_resource_object_count(
               _comm,
               resc_name,
               new_obj_count );

@@ -22,6 +22,7 @@
 // stl includes
 #include <iostream>
 #include <vector>
+#include <iterator>
 
 // =-=-=-=-=-=-=-
 // global singleton
@@ -386,6 +387,123 @@ namespace irods {
         return SUCCESS();
 
     } // get_root_resources
+
+    error resource_manager::get_hier_to_root_for_resc(
+        const std::string& _resc_name,
+        std::string&       _hierarchy ) {
+
+        _hierarchy = _resc_name;
+        std::string parent_name = _resc_name;
+        
+        resource_ptr resc;
+        while( !parent_name.empty() ) {
+            error ret = resolve(
+                            parent_name,
+                            resc);
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
+
+            ret = resc->get_property<std::string>(
+                      RESOURCE_PARENT,
+                      parent_name);
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
+
+            if(!parent_name.empty()) {
+                _hierarchy = parent_name + 
+                             irods::hierarchy_parser::delimiter() +
+                             _hierarchy;
+            }
+        } // while
+
+        return SUCCESS();
+
+    } // get_hier_to_root_for_resc
+
+    error resource_manager::gather_leaf_bundle_for_child(
+        const std::string& _resc_name,
+        leaf_bundle_t&     _bundle ) {
+        resource_ptr resc;
+        error ret = resolve(
+                        _resc_name,
+                        resc);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        if(resc->num_children() > 0 ) {
+            // still more children to traverse
+            std::vector<std::string> children;
+            resc->children(children);
+
+            for( size_t idx = 0;
+                 idx < children.size();
+                 ++idx ) {
+
+                ret = gather_leaf_bundle_for_child(
+                          children[idx],
+                          _bundle );
+                if(!ret.ok() ) {
+                    return PASS(ret);
+                }
+
+            } // for idx
+        } 
+        else {
+            // we have found a leaf
+            rodsLong_t resc_id;
+            ret = resc->get_property<rodsLong_t>(
+                    RESOURCE_ID,
+                    resc_id);
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
+
+            _bundle.push_back( resc_id );
+        }
+
+        return SUCCESS();
+
+    } // gather_leaf_bundle_for_child
+
+    error resource_manager::gather_leaf_bundles_for_resc(
+        const std::string&          _resc_name,
+        std::vector<leaf_bundle_t>& _bundles ) {
+        resource_ptr resc;
+        error ret = resolve(
+                        _resc_name,
+                        resc);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        std::vector<std::string> children;
+        resc->children(children);
+
+        _bundles.resize(children.size());
+
+        for( size_t idx = 0;
+             idx < children.size();
+             ++idx ) {
+            ret = gather_leaf_bundle_for_child(
+                      children[idx],
+                      _bundles[idx] );
+            if(!ret.ok() ) {
+                return PASS(ret);
+            }
+            // sort for increase in search speed
+            // for rebalance operation
+            std::sort(
+                std::begin(_bundles[idx]),
+                std::end(_bundles[idx]) );
+
+        } // for idx
+
+        return SUCCESS();
+
+    } // gather_leaf_bundles_for_resc
 
 // =-=-=-=-=-=-=-
 // public - take results from genQuery, extract values and create resources

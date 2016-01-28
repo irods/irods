@@ -69,13 +69,14 @@ namespace irods {
             /// @brief interface to add and remove children using the zone_name::resource_name
             virtual error add_child( const std::string&, const std::string&, resource_ptr );
             virtual error remove_child( const std::string& );
-            virtual int   num_children() {
+            virtual size_t num_children() {
                 return children_.size();
             }
             virtual bool has_child(
                 const std::string& _name ) {
                 return children_.has_entry( _name );
             }
+            virtual void children( std::vector<std::string>& );
 
             // =-=-=-=-=-=-=-
             /// @brief interface to get and set a resource's parent pointer
