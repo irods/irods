@@ -104,6 +104,14 @@ The `/etc/irods/server_config.json` must be updated to include:
 "KerberosKeytab": "/var/lib/irods/irods.keytab",
 ~~~
 
+An `/etc/irods/server_config.json` environment variable must also be included to point the GSS API to the keytab mentioned above:
+
+~~~
+"environment_variables": {
+    "KRB5_KTNAME": "/var/lib/irods/irods.keytab"
+},
+~~~
+
 On the client side, the user's 'irods_authentication_scheme' must be set to 'KRB'.  This can be configured via an `irods_environment.json` property:
 
 ~~~
