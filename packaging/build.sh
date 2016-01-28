@@ -287,15 +287,10 @@ if [ "$RUNINPLACE" == "1" ] ; then
         fi
     fi
 else
-    IRODS_EXTERNALS_ROOT="/opt/irods-externals/"
+    IRODS_EXTERNALS_ROOT="/opt/irods-externals"
 fi
 
 EPMCMD=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_EPM/bin/epm
-    
-echo "Detected iRODS Externals Directory [$IRODS_EXTERNALS_ROOT]"
-
-EPMCMD=$IRODS_EXTERNALS_ROOT/$BUILD_SUBDIRECTORY_EPM/bin/epm
-    
 echo "Detected iRODS Externals Directory [$IRODS_EXTERNALS_ROOT]"
 
 ############################################################
