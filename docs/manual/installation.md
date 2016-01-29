@@ -21,7 +21,9 @@ The iRODS installation script (which also configures the iRODS database plugin) 
 
 ### Database Setup
 
-iRODS can use many different database configurations.  As an example, a local PostgreSQL database can be configured on Ubuntu 14.04 with the following steps:
+iRODS can use many different database configurations.  Local database examples are included below:
+
+#### PostgreSQL on Ubuntu 14.04:
 
 ~~~
 $ (sudo) su - postgres
@@ -43,6 +45,30 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
             |          |          |             |             | irods=CTc/postgres
  ...
  (N rows)
+~~~
+
+#### MySQL on Ubuntu 14.04:
+
+~~~
+$ mysql
+mysql> CREATE DATABASE ICAT;
+mysql> CREATE USER irods IDENTIFIED BY 'testpassword';
+mysql> GRANT ALL ON ICAT.* to irods;
+~~~
+
+Confirmation of the permissions can be viewed:
+
+~~~
+mysql> SHOW GRANTS FOR irods;
++------------------------------------------------------------------------------------------------------+
+| Grants for irods@%                                                                           |
++------------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'irods'@'%' IDENTIFIED BY PASSWORD '*9F69E47E519D9CA02116BF5796684F7D0D45F8FA' |
+| GRANT ALL PRIVILEGES ON `ICAT`.* TO 'irods'@'%'                                                      |
+| ...                                                                                                  |
++------------------------------------------------------------------------------------------------------+
+N rows in set (0.00 sec)
+
 ~~~
 
 ### iRODS Setup
