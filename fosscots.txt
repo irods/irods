@@ -24,6 +24,7 @@ lex
 lib_mysqludf_preg
 libarchive
 libs3
+markdown
 mysql
 netcdf
 nodejs
@@ -31,7 +32,6 @@ openssl
 perl
 postgresql
 python
-restructuredtext
 unixodbc
 yacc
 
@@ -49,6 +49,7 @@ lintian
 make
 rpmlint
 rpmtools
+fpm
 
 ----------------------------------------------
 
@@ -66,6 +67,7 @@ ansible
 archlinux
 chromeos
 centos
+clang
 cppcheck
 docker
 eclipse
@@ -73,10 +75,13 @@ emacs
 fish
 g++
 gcc
+gdb
 git
 hudson
 jenkins
+llvm
 mosh
+rr
 screen
 ssh
 stack
