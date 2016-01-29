@@ -2,7 +2,7 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product iRODS Oracle Database Plugin
-%copyright 2014-2015, The University of North Carolina at Chapel Hill
+%copyright 2016, The University of North Carolina at Chapel Hill
 %vendor Renaissance Computing Institute <info@irods.org>
 %license LICENSE
 %readme README
@@ -56,35 +56,20 @@ $RPM=true
 $IRODS_HOME_DIR=/var/lib/irods
 $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
+
 # =-=-=-=-=-=-=-
 # preinstall
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
-
-# determine whether this is an upgrade
-if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
-  # integer, therefore rpm
-  if [ $$1 -gt 1 ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
-else
-  # string, therefore deb
-  if [ "$$1" = "upgrade" ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
+REQUIRED_VERSION="4.1.8"
+DETECTED_VERSION=`python -c 'import json; print json.loads(open("/var/lib/irods/VERSION.json").read())["irods_version"]'`
+if [ "$$DETECTED_VERSION" != "$$REQUIRED_VERSION" ] ; then
+    echo "Local iRODS is $$DETECTED_VERSION"
+    echo "This plugin requires iRODS $$REQUIRED_VERSION"
+    exit 1
 fi
-
-if [ "$$PACKAGEUPGRADE" = "true" ] ; then
-  echo "NOP" > /dev/null
-else
-  echo "NOP" > /dev/null
-fi
-
 END_PREINSTALL
+
 
 # =-=-=-=-=-=-=-
 # post install
