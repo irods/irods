@@ -27,6 +27,8 @@ Run-in-Place has been made available for testing and backwards compatibility.  T
 
 It is possible that in the 5.0 timeframe, with the plans for a proper plugin registry, managing a '--run-in-place' installation can be handled more gracefully.
 
+The best way to manage a '--run-in-place' installation at this time is to checkout a newer release, rebuild, and then re-run the setup script:
+
 ~~~
 $ cd irods
 $ git checkout TEMPLATE_IRODSVERSION
