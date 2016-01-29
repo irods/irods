@@ -18,6 +18,7 @@
 #include "subStructFileRmdir.h"
 #include "dataObjRename.h"
 #include "genQuery.h"
+#include "miscServerFunct.hpp"
 
 #include "irods_resource_backport.hpp"
 
@@ -397,9 +398,8 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
 int
 svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     int status;
-#ifdef RODS_CAT
     collInfo_t collInfo;
-#endif
+
     rodsServerHost_t *rodsServerHost = NULL;
 
     status = getAndConnRcatHost(
@@ -412,23 +412,35 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        memset( &collInfo, 0, sizeof( collInfo ) );
-        rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );
-        if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW )
-                != NULL ) {
-            status = chlDelCollByAdmin( rsComm, &collInfo );
-            if ( status >= 0 ) {
-                chlCommit( rsComm );
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            memset( &collInfo, 0, sizeof( collInfo ) );
+            rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );
+            if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW )
+                    != NULL ) {
+                status = chlDelCollByAdmin( rsComm, &collInfo );
+                if ( status >= 0 ) {
+                    chlCommit( rsComm );
+                }
             }
+            else {
+                status = chlDelColl( rsComm, &collInfo );
+            }
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
-        else {
-            status = chlDelColl( rsComm, &collInfo );
-        }
-
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
     }
     else {
         collOprStat_t *collOprStat = NULL;;

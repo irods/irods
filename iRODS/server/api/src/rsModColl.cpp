@@ -7,6 +7,7 @@
 #include "modColl.h"
 #include "rcMisc.h"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
@@ -22,11 +23,24 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsModColl( rsComm, modCollInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsModColl( rsComm, modCollInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcModColl( rodsServerHost->conn, modCollInp );
@@ -37,78 +51,91 @@ rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
 
 int
 _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
-#ifdef RODS_CAT
-    int status;
-    collInfo_t collInfo;
-    char *tmpStr;
-
-    int i;
-    ruleExecInfo_t rei2;
-
-    memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
-    rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
-        rei2.uoic = &rsComm->clientUser;
-        rei2.uoip = &rsComm->proxyUser;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        int status;
+        collInfo_t collInfo;
+        char *tmpStr;
 
-    memset( &collInfo, 0, sizeof( collInfo ) );
+        int i;
+        ruleExecInfo_t rei2;
 
-    rstrcpy( collInfo.collName, modCollInp->collName, MAX_NAME_LEN );
-
-    if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                 COLLECTION_TYPE_KW ) ) != NULL ) {
-        rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
-    }
-    if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                 COLLECTION_INFO1_KW ) ) != NULL ) {
-        rstrcpy( collInfo.collInfo1, tmpStr, MAX_NAME_LEN );
-    }
-    if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                 COLLECTION_INFO2_KW ) ) != NULL ) {
-        rstrcpy( collInfo.collInfo2, tmpStr, MAX_NAME_LEN );
-    }
-    /**  June 1 2009 for pre-post processing rule hooks **/
-    rei2.coi = &collInfo;
-    i =  applyRule( "acPreProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
-    if ( i < 0 ) {
-        if ( rei2.status < 0 ) {
-            i = rei2.status;
+        memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
+        rei2.rsComm = rsComm;
+        if ( rsComm != NULL ) {
+            rei2.uoic = &rsComm->clientUser;
+            rei2.uoip = &rsComm->proxyUser;
         }
-        rodsLog( LOG_ERROR,
-                 "rsGeneralAdmin:acPreProcForModifyCollMeta error for %s,stat=%d",
-                 modCollInp->collName, i );
-        return i;
-    }
-    /**  June 1 2009 for pre-post processing rule hooks **/
 
-    status = chlModColl( rsComm, &collInfo );
+        memset( &collInfo, 0, sizeof( collInfo ) );
 
-    /**  June 1 2009 for pre-post processing rule hooks **/
-    if ( status >= 0 ) {
-        i =  applyRule( "acPostProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
+        rstrcpy( collInfo.collName, modCollInp->collName, MAX_NAME_LEN );
+
+        if ( ( tmpStr = getValByKey( &modCollInp->condInput,
+                                     COLLECTION_TYPE_KW ) ) != NULL ) {
+            rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
+        }
+        if ( ( tmpStr = getValByKey( &modCollInp->condInput,
+                                     COLLECTION_INFO1_KW ) ) != NULL ) {
+            rstrcpy( collInfo.collInfo1, tmpStr, MAX_NAME_LEN );
+        }
+        if ( ( tmpStr = getValByKey( &modCollInp->condInput,
+                                     COLLECTION_INFO2_KW ) ) != NULL ) {
+            rstrcpy( collInfo.collInfo2, tmpStr, MAX_NAME_LEN );
+        }
+        /**  June 1 2009 for pre-post processing rule hooks **/
+        rei2.coi = &collInfo;
+        i =  applyRule( "acPreProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
         if ( i < 0 ) {
             if ( rei2.status < 0 ) {
                 i = rei2.status;
             }
             rodsLog( LOG_ERROR,
-                     "rsGeneralAdmin:acPostProcForModifyCollMeta error for %s,stat=%d",
+                     "rsGeneralAdmin:acPreProcForModifyCollMeta error for %s,stat=%d",
                      modCollInp->collName, i );
             return i;
         }
-    }
-    /**  June 1 2009 for pre-post processing rule hooks **/
+        /**  June 1 2009 for pre-post processing rule hooks **/
 
-    /* XXXX need to commit */
-    if ( status >= 0 ) {
-        status = chlCommit( rsComm );
-    }
-    else {
-        chlRollback( rsComm );
-    }
+        status = chlModColl( rsComm, &collInfo );
 
-    return status;
-#else
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
+        /**  June 1 2009 for pre-post processing rule hooks **/
+        if ( status >= 0 ) {
+            i =  applyRule( "acPostProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
+            if ( i < 0 ) {
+                if ( rei2.status < 0 ) {
+                    i = rei2.status;
+                }
+                rodsLog( LOG_ERROR,
+                         "rsGeneralAdmin:acPostProcForModifyCollMeta error for %s,stat=%d",
+                         modCollInp->collName, i );
+                return i;
+            }
+        }
+        /**  June 1 2009 for pre-post processing rule hooks **/
+
+        /* XXXX need to commit */
+        if ( status >= 0 ) {
+            status = chlCommit( rsComm );
+        }
+        else {
+            chlRollback( rsComm );
+        }
+
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
 }

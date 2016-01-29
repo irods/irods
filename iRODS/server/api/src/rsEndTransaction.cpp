@@ -6,6 +6,7 @@
 #include "endTransaction.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
@@ -20,11 +21,24 @@ rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsEndTransaction( rsComm, endTransactionInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsEndTransaction( rsComm, endTransactionInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
+
     }
     else {
         status = rcEndTransaction( rodsServerHost->conn,
@@ -38,7 +52,6 @@ rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
     int status;
@@ -59,4 +72,4 @@ _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
 
     return CAT_INVALID_ARGUMENT;
 }
-#endif
+

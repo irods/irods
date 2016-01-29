@@ -122,9 +122,6 @@ INCLUDES +=	-I$(svrDriversIncDir)
 # XXXXX add svrIcatIncDir for now. needed by non-icat server. mw
 INCLUDES +=	-I$(svrIcatIncDir)
 
-# icat
-ifdef RODS_CAT
-CFLAGS += -DRODS_CAT
 SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o
 
@@ -137,8 +134,6 @@ INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
-
-endif
 
 ifdef RELEASE_FLAG
 CFLAGS += -DRELEASE_FLAG
@@ -212,13 +207,11 @@ AUTH_CFLAGS +=
 AUTH_LDFLAGS += -lpam
 
 # icat Tests
-ifdef RODS_CAT
 TEST_OBJS =	\
 		$(svrTestObjDir)/test_chl.o
 
 TEST_BINS =	\
 		$(svrTestBinDir)/test_chl
-endif
 
 # All objects (except tests)
 OBJS =		$(SVR_RE_OBJS) $(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \

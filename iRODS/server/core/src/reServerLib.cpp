@@ -23,6 +23,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "initServer.hpp"
+#include "miscServerFunct.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -427,9 +428,16 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
                              MASTER_RCAT,
                              zone_name.c_str() );
                 if ( LOCAL_HOST == status ) {
-#ifdef RODS_CAT
-                    resetRcat();
-#endif
+                    std::string svc_role;
+                    irods::error ret = get_catalog_service_role(svc_role);
+                    if(!ret.ok()) {
+                        irods::log(PASS(ret));
+                        return ret.code();
+                    }
+                    
+                    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+                        resetRcat();
+                    }
                 }
                 /* this call doesn't come back */
                 execRuleExec( &reExec->reExecProc[thrInx] );
@@ -480,22 +488,29 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
         return ret.code();
 
     }
-    if ( ( status = resetRcatHost( MASTER_RCAT, zone_name.c_str() ) )
+    
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
 
+    if ( ( status = resetRcatHost( MASTER_RCAT, zone_name.c_str() ) )
             == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        resetRcat();
-#endif
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            resetRcat();
+        }
     }
     if ( ( status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                         zone_name.c_str(), &rodsServerHost ) ) == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = connectRcat();
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "runQueuedRuleExec: connectRcat error. status=%d", status );
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = connectRcat();
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "runQueuedRuleExec: connectRcat error. status=%d", status );
+            }
         }
-#endif
     }
     seedRandom();
     status = runRuleExec( reExecProc );

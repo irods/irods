@@ -10,6 +10,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
+#include "miscServerFunct.hpp"
 
 /**
  * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)
@@ -96,13 +97,18 @@ msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t*
 int
 msiQuota( ruleExecInfo_t *rei ) {
     int status;
-
-#ifdef RODS_CAT
-    rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
-    status = chlCalcUsageAndQuota( rei->rsComm );
-#else
-    status =  SYS_NO_RCAT_SERVER_ERR;
-#endif
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
+        status = chlCalcUsageAndQuota( rei->rsComm );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status =  SYS_NO_RCAT_SERVER_ERR;
+    }
     return status;
 }
 
@@ -379,11 +385,24 @@ msiCommit( ruleExecInfo_t *rei ) {
         }
     }
     /**** This is Just a Test Stub  ****/
-#ifdef RODS_CAT
-    status = chlCommit( rei->rsComm );
-#else
-    status =  SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        status = chlCommit( rei->rsComm );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status =  SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return status;
 }
 
@@ -433,12 +452,24 @@ msiRollback( ruleExecInfo_t *rei ) {
     }
     /**** This is Just a Test Stub  ****/
 
-
-#ifdef RODS_CAT
-    status = chlRollback( rei->rsComm );
-#else
-    status =  SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        status = chlRollback( rei->rsComm );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status =  SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return status;
 }
 
@@ -616,12 +647,25 @@ msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
         }
     }
     /**** This is Just a Test Stub  ****/
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        rodsLog( LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n" );
+        status = chlDelUnusedAVUs( rei->rsComm );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status =  SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
 
-#ifdef RODS_CAT
-    rodsLog( LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n" );
-    status = chlDelUnusedAVUs( rei->rsComm );
-#else
-    status =  SYS_NO_RCAT_SERVER_ERR;
-#endif
     return status;
 }

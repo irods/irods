@@ -49,9 +49,7 @@ extern char KerberosName[MAX_NAME_LEN];
 extern int InitialState;
 extern rsComm_t *ThisComm;
 
-#ifdef RODS_CAT
 extern int IcatConnState;
-#endif
 
 extern specCollCache_t *SpecCollCacheHead;
 

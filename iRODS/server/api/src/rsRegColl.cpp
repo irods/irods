@@ -7,6 +7,7 @@
 #include "regColl.h"
 #include "icatHighLevelRoutines.hpp"
 #include "collection.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
@@ -40,11 +41,25 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsRegColl( rsComm, regCollInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsRegColl( rsComm, regCollInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
+
     }
     else {
         status = rcRegColl( rodsServerHost->conn, regCollInp );
@@ -55,29 +70,42 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
 
 int
 _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
-#ifdef RODS_CAT
-    int status;
-    collInfo_t collInfo;
-    char *tmpStr;
-
-    memset( &collInfo, 0, sizeof( collInfo ) );
-
-    rstrcpy( collInfo.collName, collCreateInp->collName, MAX_NAME_LEN );
-
-    if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_TYPE_KW ) ) != NULL ) {
-        rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
-        if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO1_KW ) ) != NULL ) {
-            rstrcpy( collInfo.collInfo1, tmpStr, NAME_LEN );
-        }
-        if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO2_KW ) ) != NULL ) {
-            rstrcpy( collInfo.collInfo2, tmpStr, NAME_LEN );
-        }
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        int status;
+        collInfo_t collInfo;
+        char *tmpStr;
 
-    status = chlRegColl( rsComm, &collInfo );
-    clearKeyVal( &collInfo.condInput );
-    return status;
-#else
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
+        memset( &collInfo, 0, sizeof( collInfo ) );
+
+        rstrcpy( collInfo.collName, collCreateInp->collName, MAX_NAME_LEN );
+
+        if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_TYPE_KW ) ) != NULL ) {
+            rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
+            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO1_KW ) ) != NULL ) {
+                rstrcpy( collInfo.collInfo1, tmpStr, NAME_LEN );
+            }
+            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO2_KW ) ) != NULL ) {
+                rstrcpy( collInfo.collInfo2, tmpStr, NAME_LEN );
+            }
+        }
+
+        status = chlRegColl( rsComm, &collInfo );
+        clearKeyVal( &collInfo.condInput );
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
 }

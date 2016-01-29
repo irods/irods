@@ -6,6 +6,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "getHierarchyForResc.h"
 #include "irods_stacktrace.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 // local implementation which makes the icat high level
@@ -16,29 +17,43 @@ int _rsGetHierarchyForResc(
     // =-=-=-=-=-=-=-
     // icat high level calls only work on a server
     // connected to the database
-#ifdef RODS_CAT
-    // =-=-=-=-=-=-=-
-    // allocate the outgoing structure
-    ( *_out ) = ( getHierarchyForRescOut_t* )malloc( sizeof( getHierarchyForRescOut_t ) );
-    bzero( ( *_out ), sizeof( getHierarchyForRescOut_t ) );
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        // =-=-=-=-=-=-=-
+        // allocate the outgoing structure
+        ( *_out ) = ( getHierarchyForRescOut_t* )malloc( sizeof( getHierarchyForRescOut_t ) );
+        bzero( ( *_out ), sizeof( getHierarchyForRescOut_t ) );
 
-    // =-=-=-=-=-=-=-
-    // get local zone
-    char* zone_name = getLocalZoneName();
+        // =-=-=-=-=-=-=-
+        // get local zone
+        char* zone_name = getLocalZoneName();
 
-    // =-=-=-=-=-=-=-
-    // make the chl call to get the hierarchy
-    std::string hier;
-    int status = chlGetHierarchyForResc(
-                     _inp->resc_name_,
-                     zone_name,
-                     hier );
-    snprintf( ( *_out )->resc_hier_, MAX_NAME_LEN, "%s", hier.c_str() );
+        // =-=-=-=-=-=-=-
+        // make the chl call to get the hierarchy
+        std::string hier;
+        int status = chlGetHierarchyForResc(
+                         _inp->resc_name_,
+                         zone_name,
+                         hier );
+        snprintf( ( *_out )->resc_hier_, MAX_NAME_LEN, "%s", hier.c_str() );
 
-    return status;
-#else
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
 
 } // _rsGetHierarchyForResc
 
@@ -72,11 +87,24 @@ int rsGetHierarchyForResc(
     // if we are on the icat server run the fetch,
     // otherwise redirect to the icat server
     if ( svr_host->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsGetHierarchyForResc( _inp, _out );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsGetHierarchyForResc( _inp, _out );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
+
     }
     else {
         status = rcGetHierarchyForResc( svr_host->conn, _inp, _out );

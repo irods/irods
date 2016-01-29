@@ -14,6 +14,7 @@
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 #include "dataObjClose.h"
+#include "miscServerFunct.hpp"
 
 int
 rsObjStat(
@@ -38,11 +39,24 @@ rsObjStat(
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsObjStat( rsComm, dataObjInp, rodsObjStatOut );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsObjStat( rsComm, dataObjInp, rodsObjStatOut );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         if ( isLocalZone( dataObjInp->objPath ) ) {

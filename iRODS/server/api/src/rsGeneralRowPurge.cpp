@@ -6,6 +6,7 @@
 #include "generalRowPurge.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) {
@@ -20,11 +21,18 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsGeneralRowPurge( rsComm, generalRowPurgeInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsGeneralRowPurge( rsComm, generalRowPurgeInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcGeneralRowPurge( rodsServerHost->conn,
@@ -38,7 +46,6 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) {
     int status;
@@ -59,4 +66,4 @@ _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp )
     }
     return CAT_INVALID_ARGUMENT;
 }
-#endif
+

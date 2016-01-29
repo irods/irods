@@ -14,6 +14,7 @@
 #include "readServerConfig.hpp"
 #include "irods_log.hpp"
 #include "sslSockComm.h"
+#include "miscServerFunct.hpp"
 
 
 int
@@ -31,13 +32,27 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsPamAuthRequest( rsComm,  pamAuthRequestInp,
-                                    pamAuthRequestOut );
-
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsPamAuthRequest(
+                         rsComm,
+                         pamAuthRequestInp,
+                         pamAuthRequestOut );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         /* protect the PAM plain text password by
@@ -62,8 +77,6 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
     return status;
 }
 
-
-#ifdef RODS_CAT
 /*
  Fork and exec the PamAuthCheck program, which is setuid root, to do
  do the PAM authentication.  The username is on the command line but
@@ -155,4 +168,4 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                                         &result->irodsPamPassword );
     return status;
 }
-#endif /* RODS_CAT */
+

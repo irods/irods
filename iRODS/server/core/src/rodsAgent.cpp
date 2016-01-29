@@ -179,14 +179,17 @@ main( int, char ** ) {
         return 1;
     }
 
-
-
-
-#if RODS_CAT
-    if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {
-        chlDebug( rsComm.myEnv.rodsDebug );
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-#endif
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {
+            chlDebug( rsComm.myEnv.rodsDebug );
+        }
+    }
 
     status = initAgent( RULE_ENGINE_TRY_CACHE, &rsComm );
 

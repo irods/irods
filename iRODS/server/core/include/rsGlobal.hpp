@@ -53,9 +53,7 @@ char KerberosName[MAX_NAME_LEN];
 int InitialState = INITIAL_NOT_DONE;
 rsComm_t *ThisComm = NULL;
 
-#ifdef RODS_CAT
 int IcatConnState = INITIAL_NOT_DONE;
-#endif
 
 specCollCache_t *SpecCollCacheHead = NULL;
 

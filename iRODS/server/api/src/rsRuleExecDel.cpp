@@ -6,6 +6,7 @@
 #include "reServerLib.hpp"
 #include "objMetaOpr.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
@@ -24,13 +25,26 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsRuleExecDel( rsComm, ruleExecDelInp );
-#else
-        rodsLog( LOG_NOTICE,
-                 "rsRuleExecDel error. ICAT is not configured on this host" );
-        return SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsRuleExecDel( rsComm, ruleExecDelInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            rodsLog( LOG_NOTICE,
+                     "rsRuleExecDel error. ICAT is not configured on this host" );
+            return SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcRuleExecDel( rodsServerHost->conn, ruleExecDelInp );
@@ -51,6 +65,13 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     sqlResult_t *ruleUserName;
 
     char reiDir[MAX_NAME_LEN];
+    
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
 
     status = getReInfoById( rsComm, ruleExecDelInp->ruleExecId,
                             &genQueryOut );
@@ -61,19 +82,27 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                  "_rsRuleExecDel: getReInfoById failed, status = %d",
                  status );
         /* unregister it anyway */
-#ifdef RODS_CAT
-        status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
-        if ( status < 0 ) {
+
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
+                         ruleExecDelInp->ruleExecId, status );
+            }
+            return status;
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
             rodsLog( LOG_ERROR,
-                     "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
-                     ruleExecDelInp->ruleExecId, status );
+                     "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
+            return SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
-        return status;
-#else
-        rodsLog( LOG_ERROR,
-                 "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-        return SYS_NO_RCAT_SERVER_ERR;
-#endif
     }
 
     if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
@@ -107,36 +136,42 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
               "/%-s/%-s.", PACKED_REI_DIR, REI_FILE_NAME );
 
     if ( strstr( reiFilePath->value, reiDir ) == NULL ) {
-#ifdef RODS_CAT
-        int i;
-        char errMsg[105];
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            int i;
+            char errMsg[105];
 
-        rodsLog( LOG_NOTICE,
-                 "_rsRuleExecDel: reiFilePath: %s is not a proper rei path",
-                 reiFilePath->value );
+            rodsLog( LOG_NOTICE,
+                     "_rsRuleExecDel: reiFilePath: %s is not a proper rei path",
+                     reiFilePath->value );
 
-        /* Try to unregister it anyway */
-        status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
+            /* Try to unregister it anyway */
+            status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
 
-        if ( status ) {
-            return ( status );   /* that failed too, report it */
+            if ( status ) {
+                return ( status );   /* that failed too, report it */
+            }
+
+            /* Add a message to the error stack for the client user */
+            snprintf( errMsg, sizeof errMsg, "Rule was removed but reiPath was invalid: %s",
+                      reiFilePath->value );
+            i = addRErrorMsg( &rsComm->rError, 0, errMsg );
+            if ( i < 0 ) {
+                irods::log( ERROR( i, "addRErrorMsg failed" ) );
+            }
+            freeGenQueryOut( &genQueryOut );
+
+            return SYS_INVALID_FILE_PATH;
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            rodsLog( LOG_ERROR,
+                     "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
+            return SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
-
-        /* Add a message to the error stack for the client user */
-        snprintf( errMsg, sizeof errMsg, "Rule was removed but reiPath was invalid: %s",
-                  reiFilePath->value );
-        i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-        if ( i < 0 ) {
-            irods::log( ERROR( i, "addRErrorMsg failed" ) );
-        }
-        freeGenQueryOut( &genQueryOut );
-
-        return SYS_INVALID_FILE_PATH;
-#else
-        rodsLog( LOG_ERROR,
-                 "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-        return SYS_NO_RCAT_SERVER_ERR;
-#endif
     }
 
     status = unlink( reiFilePath->value );
@@ -150,45 +185,50 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             return status;
         }
     }
-#ifdef RODS_CAT
-    int unlinkStatus = status;
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        int unlinkStatus = status;
 
-    /* unregister it */
-    status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
+        /* unregister it */
+        status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
 
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
-                 ruleExecDelInp->ruleExecId, status );
-    }
-    if ( unlinkStatus ) {
-        int i;
-        char errMsg[105];
-        /* Add a message to the error stack for the client user */
-        snprintf( errMsg, sizeof errMsg,
-                  "Rule was removed but unlink of rei file failed" );
-        i = addRErrorMsg( &rsComm->rError, 0, errMsg );
-        if ( i < 0 ) {
-            irods::log( ERROR( i, "addRErrorMsg failed" ) );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
+                     ruleExecDelInp->ruleExecId, status );
         }
-        snprintf( errMsg, sizeof errMsg,
-                  "rei file: %s",
-                  reiFilePath->value );
-        i = addRErrorMsg( &rsComm->rError, 1, errMsg );
-        if ( status == 0 ) {
-            status = unlinkStatus;
-        }  /* return this error if
-					          no other error occurred */
+        if ( unlinkStatus ) {
+            int i;
+            char errMsg[105];
+            /* Add a message to the error stack for the client user */
+            snprintf( errMsg, sizeof errMsg,
+                      "Rule was removed but unlink of rei file failed" );
+            i = addRErrorMsg( &rsComm->rError, 0, errMsg );
+            if ( i < 0 ) {
+                irods::log( ERROR( i, "addRErrorMsg failed" ) );
+            }
+            snprintf( errMsg, sizeof errMsg,
+                      "rei file: %s",
+                      reiFilePath->value );
+            i = addRErrorMsg( &rsComm->rError, 1, errMsg );
+            if ( status == 0 ) {
+                status = unlinkStatus;
+            }  /* return this error if
+                                  no other error occurred */
 
+        }
+        freeGenQueryOut( &genQueryOut );
+
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        rodsLog( LOG_ERROR,
+                 "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
-    freeGenQueryOut( &genQueryOut );
-
-    return status;
-#else
-    rodsLog( LOG_ERROR,
-             "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
-
 }
 

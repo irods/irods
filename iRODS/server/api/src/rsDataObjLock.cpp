@@ -16,6 +16,7 @@
 #include "reDefines.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
+#include "miscServerFunct.hpp"
 
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
@@ -41,11 +42,25 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             return SYS_NO_RCAT_SERVER_ERR;
         }
     }
-#ifdef RODS_CAT
-    return _rsDataObjLock( dataObjInp );
-#else
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        return _rsDataObjLock( dataObjInp );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
 }
 
 int
@@ -139,11 +154,24 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             return SYS_NO_RCAT_SERVER_ERR;
         }
     }
-#ifdef RODS_CAT
-    return _rsDataObjUnlock( dataObjInp );
-#else
-    return SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        return _rsDataObjUnlock( dataObjInp );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
 }
 
 int

@@ -308,22 +308,6 @@ namespace irods {
 
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
-        // rule engine server only runs on IES
-#if 0
-//#ifdef RODS_CAT
-        std::string output;
-        ret = forward_server_control_command(
-                  SERVER_CONTROL_SHUTDOWN,
-                  my_env.rodsHost,
-                  CFG_RULE_ENGINE_CONTROL_PLANE_PORT,
-                  output );
-        if ( !ret.ok() ) {
-            error msg = PASS( ret );
-            log( msg );
-            _output = msg.result();
-        }
-#endif
-
         server_state& s = server_state::instance();
         s( server_state::PAUSED );
 

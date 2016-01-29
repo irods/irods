@@ -20,6 +20,7 @@
 #include "fileReaddir.h"
 #include "fileClosedir.h"
 #include "rmColl.h"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -141,11 +142,24 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsDataObjRename( rsComm, dataObjRenameInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsDataObjRename( rsComm, dataObjRenameInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
@@ -172,159 +186,132 @@ getMultiCopyPerResc( rsComm_t *rsComm ) { // JMC - backport 4556
 
 int
 _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
-#ifdef RODS_CAT
-    if ( rsComm == NULL ) {
-        rodsLog( LOG_ERROR, "_rsDataObjRename was passed a null rsComm" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-    int status;
-    char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
-    char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
-    dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    rodsLong_t srcId, destId;
-    int multiCopyFlag;
-    int acPreProcFromRenameFlag = 0;
-
-    const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i, argc;
-    ruleExecInfo_t rei2;
-
-    memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
-    rei2.rsComm = rsComm;
-    rei2.uoic = &rsComm->clientUser;
-    rei2.uoip = &rsComm->proxyUser;
-    rei2.doinp = &dataObjRenameInp->srcDataObjInp;
-
-    srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
-    destDataObjInp = &dataObjRenameInp->destDataObjInp;
-
-    if ( ( status = splitPathByKey(
-                        srcDataObjInp->objPath, srcColl, MAX_NAME_LEN, srcObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "_rsDataObjRename: splitPathByKey for %s error, status = %d",
-                 srcDataObjInp->objPath, status );
-        return status;
-    }
-
-    if ( ( status = splitPathByKey(
-                        destDataObjInp->objPath, destColl, MAX_NAME_LEN, destObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "_rsDataObjRename: splitPathByKey for %s error, status = %d",
-                 destDataObjInp->objPath, status );
-        return status;
-    }
-
-    multiCopyFlag = getMultiCopyPerResc( rsComm );  // JMC - backport 4556
-
-    if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
-
-        status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
-
-        if ( status >= 0 || NULL != dataObjInfoHead ) {
-            srcId = dataObjInfoHead->dataId;
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if ( rsComm == NULL ) {
+            rodsLog( LOG_ERROR, "_rsDataObjRename was passed a null rsComm" );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
         }
-        else {
+        int status;
+        char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
+        char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
+        dataObjInp_t *srcDataObjInp, *destDataObjInp;
+        dataObjInfo_t *dataObjInfoHead = NULL;
+        rodsLong_t srcId, destId;
+        int multiCopyFlag;
+        int acPreProcFromRenameFlag = 0;
+
+        const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+        int i, argc;
+        ruleExecInfo_t rei2;
+
+        memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
+        rei2.rsComm = rsComm;
+        rei2.uoic = &rsComm->clientUser;
+        rei2.uoip = &rsComm->proxyUser;
+        rei2.doinp = &dataObjRenameInp->srcDataObjInp;
+
+        srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
+        destDataObjInp = &dataObjRenameInp->destDataObjInp;
+
+        if ( ( status = splitPathByKey(
+                            srcDataObjInp->objPath, srcColl, MAX_NAME_LEN, srcObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
             rodsLog( LOG_ERROR,
-                     "_rsDataObjRename: src data %s does not exist, status = %d",
+                     "_rsDataObjRename: splitPathByKey for %s error, status = %d",
                      srcDataObjInp->objPath, status );
             return status;
         }
-    }
-    else if ( srcDataObjInp->oprType == RENAME_COLL ) {
-        status = isColl( rsComm, srcDataObjInp->objPath, &srcId );
-        if ( status < 0 ) {
+
+        if ( ( status = splitPathByKey(
+                            destDataObjInp->objPath, destColl, MAX_NAME_LEN, destObj, MAX_NAME_LEN, '/' ) ) < 0 ) {
             rodsLog( LOG_ERROR,
-                     "_rsDataObjRename: src coll %s does not exist, status = %d",
-                     srcDataObjInp->objPath, status );
+                     "_rsDataObjRename: splitPathByKey for %s error, status = %d",
+                     destDataObjInp->objPath, status );
             return status;
         }
-    }
-    else {
-        if ( ( status = isData( rsComm, srcDataObjInp->objPath, &srcId ) ) >= 0 ) {
-            if ( isData( rsComm, destDataObjInp->objPath, &destId ) >= 0 &&
-                    getValByKey( &srcDataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
-                /* dest exist */
-                rsDataObjUnlink( rsComm, destDataObjInp );
+
+        multiCopyFlag = getMultiCopyPerResc( rsComm );  // JMC - backport 4556
+
+        if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
+
+            status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
+
+            if ( status >= 0 || NULL != dataObjInfoHead ) {
+                srcId = dataObjInfoHead->dataId;
             }
-            srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
-            status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead,
-                                     ACCESS_DELETE_OBJECT, 0 );
-
-            if ( status < 0 ) {
+            else {
                 rodsLog( LOG_ERROR,
                          "_rsDataObjRename: src data %s does not exist, status = %d",
                          srcDataObjInp->objPath, status );
                 return status;
             }
         }
-        else if ( ( status = isColl( rsComm, srcDataObjInp->objPath, &srcId ) )
-                  >= 0 ) {
-            srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_COLL;
+        else if ( srcDataObjInp->oprType == RENAME_COLL ) {
+            status = isColl( rsComm, srcDataObjInp->objPath, &srcId );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "_rsDataObjRename: src coll %s does not exist, status = %d",
+                         srcDataObjInp->objPath, status );
+                return status;
+            }
         }
         else {
-            rodsLog( LOG_ERROR,
-                     "_rsDataObjRename: src obj %s does not exist, status = %d",
-                     srcDataObjInp->objPath, status );
-            return status;
-        }
-    }
+            if ( ( status = isData( rsComm, srcDataObjInp->objPath, &srcId ) ) >= 0 ) {
+                if ( isData( rsComm, destDataObjInp->objPath, &destId ) >= 0 &&
+                        getValByKey( &srcDataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+                    /* dest exist */
+                    rsDataObjUnlink( rsComm, destDataObjInp );
+                }
+                srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
+                status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead,
+                                         ACCESS_DELETE_OBJECT, 0 );
 
-    if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
-        if ( strstr( dataObjInfoHead->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
-            rodsLog( LOG_ERROR,
-                     "_rsDataObjRename: cannot rename tar bundle type obj %s",
-                     srcDataObjInp->objPath );
-            return CANT_RM_MV_BUNDLE_TYPE;
-        }
-    }
-
-    if ( strcmp( srcObj, destObj ) != 0 ) {
-        /* rename */
-        if ( srcId < 0 ) {
-            status = srcId;
-            return status;
-        }
-
-        /**  June 1 2009 for pre-post processing rule hooks **/
-        argc    = 2;
-        args[0] = srcDataObjInp->objPath;
-        args[1] = destDataObjInp->objPath;
-        acPreProcFromRenameFlag = 1;
-        i =  applyRuleArg( "acPreProcForObjRename", args, argc, &rei2, NO_SAVE_REI );
-        if ( i < 0 ) {
-            if ( rei2.status < 0 ) {
-                i = rei2.status;
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR,
+                             "_rsDataObjRename: src data %s does not exist, status = %d",
+                             srcDataObjInp->objPath, status );
+                    return status;
+                }
             }
-            rodsLog( LOG_ERROR,
-                     "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                     args[0], args[1], i );
-            return i;
-        }
-        /**  June 1 2009 for pre-post processing rule hooks **/
-
-        status = chlRenameObject( rsComm, srcId, destObj );
-    }
-
-    if ( status < 0 ) {
-        return status;
-    }
-
-    if ( strcmp( srcColl, destColl ) != 0 ) {
-        /* move. The destColl is the target  */
-        status = isColl( rsComm, destColl, &destId );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "_rsDataObjRename: dest coll %s does not exist, status = %d",
-                     destColl, status );
-            return status;
+            else if ( ( status = isColl( rsComm, srcDataObjInp->objPath, &srcId ) )
+                      >= 0 ) {
+                srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_COLL;
+            }
+            else {
+                rodsLog( LOG_ERROR,
+                         "_rsDataObjRename: src obj %s does not exist, status = %d",
+                         srcDataObjInp->objPath, status );
+                return status;
+            }
         }
 
-        /**  June 1 2009 for pre-post processing rule hooks **/
-        if ( acPreProcFromRenameFlag == 0 ) {
+        if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
+            if ( strstr( dataObjInfoHead->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
+                rodsLog( LOG_ERROR,
+                         "_rsDataObjRename: cannot rename tar bundle type obj %s",
+                         srcDataObjInp->objPath );
+                return CANT_RM_MV_BUNDLE_TYPE;
+            }
+        }
+
+        if ( strcmp( srcObj, destObj ) != 0 ) {
+            /* rename */
+            if ( srcId < 0 ) {
+                status = srcId;
+                return status;
+            }
+
+            /**  June 1 2009 for pre-post processing rule hooks **/
+            argc    = 2;
             args[0] = srcDataObjInp->objPath;
             args[1] = destDataObjInp->objPath;
-            argc = 2;
+            acPreProcFromRenameFlag = 1;
             i =  applyRuleArg( "acPreProcForObjRename", args, argc, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
                 if ( rei2.status < 0 ) {
@@ -335,65 +322,106 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                          args[0], args[1], i );
                 return i;
             }
-        }
-        /**  June 1 2009 for pre-post processing rule hooks **/
+            /**  June 1 2009 for pre-post processing rule hooks **/
 
-        status = chlMoveObject( rsComm, srcId, destId );
-    }
-    if ( status >= 0 ) {
-        if ( multiCopyFlag > 0 ) {
-            status = chlCommit( rsComm );
+            status = chlRenameObject( rsComm, srcId, destObj );
+        }
+
+        if ( status < 0 ) {
             return status;
         }
-        else {
-            /* enforce physPath consistency */
-            if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
-                dataObjInfo_t *tmpDataObjInfo;
 
-                /* update src dataObjInfoHead with dest objPath */
-                tmpDataObjInfo = dataObjInfoHead;
-                while ( tmpDataObjInfo != NULL ) {
-                    rstrcpy( tmpDataObjInfo->objPath, destDataObjInp->objPath, MAX_NAME_LEN );
+        if ( strcmp( srcColl, destColl ) != 0 ) {
+            /* move. The destColl is the target  */
+            status = isColl( rsComm, destColl, &destId );
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "_rsDataObjRename: dest coll %s does not exist, status = %d",
+                         destColl, status );
+                return status;
+            }
 
-                    tmpDataObjInfo = tmpDataObjInfo->next;
+            /**  June 1 2009 for pre-post processing rule hooks **/
+            if ( acPreProcFromRenameFlag == 0 ) {
+                args[0] = srcDataObjInp->objPath;
+                args[1] = destDataObjInp->objPath;
+                argc = 2;
+                i =  applyRuleArg( "acPreProcForObjRename", args, argc, &rei2, NO_SAVE_REI );
+                if ( i < 0 ) {
+                    if ( rei2.status < 0 ) {
+                        i = rei2.status;
+                    }
+                    rodsLog( LOG_ERROR,
+                             "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
+                             args[0], args[1], i );
+                    return i;
                 }
-                status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, NULL );
-                freeAllDataObjInfo( dataObjInfoHead );
             }
-            else {
-                status = syncCollPhyPath( rsComm, destDataObjInp->objPath );
-            }
+            /**  June 1 2009 for pre-post processing rule hooks **/
 
-            if ( status >= 0 ) {
-                status = chlCommit( rsComm );
-            }
-            else {
-                chlRollback( rsComm );
-            }
+            status = chlMoveObject( rsComm, srcId, destId );
         }
         if ( status >= 0 ) {
-            args[0] = srcDataObjInp->objPath;
-            args[1] = destDataObjInp->objPath;
-            argc = 2;
-            status =  applyRuleArg( "acPostProcForObjRename", args, argc,
-                                    &rei2, NO_SAVE_REI );
-            if ( status < 0 ) {
-                if ( rei2.status < 0 ) {
-                    status = rei2.status;
+            if ( multiCopyFlag > 0 ) {
+                status = chlCommit( rsComm );
+                return status;
+            }
+            else {
+                /* enforce physPath consistency */
+                if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
+                    dataObjInfo_t *tmpDataObjInfo;
+
+                    /* update src dataObjInfoHead with dest objPath */
+                    tmpDataObjInfo = dataObjInfoHead;
+                    while ( tmpDataObjInfo != NULL ) {
+                        rstrcpy( tmpDataObjInfo->objPath, destDataObjInp->objPath, MAX_NAME_LEN );
+
+                        tmpDataObjInfo = tmpDataObjInfo->next;
+                    }
+                    status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, NULL );
+                    freeAllDataObjInfo( dataObjInfoHead );
                 }
-                rodsLog( LOG_ERROR,
-                         "rsDataObjRename: acPostProc err for src %s dest %s,stat=%d",
-                         args[0], args[1], status );
+                else {
+                    status = syncCollPhyPath( rsComm, destDataObjInp->objPath );
+                }
+
+                if ( status >= 0 ) {
+                    status = chlCommit( rsComm );
+                }
+                else {
+                    chlRollback( rsComm );
+                }
+            }
+            if ( status >= 0 ) {
+                args[0] = srcDataObjInp->objPath;
+                args[1] = destDataObjInp->objPath;
+                argc = 2;
+                status =  applyRuleArg( "acPostProcForObjRename", args, argc,
+                                        &rei2, NO_SAVE_REI );
+                if ( status < 0 ) {
+                    if ( rei2.status < 0 ) {
+                        status = rei2.status;
+                    }
+                    rodsLog( LOG_ERROR,
+                             "rsDataObjRename: acPostProc err for src %s dest %s,stat=%d",
+                             args[0], args[1], status );
+                }
             }
         }
+        else {
+            chlRollback( rsComm );
+        }
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        return SYS_NO_ICAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
-    else {
-        chlRollback( rsComm );
-    }
-    return status;
-#else
-    return SYS_NO_ICAT_SERVER_ERR;
-#endif
+
 }
 
 int

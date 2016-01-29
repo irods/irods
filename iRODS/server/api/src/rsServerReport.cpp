@@ -589,12 +589,20 @@ irods::error get_plugin_array(
     if ( !ret.ok() ) {
         return PASS( ret );
     }
-#ifdef RODS_CAT
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-#endif // RODS_CAT
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+    }
 
     ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
     if ( !ret.ok() ) {
@@ -1006,7 +1014,6 @@ irods::error load_version_file(
 } // load_version_file
 
 
-#ifdef RODS_CAT
 irods::error get_database_config(
     json_t*& _db_cfg ) {
     // =-=-=-=-=-=-=-
@@ -1069,8 +1076,6 @@ irods::error get_database_config(
     return SUCCESS();
 
 } // get_database_config
-
-#endif
 
 int _rsServerReport(
     rsComm_t*    _comm,
@@ -1165,16 +1170,21 @@ int _rsServerReport(
     }
     json_object_set( resc_svr, "configuration_directory", cfg_dir );
 
-#ifdef RODS_CAT
-
-    json_t* db_cfg = 0;
-    ret = get_database_config( db_cfg );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-    json_object_set( resc_svr, "database_config", db_cfg );
-
-#endif
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        json_t* db_cfg = 0;
+        ret = get_database_config( db_cfg );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+        }
+        json_object_set( resc_svr, "database_config", db_cfg );
+    }
 
     char* tmp_buf = json_dumps( resc_svr, JSON_INDENT( 4 ) );
 

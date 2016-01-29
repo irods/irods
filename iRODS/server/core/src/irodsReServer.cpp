@@ -282,28 +282,34 @@ reSvrSleep( rsComm_t *rsComm ) {
         return ret.code();
 
     }
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
 
     int status = disconnRcatHost( MASTER_RCAT, zone_name.c_str() );
     if ( status == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = disconnectRcat();
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "reSvrSleep: disconnectRcat error. status = %d", status );
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = disconnectRcat();
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "reSvrSleep: disconnectRcat error. status = %d", status );
+            }
         }
-#endif
     }
     rodsSleep( RE_SERVER_SLEEP_TIME, 0 );
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, zone_name.c_str(), &rodsServerHost );
     if ( status == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = connectRcat();
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "reSvrSleep: connectRcat error. status = %d", status );
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = connectRcat();
+            if ( status < 0 ) {
+                rodsLog( LOG_ERROR,
+                         "reSvrSleep: connectRcat error. status = %d", status );
+            }
         }
-#endif
     }
     return status;
 }

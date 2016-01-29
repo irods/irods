@@ -2,6 +2,7 @@
 #include "ruleExecSubmit.h"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
+#include "miscServerFunct.hpp"
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
@@ -30,16 +31,30 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsRuleExecSubmit( rsComm, ruleExecSubmitInp );
-        if ( status >= 0 ) {
-            *ruleExecId = strdup( ruleExecSubmitInp->ruleExecId );
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
         }
-#else
-        rodsLog( LOG_NOTICE,
-                 "rsRuleExecSubmit error. ICAT is not configured on this host" );
-        return SYS_NO_ICAT_SERVER_ERR;
-#endif
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsRuleExecSubmit( rsComm, ruleExecSubmitInp );
+            if ( status >= 0 ) {
+                *ruleExecId = strdup( ruleExecSubmitInp->ruleExecId );
+            }
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            rodsLog( LOG_NOTICE,
+                     "rsRuleExecSubmit error. ICAT is not configured on this host" );
+            return SYS_NO_ICAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
+
     }
     else {
         if ( getValByKey( &ruleExecSubmitInp->condInput, EXEC_LOCALLY_KW ) !=
@@ -109,18 +124,31 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
     }
 
     /* register the request */
-#ifdef RODS_CAT
-    status = chlRegRuleExec( rsComm, ruleExecSubmitInp );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "_rsRuleExecSubmit: chlRegRuleExec error. status = %d", status );
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-    return status;
-#else
-    rodsLog( LOG_ERROR,
-             "_rsRuleExecSubmit error. ICAT is not configured on this host" );
-    return SYS_NO_ICAT_SERVER_ERR;
-#endif
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        status = chlRegRuleExec( rsComm, ruleExecSubmitInp );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "_rsRuleExecSubmit: chlRegRuleExec error. status = %d", status );
+        }
+        return status;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        rodsLog( LOG_ERROR,
+                 "_rsRuleExecSubmit error. ICAT is not configured on this host" );
+        return SYS_NO_ICAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
 
 }
 
