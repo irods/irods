@@ -33,13 +33,26 @@ int rsZoneReport(
     }
 
     if ( rods_host->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsZoneReport(
-                     _comm,
-                     _bbuf );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsZoneReport(
+                         _comm,
+                         _bbuf );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcZoneReport( rods_host->conn,
@@ -56,9 +69,6 @@ int rsZoneReport(
     return status;
 
 } // rsZoneReport
-
-
-#ifdef RODS_CAT
 
 irods::error get_server_reports(
     rsComm_t* _comm,
@@ -261,4 +271,4 @@ int _rsZoneReport(
 
 } // _rsZoneReport
 
-#endif // RODS_CAT
+

@@ -3431,6 +3431,27 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
 } // add_global_re_params_to_kvp
 
+irods::error get_catalog_service_role(
+    std::string& _role ) {
+    irods::server_properties& props = irods::server_properties::getInstance();
+    irods::error ret =props.capture_if_needed();
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    ret = props.get_property<std::string>(
+              irods::CFG_CATALOG_SERVICE_ROLE,
+              _role);
+
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    return SUCCESS();
+
+} // get_catalog_service_role
+
+
 void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
     if ( !rsComm ) {
         THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm passed in" );

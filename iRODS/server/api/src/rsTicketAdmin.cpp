@@ -7,6 +7,7 @@
 #include "ticketAdmin.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
@@ -21,11 +22,24 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsTicketAdmin( rsComm, ticketAdminInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsTicketAdmin( rsComm, ticketAdminInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         if ( strcmp( ticketAdminInp->arg1, "session" ) == 0 ) {
@@ -42,7 +56,6 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
     int status;
@@ -64,4 +77,4 @@ _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
                            ticketAdminInp->arg4, ticketAdminInp->arg5 );
     return status;
 }
-#endif
+

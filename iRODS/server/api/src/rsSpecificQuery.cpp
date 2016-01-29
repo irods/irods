@@ -8,6 +8,7 @@
 #include "miscUtil.h"
 #include "rcMisc.h"
 #include "irods_log.hpp"
+#include "miscServerFunct.hpp"
 
 /* can be used for debug: */
 
@@ -28,13 +29,27 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsSpecificQuery( rsComm, specificQueryInp, genQueryOut );
-#else
-        rodsLog( LOG_NOTICE,
-                 "rsSpecificQuery error. RCAT is not configured on this host" );
-        return SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsSpecificQuery( rsComm, specificQueryInp, genQueryOut );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            rodsLog( LOG_NOTICE,
+                     "rsSpecificQuery error. RCAT is not configured on this host" );
+            return SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
+
     }
     else {
         status = rcSpecificQuery( rodsServerHost->conn,
@@ -47,7 +62,6 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
                   genQueryOut_t **genQueryOut ) {
@@ -78,4 +92,4 @@ _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     }
     return status;
 }
-#endif
+

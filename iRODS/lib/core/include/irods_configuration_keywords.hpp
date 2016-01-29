@@ -148,6 +148,11 @@ namespace irods {
     const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW(
         "server_control_plane_encryption_algorithm" );
 
+    const std::string CFG_CATALOG_SERVICE_ROLE("catalog_service_role");
+    const std::string CFG_SERVICE_ROLE_PROVIDER("provider");
+    const std::string CFG_SERVICE_ROLE_CONSUMER("consumer");
+    const std::string CFG_SERVICE_ROLE_PROXY("proxy");
+
     const std::string CFG_IRODS_PLUGINS_HOME_KW( "irods_plugins_home" );
 
     // plugin types

@@ -6,6 +6,7 @@
 #include "generalRowInsert.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp ) {
@@ -20,11 +21,23 @@ rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsGeneralRowInsert( rsComm, generalRowInsertInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsGeneralRowInsert( rsComm, generalRowInsertInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcGeneralRowInsert( rodsServerHost->conn,
@@ -38,7 +51,6 @@ rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp ) {
     int status;
@@ -131,4 +143,4 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
     }
     return CAT_INVALID_ARGUMENT;
 }
-#endif
+

@@ -9,6 +9,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "rodsVersion.h"
+#include "miscServerFunct.hpp"
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
@@ -23,12 +24,25 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
 
     memset( myOutSvrInfo, 0, sizeof( miscSvrInfo_t ) );
 
-    /* user writtened code */
-#ifdef RODS_CAT
-    myOutSvrInfo->serverType = RCAT_ENABLED;
-#else
-    myOutSvrInfo->serverType = RCAT_NOT_ENABLED;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        myOutSvrInfo->serverType = RCAT_ENABLED;
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        myOutSvrInfo->serverType = RCAT_NOT_ENABLED;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
     rstrcpy( myOutSvrInfo->relVersion, RODS_REL_VERSION, NAME_LEN );
     rstrcpy( myOutSvrInfo->apiVersion, RODS_API_VERSION, NAME_LEN );
 

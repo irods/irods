@@ -1327,10 +1327,6 @@ if [ "$BUILDIRODS" == "1" ] ; then
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         # detect database plugin type
         DATABASE_PLUGIN_TYPE=$2
-        # turn on ICAT
-        set_tmpfile
-        sed -e "\,RODS_CAT=,s,^.*$,RODS_CAT=1," $NEW_CONFIG_MK > $TMPFILE
-        mv $TMPFILE $NEW_CONFIG_MK
     fi
 
     # set RELEASE_FLAG accordingly

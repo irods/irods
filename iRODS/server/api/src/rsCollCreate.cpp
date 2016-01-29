@@ -19,6 +19,7 @@
 #include "specColl.hpp"
 #include "physPath.hpp"
 #include "dataObjOpr.hpp"
+#include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -31,9 +32,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     ruleExecInfo_t rei;
     collInfo_t collInfo;
     specCollCache_t *specCollCache = NULL;
-#ifdef RODS_CAT
     dataObjInfo_t *dataObjInfo = NULL;
-#endif
 
     irods::error ret = validate_logical_path( collCreateInp->collName );
     if ( !ret.ok() ) {
@@ -72,57 +71,68 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
             status = rsMkCollR( rsComm, "/", collCreateInp->collName );
             return status;
         }
-#ifdef RODS_CAT
-
-        /* for STRUCT_FILE_COLL to make a directory in the structFile, the
-         * COLLECTION_TYPE_KW must be set */
-
-        status = resolvePathInSpecColl( rsComm, collCreateInp->collName,
-                                        WRITE_COLL_PERM, 0, &dataObjInfo );
-        if ( status >= 0 ) {
-            freeDataObjInfo( dataObjInfo );
-            if ( status == COLL_OBJ_T ) {
-                return 0;
-            }
-            else if ( status == DATA_OBJ_T ) {
-                return USER_INPUT_PATH_ERR;
-            }
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
         }
-        else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */
-            if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
-                    dataObjInfo->specColl->collClass == LINKED_COLL ) {
-                /*  should not be here because if has been translated */
-                return SYS_COLL_LINK_PATH_ERR;
+
+            status = resolvePathInSpecColl( rsComm, collCreateInp->collName,
+                                            WRITE_COLL_PERM, 0, &dataObjInfo );
+            if ( status >= 0 ) {
+                freeDataObjInfo( dataObjInfo );
+                if ( status == COLL_OBJ_T ) {
+                    return 0;
+                }
+                else if ( status == DATA_OBJ_T ) {
+                    return USER_INPUT_PATH_ERR;
+                }
+            }
+            else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+                /* for STRUCT_FILE_COLL to make a directory in the structFile, the
+                 * COLLECTION_TYPE_KW must be set */
+                if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+                        dataObjInfo->specColl->collClass == LINKED_COLL ) {
+                    /*  should not be here because if has been translated */
+                    return SYS_COLL_LINK_PATH_ERR;
+                }
+                else {
+                    status = l3Mkdir( rsComm, dataObjInfo );
+                }
+                freeDataObjInfo( dataObjInfo );
+                return status;
             }
             else {
-                status = l3Mkdir( rsComm, dataObjInfo );
+                if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
+                    return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+                }
+                status = _rsRegColl( rsComm, collCreateInp );
             }
-            freeDataObjInfo( dataObjInfo );
-            return status;
-        }
-        else {
-            if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
-                return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
-            }
-            status = _rsRegColl( rsComm, collCreateInp );
-        }
-        rei.status = status;
-        if ( status >= 0 ) {
-            rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
-                                    NO_SAVE_REI );
+            rei.status = status;
+            if ( status >= 0 ) {
+                rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
+                                        NO_SAVE_REI );
 
-            if ( rei.status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
-                         collCreateInp->collName, status );
+                if ( rei.status < 0 ) {
+                    rodsLog( LOG_ERROR,
+                             "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
+                             collCreateInp->collName, status );
+                }
             }
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
-
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
     }
     else {
         status = rcCollCreate( rodsServerHost->conn, collCreateInp );

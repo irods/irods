@@ -212,6 +212,7 @@ NEW_ERROR(SYS_THREAD_RESOURCE_ERR,                     -157000)
 NEW_ERROR(SYS_BAD_INPUT,                               -158000)
 NEW_ERROR(SYS_PORT_RANGE_EXHAUSTED,                    -159000)
 NEW_ERROR(SYS_SOCK_LISTEN_ERROR,                       -160000)
+NEW_ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,              -161000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */

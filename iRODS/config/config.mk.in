@@ -23,8 +23,6 @@
 #
 #	FILE_64BITS	Whether 64-bit file sizes are supported.
 #
-#	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
-#
 #	POSTGRES_HOME	The home directory of Postgres
 #
 #	MYSQL_HOME	The home directory of MySQL
@@ -35,7 +33,6 @@
 #RELEASE_FLAG=1
 OS_platform=
 FILE_64BITS=1
-#RODS_CAT=1
 POSTGRES_HOME=
 MYSQL_HOME=
 ORACLE_HOME=

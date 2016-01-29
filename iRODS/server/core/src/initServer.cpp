@@ -109,18 +109,24 @@ initServerInfo( rsComm_t *rsComm ) {
                  status );
         return status;
     }
-
-#ifdef RODS_CAT
-    status = connectRcat();
-    if ( status < 0 ) {
-        rodsLog(
-            LOG_SYS_FATAL,
-            "initServerInfo: connectRcat failed, status = %d",
-            status );
-
-        return status;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-#endif
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        status = connectRcat();
+        if ( status < 0 ) {
+            rodsLog(
+                LOG_SYS_FATAL,
+                "initServerInfo: connectRcat failed, status = %d",
+                status );
+
+            return status;
+        }
+    }
 
     status = initZone( rsComm );
     if ( status < 0 ) {
@@ -749,9 +755,16 @@ initAgent( int processType, rsComm_t *rsComm ) {
 
 void
 cleanup() {
-#ifdef RODS_CAT
-    disconnectRcat();
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        disconnectRcat();
+    }
 
     finalizeRuleEngine();
 

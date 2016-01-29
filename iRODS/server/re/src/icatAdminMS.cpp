@@ -10,6 +10,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "generalAdmin.h"
+#include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
 
 
@@ -68,12 +69,24 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
         }
     }
     /**** End of Test Stub  ****/
-
-#ifdef RODS_CAT
-    i =  chlRegUserRE( rei->rsComm, rei->uoio );
-#else
-    i =  SYS_NO_ICAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        i =  chlRegUserRE( rei->rsComm, rei->uoio );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        i =  SYS_NO_ICAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return i;
 }
 
@@ -143,12 +156,24 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
     snprintf( collInfo.collOwnerZone, sizeof( collInfo.collOwnerZone ),
               "%s", rei->uoio->rodsZone );
 
-
-#ifdef RODS_CAT
-    i =  chlRegCollByAdmin( rei->rsComm, &collInfo );
-#else
-    i =  SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        i =  chlRegCollByAdmin( rei->rsComm, &collInfo );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        i =  SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return i;
 }
 
@@ -216,11 +241,25 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
     snprintf( collInfo.collOwnerZone, sizeof( collInfo.collOwnerZone ),
               "%s", rei->uoio->rodsZone );
 
-#ifdef RODS_CAT
-    i = chlDelCollByAdmin( rei->rsComm, &collInfo );
-#else
-    i = SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        i = chlDelCollByAdmin( rei->rsComm, &collInfo );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        i = SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
     if ( i == CAT_UNKNOWN_COLLECTION ) {
         /* Not sure where this kind of logic belongs, chl, rules,
            or here; but for now it's here.  */
@@ -279,12 +318,24 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
         return 0;
     }
     /**** End of Test Stub  ****/
-
-#ifdef RODS_CAT
-    i =  chlDelUserRE( rei->rsComm, rei->uoio );
-#else
-    i = SYS_NO_RCAT_SERVER_ERR;
-#endif
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        i =  chlDelUserRE( rei->rsComm, rei->uoio );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        i = SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return i;
 }
 
@@ -323,9 +374,8 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
 int
 msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
     int i;
-#ifdef RODS_CAT
     char *groupName;
-#endif
+
     if ( reTestFlag > 0 ) { /* Test stub mode */
         if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
             print_uoi( rei->uoio );
@@ -338,16 +388,30 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
                  "   Test mode, returning without performing normal operations (chlModGroup)" );
         return 0;
     }
-#ifdef RODS_CAT
-    if ( strncmp( rei->uoio->userType, "rodsgroup", 9 ) == 0 ) {
-        return 0;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-    groupName = ( char * ) msParam->inOutStruct;
-    i =  chlModGroup( rei->rsComm, groupName, "add", rei->uoio->userName,
-                      rei->uoio->rodsZone );
-#else
-    i = SYS_NO_RCAT_SERVER_ERR;
-#endif
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        if ( strncmp( rei->uoio->userType, "rodsgroup", 9 ) == 0 ) {
+            return 0;
+        }
+        groupName = ( char * ) msParam->inOutStruct;
+        i =  chlModGroup( rei->rsComm, groupName, "add", rei->uoio->userName,
+                          rei->uoio->rodsZone );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        i = SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
     return i;
 }
 
@@ -387,16 +451,29 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
 int
 msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei ) {
     int status;
-#ifdef RODS_CAT
-    char *oldNameStr;
-    char *newNameStr;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        char *oldNameStr;
+        char *newNameStr;
 
-    oldNameStr = ( char * ) oldName->inOutStruct;
-    newNameStr = ( char * ) newName->inOutStruct;
-    status = chlRenameLocalZone( rei->rsComm, oldNameStr, newNameStr );
-#else
-    status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        oldNameStr = ( char * ) oldName->inOutStruct;
+        newNameStr = ( char * ) newName->inOutStruct;
+        status = chlRenameLocalZone( rei->rsComm, oldNameStr, newNameStr );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status = SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return status;
 }
 
@@ -436,16 +513,29 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
 int
 msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei ) {
     int status;
-#ifdef RODS_CAT
-    char *oldNameStr;
-    char *newNameStr;
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+    
+    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+        char *oldNameStr;
+        char *newNameStr;
 
-    oldNameStr = ( char * ) oldName->inOutStruct;
-    newNameStr = ( char * ) newName->inOutStruct;
-    status = chlRenameColl( rei->rsComm, oldNameStr, newNameStr );
-#else
-    status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        oldNameStr = ( char * ) oldName->inOutStruct;
+        newNameStr = ( char * ) newName->inOutStruct;
+        status = chlRenameColl( rei->rsComm, oldNameStr, newNameStr );
+    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        status = SYS_NO_RCAT_SERVER_ERR;
+    } else {
+        rodsLog(
+            LOG_ERROR,
+            "role not supported [%s]",
+            svc_role.c_str() );
+        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
     return status;
 }
 
@@ -489,21 +579,27 @@ int
 msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     char *inputArg;
 
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
+
     std::string strict = "off";
     inputArg = ( char * ) msParam->inOutStruct;
     if ( inputArg != NULL ) {
         if ( strncmp( inputArg, "STRICT", 6 ) == 0 ) {
-#ifdef RODS_CAT
-            chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
-            strict = "on";
-#endif
+            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+                chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
+                strict = "on";
+            }
         }
     }
     else {
-#ifdef RODS_CAT
-        chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
-
-#endif
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
+        }
     }
 
     // set a strict acl prop

@@ -8,6 +8,7 @@
 #include "specColl.hpp"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
 
 int
 rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp ) {
@@ -33,11 +34,24 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-#ifdef RODS_CAT
-        status = _rsModAccessControl( rsComm, &newModAccessControlInp );
-#else
-        status = SYS_NO_RCAT_SERVER_ERR;
-#endif
+        std::string svc_role;
+        irods::error ret = get_catalog_service_role(svc_role);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        
+        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+            status = _rsModAccessControl( rsComm, &newModAccessControlInp );
+        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+            status = SYS_NO_RCAT_SERVER_ERR;
+        } else {
+            rodsLog(
+                LOG_ERROR,
+                "role not supported [%s]",
+                svc_role.c_str() );
+            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        }
     }
     else {
         status = rcModAccessControl( rodsServerHost->conn,
@@ -51,7 +65,6 @@ rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     return status;
 }
 
-#ifdef RODS_CAT
 int
 _rsModAccessControl( rsComm_t *rsComm,
                      modAccessControlInp_t *modAccessControlInp ) {
@@ -115,4 +128,4 @@ _rsModAccessControl( rsComm_t *rsComm,
 
     return status;
 }
-#endif
+
