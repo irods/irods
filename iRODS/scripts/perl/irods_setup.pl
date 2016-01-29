@@ -2429,6 +2429,8 @@ sub MySQL_sql($$)
 # Finish setting up iRODS.
 #
 
+no warnings 'uninitialized';
+
 # Initially, assume a database restart is not needed.  Any of the
 # steps that might change database configuration files will change
 # this flag to indicate that a restart is needed.  That restart
