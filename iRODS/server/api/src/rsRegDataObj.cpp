@@ -34,7 +34,7 @@ rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRegDataObj( rsComm, dataObjInfo );
             if ( status >= 0 ) {
@@ -68,7 +68,7 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         irods::error ret;
@@ -109,7 +109,7 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
 }
@@ -139,7 +139,7 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRegDataObj( rsComm, dataObjInfo );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -165,4 +165,3 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 
     return status;
 }
-

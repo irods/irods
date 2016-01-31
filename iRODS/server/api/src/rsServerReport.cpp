@@ -589,14 +589,14 @@ irods::error get_plugin_array(
     if ( !ret.ok() ) {
         return PASS( ret );
     }
-    
+
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
+    ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();
+        return PASS( ret );
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
         if ( !ret.ok() ) {
@@ -1171,12 +1171,12 @@ int _rsServerReport(
     json_object_set( resc_svr, "configuration_directory", cfg_dir );
 
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
+    ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         json_t* db_cfg = 0;
         ret = get_database_config( db_cfg );

@@ -30,7 +30,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         myOutSvrInfo->serverType = RCAT_ENABLED;
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -40,7 +40,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
     rstrcpy( myOutSvrInfo->relVersion, RODS_REL_VERSION, NAME_LEN );
@@ -64,4 +64,3 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
 
     return 0;
 }
-

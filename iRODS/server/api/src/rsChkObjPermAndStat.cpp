@@ -34,7 +34,7 @@ rsChkObjPermAndStat( rsComm_t *rsComm,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsChkObjPermAndStat( rsComm, chkObjPermAndStatInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -64,7 +64,7 @@ _rsChkObjPermAndStat( rsComm_t *rsComm,
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
 
@@ -85,7 +85,7 @@ _rsChkObjPermAndStat( rsComm_t *rsComm,
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }
 
@@ -98,7 +98,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         collInp_t openCollInp;
@@ -280,7 +280,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }
 
@@ -326,4 +326,3 @@ freeCollEntForChkColl( collEnt_t *collEnt ) {
     free( collEnt );
     return 0;
 }
-

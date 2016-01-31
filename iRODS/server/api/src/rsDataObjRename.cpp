@@ -148,7 +148,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsDataObjRename( rsComm, dataObjRenameInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -192,7 +192,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         if ( rsComm == NULL ) {
             rodsLog( LOG_ERROR, "_rsDataObjRename was passed a null rsComm" );
@@ -419,7 +419,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
 }
@@ -658,4 +658,3 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     l3Rmdir( rsComm, srcDataObjInfo );
     return savedStatus;
 }
-

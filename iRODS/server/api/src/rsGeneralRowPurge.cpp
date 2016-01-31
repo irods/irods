@@ -22,6 +22,7 @@ rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp ) 
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
 
+        std::string svc_role;
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGeneralRowPurge( rsComm, generalRowPurgeInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -66,4 +67,3 @@ _rsGeneralRowPurge( rsComm_t *rsComm, generalRowPurgeInp_t *generalRowPurgeInp )
     }
     return CAT_INVALID_ARGUMENT;
 }
-

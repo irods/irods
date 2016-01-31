@@ -47,7 +47,7 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRegColl( rsComm, regCollInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -76,7 +76,7 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         collInfo_t collInfo;
@@ -106,6 +106,6 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }
