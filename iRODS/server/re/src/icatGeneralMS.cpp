@@ -97,12 +97,13 @@ msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t*
 int
 msiQuota( ruleExecInfo_t *rei ) {
     int status;
+    std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
         status = chlCalcUsageAndQuota( rei->rsComm );
@@ -391,7 +392,7 @@ msiCommit( ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         status = chlCommit( rei->rsComm );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -458,7 +459,7 @@ msiRollback( ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         status = chlRollback( rei->rsComm );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -653,7 +654,7 @@ msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         rodsLog( LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n" );
         status = chlDelUnusedAVUs( rei->rsComm );

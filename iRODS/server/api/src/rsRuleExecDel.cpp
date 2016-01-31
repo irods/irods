@@ -1,5 +1,3 @@
-
-
 #include "rcMisc.h"
 #include "ruleExecSubmit.h"
 #include "ruleExecDel.h"
@@ -31,7 +29,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRuleExecDel( rsComm, ruleExecDelInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -65,7 +63,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     sqlResult_t *ruleUserName;
 
     char reiDir[MAX_NAME_LEN];
-    
+
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -83,7 +81,7 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                  status );
         /* unregister it anyway */
 
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = chlDelRuleExec( rsComm, ruleExecDelInp->ruleExecId );
             if ( status < 0 ) {
@@ -228,7 +226,6 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }
-

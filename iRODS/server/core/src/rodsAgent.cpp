@@ -180,7 +180,7 @@ main( int, char ** ) {
     }
 
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
+    ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();

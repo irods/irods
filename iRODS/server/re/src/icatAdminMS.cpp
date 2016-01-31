@@ -75,7 +75,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlRegUserRE( rei->rsComm, rei->uoio );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -85,7 +85,7 @@ int msiCreateUser( ruleExecInfo_t *rei ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        i = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
     return i;
 }
@@ -162,7 +162,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlRegCollByAdmin( rei->rsComm, &collInfo );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -172,7 +172,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        i = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
     return i;
 }
@@ -247,7 +247,7 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i = chlDelCollByAdmin( rei->rsComm, &collInfo );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -257,7 +257,7 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        i = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
     if ( i == CAT_UNKNOWN_COLLECTION ) {
@@ -324,7 +324,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         i =  chlDelUserRE( rei->rsComm, rei->uoio );
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -334,7 +334,7 @@ msiDeleteUser( ruleExecInfo_t *rei ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        i = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
     return i;
 }
@@ -394,7 +394,7 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         if ( strncmp( rei->uoio->userType, "rodsgroup", 9 ) == 0 ) {
             return 0;
@@ -409,7 +409,7 @@ msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        i = SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
     return i;
@@ -457,7 +457,7 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         char *oldNameStr;
         char *newNameStr;
@@ -519,7 +519,7 @@ msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         char *oldNameStr;
         char *newNameStr;
@@ -603,7 +603,7 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     }
 
     // set a strict acl prop
-    irods::error ret = irods::set_server_property<std::string>(
+    ret = irods::set_server_property<std::string>(
                            irods::STRICT_ACL_KW,
                            strict );
 
@@ -746,4 +746,3 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     /* Done */
     return status;
 }
-

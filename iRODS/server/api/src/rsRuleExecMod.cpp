@@ -2,9 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See ruleExecMod.h for a description of this API call.*/
 
+#include "miscServerFunct.hpp"
 #include "ruleExecMod.h"
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "irods_log.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
@@ -23,7 +26,7 @@ rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsRuleExecMod( rsComm, ruleExecModInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -58,4 +61,3 @@ _rsRuleExecMod( rsComm_t *rsComm,
                              &ruleExecModInp->condInput );
     return status;
 }
-

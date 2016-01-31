@@ -307,9 +307,9 @@ serverMain( char *logDir ) {
                  status );
         exit( 1 );
     }
-    
+
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
+    ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
@@ -847,7 +847,7 @@ initServer( rsComm_t *svrComm ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {

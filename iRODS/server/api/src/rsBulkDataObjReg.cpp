@@ -43,7 +43,7 @@ rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsBulkDataObjReg( rsComm, bulkDataObjRegInp,
                                         bulkDataObjRegOut );
@@ -74,7 +74,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         irods::log(PASS(ret));
         return ret.code();
     }
-    
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         dataObjInfo_t dataObjInfo;
         sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescHier, *filePath,
@@ -245,7 +245,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 }
 
@@ -276,4 +276,3 @@ modDataObjSizeMeta( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     return status;
 }
-

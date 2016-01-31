@@ -434,7 +434,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
                         irods::log(PASS(ret));
                         return ret.code();
                     }
-                    
+
                     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
                         resetRcat();
                     }
@@ -488,9 +488,9 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
         return ret.code();
 
     }
-    
+
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
+    ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
@@ -1131,4 +1131,3 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
 
     return reExecProc.status;
 }
-
