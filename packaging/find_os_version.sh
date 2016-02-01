@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
-DETECTEDOS=`$SCRIPTPATH/find_os.sh`
+DETECTEDOS=`bash $SCRIPTPATH/find_os.sh`
 if [ "$DETECTEDOS" == "Ubuntu" ] ; then
     OSVERSION=`grep RELEASE /etc/lsb-release | awk -F= '{print $2}'`
 elif [ "$DETECTEDOS" == "Debian" ] ; then
@@ -22,4 +22,3 @@ fi
 
 echo "$OSVERSION"
 exit 0
-

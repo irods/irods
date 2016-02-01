@@ -28,9 +28,9 @@ namespace irods {
         // given config file.  this list is searched in the order in
         // which the paths are added to the vector
         std::vector< std::string > search_paths;
-        search_paths.push_back( IRODS_HOME_DIRECTORY + "iRODS/server/config/reConfigs/" );
-        search_paths.push_back( IRODS_HOME_DIRECTORY + "iRODS/server/config/" );
-        search_paths.push_back( IRODS_HOME_DIRECTORY + "iRODS/config/" );
+        search_paths.push_back( IRODS_HOME_DIRECTORY + "/iRODS/server/config/reConfigs/" );
+        search_paths.push_back( IRODS_HOME_DIRECTORY + "/iRODS/server/config/" );
+        search_paths.push_back( IRODS_HOME_DIRECTORY + "/iRODS/config/" );
         search_paths.push_back( "/etc/irods/" );
 
         std::vector< std::string >::iterator itr = search_paths.begin();
@@ -58,6 +58,3 @@ namespace irods {
     } // get_full_path_for_config_file
 
 }; // namespace irods
-
-
-

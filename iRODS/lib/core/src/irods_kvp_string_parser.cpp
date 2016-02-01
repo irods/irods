@@ -72,7 +72,7 @@ namespace irods {
         const std::string& _assoc,
         const std::string& _delim ) {
         std::string::size_type pos = _string.find( _assoc );
-        if( std::string::npos == pos || _string.empty() ) { 
+        if( std::string::npos == pos || _string.empty() ) {
             return ERROR(
 			           INVALID_KVP_STRING,
 					   _string );

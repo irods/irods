@@ -5,7 +5,6 @@
 #include "reconstants.hpp"
 #include "irodsXmsgServer.hpp"
 #include "xmsgLib.hpp"
-#include "rsGlobal.hpp"
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_client_server_negotiation.hpp"
@@ -19,16 +18,6 @@
 
 int loopCnt = -1; /* make it -1 to run infinitely */
 
-
-int getAgentProcCnt() {
-    return 0;
-}
-
-int getAgentProcPIDs(
-    std::vector<int>& _pids ) {
-    _pids.clear();
-    return 0;
-}
 
 int
 main( int argc, char **argv ) {
@@ -267,4 +256,3 @@ xmsgServerMain() {
     }
     return 0;
 }
-

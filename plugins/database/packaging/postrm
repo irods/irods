@@ -1,0 +1,22 @@
+# determine whether this is an upgrade
+if [ "$1" -eq "$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $1 -gt 0 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$PACKAGEUPGRADE" = "true" ] ; then
+   echo "NOP" > /dev/null
+else
+   echo "NOP" > /dev/null
+fi

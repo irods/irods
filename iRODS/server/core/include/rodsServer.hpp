@@ -28,6 +28,7 @@
 #include "getRodsEnv.h"
 #include "rcConnect.h"
 
+#include <vector>
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -81,6 +82,8 @@ int
 getAgentProcCnt();
 int
 chkAgentProcCnt();
+int
+getAgentProcPIDs( std::vector<int>& _pids );
 int
 chkConnectedAgentProcQue();
 int

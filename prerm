@@ -1,0 +1,1 @@
+bash /var/lib/irods/packaging/preremove.sh $1 /var/lib/irods icat

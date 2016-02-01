@@ -1,0 +1,1 @@
+bash /var/lib/irods/packaging/postinstall.sh /var/lib/irods icat

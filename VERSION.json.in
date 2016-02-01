@@ -1,0 +1,11 @@
+{
+    "irods_version": "@IRODS_VERSION@",
+    "catalog_schema_version": 5,
+    "commit_id": "@IRODS_GIT_SHA1@",
+    "configuration_schema_version": 3
+
+
+    ,"build_system_information": "default"
+    ,"compiler_version": "default"
+    ,"compile_time": "1970-01-01T00:00:00Z"
+}

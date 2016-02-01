@@ -974,7 +974,7 @@ irods::error load_version_file(
     // =-=-=-=-=-=-=-
     // if json file exists, simply load that
     std::string version_file( irods::IRODS_HOME_DIRECTORY );
-    version_file += "VERSION.json";
+    version_file += "/VERSION.json";
 
     if ( fs::exists( version_file ) ) {
         json_error_t error;

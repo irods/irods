@@ -11,6 +11,7 @@
 #include "rcMisc.h"
 #include "sockComm.h"
 #include "miscServerFunct.hpp"
+#include "rodsServer.hpp"
 
 #include "irods_log.hpp"
 #include "irods_server_control_plane.hpp"
@@ -28,10 +29,6 @@
 #include <ctime>
 #include <unistd.h>
 
-int getAgentProcCnt();
-int getAgentProcPIDs(
-    std::vector<int>& _pids );
-
 namespace irods {
     static void ctrl_plane_sleep(
         int _s,
@@ -39,7 +36,6 @@ namespace irods {
         useconds_t us = ( _s * 1000000 ) + ( _ms * 1000 );
         usleep( us );
     }
-
 
     static error get_server_properties(
         const std::string&     _port_keyword,
@@ -249,7 +245,7 @@ namespace irods {
 
     } // forward_server_control_command
 
-    static error kill_server( 
+    static error kill_server(
         const std::string& _pid_prop ) {
         int svr_pid = 0;
         // no error case, resource servers have no re server
@@ -453,7 +449,7 @@ namespace irods {
         ret = get_server_property< int > (
                   irods::XMSG_PID_KW,
                   xmsg_pid );
-       
+
         int my_pid = getpid();
 
         json_t* obj = json_object();
