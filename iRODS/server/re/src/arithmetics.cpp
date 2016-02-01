@@ -818,7 +818,7 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
         }
         if(supported) {
             irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr =
-                irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE>(irods::re_plugin_globals.global_re_mgr, rei);
+                irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE>(irods::re_plugin_globals->global_re_mgr, rei);
 
             irods::error err;
             std::list<std::string> args_storage;

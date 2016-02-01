@@ -11,7 +11,7 @@ int processReturnRes( Res *res );
 namespace irods{
 
     // extern variable for the re plugin globals
-    struct global_re_plugin_mgr re_plugin_globals;
+    std::unique_ptr<struct global_re_plugin_mgr> re_plugin_globals;
 
     void var_arg_to_list(std::list<boost::any>& _l) {
         (void) _l;

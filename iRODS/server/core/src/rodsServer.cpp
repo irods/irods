@@ -294,6 +294,8 @@ serverMain( char *logDir ) {
     int loopCnt = 0;
     int acceptErrCnt = 0;
 
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     irods::error ret = createAndSetRECacheSalt();
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "serverMain: createAndSetRECacheSalt error.\n%s", ret.result().c_str() );

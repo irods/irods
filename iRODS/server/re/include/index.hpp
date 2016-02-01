@@ -45,7 +45,6 @@ int mapExternalFuncToInternalProc2( char *funcName );
 int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexListNode **node );
 int findNextRule2( const char *action,  int i, RuleIndexListNode **node );
 int actionTableLookUp2( char *action );
-int createMacorsIndex();
 void deleteCondIndexVal( CondIndexVal *h );
 void insertIntoRuleIndexList( RuleIndexList *rd, RuleIndexListNode *prev, CondIndexVal *civ, Region *r );
 void removeNodeFromRuleIndexList2( RuleIndexList *rd, int i );

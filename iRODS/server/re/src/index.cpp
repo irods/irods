@@ -283,13 +283,7 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
     }
     return 1;
 }
-/**
- * returns 0 if out of memory
- */
-int createMacorsIndex() {
-    rodsLog( LOG_ERROR, "createMacorsIndex :: calling function which is supposedly not used." );
-    assert( 0 );
-}
+
 /* find the ith RuleIndexListNode */
 int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexListNode **node ) {
     int k = i;

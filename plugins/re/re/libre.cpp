@@ -36,7 +36,7 @@
 
 irods::configuration_parser::array_t get_re_configs() {
     irods::server_properties& props = irods::server_properties::getInstance();
-    
+
     props.capture_if_needed();
     irods::configuration_parser::array_t re_plugin_configs;
     props.get_property <irods::configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs);
@@ -44,7 +44,7 @@ irods::configuration_parser::array_t get_re_configs() {
 }
 
 std::vector<std::string> ns;
-    
+
 irods::error start(irods::default_re_ctx& _u) {
     (void) _u;
     bool found = false;
@@ -72,14 +72,14 @@ irods::error start(irods::default_re_ctx& _u) {
                             return ERROR(-1, "configuration error");
                         }
                     }
-                } else {           
+                } else {
                     return ERROR(-1, "configuration error");
                 }
             }
         } else {
             return ERROR(-1, "configuration error");
         }
-    }     
+    }
     return SUCCESS();
 }
 
@@ -98,7 +98,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 //                  "callback type \n[%s]\n[%s]\n[%s]",
 //                  _ps.back().type().name(), typeid(irods::callback<irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> >).name() ,typeid(irods::callback<irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::DONT_AUDIT_RULE> >).name());
 //                  return SUCCESS();
-    
+
     std::stringstream ss;
     ss << _rn << ":";
     int i = 0;
@@ -113,9 +113,9 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 //                   LOG_DEBUG,
 //                   "rule %s param %d type [%s]",
 //                   _rn.c_str(), i, (*itr).type().name());
-        
+
         typedef std::function<irods::error()> OP_TYPE;
-        
+
         if (testGo) {
             switch(i){
             case 0:
@@ -135,7 +135,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
             case 4:
                 op = *itr;
                 break;
-                
+
             }
         }
         if (itr->type() == typeid(std::string)) {
@@ -144,11 +144,11 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
             ss<< "type "<<itr->type().name()<<";";
         }
         i++;
-        
+
     }
     // _eff_hdlr(std::string("writeLine"), std::string("serverLog"), ss.str());
     irods::error err = SUCCESS();
-    if (foundGo) 
+    if (foundGo)
     {
         std::list<boost::any> pl(_ps);
         auto itr = pl.begin();
@@ -156,11 +156,11 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         std::advance(itr, 1);
         std::advance(itr2, 4);
         pl.erase(itr, itr2);
-        
+
         std::vector<std::string> unwind;
-        irods::rule_exists_manager<irods::default_re_ctx, irods::default_ms_ctx> rexist_mgr(irods::re_plugin_globals.global_re_mgr);
-        
-        
+        irods::rule_exists_manager<irods::default_re_ctx, irods::default_ms_ctx> rexist_mgr(irods::re_plugin_globals->global_re_mgr);
+
+
         // pre rule
         for(auto itr = begin(ns);itr != end(ns);++itr){
             std::string pre_rule_name = *itr + "pep_" + opname + "_pre";
@@ -178,15 +178,15 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
                 err = err1;
                 break;
             }
-            
+
             unwind.push_back(*itr);
         }
-        
+
         if(err.ok()) {
             // go op
             err = go();
         }
-        
+
         // post rule
         for(auto itr = unwind.rbegin();itr != unwind.rend();++itr){
             auto post_rule_name = *itr + "pep_" + opname + "_post";
@@ -203,12 +203,12 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
                 err = err1;
             }
         }
-        
+
     }
-    
+
     return err;
-    
-        
+
+
 }
 
 extern "C"
@@ -226,14 +226,10 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&, std::string, bool&>(
             "rule_exists",
             std::function<irods::error(irods::default_re_ctx&, std::string, bool&)>( rule_exists ) );
-            
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule ) );
     return re;
 
 }
-
-
-
-
