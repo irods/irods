@@ -9,7 +9,6 @@
 #include "irodsReServer.hpp"
 #include "reServerLib.hpp"
 #include "rsApiHandler.hpp"
-#include "rsGlobal.hpp"
 #include "rsIcatOpr.hpp"
 #include <syslog.h>
 #include "miscServerFunct.hpp"
@@ -30,16 +29,6 @@
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
-
-int getAgentProcCnt() {
-    return 0;
-}
-
-int getAgentProcPIDs(
-    std::vector<int>& _pids ) {
-    _pids.clear();
-    return 0;
-}
 
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
 

@@ -36,7 +36,6 @@
 #include "initServer.hpp"
 #include "procLog.h"
 #include "rsGlobalExtern.hpp"
-#include "rsGlobal.hpp" /* server global */
 #include "locks.hpp"
 #include "sharedmemory.hpp"
 
@@ -1006,7 +1005,7 @@ initServerMain( rsComm_t *svrComm ) {
             irods::set_server_property<int>( irods::RE_PID_KW, re_pid );
         }
     }
-    
+
     if ( unsigned char *shared = prepareServerSharedMemory() ) {
         copyCache( &shared, SHMMAX, &ruleEngineConfig );
         detachSharedMemory();

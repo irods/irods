@@ -1,0 +1,307 @@
+#!/bin/bash -e
+
+# detect correct python version
+if type -P python2 1> /dev/null; then
+    PYTHON=`type -P python2`
+else
+    PYTHON=`type -P python`
+fi
+
+# templated variables
+DATABASETYPE="@IRODS_DATABASE_PLUGIN_TYPE@"
+DEFAULT_DATABASEPORT="@IRODS_DATABASE_DEFAULT_PORT@"
+
+# config
+SETUP_DATABASE_FLAG="/tmp/$USER/setup_irods_database.flag"
+DATABASEHOSTORIP="DEFAULTHOST"
+DATABASEPORT="DEFAULTPORT"
+DATABASEUSER="DEFAULTUSER"
+DATABASEPASSWORD="DEFAULTPASSWORD"
+
+# use inherited environment variable
+ORACLEHOME=$ORACLE_HOME
+
+# get into the top level directory
+# detect run-in-place installation
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -f "$DETECTEDDIR/binary_installation.flag" ] ; then
+    RUNINPLACE=0
+    cd $DETECTEDDIR/../
+else
+    RUNINPLACE=1
+    cd $DETECTEDDIR/../../../
+    set +e
+    source ./packaging/setup_irods_configuration.sh 2> /dev/null
+    set -e
+fi
+
+# find server_config
+if [ "$RUNINPLACE" == "1" ] ;  then
+    server_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/server_config.json
+else
+    server_config="/etc/irods/server_config.json"
+fi
+
+# =-=-=-=-=-=-=-
+# copy database_config.json template into live config location
+if [ "$RUNINPLACE" == "1" ] ;  then
+    db_config=$(cd $(dirname DETECTEDDIR); pwd -P )/iRODS/server/config/database_config.json
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to [$(dirname $db_config)]"
+        cp $DETECTEDDIR/database_config.json.template $db_config
+    fi
+
+else
+    db_config="/etc/irods/database_config.json"
+    if [ ! -f $db_config ]; then
+        echo ">>> Copying new database_config.json to [/etc/irods]"
+        cp $DETECTEDDIR/database_config.json $db_config
+    fi
+fi
+
+# get temp file from prior run, if it exists
+mkdir -p /tmp/$USER
+if [ -f $SETUP_DATABASE_FLAG ] ; then
+    # have run this before, read the existing config file
+    DATABASEHOSTORIP=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_host']"`
+    DATABASEPORT=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_port']"`
+    DATABASENAME=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_name']"`
+    DATABASEUSER=`$PYTHON -c "import json; print json.load(open('$db_config'))['db_username']"`
+    if [ "$DATABASETYPE" == "oracle" ] ; then
+        ORACLEHOME=`$PYTHON -c "import json; print json.load(open('$server_config'))['environment_variables']['ORACLE_HOME']"`
+    fi
+    STATUS="loop"
+else
+    # no temp file, this is the first run
+    STATUS="firstpass"
+fi
+
+echo "==================================================================="
+echo ""
+echo "You are installing an iRODS database plugin."
+echo ""
+echo "The iRODS server cannot be started until its database"
+echo "has been properly configured."
+echo ""
+while [ "$STATUS" != "complete" ] ; do
+
+  # set default values from an earlier loop
+  if [ "$STATUS" != "firstpass" ] ; then
+    LASTDATABASEHOSTORIP=$DATABASEHOSTORIP
+    LASTDATABASEPORT=$DATABASEPORT
+    LASTDATABASENAME=$DATABASENAME
+    LASTDATABASEUSER=$DATABASEUSER
+    LASTORACLEHOME=$ORACLEHOME
+  fi
+
+
+if [ "$DATABASETYPE" == "oracle" ] ; then
+  # get oracle home
+  echo -n "\$ORACLE_HOME"
+  if [ "$LASTORACLEHOME" ] ; then
+    echo -n " [$LASTORACLEHOME]"
+  else
+    echo -n " [$ORACLEHOME]"
+  fi
+  echo -n ": "
+  read ORACLEHOMEINPUT
+  if [ "$ORACLEHOMEINPUT" == "" ] ; then
+    if [ "$LASTORACLEHOME" ] ; then
+      ORACLEHOME=$LASTORACLEHOME
+    else
+      ORACLEHOME=$ORACLE_HOME
+    fi
+  else
+      ORACLEHOME=$ORACLEHOMEINPUT
+  fi
+  echo ""
+
+  # get database user
+  echo -n "Database Connection String User@TNS"
+  if [ "$LASTDATABASEUSER" ] ; then
+    echo -n " [$LASTDATABASEUSER]"
+  else
+    echo -n " [irods]"
+  fi
+  echo -n ": "
+  read DATABASEUSER
+  if [ "$DATABASEUSER" == "" ] ; then
+    if [ "$LASTDATABASEUSER" ] ; then
+      DATABASEUSER=$LASTDATABASEUSER
+    else
+      DATABASEUSER=irods
+    fi
+  fi
+  # strip all forward slashes
+  DATABASEUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
+  echo ""
+
+else
+  # get host
+  echo -n "Database server's hostname or IP address"
+  if [ "$LASTDATABASEHOSTORIP" ] ; then echo -n " [$LASTDATABASEHOSTORIP]"; fi
+  echo -n ": "
+  read DATABASEHOSTORIP
+  if [ "$DATABASEHOSTORIP" == "" ] ; then
+    if [ "$LASTDATABASEHOSTORIP" ] ; then DATABASEHOSTORIP=$LASTDATABASEHOSTORIP; fi
+  fi
+  # strip all forward slashes
+  DATABASEHOSTORIP=`echo "${DATABASEHOSTORIP}" | sed -e "s/\///g"`
+  echo ""
+
+  # get port
+  echo -n "Database server's port"
+  if [ "$LASTDATABASEPORT" ] ; then
+    echo -n " [$LASTDATABASEPORT]"
+  else
+    echo -n " [$DEFAULT_DATABASEPORT]"
+  fi
+  echo -n ": "
+  read DATABASEPORT
+  if [ "$DATABASEPORT" == "" ] ; then
+    if [ "$LASTDATABASEPORT" ] ; then
+      DATABASEPORT=$LASTDATABASEPORT
+    else
+      DATABASEPORT=$DEFAULT_DATABASEPORT
+    fi
+  fi
+  # strip all forward slashes
+  DATABASEPORT=`echo "${DATABASEPORT}" | sed -e "s/\///g"`
+  echo ""
+
+  # get the db name
+  echo -n "Database name"
+  if [ "$LASTDATABASENAME" ] ; then
+    echo -n " [$LASTDATABASENAME]"
+  else
+    echo -n " [ICAT]"
+  fi
+  echo -n ": "
+  read DATABASENAME
+  if [ "$DATABASENAME" == "" ] ; then
+    if [ "$LASTDATABASENAME" ] ; then
+      DATABASENAME=$LASTDATABASENAME
+    else
+      DATABASENAME="ICAT"
+    fi
+  fi
+  # strip all forward slashes
+  DATABASENAME=`echo "${DATABASENAME}" | sed -e "s/\///g"`
+  echo ""
+
+  # get database user
+  echo -n "Database username"
+  if [ "$LASTDATABASEUSER" ] ; then
+    echo -n " [$LASTDATABASEUSER]"
+  else
+    echo -n " [irods]"
+  fi
+  echo -n ": "
+  read DATABASEUSER
+  if [ "$DATABASEUSER" == "" ] ; then
+    if [ "$LASTDATABASEUSER" ] ; then
+      DATABASEUSER=$LASTDATABASEUSER
+    else
+      DATABASEUSER=irods
+    fi
+  fi
+  # strip all forward slashes
+  ADMINUSER=`echo "${DATABASEUSER}" | sed -e "s/\///g"`
+  echo ""
+fi # else not oracle
+
+
+  echo -n "Database password: "
+  # get db password, without showing on screen
+  read -s DATABASEPASSWORD
+  echo ""
+  echo ""
+
+  # confirm
+  echo "-------------------------------------------"
+  echo "Database Type:     $DATABASETYPE"
+if [ "$DATABASETYPE" == "oracle" ] ; then
+  echo "\$ORACLE_HOME:      $ORACLEHOME"
+else
+  echo "Hostname or IP:    $DATABASEHOSTORIP"
+  echo "Database Port:     $DATABASEPORT"
+  echo "Database Name:     $DATABASENAME"
+fi
+  echo "Database User:     $DATABASEUSER"
+  echo "Database Password: Not Shown"
+  echo "-------------------------------------------"
+  echo -n "Please confirm these settings [yes]: "
+  read CONFIRM
+  if [ "$CONFIRM" == "" -o "$CONFIRM" == "y" -o "$CONFIRM" == "Y" -o "$CONFIRM" == "yes" ]; then
+    STATUS="complete"
+  else
+    STATUS="loop"
+  fi
+  echo ""
+  echo ""
+
+done
+touch $SETUP_DATABASE_FLAG
+echo "==================================================================="
+
+TMPFILE="/tmp/$USER/database_config.json.tmp"
+echo "Updating $db_config..."
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string catalog_database_type $DATABASETYPE
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_username $DATABASEUSER
+
+if [ "$DATABASETYPE" != "oracle" ] ; then
+    # update database_config.json
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_host $DATABASEHOSTORIP
+    $PYTHON $DETECTEDDIR/update_json.py $db_config integer db_port $DATABASEPORT
+    $PYTHON $DETECTEDDIR/update_json.py $db_config string db_name $DATABASENAME
+else
+    # port can get repaved to empty string which causes positional
+    # issues on the irods_setup.pl command line, we need it to have a value
+    DATABASEPORT="DEFAULTPORT"
+fi
+
+echo ""
+
+# =-=-=-=-=-=-=-
+# update ORACLE_HOME in server_config.json
+if [ "$DATABASETYPE" == "oracle" ] ; then
+    echo "Updating $server_config..."
+    $PYTHON $DETECTEDDIR/update_json.py $server_config string 'environment_variables,ORACLE_HOME' $ORACLEHOME
+fi
+
+# =-=-=-=-=-=-=-
+# run irods_setup.pl
+cd iRODS
+./irodsctl stop
+echo ""
+echo "-----------------------------"
+echo "Running irods_setup.pl..."
+perl ./scripts/perl/irods_setup.pl $DATABASETYPE $DATABASEHOSTORIP $DATABASEPORT $DATABASEUSER "$DATABASEPASSWORD"
+
+# =-=-=-=-=-=-=-
+# sanitize irods admin password
+#   templated sql setup file
+TOPLEVELDIR=$DETECTEDDIR/../
+MYSETUPVALUESSQL=`find $TOPLEVELDIR -name icatSetupValues.sql`
+rm -f $MYSETUPVALUESSQL
+#   server config
+$PYTHON $DETECTEDDIR/update_json.py $server_config string admin_password XXXXXXXXXX
+TMPFILE=`mktemp -t irods_tmp_server_config.XXXXXX`
+sed -e '/admin_password/d' $server_config > $TMPFILE
+mv $TMPFILE $server_config
+
+# =-=-=-=-=-=-=-
+# run update_catalog_schema.py
+# moved to irods_setup.pl
+#cd ..
+#echo ""
+#echo "-----------------------------"
+#echo "Running update_catalog_schema.py..."
+#if [ "$RUNINPLACE" == "1" ] ;  then
+#    cp ./plugins/database/packaging/update_catalog_schema.py ./packaging/
+#fi
+#$PYTHON ./packaging/update_catalog_schema.py
+
+# =-=-=-=-=-=-=-
+# done
+exit 0

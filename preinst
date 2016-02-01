@@ -1,0 +1,63 @@
+# determine whether this is an upgrade
+if [ "$1" -eq "$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$PACKAGEUPGRADE" = "true" ] ; then
+  # detect current service account information
+  MYACCTNAME=`ls -l /etc/irods/core.re | awk '{print $3}'`
+  MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $4}'`
+
+  # Stop server to prevent db plugin / irods server mismatch
+  HIDE_OUTPUT=`su - $MYACCTNAME -c "/var/lib/irods/iRODS/irodsctl stop"`
+  # Upgrade
+  echo "Upgrading Existing iRODS Installation"
+  mkdir -p /var/lib/irods
+  # write version information down for postinstall
+  UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"
+  if [ -f "/var/lib/irods/VERSION.json" ] ; then
+    cp /var/lib/irods/VERSION.json $UPGRADE_TEMP_FILE
+    cp /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
+  else
+    cp /var/lib/irods/VERSION $UPGRADE_TEMP_FILE
+    # get version information from 4.0 bash-style VERSION file
+    # and stub out the rest for validation
+    . /var/lib/irods/VERSION
+    if [ "$CATALOG_SCHEMA_VERSION" = "" ] ; then CATALOG_SCHEMA_VERSION=1 ; fi
+    python -c "from __future__ import print_function; import json; print(json.dumps({'irods_version': '$IRODSVERSION', 'catalog_schema_version': $CATALOG_SCHEMA_VERSION, 'configuration_schema_version': 0, 'commit_id': '0000000000000000000000000000000000000000', 'installation_time': '2014-08-20T17:36:40Z', 'build_system_information': '', 'compiler_version': '', 'compile_time': '2014-08-20T17:36:40Z'}))" > /var/lib/irods/VERSION.json.previous
+  fi
+
+  # service account information
+  SERVICE_ACCOUNT_CONFIG_FILE="/etc/irods/service_account.config"
+  if [ ! -e $SERVICE_ACCOUNT_CONFIG_FILE ] ; then
+    # populate configuration file
+    echo "IRODS_SERVICE_ACCOUNT_NAME=$MYACCTNAME " > $SERVICE_ACCOUNT_CONFIG_FILE
+    echo "IRODS_SERVICE_GROUP_NAME=$MYGROUPNAME " >> $SERVICE_ACCOUNT_CONFIG_FILE
+    chown $MYACCTNAME:$MYGROUPNAME $SERVICE_ACCOUNT_CONFIG_FILE
+  fi
+else
+  # New Install
+
+  # Detect OS
+  UNAMERESULTS=`uname`
+  if [ "$UNAMERESULTS" = "SunOS" ] ; then
+    DETECTED_OS="Solaris"
+  elif [ -f "/usr/bin/sw_vers" ] ; then
+    DETECTED_OS="MacOSX"
+  else
+    DETECTED_OS="Linux"
+  fi
+
+fi

@@ -1,12 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsGlobal.h - header file for globals in the server
- */
-
-#ifndef RS_GLOBAL_HPP
-#define RS_GLOBAL_HPP
-
-//#include "apiTable.hpp"   /* contains global RsApiTable */
 #include "rods.h"
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
@@ -83,7 +74,3 @@ gid_t ServiceGid = 0;
 
 /* Flag for whether the read/write rule should be executed */
 irodsStateFlag_t ReadWriteRuleState = UNINIT_STATE;
-
-#endif  /* RS_GLOBAL_H */
-
-

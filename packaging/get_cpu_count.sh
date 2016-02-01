@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
-DETECTEDOS=`$SCRIPTPATH/find_os.sh`
+DETECTEDOS=`bash $SCRIPTPATH/find_os.sh`
 if [ "$DETECTEDOS" == "MacOSX" ] ; then
     DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
 elif [ "$DETECTEDOS" == "Solaris" ] ; then

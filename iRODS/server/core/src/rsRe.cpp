@@ -9,6 +9,7 @@
 #include "reconstants.hpp"
 #include "configuration.hpp"
 #include "reFuncDefs.hpp"
+#include "irods_re_plugin.hpp"
 
 static char ruleSetInitialized[NAME_LEN] = "";
 
@@ -63,4 +64,3 @@ clearCoreRule() {
     return i;
 
 }
-

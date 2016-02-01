@@ -27,7 +27,7 @@ fi
 
 # =-=-=-=-=-=-=-
 # detect operating system
-DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
+DETECTEDOS=`bash $IRODS_HOME_DIR/packaging/find_os.sh`
 
 # get database password from pre-4.1 icat installations
 if [ "$UPGRADE_FLAG" == "true" ] && [ "$SERVER_TYPE" == "icat" ] ; then

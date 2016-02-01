@@ -1,0 +1,18 @@
+add_executable(
+  mytest
+  ${CMAKE_SOURCE_DIR}/iRODS/clients/c_api_test/test.c
+  )
+target_include_directories(
+  mytest
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
+  ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
+  ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
+  ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
+  ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
+  )
+target_link_libraries(
+  mytest
+  PRIVATE
+  RodsAPIs
+  )

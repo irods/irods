@@ -18,7 +18,11 @@
 # arg1 is the db type, optional arg2 is the directory where the
 # scripts are (i.e. if not the cwd).
 
-($arg1, $arg2)=@ARGV;
+($arg1, $arg2, $arg3)=@ARGV;
+
+if (!$arg3) {
+    $arg3 = "icatSysTables.sql"
+}
 
 if ($arg2) {
     chdir($arg2);
@@ -38,7 +42,7 @@ else {
 
 print ("$arg1\n");
 
-runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > icatSysTables.sql");
+runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > $arg3");
 print "Preprocess icatSysTables.sql.pp to icatSysTables.sql\n";
 
 exit(0);
@@ -56,4 +60,3 @@ sub runCmd {
 	die("command failed");
     }
 }
-

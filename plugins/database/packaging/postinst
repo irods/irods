@@ -1,0 +1,25 @@
+# detect whether this is an upgrade
+UPGRADE_FLAG_FILE=/var/lib/irods/packaging/upgrade_db.tmp
+if [ -f "$UPGRADE_FLAG_FILE" ] ; then
+    UPGRADE_FLAG="true"
+else
+    UPGRADE_FLAG="false"
+fi
+if [ "$UPGRADE_FLAG" = "false" ] ; then
+    echo ""
+    echo "======================================================================="
+    echo ""
+    echo "iRODS Postgres Database Plugin installation was successful."
+    echo ""
+    echo "To configure this plugin, the following prerequisites need to be met:"
+    echo " - an existing database user (to be used by the iRODS server)"
+    echo " - an existing database (to be used as the iCAT catalog)"
+    echo " - permissions for existing user on existing database"
+    echo ""
+    echo "Then run the following setup script:"
+    echo "  sudo /var/lib/irods/packaging/setup_irods.sh"
+    echo ""
+    echo "======================================================================="
+    echo ""
+fi
+rm -f $UPGRADE_FLAG_FILE

@@ -10,7 +10,6 @@
 #include "rsApiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#include "rsGlobal.hpp"   /* server global */
 #ifdef windows_platform
 #include "rsLog.hpp"
 static void NtAgentSetEnvsFromArgs( int ac, char **av );
@@ -40,17 +39,6 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "sslSockComm.h"
 
 #include "irods_server_rule_execution_manager_factory.hpp"
-
-int getAgentProcCnt() {
-    return 0;
-}
-
-int getAgentProcPIDs(
-    std::vector<int>& _pids ) {
-    _pids.clear();
-    return 0;
-}
-
 
 /* #define SERVER_DEBUG 1   */
 int

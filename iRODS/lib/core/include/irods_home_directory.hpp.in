@@ -1,0 +1,10 @@
+#ifndef __IRODS_HOME_DIRECTORY_HPP__
+#define __IRODS_HOME_DIRECTORY_HPP__
+
+#include <string>
+
+namespace irods {
+    const std::string IRODS_HOME_DIRECTORY( "@IRODS_HOME_DIRECTORY@" );
+}
+
+#endif // __IRODS_HOME_DIRECTORY_HPP__

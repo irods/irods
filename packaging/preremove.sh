@@ -133,7 +133,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 
 	# =-=-=-=-=-=-=-
 	# detect operating system
-	DETECTEDOS=`$IRODS_HOME_DIR/packaging/find_os.sh`
+	DETECTEDOS=`bash $IRODS_HOME_DIR/packaging/find_os.sh`
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting some things
