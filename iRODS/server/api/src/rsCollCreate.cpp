@@ -24,6 +24,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
@@ -77,7 +78,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */

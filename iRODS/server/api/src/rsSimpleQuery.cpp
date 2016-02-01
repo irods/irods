@@ -7,6 +7,7 @@
 #include "rodsConnect.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
@@ -26,7 +27,7 @@ rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsSimpleQuery( rsComm, simpleQueryInp, simpleQueryOut );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -93,4 +94,3 @@ _rsSimpleQuery( rsComm_t *rsComm, simpleQueryInp_t *simpleQueryInp,
 
     return status;
 }
-

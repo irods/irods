@@ -7,6 +7,7 @@
 #include "getHierarchyForResc.h"
 #include "irods_stacktrace.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 // =-=-=-=-=-=-=-
 // local implementation which makes the icat high level

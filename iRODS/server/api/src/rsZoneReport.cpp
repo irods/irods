@@ -1,5 +1,3 @@
-
-
 #include "rcMisc.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
@@ -10,6 +8,7 @@
 #include "server_report.h"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
+#include "irods_configuration_keywords.hpp"
 
 #include "jansson.h"
 
@@ -39,7 +38,7 @@ int rsZoneReport(
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsZoneReport(
                          _comm,
@@ -270,5 +269,3 @@ int _rsZoneReport(
     return 0;
 
 } // _rsZoneReport
-
-

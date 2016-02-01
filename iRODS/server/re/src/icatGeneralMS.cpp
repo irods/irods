@@ -11,6 +11,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 /**
  * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)

@@ -10,6 +10,7 @@
 
 #include "irods_file_object.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {

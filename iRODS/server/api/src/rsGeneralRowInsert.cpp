@@ -7,6 +7,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp ) {
@@ -143,4 +144,3 @@ _rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertIn
     }
     return CAT_INVALID_ARGUMENT;
 }
-

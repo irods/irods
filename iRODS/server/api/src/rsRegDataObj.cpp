@@ -9,6 +9,7 @@
 #include "miscServerFunct.hpp"
 
 #include "irods_file_object.hpp"
+#include "irods_configuration_keywords.hpp"
 
 /* rsRegDataObj - This call is strictly an API handler and should not be
  * called directly in the server. For server calls, use svrRegDataObj

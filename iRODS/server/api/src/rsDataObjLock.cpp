@@ -17,6 +17,7 @@
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {

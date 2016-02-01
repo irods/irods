@@ -12,6 +12,7 @@
 
 #include "irods_file_object.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int _call_file_modified_for_modification(
     rsComm_t*         rsComm,
@@ -39,7 +40,7 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsModDataObjMeta( rsComm, modDataObjMetaInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -292,4 +293,3 @@ int _call_file_modified_for_modification(
     return status;
 
 }
-

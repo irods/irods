@@ -7,6 +7,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
@@ -72,4 +73,3 @@ _rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {
 
     return CAT_INVALID_ARGUMENT;
 }
-
