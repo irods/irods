@@ -181,7 +181,7 @@ generalDelete( generalUpdateInp_t generalUpdateInp ) {
 
 
 /* General Update */
-extern "C" int chl_general_update_impl(
+int chl_general_update_impl(
     generalUpdateInp_t generalUpdateInp ) {
     int status;
     static int firstCall = 1;
