@@ -8,7 +8,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
@@ -60,7 +60,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsModAVUMetadata( rsComm, modAVUMetadataInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -246,4 +246,3 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     return status;
 
 }
-

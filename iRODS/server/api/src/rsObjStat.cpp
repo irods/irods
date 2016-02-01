@@ -15,6 +15,7 @@
 #include "rsGlobalExtern.hpp"
 #include "dataObjClose.h"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsObjStat(
@@ -45,7 +46,7 @@ rsObjStat(
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsObjStat( rsComm, dataObjInp, rodsObjStatOut );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -317,4 +318,3 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     return status;
 }
-

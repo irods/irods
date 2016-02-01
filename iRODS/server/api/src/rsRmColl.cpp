@@ -21,6 +21,7 @@
 #include "miscServerFunct.hpp"
 
 #include "irods_resource_backport.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
@@ -418,7 +419,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             memset( &collInfo, 0, sizeof( collInfo ) );
             rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );

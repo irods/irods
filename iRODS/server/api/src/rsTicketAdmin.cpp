@@ -8,6 +8,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
@@ -28,7 +29,7 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsTicketAdmin( rsComm, ticketAdminInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -77,4 +78,3 @@ _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
                            ticketAdminInp->arg4, ticketAdminInp->arg5 );
     return status;
 }
-

@@ -7,6 +7,7 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsGeneralUpdate( rsComm_t *rsComm, generalUpdateInp_t *generalUpdateInp ) {

@@ -8,6 +8,7 @@
 #include "rcMisc.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {

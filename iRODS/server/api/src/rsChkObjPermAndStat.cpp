@@ -6,8 +6,9 @@
 #include "chkObjPermAndStat.h"
 #include "apiHeaderAll.h"
 #include "icatHighLevelRoutines.hpp"
-#include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
+
 int
 saveCollEntForChkColl( collEnt_t *collEnt );
 int

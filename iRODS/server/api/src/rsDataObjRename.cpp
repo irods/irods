@@ -27,6 +27,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {

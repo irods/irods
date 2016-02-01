@@ -9,6 +9,7 @@
 #include "miscServerFunct.hpp"
 
 #include "irods_file_object.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int _call_file_modified_for_replica(
     rsComm_t*     rsComm,

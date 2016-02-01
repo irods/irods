@@ -5,6 +5,7 @@
 #include "objMetaOpr.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {

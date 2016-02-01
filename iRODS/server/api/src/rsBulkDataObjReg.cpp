@@ -11,6 +11,7 @@
 
 #include "irods_stacktrace.hpp"
 #include "irods_file_object.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,

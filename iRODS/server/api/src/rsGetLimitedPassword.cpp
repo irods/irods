@@ -6,8 +6,8 @@
 #include "getLimitedPassword.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
-        
 
 
 
@@ -80,4 +80,3 @@ _rsGetLimitedPassword( rsComm_t *rsComm,
 
     return status;
 }
-

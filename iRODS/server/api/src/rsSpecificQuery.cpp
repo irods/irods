@@ -9,6 +9,7 @@
 #include "rcMisc.h"
 #include "irods_log.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 /* can be used for debug: */
 
@@ -35,7 +36,7 @@ rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsSpecificQuery( rsComm, specificQueryInp, genQueryOut );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -92,4 +93,3 @@ _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     }
     return status;
 }
-

@@ -7,6 +7,7 @@
 #include "authCheck.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

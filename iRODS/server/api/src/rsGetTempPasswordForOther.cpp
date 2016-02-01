@@ -6,6 +6,7 @@
 #include "getTempPasswordForOther.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_configuration_keywords.hpp"
 
 int
 rsGetTempPasswordForOther( rsComm_t *rsComm,
@@ -28,7 +29,7 @@ rsGetTempPasswordForOther( rsComm_t *rsComm,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGetTempPasswordForOther(
                          rsComm,
