@@ -59,6 +59,8 @@ main( int, char ** ) {
     rsComm_t rsComm;
     char *tmpStr;
 
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     ProcessType = AGENT_PT;
 
     // capture server properties

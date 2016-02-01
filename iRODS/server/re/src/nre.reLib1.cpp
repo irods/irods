@@ -33,7 +33,7 @@ int
 applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
               ruleExecInfo_t *rei, int reiSaveFlag ) {
     (void) reiSaveFlag;
-    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals.global_re_mgr, rei);
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals->global_re_mgr, rei);
     std::list<boost::any> args2;
     for(int i = 0; i<argc;i++) {
         args2.push_back(boost::any(std::string(args[i])));
@@ -42,7 +42,7 @@ applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], i
     if(!err.ok()) {
         rodsLog(
             LOG_ERROR,
-            "applyRuleArg: %d, %s", 
+            "applyRuleArg: %d, %s",
             err.code(),
             err.result().c_str()
         );
@@ -60,7 +60,7 @@ applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, 
     }
     (void) reiSaveFlag;
     (void) inMsParamArray;
-    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals.global_re_mgr, rei);
+    irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr(irods::re_plugin_globals->global_re_mgr, rei);
     irods::error err = re_ctx_mgr.exec_rule(inAction);
     if(!err.ok()) {
         rodsLog(
@@ -557,8 +557,8 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
             break;
         }
     }
-   
-    clearGenQueryInp( &genQueryInp ); 
+
+    clearGenQueryInp( &genQueryInp );
 	freeGenQueryOut( &genQueryOut );
     /* deleteEnv(env, 3); */
     return 0;
@@ -608,8 +608,8 @@ readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRule
         continueInx = genQueryInp.continueInx =  genQueryOut->continueInx;
         freeGenQueryOut( &genQueryOut );
     }
-    
-    clearGenQueryInp( &genQueryInp ); 
+
+    clearGenQueryInp( &genQueryInp );
 	freeGenQueryOut( &genQueryOut );
     return 0;
 }
@@ -658,9 +658,9 @@ readDVMapStructFromDB( char *dvmBaseName, char *versionStr, rulevardef_t *inDvmS
             break;
         }
     }
-    
+
 	freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp ); 
+    clearGenQueryInp( &genQueryInp );
     inDvmStrct->MaxNumOfDVars = l;
     return 0;
 }
@@ -709,7 +709,7 @@ readFNMapStructFromDB( char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnm
         }
     }
     freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp ); 
+    clearGenQueryInp( &genQueryInp );
     inFnmStrct->MaxNumOfFMaps = l;
     return 0;
 }
@@ -777,7 +777,7 @@ readMsrvcStructFromDB( int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t
         }
     }
     freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp ); 
+    clearGenQueryInp( &genQueryInp );
     inMsrvcStrct->MaxNumOfMsrvcs = l;
     return 0;
 }

@@ -60,7 +60,7 @@ namespace irods {
         keyValPair_t&      _kvp,
         const std::string& _name,
         std::string&       _res ) {
-        
+
         // =-=-=-=-=-=-=-
         // add additional global re params
         error err = add_global_re_params_to_kvp_for_dynpep( _kvp );
@@ -70,15 +70,15 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule
-        
+
         ruleExecInfo_t rei;
         memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
         rei.rsComm        = _comm;
         rei.condInputData = &_kvp; // give rule scope to our key value pairs
         rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 
-        rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE> re_ctx_mgr = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>(re_plugin_globals.global_re_mgr, &rei);
-        
+        rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE> re_ctx_mgr = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>(re_plugin_globals->global_re_mgr, &rei);
+
         // =-=-=-=-=-=-=-
         // determine if rule exists
         bool ret;
@@ -108,6 +108,3 @@ namespace irods {
     } // exec_op
 
 }; // namespace irods
-
-
-

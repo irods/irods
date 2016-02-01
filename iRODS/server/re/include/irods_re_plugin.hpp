@@ -13,6 +13,7 @@
 #include <utility>
 #include <functional>
 #include <map>
+#include <memory>
 
 namespace irods {
 
@@ -565,7 +566,7 @@ namespace irods {
         rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
     };
 
-    extern struct global_re_plugin_mgr re_plugin_globals;
+    extern std::unique_ptr<struct global_re_plugin_mgr> re_plugin_globals;
 
 }
 #define DEFINE_FACTORY \
@@ -578,4 +579,3 @@ namespace irods {
     }
 
 #endif
-

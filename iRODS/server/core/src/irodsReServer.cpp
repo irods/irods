@@ -135,6 +135,8 @@ main( int argc, char **argv ) {
         }
     }
 
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     status = initRsComm( &rsComm );
 
     if ( status < 0 ) {

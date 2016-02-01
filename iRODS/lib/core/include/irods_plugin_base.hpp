@@ -24,7 +24,7 @@
 #include "irods_operation_rule_execution_manager_base.hpp"
 
 static double PLUGIN_INTERFACE_VERSION = 2.0;
-    
+
 irods::error add_global_re_params_to_kvp_for_dynpep( keyValPair_t& );
 
 namespace irods {
@@ -33,7 +33,7 @@ namespace irods {
     typedef std::function< irods::error( plugin_property_map& ) > maintenance_operation_t;
 
     static error default_plugin_start_operation( plugin_property_map& ) {
-        return SUCCESS();    
+        return SUCCESS();
     }
 
     static error default_plugin_stop_operation( plugin_property_map& ) {
@@ -78,11 +78,11 @@ namespace irods {
                 return *this;
 
             } // operator=
-    
+
             virtual ~plugin_base( ) {
             } // dtor
 
-            
+
             /// @brief interface to create and register a PDMO
             virtual error post_disconnect_maintenance_operation( pdmo_type& ) {
                 return ERROR( NO_PDMO_DEFINED, "no defined operation" );
@@ -188,7 +188,7 @@ namespace irods {
                                             default_re_ctx,
                                             default_ms_ctx,
                                             DONT_AUDIT_RULE >(
-                                                re_plugin_globals.global_re_mgr, &rei)));
+                                                re_plugin_globals->global_re_mgr, &rei)));
                     error op_err = rex_mgr.call(
                                        instance_name_,
                                        _operation_name,
@@ -250,7 +250,7 @@ namespace irods {
                                             default_re_ctx,
                                             default_ms_ctx,
                                             DONT_AUDIT_RULE >(
-                                                re_plugin_globals.global_re_mgr, &rei)));
+                                                re_plugin_globals->global_re_mgr, &rei)));
                     error op_err = rex_mgr.call(
                                        instance_name_,
                                        _operation_name,
@@ -332,6 +332,3 @@ namespace irods {
 }; // namespace irods
 
 #endif // IRODS_PLUGIN_BASE_HPP
-
-
-
