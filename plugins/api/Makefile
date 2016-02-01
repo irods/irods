@@ -18,7 +18,7 @@ CFLAGS += -L$(IRODS_BUILD_DIR)
 EXTRAINCS += -I$(IRODSDIR)/lib/core/include/ -I$(IRODSDIR)/lib/api/include/ -I$(IRODSDIR)/lib/hasher/include \
 						-I$(IRODSDIR)/server/core/include/ -I$(IRODSDIR)/server/icat/include/ -I$(IRODSDIR)/server/re/include/ \
 						-I$(IRODSDIR)/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-						-I/usr/include/openssl $(CCFLAGS)
+						-I/usr/include/openssl
 
 #BOOST_LIBS = \
 #    -lboost_filesystem \

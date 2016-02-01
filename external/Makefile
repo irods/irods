@@ -90,33 +90,27 @@ build_database_for_macosx : postgresql-$(PG_VERSION)/Makefile
 		cd src/interfaces/odbc/unixODBC-$(UNIXODBC_VERSION); \
 		./configure --prefix=`pwd`/../../../../pgsql --enable-gui=no --enable-static; \
 		$(MAKE); \
-		$(MAKE) install;
+		$(MAKE) install; \
+		$(MAKE) distclean; \
+		cd ../../../../; \
+		$(MAKE) distclean;
 
 $(FAKETARGETFORMAKE) : $(IRODSEXTERNALLOCAL)
 	@echo "Unpacking $(IRODSEXTERNALLOCAL)..."
 	$(V_at)tar zxf $(IRODSEXTERNALLOCAL)
 	$(V_at)touch $(FAKETARGETFORMAKE)
 
-
-MAINBUILD=cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq
 ifeq ($(OS_platform), osx_platform)
-ifeq ($(RODS_CAT), 1)
-MAINBUILD+=build_database_for_macosx
-endif
-endif
-
-build : $(MAINBUILD)
-
-ifeq ($(OS_platform), osx_platform)
-generate : build
-	$(V_at)touch $(FAKETARGETFORMAKE)
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq build_database_for_macosx
 else
+build : cmake libarchive jansson boost epm hdf5 netcdf lib_mysqludf_preg libs3 check avro zeromq
+endif
+
 generate : build
 	@echo "Building $(IRODSEXTERNALARCHIVE)..."
 	$(V_at)tar zfc $(IRODSEXTERNALARCHIVE) --exclude "*.tar.gz" --exclude "*.zip" --exclude "*cmake*" --exclude "Makefile" --exclude $(FAKETARGETFORMAKE) *
 	$(V_at)cp $(IRODSEXTERNALARCHIVE) $(IRODSEXTERNALLOCAL)
 	$(V_at)touch $(FAKETARGETFORMAKE)
-endif
 
 $(LIB_MYSQLUDF_PREG_ARCHIVE) :
 	@wget $(IRODS_FTP_EXTERNAL)/$(LIB_MYSQLUDF_PREG_ARCHIVE) 2>&1
