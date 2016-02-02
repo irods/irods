@@ -126,6 +126,12 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
+
+                // make resource properties available as rule session variables
+                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+                memset(rei.condInputData, 0, sizeof(keyValPair_t));
+                irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
                 rei.status = applyRule( "acPostProcForCreate", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
@@ -137,6 +143,12 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
+
+                // make resource properties available as rule session variables
+                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+                memset(rei.condInputData, 0, sizeof(keyValPair_t));
+                irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
                 rei.status = applyRule( "acPostProcForOpen", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
@@ -163,6 +175,12 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
+
+                // make resource properties available as rule session variables
+                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+                memset(rei.condInputData, 0, sizeof(keyValPair_t));
+                irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
                 rei.status = applyRule( "acPostProcForCopy", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
@@ -177,6 +195,12 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
+
+                // make resource properties available as rule session variables
+                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+                memset(rei.condInputData, 0, sizeof(keyValPair_t));
+                irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
                 rei.status = applyRule( "acPostProcForPut", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */

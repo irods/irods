@@ -3,28 +3,30 @@
 #include "irods_string_tokenize.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include <boost/lexical_cast.hpp>
+
 
 namespace irods {
 
-#if 0	// #1472
+
 // =-=-=-=-=-=-=-
-// helper function to convert properties from a resource plugin
-// the a standard irods rescInfo_t
-    error resource_to_resc_info( rescInfo_t& _info, resource_ptr& _resc ) {
+// helper function to query properties from a resource plugin
+// and load them into a keyValPair_t
+    error resource_to_kvp(resource_ptr& _resc, keyValPair_t* _kvp) {
         error err;
         std::string prop_name;
         // =-=-=-=-=-=-=-
         // get the resource property - host
-        prop_name = RESOURCE_HOST;
-        rodsServerHost_t* host = 0;
-        err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
-        if ( !err.ok() ) {
-            std::stringstream msg;
-            msg << "failed to get property [";
-            msg << prop_name;
-            msg << "]";
-            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
-        }
+//        prop_name = RESOURCE_HOST;
+//        rodsServerHost_t* host = 0;
+//        err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
+//        if ( !err.ok() ) {
+//            std::stringstream msg;
+//            msg << "failed to get property [";
+//            msg << prop_name;
+//            msg << "]";
+//            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
+//        }
 
         // =-=-=-=-=-=-=-
         // get the resource property - id
@@ -208,27 +210,27 @@ namespace irods {
             return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
-        _info.rodsServerHost = host;
-        _info.rescId         = id;
-        _info.freeSpace      = freespace;
-        _info.quotaLimit     = quota;
-        _info.rescStatus     = status;
-        strncpy( _info.zoneName,      zone.c_str(),     NAME_LEN );
-        strncpy( _info.rescName,      name.c_str(),     NAME_LEN );
-        strncpy( _info.rescLoc,       location.c_str(), NAME_LEN );
-        strncpy( _info.rescType,      type.c_str(),     NAME_LEN );
-        strncpy( _info.rescClass,     rclass.c_str(),   NAME_LEN );
-        strncpy( _info.rescVaultPath, path.c_str(),     NAME_LEN );
-        strncpy( _info.rescInfo,      info.c_str(),     NAME_LEN );
-        strncpy( _info.rescComments,  comments.c_str(), NAME_LEN );
-        strncpy( _info.rescCreate,    create.c_str(),   TIME_LEN );
-        strncpy( _info.rescModify,    modify.c_str(),   TIME_LEN );
+        addKeyVal(_kvp, RESC_ID_KW,     boost::lexical_cast<std::string>(id).c_str());
+        addKeyVal(_kvp, FREE_SPACE_KW,  boost::lexical_cast<std::string>(freespace).c_str());
+        addKeyVal(_kvp, QUOTA_LIMIT_KW, boost::lexical_cast<std::string>(quota).c_str());
+        addKeyVal(_kvp, RESC_STATUS_KW, boost::lexical_cast<std::string>(status).c_str());
+
+        addKeyVal(_kvp, RESC_ZONE_KW,       zone.c_str());
+        addKeyVal(_kvp, RESC_NAME_KW,       name.c_str());
+        addKeyVal(_kvp, RESC_LOC_KW,        location.c_str());
+        addKeyVal(_kvp, RESC_TYPE_KW,       type.c_str());
+        addKeyVal(_kvp, RESC_CLASS_KW,      rclass.c_str());
+        addKeyVal(_kvp, RESC_VAULT_PATH_KW, path.c_str());
+        addKeyVal(_kvp, RESC_INFO_KW,       info.c_str());
+        addKeyVal(_kvp, RESC_COMMENTS_KW,   comments.c_str());
+        addKeyVal(_kvp, RESC_CREATE_KW,     create.c_str());
+        addKeyVal(_kvp, RESC_MODIFY_KW,     modify.c_str());
 
         return SUCCESS();
 
-    } // resource_to_resc_info
+    } // resource_to_kvp
 
-
+#if 0   // #1472
 // =-=-=-=-=-=-=-
 // helper function to extract useful bits from a resource plugin and fill in a
 // resource group info structure.
@@ -518,24 +520,35 @@ namespace irods {
     } // get_host_status_by_host_info
 
 
-#if 0	// #1472
 // =-=-=-=-=-=-=-
-// helper function to save on typing - get legacy data struct
-// for resource given a resource name
-    error get_resc_info( std::string _name, rescInfo_t& _info ) {
+// helper function to save on typing - get properties kvp
+// for leaf resource given a resource hierarchy
+    error get_resc_properties_as_kvp(const std::string& _resc_hier, keyValPair_t* _kvp) {
+        // =-=-=-=-=-=-=-
+        // check hierarchy string
+        if ( _resc_hier.empty() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "resource hierarchy string is empty" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the last resource in the hierarchy
+        std::string resc_name;
+        hierarchy_parser parse;
+        parse.set_string( _resc_hier );
+        parse.last_resc( resc_name );
 
         resource_ptr resc;
-        error res_err = resc_mgr.resolve( _name, resc );
+        error res_err = resc_mgr.resolve( resc_name, resc );
         if ( res_err.ok() ) {
             // =-=-=-=-=-=-=-
             // check to see if the resource is active, if not fail
             int status = 0;
-            get_resource_property< int >( _name, RESOURCE_STATUS, status );
+            get_resource_property< int >( resc_name, RESOURCE_STATUS, status );
             if ( status == INT_RESC_STATUS_DOWN ) {
                 return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
             }
 
-            error info_err = resource_to_resc_info( _info, resc );
+            error info_err = resource_to_kvp(resc, _kvp);
             if ( info_err.ok() ) {
                 return SUCCESS();
 
@@ -551,9 +564,10 @@ namespace irods {
 
         }
 
-    } // get_resc_info
+    } // get_resc_properties_as_kvp
 
 
+#if 0   // #1472
 // =-=-=-=-=-=-=-
 // helper function to save on typing - get legacy data struct
 // for resource group given a resource name

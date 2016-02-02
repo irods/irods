@@ -153,6 +153,12 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
     rei.doi = dataObjInfoHead;
     rei.status = status;
+
+    // make resource properties available as rule session variables
+    rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+    memset(rei.condInputData, 0, sizeof(keyValPair_t));
+    irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
     rei.status = applyRule( "acPostProcForDelete", NULL, &rei, NO_SAVE_REI );
 
     if ( rei.status < 0 ) {
@@ -316,6 +322,11 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
             rei.doi = dataObjInfo;
             rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
+
+            // make resource properties available as rule session variables
+            rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+            memset(rei.condInputData, 0, sizeof(keyValPair_t));
+            irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
             applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
             if ( rei.status != NO_CHK_PATH_PERM ) {
@@ -562,6 +573,11 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     while ( tmpDataObjInfo != NULL ) {
         /* have to go through the loop to test each copy (resource). */
         rei.doi = tmpDataObjInfo;
+
+        // make resource properties available as rule session variables
+        rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+        memset(rei.condInputData, 0, sizeof(keyValPair_t));
+        irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
         status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
 
