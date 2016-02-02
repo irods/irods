@@ -507,8 +507,8 @@ extern "C" {
         fsblkcnt_t cap  = sb.f_bsize * sb.f_blocks;
         fsblkcnt_t free = sb.f_bsize * sb.f_bavail;
 
-        uintmax_t used_space = cap - free;
-        uintmax_t new_used_space = _file_size + used_space;
+        rodsLong_t used_space = cap - free;
+        rodsLong_t new_used_space = _file_size + used_space;
         if( new_used_space > hwm_val ) {
             return true;
         }
