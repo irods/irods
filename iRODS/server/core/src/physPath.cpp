@@ -162,6 +162,12 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     initReiWithDataObjInp( &rei, rsComm, NULL );
 
     rei.doi = dataObjInfo;
+
+    // make resource properties available as rule session variables
+    rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+    memset(rei.condInputData, 0, sizeof(keyValPair_t));
+    irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
     status = applyRule( "acSetVaultPathPolicy", NULL, &rei, NO_SAVE_REI );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -323,6 +329,12 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         else {
             initReiWithDataObjInp( &rei, rsComm, dataObjInp );
             rei.doi = dataObjInfo;
+
+            // make resource properties available as rule session variables
+            rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+            memset(rei.condInputData, 0, sizeof(keyValPair_t));
+            irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
             // =-=-=-=-=-=-=-
             // JMC - backport 4774
             rei.status = DISALLOW_PATH_REG;             /* default */
