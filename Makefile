@@ -31,7 +31,7 @@ libs : code-generation external
 
 clients : libs
 	@$(MAKE) -C iRODS clients
-	@$(MAKE) -C plugins auth network
+	@$(MAKE) -C plugins api auth network
 
 plugins-nodb : libs external irods
 	@$(MAKE) -C plugins nodb
