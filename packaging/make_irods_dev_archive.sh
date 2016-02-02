@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 SCRIPT_DIR=${BASH_SOURCE%/*}
 OS=`${SCRIPT_DIR}/find_os.sh`
