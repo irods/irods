@@ -76,6 +76,32 @@ if [ "$$DETECTED_VERSION" != "$$REQUIRED_VERSION" ] ; then
     echo "This plugin requires iRODS $$REQUIRED_VERSION"
     exit 1
 fi
+
+# determine whether this is an upgrade
+if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
+  # integer, therefore rpm
+  if [ $$1 -gt 1 ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+else
+  # string, therefore deb
+  if [ "$$1" = "upgrade" ] ; then
+    PACKAGEUPGRADE="true"
+  else
+    PACKAGEUPGRADE="false"
+  fi
+fi
+
+if [ "$$PACKAGEUPGRADE" = "true" ] ; then
+  # write version information down for postinstall
+  UPGRADE_FLAG_FILE="$IRODS_HOME_DIR/packaging/upgrade_db.tmp"
+  touch $$UPGRADE_FLAG_FILE
+else
+  echo "NOP" > /dev/null
+fi
+
 END_PREINSTALL
 
 
@@ -83,31 +109,42 @@ END_PREINSTALL
 # post install
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
-echo ""
-echo "======================================================================="
-echo ""
-echo "iRODS MySQL Database Plugin installation was successful."
-echo ""
-echo "To configure this plugin, the following prerequisites need to be met:"
-echo " - an existing database user (to be used by the iRODS server)"
-echo " - an existing database (to be used as the iCAT catalog)"
-echo " - permissions for existing user on existing database"
-echo ""
-echo "In addition, the following configuration needs to be added"
-echo "to the [mysqld] section of your /etc/my.cnf or /etc/mysql/my.cnf file:"
-echo "  #######################################"
-echo "  # iRODS MySQL Configuration Options"
-echo "  # as described at"
-echo "  # https://wiki.irods.org/index.php/MySQL"
-echo "  #######################################"
-echo "  log_bin_trust_function_creators=1"
-echo ""
-echo "After restarting your MySQL server with the new configuration,"
-echo "please run the following setup script:"
-echo "  sudo /var/lib/irods/packaging/setup_irods.sh"
-echo ""
-echo "======================================================================="
-echo ""
+# =-=-=-=-=-=-=-
+# detect whether this is an upgrade
+UPGRADE_FLAG_FILE=$IRODS_HOME_DIR/packaging/upgrade_db.tmp
+if [ -f "$$UPGRADE_FLAG_FILE" ] ; then
+    UPGRADE_FLAG="true"
+else
+    UPGRADE_FLAG="false"
+fi
+if [ "$$UPGRADE_FLAG" = "false" ] ; then
+    echo ""
+    echo "======================================================================="
+    echo ""
+    echo "iRODS MySQL Database Plugin installation was successful."
+    echo ""
+    echo "To configure this plugin, the following prerequisites need to be met:"
+    echo " - an existing database user (to be used by the iRODS server)"
+    echo " - an existing database (to be used as the iCAT catalog)"
+    echo " - permissions for existing user on existing database"
+    echo ""
+    echo "In addition, the following configuration needs to be added"
+    echo "to the [mysqld] section of your /etc/my.cnf or /etc/mysql/my.cnf file:"
+    echo "  #######################################"
+    echo "  # iRODS MySQL Configuration Options"
+    echo "  # as described at"
+    echo "  # https://wiki.irods.org/index.php/MySQL"
+    echo "  #######################################"
+    echo "  log_bin_trust_function_creators=1"
+    echo ""
+    echo "After restarting your MySQL server with the new configuration,"
+    echo "please run the following setup script:"
+    echo "  sudo /var/lib/irods/packaging/setup_irods.sh"
+    echo ""
+    echo "======================================================================="
+    echo ""
+fi
+rm -f $$UPGRADE_FLAG_FILE
 END_POSTINSTALL
 
 # =-=-=-=-=-=-=-
