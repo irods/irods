@@ -2,7 +2,7 @@
 
 ## 4.1.8
 
-Release Date: 2016-02-19
+Release Date: 2016-02-22
 
 ### Features
 
@@ -57,7 +57,7 @@ Release Date: 2016-02-19
 
  - Fix for default numThreads [#2996]
 
- - Fixes for federation listings [#3002] [#3013]
+ - Fixes for federation listings [#3002] [#3013] [#3055]
 
  - Fix for resource server setup warning [#3003]
 
@@ -78,6 +78,8 @@ Release Date: 2016-02-19
  - Fix for Oracle detection [#3038] [#3047]
 
  - Fix for quotas to use resource hierarchies [#3044] [#3048]
+
+ - Fix for complex hierarchy edge case [#3056]
 
 [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.8)
 
