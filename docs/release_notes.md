@@ -2,20 +2,20 @@
 
 ## 4.1.8
 
-Release Date: 2016-02
+Release Date: 2016-02-19
 
 ### Features
 
  - Added High Water Mark for unixfilesystem resources [#2981]
 
- - Include msisync_to_archive from contrib repository [#2962]
+ - Include msisync_to_archive from contrib repository [#2962] [#2963]
 
 !!! Note
     This inclusion will cause a package conflict with the existing
     'administration' microservices plugin package available from the
     irods/contrib repository.  If you have an ongoing need for any
     of the other microservices from that repository, you will need
-    to compile them yourself.
+    to compile and install them yourself.
 
 ### Bug Fixes
 
@@ -41,7 +41,7 @@ Release Date: 2016-02
 
  - Fixes to JSON documentation [#2973] [#3015] [#3020] [#3021]
 
- - Fixes for upgrade documentation [#2975] [#2982] [#2989] [#2990] [#2991] [#2994]
+ - Fixes for upgrade documentation [#2975] [#2982] [#2989] [#2991] [#2994]
 
  - Fixes for msiDataObjRsync and msiCollRsync [#2976]
 
@@ -51,7 +51,7 @@ Release Date: 2016-02
 
  - Fix for replication by admin for another user [#2988]
 
- - Fix for federation rsync [#2993]
+ - Fix and test for federation rsync [#2993] [#3016]
 
  - Fix for iphymv by admin for another user [#2995]
 
@@ -70,6 +70,14 @@ Release Date: 2016-02
  - Fix for rebalance operation [#3022]
 
  - Fix to restore session variables [#3024]
+
+ - Add missing rule engine functionality, parseMspForDouble [#3033]
+
+ - Fix for database plugin upgrade output [#3034]
+
+ - Fix for Oracle detection [#3038] [#3047]
+
+ - Fix for quotas to use resource hierarchies [#3044] [#3048]
 
 [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.8)
 
