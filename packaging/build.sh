@@ -1185,12 +1185,14 @@ if [ "$RUNINPLACE" == "1" ] ; then
                 exit 1
             fi
         fi
-        if [ "$DATABASE_PLUGIN_TYPE" == "mysql" ] ; then
-            check_package_installed "brew list" "mysql"
-            check_package_installed "brew list" "pcre"
-        fi
-        check_package_installed "brew list" "automake"
-        check_package_installed "brew list" "libtool"
+        for p in autoconf automake curl help2man libtool libxml2 mysql openssl pcre pkg-config shtool wget
+        do
+            check_package_installed "brew list" "$p"
+        done
+        for p in homebrew/dupes/bzip2 homebrew/dupes/zlib
+        do
+            check_package_installed "brew list" "$p"
+        done
     fi
 
 fi
