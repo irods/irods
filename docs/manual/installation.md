@@ -52,21 +52,20 @@ Confirmation of the permissions can be viewed with ``\l`` within the ``psql`` co
 ~~~
 $ mysql
 mysql> CREATE DATABASE ICAT;
-mysql> CREATE USER irods IDENTIFIED BY 'testpassword';
-mysql> GRANT ALL ON ICAT.* to irods;
+mysql> CREATE USER 'irods'@'localhost' IDENTIFIED BY 'testpassword';
+mysql> GRANT ALL ON ICAT.* to 'irods'@'localhost';
 ~~~
 
 Confirmation of the permissions can be viewed:
 
 ~~~
-mysql> SHOW GRANTS FOR irods;
-+------------------------------------------------------------------------------------------------------+
-| Grants for irods@%                                                                           |
-+------------------------------------------------------------------------------------------------------+
-| GRANT USAGE ON *.* TO 'irods'@'%' IDENTIFIED BY PASSWORD '*9F69E47E519D9CA02116BF5796684F7D0D45F8FA' |
-| GRANT ALL PRIVILEGES ON `ICAT`.* TO 'irods'@'%'                                                      |
-| ...                                                                                                  |
-+------------------------------------------------------------------------------------------------------+
+mysql> SHOW GRANTS FOR 'irods'@'localhost';
++--------------------------------------------------------------------------------------------------------------+
+| Grants for irods@localhost                                                                                   |
++--------------------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'irods'@'localhost' IDENTIFIED BY PASSWORD '*9F69E47E519D9CA02116BF5796684F7D0D45F8FA' |
+| GRANT ALL PRIVILEGES ON `ICAT`.* TO 'irods'@'localhost'                                                      |
++--------------------------------------------------------------------------------------------------------------+
 N rows in set (0.00 sec)
 
 ~~~
