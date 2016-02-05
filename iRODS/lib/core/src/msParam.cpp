@@ -962,6 +962,35 @@ parseMspForFloat( msParam_t * inpParam, float * floatout ) {
 }
 
 int
+parseMspForDouble( msParam_t * inpParam, double * doubleout ) {
+
+    if ( inpParam == NULL || doubleout == NULL ) {
+        return SYS_NULL_INPUT;
+    }
+    if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
+        /* str input */
+        if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
+            return SYS_NULL_INPUT;
+        }
+#if defined(solaris_platform)
+        *doubleout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
+#else
+        *doubleout = strtof( ( const char* )inpParam->inOutStruct, NULL );
+#endif
+    }
+    else if ( strcmp( inpParam->type, DOUBLE_MS_T ) == 0 ) {
+        *doubleout = *( double * )inpParam->inOutStruct;
+    }
+    else {
+        rodsLog( LOG_ERROR,
+                 "%s: Unsupported input Param type %s",
+                 __FUNCTION__,
+                 inpParam->type );
+        return USER_PARAM_TYPE_ERR;
+    }
+    return 0;
+}
+int
 parseMspForExecCmdInp( msParam_t * inpParam,
                        execCmd_t * execCmdInpCache, execCmd_t **ouExecCmdInp ) {
     *ouExecCmdInp = NULL;
