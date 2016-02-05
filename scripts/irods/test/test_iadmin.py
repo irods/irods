@@ -263,16 +263,18 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check object_count on unixB2
         self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
+
+        # no longer relevant as hierachy is in the r_resc_main table only
         # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
-        self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
-        self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
         # check resc_name on replB files
-        self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
-        self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
 
         # remove child
         # rm replB from replA
@@ -293,12 +295,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
         # check object_count on unixB2
         self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
+
         # check resc_hier on replB files, should start with replB and not have pt anymore
-        self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "replB", 'STDOUT_SINGLELINE', "replB")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "replB", 'STDOUT_SINGLELINE', "replB")
         # check resc_name on replB files
-        self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-                                   "replB", 'STDOUT_SINGLELINE', "replB")
+        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
+        #                           "replB", 'STDOUT_SINGLELINE', "replB")
 
         # delete files
         self.admin.assert_icommand("irm -rf %s" % dir1)
@@ -522,49 +525,49 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["leaf_a", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["leaf_b", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["leaf_c", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 0 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 3 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["leaf_a", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["leaf_b", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["leaf_c", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 2 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["leaf_a", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["leaf_b", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["leaf_c", " foo2"])
 
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 2 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 3 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 4 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["leaf_a", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["leaf_b", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["leaf_c", " foo3"])
 
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 0 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 1 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 2 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["leaf_a", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["leaf_b", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["leaf_c", " foo4"])
 
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 1 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 2 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 3 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["leaf_a", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["leaf_b", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["leaf_c", " foo5"])
 
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["leaf_a", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["leaf_b", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["leaf_c", " foo6"])
 
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["leaf_a", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["leaf_b", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["leaf_c", " foo7"])
 
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["leaf_a", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["leaf_b", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["leaf_c", " foo8"])
 
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 0 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["leaf_a", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["leaf_b", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["leaf_c", " foo9"])
 
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 0 ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " foo10"])
-        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 2 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', ["leaf_a", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', ["leaf_b", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', ["leaf_c", " foo10"])
 
         # =-=-=-=-=-=-=-
         # TEARDOWN
@@ -657,55 +660,55 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
-        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 4 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["unixA1", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["unixA2", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["unixB1", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', ["unixB2", " foo0"])
 
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 0 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 2 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 3 ", " foo1"])
-        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', [" 4 ", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["unixA1", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["unixA2", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["unixB1", " foo1"])
+        self.admin.assert_icommand("ils -AL foo1", 'STDOUT_SINGLELINE', ["unixB2", " foo1"])
 
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 0 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 3 ", " foo2"])
-        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 4 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["unixA1", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["unixA2", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["unixB1", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', ["unixB2", " foo2"])
 
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 2 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 3 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 4 ", " foo3"])
-        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', [" 5 ", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["unixA1", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["unixA2", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["unixB1", " foo3"])
+        self.admin.assert_icommand("ils -AL foo3", 'STDOUT_SINGLELINE', ["unixB2", " foo3"])
 
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 0 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 3 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 4 ", " foo4"])
-        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 5 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["unixA1", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["unixA2", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["unixB1", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', ["unixB2", " foo4"])
 
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 1 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 3 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 4 ", " foo5"])
-        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', [" 5 ", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["unixA1", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["unixA2", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["unixB1", " foo5"])
+        self.admin.assert_icommand("ils -AL foo5", 'STDOUT_SINGLELINE', ["unixB2", " foo5"])
 
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
-        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 4 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["unixA1", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["unixA2", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["unixB1", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', ["unixB2", " foo6"])
 
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
-        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 4 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["unixA1", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["unixA2", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["unixB1", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', ["unixB2", " foo7"])
 
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
-        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 4 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["unixA1", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["unixA2", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["unixB1", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', ["unixB2", " foo8"])
 
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 0 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
-        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 4 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["unixA1", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["unixA2", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["unixB1", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', ["unixB2", " foo9"])
 
         self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 0 ", " & ", " foo10"])
         self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " & ", " foo10"])
