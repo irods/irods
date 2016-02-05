@@ -135,8 +135,23 @@ The workaround is to use iRODS native authentication when using these.
 
 `ipasswd` for rodsusers will also fail, but it is not an issue as it would be trying to update their (unused) iRODS native password.  They should not be updating their Kerberos passwords via iCommands.
 
+### Weak Encryption Workaround
 
+If you are seeing either of the errors `GSS-API error initializing context: KDC has no support for encryption type` or `KRB_ERROR_INIT_SECURITY_CONTEXT` when setting up Kerberos, then you probably have an available cypher mismatch between the Kerberos server and the Active Directory (AD) server.  This is not an iRODS setting, and can be addressed in the Kerberos configuration.
 
+The MIT Key Distribution Center (KDC) uses the most secure encoding type when sending the ticket to the AD server. When the AD server is unable to handle that encoding, it replies with the error that the encryption type is not supported.
+
+To override this mismatch and allow a weaker algorithm to be sufficient, set `allow_weak_crypto = yes` in the `libdefaults` stanza of `/etc/krb5.conf`:
+
+~~~
+$ head /etc/krb5.conf
+[libdefaults]
+        default_realm = EXAMPLE.ORG
+        allow_weak_crypto = yes
+...
+~~~
+
+This will allow the Kerberos handshake to succeed, which allows the iRODS connection to continue.
 
 ## PAM
 
