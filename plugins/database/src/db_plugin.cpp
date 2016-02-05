@@ -4242,11 +4242,10 @@ irods::error db_add_child_resc_op(
     if(!ret.ok()) {
         return PASS(ret);
     }
-
     if(child_object_count_num > 0) {
         std::string hierarchy;
         ret = resc_mgr.get_hier_to_root_for_resc(
-                  child_name,//XXXX - parent_name,
+                  parent_name,
                   hierarchy );
         if(!ret.ok()) {
             _rollback( __FUNCTION__ );
@@ -4550,7 +4549,7 @@ irods::error db_del_child_resc_op(
     if(child_object_count_num > 0) {
         std::string hierarchy;
         ret = resc_mgr.get_hier_to_root_for_resc(
-                  child_name,// XXXX - parent_name,
+                  parent_name,
                   hierarchy );
         if(!ret.ok()) {
             _rollback( __FUNCTION__ );
