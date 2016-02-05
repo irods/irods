@@ -155,13 +155,36 @@ def get_connection_string(db_config):
 
     return ';'.join(itertools.chain(['DSN=iRODS Catalog'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
 
+def get_database_connection(irods_config):
+    l = logging.getLogger(__name__)
+    if irods_config.database_config['catalog_database_type'] == 'oracle':
+        os.environ['TWO_TASK'] = get_two_task_for_oracle(irods_config.database_config)
+        l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
+
+    connection_string = get_connection_string(irods_config.database_config)
+    irods_config.sync_odbc_ini()
+    os.environ['ODBCINI'] = irods_config.odbc_ini_path
+    os.environ['ODBCSYSINI'] = '/etc'
+
+    try:
+        return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
+    except pypyodbc.Error:
+        six.reraise(IrodsError,
+            IrodsError('pypyodbc encountered an error connecting to the database'),
+            sys.exc_info()[2])
+
 def execute_sql_statement(cursor, statement, *params, **kwargs):
     l = logging.getLogger(__name__)
     log_params = kwargs.get('log_params', True)
     l.debug('Executing SQL statement:\n%s\nwith the following parameters:\n%s',
             statement,
             pprint.pformat(params) if log_params else '<hidden>')
-    return cursor.execute(statement, params)
+    try:
+        return cursor.execute(statement, params)
+    except pypyodbc.Error:
+        six.reraise(IrodsError,
+            IrodsError('pypyodbc encountered an error executing the query'),
+            sys.exc_info()[2])
 
 def execute_sql_file(filepath, cursor, by_line=False):
     l = logging.getLogger(__name__)
@@ -172,9 +195,21 @@ def execute_sql_file(filepath, cursor, by_line=False):
                 if not line.strip():
                     continue
                 l.debug('Executing SQL statement:\n%s', line)
-                cursor.execute(line)
+                try:
+                    cursor.execute(line)
+                except IrodsError:
+                    six.reraise(IrodsError,
+                        IrodsError('pypyodbc encountered an error executing '
+                            'the statement:\n\t%s' % (line)),
+                        sys.exc_info()[2])
         else:
-            cursor.execute(f.read())
+            try:
+                cursor.execute(f.read())
+            except IrodsError:
+                six.reraise(IrodsError,
+                    IrodsError('pypyodbc encountered an error executing '
+                        'the sql in %s.' % (filepath)),
+                    sys.exc_info()[2])
 
 #def main():
 #    l = logging.getLogger(__name__)

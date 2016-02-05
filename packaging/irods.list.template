@@ -355,7 +355,21 @@ d 755 root root /etc/irods -
 d 755 root root ${IRODS_HOME}/installLogs -
 
 d 755 root root ${IRODS_HOME_DIR}/scripts -
-f 744 root root ${IRODS_HOME_DIR}/scripts ./scripts/*.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/cleanup_resource_tree.py       ./scripts/cleanup_resource_tree.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/find_shared_object.py          ./scripts/find_shared_object.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/get_db_schema_version.py       ./scripts/get_db_schema_version.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/get_irods_version.py           ./scripts/get_irods_version.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/irods_control.py               ./scripts/irods_control.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/kill_pid.py                    ./scripts/kill_pid.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/make_resource_tree.py          ./scripts/make_resource_tree.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/manual_cleanup.py              ./scripts/manual_cleanup.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/pid_age.py                     ./scripts/pid_age.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/run_tests.py                   ./scripts/run_tests.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/setup_irods.py                 ./scripts/setup_irods.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/switchuser.py                  ./scripts/switchuser.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/system_identification.py       ./scripts/system_identification.py
+f 744 root root ${IRODS_HOME_DIR}/scripts/terminate_irods_processes.py   ./scripts/terminate_irods_processes.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/validate_json.py               ./scripts/validate_json.py
 
 f 744 root root ${IRODS_HOME_DIR}/scripts/rulebase_fastswap_test_2276.sh ./scripts/rulebase_fastswap_test_2276.sh
 

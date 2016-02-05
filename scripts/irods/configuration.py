@@ -12,7 +12,6 @@ import sys
 import time
 
 from . import six
-from . import pypyodbc
 
 from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
@@ -418,7 +417,7 @@ class IrodsConfig(object):
             l.info('Running update to schema version %d...', int(os.path.basename(schema_update_path).partition('.')[0]))
             try:
                 database_connect.execute_sql_file(schema_update_path, cursor, by_line=True)
-            except pypyodbc.Error as e:
+            except IrodsError:
                 six.reraise(IrodsError,
                         IrodsError('Updating database schema version failed while running %s' % (schema_update_path)),
                         sys.exc_info()[2])
@@ -460,16 +459,7 @@ class IrodsConfig(object):
         return os.stat(self.top_level_directory).st_gid
 
     def get_database_connection(self):
-        l = logging.getLogger(__name__)
-        if self.database_config['catalog_database_type'] == 'oracle':
-            os.environ['TWO_TASK'] = database_connect.get_two_task_for_oracle(self.database_config)
-            l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
-
-        connection_string = database_connect.get_connection_string(self.database_config)
-        self.sync_odbc_ini()
-        os.environ['ODBCINI'] = self.odbc_ini_path
-        os.environ['ODBCSYSINI'] = '/etc'
-        return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
+        return database_connect.get_database_connection(self)
 
     @property
     def odbc_ini_path(self):
@@ -516,11 +506,11 @@ class IrodsConfig(object):
         query = "select option_value from R_GRID_CONFIGURATION where namespace='database' and option_name='schema_version';"
         try :
             rows = database_connect.execute_sql_statement(cursor, query).fetchall()
-        except pypyodbc.Error:
+        except IrodsError:
             six.reraise(IrodsError,
-                    IrodsError('pypyodbc encountered an error executing '
-                        'the query:\n\t%s' % (query)),
-                    sys.exc_info()[2])
+                IrodsError('pypyodbc encountered an error executing '
+                    'the query:\n\t%s' % (query)),
+                sys.exc_info()[2])
         if len(rows) == 0:
             raise IrodsError('No schema version present, unable to upgrade. '
                     'If this is an upgrade from a pre-4.0 installation, '
