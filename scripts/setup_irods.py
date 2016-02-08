@@ -64,6 +64,9 @@ def setup_server(irods_config):
     if irods_config.is_catalog:
         default_resource_directory = get_and_create_default_vault(irods_config)
         setup_catalog(irods_config, default_resource_directory=default_resource_directory)
+    elif irods_config.is_resource:
+        default_resource_directory = get_and_create_default_vault(irods_config)
+        irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     l.info(get_header('Starting iRODS...'))
     IrodsController(irods_config).start()
@@ -247,6 +250,9 @@ def setup_server_config(irods_config):
         'Control Plane key',
         input_filter=character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
         echo=False)
+
+    if irods_config.is_resource:
+        server_config['default_resource_name'] = ''.join([irods.lib.get_hostname().split('.')[0], 'Resource'])
 
     irods_config.commit(server_config, irods_config.server_config_path)
 
