@@ -16,8 +16,7 @@ namespace irods {
         plugin_base(
             "",
             "" ),
-        num_args_( 0 ),
-        call_action_( 0 ) {
+        num_args_( 0 ) {
     } // def ctor
 
     ms_table_entry::ms_table_entry(
@@ -25,72 +24,217 @@ namespace irods {
         plugin_base(
             "msvc",
             "ctx" ),
-        num_args_( _n ),
-        call_action_( 0 ) {
+        num_args_( _n ) {
     } // ctor
 
     ms_table_entry::ms_table_entry(
-        const std::string&, //_name
+        const std::string& _name,
         int                _num_args,
-        ms_func_ptr        _fcn_ptr ) :
+        boost::any         _fcn_ptr ) :
         plugin_base(
             "msvc",
             "ctx" ),
-        num_args_( _num_args ),
-        call_action_( _fcn_ptr ) {
+        operation_name_( _name ),
+        num_args_( _num_args ) {
+        operations_[operation_name_] = _fcn_ptr;
     } // ctor
 
     ms_table_entry::ms_table_entry(
         const ms_table_entry& _rhs ) :
         plugin_base( _rhs ),
         num_args_( _rhs.num_args_ ),
-        call_action_( _rhs.call_action_ ) {
+        operation_name_( _rhs.operation_name_ ) {
     } // cctor
 
     ms_table_entry& ms_table_entry::operator=(
         const ms_table_entry& _rhs ) {
         plugin_base::operator=( _rhs );
-        num_args_    = _rhs.num_args_;
-        call_action_ = _rhs.call_action_;
+        num_args_       = _rhs.num_args_;
+        operation_name_ = _rhs.operation_name_;
         return *this;
     } // operator=
 
     ms_table_entry::~ms_table_entry() {
     } // dtor
 
-    error ms_table_entry::delay_load(
-        void* _h ) {
-        // =-=-=-=-=-=-=-
-        // check handle to open shared object
-        if ( !_h ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null handle parameter" );
+    int ms_table_entry::call(
+        ruleExecInfo_t*          _rei,
+        std::vector<msParam_t*>& _params ) {
+        if( _params.size() != num_args_ ) {
+            return SYS_INVALID_INPUT_PARAM;
         }
 
-        // =-=-=-=-=-=-=-
-        // check to see if we actually have any ops
-        if ( 0 == ops_for_delay_load_.size() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "no ops to load" );
+        int status = 0;
+        if ( _params.size() == 0 ) {
+            status = call_handler<ruleExecInfo_t*>( _rei );
+        }
+        else if ( _params.size() == 1 ) {
+            status = call_handler<
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _rei );
+        }
+        else if ( _params.size() == 2 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _rei );
+        }
+        else if ( _params.size() == 3 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _rei );
+        }
+        else if ( _params.size() == 4 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _rei );
+
+        }
+        else if ( _params.size() == 5 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _rei );
+        }
+        else if ( _params.size() == 6 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _params[5],
+                        _rei );
+        }
+        else if ( _params.size() == 7 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _params[5],
+                        _params[6],
+                        _rei );
+
+        }
+        else if ( _params.size() == 8 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _params[5],
+                        _params[6],
+                        _params[7],
+                        _rei );
+        }
+        else if ( _params.size() == 9 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _params[5],
+                        _params[6],
+                        _params[7],
+                        _params[8],
+                        _rei );
+        }
+        else if ( _params.size() == 10 ) {
+            status = call_handler<
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                msParam_t*,
+                ruleExecInfo_t*>(
+                        _params[0],
+                        _params[1],
+                        _params[2],
+                        _params[3],
+                        _params[4],
+                        _params[5],
+                        _params[6],
+                        _params[7],
+                        _params[8],
+                        _params[9],
+                        _rei );
         }
 
-        // =-=-=-=-=-=-=-
-        // load our operation, assuming we have only one
-        std::string action = ops_for_delay_load_[0].first;
-        call_action_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action.c_str() ) );
+        return status;
 
+    } // call
 
-        // =-=-=-=-=-=-=-
-        // check our fcn ptr
-        if ( !call_action_ ) {
-            std::stringstream msg;
-            msg << "failed to load msvc function [";
-            msg << action;
-            msg << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-        }
-
-        return SUCCESS();
-
-    } // delay_load
 
 // =-=-=-=-=-=-=-
 // given the name of a microservice, try to load the shared object

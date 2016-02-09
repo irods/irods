@@ -17,7 +17,7 @@
 #include "irods_re_plugin.hpp"
 
 //    #include "irods_ms_plugin.hpp"
-//    extern irods::ms_table MicrosTable;
+//    irods::ms_table MicrosTable;
 //    extern int NumOfAction;
 
 #define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
@@ -868,17 +868,11 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
  */
 Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node, Env *env, ruleExecInfo_t *rei, rError_t *errmsg, Region *r ) {
     msParamArray_t *origMsParamArray = rei->msParamArray;
-    funcPtr myFunc = NULL;
-    int actionInx;
-    unsigned int numOfStrArgs;
-    unsigned int i;
-    int ii = 0;
-    msParam_t *myArgv[MAX_PARAMS_LEN];
-    Res *res;
+    Res *res = NULL;
 
     /* look up the micro service */
     irods::ms_table_entry ms_entry;
-    actionInx = actionTableLookUp( ms_entry, msName );
+    int actionInx = actionTableLookUp( ms_entry, msName );
 
     char errbuf[ERR_MSG_LEN];
     if ( actionInx < 0 ) {
@@ -889,8 +883,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
 
     }
 
-    myFunc       = ms_entry.call_action_;
-    numOfStrArgs = ms_entry.num_args_;
+    unsigned int numOfStrArgs = ms_entry.num_args();
     if ( nargs != numOfStrArgs ) {
         int ret = ACTION_ARG_COUNT_MISMATCH;
         generateErrMsg( "execMicroService3: wrong number of arguments", NODE_EXPR_POS( node ), node->base, errbuf );
@@ -898,8 +891,12 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         return newErrorRes( r, ret );
     }
 
+    std::vector<msParam_t*> myArgv;
+    myArgv.resize( numOfStrArgs );
+
     /* convert arguments from Res to msParam_t */
     /* char buf[1024]; */
+    int i = 0;
     int fillInParamLabel = node->degree == 2 && node->subtrees[1]->degree == ( int ) numOfStrArgs;
     for ( i = 0; i < numOfStrArgs; i++ ) {
         myArgv[i] = ( msParam_t * )malloc( sizeof( msParam_t ) );
@@ -928,6 +925,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         /* sprintf(buf,"**%d",i); */
         /* myArgv[i]->label = strdup(buf); */
     }
+    int ii = 0;
     /* convert env to msparam array */
     rei->msParamArray = newMsParamArray();
     int ret = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
@@ -945,39 +943,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         reDebug( EXEC_MICRO_SERVICE_BEGIN, -4, &param, node, env, rei );
     }
 
-    if ( numOfStrArgs == 0 ) {
-        ii = ( *( int ( * )( ruleExecInfo_t * ) )myFunc )( rei ) ;
-    }
-    else if ( numOfStrArgs == 1 ) {
-        ii = ( *( int ( * )( msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], rei );
-    }
-    else if ( numOfStrArgs == 2 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], rei );
-    }
-    else if ( numOfStrArgs == 3 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], rei );
-    }
-    else if ( numOfStrArgs == 4 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], rei );
-    }
-    else if ( numOfStrArgs == 5 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], rei );
-    }
-    else if ( numOfStrArgs == 6 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], rei );
-    }
-    else if ( numOfStrArgs == 7 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], rei );
-    }
-    else if ( numOfStrArgs == 8 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7], rei );
-    }
-    else if ( numOfStrArgs == 9 ) {
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7], myArgv[8], rei );
-    }
-    else if ( numOfStrArgs == 10 )
-        ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7],
-                myArgv[8], myArgv [9], rei );
+    ii = ms_entry.call( rei, myArgv );
 
     /* move errmsgs from rei to errmsg */
     if ( rei->rsComm != NULL ) {

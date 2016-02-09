@@ -173,54 +173,15 @@ namespace irods{
                 }
             }
         } else {
-            funcPtr myFunc = NULL;
-            unsigned int numOfStrArgs;
-            int ii = 0;
-            std::vector<msParam_t *> &myArgv = ar.myArgv;
-
-            myFunc       = ms_entry.call_action_;
-            numOfStrArgs = ms_entry.num_args_;
+            unsigned int numOfStrArgs = ms_entry.num_args();
             if ( nargs != numOfStrArgs ) {
                 return ERROR( ACTION_ARG_COUNT_MISMATCH, "execMicroService3: wrong number of arguments");
             }
 
-
-            if ( numOfStrArgs == 0 ) {
-                ii = ( *( int ( * )( ruleExecInfo_t * ) )myFunc )( rei ) ;
-            }
-            else if ( numOfStrArgs == 1 ) {
-                ii = ( *( int ( * )( msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], rei );
-            }
-            else if ( numOfStrArgs == 2 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], rei );
-            }
-            else if ( numOfStrArgs == 3 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], rei );
-            }
-            else if ( numOfStrArgs == 4 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], rei );
-            }
-            else if ( numOfStrArgs == 5 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], rei );
-            }
-            else if ( numOfStrArgs == 6 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], rei );
-            }
-            else if ( numOfStrArgs == 7 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], rei );
-            }
-            else if ( numOfStrArgs == 8 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7], rei );
-            }
-            else if ( numOfStrArgs == 9 ) {
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7], myArgv[8], rei );
-            }
-            else if ( numOfStrArgs == 10 )
-                ii = ( *( int ( * )( msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, msParam_t *, ruleExecInfo_t * ) )myFunc )( myArgv[0], myArgv[1], myArgv[2], myArgv[3], myArgv[4], myArgv[5], myArgv[6], myArgv[7],
-                        myArgv[8], myArgv [9], rei );
-
-            if ( ii < 0 ) {
-                return ERROR(ii,"exec_microservice_adapter failed");
+            std::vector<msParam_t *> &myArgv = ar.myArgv;
+            int status = ms_entry.call( rei, myArgv );
+            if ( status < 0 ) {
+                return ERROR(status,"exec_microservice_adapter failed");
             }
         }
         i = 0;

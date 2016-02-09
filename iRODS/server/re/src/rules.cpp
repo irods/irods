@@ -17,11 +17,13 @@
 #include "irods_log.hpp"
 #include "irods_re_plugin.hpp"
 #include "irods_error.hpp"
-
+#include "reAction.hpp"
 
 #define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
+
+static irods::ms_table MicrosTable;
 
 /**
  * Read a set of rules from files.
