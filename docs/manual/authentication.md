@@ -68,7 +68,7 @@ Kerberos setup in iRODS 4.0+ has been greatly simplified.  The functionality its
 
 ### Kerberos Configuration
 
-Configuration of Kerberos is out of scope for this document, but consists of the following four main steps:
+Configuration of a Kerberos server for authentication is out of scope for this document, but consists of the following four main steps:
 
 1. Set up Kerberos (Key Distribution Center (KDC) and Kerberos Admin Server)
 2. Confirm the (default) irods service account has a service principal in KDC (with the hostname of the rodsServer) (e.g. irodsserver/serverhost.example.org@EXAMPLE.ORG)
