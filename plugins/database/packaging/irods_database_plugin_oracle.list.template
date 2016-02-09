@@ -61,14 +61,6 @@ $IRODS_HOME=$IRODS_HOME_DIR/iRODS
 # preinstall
 # =-=-=-=-=-=-=-
 %preinstall << END_PREINSTALL
-REQUIRED_VERSION="4.1.8"
-DETECTED_VERSION=`python -c 'import json; print json.loads(open("/var/lib/irods/VERSION.json").read())["irods_version"]'`
-if [ "$$DETECTED_VERSION" != "$$REQUIRED_VERSION" ] ; then
-    echo "Local iRODS is $$DETECTED_VERSION"
-    echo "This plugin requires iRODS $$REQUIRED_VERSION"
-    exit 1
-fi
-
 # determine whether this is an upgrade
 if [ "$$1" -eq "$$1" ] 2>/dev/null ; then
   # integer, therefore rpm
