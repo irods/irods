@@ -1050,7 +1050,7 @@ msiListEnabledMS(
     msParam_t*      outKVPairs,
     ruleExecInfo_t* rei ) {
 
-    extern irods::ms_table MicrosTable;
+    irods::ms_table MicrosTable;
     keyValPair_t *results;		/* the output data structure */
 
 

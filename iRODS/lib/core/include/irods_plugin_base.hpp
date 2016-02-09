@@ -55,6 +55,7 @@ namespace irods {
                 context_( _c ),
                 instance_name_( _n ),
                 interface_version_( PLUGIN_INTERFACE_VERSION ),
+                operations_( ),
                 start_operation_( default_plugin_start_operation ),
                 stop_operation_( default_plugin_stop_operation ) {
             } // ctor
@@ -64,6 +65,7 @@ namespace irods {
                 context_( _rhs.context_ ),
                 instance_name_( _rhs.instance_name_ ),
                 interface_version_( _rhs.interface_version_ ),
+                operations_( _rhs.operations_ ),
                 start_operation_(_rhs.start_operation_),
                 stop_operation_(_rhs.stop_operation_) {
             } // cctor
@@ -73,6 +75,7 @@ namespace irods {
                 instance_name_     = _rhs.instance_name_;
                 context_           = _rhs.context_;
                 interface_version_ = _rhs.interface_version_;
+                operations_        = _rhs.operations_;
                 start_operation_   = _rhs.start_operation_;
                 stop_operation_    = _rhs.stop_operation_;
                 return *this;

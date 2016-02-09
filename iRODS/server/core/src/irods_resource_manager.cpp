@@ -253,7 +253,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // loop until continuation is not requested
         while ( continueInx > 0 ) {
-
             // =-=-=-=-=-=-=-
             // perform the general query
             int status = rsGenQuery( _comm, &genQueryInp, &genQueryOut );
@@ -261,14 +260,16 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // perform the general query
             if ( status < 0 ) {
-                if ( status != CAT_NO_ROWS_FOUND ) {
-                    rodsLog( LOG_NOTICE, "initResc: rsGenQuery error, status = %d",
-                             status );
-                }
-
                 freeGenQueryOut( &genQueryOut );
                 clearGenQueryInp( &genQueryInp );
-                return ERROR( status, "genQuery failed." );
+                if ( status != CAT_NO_ROWS_FOUND ) {
+                    // actually an error
+                    rodsLog( LOG_NOTICE, "initResc: rsGenQuery error, status = %d",
+                             status );
+                    return ERROR( status, "genQuery failed." );
+                }
+
+                break; // CAT_NO_ROWS_FOUND expected at the end of a query
 
             } // if
 

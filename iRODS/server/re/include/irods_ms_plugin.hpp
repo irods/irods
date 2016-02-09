@@ -32,8 +32,6 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Attributes
-            int          num_args_;
-            ms_func_ptr  call_action_;
 
             // =-=-=-=-=-=-=-
             // Constructors
@@ -42,14 +40,15 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // NOTE :: this ctor should be called by plugin authors
             ms_table_entry(
-                int ); // num ms args
+                    int ); // num ms args
 
             // =-=-=-=-=-=-=-
             // NOTE :: called internally for static plugins
+            //         with no type checking
             ms_table_entry(
-                const std::string&,  // ms name
-                int,                 // num ms args
-                ms_func_ptr );       // function pointer
+                const std::string&, // ms name
+                int,                // num ms args
+                boost::any );       // function pointer
 
             // =-=-=-=-=-=-=-
             // copy ctor
@@ -63,15 +62,64 @@ namespace irods {
             // Destructor
             virtual ~ms_table_entry();
 
-            // =-=-=-=-=-=-=-
-            // Lazy Loader for MS Fcn Ptr
-            error delay_load( void* _h );
+            /// =-=-=-=-=-=-=-
+            /// @brief adaptor from old microservice sig to new plugin sign
+            template<typename... types_t>
+                error add_operation(
+                        const std::string& _op,
+                        std::function<int(types_t...)> _f ) {
 
-            void add_operation(
-                    const std::string& _op,
-                    const std::string& _fn ) {
-                ops_for_delay_load_.push_back( std::make_pair( _op, _fn ) );
-            }
+                    // =-=-=-=-=-=-=-
+                    // check params
+                    if ( _op.empty() ) {
+                        std::stringstream msg;
+                        msg << "empty operation key [" << _op << "]";
+                        return ERROR(
+                                SYS_INVALID_INPUT_PARAM,
+                                msg.str() );
+                    }
+
+                    operation_name_ = _op;
+                    operations_[operation_name_] = _f;
+
+                    return SUCCESS();
+
+                } // add_operation
+
+            template<typename... types_t>
+                int call_handler(types_t... _t ) {
+                    if( !operations_.has_entry(operation_name_) ) {
+                        rodsLog(
+                            LOG_ERROR,
+                            "missing microservice operation [%s]",
+                            operation_name_.c_str() );
+                        return SYS_INVALID_INPUT_PARAM;
+                    }
+
+                    try {
+                        typedef std::function<int(types_t...)> fcn_t;
+                        fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name_ ] );
+                        return fcn(_t...);
+                    }
+                    catch( const boost::bad_any_cast& ) {
+                        std::string msg( "failed for call - " );
+                        msg += operation_name_;
+                        irods::log( ERROR(
+                                    INVALID_ANY_CAST,
+                                    msg ) );
+                        return INVALID_ANY_CAST;
+                    }
+
+                    return 0;
+
+                } // call_handler
+
+            int call(ruleExecInfo_t*,std::vector<msParam_t*>&);
+            int num_args() { return num_args_; }
+
+        private:
+            std::string operation_name_;
+            int num_args_;
 
     }; // class ms_table_entry
 

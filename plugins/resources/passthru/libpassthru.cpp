@@ -866,8 +866,12 @@ class passthru_resource : public irods::resource {
                                        _context,
                                        kvp_map );
                 if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-
+                    rodsLog(
+                        LOG_ERROR,
+                        "invalid context [%s] : %d",
+                        _context.c_str(),
+                        _context.size() );
+                    return;
                 }
 
                 if ( kvp_map.find( WRITE_WEIGHT_KW ) != kvp_map.end() ) {

@@ -133,7 +133,6 @@
 
  \subsection msiemail Email Microservices
   - #msiSendMail   - Sends email
-  - #msiSendStdoutAsEmail - Sends rei's stdout as email
 
  \subsection msikv Key-Value (Attr-Value) Microservices
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator

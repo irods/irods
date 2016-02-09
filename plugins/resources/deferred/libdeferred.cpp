@@ -877,6 +877,14 @@ class deferred_resource : public irods::resource {
             irods::error ret = irods::parse_kvp_string(
                                    _context,
                                    kvp );
+            if(!ret.ok()) {
+                rodsLog(
+                    LOG_ERROR,
+                    "invalid context [%s]",
+                    _context.c_str() );
+                return;
+            }
+
             if ( kvp.end() != kvp.find( DEFER_POLICY_KEY ) ) {
                 properties_.set< std::string >(
                     DEFER_POLICY_KEY,

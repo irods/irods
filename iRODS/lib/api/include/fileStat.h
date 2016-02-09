@@ -19,7 +19,7 @@ typedef struct {
     rodsLong_t rescId;
 } fileStatInp_t;
 
-#define fileStatInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; double rescId"
+#define fileStatInp_PI "struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; double rescId;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_STAT rsFileStat

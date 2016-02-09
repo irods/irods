@@ -1736,9 +1736,15 @@ class compound_resource : public irods::resource {
             // parse context string into property pairs assuming a ; as a separator
             std::vector< std::string > props;
             irods::kvp_map_t kvp;
-            irods::parse_kvp_string(
-                _context,
-                kvp );
+            irods::error ret = irods::parse_kvp_string(
+                                   _context,
+                                   kvp );
+            if(!ret.ok()) {
+                rodsLog(
+                    LOG_ERROR,
+                    "invalid context [%s]",
+                    _context.c_str() );
+            }
 
             // =-=-=-=-=-=-=-
             // copy the properties from the context to the prop map

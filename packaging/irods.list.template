@@ -647,7 +647,6 @@ f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiPrintGenQueryI
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiobjput_srb.r ./iRODS/clients/icommands/test/rules/rulemsiobjput_srb.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiSysMetaModify.r ./iRODS/clients/icommands/test/rules/rulemsiSysMetaModify.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiDeleteUnusedAVUs.r ./iRODS/clients/icommands/test/rules/rulemsiDeleteUnusedAVUs.r
-f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiSendStdoutAsEmail.r ./iRODS/clients/icommands/test/rules/rulemsiSendStdoutAsEmail.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiXsltApply.r ./iRODS/clients/icommands/test/rules/rulemsiXsltApply.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiRecursiveCollCopy.r ./iRODS/clients/icommands/test/rules/rulemsiRecursiveCollCopy.r
 f 644 root root ${IRODS_HOME}/clients/icommands/test/rules/rulemsiCreateCollByAdmin.r ./iRODS/clients/icommands/test/rules/rulemsiCreateCollByAdmin.r
