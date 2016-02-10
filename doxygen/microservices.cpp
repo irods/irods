@@ -195,6 +195,7 @@
   - #msiSetRescQuotaPolicy - Sets the resource quota to on or off
   - #msiListEnabledMS - Returns the list of compiled microservices on the local iRODS server
   - #msiSetBulkPutPostProcPolicy - Sets whether acPostProcForPut should be run after a bulk put
+  - #msisync_to_archive - Manually replicates a dataObject from compound cache to archive
 
  \section msiadmin Admin Microservices
   Can only be called by an administrator
