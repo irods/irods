@@ -461,7 +461,7 @@ For example, to turn off the automatic replication when creating a new compound 
 irods@hostname:~/ $ iadmin mkresc compResc compound '' auto_repl=off
 ~~~
 
-When auto-replication is turned off, it may be necessary to replicate on command.  For this, there is a [microservice that is part of the irods/contrib repository named msisync_to_archive](https://github.com/irods/contrib/tree/master/microservices/administration/msisync_to_archive) which will sync (replicate) a particular logical path to a physical path on the child archive resource of a compound resource.
+When auto-replication is turned off, it may be necessary to replicate on demand.  For this scenario, there is a microservice named `msisync_to_archive()` which will sync (replicate) a data object from the child cache to the child archive of a compound resource.  This creates a new replica within iRODS of the synchronized data object.
 
 Getting files from the compound resource will behave in a similar way as iRODS 3.x.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
 
