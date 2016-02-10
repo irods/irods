@@ -188,7 +188,6 @@ usage( FILE* _fout ) {
         " -Q  use RBUDP (datagram) protocol for the data transfer",
         " -v  verbose",
         " -V  Very verbose",
-        "     restartFile input specifies a local file that contains the restart info.",
         " -X  restartFile - specifies that the restart option is on and the",
         "     restartFile input specifies a local file that contains the restart info.",
         "--retries count - Retry the iget in case of error. The 'count' input",
