@@ -21,6 +21,7 @@ from irods import six
 import irods_control
 import irods.database_connect
 import irods.lib
+import irods.password_obfuscation
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
@@ -353,10 +354,16 @@ def setup_database_config(irods_config):
             'Database password',
             echo=False)
 
-    irods_config.commit(db_config, irods_config.database_config_path)
+    db_password_salt = prompt(
+            'Salt for passwords stored in the database',
+            echo=False)
+    if db_password_salt:
+        if 'environment_variables' not in server_config:
+            server_config['environment_variables'] = {}
+        server_config['environment_variables']['IRODS_DATABASE_USER_PASSWORD_SALT'] = db_password_salt
 
-    if db_config['catalog_database_type'] == 'oracle':
-        irods_config.commit(server_config, irods_config.server_config_path)
+    irods_config.commit(db_config, irods_config.database_config_path)
+    irods_config.commit(server_config, irods_config.server_config_path)
 
 def setup_catalog(irods_config, default_resource_directory=None):
     l = logging.getLogger(__name__)
@@ -499,10 +506,12 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             timestamp)
 
     #password
+    scrambled_password = irods.password_obfuscation.scramble(irods_config.admin_password,
+            key=irods_config.server_config.get('environment_variables', {}).get('IRODS_DATABASE_USER_PASSWORD_SALT', None))
     irods.database_connect.execute_sql_statement(cursor,
             "insert into R_USER_PASSWORD values (?,?,'9999-12-31-23.59.00',?,?);",
             admin_user_id,
-            irods_config.admin_password,
+            scrambled_password,
             timestamp,
             timestamp,
             log_params=False)

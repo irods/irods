@@ -178,6 +178,9 @@ def get_encoder_ring(key=default_password_key):
 
 #unscramble passwords stored in the database
 def unscramble(s, key=default_password_key, scramble_prefix=default_scramble_prefix, block_chaining=False):
+    if key is None:
+        key=default_password_key
+
     if not s.startswith(scramble_prefix):
         #not scrambled. or if it is, not
         #in a way we can unscramble
@@ -209,6 +212,8 @@ def unscramble(s, key=default_password_key, scramble_prefix=default_scramble_pre
 
 #scramble passwords to store in the database
 def scramble(s, key=default_password_key, scramble_prefix=default_scramble_prefix, block_chaining=False):
+    if key is None:
+        key=default_password_key
 
     to_scramble = s
 
