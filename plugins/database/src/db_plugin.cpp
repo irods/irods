@@ -72,7 +72,7 @@ static rodsLong_t MAX_PASSWORDS = 40;
    reduce the number of open connections and active agents.  */
 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
-#define PASSWORD_KEY_ENV_VAR "irodsPKey"
+#define PASSWORD_KEY_ENV_VAR "IRODS_DATABASE_USER_PASSWORD_SALT"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
 
 #define MAX_HOST_STR 2700
