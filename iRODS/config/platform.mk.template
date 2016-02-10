@@ -10,11 +10,11 @@
 #
 # Commands as found by the 'configure' script during iRODS installation
 #
-CC=clang++ -std=c++11 --gcc-toolchain=/opt/rh/devtoolset-2/root/usr/ 
-LDR=clang++ --gcc-toolchain=/opt/rh/devtoolset-2/root/usr/ 
+CC=clang++ -std=c++11 ${IRODS_GCC_TOOL_CHAIN}
+LDR=clang++ -std=c++11 ${IRODS_GCC_TOOL_CHAIN}
 
-C_CC=clang --gcc-toolchain=/opt/rh/devtoolset-2/root/usr/ 
-C_LDR=clang --gcc-toolchain=/opt/rh/devtoolset-2/root/usr/ 
+C_CC=clang ${IRODS_GCC_TOOL_CHAIN}
+C_LDR=clang ${IRODS_GCC_TOOL_CHAIN}
 
 CC_IS_GCC=0
 CCFLAGS=
