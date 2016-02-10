@@ -19,7 +19,7 @@ PREFLIGHTEXIT="1"
 IRODSPACKAGEDIR="./build"
 FAST="0"
 IRODS_EXTERNALS_PACKAGE_ROOT="/opt/irods/externals"
-
+IRODS_GCC_TOOL_CHAIN="--gcc-toolchain=/opt/rh/devtoolset-2/root/usr/" 
 source "$SCRIPTPATH/irods_externals_locations.mk"
 #echo "SCRIPTPATH=[$SCRIPTPATH]"
 #echo "BUILD_SUBDIRECTORY_AVRO=[$BUILD_SUBDIRECTORY_AVRO]"
@@ -1421,6 +1421,20 @@ if [ "$BUILDIRODS" == "1" ] ; then
     sed -e s,IRODSPLUGINHOMEPATH,$irods_plugin_home_directory, ./lib/core/include/irods_plugin_home_directory.hpp.src > $TMPFILE
     rsync -c $TMPFILE ./lib/core/include/irods_plugin_home_directory.hpp
     rm -f $TMPFILE
+    
+    ###########################################
+    # set the gcc toolchain variable used by platform.mk if necessary
+    if [ "$DETECTEDOS" == "RedHatCompatible" ]; then
+        ostype=`awk '{print $1}' /etc/redhat-release`
+        osversion=`awk '{print $3}' /etc/redhat-release`
+        if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
+            echo "Centos6 Detected - setting the GCC Toolchain [$IRODS_GCC_TOOL_CHAIN]"
+            export IRODS_GCC_TOOL_CHAIN=$IRODS_GCC_TOOL_CHAIN
+        fi
+    fi
+
+
+
 
 
     ###########################################
