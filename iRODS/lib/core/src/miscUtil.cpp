@@ -23,6 +23,8 @@
 
 static uint Myumask = INIT_UMASK_VAL;
 
+const char NON_ROOT_COLL_CHECK_STR[] = "<>'/'";
+
 int
 mkColl( rcComm_t *conn, char *collection ) {
     int status;
@@ -287,7 +289,7 @@ queryCollInColl( queryHandle_t *queryHandle, char *collection,
 
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
-    snprintf( collQCond, MAX_NAME_LEN, "%s", "<>'/'");
+    snprintf( collQCond, MAX_NAME_LEN, "%s", NON_ROOT_COLL_CHECK_STR);
     addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond );
 
     if ( ( flags & RECUR_QUERY_FG ) != 0 ) {
@@ -1789,10 +1791,12 @@ getZoneHintForGenQuery( genQueryInp_t *genQueryInp ) {
                 inx == COL_ZONE_NAME ) {
             char *tmpPtr;
             zoneHint = genQueryInp->sqlCondInp.value[i];
-            if ( ( tmpPtr = strchr( zoneHint, '/' ) ) != NULL ) {
-                zoneHint = tmpPtr;
+            if (strcmp(zoneHint, NON_ROOT_COLL_CHECK_STR)) {
+                if ( ( tmpPtr = strchr( zoneHint, '/' ) ) != NULL ) {
+                    zoneHint = tmpPtr;
+                }
+                return zoneHint;
             }
-            return zoneHint;
         }
     }
     return NULL;
