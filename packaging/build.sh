@@ -855,7 +855,7 @@ else
 fi
 
 if [ "$DETECTEDOS" == "Solaris" ] ; then
-    UNIXODBC=`ld --verbose --library odbc 2> /dev/null | sed --quiet 's/^attempt to open \(.*\) succeeded$/\1/p'`
+    UNIXODBC=`ld --verbose --library odbc -o/dev/null 2> /dev/null | sed --quiet 's/^attempt to open \(.*\) succeeded$/\1/p'`
 else
     UNIXODBC=`/sbin/ldconfig -p 2> /dev/null | grep libodbc\.so`
 fi
