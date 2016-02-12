@@ -275,9 +275,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {testfile}'.format(**locals()))
@@ -367,9 +364,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         os.unlink(test_re)
@@ -458,9 +452,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         os.unlink(test_re)
@@ -549,9 +540,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         os.unlink(test_re)
@@ -643,9 +631,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
@@ -735,9 +720,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {testfile}'.format(**locals()))
@@ -825,9 +807,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {testfile}'.format(**locals()))
@@ -932,9 +911,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last two digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
@@ -1040,9 +1016,6 @@ OUTPUT ruleExecOut
                 if property:
                     if column != 'RESC_MODIFY_TIME':
                         assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
-                    else:
-                        # for resource modify time skip last 2 second digits
-                        assert lib.count_occurrences_of_string_in_log('server', property[:-2], start_index=initial_log_size)
 
         # cleanup
         sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
