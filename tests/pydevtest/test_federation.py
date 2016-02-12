@@ -58,6 +58,31 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             # cleanup
             test_session.assert_icommand(['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
 
+    def test_ils_subcolls(self):
+        # pick session(s) for the test
+        test_session = self.user_sessions[0]
+
+        # test specific parameters
+        parameters = self.config.copy()
+        parameters['user_name'] = test_session.username
+        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **parameters)
+        parameters['subcoll0'] = "{remote_home_collection}/subcoll0".format(**parameters)
+        parameters['subcoll1'] = "{remote_home_collection}/subcoll1".format(**parameters)
+
+        # make subcollections in remote coll
+        test_session.assert_icommand("imkdir {subcoll0}".format(**parameters))
+        test_session.assert_icommand("imkdir {subcoll1}".format(**parameters))
+
+        # list remote home collection and look for subcollections
+        test_session.assert_icommand(
+            "ils {remote_home_collection}".format(**parameters), 'STDOUT_MULTILINE', [parameters['subcoll0'], parameters['subcoll1']])
+
+        # cleanup
+        test_session.assert_icommand("irm -r {subcoll0}".format(**parameters))
+        test_session.assert_icommand("irm -r {subcoll1}".format(**parameters))
+
+
     def test_iput(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
@@ -800,7 +825,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # list remote resources
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', self.config['remote_resource'])
+            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_RESOURCE)
 
 
 class Test_Admin_Commands(unittest.TestCase):
