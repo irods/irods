@@ -39,6 +39,12 @@ typedef struct rescQuota {
     struct rescQuota *next;
 } rescQuota_t;
 
+int setRescQuota(
+    rsComm_t*,    // comm handle
+    const char*,  // obj path
+    const char*,  // resc name
+    rodsLong_t ); // data size
+
 /* definition for flag in rescQuota_t */
 #define GLOBAL_QUOTA	0x1	/* the quota is global */
 

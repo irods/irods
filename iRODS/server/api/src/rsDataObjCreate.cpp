@@ -609,20 +609,21 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * or an error code.
  */
 
-int getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _resc_name ) {
-    int            status;
-    ruleExecInfo_t rei;
+int getRescForCreate(
+    rsComm_t*     _comm,
+    dataObjInp_t* _obj_inp,
+    std::string&  _resc_name ) {
 
     /* query rcat for resource info and sort it */
-    initReiWithDataObjInp( &rei, rsComm, dataObjInp );
+    ruleExecInfo_t rei;
+    initReiWithDataObjInp( &rei, _comm, _obj_inp );
 
-    if ( dataObjInp->oprType == REPLICATE_OPR ) { // JMC - backport 4660
+    int status = 0;
+    if ( _obj_inp->oprType == REPLICATE_OPR ) {
         status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
-
     }
     else {
         status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
-
     }
 
     if ( status < 0 ) {
@@ -630,15 +631,22 @@ int getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _
             status = rei.status;
         }
 
-        rodsLog( LOG_NOTICE, "getRescForCreate:acSetRescSchemeForCreate error for %s,status=%d",
-                 dataObjInp->objPath, status );
+        rodsLog(
+            LOG_NOTICE,
+            "getRescForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+            _obj_inp->objPath,
+            status );
 
         return status;
     }
 
     // get resource name
     if ( !strlen( rei.rescName ) ) {
-        irods::error set_err = irods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, _resc_name );
+        irods::error set_err = irods::set_default_resource(
+                                   _comm,
+                                   "", "",
+                                   &_obj_inp->condInput,
+                                   _resc_name );
         if ( !set_err.ok() ) {
             irods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
@@ -648,18 +656,16 @@ int getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, std::string& _
         _resc_name = rei.rescName;
     }
 
-#if 0	// #1472
-    status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
-
-    if ( status == SYS_RESC_QUOTA_EXCEEDED ) {
-        if ( rei.rgi == NULL ) {
-            delete( *myRescGrpInfo )->rescInfo;
-            delete( *myRescGrpInfo );
-            *myRescGrpInfo = NULL;
-        }
+    status = setRescQuota(
+                 _comm,
+                 _obj_inp->objPath,
+                 _resc_name.c_str(),
+                 _obj_inp->dataSize );
+rodsLog( LOG_NOTICE, "XXXX - %s:%d status %d", __FILE__, __LINE__, status );
+    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
         return SYS_RESC_QUOTA_EXCEEDED;
     }
-#endif
 
-    return 0; // JMC - should this be 1 per above block?
+
+    return 0;
 }

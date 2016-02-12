@@ -5,10 +5,11 @@
 
 #include "getRescQuota.h"
 #include "miscUtil.h"
-#include "genQuery.h"
+
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "reFuncDefs.hpp"
+#include "genQuery.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -41,12 +42,13 @@ rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
     return status;
 }
 
-int
-_rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
-                 rescQuota_t **rescQuota ) {
+int _rsGetRescQuota(
+    rsComm_t*          rsComm,
+    getRescQuotaInp_t* getRescQuotaInp,
+    rescQuota_t**      rescQuota ) {
     int status = 0;
 
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t* genQueryOut = NULL;
 
     if ( rescQuota == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -54,63 +56,30 @@ _rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
 
     *rescQuota = NULL;
 
-    /* assume it is a resource */
-
-    status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
-                             getRescQuotaInp->rescName, &genQueryOut );
-
+    status = getQuotaByResc(
+                 rsComm,
+                 getRescQuotaInp->userName,
+                 getRescQuotaInp->rescName,
+                 &genQueryOut );
     if ( status >= 0 ) {
         queRescQuota( rescQuota, genQueryOut );
     }
-    freeGenQueryOut( &genQueryOut );
-    return status;
-
-#if 0	// #1472
-    if ( status >= 0 ) {
-        queRescQuota( rescQuota, genQueryOut, NULL );
-        freeGenQueryOut( &genQueryOut );
-        return status;
-    }
-
-    /* not a resource. may be a resource group */
-    //status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
-    rescGrpInfo = new rescGrpInfo_t;
-    rescGrpInfo->rescInfo = new rescInfo_t;
-    irods::error err = irods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
-    if ( !err.ok() ) {//(status < 0) {
-        rodsLog( LOG_ERROR,
-                 "_rsGetRescQuota: _getRescInfo of %s error for %s. stat = %d",
-                 getRescQuotaInp->rescName, getRescQuotaInp->zoneHint, status );
-        delete rescGrpInfo->rescInfo;
-        delete rescGrpInfo;
-        return status;
-    }
-
-    tmpRescGrpInfo = rescGrpInfo;
-    while ( tmpRescGrpInfo != NULL ) {
-        status = getQuotaByResc( rsComm, getRescQuotaInp->userName,
-                                 tmpRescGrpInfo->rescInfo->rescName, &genQueryOut );
-
-        if ( status >= 0 ) {
-            queRescQuota( rescQuota, genQueryOut, tmpRescGrpInfo->rescGroupName );
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    delete rescGrpInfo->rescInfo;
-    delete rescGrpInfo;
+    
     freeGenQueryOut( &genQueryOut );
 
     return 0;
-#endif
+
 }
 
 /* getQuotaByResc - get the quoto for an individual resource. The code is
  * mostly from doTest7 of iTestGenQuery.c
  */
 
-int
-getQuotaByResc( rsComm_t *rsComm, char *userName, char *rescName,
-                genQueryOut_t **genQueryOut ) {
+int getQuotaByResc(
+    rsComm_t*       rsComm,
+    char*           userName,
+    char*           rescName,
+    genQueryOut_t** genQueryOut ) {
     int status;
     genQueryInp_t genQueryInp;
     char condition1[MAX_NAME_LEN];
@@ -125,27 +94,39 @@ getQuotaByResc( rsComm_t *rsComm, char *userName, char *rescName,
 
     genQueryInp.options = QUOTA_QUERY;
 
-    snprintf( condition1, MAX_NAME_LEN, "%s",
-              userName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_USER_NAME, condition1 );
-
+    snprintf(
+        condition1,
+        MAX_NAME_LEN, "%s",
+        userName );
+    addInxVal(
+        &genQueryInp.sqlCondInp,
+        COL_USER_NAME,
+        condition1 );
     if ( rescName != NULL && strlen( rescName ) > 0 ) {
-        snprintf( condition2, MAX_NAME_LEN, "%s",
-                  rescName );
-        addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condition2 );
+        snprintf(
+            condition2,
+            MAX_NAME_LEN, "%s",
+            rescName );
+        addInxVal(
+            &genQueryInp.sqlCondInp,
+            COL_R_RESC_NAME,
+            condition2 );
     }
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    status = rsGenQuery( rsComm, &genQueryInp, genQueryOut );
-
+    status = rsGenQuery(
+                 rsComm,
+                 &genQueryInp,
+                 genQueryOut );
     clearGenQueryInp( &genQueryInp );
 
     return status;
 }
 
-int
-queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut ) {
+int queRescQuota(
+    rescQuota_t**  rescQuotaHead,
+    genQueryOut_t* genQueryOut ) {
+
     sqlResult_t *quotaLimit, *quotaOver, *rescName, *quotaRescId, *quotaUserId;
     char *tmpQuotaLimit, *tmpQuotaOver, *tmpRescName, *tmpQuotaRescId,
          *tmpQuotaUserId;
@@ -201,14 +182,19 @@ queRescQuota( rescQuota_t **rescQuotaHead, genQueryOut_t *genQueryOut ) {
     return 0;
 }
 
-int
-fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
-                     char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
-                     char *tmpQuotaUserId ) {
+int fillRescQuotaStruct(
+    rescQuota_t* rescQuota,
+    char*        tmpQuotaLimit,
+    char*        tmpQuotaOver,
+    char*        tmpRescName,
+    char*        tmpQuotaRescId,
+    char*        tmpQuotaUserId ) {
+    
     bzero( rescQuota, sizeof( rescQuota_t ) );
 
     rescQuota->quotaLimit = strtoll( tmpQuotaLimit, 0, 0 );
     rescQuota->quotaOverrun = strtoll( tmpQuotaOver, 0, 0 );
+
     if ( strtoll( tmpQuotaRescId, 0, 0 ) > 0 ) {
         /* quota by resource */
         rstrcpy( rescQuota->rescName, tmpRescName, NAME_LEN );
@@ -216,190 +202,135 @@ fillRescQuotaStruct( rescQuota_t *rescQuota, char *tmpQuotaLimit,
     else {
         rescQuota->flags = GLOBAL_QUOTA;
     }
+
     rstrcpy( rescQuota->userId, tmpQuotaUserId, NAME_LEN );
 
     return 0;
 }
 
-
-#if 0	// #1472
-int
-setRescQuota( rsComm_t *rsComm, char *zoneHint,
-              rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
-    rescGrpInfo_t *tmpRescGrpInfo;
-    getRescQuotaInp_t getRescQuotaInp;
-    rescQuota_t *rescQuota = NULL;
-    rescQuota_t *tmpRescQuota;
-    int needInit = 0;
-    int status = 0;
-
-    status = chkRescQuotaPolicy( rsComm );
+int setRescQuota(
+    rsComm_t*   _comm,
+    const char* _obj_path,
+    const char* _resc_name,
+    rodsLong_t  _data_size ) {
+    int status = chkRescQuotaPolicy( _comm );
     if ( status != RESC_QUOTA_ON ) {
         return 0;
     }
 
-    if ( rescGrpInfoHead == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-    tmpRescGrpInfo = *rescGrpInfoHead;
-    while ( tmpRescGrpInfo != NULL ) {
-        if ( tmpRescGrpInfo->rescInfo->quotaLimit == RESC_QUOTA_UNINIT ) {
-            needInit = 1;
-            break;
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    if ( needInit == 0 ) {
-        status = chkRescGrpInfoForQuota( rescGrpInfoHead, dataSize );
-        return status;
-    }
-    bzero( &getRescQuotaInp, sizeof( getRescQuotaInp ) );
-    tmpRescGrpInfo = *rescGrpInfoHead;
-    rstrcpy( getRescQuotaInp.zoneHint, zoneHint, MAX_NAME_LEN );
-    if ( strlen( tmpRescGrpInfo->rescGroupName ) > 0 ) {
-        rstrcpy( getRescQuotaInp.rescName, tmpRescGrpInfo->rescGroupName,
-                 NAME_LEN );
-    }
-    else {
-        rstrcpy( getRescQuotaInp.rescName, tmpRescGrpInfo->rescInfo->rescName,
-                 NAME_LEN );
-    }
-    snprintf( getRescQuotaInp.userName, NAME_LEN, "%s#%s",
-              rsComm->clientUser.userName, rsComm->clientUser.rodsZone );
-    status = rsGetRescQuota( rsComm, &getRescQuotaInp, &rescQuota );
-    if ( status < 0 ) {
-        return status;
-    }
+    rodsLong_t resc_overrun = 0;
+    irods::error ret = irods::get_resource_property<rodsLong_t>(
+                           _resc_name,
+                           irods::RESOURCE_QUOTA_OVERRUN,
+                           resc_overrun );
 
-    /* process the quota */
-    tmpRescQuota = rescQuota;
-    while ( tmpRescQuota != NULL ) {
-        if ( ( tmpRescQuota->flags & GLOBAL_QUOTA ) > 0 ) {
-            /* global limit */
-            /* get the worst. the higher the overrun, the worse */
-            if ( GlobalQuotaLimit < 0 ||
-                    GlobalQuotaOverrun < tmpRescQuota->quotaOverrun ) {
-                GlobalQuotaLimit = tmpRescQuota->quotaLimit;
-                GlobalQuotaOverrun = tmpRescQuota->quotaOverrun;
-            }
-        }
-        else {
-            tmpRescGrpInfo = *rescGrpInfoHead;
-            /* update the quota */
-            while ( tmpRescGrpInfo != NULL ) {
-                rescInfo_t *rescInfo = tmpRescGrpInfo->rescInfo;
-                if ( strcmp( tmpRescQuota->rescName, rescInfo->rescName ) == 0 ) {
-                    if ( rescInfo->quotaLimit == RESC_QUOTA_UNINIT ||
-                            rescInfo->quotaOverrun < tmpRescQuota->quotaOverrun ) {
-                        rescInfo->quotaLimit = tmpRescQuota->quotaLimit;
-                        rescInfo->quotaOverrun = tmpRescQuota->quotaOverrun;
-                    }
-                    break;
-                }
-                tmpRescGrpInfo = tmpRescGrpInfo->next;
-            }
-        }
-        tmpRescQuota = tmpRescQuota->next;
-    }
-    freeAllRescQuota( rescQuota );
-    status = chkRescGrpInfoForQuota( rescGrpInfoHead, dataSize );
+    // fetch a global quota for the user if it exists
+    getRescQuotaInp_t get_resc_quota_inp;
+    bzero(&get_resc_quota_inp,
+          sizeof( get_resc_quota_inp ) );
+    rstrcpy(
+        get_resc_quota_inp.zoneHint,
+        _obj_path,
+        MAX_NAME_LEN );
+    snprintf(
+        get_resc_quota_inp.userName,
+        NAME_LEN, "%s#%s",
+        _comm->clientUser.userName,
+        _comm->clientUser.rodsZone );
 
-    return status;
-}
-
-
-int
-chkRescGrpInfoForQuota( rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize ) {
-    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
-
-    if ( dataSize < 0 ) {
-        dataSize = 0;
-    }
-    if ( GlobalQuotaLimit == RESC_QUOTA_UNINIT ) {
-        /* indicate we have already query quota */
-        GlobalQuotaLimit = 0;
-    }
-    else if ( GlobalQuotaLimit > 0 ) {
-        if ( GlobalQuotaOverrun + dataSize >= 0 ) {
+    rescQuota_t *total_quota = NULL;
+    status = rsGetRescQuota(
+                 _comm,
+                 &get_resc_quota_inp,
+                 &total_quota );
+    if ( status >= 0 && total_quota ) {
+        rodsLong_t compare_overrun = total_quota->quotaOverrun;
+        freeAllRescQuota(total_quota);
+        if ( compare_overrun != 0 && // disabled if 0
+             compare_overrun + resc_overrun + _data_size > 0 ) {
             return SYS_RESC_QUOTA_EXCEEDED;
         }
+    } else {
+        rodsLog(
+            LOG_ERROR,//LOG_DEBUG,
+            "%s rsGetRescQuota for total quota - status %d",
+            __FUNCTION__,
+            status );
     }
 
-    if ( rescGrpInfoHead == NULL ) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
+    // if no global enforcement was successful try per resource 
+    rstrcpy(
+        get_resc_quota_inp.rescName,
+        _resc_name,
+        NAME_LEN );
+    
+    rescQuota_t *resc_quota = NULL;
+    status = rsGetRescQuota(
+                 _comm,
+                 &get_resc_quota_inp,
+                 &resc_quota );
+    if( status < 0 || !resc_quota ) {
+        return status;
     }
 
-    /* take out resc that has been overrun and indicate that the quota has
-     * been initialized */
-    prevRescGrpInfo = NULL;
-    tmpRescGrpInfo = *rescGrpInfoHead;
-    while ( tmpRescGrpInfo != NULL ) {
-        rescGrpInfo_t *nextRescGrpInfo = tmpRescGrpInfo->next;
-        if ( tmpRescGrpInfo->rescInfo->quotaLimit > 0 &&
-                tmpRescGrpInfo->rescInfo->quotaOverrun + dataSize >= 0 ) {
-            /* overrun the quota. take the resc out */
-            if ( prevRescGrpInfo == NULL ) {
-                /* head */
-                *rescGrpInfoHead = nextRescGrpInfo;
-            }
-            else {
-                prevRescGrpInfo->next = nextRescGrpInfo;
-            }
-            if ( *rescGrpInfoHead != NULL ) {
-                ( *rescGrpInfoHead )->status = SYS_RESC_QUOTA_EXCEEDED;
-            }
-            free( tmpRescGrpInfo );
-        }
-        else {
-            if ( tmpRescGrpInfo->rescInfo->quotaLimit == RESC_QUOTA_UNINIT ) {
-                /* indicate we have already query quota */
-                tmpRescGrpInfo->rescInfo->quotaLimit = 0;
-            }
-            prevRescGrpInfo = tmpRescGrpInfo;
-        }
-        tmpRescGrpInfo = nextRescGrpInfo;
-    }
-    if ( *rescGrpInfoHead == NULL ) {
+    rodsLong_t compare_overrun = resc_quota->quotaOverrun;
+    freeAllRescQuota(resc_quota);
+    if ( compare_overrun != 0 && // disabled if 0
+         compare_overrun + resc_overrun + _data_size > 0 ) {
         return SYS_RESC_QUOTA_EXCEEDED;
     }
-    else {
-        return 0;
+
+    return 0;
+
+} // setRescQuota
+
+int updatequotaOverrun(
+    const char* _resc_hier,
+    rodsLong_t  _data_size,
+    int         _flags ) {
+    if( ( _flags & GLB_QUOTA ) > 0 ) {
+        GlobalQuotaOverrun += _data_size;
     }
-}
-#endif	// #1472
 
+    if( ( _flags & RESC_QUOTA ) > 0 ) {
+        irods::hierarchy_parser parser;
+        parser.set_string( _resc_hier );
 
-int
-updatequotaOverrun( const char *_resc_hier, rodsLong_t dataSize, int flags ) {
-    if ( ( flags & GLB_QUOTA ) > 0 && GlobalQuotaLimit > 0 ) {
-        GlobalQuotaOverrun += dataSize;
+        std::string root;
+        parser.first_resc( root );
+
+        rodsLong_t over_run = 0;
+        irods::error ret = irods::get_resource_property<rodsLong_t>(
+                               root,
+                               irods::RESOURCE_QUOTA_OVERRUN,
+                               over_run );
+        // property may not be set yet so skip error
+        over_run += _data_size;
+        ret = irods::set_resource_property<rodsLong_t>(
+                  root,
+                  irods::RESOURCE_QUOTA_OVERRUN,
+                  over_run );
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
     }
-
-    // #1472 Revisit when we have ported quotaOverrun
-
-    if ( !_resc_hier ) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-#if 0
-    if ( ( flags & RESC_QUOTA ) > 0 && rescInfo->quotaLimit > 0 ) {
-        rescInfo->quotaOverrun += dataSize;
-    }
-#endif
-
     return 0;
 }
 
-int
-chkRescQuotaPolicy( rsComm_t *rsComm ) {
-    int status;
-    ruleExecInfo_t rei;
-
+int chkRescQuotaPolicy( rsComm_t *rsComm ) {
     if ( RescQuotaPolicy == RESC_QUOTA_UNINIT ) {
+        ruleExecInfo_t rei;
         initReiWithDataObjInp( &rei, rsComm, NULL );
-        status = applyRule( "acRescQuotaPolicy", NULL, &rei, NO_SAVE_REI );
+        int status = applyRule(
+                         "acRescQuotaPolicy",
+                         NULL, &rei,
+                         NO_SAVE_REI );
         if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "queRescQuota: acRescQuotaPolicy error status = %d", status );
+            rodsLog(
+                LOG_ERROR,
+                "queRescQuota: acRescQuotaPolicy error status = %d",
+                status );
             RescQuotaPolicy = RESC_QUOTA_OFF;
         }
     }

@@ -65,6 +65,35 @@ namespace irods {
 
     } // get_resource_property
 
+    template< typename T >
+    error set_resource_property( std::string _name, const std::string& _prop_name, T& _prop ) {
+        // =-=-=-=-=-=-=-
+        // resolve the resource by name
+        resource_ptr resc;
+        error res_err = resc_mgr.resolve( _name, resc );
+        if ( !res_err.ok() ) {
+            std::stringstream msg;
+            msg << "failed to resolve resource [";
+            msg << _prop_name;
+            msg << "]";
+            return PASSMSG( msg.str(), res_err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the resource property
+        error get_err = resc->set_property< T >( _prop_name, _prop );
+        if ( !get_err.ok() ) {
+            std::stringstream msg;
+            msg << "failed to set property [";
+            msg << _prop_name;
+            msg << "]";
+            return PASSMSG( msg.str(), get_err );
+        }
+
+        return SUCCESS();
+
+    } // set_resource_property
+
     /// @brief Returns a given property of the specified hierarchy string's leaf resource
     template< typename T >
     error get_resc_hier_property(

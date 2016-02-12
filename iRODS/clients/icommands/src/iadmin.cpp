@@ -975,12 +975,36 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "suq" ) == 0 ) {
+        if(!strlen(cmdToken[1])) {
+            fprintf( stderr, "ERROR: missing username parameter\n" );
+        }
+
+        if(!strlen(cmdToken[2])) {
+            fprintf( stderr, "ERROR: missing resource name parameter\n" );
+        }
+        
+        if(!strlen(cmdToken[3])) {
+            fprintf( stderr, "ERROR: missing value parameter\n" );
+        }
+
         generalAdmin( 0, "set-quota", "user",
                       cmdToken[1], cmdToken[2], cmdToken[3],
                       "", "", "", "", "" );
         return 0;
     }
     if ( strcmp( cmdToken[0], "sgq" ) == 0 ) {
+        if(!strlen(cmdToken[1])) {
+            fprintf( stderr, "ERROR: missing username parameter\n" );
+        }
+
+        if(!strlen(cmdToken[2])) {
+            fprintf( stderr, "ERROR: missing resource name parameter\n" );
+        }
+        
+        if(!strlen(cmdToken[3])) {
+            fprintf( stderr, "ERROR: missing value parameter\n" );
+        }
+
         generalAdmin( 0, "set-quota", "group",
                       cmdToken[1], cmdToken[2], cmdToken[3],
                       "", "", "", "", "" );
