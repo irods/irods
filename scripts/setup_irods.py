@@ -288,12 +288,6 @@ def setup_database_config(irods_config):
 
     db_config['catalog_database_type'] = db_type
     while True:
-        if db_config['catalog_database_type'] == 'oracle':
-            if 'environment_variables' not in server_config:
-                server_config['environment_variables'] = {}
-            server_config['environment_variables']['ORACLE_HOME'] = default_prompt(
-                '$ORACLE_HOME', default=[self.execution_environment['ORACLE_HOME']])
-
         odbc_drivers = irods.database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
         if odbc_drivers:
             db_config['db_odbc_driver'] = default_prompt(
@@ -303,7 +297,7 @@ def setup_database_config(irods_config):
             db_config['db_odbc_driver'] = default_prompt(
                 'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
                 default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type'],
-                    oracle_home=server_config['environment_variables']['ORACLE_HOME'] if db_config['catalog_database_type'] == 'oracle' else None))
+                    oracle_home=os.getenv('ORACLE_HOME', None)))
 
         db_config['db_host'] = default_prompt(
             'Database server\'s hostname or IP address',
@@ -331,7 +325,6 @@ def setup_database_config(irods_config):
                 '\n',
                 '-------------------------------------------\n',
                 'Database Type: %s\n',
-                '$ORACLE_HOME:  %s\n' if db_config['catalog_database_type'] == 'oracle' else '%s',
                 'ODBC Driver:   %s\n',
                 'Database Host: %s\n',
                 'Database Port: %d\n',
@@ -340,7 +333,6 @@ def setup_database_config(irods_config):
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
                     db_config['catalog_database_type'],
-                    server_config['environment_variables']['ORACLE_HOME'] if db_config['catalog_database_type'] == 'oracle' else '',
                     db_config['db_odbc_driver'],
                     db_config['db_host'],
                     db_config['db_port'],
