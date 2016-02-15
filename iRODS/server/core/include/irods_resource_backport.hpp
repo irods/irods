@@ -13,12 +13,12 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // helper functions for knitting back into legacy irods code
-#if 0	// #1472
-    error resource_to_resc_info( rescInfo_t&, resource_ptr& );
+    error resource_to_kvp(resource_ptr&, keyValPair_t*);
+#if 0   // #1472
     error resource_to_resc_grp_info( rescGrpInfo_t&, resource_ptr& );
     error get_resc_grp_info( std::string, rescGrpInfo_t& );
-    error get_resc_info( std::string, rescInfo_t& );
 #endif
+    error get_resc_properties_as_kvp(const std::string&, keyValPair_t*);
     error is_resc_live( const std::string& );
     error is_hier_live( const std::string& );
     error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, std::string& );

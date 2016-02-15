@@ -9,6 +9,7 @@ import time  # remove once file hash fix is commited #2279
 import lib
 import time
 import copy
+import inspect
 
 import configuration
 from resource_suite import ResourceBase
@@ -192,3 +193,832 @@ OUTPUT ruleExecOut
         # cleanup
         os.unlink(test_re)
         os.unlink(rule_file)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPostProcForPut__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # iput test file to trigger PEP
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {testfile}'.format(**locals()))
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acDataDeletePolicy__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # iput test file
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # delete test file to trigger PEP
+            sesh.assert_icommand('irm -f {testfile}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPostProcForDelete__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # iput test file
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # delete test file to trigger PEP
+            sesh.assert_icommand('irm -f {testfile}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acSetChkFilePathPerm__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # test file for ireg
+        testfile = '/var/lib/irods/VERSION.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # ireg test file to trigger PEP
+            target_obj = os.path.join(sesh.home_collection, os.path.basename(testfile))
+            sesh.assert_icommand('ireg {testfile} {target_obj}'.format(**locals()), 'STDERR_SINGLELINE', 'PATH_REG_NOT_ALLOWED')
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPostProcForFilePathReg__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        # use admin to be allowed to register stuff
+        sesh = self.admin
+
+        # test file for ireg
+        username = sesh.username
+        testfile = '/var/lib/irods/iRODS/Vault/home/{username}/foo.txt'.format(**locals())
+        open(testfile, 'a').close()
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # ireg test file to trigger PEP
+            target_obj = os.path.join(sesh.home_collection, os.path.basename(testfile))
+            sesh.assert_icommand('ireg {testfile} {target_obj}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPostProcForCopy__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # iput test file
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # copy test file to trigger PEP
+            sesh.assert_icommand('icp {testfile} {testfile}_copy'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {testfile}'.format(**locals()))
+        sesh.run_icommand('irm -f {testfile}_copy'.format(**locals()))
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acSetVaultPathPolicy__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # iput test file to trigger PEP
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {testfile}'.format(**locals()))
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPreprocForDataObjOpen__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+        target_obj = os.path.join(sesh.session_collection, testfile)
+
+        # prepare rule file
+        rule_file = "test_rule_file.r"
+        rule_string = '''
+test_acPostProcForCreate__3024 {{
+    msiDataObjOpen("{target_obj}",*FD);
+    msiDataObjClose(*FD,*Status);
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''.format(**locals())
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # iput test file
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # invoke irule to trigger PEP
+            sesh.assert_icommand('irule -F {rule_file}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
+        os.unlink(rule_file)
+        os.unlink(test_re)
+
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acPostProcForOpen__3024(self):
+        test_re = os.path.join(lib.get_core_re_dir(), 'test.re')
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+
+        # get PEP name from function name
+        pep_name = inspect.stack()[0][3].split('_')[1]
+
+        # user session
+        sesh = self.user0
+        testfile = self.testfile
+        target_obj = os.path.join(sesh.session_collection, testfile)
+
+        # prepare rule file
+        rule_file = "test_rule_file.r"
+        rule_string = '''
+test_acPostProcForCreate__3024 {{
+    msiDataObjOpen("{target_obj}",*FD);
+    msiDataObjClose(*FD,*Status);
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''.format(**locals())
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        # query for resource properties
+        columns = ('RESC_ZONE_NAME, '
+                   'RESC_FREE_SPACE, '
+                   'RESC_STATUS, '
+                   'RESC_ID, '
+                   'RESC_NAME, '
+                   'RESC_TYPE_NAME, '
+                   'RESC_LOC, '
+                   'RESC_CLASS_NAME, '
+                   'RESC_VAULT_PATH, '
+                   'RESC_INFO, '
+                   'RESC_COMMENT, '
+                   'RESC_CREATE_TIME, '
+                   'RESC_MODIFY_TIME')
+        resource = sesh.default_resource
+        query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
+        result = sesh.run_icommand(query)[1]
+
+        # last line is iquest default formatting separator
+        resource_property_list = result.splitlines()[:-1]
+
+        with lib.file_backed_up(server_config_filename):
+            # prepare rule
+            # rule will write PEP name as well as
+            # resource related rule session vars to server log
+            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+                          'writeLine("serverLog", $KVPairs.freeSpace);'
+                          'writeLine("serverLog", $KVPairs.quotaLimit);'
+                          'writeLine("serverLog", $KVPairs.rescStatus);'
+                          'writeLine("serverLog", $KVPairs.rescId);'
+                          'writeLine("serverLog", $KVPairs.rescName);'
+                          'writeLine("serverLog", $KVPairs.rescType);'
+                          'writeLine("serverLog", $KVPairs.rescLoc);'
+                          'writeLine("serverLog", $KVPairs.rescClass);'
+                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                          'writeLine("serverLog", $KVPairs.rescInfo);'
+                          'writeLine("serverLog", $KVPairs.rescComments);'
+                          'writeLine("serverLog", $KVPairs.rescCreate);'
+                          'writeLine("serverLog", $KVPairs.rescModify);')
+            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+
+            # write new rule file
+            with open(test_re, 'w') as f:
+                f.write(test_rule)
+
+            # update server config with additional rule file
+            server_config_update = {
+                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            # iput test file
+            sesh.assert_icommand('iput -f {testfile}'.format(**locals()))
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_log_size('server')
+
+            # invoke irule to trigger PEP
+            sesh.assert_icommand('irule -F {rule_file}'.format(**locals()))
+
+            # confirm that PEP was hit by looking for pep name in server log
+            assert lib.count_occurrences_of_string_in_log('server', pep_name, start_index=initial_log_size)
+
+            # check that resource session vars were written to the server log
+            for line in resource_property_list:
+                column = line.rsplit('=', 1)[0].strip()
+                property = line.rsplit('=', 1)[1].strip()
+                if property:
+                    if column != 'RESC_MODIFY_TIME':
+                        assert lib.count_occurrences_of_string_in_log('server', property, start_index=initial_log_size)
+
+        # cleanup
+        sesh.run_icommand('irm -f {target_obj}'.format(**locals()))
+        os.unlink(rule_file)
+        os.unlink(test_re)
+

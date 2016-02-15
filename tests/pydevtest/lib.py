@@ -3,6 +3,7 @@ from __future__ import print_function
 import commands
 import contextlib
 import datetime
+import errno
 import hashlib
 import itertools
 import json
@@ -21,6 +22,38 @@ import time
 
 import configuration
 
+
+def get_irods_version():
+    version = get_irods_version_from_json()
+    if version:
+        return version
+    version = get_irods_version_from_bash()
+    if version:
+        return version
+    raise RuntimeError('Unable to determine iRODS version')
+
+def get_irods_version_from_json():
+    try:
+        with open('/var/lib/irods/VERSION.json') as f:
+            version_string = json.load(f)['irods_version']
+    except IOError as e:
+        if e.errno != 2:
+            raise
+        return None
+    return tuple(map(int, version_string.split('.')))
+
+def get_irods_version_from_bash():
+    try:
+        with open('/var/lib/irods/VERSION') as f:
+            for line in f:
+                key, _, value = line.rstrip('\n').partition('=')
+                if key == 'IRODSVERSION':
+                    return tuple(map(int, value.split('.')))
+            return None
+    except IOError as e:
+        if e.errno != 2:
+            raise
+        return None
 
 def md5_hex_file(filename):
     block_size = pow(2, 20)
@@ -115,7 +148,7 @@ def make_file(f_name, f_size, contents='zero'):
     source = {'zero': '/dev/zero',
               'random': '/dev/urandom'}[contents]
 
-    subprocess.check_call(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
+    subprocess.check_call(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def ils_output_to_entries(stdout):
     raw = stdout.strip().split('\n')
@@ -464,15 +497,50 @@ def open_and_load_json_ascii(filename):
     with open(filename) as f:
         return json.load(f, object_hook=json_object_hook_ascii_dict)
 
+# Two-way mapping of the new (json) and old iRODS environment setting names
+json_env_map = {'irods_host': 'irodsHost',
+                'irods_port': 'irodsPort',
+                'irods_default_resource': 'irodsDefResource',
+                'irods_home': 'irodsHome',
+                'irods_cwd': 'irodsCwd',
+                'irods_user_name': 'irodsUserName',
+                'irods_zone_name': 'irodsZone',
+                'irods_client_server_negotiation': 'irodsClientServerNegotiation',
+                'irods_client_server_policy': 'irodsClientServerPolicy',
+                'irods_encryption_salt_size': 'irodsEncryptionSaltSize',
+                'irods_encryption_num_hash_rounds': 'irodsEncryptionNumHashRounds',
+                'irods_encryption_algorithm': 'irodsEncryptionAlgorithm',
+                'irods_default_hash_scheme': 'irodsDefaultHashScheme',
+                'irods_match_hash_policy': 'irodsMatchHashPolicy'}
+json_env_map.update((val, key) for key, val in json_env_map.items())
+
+def open_and_load_pre410_env_file(filename):
+    '''
+    A very brittle parsing takes place here:
+    Each line of .irodsEnv is split into tokens.
+    If the first token matches a key in our old-new setting map
+    we use the corresponding json setting, and the second token as value
+    '''
+    irods_env = {}
+    with open(filename) as env_file:
+        for line in env_file.readlines():
+            tokens = line.strip().split()
+            if len(tokens) > 1 and tokens[0] in json_env_map:
+                irods_env[json_env_map[tokens[0]]] = tokens[1].strip("'")
+
+    return irods_env
 
 def get_service_account_environment_file_contents():
-    return open_and_load_json_ascii(os.path.expanduser('~/.irods/irods_environment.json'))
-
+    try:
+        return open_and_load_json_ascii(os.path.expanduser('~/.irods/irods_environment.json'))
+    except IOError as err:
+        if err.errno != errno.ENOENT:
+            raise
+        return open_and_load_pre410_env_file(os.path.expanduser('~/.irods/.irodsEnv'))
 
 def make_session_for_existing_user(username, password, hostname, zone):
     env_dict = make_environment_dict(username, hostname, zone)
     return IrodsSession(env_dict, password, False)
-
 
 def make_session_for_existing_admin():
     service_env = get_service_account_environment_file_contents()
@@ -545,7 +613,6 @@ def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_lis
 
 
 class IrodsSession(object):
-
     def __init__(self, environment_file_contents, password, manage_irods_data):
         self._environment_file_contents = environment_file_contents
         self._password = password
@@ -553,12 +620,9 @@ class IrodsSession(object):
 
         self._environment_file_invalid = True
         self._local_session_dir = tempfile.mkdtemp(prefix='irods-testing-')
-        self._environment_file_path = os.path.join(
-            self._local_session_dir, 'irods_environment.json')
-        self._authentication_file_path = os.path.join(
-            self._local_session_dir, 'irods_authentication')
-        self._session_id = datetime.datetime.utcnow().strftime(
-            '%Y-%m-%dZ%H:%M:%S--') + os.path.basename(self._local_session_dir)
+        self._environment_file_path = os.path.join(self._local_session_dir, 'irods_environment.json')
+        self._authentication_file_path = os.path.join(self._local_session_dir, 'irods_authentication')
+        self._session_id = datetime.datetime.utcnow().strftime('%Y-%m-%dZ%H:%M:%S--') + os.path.basename(self._local_session_dir)
 
         if self._password is not None:
             self.assert_icommand(['iinit', self._password])
@@ -608,6 +672,9 @@ class IrodsSession(object):
     def session_collection_trash(self):
         return self.session_collection.replace('/home/', '/trash/home/', 1)
 
+    def remote_home_collection(self, remote_zone_name):
+        return '/{0}/home/{1}#{2}'.format(remote_zone_name, self.username, self.zone_name)
+
     def run_icommand(self, *args, **kwargs):
         self._prepare_run_icommand(args[0], kwargs)
         return run_command(*args, **kwargs)
@@ -625,8 +692,12 @@ class IrodsSession(object):
         self._write_environment_file()
         if 'env' not in kwargs:
             kwargs['env'] = os.environ.copy()
-        kwargs['env']['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
-        kwargs['env']['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
+        if get_irods_version() < (4, 1, 0):
+            kwargs['env']['irodsEnvFile'] = self._environment_file_path
+            kwargs['env']['irodsAuthFileName'] = self._authentication_file_path
+        else:
+            kwargs['env']['IRODS_ENVIRONMENT_FILE'] = self._environment_file_path
+            kwargs['env']['IRODS_AUTHENTICATION_FILE'] = self._authentication_file_path
 
     def _log_run_icommand(self, arg):
         if isinstance(arg, basestring):
@@ -635,7 +706,7 @@ class IrodsSession(object):
         else:
             icommand = arg[0]
             log_string = ' '.join(arg)
-        
+
         message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(
             self.username, log_string)
         write_to_log('server', message)
@@ -644,7 +715,13 @@ class IrodsSession(object):
     def _write_environment_file(self):
         if self._environment_file_invalid:
             with open(self._environment_file_path, 'w') as f:
-                json.dump(self._environment_file_contents, f)
+                if get_irods_version() < (4, 1, 0):
+                    for key, value in self._environment_file_contents.items():
+                        if key in json_env_map:
+                            env_line = '{setting} {value}\n'.format(setting=json_env_map[key], value=value)
+                            f.write(env_line)
+                else:
+                    json.dump(self._environment_file_contents, f)
             self._environment_file_invalid = False
 
     def __enter__(self):

@@ -34,7 +34,7 @@ EXTRA_CFLAGS = \
 	-I${ORACLE_HOME_INCLUDE}/rdbms/public/
 
 EXTRA_LDRFLAGS = \
-	-L${ORACLE_HOME_LIB}/lib/ \
+	-L${ORACLE_HOME_LIB} \
 	-lclntsh -locci -lnnz11
 
 include ../Makefile.base

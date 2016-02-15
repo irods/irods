@@ -153,6 +153,8 @@
 #define FREE_SPACE_KW	"freeSpace"
 #define FREE_SPACE_TIME_KW	"freeSpaceTime"
 #define FREE_SPACE_TIMESTAMP_KW	"freeSpaceTimeStamp"
+#define QUOTA_LIMIT_KW  "quotaLimit"
+#define RESC_INFO_KW    "rescInfo"
 #define RESC_TYPE_INX_KW 	"rescTypeInx"
 #define RESC_CLASS_INX_KW	"rescClassInx"
 #define RESC_ID_KW	"rescId"

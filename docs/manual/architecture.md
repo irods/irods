@@ -453,6 +453,16 @@ irods@hostname:~/ $ iadmin addchildtoresc parentResc newChildResc2 archive
 
 Putting files into the compound resource will first create a replica on the cache resource and then create a second replica on the archive resource.
 
+This compound resource auto-replication policy can be controlled with the context string associated with a compound resource.  The key "auto_repl" can have the value "on" (default), or "off".
+
+For example, to turn off the automatic replication when creating a new compound resource (note the empty host/path parameter):
+
+~~~
+irods@hostname:~/ $ iadmin mkresc compResc compound '' auto_repl=off
+~~~
+
+When auto-replication is turned off, it may be necessary to replicate on demand.  For this scenario, there is a microservice named `msisync_to_archive()` which will sync (replicate) a data object from the child cache to the child archive of a compound resource.  This creates a new replica within iRODS of the synchronized data object.
+
 Getting files from the compound resource will behave in a similar way as iRODS 3.x.  By default, the replica from the cache resource will always be returned.  If the cache resource does not have a copy, then a replica is created on the cache resource before being returned.
 
 This compound resource staging policy can be controlled with the policy key-value pair whose keyword is "compound_resource_cache_refresh_policy" and whose values are either "when_necessary" (default), or "always".

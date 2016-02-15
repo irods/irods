@@ -873,6 +873,11 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         initReiWithDataObjInp( &rei, rsComm, &dataObjInp );
         rei.doi = tmpDataObjInfo;
 
+        // make resource properties available as rule session variables
+        rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+        memset(rei.condInputData, 0, sizeof(keyValPair_t));
+        irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
+
         status = applyRule( "acPostProcForPut", NULL, &rei, NO_SAVE_REI );
         if ( status < 0 ) {
             savedStatus = status;

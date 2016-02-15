@@ -14,32 +14,25 @@ else:
 def get_irods_root_directory():
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(get_irods_root_directory(), 'iRODS', 'irodsctl')
     subprocess.check_call([irodsctl, arg])
 
-
 def restart_irods_server():
     run_irodsctl_with_arg('restart')
-
 
 def run_devtesty():
     run_irodsctl_with_arg('devtesty')
 
-
 def run_fastswap_test():
     subprocess.check_call('rulebase_fastswap_test_2276.sh')
-
 
 def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
     unittest.installHandler()
 
-
 def optparse_callback_use_ssl(*args, **kwargs):
     import configuration
     configuration.USE_SSL = True
-
 
 def optparse_callback_topology_test(option, opt_str, value, parser):
     import configuration
@@ -50,6 +43,11 @@ def optparse_callback_topology_test(option, opt_str, value, parser):
     configuration.HOSTNAME_3 = 'resource3.example.org'
     configuration.ICAT_HOSTNAME = 'icat.example.org'
 
+def optparse_callback_federation(option, opt_str, value, parser):
+    import configuration
+    configuration.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
+    configuration.FEDERATION.REMOTE_ZONE = value[1]
+    configuration.FEDERATION.REMOTE_HOST = value[2]
 
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
@@ -63,9 +61,7 @@ def run_tests_from_names(names, buffer_test_output, xml_output):
     results = runner.run(super_suite)
     return results
 
-
 class RegisteredTestResult(unittest.TextTestResult):
-
     def __init__(self, *args, **kwargs):
         super(RegisteredTestResult, self).__init__(*args, **kwargs)
         unittest.registerResult(self)
@@ -86,6 +82,7 @@ if __name__ == '__main__':
     parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
     parser.add_option('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
     parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
+    parser.add_option('--federation', type='str', nargs=3, action='callback', callback=optparse_callback_federation, metavar='<remote irods version, remote zone, remote host>')
     options, _ = parser.parse_args()
 
     if len(sys.argv) == 1:
