@@ -8,5 +8,5 @@ if [ $ORACLE_HOME ] ; then
         fi
     fi
 else
-    echo /usr/lib/oracle/11.2/client64
+    echo /usr/lib/oracle/11.2/client64/lib
 fi
