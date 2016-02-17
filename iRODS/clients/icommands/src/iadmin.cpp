@@ -980,7 +980,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         if(!strlen(cmdToken[2])) {
             fprintf( stderr, "ERROR: missing resource name parameter\n" );
         }
-        
+
         if(!strlen(cmdToken[3])) {
             fprintf( stderr, "ERROR: missing value parameter\n" );
         }
@@ -992,13 +992,13 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
     if ( strcmp( cmdToken[0], "sgq" ) == 0 ) {
         if(!strlen(cmdToken[1])) {
-            fprintf( stderr, "ERROR: missing username parameter\n" );
+            fprintf( stderr, "ERROR: missing group name parameter\n" );
         }
 
         if(!strlen(cmdToken[2])) {
             fprintf( stderr, "ERROR: missing resource name parameter\n" );
         }
-        
+
         if(!strlen(cmdToken[3])) {
             fprintf( stderr, "ERROR: missing value parameter\n" );
         }

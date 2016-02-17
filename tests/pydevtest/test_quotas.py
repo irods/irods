@@ -60,5 +60,5 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         cmd = 'iadmin suq' # no arguments
         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing username parameter') # usage information
         cmd = 'iadmin sgq' # no arguments
-        self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing username parameter') # usage information
+        self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing group name parameter') # usage information
 
