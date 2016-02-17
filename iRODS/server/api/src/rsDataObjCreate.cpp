@@ -661,7 +661,6 @@ int getRescForCreate(
                  _obj_inp->objPath,
                  _resc_name.c_str(),
                  _obj_inp->dataSize );
-rodsLog( LOG_NOTICE, "XXXX - %s:%d status %d", __FILE__, __LINE__, status );
     if( status == SYS_RESC_QUOTA_EXCEEDED ) {
         return SYS_RESC_QUOTA_EXCEEDED;
     }
