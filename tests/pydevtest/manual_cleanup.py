@@ -3,9 +3,10 @@
 import sys
 import lib
 import configuration
+import shutil
 
-test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper']
-test_resc_list = ['pydevtest_AnotherResc', 'pydevtest_TestResc']
+test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper', 'admin']
+test_resc_list = ['pydevtest_AnotherResc', 'pydevtest_TestResc', 'pt', 'leaf']
 
 # make admin session
 service_env = lib.get_service_account_environment_file_contents()
@@ -34,6 +35,13 @@ for user_name in test_user_list:
     # remove user
     sess.run_icommand('iadmin rmuser {user_name}'.format(**locals()))
 
+# remove parent-child relationships
+sess.run_icommand('iadmin rmchildfromresc pt leaf')
+
 # remove resources
 for resource in test_resc_list:
     sess.run_icommand('iadmin rmresc {resource}'.format(**locals()))
+
+# remove local files
+shutil.rmtree('/tmp/federation_test_stuff', ignore_errors=True)
+
