@@ -81,13 +81,13 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // get the resource property
-        error get_err = resc->set_property< T >( _prop_name, _prop );
-        if ( !get_err.ok() ) {
+        error set_err = resc->set_property< T >( _prop_name, _prop );
+        if ( !set_err.ok() ) {
             std::stringstream msg;
             msg << "failed to set property [";
             msg << _prop_name;
             msg << "]";
-            return PASSMSG( msg.str(), get_err );
+            return PASSMSG( msg.str(), set_err );
         }
 
         return SUCCESS();
