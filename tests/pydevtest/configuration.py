@@ -11,7 +11,7 @@ PREEXISTING_ADMIN_PASSWORD = 'rods'
 class FEDERATION(object):
     REMOTE_IRODS_VERSION = (4, 2, 0)
     RODSUSER_NAME_PASSWORD_LIST = [('zonehopper', '53CR37')]
-    RODSADMIN_NAME_PASSWORD_LIST = []
+    RODSADMIN_NAME_PASSWORD_LIST = [('admin', PREEXISTING_ADMIN_PASSWORD)]
     IRODS_DIR = '/var/lib/irods/iRODS'
     REMOTE_ZONE = 'buntest'
     REMOTE_HOST = 'buntest'
@@ -22,7 +22,6 @@ class FEDERATION(object):
     MAX_THREADS = 16
     
     # resource hierarchies
-    REMOTE_PT_RESC_HIER = 'other_pt;leaf'
+    REMOTE_PT_RESC_HIER = 'federation_remote_passthrough;federation_remote_unixfilesystem_leaf'
     LOCAL_PT_RESC_HIER = 'pt;leaf'
     REMOTE_DEF_RESOURCE = 'demoResc'
-#     LOCAL_DEF_RESOURCE = 'demoResc'

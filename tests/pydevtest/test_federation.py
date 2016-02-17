@@ -17,6 +17,7 @@ SessionsMixin = lib.make_sessions_mixin(
 
 
 class Test_ICommands(SessionsMixin, unittest.TestCase):
+
     def setUp(self):
         super(Test_ICommands, self).setUp()
 
@@ -32,7 +33,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         self.config['local_zone'] = self.user_sessions[0].zone_name
 
     def tearDown(self):
-        shutil.rmtree(self.local_test_dir_path)
+        shutil.rmtree(self.local_test_dir_path, ignore_errors=True)
         super(Test_ICommands, self).tearDown()
 
     def test_ils_l(self):
@@ -44,19 +45,27 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             filename = os.path.basename(f.name)
             filesize = configuration.FEDERATION.TEST_FILE_SIZE
             lib.make_file(f.name, filesize, 'arbitrary')
-            remote_home_collection = test_session.remote_home_collection(configuration.FEDERATION.REMOTE_ZONE)
+            remote_home_collection = test_session.remote_home_collection(
+                configuration.FEDERATION.REMOTE_ZONE)
 
-            test_session.assert_icommand(['ils', '-L', remote_home_collection], 'STDOUT_SINGLELINE', remote_home_collection)
-            test_session.assert_icommand(['iput', f.name, remote_home_collection])
+            test_session.assert_icommand(
+                ['ils', '-L', remote_home_collection], 'STDOUT_SINGLELINE', remote_home_collection)
+            test_session.assert_icommand(
+                ['iput', f.name, remote_home_collection])
 
             # list file info
-            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', filename)
-            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', str(filesize))
-            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_RESOURCE)
-            test_session.assert_icommand(['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_VAULT)
+            test_session.assert_icommand(
+                ['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', filename)
+            test_session.assert_icommand(
+                ['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', str(filesize))
+            test_session.assert_icommand(
+                ['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_DEF_RESOURCE)
+            test_session.assert_icommand(
+                ['ils', '-L', '{0}/{1}'.format(remote_home_collection, filename)], 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_VAULT)
 
             # cleanup
-            test_session.assert_icommand(['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
+            test_session.assert_icommand(
+                ['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
 
     def test_ils_subcolls(self):
         # pick session(s) for the test
@@ -67,8 +76,10 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['user_name'] = test_session.username
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
-        parameters['subcoll0'] = "{remote_home_collection}/subcoll0".format(**parameters)
-        parameters['subcoll1'] = "{remote_home_collection}/subcoll1".format(**parameters)
+        parameters['subcoll0'] = "{remote_home_collection}/subcoll0".format(
+            **parameters)
+        parameters['subcoll1'] = "{remote_home_collection}/subcoll1".format(
+            **parameters)
 
         # make subcollections in remote coll
         test_session.assert_icommand("imkdir {subcoll0}".format(**parameters))
@@ -81,7 +92,6 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # cleanup
         test_session.assert_icommand("irm -r {subcoll0}".format(**parameters))
         test_session.assert_icommand("irm -r {subcoll1}".format(**parameters))
-
 
     def test_iput(self):
         # pick session(s) for the test
@@ -821,6 +831,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
         shutil.rmtree(dir_path)
 
+    @unittest.skipIf(lib.get_irods_version() < (4, 0, 0) or configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
     def test_irsync_passthru_3016(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
@@ -840,11 +851,22 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
             **parameters)
 
-        # extract root resources from hierarchies
-        parameters['local_pt_resc'] = parameters[
-            'local_pt_resc_hier'].split(';')[0]
+        # extract resources from hierarchies
+        (parameters['local_pt_resc'], parameters['local_leaf_resc']) = tuple(
+            parameters['local_pt_resc_hier'].split(';'))
         parameters['remote_pt_resc'] = parameters[
             'remote_pt_resc_hier'].split(';')[0]
+
+        # create local passthru hierarchy
+        parameters['hostname'] = configuration.ICAT_HOSTNAME
+        parameters['local_leaf_resc_path'] = '/tmp/{local_leaf_resc}'.format(
+            **parameters)
+        self.admin_sessions[0].run_icommand(
+            "iadmin mkresc {local_pt_resc} passthru".format(**parameters))
+        self.admin_sessions[0].run_icommand(
+            "iadmin mkresc {local_leaf_resc} unixfilesystem {hostname}:{local_leaf_resc_path}".format(**parameters))
+        self.admin_sessions[0].run_icommand(
+            "iadmin addchildtoresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
 
         # checksum local file
         orig_md5 = commands.getoutput('md5sum ' + filepath)
@@ -865,17 +887,30 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "ils -L {remote_home_collection}/{filename}".format(**parameters),  'STDOUT_MULTILINE', [filename, parameters['remote_pt_resc_hier']])
 
         # get file back and compare checksums
-        test_session.assert_icommand(
-            "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
-        new_md5 = commands.getoutput('md5sum ' + filepath)
-        self.assertEqual(orig_md5, new_md5)
+        if configuration.FEDERATION.REMOTE_IRODS_VERSION != (4, 0, 3):
+            test_session.assert_icommand(
+                "iget {remote_home_collection}/{filename} {filepath}".format(**parameters))
+            new_md5 = commands.getoutput('md5sum ' + filepath)
+            self.assertEqual(orig_md5, new_md5)
+        else:
+            test_session.assert_icommand(
+                "iget {remote_home_collection}/{filename} {filepath}".format(**parameters), 'STDERR_SINGLELINE', 'USER_RODS_HOSTNAME_ERR')
 
         # cleanup
         test_session.assert_icommand(
             "irm -f {local_home_collection}/{filename}".format(**parameters))
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
-        os.remove(filepath)
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
+        self.admin_sessions[0].run_icommand(
+            "iadmin rmchildfromresc {local_pt_resc} {local_leaf_resc}".format(**parameters))
+        self.admin_sessions[0].run_icommand(
+            "iadmin rmresc {local_pt_resc}".format(**parameters))
+        self.admin_sessions[0].run_icommand(
+            "iadmin rmresc {local_leaf_resc}".format(**parameters))
 
     def test_ilsresc_z(self):
         # pick session(s) for the test
@@ -883,7 +918,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # list remote resources
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_RESOURCE)
+            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', configuration.FEDERATION.REMOTE_DEF_RESOURCE)
 
 
 class Test_Admin_Commands(unittest.TestCase):
