@@ -11,48 +11,29 @@
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_resource_constants.hpp"
+#include "irods_exception.hpp"
 
 #include <iostream>
 #include <vector>
 
-#define MAX_SQL 300
 #define BIG_STR 200
 
-rcComm_t *Conn;
-
-char zoneArgument[MAX_NAME_LEN + 2] = "";
-
-
-// =-=-=-=-=-=-=-
-// tree stuff
-
-// containers for storing query results
-// one vector per attribute
-std::vector<std::string> resc_names;
-std::vector<std::string> resc_types;
-std::vector<std::string> resc_children;
-
-// mapping of resource names and row indexes for looking up children
-std::map<std::string, int> resc_map;
-
-// list of root resources
-std::vector<std::string> roots;
 
 // tree drawing gfx
-std::string middle_child_connector[2] = {"|-- ", "\u251C\u2500\u2500 "};
-std::string last_child_connector[2] = {"`-- ", "\u2514\u2500\u2500 "};
-std::string vertical_pipe[2] = {"|   ", "\u2502   "};
-std::string indent = "    ";
-int gfx_mode = 1; // 0 for ascii, 1 for unicode
+enum DrawingStyle {
+    DrawingStyle_ascii = 0,
+    DrawingStyle_unicode
+};
 
-// =-=-=-=-=-=-=-
+
+const std::string middle_child_connector[2] = {"|-- ", "\u251C\u2500\u2500 "};
+const std::string last_child_connector[2] = {"`-- ", "\u2514\u2500\u2500 "};
+const std::string vertical_pipe[2] = {"|   ", "\u2502   "};
+const std::string indent = "    ";
 
 
 void usage();
 
-/*
- print the results of a general query.
- */
 int
 printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
                       char *descriptions[], int doDashes ) {
@@ -99,7 +80,7 @@ printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 Via a general query, show a resource
 */
 int
-showResc( char *name, int longOption ) {
+showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
     int i1a[20];
@@ -174,7 +155,7 @@ showResc( char *name, int longOption ) {
         // =-=-=-=-=-=-=-
     }
 
-    if ( zoneArgument[0] != '\0' ) {
+    if ( zoneArgument && *zoneArgument ) {
         addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
     }
 
@@ -215,82 +196,69 @@ showResc( char *name, int longOption ) {
     return 1;
 }
 
-
 // depth is a binary string of open nodes
-void printDepth( const std::string& depth ) {
-    for ( std::string::const_iterator it = depth.begin(); it != depth.end(); ++it ) {
+void printDepth( const std::string& depth, DrawingStyle drawing_style ) {
+    for ( std::string::const_iterator it=depth.begin(); it!=depth.end(); ++it ) {
         if ( *it == '1' ) {
-            std::cout << vertical_pipe[gfx_mode];
-        }
-        else {
+            std::cout << vertical_pipe[drawing_style];
+        } else {
             std::cout << indent;
         }
     }
 }
 
-
 // recursive function to print resource tree
-void printRescTree( const std::string& node_name, std::string depth ) {
-    int resc_index;
-
+void printRescTree( const std::string& node_name, const std::string& depth,
+                    const std::vector<std::string>& resc_types, const std::vector<std::string>& resc_children,
+                    const std::map<std::string, int>& resc_map, DrawingStyle drawing_style ) {
     // get children string
-    resc_index = resc_map[node_name];
-    std::string& children_str = resc_children[resc_index];
+    const std::map<std::string, int>::const_iterator it_resc_map = resc_map.find(node_name);
+    if (it_resc_map == resc_map.end()) {
+        THROW( SYS_INTERNAL_NULL_INPUT_ERR, std::string("Missing node in resc_map: [") + node_name + "]" );
+    }
+    const int resc_index = it_resc_map->second;
+    const std::string& children_str = resc_children[resc_index];
 
     // print node name, and type if not UFS
     if ( resc_types[resc_index] != irods::RESOURCE_TYPE_NATIVE ) {
         std::cout << node_name << ":" << resc_types[resc_index] << std::endl;
-    }
-    else {
+    } else {
         std::cout << node_name << std::endl;
-
     }
 
-    // if leaf we're done
     if ( children_str.empty() ) {
         return;
     }
 
-
     // print children
     irods::children_parser parser;
     parser.set_string( children_str );
-    irods::children_parser::const_iterator it, final_it = parser.end();
-    final_it--;
-    for ( it = parser.begin(); it != parser.end(); ++it ) {
+    irods::children_parser::const_iterator it;
+    const irods::children_parser::const_iterator final_it = --parser.end();
+    for ( it=parser.begin(); it!=parser.end(); ++it ) {
         if ( it != final_it ) {
-            // print depth string
-            printDepth( depth );
-
-            // print middle child connector
-            std::cout << middle_child_connector[gfx_mode];
-
-            // append '1' to depth string and print child
-            printRescTree( it->first, depth + "1" );
-        }
-        else {
-            // print depth string
-            printDepth( depth );
-
-            // print last child connector
-            std::cout << last_child_connector[gfx_mode];
-
-            // append '0' to depth string and print child
-            printRescTree( it->first, depth + "0" );
+            printDepth( depth, drawing_style);
+            std::cout << middle_child_connector[drawing_style];
+            printRescTree( it->first, depth + "1", resc_types, resc_children, resc_map, drawing_style );
+        } else {
+            printDepth( depth, drawing_style );
+            std::cout << last_child_connector[drawing_style];
+            printRescTree( it->first, depth + "0", resc_types, resc_children, resc_map, drawing_style );
         }
     }
     return;
 }
 
-
-int parseGenQueryOut( int offset, genQueryOut_t *genQueryOut ) {
-    char* t_res;	// target result
+int
+parseGenQueryOut(
+    int offset, genQueryOut_t *genQueryOut, std::vector<std::string>& resc_names,
+    std::vector<std::string>& resc_types, std::vector<std::string>& resc_children,
+    std::map<std::string, int>& resc_map, std::vector<std::string>& roots ) {
 
     // loop over rows (i.e. for each resource)
-    for ( int i = 0; i < genQueryOut->rowCnt; i++ ) {
-
+    for ( int i=0; i<genQueryOut->rowCnt; ++i ) {
         // get resource name
-        t_res = genQueryOut->sqlResult[0].value + i * genQueryOut->sqlResult[0].len;
+        char *t_res = genQueryOut->sqlResult[0].value + i * genQueryOut->sqlResult[0].len;
         if ( !t_res || !strlen( t_res ) ) {
             // parsing error
             return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -318,26 +286,15 @@ int parseGenQueryOut( int offset, genQueryOut_t *genQueryOut ) {
             // another root node
             roots.push_back( resc_names.back() );
         }
-
     }
 
     return 0;
 }
 
-
-
-int showRescTree( char *name ) {
-    int status;
-    int offset = 0; // when getting more rows
-
-    // genQuery input and output (camelCase for tradition)
+int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , DrawingStyle drawing_style) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut;
-    char collQCond[MAX_NAME_LEN];
-
-
-    // start clean
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+    genQueryOut_t *genQueryOut = NULL;
 
     // set up query columns
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, ORDER_BY );
@@ -345,17 +302,18 @@ int showRescTree( char *name ) {
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT, 1 );
 
-    if ( zoneArgument[0] != '\0' ) {
+    if ( zoneArgument && *zoneArgument ) {
         addKeyVal( &genQueryInp.condInput, ZONE_KW, zoneArgument );
     }
 
     // set up query condition (resc_name != 'bundleResc')
+    char collQCond[MAX_NAME_LEN];
     snprintf( collQCond, MAX_NAME_LEN, "!='%s'", BUNDLE_RESC );
     addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, collQCond );
 
     // query for resources
     genQueryInp.maxRows = MAX_SQL_ROWS;
-    status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
+    int status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
 
     // query fail?
     if ( status < 0 ) {
@@ -363,45 +321,42 @@ int showRescTree( char *name ) {
         return status;
     }
 
+    // containers for storing query results
+    // one vector per attribute
+    std::vector<std::string> resc_names;
+    std::vector<std::string> resc_types;
+    std::vector<std::string> resc_children;
+
+    // mapping of resource names and row indexes for looking up children
+    std::map<std::string, int> resc_map;
+
+    // list of root resources
+    std::vector<std::string> roots;
 
     // parse results
-    status = parseGenQueryOut( offset, genQueryOut );
-
-
-
-    // More rows in the pipeline?
+    int offset = 0;
+    status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_types, resc_children, resc_map, roots );
     while ( !status && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
-
-        // update offset
         offset += genQueryOut->rowCnt;
-
-        // get next batch of rows
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-
-        // parse results
-        status = parseGenQueryOut( offset, genQueryOut );
+        status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_types, resc_children, resc_map, roots );
     }
 
-
-
     // If target resource was specified print tree for that resource
-    if ( name && strlen( name ) ) {
-        std::string target_resc_name( name );
-
+    if ( name && *name ) {
         // check for invalid resource name
-        if ( std::find( resc_names.begin(), resc_names.end(), target_resc_name ) == resc_names.end() ) {
-            std::cout << "Resource " << target_resc_name << " does not exist." << std::endl;
+        if ( std::find( resc_names.begin(), resc_names.end(), name ) == resc_names.end() ) {
+            std::cout << "Resource " << name << " does not exist." << std::endl;
             return USER_INVALID_RESC_INPUT;
         }
 
         // print tree
-        printRescTree( target_resc_name, "" );
-    }
-    else {
+        printRescTree( name, "", resc_types, resc_children, resc_map, drawing_style );
+    } else {
         // Otherwise print tree for each root node
         for ( std::vector<std::string>::const_iterator it = roots.begin(); it != roots.end(); ++it ) {
-            printRescTree( *it, "" );
+            printRescTree( *it, "", resc_types, resc_children, resc_map, drawing_style );
         }
     }
 
@@ -410,39 +365,31 @@ int showRescTree( char *name ) {
 
 int
 main( int argc, char **argv ) {
-
     signal( SIGPIPE, SIG_IGN );
-
-    int status;
-    rErrMsg_t errMsg;
-
-    rodsArguments_t myRodsArgs;
-
-    rodsEnv myEnv;
-
-
     rodsLogLevel( LOG_ERROR );
 
-    status = parseCmdLineOpt( argc, argv, "hvVlz:Z", 1, &myRodsArgs );
+    rodsArguments_t myRodsArgs;
+    int status = parseCmdLineOpt( argc, argv, "hvVlz:Z", 1, &myRodsArgs );
     if ( status ) {
         printf( "Use -h for help.\n" );
-        exit( 1 );
+        return 1;
     }
 
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
+    char zoneArgument[MAX_NAME_LEN + 2] = "";
     if ( myRodsArgs.zone == True ) {
         strncpy( zoneArgument, myRodsArgs.zoneName, MAX_NAME_LEN );
     }
 
+    rodsEnv myEnv;
     status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
-                 status );
-        exit( 1 );
+        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d", status );
+        return 1;
     }
 
     // =-=-=-=-=-=-=-
@@ -451,37 +398,41 @@ main( int argc, char **argv ) {
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();
     init_api_table( api_tbl, pk_tbl );
 
-    Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+    rErrMsg_t errMsg;
+    rcComm_t *Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
-    if ( Conn == NULL ) {
-        char *mySubName = NULL;
-        const char *myName = rodsErrorName( errMsg.status, &mySubName );
-        rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
-                 myName,
-                 mySubName,
-                 errMsg.status,
-                 errMsg.msg );
-        free( mySubName );
+    try {
+        if ( Conn == NULL ) {
+            char *mySubName;
+            const char *myName = rodsErrorName( errMsg.status, &mySubName );
+            rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
+                     myName,
+                     mySubName,
+                     errMsg.status,
+                     errMsg.msg );
 
-        exit( 2 );
-    }
-
-    status = clientLogin( Conn );
-    if ( status != 0 ) {
-        exit( 3 );
-    }
-
-    // tree view
-    if ( myRodsArgs.longOption != True ) {
-        if ( myRodsArgs.ascii == True ) { // character set for printing tree
-            gfx_mode = 0;
+            return 2;
         }
 
-        status = showRescTree( argv[myRodsArgs.optind] );
-    }
-    else { // regular view
-        status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption );
+        status = clientLogin( Conn );
+        if ( status != 0 ) {
+            return 3;
+        }
+
+        // tree view
+        DrawingStyle drawing_style = DrawingStyle_unicode;
+        if ( myRodsArgs.longOption != True ) {
+            if ( myRodsArgs.ascii == True ) { // character set for printing tree
+                drawing_style = DrawingStyle_ascii;
+            }
+            status = showRescTree( argv[myRodsArgs.optind], zoneArgument, Conn, drawing_style);
+        } else { // regular view
+            status = showResc( argv[myRodsArgs.optind], myRodsArgs.longOption, zoneArgument, Conn );
+        }
+    } catch ( const irods::exception& e_ ) {
+        rodsLog( LOG_ERROR, "Caught irods::exception\n%s", e_.what() );
+        status = e_.code();
     }
 
     printErrorStack( Conn->rError );
@@ -490,8 +441,7 @@ main( int argc, char **argv ) {
     /* Exit 0 if one or more items were displayed */
     if ( status >= 0 ) {
         return 0;
-    }
-    else {
+    } else {
         return status;
     }
 }
@@ -515,8 +465,7 @@ void usage() {
         " -h This help",
         ""
     };
-    int i;
-    for ( i = 0;; i++ ) {
+    for ( int i = 0;; i++ ) {
         if ( strlen( msgs[i] ) == 0 ) {
             break;
         }
@@ -524,4 +473,3 @@ void usage() {
     }
     printReleaseInfo( "ilsresc" );
 }
-
