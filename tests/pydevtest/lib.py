@@ -34,7 +34,7 @@ def get_irods_version():
 
 def get_irods_version_from_json():
     try:
-        with open('/var/lib/irods/VERSION.json') as f:
+        with open(os.path.join(get_irods_top_level_dir(),'VERSION.json')) as f:
             version_string = json.load(f)['irods_version']
     except IOError as e:
         if e.errno != 2:
@@ -44,7 +44,7 @@ def get_irods_version_from_json():
 
 def get_irods_version_from_bash():
     try:
-        with open('/var/lib/irods/VERSION') as f:
+        with open(os.path.join(get_irods_top_level_dir(),'VERSION')) as f:
             for line in f:
                 key, _, value = line.rstrip('\n').partition('=')
                 if key == 'IRODSVERSION':
