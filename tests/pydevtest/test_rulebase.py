@@ -463,7 +463,7 @@ OUTPUT ruleExecOut
         server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
 
         # test file for ireg
-        testfile = '/var/lib/irods/VERSION.json'
+        testfile = os.path.join(lib.get_irods_top_level_dir(), 'VERSION.json')
 
         # get PEP name from function name
         pep_name = inspect.stack()[0][3].split('_')[1]
@@ -559,7 +559,8 @@ OUTPUT ruleExecOut
 
         # test file for ireg
         username = sesh.username
-        testfile = '/var/lib/irods/iRODS/Vault/home/{username}/foo.txt'.format(**locals())
+        resc_vault_path = lib.get_vault_path(sesh)
+        testfile = '{resc_vault_path}/home/{username}/foo.txt'.format(**locals())
         open(testfile, 'a').close()
 
         # query for resource properties
