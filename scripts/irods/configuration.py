@@ -400,8 +400,10 @@ class IrodsConfig(object):
         return table_names
 
     def irods_tables_in_database(self, cursor=None):
+        with open(os.path.join(self.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql')) as f:
+            irods_tables = [l.split()[2].lower() for l in f.readlines() if l.lower().startswith('create table')]
         table_names = self.list_database_tables(cursor)
-        return [t for t in table_names if t.lower().startswith('r_')]
+        return [t for t in table_names if t.lower() in irods_tables]
 
     def update_catalog_schema(self, cursor=None):
         if cursor is None:
