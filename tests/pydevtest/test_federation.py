@@ -912,6 +912,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         self.admin_sessions[0].run_icommand(
             "iadmin rmresc {local_leaf_resc}".format(**parameters))
 
+    @unittest.skipIf(configuration.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), '#3055')
     def test_ilsresc_z(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
