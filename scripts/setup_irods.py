@@ -45,20 +45,6 @@ def setup_server(irods_config):
 
     if irods_config.is_catalog:
         setup_database_config(irods_config)
-        if irods_config.irods_tables_in_database():
-            l.warning(get_header(
-                'WARNING:\n'
-                'The database specified is an already-configured\n'
-                'iRODS database, so first-time database setup will\n'
-                'not be performed. Providing different inputs from\n'
-                'those provided the first time this script was run\n'
-                'will result in unspecified behavior, and may put\n'
-                'a previously working grid in a broken state. It\'s\n'
-                'recommended that you exit this script now if you\n'
-                'are running it manually. If you wish to wipe out\n'
-                'your current iRODS installation and associated data\n'
-                'catalog, drop the database and recreate it before\n'
-                're-running this script.'))
     setup_server_config(irods_config)
     setup_client_environment(irods_config)
 
@@ -346,6 +332,23 @@ def setup_database_config(irods_config):
             'Database password',
             echo=False)
 
+    irods_config.commit(db_config, irods_config.database_config_path)
+
+    if irods_config.irods_tables_in_database():
+        l.warning(get_header(
+            'WARNING:\n'
+            'The database specified is an already-configured\n'
+            'iRODS database, so first-time database setup will\n'
+            'not be performed. Providing different inputs from\n'
+            'those provided the first time this script was run\n'
+            'will result in unspecified behavior, and may put\n'
+            'a previously working grid in a broken state. It\'s\n'
+            'recommended that you exit this script now if you\n'
+            'are running it manually. If you wish to wipe out\n'
+            'your current iRODS installation and associated data\n'
+            'catalog, drop the database and recreate it before\n'
+            're-running this script.'))
+
     db_password_salt = prompt(
             'Salt for passwords stored in the database',
             echo=False)
@@ -354,7 +357,6 @@ def setup_database_config(irods_config):
             server_config['environment_variables'] = {}
         server_config['environment_variables']['IRODS_DATABASE_USER_PASSWORD_SALT'] = db_password_salt
 
-    irods_config.commit(db_config, irods_config.database_config_path)
     irods_config.commit(server_config, irods_config.server_config_path)
 
 def setup_catalog(irods_config, default_resource_directory=None):
