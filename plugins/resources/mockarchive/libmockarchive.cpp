@@ -704,7 +704,7 @@ extern "C" {
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
-                    if ( irods::OPEN_OPERATION == ( *_opr ) ) {
+                    if ( irods::OPEN_OPERATION == ( *_opr ) || irods::UNLINK_OPERATION == ( *_opr )) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         result = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );

@@ -62,13 +62,9 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
 
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
-    addKeyVal(
-        &dataObjUnlinkInp->condInput,
-        irods::UNLINK_OPERATION.c_str(),
-        "true" );
     if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
+        irods::error ret = irods::resolve_resource_hierarchy( irods::UNLINK_OPERATION,
                            rsComm, dataObjUnlinkInp, hier );
         if ( !ret.ok() ) {
             std::stringstream msg;

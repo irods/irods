@@ -1326,6 +1326,7 @@ extern "C" {
     /// @brief - handler for prefer cache policy
     irods::error open_for_prefer_cache_policy(
         irods::resource_plugin_context& _ctx,
+        const std::string*              _opr,
         const std::string*              _curr_host,
         irods::hierarchy_parser*        _out_parser,
         float*                          _out_vote ) {
@@ -1396,11 +1397,7 @@ extern "C" {
                 return PASS( ret );
             }
 
-            const keyValPair_t& cond_input = f_ptr->cond_input( );
-            char* unlink_op = getValByKey(
-                                  &cond_input,
-                                  irods::UNLINK_OPERATION.c_str() );
-            if( unlink_op ) {
+            if( irods::UNLINK_OPERATION == ( *_opr ) ) {
                 ( *_out_parser ) = arch_check_parser;
                 ( *_out_vote )   = arch_check_vote;
                 return SUCCESS();
@@ -1451,9 +1448,10 @@ extern "C" {
     ///          otherwise the default is to compare checksum
     irods::error compound_file_redirect_open(
         irods::resource_plugin_context& _ctx,
-        const std::string*               _curr_host,
-        irods::hierarchy_parser*         _out_parser,
-        float*                           _out_vote ) {
+        const std::string*              _opr,
+        const std::string*              _curr_host,
+        irods::hierarchy_parser*        _out_parser,
+        float*                          _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if ( !_curr_host ) {
@@ -1490,7 +1488,7 @@ extern "C" {
         // if the policy is prefer cache then if the cache has the object
         // return an upvote
         if ( policy.empty() || irods::RESOURCE_STAGE_PREFER_CACHE == policy ) {
-            return open_for_prefer_cache_policy( _ctx, _curr_host, _out_parser, _out_vote );
+            return open_for_prefer_cache_policy( _ctx, _opr, _curr_host, _out_parser, _out_vote );
 
         }
 
@@ -1564,7 +1562,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
         if ( irods::OPEN_OPERATION == ( *_opr ) ||
-                irods::WRITE_OPERATION  == ( *_opr ) ) {
+                irods::WRITE_OPERATION  == ( *_opr ) ||
+                irods::UNLINK_OPERATION == ( *_opr )) {
 
             if ( irods::WRITE_OPERATION  == ( *_opr ) ) {
                 _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
@@ -1572,7 +1571,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return compound_file_redirect_open( _ctx, _curr_host, _out_parser, _out_vote );
+            return compound_file_redirect_open( _ctx, _opr, _curr_host, _out_parser, _out_vote );
         }
         else if ( irods::CREATE_OPERATION == ( *_opr )
                 ) {

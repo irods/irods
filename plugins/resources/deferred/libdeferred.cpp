@@ -787,13 +787,14 @@ extern "C" {
                 if ( ( result = ASSERT_PASS( err, "Failed to get property: \"%s\".", irods::RESOURCE_NAME.c_str() ) ).ok() ) {
 
                     // =-=-=-=-=-=-=-
-                    // add ourselves into the hierarch before calling child resources
+                    // add ourselves into the hierarchy before calling child resources
                     _out_parser->add_child( name );
 
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
                     if ( irods::OPEN_OPERATION   == ( *_opr )  ||
-                            irods::WRITE_OPERATION  == ( *_opr ) ) {
+                            irods::WRITE_OPERATION  == ( *_opr ) ||
+                            irods::UNLINK_OPERATION == ( *_opr )) {
                         std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
                         err = deferred_redirect_for_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
                         result = ASSERT_PASS( err, err_msg );

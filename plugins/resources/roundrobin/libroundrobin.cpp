@@ -1130,7 +1130,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
         if ( irods::OPEN_OPERATION  == ( *_opr )  ||
-                irods::WRITE_OPERATION == ( *_opr ) ) {
+                irods::WRITE_OPERATION == ( *_opr ) ||
+                irods::UNLINK_OPERATION == ( *_opr )) {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             irods::resource_ptr resc;

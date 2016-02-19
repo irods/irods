@@ -904,7 +904,8 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // test the operation to determine which choices to make
                     if ( irods::OPEN_OPERATION   == ( *_opr )  ||
-                            irods::WRITE_OPERATION  == ( *_opr ) ) {
+                            irods::WRITE_OPERATION  == ( *_opr ) ||
+                            irods::UNLINK_OPERATION == ( *_opr )) {
                         std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
                         err = load_balanced_redirect_for_open_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
                         result = ASSERT_PASS( err, err_msg );

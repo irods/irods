@@ -14,9 +14,6 @@ namespace irods {
     const std::string CREATE_OPERATION( "CREATE" );
     const std::string WRITE_OPERATION( "WRITE" );
     const std::string OPEN_OPERATION( "OPEN" );
-
-    // currently only used as a keyword argument in rsDataObjUnlink
-    // and libcompound.cpp
     const std::string UNLINK_OPERATION( "UNLINK" );
 
     error resolve_resource_hierarchy(

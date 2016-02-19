@@ -513,7 +513,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specified ( thats all we have for now )
         if ( OPEN_OPERATION  == oper ||
-                WRITE_OPERATION == oper ) {
+                WRITE_OPERATION == oper ||
+                UNLINK_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for
             // success before proceeding
