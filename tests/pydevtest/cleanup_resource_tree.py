@@ -16,7 +16,7 @@ def main(filename):
             # test
             print "iadmin rmchildfromresc {0} {1}".format(name, child)
 
-            args = ['/usr/bin/iadmin', 'rmchildfromresc', name, child]
+            args = ['iadmin', 'rmchildfromresc', name, child]
             # print args
 
             # run command
@@ -27,7 +27,7 @@ def main(filename):
         # test
         print "iadmin rmresc {0}".format(name)
 
-        args = ['/usr/bin/iadmin', 'rmresc', name]
+        args = ['iadmin', 'rmresc', name]
 
         # run command
         subprocess.Popen(args).communicate()

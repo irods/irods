@@ -84,7 +84,7 @@ def main(width, max_depth):
     for name in tree.keys():
         # test
         print "iadmin mkresc {0} {1} {2}:/tmp/{0} {3}".format(name, tree[name][0], hostname, EMPTY_CTXT_STR)
-        args = ['/usr/bin/iadmin', 'mkresc', name, tree[name][0],
+        args = ['iadmin', 'mkresc', name, tree[name][0],
                 "{0}:/tmp/{1}".format(hostname, name), EMPTY_CTXT_STR]
         # print args
 
@@ -98,7 +98,7 @@ def main(width, max_depth):
             for child in children:
                 # test
                 print "iadmin addchildtoresc {0} {1}".format(name, child)
-                args = ['/usr/bin/iadmin', 'addchildtoresc', name, child]
+                args = ['iadmin', 'addchildtoresc', name, child]
                 # print args
 
                 # run command
