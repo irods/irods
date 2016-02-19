@@ -325,7 +325,14 @@ def files_in_dir(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
 
+def get_user_env(user):
+    out, _ = execute_command(['su', '-', user, '-c',
+        'python -c "from __future__ import print_function; import os; import json; print(json.dumps(dict(os.environ)))"'])
+    return json.loads(out)
+
 def switch_user(user, group=None):
+    user_env = get_user_env(user)
+
     pw_record = pwd.getpwnam(user)
     os.environ['HOME'] = pw_record.pw_dir
     os.environ['LOGNAME'] = pw_record.pw_name

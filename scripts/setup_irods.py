@@ -1,5 +1,15 @@
 #!/usr/bin/python
 from __future__ import print_function
+
+import os, sys
+
+#for oracle, ORACLE_HOME must be in LD_LIBRARY_PATH
+if 'ORACLE_HOME' in os.environ:
+    oracle_lib_dir = os.path.join(os.environ['ORACLE_HOME'], 'lib')
+    if oracle_lib_dir not in os.environ.get('LD_LIBRARY_PATH', ''):
+        os.environ['LD_LIBRARY_PATH'] = ':'.join([e for e in [os.environ.get('LD_LIBRARY_PATH', ''), oracle_lib_dir] if e])
+        os.execve(sys.argv[0], sys.argv, os.environ)
+
 import contextlib
 import copy
 import getpass
@@ -8,11 +18,9 @@ import itertools
 import json
 import logging
 import optparse
-import os
 import pprint
 import pwd
 import stat
-import sys
 import time
 import tempfile
 

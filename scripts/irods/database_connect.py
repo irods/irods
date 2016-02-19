@@ -168,9 +168,9 @@ def get_database_connection(irods_config):
 
     try:
         return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
-    except pypyodbc.Error:
+    except pypyodbc.Error as e:
         six.reraise(IrodsError,
-            IrodsError('pypyodbc encountered an error connecting to the database'),
+                IrodsError('pypyodbc encountered an error connecting to the database:\n%s' % e),
             sys.exc_info()[2])
 
 def execute_sql_statement(cursor, statement, *params, **kwargs):
