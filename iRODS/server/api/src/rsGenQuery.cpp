@@ -12,6 +12,7 @@
 #include "irods_server_properties.hpp"
 
 #include "boost/format.hpp"
+#include <boost/tokenizer.hpp>
 #include <string>
 
 static
@@ -124,32 +125,25 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 
 static
 irods::error proc_query_terms_for_community_server(
-    const std::string& _zone_hint,
-    genQueryInp_t*     _inp ) {
-    bool        done     = false;
+        const std::string& _zone_hint,
+        genQueryInp_t*     _inp ){
+    std::string zone_name;
     zoneInfo_t* tmp_zone = ZoneInfoHead;
-    // =-=-=-=-=-=-=-
-    // if the zone hint starts with a / we
-    // will need to pull out just the zone
-    std::string zone_hint = _zone_hint;
-    if ( _zone_hint[0] == '/' ) {
-        size_t pos = _zone_hint.find( "/", 1 );
-        if ( std::string::npos != pos ) {
-            zone_hint = _zone_hint.substr( 1, pos - 1 );
-        }
-        else {
-            zone_hint = _zone_hint.substr( 1 );
-        }
 
-    }
-    else {
-        return SUCCESS();
+    // =-=-=-=-=-=-=-
+    // extract zone name from zone hint
+    boost::char_separator<char> sep("/");
+    boost::tokenizer<boost::char_separator<char> > tokens(_zone_hint, sep);
+    if (tokens.begin() != tokens.end()) {
+        zone_name = *tokens.begin();
+    } else {
+        return ERROR(SYS_INVALID_ZONE_NAME, "No zone name parsed from zone hint");
     }
 
     // =-=-=-=-=-=-=-
     // grind through the zones and find the match to the kw
-    while ( !done && tmp_zone ) {
-        if ( zone_hint == tmp_zone->zoneName               &&
+    while (tmp_zone) {
+        if ( zone_name == tmp_zone->zoneName               &&
                 tmp_zone->masterServerHost->conn              &&
                 tmp_zone->masterServerHost->conn->svrVersion &&
                 tmp_zone->masterServerHost->conn->svrVersion->cookie < 301 ) {
