@@ -1361,6 +1361,13 @@ extern "C" {
         const std::string&              _hierarchy_prop,
         irods::hierarchy_parser*        _out_parser,
         float*                          _out_vote ) {
+
+        (*_out_vote) = 0.0;
+        if( _redirect_map.empty() ) {
+            // there are no votes to consider
+            return SUCCESS();
+        }
+
         irods::error result = SUCCESS();
         irods::error ret;
 

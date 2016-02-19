@@ -669,6 +669,28 @@ extern "C" {
         irods::hierarchy_parser*        _out_parser,
         float*                          _out_vote ) {
         // =-=-=-=-=-=-=-
+        // ensure we start with a vote of 0 should something go wrong
+        (*_out_vote) = 0.0;
+
+        // =-=-=-=-=-=-=-
+        // if we have no children return early
+        if( _ctx.child_map().empty() ) {
+            std::string name;
+            irods::error ret = _ctx.prop_map().get< std::string >(
+                                   irods::RESOURCE_NAME, name );
+            if( ret.ok() ) {
+                rodsLog(
+                    LOG_NOTICE,
+                    "deferred resource [%s] has zero children",
+                    name.c_str() );
+            }
+            else {
+                irods::log(PASS(ret));
+            }
+            return SUCCESS();
+        }
+
+        // =-=-=-=-=-=-=-
         // data struct to hold parser and vote from the search
         std::map< float, irods::hierarchy_parser > result_map;
 
@@ -703,13 +725,18 @@ extern "C" {
                                    &vote );
             std::string hier;
             parser.str( hier );
+
+            if( !err.ok() ) {
+                // on a fail, force a zero vote and not error
+                // out in order to preserve reliability within
+                // the hierarchy, other resources may be able
+                // to service the operation.
+                vote = 0.0;
+            }
+
             rodsLog( LOG_DEBUG1, "deferred node - hier : [%s], vote %f", hier.c_str(), vote );
-            if ( !err.ok() ) {
-                irods::log( PASS( err ) );
-            }
-            else {
-                result_map[ vote ] = parser;
-            }
+
+            result_map[ vote ] = parser;
 
         } // for
 
@@ -717,16 +744,16 @@ extern "C" {
         // now that we have collected all of the results the map
         // will have put the largest one at the end of the map
         // so grab that one and return the result if it is non zero
-        float high_vote = result_map.rbegin()->first;
-        if ( high_vote > 0.0 ) {
-            ( *_out_parser ) = result_map.rbegin()->second;
-            ( *_out_vote )   = high_vote;
-            return SUCCESS();
+        if( !result_map.empty() ) {
+            float high_vote = result_map.rbegin()->first;
+            if ( high_vote > 0.0 ) {
+                ( *_out_parser ) = result_map.rbegin()->second;
+                ( *_out_vote )   = high_vote;
+                return SUCCESS();
+            }
+        }
 
-        }
-        else {
-            return ERROR( -1, "no valid data object found to open" );
-        }
+        return SUCCESS();
 
     } // deferred_redirect_for_operation
 

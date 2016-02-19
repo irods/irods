@@ -97,7 +97,7 @@ if __name__ == '__main__':
         test_identifiers.extend(['test_xmsg', 'test_iadmin', 'test_mso_suite', 'test_resource_types', 'test_catalog', 'test_rulebase',
                                  'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
-                                 'test_control_plane', 'test_iticket', 'test_irodsctl', 'test_quotas', 'test_fuse'])
+                                 'test_control_plane', 'test_iticket', 'test_irodsctl', 'test_fuse', 'test_resource_configuration'])
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
 
