@@ -303,6 +303,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 "rulemsiAdmReadRulesFromFileIntoStruct.r",
                 "rulemsiAdmRetrieveRulesFromDBIntoStruct.r",
                 "rulemsiAdmWriteRulesFromStructIntoFile.r",
+                "ruleTestChangeSessionVar.r", # only fails in RIP install
+                "rulemsiStoreVersionWithTS.r", # only fails in RIP install
             ]
             for n in names_to_skip:
                 if n in rulefile:
