@@ -24,7 +24,7 @@
  *    rsComm_t *rsComm
  *    dataObjInp_t *dataObjInp - The trim input
  *
- *  Returned val - return 1 if a copy is trimed. 0 if nothing trimed.
+ *  Returned val - return 1 if a copy is trimmed. 0 if nothing trimmed.
  */
 
 int
@@ -162,7 +162,7 @@ int trimDataObjInfo(
     addKeyVal( &dataObjInp.condInput, COPIES_KW, tmpStr );
 
     // =-=-=-=-=-=-=-
-    // specifiy the cache repl num to trim just the cache
+    // specify the cache repl num to trim just the cache
     std::stringstream str;
     str << dataObjInfo->replNum;
     addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, str.str().c_str() );
