@@ -306,7 +306,11 @@ int parseGenQueryOut( int offset, genQueryOut_t *genQueryOut ) {
 
         // get resource children
         t_res = genQueryOut->sqlResult[2].value + i * genQueryOut->sqlResult[2].len;
-        resc_children.push_back( std::string( t_res ) );
+        if (t_res) {
+            resc_children.push_back( std::string( t_res ) );
+        } else {
+            resc_children.push_back( "" );
+        }
 
         // check if has parent
         t_res = genQueryOut->sqlResult[3].value + i * genQueryOut->sqlResult[3].len;
