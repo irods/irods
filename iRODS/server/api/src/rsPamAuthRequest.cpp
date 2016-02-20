@@ -144,6 +144,7 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
         return status;
     }
     result->irodsPamPassword = ( char* )malloc( 100 );
+    memset(result->irodsPamPassword, 0, 100);
     if ( result->irodsPamPassword == 0 ) {
         return SYS_MALLOC_ERR;
     }
