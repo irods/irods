@@ -12440,8 +12440,8 @@ checkLevel:
             /* check that no subcoll exists in the target collection, with
                the name of the object */
             snprintf( newCollName, sizeof( newCollName ), "%s", targetCollName );
-            strncat( newCollName, PATH_SEPARATOR, MAX_NAME_LEN );
-            strncat( newCollName, endCollName, MAX_NAME_LEN );
+            strncat( newCollName, PATH_SEPARATOR, strlen(PATH_SEPARATOR) );
+            strncat( newCollName, endCollName, strlen(endCollName) );
 
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlMoveObject SQL 11" );
