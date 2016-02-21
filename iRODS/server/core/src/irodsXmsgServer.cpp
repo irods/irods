@@ -39,6 +39,8 @@ main( int argc, char **argv ) {
     char *tmpStr;
     int logFd;
 
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     ProcessType = XMSG_SERVER_PT;
 
     // capture server properties
