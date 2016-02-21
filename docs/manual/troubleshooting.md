@@ -26,6 +26,9 @@ Some settings within iRODS can be useful when developing for iRODS or when worki
 
 - `spLogSql=1` - This will send to the rodsLog the bind variables, the SQL query, and the return values going to and coming from the database.  This needs to be set on the iCAT server.  Setting this on a resource server will have no effect.
 
+Additionally, client side environment variables will affect all new connections without a server restart:
+
+- `irodsProt=1` - This client side environment variable will request the client and server both use the iRODS XML protocol for the entire connection.  Note that the initial iRODS handshake is always XML, so even without `irodsProt` set, a high `spLogLevel` setting on the server will cause some messages to be displayed.
 
 ## iRODS Server is down
 
@@ -46,7 +49,7 @@ Common areas to check for this error include:
 
 **Networking issues**
 
-- Verify that a firewall is not blocking the connection on the iRODS port in use (default 1247) (or the higher ports for parallel transfer).
+- Verify that a firewall is not blocking the connection on the iRODS ports in use (default 1247 and 1248) (or the higher ports for parallel transfer).
 
 - Check for network connectivity problems by pinging the server in question.
 
@@ -69,7 +72,7 @@ Every iRODS server in a Zone needs to be fully routable to and from every other 
 
 There are two networking requirements for iRODS:
 
-1. Each server in the Zone will be referred to by exactly one hostname, this is the hostname returned by "`hostname`".
+1. Each server in the Zone will be referred to by exactly one hostname, this is the hostname returned by `hostname`.
 
 2. Each server in the Zone must be able to resolve the hostnames of all servers, including itself, to a routable IP address.
 
