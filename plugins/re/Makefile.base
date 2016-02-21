@@ -46,7 +46,7 @@ ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 OBJS = $(patsubst %.cpp, %.o, ${SRCS})
 %.o: %.cpp
-	${GCC} ${CFLAGS} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+	@${GCC} ${CFLAGS} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
 endif
 
 .PHONY: clean
@@ -60,7 +60,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
+	@${GCC} ${INC} ${LDRFLAGS} -D${OS_platform} -fPIC ${LDADD} -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
 
 ${OBJDIR}/%.o: %.cpp
-	${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 
+	@${GCC} ${MY_CFLAG} -D${OS_platform} -fPIC -c -g -o $@ $< 
