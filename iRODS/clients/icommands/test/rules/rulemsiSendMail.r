@@ -6,5 +6,5 @@ myTestRule {
   msiSendMail(*Address,*Subject,*Body);
   writeLine("stdout","Sent e-mail to *Address about *Subject");
 }
-INPUT *Address="tgr@eirods.org",*Subject="Test message",*Body="Testing the msiSendMail microservice"
+INPUT *Address="tgr@irods.org",*Subject="Test message",*Body="Testing the msiSendMail microservice"
 OUTPUT ruleExecOut
