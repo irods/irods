@@ -15,6 +15,10 @@ static char ruleSetInitialized[NAME_LEN] = "";
 /* initialize the Rule Engine if it hasn't been done yet */
 int
 initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet ) {
+
+    // initialize global rule engine plugin framework
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
     int status;
     if ( strcmp( ruleSet, ruleSetInitialized ) == 0 ) {
         return ( 0 ); /* already done */
