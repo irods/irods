@@ -65,7 +65,7 @@ Release Date: 2016-02-22
 
  - Fixes for C clients [#3006] [#3009]
 
- - Fixes for OSX 10.11 icommands [#3011]
+ - Fixes for OSX 10.11 iCommands [#3011]
 
  - Fix for rebalance operation [#3022]
 
@@ -78,6 +78,8 @@ Release Date: 2016-02-22
  - Fix for Oracle detection [#3038] [#3047]
 
  - Fix for quotas to use resource hierarchies [#3044] [#3048]
+
+ - Fix for XML response string [#3050] [#3051]
 
  - Fix for complex hierarchy edge case [#3056]
 
