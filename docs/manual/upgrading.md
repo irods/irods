@@ -40,7 +40,7 @@ $ ./plugins/database/packaging/setup_irods_database.sh
 
 Migrating from iRODS 3.3.x (run-in-place) to iRODS 4.0+ is not supported with an automatic script.  There is no good way to automate setting the new configuration options (resource hierarchies, server_config.json, etc.) based solely on the state of a 3.3.x system.  In addition, with some of the new functionality, a system administrator may choose to implement some existing policies in a different manner with 4.0+.
 
-<span style="color:red">For these reasons, the following manual steps should be carefully studied and understood before beginning the upgrade process.</span>
+<span style="color:red">For these reasons, the following manual steps should be carefully studied and understood before beginning the migration process.</span>
 
 1. Port any existing custom development to plugins: Microservices, Resources, Authentication
 2. Make a backup of the iCAT database, and all iRODS configuration files: core.re, core.fnm, core.dvm, server.config, custom rulefiles, server's .irodsEnv
@@ -63,7 +63,7 @@ Migrating from iRODS 3.3.x (run-in-place) to iRODS 4.0+ is not supported with an
 19. Perform your conformance testing
 20. Sunset 3.3.x server(s)
 21. Close your Maintenance Window
-22. Update your users with any relevant changes to their connection credentials (possibly nothing to do here).
+22. Share with your users any relevant changes to their connection credentials (possibly nothing to do here).
 
 !!! Note
     Migrating from in-place 3.3.x to a ['--run-in-place' production installation of 4.0+](#run-in-place-systems) is not recommended.
