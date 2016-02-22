@@ -74,7 +74,9 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 #include <vector>
 #include <string>
 
+#ifndef ORA_ICAT
 static int didBegin = 0;
+#endif
 static int noResultRowCount = 0;
 
 // =-=-=-=-=-=-=-
@@ -364,6 +366,7 @@ cllDisconnect( icatSessionStruct *icss ) {
 int
 cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
 
+#ifndef ORA_ICAT
     if ( strncmp( sql, "commit", 6 ) == 0 ||
             strncmp( sql, "rollback", 8 ) == 0 ) {
         didBegin = 0;
@@ -377,6 +380,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sql ) {
         }
         didBegin = 1;
     }
+#endif
     return _cllExecSqlNoResult( icss, sql, 0 );
 }
 
