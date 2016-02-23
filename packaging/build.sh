@@ -1683,7 +1683,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
       fi
 elif [ "$DETECTEDOS" == "ArchLinux" ] ; then  # ArchLinux
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS TGZs${text_reset}"
-    epmvar="ARCH$SERVERTYPE"
+    epmvar="ARCH$SERVER_TYPE"
     if [ "$SERVER_TYPE" == "ICAT" ] ; then
         ICAT=true $EPMCMD $EPMOPTS -f portable irods-icat $epmvar=true ./packaging/irods.list
         if [ "$FAST" == "0" ] ; then
