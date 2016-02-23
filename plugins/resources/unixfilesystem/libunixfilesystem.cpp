@@ -453,7 +453,7 @@ extern "C" {
 
     } // stat_vault_path
 
-    static bool replica_passes_high_water_mark(
+    static bool replica_exceeds_high_water_mark(
         irods::resource_plugin_context& _ctx,
         rodsLong_t                      _file_size ) {
         namespace bt = boost;
@@ -509,7 +509,7 @@ extern "C" {
 
         return false;
 
-    } // replica_passes_high_water_mark
+    } // replica_exceeds_high_water_mark
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
@@ -552,9 +552,9 @@ extern "C" {
             ret = unix_file_get_fsfreespace_plugin( _ctx );
             if ( ( result = ASSERT_PASS( ret, "Error determining freespace on system." ) ).ok() ) {
                 rodsLong_t file_size = fco->size();
-                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+                if( replica_exceeds_high_water_mark( _ctx, file_size ) ) {
                     std::stringstream msg;
-                    msg << "file size " << file_size << " passes high water mark";
+                    msg << "file size " << file_size << " exceeds high water mark";
                     return ERROR(
                                USER_FILE_TOO_LARGE,
                                msg.str() );
@@ -1314,10 +1314,10 @@ extern "C" {
                 // result = PASS( result );
             }
             else {
-                // vote no if the file size passes the high water mark
+                // vote no if the file size exceeds the high water mark
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
                 rodsLong_t file_size = fco->size();
-                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+                if( replica_exceeds_high_water_mark( _ctx, file_size ) ) {
                     _out_vote = 0.0;
                     return SUCCESS();
                 }
