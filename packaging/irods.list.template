@@ -133,7 +133,7 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 %if ICAT
 $IRODS_PACKAGENAME=irods-icat
-%else
+%elseif RESOURCE
 $IRODS_PACKAGENAME=irods-resource
 %endif
 
@@ -235,7 +235,7 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 %if ICAT
 %postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR icat
-%else
+%elseif RESOURCE
 %postinstall $IRODS_HOME_DIR/packaging/postinstall.sh $IRODS_HOME_DIR resource
 %endif
 
@@ -249,7 +249,7 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 %if ICAT
 %preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR icat
-%else
+%elseif RESOURCE
 %preremove $IRODS_HOME_DIR/packaging/preremove.sh $$1 $IRODS_HOME_DIR resource
 %endif
 
@@ -278,9 +278,7 @@ f 644 root root ${IRODS_HOME_DIR}/VERSION.json ./VERSION.json
 
 %if ICAT
 f 000 root root ${IRODS_HOME_DIR}/catalog.flag /dev/null
-%endif
-
-%if RESOURCE
+%elseif RESOURCE
 f 000 root root ${IRODS_HOME_DIR}/resource.flag /dev/null
 %endif
 
@@ -319,11 +317,6 @@ f 644 root root ${IRODS_HOME_DIR}/packaging/host_access_control_config.json.temp
 c 755 root root /etc/init.d/irods ./packaging/irods
 %else
 f 755 root root /etc/init.d/irods ./packaging/irods
-%endif
-
-%if RESOURCE
-f 755 root root ${IRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
-f 755 root root ${IRODS_HOME_DIR}/packaging/get_icat_server_password.sh ./packaging/get_icat_server_password.sh
 %endif
 
 d 755 root root ${IRODS_HOME_DIR}/plugins -

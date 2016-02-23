@@ -1420,7 +1420,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
         elif [ "$SERVER_TYPE" == "RESOURCE" ] ; then
             echo ""
             echo "To complete your installation, please run:"
-            echo "  ./packaging/setup_resource.sh"
+            echo "  ./scripts/setup_irods.py"
         elif [ "$SERVER_TYPE" == "ICAT" ] ; then
             if [ "$DETECTEDOS" == "MacOSX" ] ; then
                 echo ""
@@ -1430,7 +1430,7 @@ if [ "$BUILDIRODS" == "1" ] ; then
             fi
             echo ""
             echo "To complete your installation, please run:"
-            echo "  ./plugins/database/packaging/setup_irods_database.sh"
+            echo "  ./scripts/setup_irods.py"
         fi
 
         # generate development package archive file
