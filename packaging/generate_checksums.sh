@@ -10,8 +10,8 @@ checksum_file() {
         FILENAME="$1"
         echo ""
         echo "$FILENAME"
-        echo "  md5   "`openssl md5 $FILENAME | awk '{print $2}'`
-        echo "  sha1  "`openssl sha1 $FILENAME | awk '{print $2}'`
+        echo "  md5     "`openssl md5 $FILENAME | awk '{print $2}'`
+        echo "  sha256  "`sha256sum $FILENAME | awk '{print $1}'`
     fi
 }
 
