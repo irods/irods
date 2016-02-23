@@ -36,6 +36,7 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 
+#include <cctype>
 #include <string>
 
 int _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber );
@@ -685,6 +686,14 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+
+#ifdef ORA_ICAT
+        //oracle prints column names (which are case-insensitive) in upper case,
+        //so to remain consistent with postgres and mysql, we convert them to lower case.
+        for ( int j = 0; j < columnLength[i] && colName[j] != '\0'; j++ ) {
+            colName[j] = tolower( colName[j] );
+        }
+#endif
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
@@ -856,6 +865,13 @@ cllExecSqlWithResultBV(
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+#ifdef ORA_ICAT
+        //oracle prints column names (which are case-insensitive) in upper case,
+        //so to remain consistent with postgres and mysql, we convert them to lower case.
+        for ( int j = 0; j < columnLength[i] && colName[j] != '\0'; j++ ) {
+            colName[j] = tolower( colName[j] );
+        }
+#endif
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
