@@ -21,17 +21,15 @@ set -e
 # import service account information
 . /etc/irods/service_account.config
 
-IRODS_HOME=/var/lib/irods/iRODS
-IRODS_CTL=./irodsctl
+IRODS_HOME=/var/lib/irods
+IRODS_CTL=$IRODS_HOME/iRODS/irodsctl
 
-cd $IRODS_HOME
-
-DETECTEDOS=`../packaging/find_os.sh`
+DETECTEDOS=`$IRODS_HOME/packaging/find_os.sh`
 
 if [ "$DETECTEDOS" = "MacOSX" ] ; then
-    SU_SHELL_OPTS=""
+    SU_SHELL_OPTS="-l"
 else
-    SU_SHELL_OPTS="--shell=/bin/bash"
+    SU_SHELL_OPTS="--shell=/bin/bash --login"
 fi
 
 case $1 in
