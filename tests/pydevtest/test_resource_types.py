@@ -355,15 +355,15 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
     def test_next_child_iteration__2884(self):
         filename="foobar"
         lib.make_file( filename, 100 )
-       
-        # extract the next resource in the rr from the context string 
+
+        # extract the next resource in the rr from the context string
         _, out, _ =self.admin.assert_icommand('ilsresc -l rrResc', 'STDOUT_SINGLELINE', 'demoResc')
         for line in out.split('\n'):
             if 'context:' in line:
                 _, _, next_resc = line.partition('context:')
                 next_resc = next_resc.strip()
-       
-        # determine the 'other' resource 
+
+        # determine the 'other' resource
         resc_set = set(['unixB1', 'unixB2'])
         remaining_set = resc_set - set([next_resc])
         resc_remaining = remaining_set.pop()
@@ -371,11 +371,11 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         # resources listed should be 'next_resc'
         self.admin.assert_icommand('iput ' + filename + ' file0')  # put file
         self.admin.assert_icommand('ils -L file0', 'STDOUT_SINGLELINE', next_resc)  # put file
-        
+
         # resources listed should be 'resc_remaining'
         self.admin.assert_icommand('iput ' + filename + ' file1')  # put file
         self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', resc_remaining)  # put file
-        
+
         # resources listed should be 'next_resc' once again
         self.admin.assert_icommand('iput ' + filename + ' file2')  # put file
         self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', next_resc)  # put file
@@ -669,7 +669,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         filesize = 64*1024*1024
         lib.make_file(filename, filesize)
 
-        self.admin.assert_icommand_fail('iput ' + filename + ' file1', 'STDOUT_SINGLELINE', 'USER_FILE_TOO_LARGE')
+        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'HIERARCHY_ERROR')
 
     def test_key_value_passthru(self):
         env = os.environ.copy()
@@ -1281,10 +1281,10 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile ) # trim cache copy
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
-        
+
         initial_log_size = lib.get_log_size('server')
         self.admin.assert_icommand("irm " + self.testfile ) # remove archive replica
-        count = lib.count_occurrences_of_string_in_log('server', 'argv:stageToCache', start_index=initial_log_size) 
+        count = lib.count_occurrences_of_string_in_log('server', 'argv:stageToCache', start_index=initial_log_size)
         assert 0 == count
 
     def test_irm_specific_replica(self):
@@ -1604,7 +1604,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand("iput -R pydevtest_TestResc " + filename)
-        
+
         logical_path = os.path.join( self.admin.session_collection, filename )
         logical_path_rsync = os.path.join( self.admin.session_collection, filename_rsync )
 
@@ -1707,7 +1707,7 @@ OUTPUT ruleExecOut
         filename = "test_test_msiDataObjUnlink__2983.txt"
         filepath = lib.create_local_testfile(filename)
         logical_path = os.path.join( self.admin.session_collection, filename )
-        
+
         self.admin.assert_icommand("ireg " + filepath + " " + logical_path)
 
         parameters = {}
