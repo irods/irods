@@ -9,9 +9,6 @@ SRCS = db_plugin.cpp                \
        irods_catalog_properties.cpp \
        irods_sql_logger.cpp
 
-ORACLE_HOME_INCLUDE=`../packaging/find_oracle_include.sh`
-ORACLE_HOME_LIB=`../packaging/find_oracle_lib.sh`
-
 HEADERS =
 
 CLL_OBJS = \
@@ -29,9 +26,7 @@ GENU_OBJS = \
 	${OBJDIR}/mid_level_routines.o
 
 EXTRA_CFLAGS = \
-	-DORA_ICAT \
-	-I${ORACLE_HOME_INCLUDE} \
-	-I${ORACLE_HOME_INCLUDE}/rdbms/public/
+	-DORA_ICAT
 
 EXTRA_LDRFLAGS = -lodbc
 
