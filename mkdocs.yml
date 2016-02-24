@@ -32,6 +32,7 @@ pages:
     - 'manual/glossary.md'
     - Best Practices: 'manual/best_practices.md'
     - 'manual/troubleshooting.md'
+    - Tips and Tricks: 'manual/tips_and_tricks.md'
  - iCommands:
     - 'icommands/administrator.md'
     - 'icommands/user.md'
