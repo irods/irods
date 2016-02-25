@@ -1108,7 +1108,7 @@ extern "C" {
     } // compound_file_notify
 
     // =-=-=-=-=-=-=-
-    /// @brief - code to determine redirection for get operation
+    /// @brief - code to determine redirection for create operation
     irods::error compound_file_redirect_create(
         irods::resource_plugin_context& _ctx,
         const std::string&               _operation,
@@ -1154,6 +1154,75 @@ extern "C" {
         return ret;
 
     } // compound_file_redirect_create
+
+    // =-=-=-=-=-=-=-
+    /// @brief - code to determine redirection for unlink operation
+    irods::error compound_file_redirect_unlink(
+        irods::resource_plugin_context& _ctx,
+        const std::string&               _operation,
+        const std::string*               _curr_host,
+        irods::hierarchy_parser*         _out_parser,
+        float*                           _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // determine if the resource is down
+        int resc_status = 0;
+        irods::error ret = _ctx.prop_map().get< int >( irods::RESOURCE_STATUS, resc_status );
+        if ( !ret.ok() ) {
+            return PASSMSG( "failed to get 'status' property", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // if the status is down, vote no.
+        if ( INT_RESC_STATUS_DOWN == resc_status ) {
+            ( *_out_vote ) = 0.0;
+            return SUCCESS();
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the cache resource
+        irods::resource_ptr resc;
+        ret = get_cache( _ctx, resc );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // ask the cache if it is willing to accept a new file, politely
+        ret = resc->call < const std::string*, const std::string*,
+        irods::hierarchy_parser*, float* > (
+            _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
+            &_operation, _curr_host,
+            _out_parser, _out_vote );
+
+        // =-=-=-=-=-=-=-
+        // if cache votes non zero we're done
+        if (*_out_vote > 0.0) {
+            return SUCCESS();
+        }
+
+        // =-=-=-=-=-=-=-
+        // otherwise try the archive
+        ret = get_archive( _ctx, resc );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // ask the archive if it is willing to accept a new file, politely
+        ret = resc->call < const std::string*, const std::string*,
+        irods::hierarchy_parser*, float* > (
+            _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
+            &_operation, _curr_host,
+            _out_parser, _out_vote );
+
+//        // =-=-=-=-=-=-=-
+//        // set the operation type to signal that we need to do some work
+//        // in file modified
+//        _ctx.prop_map().set< std::string >( OPERATION_TYPE, _operation );
+
+        return ret;
+
+    } // compound_file_redirect_unlink
 
     // =-=-=-=-=-=-=-
     /// @brief - handler for prefer archive policy
@@ -1562,8 +1631,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // test the operation to determine which choices to make
         if ( irods::OPEN_OPERATION == ( *_opr ) ||
-                irods::WRITE_OPERATION  == ( *_opr ) ||
-                irods::UNLINK_OPERATION == ( *_opr )) {
+                irods::WRITE_OPERATION  == ( *_opr )) {
 
             if ( irods::WRITE_OPERATION  == ( *_opr ) ) {
                 _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
@@ -1578,6 +1646,12 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
             return compound_file_redirect_create( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
+        }
+        else if ( irods::UNLINK_OPERATION == ( *_opr )
+                ) {
+            // =-=-=-=-=-=-=-
+            // call redirect determination for 'unlink' operation
+            return compound_file_redirect_unlink( _ctx, ( *_opr ), _curr_host, _out_parser, _out_vote );
         }
 
         // =-=-=-=-=-=-=-
