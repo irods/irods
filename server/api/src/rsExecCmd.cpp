@@ -417,13 +417,12 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
                 /* skip over a leading blank */
                 curPtr++;
                 startPtr = curPtr;
-                /**  Added by Raja to take care of escaped quotes Oct 28 09 */
             }
             else if ( ( *curPtr == '\'' || *curPtr == '\"' )
                       && ( *( curPtr - 1 ) == '\\' ) ) {
+                /* escaped quotes */
                 curPtr++;
                 curLen++;
-                /**  Added by Raja to take care of escaped quotes Oct 28 09 */
             }
             else if ( *curPtr == '\'' || *curPtr == '\"' ) {
                 quoteCnt++;
@@ -450,7 +449,7 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
 
     av[avInx] = NULL;
 
-    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
+    /* escaped quotes */
     for ( i = 0; i < avInx ; i++ ) {
         curPtr = av[i];
         startPtr = curPtr;
@@ -464,7 +463,6 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
         }
         *startPtr = '\0';
     }
-    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
 
     return 0;
 }

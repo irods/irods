@@ -61,7 +61,7 @@
  *    \li int \b numThreads - the number of threads to use. Valid values are:
  *      \n NO_THREADING (-1) - no multi-thread
  *      \n 0 - the server will decide the number of threads.
- *        (recommanded setting).
+ *        (recommended setting).
  *      \n A positive integer - specifies the number of threads.
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n RESC_NAME_KW - The resource of the data object to open.
@@ -122,15 +122,6 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
 
     if ( status == 0 || dataObjOutBBuf.len > 0 ) {
         /* data included */
-        /**** Removed by Raja as this can cause problems when the data sizes are different - say when post processing is done....Dec 2 2010
-              if (dataObjInp->dataSize > 0 &&
-              dataObjInp->dataSize != dataObjOutBBuf.len) {
-              rodsLog (LOG_NOTICE,
-              "putFile: totalWritten %lld dataSize %lld mismatch",
-              dataObjOutBBuf.len, dataObjInp->dataSize);
-              return SYS_COPY_LEN_ERR;
-              }
-        ****/
         status = getIncludeFile( conn, &dataObjOutBBuf, locFilePath );
         free( dataObjOutBBuf.buf );
     }

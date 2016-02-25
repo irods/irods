@@ -1919,7 +1919,6 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
         return 0;
     }
 #ifndef DEBUG
-    /* inserted by Raja Dec 2, 2011 */
     if ( writeId != NULL && writeId[0] == '/' ) {
         /* writing to an existing iRODS file */
 
@@ -1965,7 +1964,6 @@ int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExec
         return i;
     }
 
-    /* inserted by Raja Dec 2, 2011 */
 #endif
 
 

@@ -1,6 +1,6 @@
 # Function Name Mapping
 # FNM provides a mapping from an external function name (logical)
-# to an internal function name. 
+# to an internal function name.
 # Each mapping consists of two parts separated by |.
 # The two parts are: external function name and internal variable name.
 # The mappings are searched top-down in a file.
@@ -11,7 +11,6 @@ msiobjget_https|msiobjget_http
 msiobjget_ftp|msiobjget_http
 msiobjput_https|msiobjput_http
 msiobjput_ftp|msiobjput_http
-acExtractMetadataForImageForRaja|acExtractMetadata
 openObj|msiDataObjOpen
 readObj|msiDataObjRead
 closeObj|msiDataObjClose
