@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* initServer.h - common header file for initServer.c
+/* initServer.hpp - common header file for initServer.cpp
  */
 
 #ifndef INIT_SERVER_HPP
@@ -50,9 +50,9 @@ chkAllowedUser( const char *userName, const char *rodsZone );
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm );
 int
-queAgentProc( agentProc_t *agentPorc, agentProc_t **agentPorcHead,
+queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
               irodsPosition_t position );
 int
-purgeLockFileDir( int chkLockFlag ); // JMC - backport 4612
+purgeLockFileDir( int chkLockFlag );
 
-#endif	/* INIT_SERVER_H */
+#endif	/* INIT_SERVER_HPP */
