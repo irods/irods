@@ -1,14 +1,42 @@
 #!/usr/bin/python
 from __future__ import print_function
 
-import os, sys
+import os, sys, optparse
+import irods.setup_options
 
-#for oracle, ORACLE_HOME must be in LD_LIBRARY_PATH
-if 'ORACLE_HOME' in os.environ:
-    oracle_lib_dir = os.path.join(os.environ['ORACLE_HOME'], 'lib')
-    if oracle_lib_dir not in os.environ.get('LD_LIBRARY_PATH', ''):
-        os.environ['LD_LIBRARY_PATH'] = ':'.join([e for e in [os.environ.get('LD_LIBRARY_PATH', ''), oracle_lib_dir] if e])
+def parse_options():
+    parser = optparse.OptionParser()
+    irods.setup_options.add_options(parser)
+
+    return parser.parse_args()
+
+def get_ld_library_path_list():
+
+    ld_library_path_list = []
+
+    (options, _) = parse_options()
+    if options.ld_library_path:
+        ld_library_path_list = [p for p in options.ld_library_path.split(':') if p]
+
+    return ld_library_path_list
+
+#wrapper to set up ld_library_path
+def wrap_if_necessary():
+
+    ld_library_path_list = get_ld_library_path_list()
+
+    #for oracle, ORACLE_HOME must be in LD_LIBRARY_PATH
+    if 'ORACLE_HOME' in os.environ:
+        oracle_lib_dir = os.path.join(os.environ['ORACLE_HOME'], 'lib')
+        if oracle_lib_dir not in ld_library_path_list:
+            ld_library_path_list.append(oracle_lib_dir)
+
+    current_ld_library_path_list = [p for p in os.environ.get('LD_LIBRARY_PATH', '').split(':') if p]
+    if ld_library_path_list != current_ld_library_path_list[0:len(ld_library_path_list)]:
+        os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list + current_ld_library_path_list)
         os.execve(sys.argv[0], sys.argv, os.environ)
+
+wrap_if_necessary()
 
 import contextlib
 import copy
@@ -17,7 +45,6 @@ import grp
 import itertools
 import json
 import logging
-import optparse
 import pprint
 import pwd
 import stat
@@ -26,7 +53,6 @@ import tempfile
 
 from irods import six
 
-import irods_control
 import irods.database_connect
 import irods.lib
 import irods.password_obfuscation
@@ -162,6 +188,12 @@ def setup_server_config(irods_config):
         server_config = copy.deepcopy(irods_config.server_config)
     except (OSError, ValueError):
         server_config = {}
+
+    ld_library_path_list = get_ld_library_path_list()
+    if ld_library_path_list:
+        if 'environment_variables' not in server_config:
+            server_config['environment_variables'] = {}
+        server_config['environment_variables']['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list)
 
     while True:
         server_config['zone_name'] = default_prompt(
@@ -722,21 +754,6 @@ def character_count_filter(minimum=None, maximum=None, field='Input'):
             raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if maximum == 1 else 's'))
         raise InputFilterError('%s may be at most %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
     return f
-
-def add_options(parser):
-    parser.add_option('-d', '--database_type',
-                      dest='database_type', metavar='DB_TYPE',
-                      help='The type of database to be used by the iRODS Catalog (ICAT) server. '
-                      'Valid values are \'postgres\', \'mysql\', and \'oracle\'. '
-                      'This option is required to set up an ICAT server and ignored for a resource server.')
-
-    irods_control.add_options(parser)
-
-def parse_options():
-    parser = optparse.OptionParser()
-    add_options(parser)
-
-    return parser.parse_args()
 
 def main():
     l = logging.getLogger(__name__)

@@ -32,12 +32,6 @@ def get_hostname():
     return socket.getaddrinfo(
         socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
 
-def get_root_directory():
-    return os.path.abspath(os.sep)
-
-def get_home_directory():
-    return os.path.expanduser('~')
-
 def safe_shlex_split_for_2_6(args):
     if not isinstance(args, str) and isinstance(args, six.text_type):
         args = args.encode('ascii')

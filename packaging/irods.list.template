@@ -374,9 +374,12 @@ f 644 root root ${IRODS_HOME_DIR}/scripts/irods/exceptions.py           scripts/
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/json_validation.py      scripts/irods/json_validation.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/lib.py                  scripts/irods/lib.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/log.py                  scripts/irods/log.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/paths.py                scripts/irods/paths.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/pypyodbc.py             scripts/irods/pypyodbc.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/password_obfuscation.py scripts/irods/password_obfuscation.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/setup_options.py        scripts/irods/setup_options.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/six.py                  scripts/irods/six.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/start_options.py        scripts/irods/start_options.py
 
 %if ICAT
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/database_connect.py     scripts/irods/database_connect.py

@@ -169,8 +169,21 @@ def get_database_connection(irods_config):
     try:
         return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
     except pypyodbc.Error as e:
+        if 'file not found' in str(e):
+            message = (
+                    'pypyodbc registered a \'file not found\' error when connecting to the database. '
+                    'If your driver path exists, this is most commonly caused by a library required by the '
+                    'driver being unable to be found by the linker. Try running ldd on the odbc driver '
+                    'binary (or sudo ldd if you are running in sudo) to see which libraries are not '
+                    'being found and add any necessary library paths to the LD_LIBRARY_PATH environment '
+                    'variable. If you are running setup_irods.py, instead set the LD_LIBRARY_PATH with '
+                    'the --ld_library_path command line option.\n'
+                    'The specific error pypyodbc reported was:'
+                )
+        else:
+            message = 'pypyodbc encountered an error connecting to the database:'
         six.reraise(IrodsError,
-                IrodsError('pypyodbc encountered an error connecting to the database:\n%s' % e),
+                IrodsError('%s\n%s' % (message, e)),
             sys.exc_info()[2])
 
 def execute_sql_statement(cursor, statement, *params, **kwargs):

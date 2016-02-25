@@ -1,9 +1,53 @@
 #!/usr/bin/python
 from __future__ import print_function
-import logging
 import optparse
-import os
-import sys
+import os, sys
+import json
+
+import irods.start_options
+from irods.paths import IrodsPaths
+
+def parse_options():
+    parser = optparse.OptionParser()
+    irods.start_options.add_options(parser)
+
+    return parser.parse_args()
+
+#wrapper to set up ld_library_path
+def wrap_if_necessary():
+
+    (options, _) = parse_options()
+
+    irods_paths = IrodsPaths(
+        top_level_directory=options.top_level_directory,
+        config_directory=options.config_directory)
+
+    with open(irods_paths.server_config_path) as server_config_path:
+        server_config = json.load(server_config_path)
+    ld_library_path_list = [p
+            for p in server_config.get('environment_variables', {}).get('LD_LIBRARY_PATH', '').split(':')
+            if p]
+
+    #for oracle, ORACLE_HOME must be in LD_LIBRARY_PATH
+    with open(irods_paths.server_config_path) as server_config_path:
+        server_config = json.load(server_config_path)
+    oracle_home = server_config.get('environment_variables', {}).get('ORACLE_HOME', None)
+    if oracle_home is None:
+        oracle_home = os.environ.get('ORACLE_HOME', None)
+    if oracle_home is not None:
+        oracle_lib_dir = os.path.join(oracle_home, 'lib')
+        if oracle_lib_dir not in ld_library_path_list:
+            ld_library_path_list.append(oracle_lib_dir)
+
+    current_ld_library_path_list = [p for p in os.environ.get('LD_LIBRARY_PATH', '').split(':') if p]
+    if ld_library_path_list != current_ld_library_path_list[0:len(ld_library_path_list)]:
+        os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list + current_ld_library_path_list)
+        os.execve(sys.argv[0], sys.argv, os.environ)
+
+wrap_if_necessary()
+
+
+import logging
 import tempfile
 import time
 
@@ -14,59 +58,6 @@ from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 import irods.log
 from irods.exceptions import IrodsError, IrodsWarning
-
-
-def add_options(parser):
-    parser.add_option('-q', '--quiet',
-                      dest='verbose', action='store_false',
-                      help='Silence verbose output')
-
-    parser.add_option('-v', '--verbose',
-                      dest='verbose', action='store_true', default=True,
-                      help='Enable verbose output')
-
-    parser.add_option('--irods-home-directory',
-                      dest='top_level_directory',
-                      default=irods.configuration.get_default_top_level_directory(),
-                      metavar='DIR', help='The directory in which the iRODS '
-                      'install is located; this is the home directory of the '
-                      'service account in vanilla binary installs and the '
-                      'top-level directory of the build in run-in-place')
-
-    parser.add_option('--config-directory',
-                      dest='config_directory', metavar='DIR',
-                      help='The directory in which the iRODS configuration files '
-                      'are located; this will be /etc/irods in vanilla binary '
-                      'installs and the \'config\' subdirectory of the iRODS '
-                      'home directory in run-in-place')
-
-    parser.add_option('--server-log-level',
-                      dest='server_log_level', type='int', metavar='INT',
-                      help='The logging level of the iRODS server')
-
-    parser.add_option('--sql-log-level',
-                      dest='sql_log_level', type='int', metavar='INT',
-                      help='The database logging level')
-
-    parser.add_option('--days-per-log',
-                      dest='days_per_log', type='int', metavar='INT',
-                      help='Number of days to use the same log file')
-
-    parser.add_option('--rule-engine-server-options',
-                      dest='rule_engine_server_options', metavar='OPTIONS...',
-                      help='Options to be passed to the rule engine server')
-
-    parser.add_option('--reconnect',
-                      dest='server_reconnect_flag', action='store_true', default=False,
-                      help='Causes the server to attempt a reconnect after '
-                      'timeout (ten minutes)')
-
-
-def parse_options():
-    parser = optparse.OptionParser()
-    add_options(parser)
-
-    return parser.parse_args()
 
 def main():
     logging.getLogger().setLevel(logging.NOTSET)

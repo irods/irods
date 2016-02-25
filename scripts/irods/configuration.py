@@ -1,13 +1,10 @@
 from __future__ import print_function
 import contextlib
-import grp
-import inspect
 import itertools
 import json
 import logging
 import os
 import pprint
-import pwd
 import sys
 import time
 
@@ -18,16 +15,16 @@ from .exceptions import IrodsError, IrodsWarning
 from . import lib
 from . import json_validation
 from .password_obfuscation import encode, decode
+from .paths import IrodsPaths
 
-class IrodsConfig(object):
+class IrodsConfig(IrodsPaths):
     def __init__(self,
                  top_level_directory=None,
                  config_directory=None,
                  injected_environment={},
                  insert_behavior=True):
+        super(IrodsConfig, self).__init__(top_level_directory, config_directory)
 
-        self._top_level_directory = top_level_directory
-        self._config_directory = config_directory
         self._injected_environment = lib.callback_on_change_dict(self.clear_cache, injected_environment)
         self._insert_behavior = insert_behavior
         self.clear_cache()
@@ -48,92 +45,10 @@ class IrodsConfig(object):
         raise IrodsError('Unable to determine iRODS version')
 
     @property
-    def top_level_directory(self):
-        return self._top_level_directory if self._top_level_directory else get_default_top_level_directory()
-
-    @top_level_directory.setter
-    def top_level_directory(self, value):
-        self.clear_cache()
-        self._top_level_directory = value
-
-    @property
-    def config_directory(self):
-        if self._config_directory:
-            return self._config_directory
-        elif self.binary_installation:
-            return os.path.join(
-                lib.get_root_directory(),
-                'etc',
-                'irods')
-        else:
-            return os.path.join(
-                self._irods_directory,
-                'server',
-                'config')
-
-    @config_directory.setter
-    def config_directory(self, value):
-        self.clear_cache()
-        self._config_directory = value
-
-    @property
-    def home_directory(self):
-        return os.path.expanduser(''.join(['~', self.irods_user]))
-
-    @property
-    def binary_installation(self):
-        if self._binary_installation is None:
-            self._binary_installation = os.path.exists(
-                    os.path.join(
-                        self.top_level_directory,
-                        'packaging',
-                        'binary_installation.flag'))
-        return self._binary_installation
-
-    @property
-    def is_catalog(self):
-        return os.path.exists(os.path.join(self.top_level_directory,
-            'catalog.flag'))
-
-    @property
-    def is_resource(self):
-        return os.path.exists(os.path.join(self.top_level_directory,
-            'resource.flag'))
-
-    @property
-    def core_re_directory(self):
-        if self.binary_installation:
-            return self.config_directory
-        else:
-            return os.path.join(self.config_directory, 'reConfigs')
-
-    @property
-    def scripts_directory(self):
-        return os.path.join(self.top_level_directory, 'scripts')
-
-    @property
-    def irods_directory(self):
-        return os.path.join(
-            self.top_level_directory,
-            'iRODS')
-
-    @property
-    def server_config_path(self):
-        return os.path.join(
-            self.config_directory,
-            'server_config.json')
-
-    @property
     def server_config(self):
         if self._server_config is None:
             self._server_config = load_json_config(self.server_config_path)
         return self._server_config
-
-    @property
-    def database_config_path(self):
-        return os.path.join(
-            self.config_directory,
-            'database_config.json')
 
     @property
     def database_config(self):
@@ -158,22 +73,10 @@ class IrodsConfig(object):
         return self._database_config
 
     @property
-    def version_path(self):
-        return os.path.join(
-            self.top_level_directory,
-            'VERSION.json')
-
-    @property
     def version(self):
         if self._version is None:
             self._version = load_json_config(self.version_path)
         return self._version
-
-    @property
-    def hosts_config_path(self):
-        return os.path.join(
-            self.config_directory,
-            'hosts_config.json')
 
     @property
     def hosts_config(self):
@@ -182,24 +85,10 @@ class IrodsConfig(object):
         return self._hosts_config
 
     @property
-    def host_access_control_config_path(self):
-        return os.path.join(
-            self.config_directory,
-            'host_access_control_config.json')
-
-    @property
     def host_access_control_config(self):
         if self._host_access_control_config is None:
             self._host_access_control_config = load_json_config(self.host_access_control_config_path)
         return self._host_access_control_config
-
-
-    @property
-    def password_file_path(self):
-        return os.path.join(
-            self.home_directory,
-            '.irods',
-            '.irodsA')
 
     @property
     def client_environment_path(self):
@@ -253,98 +142,6 @@ class IrodsConfig(object):
         self.clear_cache()
 
     @property
-    def log_directory(self):
-        return os.path.join(
-            self.top_level_directory,
-            'log')
-
-    @property
-    def control_log_path(self):
-        return os.path.join(
-            self.log_directory,
-            'control_log.txt')
-
-    @property
-    def setup_log_path(self):
-        return os.path.join(
-            self.log_directory,
-            'setup_log.txt')
-
-    @property
-    def test_log_path(self):
-        return os.path.join(
-            self.log_directory,
-            'test_log.txt')
-
-    @property
-    def icommands_test_directory(self):
-        return os.path.join(
-            self.irods_directory,
-            'clients',
-            'icommands',
-            'test')
-
-    @property
-    def server_test_directory(self):
-        return os.path.join(
-            self.irods_directory,
-            'server',
-            'test',
-            'bin')
-
-    @property
-    def server_log_directory(self):
-        return os.path.join(
-            self.irods_directory,
-            'server',
-            'log')
-
-    @property
-    def server_log_path(self):
-        return sorted([os.path.join(self.server_log_directory, name)
-                for name in os.listdir(self.server_log_directory)
-                if name.startswith('rodsLog')],
-            key=lambda path: os.path.getctime(path))[-1]
-
-    @property
-    def re_log_path(self):
-        return sorted([os.path.join(self.server_log_directory, name)
-                for name in os.listdir(self.server_log_directory)
-                if name.startswith('reLog')],
-            key=lambda path: os.path.getctime(path))[-1]
-
-    @property
-    def server_bin_directory(self):
-        return os.path.join(
-            self.irods_directory,
-            'server',
-            'bin')
-
-    @property
-    def server_executable(self):
-        return os.path.join(
-            self.server_bin_directory,
-            'irodsServer')
-
-    @property
-    def rule_engine_executable(self):
-        return os.path.join(
-            self.server_bin_directory,
-            'irodsReServer')
-
-    @property
-    def xmsg_server_executable(self):
-        return os.path.join(
-            self.server_bin_directory,
-            'irodsXmsgServer')
-
-    @property
-    def agent_executable(self):
-        return os.path.join(
-            self.server_bin_directory,
-            'irodsAgent')
-
-    @property
     def schema_uri_prefix(self):
         if self._schema_uri_prefix is None:
             l = logging.getLogger(__name__)
@@ -372,21 +169,6 @@ class IrodsConfig(object):
                     'v%s' % (uri_version)])
             l.debug('Successfully constructed schema URI.')
         return self._schema_uri_prefix
-
-    @property
-    def database_schema_update_directory(self):
-        if self.binary_installation:
-            return os.path.join(
-                    self.top_level_directory,
-                    'packaging',
-                    'schema_updates')
-        else:
-            return os.path.join(
-                    self.top_level_directory,
-                    'plugins',
-                    'database',
-                    'packaging',
-                    'schema_updates')
 
     def list_database_tables(self, cursor=None):
         if cursor is None:
@@ -440,34 +222,8 @@ class IrodsConfig(object):
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(self.password_file_path, (mtime, mtime))
 
-    @property
-    def service_account_file_path(self):
-        return os.path.join(self.config_directory, 'service_account.config')
-
-    @property
-    def irods_user(self):
-        return pwd.getpwuid(os.stat(self.top_level_directory).st_uid).pw_name
-
-    @property
-    def irods_uid(self):
-        return os.stat(self.top_level_directory).st_uid
-
-    @property
-    def irods_group(self):
-        return grp.getgrgid(os.stat(self.top_level_directory).st_gid).gr_name
-
-    @property
-    def irods_gid(self):
-        return os.stat(self.top_level_directory).st_gid
-
     def get_database_connection(self):
         return database_connect.get_database_connection(self)
-
-    @property
-    def odbc_ini_path(self):
-        if 'ODBCINI' in self.execution_environment:
-            return self.execution_environment['ODBCINI']
-        return os.path.join(self.home_directory, '.odbc.ini')
 
     def sync_odbc_ini(self):
         odbc_dict = database_connect.get_odbc_entry(self.database_config)
@@ -597,13 +353,13 @@ class IrodsConfig(object):
             self.clear_cache()
 
     def clear_cache(self):
+        super(IrodsConfig, self).clear_cache()
         self._database_config = None
         self._server_config = None
         self._version = None
         self._hosts_config = None
         self._host_access_control_config = None
         self._client_environment = None
-        self._binary_installation = None
         self._schema_uri_prefix = None
         self._execution_environment = None
 
@@ -623,9 +379,3 @@ def load_json_config(path):
     else:
         raise IrodsError(
             'File %s does not exist.' % (path))
-
-def get_default_top_level_directory():
-    scripts_directory = os.path.dirname(os.path.dirname(os.path.abspath(
-        inspect.stack()[0][1])))
-    return os.path.dirname(
-            scripts_directory)
