@@ -22,9 +22,7 @@ endif
 OSNAME=$$(../packaging/find_os.sh)
 OSVERSION=$$(../packaging/find_os_version.sh)
 OS=$(OSNAME)$$( if [ "$(OSNAME)" = "RedHatCompatible" -a "$(OSVERSION)" \> "6" ] ; then if [ "$(OSVERSION)" \> "7" ] ; then echo "_CentOS7" ; else echo "_CentOS6" ; fi; fi)
-ifeq ($(OS_platform), osx_platform)
-OS=$(OSNAME)$$( echo "-$(OSVERSION)" )
-endif
+OS=$(OSNAME)$$( if [ "$(OSNAME)" = "Ubuntu" ] ; then echo $(OSVERSION) | cut -d. -f1 ; fi)
 IRODSEXTERNALARCHIVE=irods_external_$(IRODSVERSION)_$(OS).tar.gz
 IRODSEXTERNALLOCAL=irods_external.tar.gz
 
