@@ -1500,41 +1500,44 @@ extern "C" {
         irods::hierarchy_parser*       _inout_parser,
         float*                         _out_vote ) {
         irods::error ret;
-        // recreate the child list for a write operation as the
-        // initial voting may have resulted in a child voting 0
-        // for the initial operation ( e.g. READ ).  if the repl
-        // node decided to replicate the data object, a new
-        // child list should be created for that operation ( WRITE )
-        // issue #2789
-        float vote = 0.0;
-        std::string tmp_hier_prop = hierarchy_prop + "_tmp";
-        std::string op = irods::CREATE_OPERATION;
-        if( irods::CREATE_OPERATION != *_operation ) {
-            op = irods::WRITE_OPERATION;
-        }
 
-        // NOTE:: we need a copy of the upstream parser to preserve the
-        // hierarchy.  otherwise we will only generate partial hierarchies
-        irods::hierarchy_parser parser = (*_inout_parser);
-        ret = repl_redirect_impl(
-                               _ctx,
-                               &op,
-                               _curr_host,
-                               write_child_list_prop,
-                               tmp_hier_prop,
-                               &parser,
-                               &vote );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
+        if (*_operation != irods::UNLINK_OPERATION) {
+            // recreate the child list for a write operation as the
+            // initial voting may have resulted in a child voting 0
+            // for the initial operation ( e.g. READ ).  if the repl
+            // node decided to replicate the data object, a new
+            // child list should be created for that operation ( WRITE )
+            // issue #2789
+            float vote = 0.0;
+            std::string tmp_hier_prop = hierarchy_prop + "_tmp";
+            std::string op = irods::CREATE_OPERATION;
+            if( irods::CREATE_OPERATION != *_operation ) {
+                op = irods::WRITE_OPERATION;
+            }
 
-        if( 0.0 == vote ) {
-            std::string hier;
-            parser.str( hier );
-            rodsLog(
-                LOG_ERROR,
-                "replRedirect - vote of 0 on create operation for [%s]", hier.c_str() );
-        }
+            // NOTE:: we need a copy of the upstream parser to preserve the
+            // hierarchy.  otherwise we will only generate partial hierarchies
+            irods::hierarchy_parser parser = (*_inout_parser);
+            ret = repl_redirect_impl(
+                                   _ctx,
+                                   &op,
+                                   _curr_host,
+                                   write_child_list_prop,
+                                   tmp_hier_prop,
+                                   &parser,
+                                   &vote );
+            if( !ret.ok() ) {
+                return PASS( ret );
+            }
+
+            if( 0.0 == vote ) {
+                std::string hier;
+                parser.str( hier );
+                rodsLog(
+                    LOG_ERROR,
+                    "replRedirect - vote of 0 on create operation for [%s]", hier.c_str() );
+            }
+        } // if (*_operation != irods::UNLINK_OPERATION)
 
         ret = repl_redirect_impl(
                   _ctx,

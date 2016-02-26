@@ -1215,11 +1215,6 @@ extern "C" {
             &_operation, _curr_host,
             _out_parser, _out_vote );
 
-//        // =-=-=-=-=-=-=-
-//        // set the operation type to signal that we need to do some work
-//        // in file modified
-//        _ctx.prop_map().set< std::string >( OPERATION_TYPE, _operation );
-
         return ret;
 
     } // compound_file_redirect_unlink
