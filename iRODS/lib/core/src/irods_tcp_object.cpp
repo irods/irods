@@ -115,7 +115,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // accessor for rule engine variables
     error tcp_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
         return network_object::get_re_vars( _kvp );
 
     } // get_re_vars

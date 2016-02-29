@@ -195,7 +195,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
-		$(svrReObjDir)/irods_ms_plugin.o
+		$(svrReObjDir)/irods_ms_plugin.o \
+		$(svrReObjDir)/irods_re_serialization.o
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer

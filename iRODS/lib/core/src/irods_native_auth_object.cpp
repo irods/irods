@@ -109,21 +109,12 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - serialize object to kvp
     error native_auth_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
         // =-=-=-=-=-=-=-
         // all we have in this object is the auth results
-        addKeyVal(
-            &_kvp,
-            "zone_name",
-            zone_name_.c_str() );
-        addKeyVal(
-            &_kvp,
-            "user_name",
-            user_name_.c_str() );
-        addKeyVal(
-            &_kvp,
-            "digest",
-            digest_.c_str() );
+        _kvp["zone_name"] = zone_name_.c_str();
+        _kvp["user_name"] = user_name_.c_str();
+        _kvp["digest"]    = digest_.c_str();
 
         return SUCCESS();
 

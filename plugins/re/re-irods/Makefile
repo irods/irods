@@ -4,6 +4,7 @@ SRCS = libre-irods.cpp
 
 HEADERS = 
 
-EXTRALIBS =
+#EXTRALIBS = ../../../iRODS/lib/core/obj/irods_re_serialization.o
+EXTRALIBS = 
 
 include ../Makefile.base

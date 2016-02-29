@@ -11,11 +11,13 @@
 // =-=-=-=-=-=-=-
 // boost includs
 #include <boost/shared_ptr.hpp>
+#include <map>
 
 namespace irods {
 
     class plugin_base;
-    typedef boost::shared_ptr<plugin_base> plugin_ptr;
+    typedef boost::shared_ptr<plugin_base>    plugin_ptr;
+    typedef std::map<std::string,std::string> rule_engine_vars_t;
     // =-=-=-=-=-=-=-
     // base class for all object types
     class first_class_object {
@@ -36,7 +38,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
-            virtual error get_re_vars( keyValPair_t& ) = 0;
+            virtual error get_re_vars( rule_engine_vars_t& ) = 0;
 
     }; // class first_class_object
 

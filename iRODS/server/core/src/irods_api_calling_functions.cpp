@@ -792,7 +792,7 @@ int call_dataObjInp_charOut(
 int call_dataObjInp_rodsObjStatOut(
     irods::api_entry* _api,
     rsComm_t*         _comm,
-    dataObjInp_t*        _inp,
+    dataObjInp_t*     _inp,
     rodsObjStat_t**   _out ) {
     return _api->call_handler<
                rsComm_t*,

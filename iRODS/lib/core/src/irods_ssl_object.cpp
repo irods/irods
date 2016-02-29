@@ -158,27 +158,27 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // accessor for rule engine variables
     error ssl_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
         network_object::get_re_vars( _kvp );
 
-        addKeyVal( &_kvp, SSL_HOST_KW, host_.c_str() );
+        _kvp[SSL_HOST_KW] = host_.c_str();
 
         // =-=-=-=-=-=-=-
         // since the shared secret is random and unsigned it needs
         // a bit of sanitizaiton until we can copy it to the kvp
         std::stringstream key_sz;
         key_sz << key_size_;
-        addKeyVal( &_kvp, SSL_KEY_SIZE_KW, key_sz.str().c_str() );
+        _kvp[SSL_KEY_SIZE_KW] = key_sz.str().c_str();
 
         std::stringstream salt_sz;
         salt_sz << salt_size_;
-        addKeyVal( &_kvp, SSL_SALT_SIZE_KW, salt_sz.str().c_str() );
+        _kvp[SSL_SALT_SIZE_KW] = salt_sz.str().c_str();
 
         std::stringstream hash_rnds;
         hash_rnds << num_hash_rounds_;
-        addKeyVal( &_kvp, SSL_NUM_HASH_ROUNDS_KW, hash_rnds.str().c_str() );
+        _kvp[SSL_NUM_HASH_ROUNDS_KW] = hash_rnds.str().c_str();
 
-        addKeyVal( &_kvp, SSL_ALGORITHM_KW, encryption_algorithm_.c_str() );
+        _kvp[SSL_ALGORITHM_KW] = encryption_algorithm_.c_str();
 
         return SUCCESS();
 

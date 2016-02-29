@@ -45,7 +45,7 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief serialize object to key-value pairs
-            virtual error get_re_vars( keyValPair_t& );
+            virtual error get_re_vars( rule_engine_vars_t& );
 
             // Mutators
 

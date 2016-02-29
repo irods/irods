@@ -62,7 +62,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
-            virtual error get_re_vars( keyValPair_t& );
+            virtual error get_re_vars( rule_engine_vars_t& );
 
             // =-=-=-=-=-=-=-
             // Accessors

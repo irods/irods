@@ -49,16 +49,16 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - serialize object to kvp
     error gsi_auth_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
         irods::error result = SUCCESS();
 
         // =-=-=-=-=-=-=-
         // all we have in this object is the auth results
         std::stringstream sock_msg;
         sock_msg << sock_;
-        addKeyVal( &_kvp, "socket", sock_msg.str().c_str() );
-        addKeyVal( &_kvp, "serverDN", server_dn_.c_str() );
-        addKeyVal( &_kvp, "digest", digest_.c_str() );
+        _kvp["socket"] = sock_msg.str().c_str();
+        _kvp["serverDN"] = server_dn_.c_str();
+        _kvp["digest"] = digest_.c_str();
 
         return result;
 
