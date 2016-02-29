@@ -31,6 +31,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_threads.hpp"
+#include "irods_re_serialization.hpp"
 #include "procLog.h"
 #include "initServer.hpp"
 
@@ -59,6 +60,7 @@ main( int, char ** ) {
     rsComm_t rsComm;
     char *tmpStr;
 
+    irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
     ProcessType = AGENT_PT;

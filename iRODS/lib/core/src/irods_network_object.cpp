@@ -64,11 +64,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
     error network_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
 
         std::stringstream ss;
         ss << socket_handle_;
-        addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
+        _kvp[SOCKET_HANDLE_KW] = ss.str().c_str();
 
         return SUCCESS();
     } // get_re_vars

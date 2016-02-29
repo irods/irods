@@ -57,7 +57,7 @@ namespace irods {
 
             /// @brief Plugin resolution operation
             virtual error resolve( const std::string& _plugin_name, plugin_ptr& _plugin ) = 0;
-            virtual error get_re_vars( keyValPair_t& ) = 0;
+            virtual error get_re_vars( rule_engine_vars_t& ) = 0;
 
         protected:
             rError_t*   r_error_;

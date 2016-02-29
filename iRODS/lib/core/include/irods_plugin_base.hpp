@@ -28,6 +28,19 @@ static double PLUGIN_INTERFACE_VERSION = 2.0;
 irods::error add_global_re_params_to_kvp_for_dynpep( keyValPair_t& );
 
 namespace irods {
+#if 0
+    typedef void* serialized_parameter_t;
+
+    static serialized_parameter_t avro_serialize( float* ) { return nullptr; };
+    static serialized_parameter_t avro_serialize( const std::string* ) { return nullptr; };
+    static serialized_parameter_t avro_serialize( std::string* ) { return nullptr; };
+    static serialized_parameter_t avro_serialize( const std::string ) { return nullptr; };
+    static serialized_parameter_t avro_serialize( std::string ) { return nullptr; };
+#endif
+
+
+
+
 
     typedef std::function< irods::error( rcComm_t* ) > pdmo_type;
     typedef std::function< irods::error( plugin_property_map& ) > maintenance_operation_t;
@@ -160,23 +173,23 @@ namespace irods {
                 using namespace std;
                 try{
                     plugin_context ctx( _comm, properties_, _fco, "" );
-                    typedef std::function<error(plugin_context&)> fcn_t;
-                    fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
 
+                    std::function<error(plugin_context&, std::string*)> adapted_fcn = 
+                        [this,&_operation_name]
+                        (plugin_context& _ctx, std::string* _out_param ) {
+                        _ctx.rule_results( *_out_param );
+                        typedef std::function<error(plugin_context&)> fcn_t;
+                        fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
+                        error ret = fcn( _ctx );
+                        *_out_param = _ctx.rule_results();
+                        return ret;
+                    };
+
+                    std::string out_param;
                     #ifdef ENABLE_RE
-                    keyValPair_t kvp;
-                    bzero( &kvp, sizeof( kvp ) );
-                    _fco->get_re_vars( kvp );
-
-                    error err = add_global_re_params_to_kvp_for_dynpep( kvp );
-                    if( !err.ok() ) {
-                        return PASS( err );
-                    }
-
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
-                    rei.condInputData = &kvp; // give rule scope to our key value pairs
 
                     dynamic_operation_execution_manager<
                         default_re_ctx,
@@ -195,10 +208,11 @@ namespace irods {
                     error op_err = rex_mgr.call(
                                        instance_name_,
                                        _operation_name,
-                                       fcn,
-                                       ctx);
+                                       adapted_fcn,
+                                       ctx,
+                                       &out_param);
                     #else
-                    error op_err = fcn( ctx );
+                    error op_err = adapted_fcn( ctx, &out_param );
                     #endif
 
                     return op_err;
@@ -222,23 +236,22 @@ namespace irods {
                 using namespace std;
                 try{
                     plugin_context ctx( _comm, properties_, _fco, "" );
-                    typedef std::function<error(plugin_context&,types_t...)> fcn_t;
-                    fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
+                    std::function<error(plugin_context&, std::string*, types_t...)> adapted_fcn =
+                        [this,&_operation_name]
+                        (plugin_context& _ctx, std::string* _out_param, types_t... _t) {
+                        _ctx.rule_results( *_out_param );
+                        typedef std::function<error(plugin_context&,types_t...)> fcn_t;
+                        fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
+                        error ret = fcn( _ctx, _t... );
+                        *_out_param = _ctx.rule_results();
+                        return ret;
+                    };
 
+                    std::string out_param;
                     #ifdef ENABLE_RE
-                    keyValPair_t kvp;
-                    bzero( &kvp, sizeof( kvp ) );
-                    _fco->get_re_vars( kvp );
-
-                    error err = add_global_re_params_to_kvp_for_dynpep( kvp );
-                    if( !err.ok() ) {
-                        return PASS( err );
-                    }
-
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
-                    rei.condInputData = &kvp;
 
                     dynamic_operation_execution_manager<
                         default_re_ctx,
@@ -257,11 +270,12 @@ namespace irods {
                     error op_err = rex_mgr.call(
                                        instance_name_,
                                        _operation_name,
-                                       fcn,
+                                       adapted_fcn,
                                        ctx,
-                                       _t...);
+                                       &out_param,
+                                       _t... );//avro_serialize( _t )...);
                     #else
-                    error op_err = fcn( ctx, forward<types_t>(_t)... );
+                    error op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
                     #endif
 
                     return op_err;

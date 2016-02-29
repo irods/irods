@@ -15,6 +15,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_re_plugin.hpp"
+#include "irods_re_serialization.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -62,8 +63,7 @@ irods::error rule_exists(irods::default_re_ctx&, std::string _rn, bool& _ret) {
         LOG_DEBUG,
         "looking up rule name %s, found = %d",
         _rn.c_str(),
-        _ret
-    );
+        _ret );
     return SUCCESS();
 }
 
@@ -79,8 +79,9 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 
     rodsLog(
         LOG_DEBUG,
-        "applying rule %s",
-        _rn.c_str());
+        "applying rule %s, params %ld",
+        _rn.c_str(),
+        _ps.size());
         
     ruleExecInfo_t * rei;
     irods::error err;
@@ -98,131 +99,76 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         }
         msParamArray_t msParamArray;
 
-    }ar;
+    } ar;
 
-    if(_rn.compare(0,4,"pep_") == 0 ) {
-        // adapter for 4.0.3 dynamic pep
-        // because it only accepts one string param
-        // but all operation parameters are passed here
-        std::stringstream expr;
-        boost::any* arg0 = nullptr, *arg1 = nullptr;
-        std::string rule_ctx;
-        int i = 0;
-        for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
-            switch(i) {
-                case 0:
-                    if(itr->type() == typeid(std::string)) {
-                        arg0 = &*itr;
-                    } else {
-                        rodsLog(LOG_ERROR, "only string arguments are supported for instance_name");
-                        return ERROR(-1, "only string arguments are supported for instance_name");
-                    }
-                    break;
-                case 1:
-                    if(itr->type() == typeid(irods::plugin_context) ) {
-                        arg1 = &*itr;
-                    } else {
-                        rodsLog(
-                            LOG_ERROR,
-                            "only plugin_context arguments are supported for rule_param [%s]",
-                            itr->type().name() );
-                        return ERROR(-1, "only plugin_context arguments are supported for rule_param");
-                    }
-                    break;
-            }
-            ++i;
+    std::stringstream expr;
+    expr << _rn << "(";
+    int i = 0;
+
+    for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
+        char arg[10];
+        snprintf(arg, 10, "*ARG%d", i);
+        if(i!=0) expr << ",";
+        expr << arg;
+
+        // serialize to the map then bind to a ms param
+        irods::re_serialization::serialized_parameter_t param;
+        irods::error ret = irods::re_serialization::serialize_parameter(*itr,param);
+
+        if(!ret.ok()) {
+             rodsLog(LOG_ERROR, "unsupported argument for calling re rules from the rule language");
+             addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup("<unconvertible>"), NULL);
         }
-
-        if( !arg1 ) {
-            rodsLog(
-                LOG_ERROR,
-                "%s:%d - did not find plugin_context in parameter list",
-                __FUNCTION__,
-               __LINE__ );
-            return ERROR(
-                    SYS_INVALID_INPUT_PARAM,
-                    "did not find plugin_context in parameter list" );
-        }
-
-        std::string instance_name = boost::any_cast<std::string>(*arg0).c_str();
-        irods::plugin_context plugin_ctx = boost::any_cast<irods::plugin_context>(*arg1);
-        addMsParam(&(ar.msParamArray), "*OUT", STR_MS_T, (void *) plugin_ctx.rule_results().c_str(), NULL);
-
-        expr << _rn << "(*OUT)";
-        snprintf(rei->pluginInstanceName, MAX_NAME_LEN, "%s", instance_name.c_str());
-        
-        int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
-
-        msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), "*OUT");
-        if(msParam != NULL) {
-            plugin_ctx.rule_results(reinterpret_cast<char *>(msParam->inOutStruct)); // currently won't work because boost::any doesn't store reference, use std::ref to make this work
-        } else {
-            rodsLog(LOG_ERROR, "no output parameter");
-        }
-
-        rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
-
-        rodsLog(
-                LOG_DEBUG,
-                "rule engine return %d", ret
-            );
-
-        return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
-
-    } 
-    else {
-        std::stringstream expr;
-        expr << _rn << "(";
-        int i = 0;
-        for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
-            char arg[10];
-            snprintf(arg, 10, "*ARG%d", i);
-            if(i!=0) expr << ",";
-            expr << arg;
-            if(itr->type() == typeid(std::string)) {
-                addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup(boost::any_cast<std::string>(*itr).c_str()), NULL);
-            } else if(itr->type() == typeid(std::string*)) {
-                addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup((*boost::any_cast<std::string*>(*itr)).c_str()), NULL);
-            } else {
-                rodsLog(LOG_ERROR, "only string arguments are supported for calling re rules from outside");
+        else {
+            if( 0 == param.size() ) {
+                rodsLog( LOG_DEBUG, "empty serialized map for parameter %s", arg );
                 addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup("<unconvertible>"), NULL);
             }
-            i++;
-        }
-        expr << ")";
-
-        int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
-
-        i = 0;
-        for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
-            char arg[10];
-            snprintf(arg, 10, "*ARG%d", i);
-            if(itr->type() == typeid(std::string)) {
-            } else if(itr->type() == typeid(std::string*)) {
-                msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), arg);
-                if(msParam != NULL) {
-                    *boost::any_cast<std::string*>(*itr) = reinterpret_cast<char *>(msParam->inOutStruct);
-                } else {
-                    rodsLog(LOG_ERROR, "no output parameter");
-                }
-
-            } else {
-                rodsLog(LOG_ERROR, "only string arguments are supported for returning from xre rules to outside");
+            else if( 1 == param.size() ) {
+                // only one key-value in them map, bind it as a string
+                addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup(param.begin()->second.c_str()), NULL);
             }
-            i++;
+            else {
+                keyValPair_t* kvp = (keyValPair_t*)malloc(sizeof(keyValPair_t));
+                memset( kvp, 0, sizeof( keyValPair_t ) );
+                for( auto i : param ) {
+                    addKeyVal( kvp, i.first.c_str(), i.second.c_str() );
+                }
+                addMsParam(&(ar.msParamArray), strdup(arg), KeyValPair_MS_T, kvp, NULL );
+            }
         }
 
-        rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
+        i++;
+    }
+    expr << ")";
+    int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
+    i = 0;
+    for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
+        char arg[10];
+        snprintf(arg, 10, "*ARG%d", i);
+        if(itr->type() == typeid(std::string)) {
+        } else if(itr->type() == typeid(std::string*)) {
+            msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), arg);
+            if(msParam != NULL) {
+                *boost::any_cast<std::string*>(*itr) = reinterpret_cast<char *>(msParam->inOutStruct);
+            } else {
+                rodsLog(LOG_ERROR, "no output parameter");
+            }
 
-        rodsLog(
-                LOG_DEBUG,
-                "rule engine return %d", ret
-            );
-
-        return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
+        } else {
+            rodsLog(LOG_DEBUG, "only string arguments are supported for returning from xre rules to the calling rule");
+        }
+        i++;
     }
 
+    rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
 
+    rodsLog(
+            LOG_DEBUG,
+            "rule engine return %d", ret
+           );
+
+    return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
 
 }
 

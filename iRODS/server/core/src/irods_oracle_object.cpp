@@ -100,7 +100,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
     error oracle_object::get_re_vars(
-        keyValPair_t& ) {
+        rule_engine_vars_t& ) {
 
         //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
 

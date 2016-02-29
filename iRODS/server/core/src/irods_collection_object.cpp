@@ -180,7 +180,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - get vars from object for rule engine
     error collection_object::get_re_vars(
-        keyValPair_t& _kvp ) {
+        rule_engine_vars_t& _kvp ) {
         data_object::get_re_vars( _kvp );
         return SUCCESS();
 

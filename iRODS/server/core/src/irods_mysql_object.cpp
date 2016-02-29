@@ -99,9 +99,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - get rule engine kvp
     error mysql_object::get_re_vars(
-        keyValPair_t& ) {
-
-        //addKeyVal( &_kvp, SOCKET_HANDLE_KW, ss.str().c_str() );
+        rule_engine_vars_t& ) {
 
         return SUCCESS();
 
