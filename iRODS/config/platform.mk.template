@@ -10,9 +10,10 @@
 #
 # Commands as found by the 'configure' script during iRODS installation
 #
-CC=g++ -std=c++0x
+CC=g++
 CC_IS_GCC=0
-CCFLAGS=
+CCFLAGS= -std=c++0x
+#-Wno-deprecated
 LDR=g++
 LDRFLAGS=
 AR=ar

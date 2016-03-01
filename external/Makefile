@@ -207,7 +207,7 @@ boost-headers : $(BOOSTVERSIONMAKE)
 	@CPU_COUNT=`../packaging/get_cpu_count.sh` ; \
 		cd $(BOOSTVERSION) ; \
 		./b2 headers; \
-		./b2 link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED" -j$$CPU_COUNT;
+		./b2 link=static threading=multi cxxflags="-fPIC -DBOOST_SYSTEM_NO_DEPRECATED -std=c++0x" -j$$CPU_COUNT;
 
 $(BOOSTEPMLIST) : boost-headers
 	@echo "d 755 root root /usr/include/irods/boost -" > $(BOOSTEPMLIST)
