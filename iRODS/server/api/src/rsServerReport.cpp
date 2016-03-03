@@ -794,15 +794,8 @@ irods::error get_resource_array(
             continue;
         }
 
-        std::string children;
-        ret = resc->get_property< std::string >( irods::RESOURCE_CHILDREN, children );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        std::string object_count;
-        ret = resc->get_property< std::string >( irods::RESOURCE_OBJCOUNT, object_count );
+        std::string parent_context;
+        ret = resc->get_property< std::string >( irods::RESOURCE_PARENT_CONTEXT, parent_context );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             continue;
@@ -835,9 +828,7 @@ irods::error get_resource_array(
         json_object_set( entry, "vault_path",      json_string( vault.c_str() ) );
         json_object_set( entry, "context_string",  json_string( context.c_str() ) );
         json_object_set( entry, "parent_resource", json_string( parent.c_str() ) );
-
-        int count = boost::lexical_cast< int >( object_count );
-        json_object_set( entry, "object_count",    json_integer( count ) );
+        json_object_set( entry, "parent_context",  json_string( parent_context.c_str() ) );
 
         std::stringstream fs; fs << freespace;
         json_object_set( entry, "free_space", json_string( fs.str().c_str() ) );

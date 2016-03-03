@@ -170,7 +170,6 @@ CREATE TABLE ext_resc_historical
   resc_children character varying(1000),
   resc_context character varying(1000),
   resc_parent character varying(1000),
-  resc_objcount bigint default 0
 )
 WITH (
   OIDS=FALSE

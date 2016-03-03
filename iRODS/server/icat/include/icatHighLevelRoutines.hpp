@@ -188,9 +188,6 @@ int chlUpdateIrodsPamPassword( rsComm_t *rsComm, const char *userName,
                                int timeToLive, const char *testTime,
                                char **irodsPassword );
 
-
-irods::error chlRescObjCount( const std::string& _resc_name, int& _rtn_obj_count );
-
 int chlSubstituteResourceHierarchies( rsComm_t *rsComm, const char *old_hier, const char *new_hier );
 
 /// =-=-=-=-=-=-=-

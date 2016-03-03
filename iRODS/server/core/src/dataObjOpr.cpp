@@ -1908,25 +1908,12 @@ irods::error resolve_hierarchy_for_resc_from_cond_input(
         // =-=-=-=-=-=-=-
         // get the path from our parent resource
         // to this given leaf resource - this our hier
-        getHierarchyForRescOut_t* get_hier_out = 0;
-        getHierarchyForRescInp_t  get_hier_inp;
-        snprintf(
-            get_hier_inp.resc_name_,
-            sizeof( get_hier_inp.resc_name_ ),
-            "%s", last_resc.c_str() );
-        int status = rsGetHierarchyForResc(
-                        _comm,
-                        &get_hier_inp,
-                        &get_hier_out );
-        if ( status < 0 ) {
-            free( get_hier_out );
-            return ERROR(
-                       status,
-                       "failed to get resc hier" );
+        ret = resc_mgr.get_hier_to_root_for_resc(
+                last_resc,
+                _hier );
+        if(!ret.ok()){
+            return PASS(ret);
         }
-
-        _hier = get_hier_out->resc_hier_;
-        free( get_hier_out );
     } else if ( !has_parent && !has_child ) {
         _hier = last_resc;
 

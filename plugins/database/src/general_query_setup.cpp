@@ -228,7 +228,7 @@ icatGeneralQuerySetup() {
     sColumn( COL_R_RESC_CHILDREN, "R_RESC_MAIN", "resc_children " );
     sColumn( COL_R_RESC_CONTEXT, "R_RESC_MAIN", "resc_context " );
     sColumn( COL_R_RESC_PARENT,  "R_RESC_MAIN", "resc_parent " );
-    sColumn( COL_R_RESC_OBJCOUNT,  "R_RESC_MAIN", "resc_objcount " );
+    sColumn( COL_R_RESC_PARENT_CONTEXT,  "R_RESC_MAIN", "resc_parent_context" );
     sColumn( COL_D_DATA_ID, "R_DATA_MAIN", "data_id" );
     sColumn( COL_D_COLL_ID, "R_DATA_MAIN", "coll_id" );
     sColumn( COL_DATA_NAME, "R_DATA_MAIN", "data_name" );

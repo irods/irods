@@ -128,7 +128,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                                    ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/test_%s" %
                                    (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
-
+    
+    @unittest.skip("deprecated due to resc id")
     def test_modify_resource_name(self):
         h = lib.get_hostname()
         # tree standup
@@ -152,8 +153,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc %s name %s" %
                                    ("repl", newnodename), 'STDOUT_SINGLELINE', 'OK, performing the resource rename', input='yes\n')
 
-        # confirm children of pt1 is newnodename
-        self.admin.assert_icommand("iadmin lr %s" % "pt1", 'STDOUT_SINGLELINE', "resc_children: %s" % newnodename + "{}")
         # confirm parent of newnodename is still pt1
         self.admin.assert_icommand("iadmin lr %s" % newnodename, 'STDOUT_SINGLELINE', "resc_parent: %s" % "pt1")
         # confirm children of newnodename is unix1 and pt2
@@ -247,61 +246,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT_SINGLELINE', dir1)
         self.admin.assert_icommand("ils -L %s" % dir2, 'STDOUT_SINGLELINE', dir2)
 
-        # check object_count on pt
-        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT_SINGLELINE', "resc_objcount: %d" % totaltree)
-        # check object_count and children on replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_objcount: %d" % totaltree)
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_children: %s" % "unixA1{};unixA2{};replB{}")
-        # check object_count on unixA1
-        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
-        # check object_count on unixA2
-        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
-        # check object_count and parent on replB
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree2)
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_parent: %s" % "replA")
-        # check object_count on unixB1
-        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
-        # check object_count on unixB2
-        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
-
-        # no longer relevant as hierachy is in the r_resc_main table only
-        # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
-        # check resc_name on replB files
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "pt;replA;replB", 'STDOUT_SINGLELINE', "pt")
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "replB", 'STDOUT_SINGLELINE', "CAT_NO_ROWS_FOUND")
-
         # remove child
         # rm replB from replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "replB")  # debugging
+        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "replA")  # debugging
         self.admin.assert_icommand("iadmin rmchildfromresc %s %s" % ("replA", "replB"))
-
-        # check object_count on pt
-        self.admin.assert_icommand("iadmin lr %s" % "pt", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree1)
-        # check object_count on replA
-        self.admin.assert_icommand("iadmin lr %s" % "replA", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree1)
-        # check object_count on unixA1
-        self.admin.assert_icommand("iadmin lr %s" % "unixA1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
-        # check object_count on unixA2
-        self.admin.assert_icommand("iadmin lr %s" % "unixA2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree1)
-        # check object_count on replB
-        self.admin.assert_icommand("iadmin lr %s" % "replB", 'STDOUT_SINGLELINE', "resc_objcount: %d" % doubletree2)
-        # check object_count on unixB1
-        self.admin.assert_icommand("iadmin lr %s" % "unixB1", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
-        # check object_count on unixB2
-        self.admin.assert_icommand("iadmin lr %s" % "unixB2", 'STDOUT_SINGLELINE', "resc_objcount: %d" % tree2)
-
-        # check resc_hier on replB files, should start with replB and not have pt anymore
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "replB", 'STDOUT_SINGLELINE', "replB")
-        # check resc_name on replB files
-        #self.admin.assert_icommand("iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" %
-        #                           "replB", 'STDOUT_SINGLELINE', "replB")
 
         # delete files
         self.admin.assert_icommand("irm -rf %s" % dir1)
@@ -437,44 +385,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     # =-=-=-=-=-=-=-
     # REBALANCE
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
-    def test_rebalance_for_object_count(self):
-
-        root_dir = "/tmp/irods/big_dir"
-        if os.path.exists(root_dir):
-            shutil.rmtree(root_dir)
-        os.makedirs(root_dir)
-
-        for i in range(30):
-            path = root_dir + "/rebalance_testfile_" + str(i)
-            lib.make_file(path, 2**20)
-
-        # get initial object count
-        out, _, _ = self.admin.run_icommand('iadmin lr demoResc')
-        objcount_line = out.splitlines()[-1]
-        initial_objcount = int(objcount_line.split(":")[-1].strip())
-        print("initial: " + str(initial_objcount))
-
-        # put the new files
-        self.admin.assert_icommand("iput -r " + root_dir)
-
-        # =-=-=-=-=-=-=-
-        # drop several rows from the R_DATA_MAIN table to jkjjq:q
-        irods_config = IrodsConfig()
-        with contextlib.closing(irods_config.get_database_connection()) as connection:
-            with contextlib.closing(connection.cursor()) as cursor:
-                cursor.execute("delete from R_DATA_MAIN where data_name like 'rebalance_testfile_1%'")
-                cursor.commit()
-
-        # rebalance
-        self.admin.assert_icommand("iadmin modresc demoResc rebalance")
-
-        # expected object count
-        expected_objcount = initial_objcount + 19
-        # 19 = 30 initial - 11 (1 and 10 through 19) deleted files
-        print("expected: " + str(expected_objcount))
-        self.admin.assert_icommand("iadmin lr demoResc", 'STDOUT_SINGLELINE', "resc_objcount: " + str(expected_objcount))
-
     def test_rebalance_for_repl_node(self):
         hostname = lib.get_hostname()
 
