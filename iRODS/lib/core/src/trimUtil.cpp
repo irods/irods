@@ -26,7 +26,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     if ( myRodsArgs->dryrun == True ) {
         printf( "====== This is a DRYRUN ======\n" );
     }
-    int savedStatus = 0, collCnt = 0;
+    int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ) {
             getRodsObjType( conn, &rodsPathInp->srcPath[i] );
@@ -45,7 +45,6 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                                       myRodsArgs, &dataObjInp );
         }
         else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
-            collCnt ++;
             addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
             status = trimCollUtil( conn, rodsPathInp->srcPath[i].outPath,
                                    myRodsEnv, myRodsArgs, &dataObjInp );
@@ -66,11 +65,9 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             savedStatus = status;
         }
     }
-    if ( collCnt > 0 ) {
-        printf(
-            "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
-            ( float ) TotalSizeTrimmed / 1048600.0, TotalTrimmed );
-    }
+    printf(
+        "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
+        ( float ) TotalSizeTrimmed / 1048600.0, TotalTrimmed );
     return savedStatus;
 }
 

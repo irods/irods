@@ -73,7 +73,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', self.testresc)
 
         # overwrite a copy
-        self.admin.assert_icommand("itrim -S " + irodsdefresource + " -N1 " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("itrim -S " + irodsdefresource + " -N1 " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "files trimmed")
         self.admin.assert_icommand_fail("ils -L " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', [irodsdefresource])
         self.admin.assert_icommand("iphymv -R " + irodsdefresource + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', irodsdefresource[0:19])
@@ -163,7 +163,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("irepl -U " + irodshome + "/icmdtest/foo1")
         # make sure the old size is not there
         self.admin.assert_icommand_fail("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', myssize)
-        self.admin.assert_icommand("itrim -S " + irodsdefresource + " " + irodshome + "/icmdtest/foo1")
+        self.admin.assert_icommand("itrim -S " + irodsdefresource + " " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "files trimmed")
         # bulk test
         self.admin.assert_icommand("iput -bIvPKr " + mysdir + " " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', "Bulk upload")
         # iput with a lot of options
@@ -625,7 +625,7 @@ class ChunkyDevTest(ResourceBase):
                                    'STDOUT_SINGLELINE', self.user0.username + "#" + irodszone + ":read")
         self.admin.assert_icommand("irepl -B -R " + self.testresc + " " + irodshome + "/icmdtest1/foo1")
         # overwrite a copy
-        self.admin.assert_icommand("itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1")
+        self.admin.assert_icommand("itrim -S  " + irodsdefresource + " -N1 " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', "files trimmed")
         self.admin.assert_icommand("iphymv -R  " + irodsdefresource + " " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("imeta add -d " + irodshome + "/icmdtest1/foo1 testmeta1 180 cm")
         self.admin.assert_icommand("imeta ls -d " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', "testmeta1")

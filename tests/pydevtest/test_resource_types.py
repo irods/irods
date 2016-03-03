@@ -1279,7 +1279,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
     def test_irm_with_no_stage__2930(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
-        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile ) # trim cache copy
+        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile, 'STDOUT_SINGLELINE', "files trimmed") # trim cache copy
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
 
         initial_log_size = lib.get_log_size('server')
@@ -1823,7 +1823,7 @@ OUTPUT ruleExecOut
         filepath = lib.create_local_testfile(filename)
         self.admin.assert_icommand("iput " + filename)
 
-        self.admin.assert_icommand("itrim -N 1 -n 0 " + filename)
+        self.admin.assert_icommand("itrim -N 1 -n 0 " + filename, 'STDOUT_SINGLELINE', "files trimmed")
 
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'archiveResc' )
 

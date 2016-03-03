@@ -969,3 +969,23 @@ class ResourceSuite(ResourceBase):
         homepath = self.user0.session_collection
         self.user0.assert_icommand("irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
         self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT_SINGLELINE', "Number of files trimmed = 100.")
+
+    def test_itrim_no_op(self):
+        collection = self.admin.session_collection
+        filename = self.testfile
+        repl_resource = self.anotherresc
+
+        # check that test file is there
+        self.admin.assert_icommand("ils {filename}".format(**locals()), 'STDOUT_SINGLELINE', filename)
+
+        # replicate test file
+        self.admin.assert_icommand("irepl -R {repl_resource} {filename}".format(**locals()), 'EMPTY')
+
+        # check replication
+        self.admin.assert_icommand("ils -L {filename}".format(**locals()), 'STDOUT_SINGLELINE', repl_resource)
+
+        # count replicas
+        repl_count = self.admin.run_icommand('''iquest "%s" "SELECT count(DATA_ID) where COLL_NAME ='{collection}' and DATA_NAME ='{filename}'"'''.format(**locals()))[1]
+
+        # try to trim down to repl_count
+        self.admin.assert_icommand("itrim -N {repl_count} {filename}".format(**locals()), 'STDOUT_SINGLELINE', "Total size trimmed = 0.000 MB. Number of files trimmed = 0.")

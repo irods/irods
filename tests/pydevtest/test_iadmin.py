@@ -495,9 +495,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
-        self.admin.assert_icommand("itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8")
-        self.admin.assert_icommand("itrim -N1 -n 1 foo1 foo3 foo4 foo9")
-        self.admin.assert_icommand("itrim -N1 -n 2 foo2 foo4 foo5")
+        self.admin.assert_icommand("itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8", 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand("itrim -N1 -n 1 foo1 foo3 foo4 foo9", 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand("itrim -N1 -n 2 foo2 foo4 foo5", 'STDOUT_SINGLELINE', "files trimmed")
 
         # =-=-=-=-=-=-=-
         # visualize our pruning
@@ -619,9 +619,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
-        self.admin.assert_icommand("itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8")
-        self.admin.assert_icommand("itrim -N1 -n 1 foo1 foo3 foo4 foo9")
-        self.admin.assert_icommand("itrim -N1 -n 2 foo2 foo4 foo5")
+        self.admin.assert_icommand("itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8", 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand("itrim -N1 -n 1 foo1 foo3 foo4 foo9", 'STDOUT_SINGLELINE', "files trimmed")
+        self.admin.assert_icommand("itrim -N1 -n 2 foo2 foo4 foo5", 'STDOUT_SINGLELINE', "files trimmed")
 
         # =-=-=-=-=-=-=-
         # dirty up a foo10 repl to ensure that code path is tested also
@@ -773,8 +773,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
-        self.admin.assert_icommand("itrim -N1 -n 0 foo1")
-        self.user0.assert_icommand("itrim -N1 -n 0 bar0")
+        self.admin.assert_icommand("itrim -N1 -n 0 foo1", 'STDOUT_SINGLELINE', "files trimmed")
+        self.user0.assert_icommand("itrim -N1 -n 0 bar0", 'STDOUT_SINGLELINE', "files trimmed")
 
         # =-=-=-=-=-=-=-
         # dirty up a foo10 repl to ensure that code path is tested also
