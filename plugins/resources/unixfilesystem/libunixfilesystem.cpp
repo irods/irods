@@ -702,7 +702,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // trap error case with bad fd
             if ( fd < 0 ) {
-                int status = UNIX_FILE_CREATE_ERR - errsav;
+                int status = UNIX_FILE_OPEN_ERR - errsav;
                 std::stringstream msg;
                 msg << "Open error for \"";
                 msg << fco->physical_path();
