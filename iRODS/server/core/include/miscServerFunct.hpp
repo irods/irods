@@ -148,15 +148,6 @@ irods::error readStartupPack(
     startupPack_t **startupPack,
     struct timeval *tv );
 
-irods::error get_current_resource_object_count(
-    rsComm_t*,          // comm handle
-    rodsLong_t,         // resc id
-    rodsLong_t& );      // out var - count
-
-irods::error update_resource_object_count(
-    rsComm_t*,                     // server comm handle
-    irods::plugin_property_map& ); // resource property map
-
 irods::error setRECacheSaltFromEnv();
 
 irods::error get_script_output_single_line(

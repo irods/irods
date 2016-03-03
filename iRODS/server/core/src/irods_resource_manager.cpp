@@ -6,6 +6,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_plugin_impostor.hpp"
 #include "irods_load_plugin.hpp"
+#include "irods_lexical_cast.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -226,23 +227,23 @@ namespace irods {
 
         memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_OBJCOUNT, 1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,             1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,           1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,           1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,           1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,          1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_LOC,                 1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,          1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,          1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,           1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,        1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,         1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,         1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,         1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN,       1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,        1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,         1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT_CONTEXT, 1 );
 
         genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -389,6 +390,54 @@ namespace irods {
 
     } // get_root_resources
 
+    error resource_manager::get_parent_name(
+        resource_ptr _resc,
+        std::string& _name ) {
+
+        std::string my_name; 
+        error ret = _resc->get_property<std::string>(
+                        RESOURCE_NAME,
+                        my_name);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        std::string parent_id_str; 
+        ret = _resc->get_property<std::string>(
+                        RESOURCE_PARENT,
+                        parent_id_str);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        if(parent_id_str.empty()) {
+            std::stringstream msg;
+            return ERROR(
+                    HIERARCHY_ERROR,
+                    "empty parent string");
+        }
+ 
+        rodsLong_t parent_id;
+        ret = lexical_cast<rodsLong_t>(
+                  parent_id_str,
+                  parent_id);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        resource_ptr parent_resc;
+        ret = resolve(
+                parent_id,
+                parent_resc);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        return parent_resc->get_property<std::string>(
+                   RESOURCE_NAME,
+                   _name );
+    } // get_parent_name
+
     error resource_manager::get_hier_to_root_for_resc(
         const std::string& _resc_name,
         std::string&       _hierarchy ) {
@@ -405,10 +454,14 @@ namespace irods {
                 return PASS(ret);
             }
 
-            ret = resc->get_property<std::string>(
-                      RESOURCE_PARENT,
-                      parent_name);
+            ret = get_parent_name(
+                      resc,
+                      parent_name );
             if(!ret.ok()) {
+                if(HIERARCHY_ERROR == ret.code()) {
+                    break;
+                }
+
                 return PASS(ret);
             }
 
@@ -520,7 +573,7 @@ namespace irods {
         sqlResult_t *rescId       = 0, *rescName      = 0, *zoneName   = 0, *rescType   = 0, *rescClass = 0;
         sqlResult_t *rescLoc      = 0, *rescVaultPath = 0, *freeSpace  = 0, *rescInfo   = 0;
         sqlResult_t *rescComments = 0, *rescCreate    = 0, *rescModify = 0, *rescStatus = 0;
-        sqlResult_t *rescChildren = 0, *rescContext   = 0, *rescParent = 0, *rescObjCount = 0;
+        sqlResult_t *rescChildren = 0, *rescContext   = 0, *rescParent = 0, *rescParentContext = 0;
 
         // =-=-=-=-=-=-=-
         // extract results from query
@@ -588,8 +641,8 @@ namespace irods {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT failed" );
         }
 
-        if ( ( rescObjCount = getSqlResultByInx( _result, COL_R_RESC_OBJCOUNT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_OBJCOUNT failed" );
+        if ( ( rescParentContext = getSqlResultByInx( _result, COL_R_RESC_PARENT_CONTEXT ) ) == NULL ) {
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT_CONTEXT failed" );
         }
 
         // =-=-=-=-=-=-=-
@@ -613,7 +666,7 @@ namespace irods {
             std::string tmpRescChildren  = &rescChildren->value[ rescChildren->len * i ];
             std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
             std::string tmpRescParent    = &rescParent->value[ rescParent->len * i ];
-            std::string tmpRescObjCount  = &rescObjCount->value[ rescObjCount->len * i ];
+            std::string tmpRescParentCtx = &rescParentContext->value[ rescParent->len * i ];
 
             // =-=-=-=-=-=-=-
             // create the resource and add properties for column values
@@ -649,20 +702,20 @@ namespace irods {
             resc->set_property<long>( RESOURCE_FREESPACE, strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
             resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
-            resc->set_property<std::string>( RESOURCE_ZONE,      tmpZoneName );
-            resc->set_property<std::string>( RESOURCE_NAME,      tmpRescName );
-            resc->set_property<std::string>( RESOURCE_LOCATION,  tmpRescLoc );
-            resc->set_property<std::string>( RESOURCE_TYPE,      tmpRescType );
-            resc->set_property<std::string>( RESOURCE_CLASS,     tmpRescClass );
-            resc->set_property<std::string>( RESOURCE_PATH,      tmpRescVaultPath );
-            resc->set_property<std::string>( RESOURCE_INFO,      tmpRescInfo );
-            resc->set_property<std::string>( RESOURCE_COMMENTS,  tmpRescComments );
-            resc->set_property<std::string>( RESOURCE_CREATE_TS, tmpRescCreate );
-            resc->set_property<std::string>( RESOURCE_MODIFY_TS, tmpRescModify );
-            resc->set_property<std::string>( RESOURCE_CHILDREN,  tmpRescChildren );
-            resc->set_property<std::string>( RESOURCE_PARENT,    tmpRescParent );
-            resc->set_property<std::string>( RESOURCE_CONTEXT,   tmpRescContext );
-            resc->set_property<std::string>( RESOURCE_OBJCOUNT,  tmpRescObjCount );
+            resc->set_property<std::string>( RESOURCE_ZONE,           tmpZoneName );
+            resc->set_property<std::string>( RESOURCE_NAME,           tmpRescName );
+            resc->set_property<std::string>( RESOURCE_LOCATION,       tmpRescLoc );
+            resc->set_property<std::string>( RESOURCE_TYPE,           tmpRescType );
+            resc->set_property<std::string>( RESOURCE_CLASS,          tmpRescClass );
+            resc->set_property<std::string>( RESOURCE_PATH,           tmpRescVaultPath );
+            resc->set_property<std::string>( RESOURCE_INFO,           tmpRescInfo );
+            resc->set_property<std::string>( RESOURCE_COMMENTS,       tmpRescComments );
+            resc->set_property<std::string>( RESOURCE_CREATE_TS,      tmpRescCreate );
+            resc->set_property<std::string>( RESOURCE_MODIFY_TS,      tmpRescModify );
+            resc->set_property<std::string>( RESOURCE_CHILDREN,       tmpRescChildren );
+            resc->set_property<std::string>( RESOURCE_CONTEXT,        tmpRescContext );
+            resc->set_property<std::string>( RESOURCE_PARENT,         tmpRescParent );
+            resc->set_property<std::string>( RESOURCE_PARENT_CONTEXT, tmpRescParentCtx );
 
             if ( tmpRescStatus == std::string( RESC_DOWN ) ) {
                 resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_DOWN );
@@ -677,7 +730,6 @@ namespace irods {
             resource_id_map_[ resource_id ] = resc;
 
         } // for i
-
 
         return SUCCESS();
 
@@ -777,67 +829,63 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // private - walk the resource map and wire children up to parents
     error resource_manager::init_child_map( void ) {
-        error result = SUCCESS();
+        for( auto itr : resource_name_map_ ) {
+            const std::string& child_name = itr.first;
+            resource_ptr       child_resc = itr.second;
 
-        // Iterate over all the resources
-        lookup_table< boost::shared_ptr< resource > >::iterator it;
-        for ( it = resource_name_map_.begin(); it != resource_name_map_.end(); ++it ) {
-            resource_ptr resc = it->second;
-
-            // Get the children string and resource name
-            std::string children_string;
-            error ret = resc->get_property<std::string>( RESOURCE_CHILDREN, children_string );
-            if ( !ret.ok() ) {
-                result = PASSMSG( "init_child_map failed.", ret );
+            std::string parent_id_str;
+            error ret = child_resc->get_property<std::string>(
+                            RESOURCE_PARENT,
+                            parent_id_str );
+            if(!ret.ok() || parent_id_str.empty()) {
+                continue;
             }
-            else {
-                std::string resc_name;
-                error ret = resc->get_property<std::string>( RESOURCE_NAME, resc_name );
-                if ( !ret.ok() ) {
-                    result = PASSMSG( "init_child_map failed.", ret );
-                }
-                else {
-                    // Get the list of children and their contexts from the resource
-                    children_parser parser;
-                    parser.set_string( children_string );
-                    children_parser::children_map_t children_list;
-                    error ret = parser.list( children_list );
-                    if ( !ret.ok() ) {
-                        result = PASSMSG( "init_child_map failed.", ret );
-                    }
-                    else {
 
-                        // Iterate over all of the children
-                        children_parser::children_map_t::const_iterator itr;
-                        for ( itr = children_list.begin(); itr != children_list.end(); ++itr ) {
-                            std::string child = itr->first;
-                            std::string context = itr->second;
+            rodsLong_t parent_id = 0;
+            ret = irods::lexical_cast<rodsLong_t>(
+                      parent_id_str,
+                      parent_id );
+            if(!ret.ok()) {
+                irods::log(PASS(ret));
+                continue;
+            }
 
-                            // Lookup the child resource pointer
-                            lookup_table< boost::shared_ptr< resource > >::iterator child_itr = resource_name_map_.find( child );
-                            if ( child_itr == resource_name_map_.end() ) {
-                                std::stringstream msg;
-                                msg << "Failed to find child \"" << child << "\" in resources.";
-                                result = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-                            }
-                            else {
+            if(!resource_id_map_.has_entry(parent_id)) {
+                rodsLog(
+                    LOG_ERROR,
+                    "invalid parent resource id %ld",
+                    parent_id );
+                continue;
+            }
 
-                                // Add a reference to the child resource pointer and its context to the resource
-                                resource_ptr child_resc = child_itr->second;
-                                error ret = resc->add_child( child, context, child_resc );
-                                if ( !ret.ok() ) {
-                                    result = PASSMSG( "init_child_map failed.", ret );
-                                }
+            resource_ptr parent_resc = resource_id_map_[parent_id];
 
-                                // set the parent for the child resource
-                                child_resc->set_parent( resc );
-                            }
-                        } // for itr
-                    } // else parse list
-                } // else get name
-            } // else get child string
-        } // for it
-        return result;
+            std::string parent_child_context;
+            ret = child_resc->get_property<std::string>(
+                      RESOURCE_PARENT_CONTEXT,
+                      parent_child_context );
+            if(!ret.ok()) {
+            }
+
+            parent_resc->add_child(
+                child_name,
+                parent_child_context,
+                child_resc);
+
+            child_resc->set_parent(parent_resc);
+
+            rodsLog(
+                LOG_DEBUG,
+                "%s - add [%s][%s] to [%ld]",
+                __FUNCTION__,
+                child_name.c_str(),
+                parent_child_context.c_str(),
+                parent_id);
+
+        } // for itr
+
+        return SUCCESS();
+
     } // init_child_map
 
 // =-=-=-=-=-=-=-

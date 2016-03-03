@@ -38,7 +38,7 @@ irods::error strip_new_query_terms(
         if ( tmp.inx[ i ] == COL_R_RESC_CHILDREN ||
                 tmp.inx[ i ] == COL_R_RESC_CONTEXT  ||
                 tmp.inx[ i ] == COL_R_RESC_PARENT   ||
-                tmp.inx[ i ] == COL_R_RESC_OBJCOUNT ||
+                tmp.inx[ i ] == COL_R_RESC_PARENT_CONTEXT   ||
                 tmp.inx[ i ] == COL_D_RESC_HIER ) {
             continue;
         }

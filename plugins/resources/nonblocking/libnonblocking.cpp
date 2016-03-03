@@ -1471,9 +1471,7 @@ irods::error non_blocking_file_resolve_hierarchy(
 // non_blocking_file_rebalance - code which would rebalance the subtree
 irods::error non_blocking_file_rebalance(
     irods::plugin_context& _ctx ) {
-    return update_resource_object_count(
-               _ctx.comm(),
-               _ctx.prop_map() );
+    return SUCCESS();
 
 } // non_blocking_file_rebalancec
 

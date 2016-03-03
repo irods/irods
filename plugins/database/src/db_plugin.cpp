@@ -246,81 +246,46 @@ irods::error getLocalZone(
 
 } // getLocalZone
 
-
 // =-=-=-=-=-=-=-
-// @brief Updates the specified resources object count by the specified amount
-static int
-_updateRescObjCount(
+// @brief query for object found of a resource
+int get_object_count_of_resource_by_name(
     icatSessionStruct* _icss,
     const std::string& _resc_name,
-    const std::string& _zone,
-    rodsLong_t         _amount ) {
+    rodsLong_t&         _count ) {
 
-    int result = 0;
-    int status;
-    char resc_id[MAX_NAME_LEN];
-    char myTime[50];
-    irods::sql_logger logger( __FUNCTION__, logSQL );
-    irods::hierarchy_parser hparse;
-
-    resc_id[0] = '\0';
-    {
-        std::vector<std::string> bindVars;
-        bindVars.push_back( _resc_name );
-        bindVars.push_back( _zone );
-        status = cmlGetStringValueFromSql(
-                     ( char* )"select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                     resc_id, MAX_NAME_LEN, bindVars, _icss );
-    }
-    if ( status != 0 ) {
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            result = CAT_INVALID_RESOURCE;
+    rodsLong_t resc_id;
+    irods::error ret = resc_mgr.hier_to_leaf_id(
+                         _resc_name,
+                         resc_id);
+    if(!ret.ok()) {
+        // if we have a bad resource in the database we need
+        // to ignore this in order to still remove it
+        if(SYS_RESC_DOES_NOT_EXIST == ret.code()) {
+            _count = 0;
+            return 0;
         }
-        else {
-            _rollback( __FUNCTION__ );
-            result = status;
-        }
-    }
-    else {
-        std::stringstream ss;
-        ss << "update R_RESC_MAIN set resc_objcount=resc_objcount+";
-        ss << _amount;
-        ss << ", modify_ts=? where resc_id=?";
-        getNowStr( myTime );
-        cllBindVarCount = 0;
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = resc_id;
-        if ( ( status = cmlExecuteNoAnswerSql( ss.str().c_str(), &icss ) ) != 0 ) {
-            std::stringstream ss;
-            ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
-            irods::log( LOG_NOTICE, ss.str() );
-            _rollback( __FUNCTION__ );
-            result = status;
-        }
+        irods::log(PASS(ret));
+        return ret.code();
     }
 
-    return result;
-}
-
-// =-=-=-=-=-=-=-
-// @brief Traverses the specified resource hierarchy updating the object counts of each resource
-static int
-_updateObjCountOfResources(
-    icatSessionStruct* _icss,
-    const std::string  _resc_hier,
-    const std::string  _zone,
-    rodsLong_t         _amount ) {
-
-    int result = 0;
-    irods::hierarchy_parser hparse;
-
-    hparse.set_string( _resc_hier );
-    for ( irods::hierarchy_parser::const_iterator it = hparse.begin();
-            result == 0 && it != hparse.end(); ++it ) {
-        result = _updateRescObjCount( _icss, *it, _zone, _amount );
+    std::string resc_id_str;
+    ret = irods::lexical_cast<std::string>(resc_id, resc_id_str);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
     }
-    return result;
-}
+
+    std::vector<std::string> bindVars;
+    bindVars.push_back( resc_id_str );
+    int status = cmlGetIntegerValueFromSql(
+                     ( char* )"select count(data_id) from R_DATA_MAIN where resc_id=?",
+                     &_count,
+                     bindVars,
+                     _icss );
+
+    return status;
+
+} // get_object_count_of_resource_by_name
 
 // =-=-=-=-=-=-=-
 // @brief determine if user had write permission to data object
@@ -618,61 +583,10 @@ irods::error _childIsValid(
     return SUCCESS();
 }
 
-int
-_updateRescChildren(
-    const std::string& _resc_id,
-    const std::string& _new_child_string ) {
-
-    int result = 0;
-    int status;
-    char children[MAX_PATH_ALLOWED];
-    char myTime[50];
-    irods::sql_logger logger( "_updateRescChildren", logSQL );
-
-    {
-        std::vector<std::string> bindVars;
-        bindVars.push_back( _resc_id );
-        status = cmlGetStringValueFromSql(
-                     "select resc_children from R_RESC_MAIN where resc_id=?",
-                     children, MAX_PATH_ALLOWED, bindVars, &icss );
-    }
-    if ( status != 0 ) {
-        _rollback( "_updateRescChildren" );
-        result = status;
-    }
-    else {
-        std::string children_string( children );
-        std::stringstream ss;
-        if ( children_string.empty() ) {
-            ss << _new_child_string;
-        }
-        else {
-            ss << children_string << ";" << _new_child_string;
-        }
-        std::string combined_children = ss.str();
-
-        // have to do this to avoid const issues
-        getNowStr( myTime );
-        cllBindVarCount = 0;
-        cllBindVars[cllBindVarCount++] = combined_children.c_str();
-        cllBindVars[cllBindVarCount++] = myTime;
-        cllBindVars[cllBindVarCount++] = _resc_id.c_str();
-        logger.log();
-        if ( ( status = cmlExecuteNoAnswerSql( "update R_RESC_MAIN set resc_children=?, modify_ts=? "
-                                               "where resc_id=?", &icss ) ) != 0 ) {
-            std::stringstream ss;
-            ss << "_updateRescChildren cmlExecuteNoAnswerSql update failure " << status;
-            irods::log( LOG_NOTICE, ss.str() );
-            _rollback( "_updateRescChildren" );
-            result = status;
-        }
-    }
-    return result;
-} // _updateRescChildren
-
 irods::error _updateChildParent(
     const std::string& _child_resc_id,
-    const std::string& _parent_name ) {
+    const std::string& _parent_resc_id,
+    const std::string& _parent_child_context ) {
     irods::sql_logger logger( "_updateChildParent", logSQL );
 
     // Update the parent for the child resource
@@ -680,13 +594,14 @@ irods::error _updateChildParent(
     char myTime[50];
     getNowStr( myTime );
     cllBindVarCount = 0;
-    cllBindVars[cllBindVarCount++] = _parent_name.c_str();
+    cllBindVars[cllBindVarCount++] = _parent_resc_id.c_str();
+    cllBindVars[cllBindVarCount++] = _parent_child_context.c_str();
     cllBindVars[cllBindVarCount++] = myTime;
     cllBindVars[cllBindVarCount++] = _child_resc_id.c_str();
     logger.log();
 
     int status = cmlExecuteNoAnswerSql(
-                     "update R_RESC_MAIN set resc_parent=?, modify_ts=? "
+                     "update R_RESC_MAIN set resc_parent=?, resc_parent_context=?, modify_ts=? "
                      "where resc_id=?",
                      &icss );
     if( status != 0 ) {
@@ -698,79 +613,31 @@ irods::error _updateChildParent(
 
 } // _updateChildParent
 
-irods::error _get_resc_obj_count(
-    const std::string& _resc_name,
-    rodsLong_t & _rtn_obj_count ) {
-    irods::error result = SUCCESS();
-    rodsLong_t obj_count = 0;
-    int status;
-
-    {
-        std::vector<std::string> bindVars;
-        bindVars.push_back( _resc_name );
-        status = cmlGetIntegerValueFromSql(
-                     "select resc_objcount from R_RESC_MAIN where resc_name=?",
-                     &obj_count, bindVars, &icss );
-    }
-    if ( status != 0 ) {
-        _rollback( __FUNCTION__ );
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to get object count for resource: \"" << _resc_name << "\"";
-        result = ERROR( status, msg.str() );
-    }
-    else {
-        _rtn_obj_count = obj_count;
-    }
-
-    return result;
-}
-
 /**
  * @brief Returns true if the specified resource has associated data objects
  */
-bool
+int
 _rescHasData(
-    const std::string& _resc_name ) {
-
-    bool result = false;
+    icatSessionStruct* _icss,
+    const std::string& _resc_name,
+    bool&              _has_data ) {
     irods::sql_logger logger( "_rescHasData", logSQL );
-    int status;
     static const char* func_name = "_rescHasData";
     rodsLong_t obj_count;
 
     logger.log();
-    {
-        std::vector<std::string> bindVars;
-        bindVars.push_back( _resc_name );
-        status = cmlGetIntegerValueFromSql(
-                     "select resc_objcount from R_RESC_MAIN where resc_name=?",
-                     &obj_count, bindVars, &icss );
-    }
-    if ( status != 0 ) {
-        _rollback( func_name );
-    }
-    else {
-        if ( obj_count > 0 ) {
-            result = true;
+
+    int status = get_object_count_of_resource_by_name(
+                      _icss,
+                      _resc_name,
+                      obj_count );
+    if( 0 == status ) {
+        if ( 0 == obj_count ) {
+            _has_data = false;
         }
     }
-    return result;
-}
 
-/**
- * @brief Returns true if the specified child, possibly including context, has data
- */
-bool
-_childHasData(
-    const std::string& _child ) {
-
-    bool result = true;
-    irods::children_parser parser;
-    parser.set_string( _child );
-    std::string child;
-    parser.first_child( child );
-    result = _rescHasData( child );
-    return result;
+    return status;
 }
 
 /// @brief function for validating a resource name
@@ -792,81 +659,6 @@ irods::error validate_resource_name( std::string _resc_name ) {
     return SUCCESS();
 
 } // validate_resource_name
-
-irods::error _removeRescChild(
-    const std::string& _resc_id,
-    const std::string& _child_string ) {
-    int result = 0;
-    int status;
-    char children[MAX_PATH_ALLOWED];
-    char myTime[50];
-    irods::sql_logger logger( "_removeRescChild", logSQL );
-
-    // Get the resources current children string
-    {
-        std::vector<std::string> bindVars;
-        bindVars.push_back( _resc_id );
-        status = cmlGetStringValueFromSql(
-                     "select resc_children from R_RESC_MAIN where resc_id=?",
-                     children, MAX_PATH_ALLOWED, bindVars, &icss );
-    }
-    if ( status != 0 ) {
-        _rollback( __FUNCTION__ );
-        result = status;
-    }
-    else {
-        // Parse the children string
-        irods::children_parser parser;
-        irods::error ret = parser.set_string( children );
-        if ( !ret.ok() ) {
-            std::stringstream ss;
-            ss << "_removeChildFromResource resource has invalid children string \"" << children << "\'";
-            ss << ret.result();
-            irods::log( LOG_NOTICE, ss.str() );
-            result = CAT_INVALID_CHILD;
-        }
-        else {
-            // Remove the specified child from the children
-            ret = parser.remove_child( _child_string );
-            if ( !ret.ok() ) {
-                std::stringstream ss;
-                ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
-                ss << ret.result();
-                irods::log( LOG_NOTICE, ss.str() );
-                result = CAT_INVALID_CHILD;
-            }
-            else {
-                // Update the database with the new children string
-
-                // have to do this to avoid const issues
-                std::string children_string;
-                parser.str( children_string );
-                getNowStr( myTime );
-                cllBindVarCount = 0;
-                cllBindVars[cllBindVarCount++] = children_string.c_str();
-                cllBindVars[cllBindVarCount++] = myTime;
-                cllBindVars[cllBindVarCount++] = _resc_id.c_str();
-                logger.log();
-                if ( ( status = cmlExecuteNoAnswerSql( "update R_RESC_MAIN set resc_children=?, modify_ts=? "
-                                                       "where resc_id=?", &icss ) ) != 0 ) {
-                    std::stringstream ss;
-                    ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
-                    irods::log( LOG_NOTICE, ss.str() );
-                    _rollback( "_removeRescChild" );
-                    result = status;
-                }
-            }
-        }
-    }
-
-    if( result != 0 ) {
-        return ERROR(
-                result,
-                "remove failed");
-    }
-
-    return SUCCESS();
-}
 
 bool
 _rescHasParentOrChild( char* rescId ) {
@@ -904,7 +696,7 @@ _rescHasParentOrChild( char* rescId ) {
         std::vector<std::string> bindVars;
         bindVars.push_back( rescId );
         status = cmlGetStringValueFromSql(
-                     "select resc_children from R_RESC_MAIN where resc_id=?",
+                     "select resc_id from R_RESC_MAIN where resc_parent=?",
                      children, MAX_NAME_LEN, bindVars, &icss );
     }
     if ( status != 0 ) {
@@ -1148,72 +940,6 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
         ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
         irods::log( LOG_NOTICE, ss.str() );
         // _rollback("_modRescInHierarchies");
-    }
-
-    return status;
-}
-
-
-// Modifies a given resource name in all children lists (i.e for all resources)
-// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
-static int _modRescInChildren( const std::string& old_resc, const std::string& new_resc ) {
-    char update_sql[MAX_SQL_SIZE];
-    int status;
-    char sep[] = ";";        // might later get it from children parser
-    std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
-
-#if ORA_ICAT
-    snprintf( update_sql, MAX_SQL_SIZE,
-              "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3')",
-              sep, old_resc.c_str(), new_resc.c_str() );
-
-
-#elif MY_ICAT
-    snprintf( update_sql, MAX_SQL_SIZE,
-              "update R_RESC_MAIN set resc_children = PREG_REPLACE('/(^|(.+%s))%s\\{\\}(.*)/', '$1%s\\{\\}$3', resc_children);",
-              sep, old_resc.c_str(), new_resc.c_str() );
-#else
-
-
-
-    // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-    irods::error ret = irods::get_catalog_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, ret.result().c_str() );
-    }
-
-    // Regex will look in r_resc_main.resc_children
-    // for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
-    // and replace them with new_resc, e.g:
-    // regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
-    // This assumes that '{}' are not valid characters in resource name
-    // Backslashes must be escaped in older versions of Postgres
-
-    if ( std_conf_str == "on" ) {
-        // Default since Postgres 9.1
-        snprintf( update_sql, MAX_SQL_SIZE,
-                  "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
-                  sep, old_resc.c_str(), new_resc.c_str() );
-    }
-    else {
-        // Older Postgres
-        snprintf( update_sql, MAX_SQL_SIZE,
-                  "update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
-                  sep, old_resc.c_str(), new_resc.c_str() );
-    }
-
-#endif
-    // =-=-=-=-=-=-=-
-    // SQL update
-    status = cmlExecuteNoAnswerSql( update_sql, &icss );
-
-    // =-=-=-=-=-=-=-
-    // Log error. Rollback is done in calling function
-    if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        std::stringstream ss;
-        ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
-        irods::log( LOG_NOTICE, ss.str() );
-        // _rollback("_modRescInChildren");
     }
 
     return status;
@@ -2370,58 +2096,6 @@ irods::error db_update_resc_obj_count_op(
     irods::plugin_context& _ctx,
     const std::string*     _resc,
     int                    _delta ) {
-    // =-=-=-=-=-=-=-
-    // check the context
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // check the params
-    if ( !_resc ) {
-        return ERROR(
-                   CAT_INVALID_ARGUMENT,
-                   "null parameter" );
-    }
-
-
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    /*irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }*/
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-
-    // =-=-=-=-=-=-=-
-    // get the local zone name
-    std::string zone;
-    ret = getLocalZone( _ctx.prop_map(), &icss, zone );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    int status = _updateRescObjCount(
-                     &icss,
-                     ( *_resc ),
-                     zone,
-                     _delta );
-    if ( 0 != status ) {
-        std::stringstream msg;
-        msg << "Failed to update the object count for resource \""
-            << ( *_resc )
-            << "\"";
-        return ERROR(
-                   status,
-                   msg.str() );
-    }
 
     return SUCCESS();
 
@@ -2828,20 +2502,8 @@ irods::error db_mod_data_obj_meta_op(
             return ERROR(
                        status,
                        msg.str() );
-        } else {
-            resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
-            // TODO - Address this in terms of resource hierarchies
-            if ( ( status = _updateObjCountOfResources( &icss, resc_hier, zone.c_str(), -1 ) ) != 0 ) {
-                return ERROR(
-                           status,
-                           "_updateObjCountOfResources failed" );
-            }
-            else if ( ( status = _updateObjCountOfResources( &icss, new_resc_hier, zone.c_str(), +1 ) ) != 0 ) {
-                return ERROR(
-                           status,
-                           "_updateObjCountOfResources failed" );
-            }
         }
+
     }
 
     if ( mode == 0 ) {
@@ -3101,10 +2763,6 @@ irods::error db_reg_data_obj_op(
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "chlRegDataInfo - failed in getLocalZone with status [%d]", status );
         return PASS( ret );
-    }
-
-    if ( ( status = _updateObjCountOfResources( &icss, _data_obj_info->rescHier, zone.c_str(), 1 ) ) != 0 ) {
-        return ERROR( status, "_updateObjCountOfResources failed" );
     }
 
     if ( inheritFlag ) {
@@ -3401,10 +3059,6 @@ irods::error db_reg_replica_op(
         return PASS( ret );
     }
 
-    if ( ( status = _updateObjCountOfResources( &icss, _dst_data_obj_info->rescHier, zone.c_str(), 1 ) ) != 0 ) {
-        return ERROR( status, "_updateObjCountOfResources failed" );
-    }
-
     status = cmlFreeStatement( statementNumber, &icss );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "chlRegReplica cmlFreeStatement failure %d", status );
@@ -3657,11 +3311,6 @@ irods::error db_unreg_replica_op(
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "chlUnRegDataObj - failed in getLocalZone with status [%d]", status );
         return PASS( ret );
-    }
-
-    // update the object count in the resource
-    if ( ( status = _updateObjCountOfResources( &icss, resc_hier, zone.c_str(), -1 ) ) != 0 ) {
-        return ERROR( status, "_updateObjCountOfResources failed" );
     }
 
     /* delete the access rows, if we just deleted the last replica */
@@ -4071,8 +3720,7 @@ irods::error db_del_rule_exec_op(
 static irods::error extract_resource_properties_for_operations(
     const std::string& _resc_name,
     std::string& _resc_id,
-    std::string& _resc_parent,
-    std::string& _resc_object_count ) {
+    std::string& _resc_parent ) {
 
     irods::resource_ptr resc;
     irods::error ret = resc_mgr.resolve(
@@ -4085,13 +3733,6 @@ static irods::error extract_resource_properties_for_operations(
     ret = resc->get_property<std::string>(
                     irods::RESOURCE_PARENT,
                     _resc_parent);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    ret = resc->get_property<std::string>(
-                    irods::RESOURCE_OBJCOUNT,
-                    _resc_object_count);
     if(!ret.ok()) {
         return PASS(ret);
     }
@@ -4138,19 +3779,28 @@ irods::error db_add_child_resc_op(
 
     std::string new_child_string( resc_input[irods::RESOURCE_CHILDREN] );
 
-    std::string child_name; 
     irods::children_parser child_parser;
     child_parser.set_string( new_child_string );
-    child_parser.first_child( child_name );
+    
+    irods::children_parser::children_map_t c_map;
+    child_parser.list( c_map );
+
+    if(c_map.empty()) {
+       return ERROR(
+                  SYS_INVALID_INPUT_PARAM,
+                  "child map is empty" ); 
+    }
+
+    std::string child_name    = c_map.begin()->first; 
+    std::string child_context = c_map.begin()->second; 
 
     std::string child_resource_id;
     std::string child_parent_name;
-    std::string child_object_count;
     ret = extract_resource_properties_for_operations(
               child_name,
               child_resource_id,
-              child_parent_name,
-              child_object_count); 
+              child_parent_name);
+              
     if(!ret.ok()) {
 	if( SYS_RESC_DOES_NOT_EXIST == ret.code() ) {
 	    return ERROR(
@@ -4178,18 +3828,16 @@ irods::error db_add_child_resc_op(
     std::string& parent_name = resc_input[irods::RESOURCE_NAME];
     std::string parent_resource_id;
     std::string parent_parent_name;
-    std::string parent_object_count;
     ret = extract_resource_properties_for_operations(
               parent_name,
               parent_resource_id,
-              parent_parent_name,
-              parent_object_count); 
+              parent_parent_name);
     if(!ret.ok()) {
-	if( SYS_RESC_DOES_NOT_EXIST == ret.code() ) {
-	    return ERROR(
+        if( SYS_RESC_DOES_NOT_EXIST == ret.code() ) {
+            return ERROR(
                        CAT_INVALID_RESOURCE,
                        child_parent_name.c_str());
-	}
+        }
         return PASS(ret);
     }
 
@@ -4219,52 +3867,13 @@ irods::error db_add_child_resc_op(
 
     logger.log();
 
-    status = _updateRescChildren(
-                 parent_resource_id,
-                 new_child_string );
-    if(status < 0) {
-        return ERROR(
-                   status,
-                   "failed in _updateRescChildren");
-    }
-
     ret = _updateChildParent(
               child_resource_id,
-              parent_name);
+              parent_resource_id,
+              child_context );
     if(!ret.ok()) {
         return PASS(ret);
     }
-
-    rodsLong_t child_object_count_num = 0;
-    ret = irods::lexical_cast<rodsLong_t>(
-              child_object_count_num,
-              child_object_count);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-    if(child_object_count_num > 0) {
-        std::string hierarchy;
-        ret = resc_mgr.get_hier_to_root_for_resc(
-                  parent_name,
-                  hierarchy );
-        if(!ret.ok()) {
-            _rollback( __FUNCTION__ );
-            return PASS(ret);
-        }
-        status = _updateObjCountOfResources(
-                     &icss,
-                     hierarchy,
-                     zone,
-                     child_object_count_num );
-        if(status < 0) {
-            _rollback( __FUNCTION__ );
-            std::stringstream msg;
-            msg << "_updateObjCountOfResources failed for ["
-                << hierarchy << "]";
-            return ERROR( status, msg.str() );
-        }
-
-    }  // child_object_count_num>0
 
     status = cmlExecuteNoAnswerSql( "commit", &icss );
     if(status != 0) {
@@ -4412,14 +4021,13 @@ irods::error db_reg_resc_op(
     cllBindVars[9] = resc_input[irods::RESOURCE_CHILDREN].c_str();
     cllBindVars[10] = resc_input[irods::RESOURCE_CONTEXT].c_str();
     cllBindVars[11] = resc_input[irods::RESOURCE_PARENT].c_str();
-    cllBindVars[12] = "0";
-    cllBindVarCount = 13;
+    cllBindVarCount = 12;
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegResc SQL 4" );
     }
     status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent, resc_objcount) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                  "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",
                   &icss );
 
     if ( status != 0 ) {
@@ -4483,12 +4091,10 @@ irods::error db_del_child_resc_op(
     std::string& parent_name = resc_input[irods::RESOURCE_NAME];
     std::string parent_resource_id;
     std::string parent_parent_name;
-    std::string parent_object_count;
     ret = extract_resource_properties_for_operations(
               parent_name,
               parent_resource_id,
-              parent_parent_name,
-              parent_object_count); 
+              parent_parent_name);
     if(!ret.ok()) {
            return PASS(ret);
     }
@@ -4501,12 +4107,10 @@ irods::error db_del_child_resc_op(
 
     std::string child_resource_id;
     std::string child_parent_name;
-    std::string child_object_count;
     ret = extract_resource_properties_for_operations(
               child_name,
               child_resource_id,
-              child_parent_name,
-              child_object_count); 
+              child_parent_name);
     if(!ret.ok()) {
            return PASS(ret);
     }
@@ -4526,50 +4130,11 @@ irods::error db_del_child_resc_op(
 
     ret = _updateChildParent(
               child_resource_id,
+              std::string(""),
               std::string(""));
     if(!ret.ok()) {
         return PASS(ret);
     }
-
-    ret = _removeRescChild(
-              parent_resource_id,
-              child_name);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    rodsLong_t child_object_count_num = 0;
-    ret = irods::lexical_cast<rodsLong_t>(
-              child_object_count_num,
-              child_object_count);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    if(child_object_count_num > 0) {
-        std::string hierarchy;
-        ret = resc_mgr.get_hier_to_root_for_resc(
-                  parent_name,
-                  hierarchy );
-        if(!ret.ok()) {
-            _rollback( __FUNCTION__ );
-            return PASS(ret);
-        }
-
-        status = _updateObjCountOfResources(
-                     &icss,
-                     hierarchy,
-                     zone,
-                     -child_object_count_num );
-        if(status < 0) {
-            _rollback( __FUNCTION__ );
-            std::stringstream msg;
-            msg << "_updateObjCountOfResources failed for ["
-                << hierarchy << "]";
-            return ERROR( status, msg.str() );
-        }
-
-    }  // child_object_count_num>0
 
     status = cmlExecuteNoAnswerSql( "commit", &icss );
     if(status != 0) {
@@ -4648,7 +4213,21 @@ irods::error db_del_resc_op(
     }
     // =-=-=-=-=-=-=-
 
-    if ( _rescHasData( _resc_name ) ) {
+    bool has_data = true; // default to error case
+    status = _rescHasData( &icss, _resc_name, has_data );
+    if( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "%s - _rescHasData failed for [%s] %d",
+            __FUNCTION__,
+            _resc_name,
+            status );
+        return ERROR(
+                  status,
+                  "failed to get object count for resource" );
+    }
+
+    if( has_data   ) {
         char errMsg[105];
         snprintf( errMsg, 100,
                   "resource '%s' contains one or more dataObjects",
@@ -4716,24 +4295,6 @@ irods::error db_del_resc_op(
         _rollback( "chlDelResc" );
         return ERROR( status, "resource does not exist" );
     }
-
-    /* Remove it from resource groups, if any */
-    cllBindVars[cllBindVarCount++] = rescId;
-    if ( logSQL != 0 ) {
-        rodsLog( LOG_SQL, "chlDelResc SQL 4" );
-    }
-    status =  cmlExecuteNoAnswerSql(
-                  "delete from R_RESC_GROUP where resc_id=?",
-                  &icss );
-    if ( status != 0 &&
-            status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelResc delete from R_RESC_GROUP failure %d",
-                 status );
-        _rollback( "chlDelResc" );
-        return ERROR( status, "chlDelResc delete from R_RESC_GROUP failure" );
-    }
-
 
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( rescId );
@@ -8695,27 +8256,6 @@ irods::error db_mod_resc_op(
                    "argument is empty" );
     }
 
-    if ( strcmp( _option, "objcount" ) == 0 ) {
-        int amt = atoi( _option_value );
-        int ret = _updateRescObjCount(
-                      &icss,
-                      _resc_name,
-                      zone,
-                      amt );
-        if ( ret != 0 ) {
-            rodsLog(
-                LOG_ERROR,
-                "failed in _updateRescObjCount %d",
-                ret );
-            return ERROR(
-                       ret,
-                       "failed in _updateRescObjCount" );
-        }
-
-        OK = 1;
-
-    } // objcount
-
     if ( strcmp( _option, "info" ) == 0 ) {
         cllBindVars[cllBindVarCount++] = _option_value;
         cllBindVars[cllBindVarCount++] = myTime;
@@ -8969,42 +8509,6 @@ irods::error db_mod_resc_op(
                      status );
             _rollback( "chlModResc" );
             return ERROR( status, "failed to set load digest" );
-        }
-
-        // Update resource parent strings that are _resc_name
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModResc SQL 17" );
-        }
-        cllBindVars[cllBindVarCount++] = _option_value;
-        cllBindVars[cllBindVarCount++] = _resc_name;
-        status =  cmlExecuteNoAnswerSql(
-                      "update R_RESC_MAIN  set resc_parent=? where resc_parent=?",
-                      &icss );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
-                     status );
-            _rollback( "chlModResc" );
-            return ERROR( status, "failed to set parent" );
-        }
-
-        // Update resource children lists that contain _resc_name
-        if ( logSQL != 0 ) {
-            rodsLog( LOG_SQL, "chlModResc SQL 19" );
-        }
-        status = _modRescInChildren( _resc_name, _option_value );
-        if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-            status = 0;
-        }
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModResc: _modRescInChildren error, status = %d",
-                     status );
-            _rollback( "chlModResc" );
-            return ERROR( status, "failed to update children" );
         }
 
         OK = 1;
@@ -9832,22 +9336,6 @@ irods::error db_add_avu_metadata_wild_op(
         return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
 
     }
-
-    #if 0 // future usage
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-    icatSessionStruct icss;
-    _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    #endif
 
     rodsLong_t status;//, status2;
     rodsLong_t seqNum;

@@ -726,9 +726,7 @@ irods::error mock_archive_file_resolve_hierarchy(
 irods::error mock_archive_file_rebalance(
     irods::plugin_context& _ctx ) {
 
-    return update_resource_object_count(
-               _ctx.comm(),
-               _ctx.prop_map() );
+    return SUCCESS();
 
 } // mock_archive_file_rebalancec
 

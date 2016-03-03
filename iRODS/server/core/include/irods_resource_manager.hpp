@@ -216,6 +216,10 @@ namespace irods {
             error gather_leaf_bundle_for_child( const std::string&, leaf_bundle_t& );
 
             // =-=-=-=-=-=-=-
+            /// @brief given a resource name get the parent name from the id
+            error get_parent_name( resource_ptr, std::string& );
+
+            // =-=-=-=-=-=-=-
             // Attributes
             lookup_table< resource_ptr >                        resource_name_map_;
             lookup_table< resource_ptr, long, std::hash<long> > resource_id_map_;

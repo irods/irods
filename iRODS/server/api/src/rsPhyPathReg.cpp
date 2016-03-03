@@ -133,20 +133,14 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                 // =-=-=-=-=-=-=-
                 // get the path from our parent resource
                 // to this given leaf resource - this our hier
-                getHierarchyForRescOut_t* get_hier_out = 0;
-                getHierarchyForRescInp_t  get_hier_inp;
-                snprintf( get_hier_inp.resc_name_, sizeof( get_hier_inp.resc_name_ ), "%s", dst_resc );
-                status = rsGetHierarchyForResc(
-                             rsComm,
-                             &get_hier_inp,
-                             &get_hier_out );
-                if ( status < 0 ) {
-                    irods::log( ERROR( status, "failed to get resc hier" ) );
-                    free( get_hier_out );
-                    return status;
+                ret = resc_mgr.get_hier_to_root_for_resc(
+                        dst_resc,
+                        hier );
+                if(!ret.ok()) {
+                    irods::log(PASS(ret));
+                    return ret.code();
                 }
 
-                hier = get_hier_out->resc_hier_;
                 addKeyVal(
                     &phyPathRegInp->condInput,
                     RESC_HIER_STR_KW,
@@ -157,13 +151,12 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
                 // new resource name
                 std::string root_resc;
                 irods::hierarchy_parser parser;
-                parser.set_string( get_hier_out->resc_hier_ );
+                parser.set_string( hier );
                 parser.first_resc( root_resc );
                 addKeyVal(
                     &phyPathRegInp->condInput,
                     DEST_RESC_NAME_KW,
                     root_resc.c_str() );
-                free( get_hier_out );
 
             }
             // =-=-=-=-=-=-=-

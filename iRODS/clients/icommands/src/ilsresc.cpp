@@ -90,11 +90,12 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
     char v1[BIG_STR];
     int i, status;
     int printCount;
-    char *columnNames[] = {"resource name", "id", "zone", "type", "class",
-                           "location",  "vault", "free space", "free space time", "status",
-                           "info", "comment", "create time", "modify time", "children",
-                           "context", "parent", "object count"
-                          };
+    char *columnNames[] = {
+        "resource name", "id", "zone", "type", "class",
+        "location",  "vault", "free space", "free space time", "status",
+        "info", "comment", "create time", "modify time", "children",
+        "context", "parent", "parent context"
+    };
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     printCount = 0;
@@ -115,11 +116,9 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
         i1a[i++] = COL_R_RESC_COMMENT;
         i1a[i++] = COL_R_CREATE_TIME;
         i1a[i++] = COL_R_MODIFY_TIME;
-        i1a[i++] = COL_R_RESC_CHILDREN;
         i1a[i++] = COL_R_RESC_CONTEXT;
         i1a[i++] = COL_R_RESC_PARENT;
-        i1a[i++] = COL_R_RESC_OBJCOUNT;
-
+        i1a[i++] = COL_R_RESC_PARENT_CONTEXT;
     }
     else {
         columnNames[0] = "";
@@ -208,14 +207,20 @@ void printDepth( const std::string& depth, DrawingStyle drawing_style ) {
 }
 
 // recursive function to print resource tree
-void printRescTree( const std::string& node_name, const std::string& depth,
-                    const std::vector<std::string>& resc_types, const std::vector<std::string>& resc_children,
-                    const std::map<std::string, int>& resc_map, DrawingStyle drawing_style ) {
+void printRescTree(
+     const std::string&                node_name,
+     const std::string&                depth,
+     const std::vector<std::string>&   resc_types,
+     const std::vector<std::string>&   resc_children,
+     const std::map<std::string, int>& resc_map,
+     DrawingStyle                      drawing_style ) {
+
     // get children string
     const std::map<std::string, int>::const_iterator it_resc_map = resc_map.find(node_name);
     if (it_resc_map == resc_map.end()) {
         THROW( SYS_INTERNAL_NULL_INPUT_ERR, std::string("Missing node in resc_map: [") + node_name + "]" );
     }
+    
     const int resc_index = it_resc_map->second;
     const std::string& children_str = resc_children[resc_index];
 
@@ -251,9 +256,14 @@ void printRescTree( const std::string& node_name, const std::string& depth,
 
 int
 parseGenQueryOut(
-    int offset, genQueryOut_t *genQueryOut, std::vector<std::string>& resc_names,
-    std::vector<std::string>& resc_types, std::vector<std::string>& resc_children,
-    std::map<std::string, int>& resc_map, std::vector<std::string>& roots ) {
+    int                         offset,
+    genQueryOut_t*              genQueryOut,
+    std::vector<std::string>&   resc_names,
+    std::vector<std::string>&   resc_indices,
+    std::vector<std::string>&   resc_types,
+    std::vector<std::string>&   resc_parents,
+    std::map<std::string, int>& resc_map,
+    std::vector<std::string>&   roots ) {
 
     // loop over rows (i.e. for each resource)
     for ( int i=0; i<genQueryOut->rowCnt; ++i ) {
@@ -272,12 +282,12 @@ parseGenQueryOut(
         t_res = genQueryOut->sqlResult[1].value + i * genQueryOut->sqlResult[1].len;
         resc_types.push_back( std::string( t_res ) );
 
-        // get resource children
+        // get resource indicies
         t_res = genQueryOut->sqlResult[2].value + i * genQueryOut->sqlResult[2].len;
         if (t_res) {
-            resc_children.push_back( std::string( t_res ) );
+            resc_indices.push_back( std::string( t_res ) );
         } else {
-            resc_children.push_back( "" );
+            resc_indices.push_back( "" );
         }
 
         // check if has parent
@@ -285,11 +295,49 @@ parseGenQueryOut(
         if ( !t_res || !strlen( t_res ) ) {
             // another root node
             roots.push_back( resc_names.back() );
+        } else {
+            resc_parents.push_back( std::string( t_res ) );
         }
     }
 
     return 0;
 }
+
+int build_child_list(
+    const std::vector<std::string>&   _resc_names,
+    const std::vector<std::string>&   _resc_parents,
+    const std::vector<std::string>&   _resc_indicies,
+    std::vector<std::string>&         _resc_children ) {
+
+    for( size_t idx = 0;
+         idx < _resc_names.size();
+         ++idx ) {
+        if(idx >= _resc_parents.size() ||
+           _resc_parents[idx].empty()) {
+            continue;
+        }
+
+        size_t parent_pos = std::find(
+                                _resc_indicies.begin(),
+                                _resc_indicies.end(),
+                                _resc_parents[idx] ) - _resc_indicies.begin();
+        if( parent_pos > _resc_indicies.size() ) {
+            // parent_idx not found
+            continue;
+        }
+
+        if(!_resc_children[parent_pos].empty()) {
+            _resc_children[parent_pos] += ";";
+        }
+        _resc_children[parent_pos] += _resc_names[idx];
+        _resc_children[parent_pos] += "{}";
+
+    } // for idx
+
+    return 0;
+
+} // build_child_list
+
 
 int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , DrawingStyle drawing_style) {
     genQueryInp_t genQueryInp;
@@ -299,7 +347,7 @@ int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , D
     // set up query columns
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, ORDER_BY );
     addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID, 1 );
     addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT, 1 );
 
     if ( zoneArgument && *zoneArgument ) {
@@ -324,8 +372,10 @@ int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , D
     // containers for storing query results
     // one vector per attribute
     std::vector<std::string> resc_names;
+    std::vector<std::string> resc_indices;
     std::vector<std::string> resc_types;
     std::vector<std::string> resc_children;
+    std::vector<std::string> resc_parents;
 
     // mapping of resource names and row indexes for looking up children
     std::map<std::string, int> resc_map;
@@ -335,12 +385,21 @@ int showRescTree( const char *name, const char *zoneArgument, rcComm_t *Conn , D
 
     // parse results
     int offset = 0;
-    status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_types, resc_children, resc_map, roots );
+    status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_indices, resc_types, resc_parents, resc_map, roots );
     while ( !status && genQueryOut->continueInx > 0 ) {
         genQueryInp.continueInx = genQueryOut->continueInx;
         offset += genQueryOut->rowCnt;
         status = rcGenQuery( Conn, &genQueryInp, &genQueryOut );
-        status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_types, resc_children, resc_map, roots );
+        status = parseGenQueryOut( offset, genQueryOut, resc_names, resc_indices, resc_types, resc_parents, resc_map, roots );
+    }
+
+    // child strings assumed to be initialized by printRescTree
+    resc_children.resize( resc_names.size() );
+
+    status =  build_child_list( resc_names, resc_parents, resc_indices, resc_children );
+    if( status < 0 ) {
+        printError( Conn, status, "build_child_list failed" );
+        return status;
     }
 
     // If target resource was specified print tree for that resource

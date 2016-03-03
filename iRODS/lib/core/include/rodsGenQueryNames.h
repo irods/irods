@@ -52,7 +52,7 @@ columnName_t columnNames[] = {
     { COL_R_RESC_CHILDREN, "RESC_CHILDREN", },
     { COL_R_RESC_CONTEXT,  "RESC_CONTEXT", },
     { COL_R_RESC_PARENT,   "RESC_PARENT", },
-    { COL_R_RESC_OBJCOUNT,   "RESC_OBJCOUNT", },
+    { COL_R_RESC_PARENT_CONTEXT,   "RESC_PARENT_CONTEXT", },
 
     { COL_D_DATA_ID,        "DATA_ID", },
     { COL_D_COLL_ID,        "DATA_COLL_ID", },

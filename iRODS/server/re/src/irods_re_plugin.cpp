@@ -34,7 +34,7 @@ namespace irods{
         configuration_parser::array_t re_plugin_configs;
         error err;
         if(!(err = props.get_property <configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs)).ok()) {
-            rodsLog(LOG_ERROR, "cannot load re_plugins");
+            rodsLog(LOG_ERROR, "cannot load re_plugins from server_config.json");
         }
         return re_plugin_configs;
     }
