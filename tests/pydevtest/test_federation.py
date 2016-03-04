@@ -1095,3 +1095,87 @@ OUTPUT ruleExecOut
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
         os.remove(filepath)
+
+    @unittest.skipIf(lib.get_irods_version() < (4, 1, 5), 'Fixed in 4.1.5')
+    def test_msiRemoveKeyValuePairsFromObj(self):
+        # pick session(s) for the test
+        test_session = self.user_sessions[0]
+
+        # make test file
+        filename = 'msiRemoveKeyValuePairsFromObj_test_file'
+        filesize = self.config['test_file_size']
+        filepath = os.path.join(self.local_test_dir_path, filename)
+        lib.make_file(filepath, filesize)
+
+        # test specific parameters
+        parameters = self.config.copy()
+        parameters['filepath'] = filepath
+        parameters['filename'] = filename
+        parameters['user_name'] = test_session.username
+        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **parameters)
+        parameters['attribute'] = "test_attr"
+        parameters['value'] = "test_value"
+
+        # put file in remote collection
+        test_session.assert_icommand(
+            "iput -f {filepath} {remote_home_collection}/".format(**parameters))
+
+        # file should be there
+        test_session.assert_icommand(
+            "ils -L {remote_home_collection}/{filename}".format(**parameters), 'STDOUT_SINGLELINE', filename)
+
+        # prepare first rule file to add kvp metadata
+        rule_file_path = os.path.join(
+            self.local_test_dir_path, 'msiAssociateKeyValuePairsToObj.r')
+        with open(rule_file_path, 'w') as rule_file:
+            rule_str = '''
+msiAssociateKeyValuePairsToObj {{
+    *attr."{attribute}" = "{value}";
+    msiAssociateKeyValuePairsToObj(*attr, *obj, "-d")
+}}
+INPUT *obj="{remote_home_collection}/{filename}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+            rule_file.write(rule_str)
+
+        # invoke rule
+        test_session.assert_icommand('irule -F ' + rule_file_path)
+
+        # look for AVU set by msiAssociateKeyValuePairsToObj
+        test_session.assert_icommand(
+                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters), 
+                                     'STDOUT_MULTILINE',
+                                     ['attribute: {attribute}$'.format(**parameters),
+                                      'value: {value}$'.format(**parameters)],
+                                     use_regex=True)
+
+        # prepare second rule file to remove kvp metadata
+        rule_file_path = os.path.join(
+            self.local_test_dir_path, 'msiRemoveKeyValuePairsFromObj.r')
+        with open(rule_file_path, 'w') as rule_file:
+            rule_str = '''
+msiRemoveKeyValuePairsFromObj {{
+    *attr."{attribute}" = "{value}";
+    msiRemoveKeyValuePairsFromObj(*attr, *obj, "-d")
+}}
+INPUT *obj="{remote_home_collection}/{filename}"
+OUTPUT ruleExecOut
+'''.format(**parameters)
+            rule_file.write(rule_str)
+
+        # invoke rule
+        test_session.assert_icommand('irule -F ' + rule_file_path)
+
+        # confirm that AVU is gone
+        test_session.assert_icommand(
+                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters), 
+                                     'STDOUT_MULTILINE',
+                                     ['AVUs defined for dataObj {remote_home_collection}/{filename}:$'.format(**parameters),
+                                      'None$'],
+                                     use_regex=True)
+
+        # cleanup
+        test_session.assert_icommand(
+            "irm -f {remote_home_collection}/{filename}".format(**parameters))
+        os.remove(filepath)
