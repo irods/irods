@@ -32,7 +32,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         int status = 0;
-        rstrcpy( zoneHint, rodsPathInp->srcPath[i].inPath, MAX_NAME_LEN ); // // JMC - backport 4416
+        rstrcpy( zoneHint, rodsPathInp->srcPath[i].outPath, MAX_NAME_LEN ); // // JMC - backport 4416
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ||
                 rodsPathInp->srcPath[i].objState == UNKNOWN_ST ) {
             status = getRodsObjType( conn, &rodsPathInp->srcPath[i] );

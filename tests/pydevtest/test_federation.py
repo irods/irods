@@ -67,6 +67,35 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             test_session.assert_icommand(
                 ['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
 
+    @unittest.skipIf(lib.get_irods_version() < (4, 2, 0), 'Fixed in 4.2.0')
+    def test_ils_A(self):
+        # pick session(s) for the test
+        test_session = self.user_sessions[0]
+
+        # make test file
+        with tempfile.NamedTemporaryFile() as f:
+            filename = os.path.basename(f.name)
+            filesize = configuration.FEDERATION.TEST_FILE_SIZE
+            lib.make_file(f.name, filesize, 'arbitrary')
+            remote_home_collection = test_session.remote_home_collection(configuration.FEDERATION.REMOTE_ZONE)
+            username = test_session.username
+            local_zone = test_session.zone_name
+
+            # put file in remote collection
+            test_session.assert_icommand(
+                ['iput', f.name, remote_home_collection])
+
+            # icd to remote collection
+            test_session.assert_icommand(['icd', remote_home_collection])
+
+            # list object's ACLs
+            test_session.assert_icommand(
+                ['ils', '-A', filename], 'STDOUT_SINGLELINE', "ACL - {username}#{local_zone}:own".format(**locals()))
+
+            # cleanup
+            test_session.assert_icommand(
+                ['irm', '-f', '{0}/{1}'.format(remote_home_collection, filename)])
+
     def test_ils_subcolls(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
