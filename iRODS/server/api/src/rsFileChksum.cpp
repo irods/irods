@@ -223,6 +223,16 @@ int fileChksum(
                                 file_obj,
                                 buffer,
                                 SVR_MD5_BUF_SZ );
+    if (!read_err.ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to read buffer from file: \"";
+        msg << fileName;
+        msg << "\"";
+        irods::error result = PASSMSG( msg.str(), read_err );
+        irods::log( result );
+        return result.code();
+    }
     int bytes_read = read_err.code();
 
     // =-=-=-=-=-=-=-
