@@ -97,11 +97,6 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
                                         &dataObjInfoHead );
     }
 
-//    ///
-//    status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp,
-//                                            &dataObjInfoHead );
-//    /////
-
     if ( status < 0 ) {
         char* sys_error = NULL;
         const char* rods_error = rodsErrorName( status, &sys_error );
