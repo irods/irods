@@ -176,6 +176,7 @@ def setup_service_account(irods_config):
 
     os.lchown(os.path.join(irods_config.server_bin_directory, 'PamAuthCheck'), 0, 0)
     os.chmod(os.path.join(irods_config.server_bin_directory, 'PamAuthCheck'), stat.S_ISUID | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    #owner of top-level directory changed, clear the cache
     irods_config.clear_cache()
 
     return (irods_user, irods_group)
@@ -383,7 +384,7 @@ def setup_database_config(irods_config):
             'not be performed. Providing different inputs from\n'
             'those provided the first time this script was run\n'
             'will result in unspecified behavior, and may put\n'
-            'a previously working grid in a broken state. It\'s\n'
+            'a previously working zone in a broken state. It\'s\n'
             'recommended that you exit this script now if you\n'
             'are running it manually. If you wish to wipe out\n'
             'your current iRODS installation and associated data\n'
@@ -412,8 +413,9 @@ def setup_catalog(irods_config, default_resource_directory=None):
                 irods_config.update_catalog_schema(cursor)
                 l.debug('Committing database changes...')
                 cursor.commit()
-            finally:
+            except:
                 cursor.rollback()
+                raise
 
     # Make sure communications are working.
     #       This simple test issues a few SQL statements
@@ -450,7 +452,8 @@ def create_database_tables(irods_config, cursor=None, default_resource_directory
                         ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
                         stdin=sql_file)
         l.info('Creating database tables...')
-        sql_files = [os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
+        sql_files = [
+                os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
                 os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysInserts.sql')
             ]
         for sql_file in sql_files:
@@ -466,7 +469,7 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     if cursor is None:
         with contextlib.closing(irods_config.get_database_connection()) as connection:
             with contextlib.closing(connection.cursor()) as cursor:
-                create_database_tables(irods_config, cursor)
+                setup_database_values(irods_config, cursor)
                 return
     l = logging.getLogger(__name__)
     timestamp = '{0:011d}'.format(int(time.time()))
@@ -478,6 +481,8 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID_nextval();").fetchone()[0]
         elif irods_config.database_config['catalog_database_type'] == 'oracle':
             return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID.nextval from DUAL;").fetchone()[0]
+        else:
+            raise IrodsError('no next object id function defined for %s' % irods_config.database_config['catalog_database_type'])
 
     #zone
     zone_id = get_next_object_id()
@@ -629,12 +634,12 @@ def setup_client_environment(irods_config):
             'irods_cwd': '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
             'irods_user_name': irods_config.server_config['zone_user'],
             'irods_zone_name': irods_config.server_config['zone_name'],
-            'irods_client_server_negotiation': 'request_server_negotiation', #irods_config.server_config['negotiation_key'],
-            'irods_client_server_policy': 'CS_NEG_REFUSE', #irods_config.server_config['match_hash_policy'],
-            'irods_encryption_key_size': 32, #irods_config.server_config['encryption_key_size'],
-            'irods_encryption_salt_size': 8, #irods_config.server_config['encryption_salt_size'],
-            'irods_encryption_num_hash_rounds': 16, #irods_config.server_config['encryption_num_hash_rounds'],
-            'irods_encryption_algorithm': 'AES-256-CBC', #irods_config.server_config['encryption_algorithm'],
+            'irods_client_server_negotiation': 'request_server_negotiation',
+            'irods_client_server_policy': 'CS_NEG_REFUSE',
+            'irods_encryption_key_size': 32,
+            'irods_encryption_salt_size': 8,
+            'irods_encryption_num_hash_rounds': 16,
+            'irods_encryption_algorithm': 'AES-256-CBC',
             'irods_default_hash_scheme': irods_config.server_config['default_hash_scheme'],
             'irods_match_hash_policy': irods_config.server_config['match_hash_policy'],
             'irods_server_control_plane_port': irods_config.server_config['server_control_plane_port'],
