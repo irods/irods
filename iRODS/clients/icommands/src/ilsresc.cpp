@@ -295,6 +295,7 @@ parseGenQueryOut(
         if ( !t_res || !strlen( t_res ) ) {
             // another root node
             roots.push_back( resc_names.back() );
+            resc_parents.push_back( "" ); // parents must line up with resources
         } else {
             resc_parents.push_back( std::string( t_res ) );
         }
