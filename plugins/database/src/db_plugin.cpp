@@ -14334,7 +14334,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     std::string not_child_array = not_child_stream.str();
     not_child_array.pop_back(); // trim last ','
 
-    std::string base_query = "select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s));";
+    std::string base_query = "select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s))";
     char query[ MAX_NAME_LEN ];
     snprintf(
         query,
