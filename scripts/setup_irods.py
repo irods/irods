@@ -93,6 +93,30 @@ def setup_server(irods_config):
         default_resource_directory = get_and_create_default_vault(irods_config)
         irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
+    test_put(irods_config)
+
+    l.info(get_header('iRODS is installed and running'))
+
+def test_put(irods_config):
+    l = logging.getLogger(__name__)
+
+    l.info(get_header('Attempting test put'))
+
+    test_text = 'This is a test file written by the iRODS installation script.'
+    with tempfile.NamedTemporaryFile(mode='wt', suffix=irods_config.server_config['default_resource_name']) as f:
+        print(test_text, file=f, end='')
+        f.flush()
+        l.info('Putting the test file into iRODS...')
+        irods.lib.execute_command(['iput', f.name])
+        test_file_name = os.path.basename(f.name)
+    l.info('Getting the test file from iRODS...')
+    if irods.lib.execute_command(['iget', test_file_name, '-'])[0] != test_text:
+        raise IrodsError('The text retrieved from iRODS did not match the text in the file put into iRODS')
+    l.info('Removing the test file from iRODS...')
+    irods.lib.execute_command(['irm', test_file_name])
+
+    l.info('Success.')
+
 def check_hostname():
     l = logging.getLogger(__name__)
 
