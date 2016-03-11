@@ -463,8 +463,6 @@ Res *evaluateFunctionApplication( Node *func, Node *arg, int applyAll, Node *nod
 Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     unsigned int i;
     unsigned int n;
-    Node* args[MAX_FUNC_PARAMS];
-    Node* argsProcessed[MAX_FUNC_PARAMS];
     i = 0;
     Node *appFuncRes = appRes;
     while ( getNodeType( appFuncRes ) == N_PARTIAL_APPLICATION ) {
@@ -484,6 +482,8 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     Res *appArgRes = appRes->subtrees[1];
 
     n = appArgRes->degree;
+    std::vector<Node*> args(n,NULL);
+    std::vector<Node*> argsProcessed(n,NULL);
     Res** appArgs = appArgRes->subtrees;
     Node** nodeArgs = node->subtrees[1]->subtrees;
     ExprType *coercionType = NULL;
@@ -505,7 +505,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, fn );
 
     localTypingConstraints = newList( r );
-    int ioParam[MAX_FUNC_PARAMS];
+    std::vector<int> ioParam(n,0);
     /* evaluation parameters and try to resolve remaining tvars with unification */
     for ( i = 0; i < n; i++ ) {
         switch ( getIOType( nodeArgs[i] ) ) {
@@ -583,7 +583,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }*/
 
 
-        ExprType *argType = newTupleRes( n, args, r )->exprType;
+        ExprType *argType = newTupleRes( n, &args[0], r )->exprType;
         if ( typeFuncParam( node->subtrees[1], argType, coercionType, env->current, localTypingConstraints, errmsg, newRegion ) != 0 ) {
             res = newErrorRes( r, RE_TYPE_ERROR );
             RETURN;
@@ -613,7 +613,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }
     }
     else {
-        memcpy( argsProcessed, args, sizeof( Res * ) * n );
+        memcpy( &argsProcessed[0], &args[0], sizeof( Res * ) * n );
     }
 
 
@@ -627,19 +627,19 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     if ( fd != NULL ) {
         switch ( getNodeType( fd ) ) {
         case N_FD_DECONSTRUCTOR:
-            res = deconstruct( argsProcessed, FD_PROJ( fd ) );
+            res = deconstruct( &argsProcessed[0], FD_PROJ( fd ) );
             break;
         case N_FD_CONSTRUCTOR:
-            res = construct( fn, argsProcessed, n, instantiate( node->exprType, env->current, 1, r ), r );
+            res = construct( fn, &argsProcessed[0], n, instantiate( node->exprType, env->current, 1, r ), r );
             break;
         case N_FD_FUNCTION:
-            res = ( Res * ) FD_SMSI_FUNC_PTR( fd )( argsProcessed, n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
+            res = ( Res * ) FD_SMSI_FUNC_PTR( fd )( &argsProcessed[0], n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
             break;
         case N_FD_EXTERNAL:
-            res = execAction3( fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         case N_FD_RULE_INDEX_LIST:
-            res = execAction3( fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
             break;
         default:
             res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
@@ -648,7 +648,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
         }
     }
     else {
-        res = execAction3( fn, argsProcessed, n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+        res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
     }
 
     if ( GlobalREAuditFlag > 0 ) {
@@ -1631,4 +1631,3 @@ int definitelyEq( Res *a, Res *b ) {
     }
     return a == b;
 }
-
