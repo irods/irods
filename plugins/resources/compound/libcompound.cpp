@@ -17,6 +17,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_kvp_string_parser.hpp"
+#include "irods_lexical_cast.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -404,9 +405,17 @@ irods::error repl_object(
         parser.first_resc( resource );
         // =-=-=-=-=-=-=-
         // get the parent name
-        std::string parent_name;
-        irods::error ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PARENT, parent_name );
+        std::string parent_id_str;
+        irods::error ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PARENT, parent_id_str );
         if ( ( result = ASSERT_PASS( ret, "Failed to get the parent name." ) ).ok() ) {
+
+            std::string parent_name;
+            ret = resc_mgr.resc_id_to_name(
+                     parent_id_str,
+                     parent_name );
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
 
             // =-=-=-=-=-=-=-
             // get the cache name
@@ -1356,10 +1365,18 @@ irods::error open_for_prefer_archive_policy(
 
     // =-=-=-=-=-=-=-
     // get the parent name
-    std::string parent_name;
-    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PARENT, parent_name );
+    std::string parent_id_str;
+    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_PARENT, parent_id_str );
     if ( !ret.ok() ) {
         return PASS( ret );
+    }
+
+    std::string parent_name;
+    ret = resc_mgr.resc_id_to_name(
+             parent_id_str,
+             parent_name );
+    if(!ret.ok()) {
+        return PASS(ret);
     }
 
     // =-=-=-=-=-=-=-
@@ -1751,6 +1768,10 @@ class compound_resource : public irods::resource {
                     itr->first,
                     itr->second );
             } // for itr
+
+            std::string parent_id_str;
+            ret = properties_.get< std::string >( irods::RESOURCE_PARENT, parent_id_str );
+
         }
 
         // =-=-=-=-=-=-
