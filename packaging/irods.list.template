@@ -393,12 +393,6 @@ f 644 root root ${IRODS_HOME_DIR}/scripts/irods/test/README ./scripts/irods/test
 
 
 f 755 root root ${IRODS_HOME}/scripts/find_irods_home.sh ./iRODS/scripts/find_irods_home.sh
-f 755 root root ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
-d 755 root root ${IRODS_HOME}/scripts/notify -
-f 644 root root ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
-f 755 root root ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl
-f 644 root root ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
-f 644 root root ${IRODS_HOME}/scripts/README.txt ./iRODS/scripts/README.txt
 d 755 root root ${IRODS_HOME}/server -
 d 755 root root ${IRODS_HOME}/server/log -
 d 755 root root ${IRODS_HOME}/server/config -
