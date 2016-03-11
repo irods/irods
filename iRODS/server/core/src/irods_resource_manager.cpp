@@ -842,7 +842,7 @@ namespace irods {
             }
 
             rodsLong_t parent_id = 0;
-            ret = irods::lexical_cast<rodsLong_t>(
+            ret = lexical_cast<rodsLong_t>(
                       parent_id_str,
                       parent_id );
             if(!ret.ok()) {
@@ -875,7 +875,7 @@ namespace irods {
             child_resc->set_parent(parent_resc);
 
             rodsLog(
-                LOG_DEBUG,
+                LOG_NOTICE,// XXXX - LOG_DEBUG,
                 "%s - add [%s][%s] to [%ld]",
                 __FUNCTION__,
                 child_name.c_str(),
@@ -1221,6 +1221,73 @@ namespace irods {
         return SUCCESS();
 
     } // leaf_id_to_hier
+
+    error resource_manager::resc_id_to_name(
+        const rodsLong_t& _id,
+        std::string&      _name ) {
+        // parent name might be 'empty'
+        if(!_id) {
+            return SUCCESS();
+        }
+
+        if( !resource_id_map_.has_entry(_id) ) {
+            std::stringstream msg;
+            msg << "invalid resource id: " << _id;
+            return ERROR(
+                       SYS_RESC_DOES_NOT_EXIST,
+                       msg.str() );
+        }
+
+        resource_ptr resc = resource_id_map_[ _id ];
+
+        std::string hier;
+        error ret = resc->get_property<std::string>(
+                        RESOURCE_NAME,
+                        _name );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        return SUCCESS();
+
+    } // resc_id_to_name
+
+    error resource_manager::resc_id_to_name(
+        const std::string& _id_str,
+        std::string&       _name ) {
+        // parent name might be 'empty'
+        if("0" == _id_str || _id_str.empty()) {
+            return SUCCESS();
+        }
+
+        rodsLong_t resc_id = 0;
+        error ret = lexical_cast<rodsLong_t>(
+                       _id_str,
+                       resc_id );
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+
+        if( !resource_id_map_.has_entry(resc_id) ) {
+            std::stringstream msg;
+            msg << "invalid resource id: " << _id_str;
+            return ERROR(
+                       SYS_RESC_DOES_NOT_EXIST,
+                       msg.str() );
+        }
+        resource_ptr resc = resource_id_map_[ resc_id ];
+
+        std::string hier;
+        ret = resc->get_property<std::string>(
+                        RESOURCE_NAME,
+                        _name );
+        if( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        return SUCCESS();
+
+    } // resc_id_to_name
 
 }; // namespace irods
 

@@ -104,6 +104,14 @@ namespace irods {
             error leaf_id_to_hier( const rodsLong_t&, std::string& );
 
             // =-=-=-=-=-=-=-
+            /// @brief get the resc name of the resource given an id
+            error resc_id_to_name( const rodsLong_t&, std::string& );
+
+            // =-=-=-=-=-=-=-
+            /// @brief get the resc name of the resource given an id as a string
+            error resc_id_to_name( const std::string&, std::string& );
+
+            // =-=-=-=-=-=-=-
             /// @brief resolve a resource from a match with a given property
             template< typename value_type >
             error resolve_from_property( std::string   _prop,    // property key
