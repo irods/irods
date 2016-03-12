@@ -875,7 +875,7 @@ namespace irods {
             child_resc->set_parent(parent_resc);
 
             rodsLog(
-                LOG_NOTICE,// XXXX - LOG_DEBUG,
+                LOG_DEBUG,
                 "%s - add [%s][%s] to [%ld]",
                 __FUNCTION__,
                 child_name.c_str(),

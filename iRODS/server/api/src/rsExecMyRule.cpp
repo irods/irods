@@ -48,8 +48,30 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
 
     rstrcpy( rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN );
 
-    status = execMyRule( execMyRuleInp->myRule, execMyRuleInp->inpParamArray,
-                         execMyRuleInp->outParamDesc, &rei );
+    std::string my_rule_text   = execMyRuleInp->myRule;
+    std::string out_param_desc = execMyRuleInp->outParamDesc;
+    irods::rule_engine_context_manager<
+        irods::unit,
+        ruleExecInfo_t*,
+        irods::AUDIT_RULE> re_ctx_mgr(
+                               irods::re_plugin_globals->global_re_mgr,
+                               &rei);
+    irods::error err = re_ctx_mgr.exec_rule_text(
+                           my_rule_text,
+                           execMyRuleInp->inpParamArray,
+                           out_param_desc,
+                           &rei);
+    if(!err.ok()) {
+        rodsLog(
+            LOG_ERROR,
+            "%s : %d, %s",
+            __FUNCTION__,
+            err.code(),
+            err.result().c_str()
+        );
+    }
+    return err.code();
+
 
     if ( iFlag != NULL ) {
         reTestFlag = oldReTestFlag;
