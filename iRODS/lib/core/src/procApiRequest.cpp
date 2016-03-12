@@ -263,7 +263,13 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
 
     ret = readMsgHeader( net_obj, &myHeader, NULL );
     if ( !ret.ok() ) {
+#ifdef RODS_CLERVER
         irods::log( PASS( ret ) );
+#else
+        if (ret.code() == SYS_HEADER_READ_LEN_ERR) {
+            ret = CODE(SYS_INTERNAL_ERR);
+        }
+#endif
         if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
@@ -273,7 +279,7 @@ readAndProcApiReply( rcComm_t *conn, int apiInx, void **outStruct,
                      conn->clientState, conn->agentState );
             cliSwitchConnect( conn );
             conn->thread_ctx->lock->unlock();
-            irods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
+            ret = readMsgHeader( net_obj, &myHeader, NULL );
 
             if ( !ret.ok() ) {
                 cliChkReconnAtReadEnd( conn );

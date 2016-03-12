@@ -265,9 +265,11 @@ int rcDisconnect(
               RODS_DISCONNECT_T,
               NULL, NULL, NULL, 0,
               _conn->irodsProt );
+#ifdef RODS_CLERVER
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
+#endif
 
     // =-=-=-=-=-=-=-
     // get rods env to pass to client start for policy decisions
