@@ -295,12 +295,12 @@ def setup_server_config(irods_config):
         echo=False)
 
     server_config['negotiation_key'] = prompt(
-        'iRODS server\'s negotiation key',
+        'iRODS server\'s negotiation key (32 characters)',
         input_filter=character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
         echo=False)
 
     server_config['server_control_plane_key'] = prompt(
-        'Control Plane key',
+        'Control Plane key (32 characters)',
         input_filter=character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
         echo=False)
 
@@ -725,7 +725,7 @@ def default_prompt(*args, **kwargs):
         try :
             return input_filter(user_input)
         except InputFilterError as e:
-            l.debug(e)
+            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
             l.warning(e.args[0] if len(e.args) else "User input error.")
             user_input = prompt(message, **kwargs)
 
@@ -754,7 +754,7 @@ def prompt(*args, **kwargs):
         try :
             return input_filter(user_input)
         except InputFilterError as e:
-            l.debug(e)
+            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
             l.warning(e.args[0] if len(e.args) else "User input error.")
 
 def int_filter(field='Input'):
