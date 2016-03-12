@@ -4,6 +4,7 @@
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
+#include "execMyRule.h" 
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -36,8 +37,7 @@
 #include "reFuncDefs.hpp"
 #include "region.h"
 
-    int
-    applyRuleArg331( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, ruleExecInfo_t *rei, int reiSaveFlag );
+//int applyRuleArg331( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, ruleExecInfo_t *rei, int reiSaveFlag );
 
 irods::error start(irods::default_re_ctx& _u) {
     (void) _u;
@@ -172,6 +172,49 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 
 }
 
+irods::error exec_rule_text(
+    irods::default_re_ctx&,
+    std::string            _rt,
+    std::list<boost::any>& _ps,
+    irods::callback        _eff_hdlr) {
+
+    if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
+        rodsLog(
+            LOG_DEBUG,
+            "rule engine xre has not initialized, skip rule [%s]",
+            _rt.c_str());
+        return SUCCESS();
+    }
+
+    rodsLog(
+        LOG_DEBUG,
+        "applying rule %s, params %ld",
+        _rt.c_str(),
+        _ps.size());
+
+    ruleExecInfo_t* rei = nullptr;
+    irods::error err;
+    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
+        return err;
+    }
+
+    auto itr = begin(_ps);
+    ++itr; // skip tuple
+    ++itr; // skip callback
+    msParamArray_t* ms_params = boost::any_cast<msParamArray_t*>(*itr);
+
+    ++itr; // skip msparam
+    std::string out_desc = boost::any_cast<std::string>(*itr);
+
+    int status = execMyRule(
+                     (char*)_rt.c_str(),
+                     ms_params,
+                     (char*)out_desc.c_str(),
+                     rei );
+    return SUCCESS();
+}
+
+
 extern "C"
 irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
@@ -191,6 +234,11 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule ) );
+ 
+    re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
+            "exec_rule_text",
+            std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_text ) );
+
 
     return re;
 

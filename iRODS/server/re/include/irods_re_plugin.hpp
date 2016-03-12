@@ -198,6 +198,18 @@ namespace irods {
             return fcn(_re_ctx, _rn, l, _callback);
         }
 
+        template<typename ...As>
+        error exec_rule_text(
+                std::string _rt,
+                T&          _re_ctx,
+                callback    _callback,
+                As&&...     _ps) {
+            auto l = pack(std::forward<As>(_ps)...);
+            auto fcn = boost::any_cast<
+                           std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                               operations_["exec_rule_text"] );
+            return fcn(_re_ctx, _rt, l, _callback);
+        }
     private:
         error load_operation(void *handle, std::string _fcn, std::string _key);
         irods::lookup_table< boost::any > operations_;
@@ -214,6 +226,16 @@ namespace irods {
         dynamic_operation_execution_manager(
             std::shared_ptr<rule_engine_context_manager<T,C,Audit> > _re_mgr  // rule engine manager
         ) : re_mgr_(_re_mgr) { }
+
+        template<typename... As >
+        error exec_rule_text(
+            std::string _rule_text,
+            As&& ... _ps) {
+                return re_mgr_->exec_rule_text(
+                           _rule_text,
+                           clone(_ps)...);
+
+        }
 
         template<typename OP, typename... As >
         error call(
@@ -421,6 +443,24 @@ namespace irods {
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
 
+        template <typename ...As>
+        error exec_rule_text(std::string _rt, As &&... _ps) {
+            error ret;
+            for( auto itr  = begin(this->re_mgr_.re_packs_);
+                      itr != end(this->re_mgr_.re_packs_);
+                            ++itr ) {
+                ret = this->rex_mgr_.exec_rule_text(
+                        _rt,
+                        itr->re_ctx_,
+                        callback(*this),
+                        std::forward<As>(_ps)...);
+                if(ret.ok()) {
+                    return ret;
+                }
+            }
+            return ret;
+        }
+
     protected:
         C ctx_;
         dynamic_operation_execution_manager<T,C,DONT_AUDIT_RULE> rex_mgr_;
@@ -445,6 +485,25 @@ namespace irods {
             };
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
+
+        template <typename ...As>
+        error exec_rule_text(std::string _rt, As &&... _ps) {
+            error ret;
+            for( auto itr  = begin(this->re_mgr_.re_packs_);
+                      itr != end(this->re_mgr_.re_packs_);
+                            ++itr ) {
+                ret = itr->re_->exec_rule_text(
+                        _rt,
+                        itr->re_ctx_,
+                        callback(*this),
+                        std::forward<As>(_ps)...);
+                if(ret.ok()) {
+                    return ret;
+                }
+            }
+            return ret;
+        }
+
     protected:
         C ctx_;
 
