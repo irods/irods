@@ -331,6 +331,12 @@ static int build_irods_path_structure(
         if ( _dst_type <= COLL_OBJ_T ) {
             status = parseRodsPath( _rods_paths->destPath, _rods_env );
         }
+        else if ( strcmp( _rods_paths->destPath->inPath, STDOUT_FILE_NAME ) == 0 ) {
+            snprintf( _rods_paths->destPath->outPath, sizeof( _rods_paths->destPath->outPath ), "%s", STDOUT_FILE_NAME );
+            _rods_paths->destPath->objType = UNKNOWN_FILE_T;
+            _rods_paths->destPath->objState = NOT_EXIST_ST;
+            status = NOT_EXIST_ST;
+        }
         else {
             status = parseLocalPath( _rods_paths->destPath );
         }
