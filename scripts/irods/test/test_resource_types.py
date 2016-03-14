@@ -3489,6 +3489,21 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_iquest_for_resc_hier__3039(self):
+        # local setup
+        # break the second child resource
+        filename = "test_iquest_for_resc_hier__3039.txt"
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        self.admin.assert_icommand_fail("iput " + filename, 'STDOUT_SINGLELINE', "put error")  # put file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix1Resc")  # should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix2Resc")  # should be listed
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix3Resc")  # should be listed
+        self.admin.assert_icommand('iquest "select DATA_RESC_HIER where DATA_NAME like \'' + filename + "'\"", 'STDOUT_SINGLELINE', "demoResc;unix1Resc")  # should be listed
+        self.admin.assert_icommand('iquest "select DATA_RESC_HIER where DATA_NAME like \'' + filename + "'\"", 'STDOUT_SINGLELINE', "demoResc;unix2Resc")  # should be listed
+        self.admin.assert_icommand('iquest "select DATA_RESC_HIER where DATA_NAME like \'' + filename + "'\"", 'STDOUT_SINGLELINE', "demoResc;unix3Resc")  # should be listed
+
+
     def test_reliable_iput__ticket_2557(self):
         # local setup
         # break the second child resource
