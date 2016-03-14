@@ -13,23 +13,17 @@
 
 namespace irods {
 
+    static const std::string IRODS_LEGACY_ENV_FILE = "/.irods/.irodsEnv";
+    static const std::string IRODS_JSON_ENV_FILE = "/.irods/irods_environment.json";
+
+    error get_json_environment_file( std::string& _env_file, std::string& _session_file);
+    error get_legacy_environment_file( std::string& _env_file, std::string& _session_file);
+
     class environment_properties {
 
         public:
             /// @brief  type alias for iterating over configuration properties
             typedef configuration_parser::object_t::iterator iterator;
-
-            /// @brief path for legacy environemnt file
-            static const std::string LEGACY_ENV_FILE;
-
-            /// @brief path for json environemnt file
-            static const std::string JSON_ENV_FILE;
-
-            /// @brief function which returns json env and session file
-            static error get_json_environment_file( std::string&, std::string& );
-
-            /// @brief function which returns legacy env and session file
-            static error get_legacy_environment_file( std::string&, std::string& );
 
             /**
              * @brief Access method for the singleton
