@@ -28,20 +28,6 @@ static double PLUGIN_INTERFACE_VERSION = 2.0;
 irods::error add_global_re_params_to_kvp_for_dynpep( keyValPair_t& );
 
 namespace irods {
-#if 0
-    typedef void* serialized_parameter_t;
-
-    static serialized_parameter_t avro_serialize( float* ) { return nullptr; };
-    static serialized_parameter_t avro_serialize( const std::string* ) { return nullptr; };
-    static serialized_parameter_t avro_serialize( std::string* ) { return nullptr; };
-    static serialized_parameter_t avro_serialize( const std::string ) { return nullptr; };
-    static serialized_parameter_t avro_serialize( std::string ) { return nullptr; };
-#endif
-
-
-
-
-
     typedef std::function< irods::error( rcComm_t* ) > pdmo_type;
     typedef std::function< irods::error( plugin_property_map& ) > maintenance_operation_t;
 
@@ -273,7 +259,7 @@ namespace irods {
                                        adapted_fcn,
                                        ctx,
                                        &out_param,
-                                       _t... );//avro_serialize( _t )...);
+                                       _t... );
                     #else
                     error op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
                     #endif

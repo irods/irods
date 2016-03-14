@@ -78,7 +78,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
     }
 
     rodsLog(
-        LOG_DEBUG,
+        LOG_NOTICE,// XXXX - LOG_DEBUG,
         "applying rule %s, params %ld",
         _rn.c_str(),
         _ps.size());
@@ -141,6 +141,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         i++;
     }
     expr << ")";
+
     int ret = applyRuleUpdateParams(const_cast<char *>(expr.str().c_str()), &(ar.msParamArray), rei, 0);
     i = 0;
     for ( auto itr = begin(_ps);itr!=end(_ps);++itr ) {
