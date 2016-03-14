@@ -425,6 +425,7 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(datafilename):
             os.unlink(datafilename)
 
+    @unittest.skipIf(True, 'Enable once #2634 is resolved')
     def test_local_iput_interrupt_directory(self):
         # local setup
         datadir = "newdatadir"
