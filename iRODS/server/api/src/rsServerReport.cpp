@@ -443,7 +443,7 @@ irods::error convert_service_account(
     // =-=-=-=-=-=-=-
     // if json file exists, simply load that
     std::string env_file( irods::IRODS_HOME_DIRECTORY );
-    env_file += irods::environment_properties::JSON_ENV_FILE;
+    env_file += irods::IRODS_JSON_ENV_FILE;
 
     if ( fs::exists( env_file ) ) {
         json_error_t error;
