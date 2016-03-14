@@ -382,7 +382,7 @@ main( int argc, char **argv ) {
     /* Save updates to irods_environment.json. */
     if ( doingEnvFileUpdate ) {
         std::string env_file, session_file;
-        irods::error ret = irods::environment_properties::get_json_environment_file(
+        irods::error ret = irods::get_json_environment_file(
                                env_file,
                                session_file );
         if ( ret.ok() ) {

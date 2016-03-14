@@ -28,53 +28,7 @@ namespace fs = boost::filesystem;
 
 namespace irods {
 
-    const std::string environment_properties::LEGACY_ENV_FILE = "/.irods/.irodsEnv";
-    const std::string environment_properties::JSON_ENV_FILE   = "/.irods/irods_environment.json";
-
-// Access method for singleton
-    environment_properties& environment_properties::getInstance() {
-        static environment_properties instance;
-        return instance;
-    }
-
-
-    error environment_properties::capture_if_needed() {
-        error result = SUCCESS();
-        if ( !captured_ ) {
-            result = capture();
-        }
-        return result;
-    }
-
-    environment_properties::environment_properties() :
-        captured_( false ) {
-
-        legacy_key_map_[ "irodsUserName" ]                = CFG_IRODS_USER_NAME_KW;
-        legacy_key_map_[ "irodsHost" ]                    = CFG_IRODS_HOST_KW;
-        legacy_key_map_[ "irodsPort" ]                    = CFG_IRODS_PORT_KW;
-        legacy_key_map_[ "xmsgHost" ]                     = CFG_IRODS_XMSG_HOST_KW;
-        legacy_key_map_[ "xmsgPort" ]                     = CFG_IRODS_XMSG_PORT_KW;
-        legacy_key_map_[ "irodsHome" ]                    = CFG_IRODS_HOME_KW;
-        legacy_key_map_[ "irodsCwd" ]                     = CFG_IRODS_CWD_KW;
-        legacy_key_map_[ "irodsAuthScheme" ]              = CFG_IRODS_AUTHENTICATION_SCHEME_KW;
-        legacy_key_map_[ "irodsDefResource" ]             = CFG_IRODS_DEFAULT_RESOURCE_KW;
-        legacy_key_map_[ "irodsZone" ]                    = CFG_IRODS_ZONE_KW;
-        legacy_key_map_[ "irodsServerDn" ]                = CFG_IRODS_GSI_SERVER_DN_KW;
-        legacy_key_map_[ "irodsLogLevel" ]                = CFG_IRODS_LOG_LEVEL_KW;
-        legacy_key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILE_KW;
-        legacy_key_map_[ "irodsDebug" ]                   = CFG_IRODS_DEBUG_KW;
-        legacy_key_map_[ "irodsClientServerPolicy" ]      = CFG_IRODS_CLIENT_SERVER_POLICY_KW;
-        legacy_key_map_[ "irodsClientServerNegotiation" ] = CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
-        legacy_key_map_[ "irodsEncryptionKeySize" ]       = CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
-        legacy_key_map_[ "irodsEncryptionSaltSize" ]      = CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
-        legacy_key_map_[ "irodsEncryptionNumHashRounds" ] = CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
-        legacy_key_map_[ "irodsEncryptionAlgorithm" ]     = CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
-        legacy_key_map_[ "irodsDefaultHashScheme" ]       = CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
-        legacy_key_map_[ "irodsMatchHashPolicy" ]         = CFG_IRODS_MATCH_HASH_POLICY_KW;
-
-    } // ctor
-
-    error environment_properties::get_json_environment_file(
+    error get_json_environment_file(
         std::string& _env_file,
         std::string& _session_file ) {
         // capture parent process id for use in creation of 'session'
@@ -108,7 +62,7 @@ namespace irods {
                 json_file = home_dir;
             }
 
-            json_file += JSON_ENV_FILE;
+            json_file += IRODS_JSON_ENV_FILE;
             json_session_file = json_file + "." + ppid_str.str();
 
         }
@@ -120,7 +74,7 @@ namespace irods {
 
     } // get_json_environment_file
 
-    error environment_properties::get_legacy_environment_file(
+    error get_legacy_environment_file(
         std::string& _env_file,
         std::string& _session_file ) {
         // capture parent process id for use in creation of 'session'
@@ -154,7 +108,7 @@ namespace irods {
                 legacy_file = home_dir;
             }
 
-            legacy_file += LEGACY_ENV_FILE;
+            legacy_file += IRODS_LEGACY_ENV_FILE;
             legacy_session_file = legacy_file + "." + ppid_str.str();
 
         }
@@ -171,6 +125,51 @@ namespace irods {
         return SUCCESS();
 
     } // get_legacy_environment_file
+
+
+// Access method for singleton
+    environment_properties& environment_properties::getInstance() {
+        static environment_properties instance;
+        return instance;
+    }
+
+
+    error environment_properties::capture_if_needed() {
+        error result = SUCCESS();
+        if ( !captured_ ) {
+            result = capture();
+        }
+        return result;
+    }
+
+    environment_properties::environment_properties() :
+        captured_( false )
+    {
+        legacy_key_map_[ "irodsUserName" ]                = CFG_IRODS_USER_NAME_KW;
+        legacy_key_map_[ "irodsHost" ]                    = CFG_IRODS_HOST_KW;
+        legacy_key_map_[ "irodsPort" ]                    = CFG_IRODS_PORT_KW;
+        legacy_key_map_[ "xmsgHost" ]                     = CFG_IRODS_XMSG_HOST_KW;
+        legacy_key_map_[ "xmsgPort" ]                     = CFG_IRODS_XMSG_PORT_KW;
+        legacy_key_map_[ "irodsHome" ]                    = CFG_IRODS_HOME_KW;
+        legacy_key_map_[ "irodsCwd" ]                     = CFG_IRODS_CWD_KW;
+        legacy_key_map_[ "irodsAuthScheme" ]              = CFG_IRODS_AUTHENTICATION_SCHEME_KW;
+        legacy_key_map_[ "irodsDefResource" ]             = CFG_IRODS_DEFAULT_RESOURCE_KW;
+        legacy_key_map_[ "irodsZone" ]                    = CFG_IRODS_ZONE_KW;
+        legacy_key_map_[ "irodsServerDn" ]                = CFG_IRODS_GSI_SERVER_DN_KW;
+        legacy_key_map_[ "irodsLogLevel" ]                = CFG_IRODS_LOG_LEVEL_KW;
+        legacy_key_map_[ "irodsAuthFileName" ]            = CFG_IRODS_AUTHENTICATION_FILE_KW;
+        legacy_key_map_[ "irodsDebug" ]                   = CFG_IRODS_DEBUG_KW;
+        legacy_key_map_[ "irodsClientServerPolicy" ]      = CFG_IRODS_CLIENT_SERVER_POLICY_KW;
+        legacy_key_map_[ "irodsClientServerNegotiation" ] = CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW;
+        legacy_key_map_[ "irodsEncryptionKeySize" ]       = CFG_IRODS_ENCRYPTION_KEY_SIZE_KW;
+        legacy_key_map_[ "irodsEncryptionSaltSize" ]      = CFG_IRODS_ENCRYPTION_SALT_SIZE_KW;
+        legacy_key_map_[ "irodsEncryptionNumHashRounds" ] = CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW;
+        legacy_key_map_[ "irodsEncryptionAlgorithm" ]     = CFG_IRODS_ENCRYPTION_ALGORITHM_KW;
+        legacy_key_map_[ "irodsDefaultHashScheme" ]       = CFG_IRODS_DEFAULT_HASH_SCHEME_KW;
+        legacy_key_map_[ "irodsMatchHashPolicy" ]         = CFG_IRODS_MATCH_HASH_POLICY_KW;
+    } // ctor
+
+
 
     error environment_properties::capture() {
         std::string json_file, json_session_file;
