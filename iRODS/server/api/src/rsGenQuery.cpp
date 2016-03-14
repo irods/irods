@@ -12,6 +12,7 @@
 #include "rsGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_lexical_cast.hpp"
 
 #include "boost/format.hpp"
 #include <boost/tokenizer.hpp>
@@ -123,6 +124,117 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
     return SUCCESS();
 
 } // add_resc_grp_name_to_query_out
+
+static
+irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos ) {
+
+    const int COL_D_RESC_GROUP_NAME  = 408;
+
+    // sanity check
+    if ( !_inp ) {
+        return CODE( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    // =-=-=-=-=-=-=-
+    // cache pointers to the incoming inxIvalPair
+    inxIvalPair_t tmp;
+    tmp.len   = _inp->selectInp.len;
+    tmp.inx   = _inp->selectInp.inx;
+    tmp.value = _inp->selectInp.value;
+
+    // =-=-=-=-=-=-=-
+    // zero out the selectInp to copy
+    // fresh indices and values
+    bzero( &_inp->selectInp, sizeof( _inp->selectInp ) );
+
+    // =-=-=-=-=-=-=-
+    // iterate over tmp and replace resource group with resource name
+    for ( int i = 0; i < tmp.len; ++i ) {
+        if ( tmp.inx[i] == COL_D_RESC_HIER ) {
+            addInxIval( &_inp->selectInp, COL_D_RESC_ID, tmp.value[i] );
+            _pos = i;
+        }
+        else {
+            addInxIval( &_inp->selectInp, tmp.inx[i], tmp.value[i] );
+        }
+    } // for i
+
+    // cleanup
+    if ( tmp.inx ) { free( tmp.inx ); }
+    if ( tmp.value ) { free( tmp.value ); }
+
+    return SUCCESS();
+
+} // strip_resc_hier_name_from_query_inp
+
+
+static
+irods::error add_resc_hier_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
+    // =-=-=-=-=-=-=-
+    // Sanity checks
+    if ( !_out ) {
+        return CODE( SYS_INTERNAL_NULL_INPUT_ERR );
+    }
+
+    if ( _pos < 0 || _pos > MAX_SQL_ATTR - 1 ) {
+        return CODE( SYS_INVALID_INPUT_PARAM );
+    }
+
+    sqlResult_t *sqlResult = &_out->sqlResult[_pos];
+    if ( !sqlResult || sqlResult->attriInx != COL_D_RESC_ID ) {
+        return CODE( SYS_INTERNAL_ERR );
+    }
+
+    // =-=-=-=-=-=-=-
+    // Swap attribute indices back
+    sqlResult->attriInx = COL_D_RESC_HIER;
+
+    // =-=-=-=-=-=-=-
+    // cache hier strings for leaf id
+    size_t max_len = 0;
+    std::vector<std::string> resc_hiers(_out->rowCnt);
+    for ( int i = 0; i < _out->rowCnt; ++i ) {
+        char* leaf_id_str = &sqlResult->value[i*sqlResult->len];
+
+        rodsLong_t leaf_id = 0;
+        irods::error ret = irods::lexical_cast<rodsLong_t>(
+                               leaf_id_str,
+                               leaf_id);
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            continue;
+        }
+
+        std::string hier;
+        ret = resc_mgr.leaf_id_to_hier( leaf_id, resc_hiers[i] );
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            continue;
+        }
+
+        if(resc_hiers[i].size() > max_len ) {
+            max_len = resc_hiers[i].size();
+        }
+
+    } // for i
+
+    free( sqlResult->value );
+
+    // =-=-=-=-=-=-=-
+    // craft new result string with the hiers
+    sqlResult->len = max_len+1;
+    sqlResult->value = (char*)malloc(sqlResult->len*_out->rowCnt);
+    for( int i = 0; i < resc_hiers.size(); ++i ) {
+        snprintf(
+            &sqlResult->value[i*sqlResult->len],
+            sqlResult->len,
+            "%s",
+            resc_hiers[i].c_str() );
+    }
+
+    return SUCCESS();
+
+} // add_resc_hier_name_to_query_out
 
 
 static
@@ -246,6 +358,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
              genQueryOut_t **genQueryOut ) {
     int status;
     int resc_grp_attr_pos = -1;
+    int resc_hier_attr_pos = -1;
 
     static int ruleExecuted = 0;
     ruleExecInfo_t rei;
@@ -265,6 +378,11 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         if ( !err.ok() ) {
             irods::log( PASS( err ) );
         }
+    }
+
+    irods::error err = strip_resc_hier_name_from_query_inp( genQueryInp, resc_hier_attr_pos );
+    if ( !err.ok() ) {
+        irods::log( PASS( err ) );
     }
 
     if ( PrePostProcForGenQueryFlag < 0 ) {
@@ -324,7 +442,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     // =-=-=-=-=-=-=-
     // verify that we are running a query for another agent connection
     std::string svr_sid;
-    irods::error err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
+    err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
     bool agent_conn_flg = err.ok();
 
     // =-=-=-=-=-=-=-
@@ -396,6 +514,13 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     // handle queries from older clients
     if ( status >= 0 && resc_grp_attr_pos >= 0 ) {
         irods::error err = add_resc_grp_name_to_query_out( *genQueryOut, resc_grp_attr_pos );
+        if ( !err.ok() ) {
+            irods::log( PASS( err ) );
+        }
+    }
+
+    if ( status >= 0 && resc_hier_attr_pos >= 0 ) {
+        irods::error err = add_resc_hier_name_to_query_out( *genQueryOut, resc_hier_attr_pos );
         if ( !err.ok() ) {
             irods::log( PASS( err ) );
         }
