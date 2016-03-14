@@ -3,6 +3,7 @@
 #include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
 #include "rcMisc.h"
+#include "irods_re_plugin.hpp"
 
 int
 rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
