@@ -71,10 +71,33 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Iadmin, self).tearDown()
 
-    @unittest.skip("SKIP UNTIL API PLUGINS WORK")
     def test_api_plugin(self):
-        self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
-        assert 0 < lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'HELLO WORLD')
+        rules_to_prepend = """
+pep_rs_hello_world_pre(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
+    writeLine("serverLog", "pep_rs_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
+}
+pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
+    writeLine("serverLog", "pep_rs_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
+}
+"""
+
+        irods_config = IrodsConfig()
+        core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
+        with lib.file_backed_up(core_re_path):
+	    time.sleep(1)  # remove once file hash fix is commited #2279
+	    lib.prepend_string_to_file(rules_to_prepend, core_re_path)
+	    time.sleep(1)  # remove once file hash fix is commited #2279
+
+            initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
+            self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
+
+            pre_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path,'pep_rs_hello_world_pre - api_instance <unconvertible> that=hello, world.++++this=42, null_value')
+            hello_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'HELLO WORLD')
+            post_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'pep_rs_hello_world_post - api_instance <unconvertible> that=hello, world.++++this=42, that=hello, world.++++this=42++++value=128')
+
+        assert 1 == pre_count
+        assert 1 == hello_count
+        assert 1 == post_count
 
     ###################
     # iadmin

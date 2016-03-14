@@ -185,12 +185,13 @@ namespace irods {
                                 entry,
                                 name,
                                 PLUGIN_TYPE_API,
-                                "inst", "ctx" );
+                                "api_instance",
+                                "api_context" );
                 if ( ret.ok() && entry ) {
                     // =-=-=-=-=-=-=-
                     //
                     rodsLog(
-                        LOG_DEBUG,
+                        LOG_NOTICE,//LOG_DEBUG,
                         "init_api_table :: adding %d - [%s] - [%s]",
                         entry->apiNumber,
                         entry->operation_name.c_str(),
@@ -232,7 +233,6 @@ namespace irods {
                 }
                 else {
                     irods::log( PASS( ret ) );
-
                 }
 
             } // for itr

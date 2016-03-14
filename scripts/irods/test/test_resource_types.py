@@ -1897,7 +1897,6 @@ OUTPUT ruleExecOut
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skip("UNSKIP AFTER OUTVARIABLES WORK")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = IrodsConfig().core_re_directory + "/core.re"
@@ -1928,7 +1927,7 @@ OUTPUT ruleExecOut
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
         with open(corefile, 'at') as f:
-            print('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
+            print('pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
 
         # restart the server to reread the new core.re
         IrodsController().restart()
@@ -2601,8 +2600,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    #@unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    @unittest.skip("UNSKIP AFTER OUTVARIABLES WORK")
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = IrodsConfig().core_re_directory + "/core.re"
@@ -2639,7 +2637,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
         with open(corefile, 'at') as f:
-            print('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
+            print('pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
 
         # restart the server to reread the new core.re
         IrodsController().restart()
@@ -3068,8 +3066,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    #@unittest.skip("this is tested elsewhere")
-    @unittest.skip("UNSKIP AFTER OUTVARIABLES WORK")
+    @unittest.skip("this is tested elsewhere")
     def test_iget_prefer_from_archive__ticket_1660(self):
         pass
 
