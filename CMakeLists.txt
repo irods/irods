@@ -107,6 +107,7 @@ add_custom_command(
 
 set_source_files_properties(
   ${CMAKE_SOURCE_DIR}/iRODS/server/core/src/irods_server_control_plane.cpp
+  ${CMAKE_SOURCE_DIR}/iRODS/clients/icommands/src/irods-grid.cpp
   PROPERTIES
   OBJECT_DEPENDS ${CMAKE_BINARY_DIR}/iRODS/lib/core/include/server_control_plane_command.hpp
   )
