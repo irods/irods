@@ -5,8 +5,7 @@ import shutil
 from irods import lib
 from irods.test import session
 from irods.configuration import IrodsConfig
-from irods import test
-import test.settings
+from irods.test import settings
 
 test_user_list = ['alice', 'bobby', 'otherrods', 'zonehopper', 'admin']
 test_resc_list = ['AnotherResc', 'TestResc', 'pt', 'leaf']
@@ -15,8 +14,8 @@ test_resc_list = ['AnotherResc', 'TestResc', 'pt', 'leaf']
 irods_config = IrodsConfig()
 admin_name = irods_config.client_environment['irods_user_name']
 zone_name = irods_config.client_environment['irods_zone_name']
-env_dict = lib.make_environment_dict(admin_name, test.settings.ICAT_HOSTNAME, zone_name, use_ssl=test.settings.USE_SSL)
-sess = session.IrodsSession(env_dict, test.settings.PREEXISTING_ADMIN_PASSWORD, False)
+env_dict = lib.make_environment_dict(admin_name, settings.ICAT_HOSTNAME, zone_name, use_ssl=settings.USE_SSL)
+sess = session.IrodsSession(env_dict, settings.PREEXISTING_ADMIN_PASSWORD, False)
 
 # remove test stuff
 for user_name in test_user_list:
