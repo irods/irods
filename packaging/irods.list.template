@@ -376,6 +376,7 @@ f 644 root root ${IRODS_HOME_DIR}/scripts/irods/lib.py                  scripts/
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/log.py                  scripts/irods/log.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/paths.py                scripts/irods/paths.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/pypyodbc.py             scripts/irods/pypyodbc.py
+f 644 root root ${IRODS_HOME_DIR}/scripts/irods/pyparsing.py            scripts/irods/pyparsing.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/password_obfuscation.py scripts/irods/password_obfuscation.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/setup_options.py        scripts/irods/setup_options.py
 f 644 root root ${IRODS_HOME_DIR}/scripts/irods/six.py                  scripts/irods/six.py
