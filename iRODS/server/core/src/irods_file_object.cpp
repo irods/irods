@@ -209,10 +209,8 @@ namespace irods {
         keyValPair_t& _kvp ) {
         data_object::get_re_vars( _kvp );
 
-        copyKeyVal( &cond_input_, &_kvp );
-
-        addKeyVal( &_kvp, LOGICAL_PATH_KW, logical_path_.c_str() );
-        addKeyVal( &_kvp, DATA_TYPE_KW,    data_type_.c_str() );
+        _kvp[LOGICAL_PATH_KW] = logical_path_.c_str();
+        _kvp[DATA_TYPE_KW]    = data_type_.c_str();
 
         std::stringstream fd;
         fd << file_descriptor_;
@@ -234,6 +232,8 @@ namespace irods {
         pdmo << in_pdmo_;
         addKeyVal( &_kvp, IN_PDMO_KW, pdmo.str().c_str() );
 
+        // TODO serialize physical objects
+
         return SUCCESS();
 
     } // get_re_vars
@@ -244,6 +244,19 @@ namespace irods {
                                dataObjInp_t*    _data_obj_inp,
                                file_object_ptr  _file_obj ) {
         // =-=-=-=-=-=-=-
+        // start populating file_object
+        _file_obj->comm( _comm );
+        _file_obj->logical_path( _data_obj_inp->objPath );
+        _file_obj->cond_input( _data_obj_inp->condInput );
+        _file_obj->size( _data_obj_inp->dataSize );
+
+        // handle the case where we are being called as part of a pdmo
+        char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
+        if ( in_pdmo ) {
+            _file_obj->in_pdmo( in_pdmo );
+        }
+
+        // =-=-=-=-=-=-=-
         // if a repl is requested, cache that fact
         char* repl_num_ptr = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
         std::string repl_num;
@@ -253,13 +266,21 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
+        // handle requested repl number
+        if ( !repl_num.empty() ) {
+            _file_obj->repl_requested( atoi( repl_num.c_str() ) );
+
+            addKeyVal(
+                &_data_obj_inp->condInput,
+                REPL_NUM_KW,
+                repl_num.c_str() );
+        }
+
+        // =-=-=-=-=-=-=-
         // make a call to build the linked list
         dataObjInfo_t* head_ptr = 0;
 
         int status = getDataObjInfoIncSpecColl( _comm, _data_obj_inp, &head_ptr );
-        if ( status < 0 ) {
-            status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
-        }
         if ( 0 == head_ptr || status < 0 ) {
             if ( head_ptr ) {
                 freeAllDataObjInfo( head_ptr );
@@ -276,33 +297,7 @@ namespace irods {
             return ERROR( status, msg.str() );
         }
 
-        // =-=-=-=-=-=-=-
-        // replace the keyword
-        if ( !repl_num.empty() ) {
-            addKeyVal(
-                &_data_obj_inp->condInput,
-                REPL_NUM_KW,
-                repl_num.c_str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // start populating file_object
-        _file_obj->comm( _comm );
-        _file_obj->logical_path( _data_obj_inp->objPath );
         _file_obj->resc_hier( head_ptr->rescHier );
-        _file_obj->cond_input( _data_obj_inp->condInput );
-
-        // =-=-=-=-=-=-=-
-        // handle requested repl number
-        if ( !repl_num.empty() ) {
-            _file_obj->repl_requested( atoi( repl_num.c_str() ) );
-        }
-
-        // handle the case where we are being called as part of a pdmo
-        char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
-        if ( in_pdmo ) {
-            _file_obj->in_pdmo( in_pdmo );
-        }
 
         // =-=-=-=-=-=-=-
         // iterate over the linked list and populate
@@ -315,7 +310,13 @@ namespace irods {
             obj.is_dirty( info_ptr->replStatus );
             obj.repl_num( info_ptr->replNum );
             obj.map_id( info_ptr->dataMapId );
+            if(info_ptr->dataSize > 0) {
             obj.size( info_ptr->dataSize );
+                obj.size( info_ptr->dataSize );
+            }
+            else {
+                obj.size( _data_obj_inp->dataSize );
+            }
             obj.id( info_ptr->dataId );
             obj.coll_id( info_ptr->collId );
             obj.name( info_ptr->objPath );
@@ -348,7 +349,4 @@ namespace irods {
 
     } // file_object_factory
 
-}; // namespace irods
-
-
-
+} // namespace irods
