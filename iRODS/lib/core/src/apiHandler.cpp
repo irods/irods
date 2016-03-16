@@ -191,7 +191,7 @@ namespace irods {
                     // =-=-=-=-=-=-=-
                     //
                     rodsLog(
-                        LOG_NOTICE,//LOG_DEBUG,
+                        LOG_DEBUG,
                         "init_api_table :: adding %d - [%s] - [%s]",
                         entry->apiNumber,
                         entry->operation_name.c_str(),

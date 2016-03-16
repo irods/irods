@@ -86,10 +86,18 @@ namespace irods {
         const std::string& _inst,
         const std::string& _ctx,
         network_ptr&       _net ) {
+
+        std::string type = _type;
+        #ifdef RODS_CLERVER
+        type += "_server";
+        #else
+        type += "_client";
+        #endif
+
         // =-=-=-=-=-=-=-
         // create the network plugin and add it to the table
         network_ptr ptr;
-        error ret = load_network_plugin( ptr, _type, _inst, _ctx );
+        error ret = load_network_plugin( ptr, type, _inst, _ctx );
         if ( !ret.ok() ) {
             return PASSMSG( "Failed to load network plugin", ret );
         }

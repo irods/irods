@@ -72,7 +72,14 @@ namespace irods {
         error ret;
         auth_ptr auth;
 
-        ret = load_auth_plugin( auth, _type, _inst, _ctx );
+        std::string type = _type;
+        #ifdef RODS_CLERVER
+        type += "_server";
+        #else
+        type += "_client";
+        #endif
+
+        ret = load_auth_plugin( auth, type, _inst, _ctx );
         if ( ( result = ASSERT_PASS( ret, "Failed to load auth plugin." ) ).ok() ) {
             plugins_[_key] = auth;
             _rtn_auth = plugins_[_key];
