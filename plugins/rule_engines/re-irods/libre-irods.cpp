@@ -78,7 +78,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
     }
 
     rodsLog(
-        LOG_NOTICE,// XXXX - LOG_DEBUG,
+        LOG_DEBUG,
         "applying rule %s, params %ld",
         _rn.c_str(),
         _ps.size());
@@ -165,9 +165,16 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
     rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
 
     rodsLog(
-            LOG_DEBUG,
-            "rule engine return %d", ret
-           );
+        LOG_DEBUG,
+        "rule engine return %d", ret);
+
+    // clear client-side errors for dynamic PEPs as we expect failures
+    // from the pre-PEPs to control access to operations
+    if( _rn.substr(0,4) == "pep_" ) {
+        if( rei && rei->rsComm ) {
+            freeRErrorContent( &rei->rsComm->rError );
+        }
+    }
 
     return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
 
