@@ -30,12 +30,6 @@ install(
   )
 
 install(
-  DIRECTORY ${CMAKE_SOURCE_DIR}/tests/pydevtest
-  DESTINATION ${IRODS_HOME_DIRECTORY}/tests
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/convert_configuration_to_json.py
   ${CMAKE_SOURCE_DIR}/packaging/core.dvm.template
@@ -45,7 +39,6 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/host_access_control_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/hosts_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/server_config.json.template
-  ${CMAKE_SOURCE_DIR}/packaging/server_config.py
   ${CMAKE_SOURCE_DIR}/packaging/update_configuration_schema.py
   ${CMAKE_SOURCE_DIR}/packaging/update_json.py
   ${CMAKE_SOURCE_DIR}/packaging/user_icat.txt
@@ -55,22 +48,11 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
-# WORLD_EXECUTE for tab completion
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/packaging/setup_irods.sh
-  DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
-
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/find_os.sh
   ${CMAKE_SOURCE_DIR}/packaging/postinstall.sh
   ${CMAKE_SOURCE_DIR}/packaging/preremove.sh
-  ${CMAKE_SOURCE_DIR}/packaging/setup_irods_configuration.sh
-  ${CMAKE_SOURCE_DIR}/packaging/setup_irods_service_account.sh
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
@@ -117,8 +99,8 @@ install(
   )
 
 install(
-  DIRECTORY ${CMAKE_SOURCE_DIR}/iRODS/scripts
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS
+  DIRECTORY ${CMAKE_SOURCE_DIR}/scripts
+  DESTINATION ${IRODS_HOME_DIRECTORY}
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 

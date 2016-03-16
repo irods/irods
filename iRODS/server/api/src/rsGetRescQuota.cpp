@@ -65,7 +65,7 @@ int _rsGetRescQuota(
     if ( status >= 0 ) {
         queRescQuota( rescQuota, genQueryOut );
     }
-    
+
     freeGenQueryOut( &genQueryOut );
 
     return 0;
@@ -190,7 +190,7 @@ int fillRescQuotaStruct(
     char*        tmpRescName,
     char*        tmpQuotaRescId,
     char*        tmpQuotaUserId ) {
-    
+
     bzero( rescQuota, sizeof( rescQuota_t ) );
 
     rescQuota->quotaLimit = strtoll( tmpQuotaLimit, 0, 0 );
@@ -219,9 +219,16 @@ int setRescQuota(
         return 0;
     }
 
+    rodsLong_t resc_id = 0;
+    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     rodsLong_t resc_overrun = 0;
-    irods::error ret = irods::get_resource_property<rodsLong_t>(
-                           _resc_name,
+    ret = irods::get_resource_property<rodsLong_t>(
+                           resc_id,
                            irods::RESOURCE_QUOTA_OVERRUN,
                            resc_overrun );
 
@@ -259,12 +266,12 @@ int setRescQuota(
             status );
     }
 
-    // if no global enforcement was successful try per resource 
+    // if no global enforcement was successful try per resource
     rstrcpy(
         get_resc_quota_inp.rescName,
         _resc_name,
         NAME_LEN );
-    
+
     rescQuota_t *resc_quota = NULL;
     status = rsGetRescQuota(
                  _comm,
@@ -300,9 +307,16 @@ int updatequotaOverrun(
         std::string root;
         parser.first_resc( root );
 
+        rodsLong_t resc_id = 0;
+        irods::error ret = resc_mgr.hier_to_leaf_id(root, resc_id);
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+
         rodsLong_t over_run = 0;
-        irods::error ret = irods::get_resource_property<rodsLong_t>(
-                               root,
+        ret = irods::get_resource_property<rodsLong_t>(
+                               resc_id,
                                irods::RESOURCE_QUOTA_OVERRUN,
                                over_run );
         // property may not be set yet so skip error
@@ -337,4 +351,3 @@ int chkRescQuotaPolicy( rsComm_t *rsComm ) {
     }
     return RescQuotaPolicy;
 }
-

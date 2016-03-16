@@ -118,7 +118,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
   install(
     FILES
     ${CMAKE_SOURCE_DIR}/plugins/database/${PLUGIN}/upgrade-3.3.xto4.0.0.sql
-    ${CMAKE_SOURCE_DIR}/plugins/database/packaging/update_catalog_schema.py
     DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )

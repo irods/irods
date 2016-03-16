@@ -675,9 +675,18 @@ irods::error deferred_redirect_for_operation(
     // ensure we start with a vote of 0 should something go wrong
     (*_out_vote) = 0.0;
 
+
+    // =-=-=-=-=-=-=-
+    // data struct to hold parser and vote from the search
+    std::map< float, irods::hierarchy_parser > result_map;
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get< irods::resource_child_map* >(
+        irods::RESC_CHILD_MAP_PROP,
+        cmap_ref );
+
     // =-=-=-=-=-=-=-
     // if we have no children return early
-    if( _ctx.child_map().empty() ) {
+    if( cmap_ref->empty() ) {
         std::string name;
         irods::error ret = _ctx.prop_map().get< std::string >(
                                 irods::RESOURCE_NAME, name );
@@ -692,16 +701,6 @@ irods::error deferred_redirect_for_operation(
         }
         return SUCCESS();
     }
-
-    // =-=-=-=-=-=-=-
-    // data struct to hold parser and vote from the search
-    std::map< float, irods::hierarchy_parser > result_map;
-
-    irods::resource_child_map* cmap_ref;
-    _ctx.prop_map().get< irods::resource_child_map* >(
-            irods::RESC_CHILD_MAP_PROP,
-            cmap_ref );
-
 
     // =-=-=-=-=-=-=-
     // iterate over all the children and pick the highest vote
@@ -1066,4 +1065,3 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-

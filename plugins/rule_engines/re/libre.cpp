@@ -35,11 +35,8 @@
 
 
 irods::configuration_parser::array_t get_re_configs() {
-    irods::server_properties& props = irods::server_properties::getInstance();
-
-    props.capture_if_needed();
     irods::configuration_parser::array_t re_plugin_configs;
-    props.get_property <irods::configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs);
+    irods::get_server_property<irods::configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs);
     return re_plugin_configs;
 }
 

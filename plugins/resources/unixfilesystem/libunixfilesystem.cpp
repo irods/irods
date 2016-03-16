@@ -452,7 +452,7 @@ irods::error stat_vault_path(
 } // stat_vault_path
 
 static bool replica_exceeds_high_water_mark(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     rodsLong_t                      _file_size ) {
     namespace bt = boost;
     namespace fs = boost::filesystem;
@@ -1291,7 +1291,7 @@ irods::error unix_file_sync_to_arch(
 // =-=-=-=-=-=-=-
 // redirect_create - code to determine redirection for create operation
 irods::error unix_resolve_hierarchy_create(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string&             _resc_name,
     const std::string&             _curr_host,
     float&                         _out_vote ) {
@@ -1775,5 +1775,3 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
-

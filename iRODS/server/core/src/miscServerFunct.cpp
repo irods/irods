@@ -255,7 +255,7 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
         rodsLog( LOG_NOTICE,
                  "setupSrvPortal: listen failed, errno: %d",
                  errno );
-        return SYS_SOCK_LISTEN_ERROR;
+        return SYS_SOCK_LISTEN_ERR;
     }
 
     if ( proto == SOCK_DGRAM ) {
@@ -3237,13 +3237,8 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
 irods::error get_catalog_service_role(
     std::string& _role ) {
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret =props.capture_if_needed();
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
 
-    ret = props.get_property<std::string>(
+    irods::error ret = irods::get_server_property<std::string>(
               irods::CFG_CATALOG_SERVICE_ROLE,
               _role);
 

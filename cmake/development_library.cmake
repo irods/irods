@@ -365,7 +365,6 @@ set(
   ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include/icatGlobalsExtern.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include/icatHighLevelRoutines.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include/icatStructs.hpp
-  ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include/rdaHighLevelRoutines.hpp
   )
 
 set(

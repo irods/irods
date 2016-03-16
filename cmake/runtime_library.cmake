@@ -5,6 +5,7 @@ install(
     irods_client_api_table
     irods_client_core
     irods_client_plugins
+    irods_common
     irods_server
   LIBRARY
     DESTINATION lib
