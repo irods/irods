@@ -980,7 +980,7 @@ irods::error get_next_valid_child_resource(
     bool child_found = false;
 
     irods::resource_child_map* cmap_ref;
-    _prop_map.get< irods::resource_child_map* >(
+    _ctx.prop_map().get< irods::resource_child_map* >(
             irods::RESC_CHILD_MAP_PROP,
             cmap_ref );
 
@@ -988,7 +988,7 @@ irods::error get_next_valid_child_resource(
     // while we have not found a child and have not
     // exhausted all the children in the map
     while ( !child_found &&
-            child_ctr < _ctx.child_map().size() ) {
+            child_ctr < cmap_ref->size() ) {
         // =-=-=-=-=-=-=-
         // increment child counter
         child_ctr++;
@@ -1006,7 +1006,7 @@ irods::error get_next_valid_child_resource(
 
         // =-=-=-=-=-=-=-
         // get the next_child resource
-        if ( !_ctx.child_map().has_entry( next_child ) ) {
+        if ( !cmap_ref->has_entry( next_child ) ) {
             std::stringstream msg;
             msg << "child map has no child by name [";
             msg << next_child << "]";
@@ -1016,7 +1016,7 @@ irods::error get_next_valid_child_resource(
 
         // =-=-=-=-=-=-=-
         // request our child resource to test it
-        irods::resource_ptr resc = _ctx.child_map()[ next_child ].second;
+        irods::resource_ptr resc = (*cmap_ref)[ next_child ].second;
 
         // =-=-=-=-=-=-=-
         // get the resource's status
@@ -1445,6 +1445,3 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
-
-

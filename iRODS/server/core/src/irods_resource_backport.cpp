@@ -513,7 +513,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // check to see if the resource is active, if not fail
             int status = 0;
-            get_resource_property< int >( resc_name, RESOURCE_STATUS, status );
+            resc->get_property< int >( RESOURCE_STATUS, status );
             if ( status == INT_RESC_STATUS_DOWN ) {
                 return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
             }
@@ -634,7 +634,7 @@ namespace irods {
         if( !ret.ok() ) {
             return PASS(ret);
         }
-        
+
         std::string location;
         ret = get_resource_property< std::string >( resc_id, RESOURCE_LOCATION, location );
         if ( !ret.ok() ) {
@@ -683,23 +683,9 @@ namespace irods {
         if ( !ret.ok() ) {
             return PASS(ret);
         }
-        
+
         return SUCCESS();
     }
 
 
 }; // namespace irods
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -28,12 +28,9 @@ namespace irods{
     unpack::unpack(std::list<boost::any> &_l) : l_(_l) {};
 
     configuration_parser::array_t get_re_configs() {
-        server_properties& props = server_properties::getInstance();
-
-        props.capture_if_needed();
         configuration_parser::array_t re_plugin_configs;
         error err;
-        if(!(err = props.get_property <configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs)).ok()) {
+        if(!(err = irods::get_server_property<configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs)).ok()) {
             rodsLog(LOG_ERROR, "cannot load re_plugins from server_config.json");
         }
         return re_plugin_configs;

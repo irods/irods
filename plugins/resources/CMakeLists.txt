@@ -103,6 +103,7 @@ foreach(PLUGIN ${IRODS_RESOURCE_PLUGINS})
     PRIVATE
     irods_server
     irods_clerver
+    irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so

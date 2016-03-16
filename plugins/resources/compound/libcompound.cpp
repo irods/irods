@@ -1185,7 +1185,7 @@ irods::error compound_file_redirect_create(
 // =-=-=-=-=-=-=-
 /// @brief - code to determine redirection for unlink operation
 irods::error compound_file_redirect_unlink(
-    irods::resource_plugin_context& _ctx,
+    irods::plugin_context& _ctx,
     const std::string&               _operation,
     const std::string*               _curr_host,
     irods::hierarchy_parser*         _out_parser,
@@ -1942,4 +1942,3 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
