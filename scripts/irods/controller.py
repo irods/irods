@@ -18,6 +18,7 @@ from . import six
 from .configuration import IrodsConfig
 from . import database_connect
 from . import lib
+from . import paths
 
 from .exceptions import IrodsError, IrodsWarning
 
@@ -260,14 +261,14 @@ def delete_cache_files_by_pid(pid):
     l = logging.getLogger(__name__)
     l.debug('Deleting cache files for pid %s...', pid)
     ubuntu_cache = glob.glob(os.path.join(
-        lib.get_root_directory(),
+        paths.get_root_directory(),
         'var',
         'run',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*ubuntu_cache)
     other_linux_cache = glob.glob(os.path.join(
-        lib.get_root_directory(),
+        paths.get_root_directory(),
         'dev',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
@@ -281,5 +282,3 @@ def delete_cache_files_by_name(*paths):
             os.unlink(path)
         except (IOError, OSError):
             l.warning(lib.indent('Error deleting cache file: %s'), path)
-
-

@@ -7,7 +7,10 @@ import os
 import pprint
 import sys
 
-from . import pypyodbc
+try:
+    from . import pypyodbc
+except ImportError:
+    pass
 from . import six
 
 from . import lib
@@ -238,4 +241,3 @@ def execute_sql_file(filepath, cursor, by_line=False):
 #        dump_odbc_ini({db_config['catalog_database_type']: get_odbc_entry(db_config)})
 #    if db_config['catalog_database_type'] == 'oracle':
 #        log.info('Oracle will also require that the \'TWO_TASK\' environment variable be set to \'%s\' to connect.', get_two_task_for_oracle(db_config))
-

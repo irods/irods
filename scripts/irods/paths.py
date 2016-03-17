@@ -56,16 +56,6 @@ class IrodsPaths(object):
         return self._binary_installation
 
     @property
-    def is_catalog(self):
-        return os.path.exists(os.path.join(self.top_level_directory,
-            'catalog.flag'))
-
-    @property
-    def is_resource(self):
-        return os.path.exists(os.path.join(self.top_level_directory,
-            'resource.flag'))
-
-    @property
     def core_re_directory(self):
         if self.binary_installation:
             return self.config_directory

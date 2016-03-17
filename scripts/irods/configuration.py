@@ -51,6 +51,14 @@ class IrodsConfig(IrodsPaths):
         return self._server_config
 
     @property
+    def is_catalog(self):
+        return self.server_config['catalog_service_role'] == 'provider'
+
+    @property
+    def is_resource(self):
+        return self.server_config['catalog_service_role'] == 'consumer'
+
+    @property
     def database_config(self):
         if self._database_config is None:
             self._database_config = load_json_config(self.database_config_path)

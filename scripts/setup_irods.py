@@ -77,6 +77,19 @@ def setup_server(irods_config):
     #Do the rest of the setup as the irods user
     irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
+    try:
+        server_config = copy.deepcopy(irods_config.server_config)
+    except (OSError, ValueError):
+        server_config = {}
+
+    catalog_service_roles = set(['provider', 'consumer'])
+    default_catalog_service_role = server_config.get('catalog_service_role', 'provider')
+    server_config['catalog_service_role'] = default_prompt(
+        'iRODS server\'s role',
+        default=[default_catalog_service_role] + list(catalog_service_roles - set([default_catalog_service_role])),
+        input_filter=set_filter(catalog_service_roles, field='Server role'))
+    irods_config.commit(server_config, irods_config.server_config_path)
+
     if irods_config.is_catalog:
         setup_database_config(irods_config)
     setup_server_config(irods_config)
@@ -727,7 +740,6 @@ def default_prompt(*args, **kwargs):
         except InputFilterError as e:
             l.debug('Error encountered in user input:', exc_info=sys.exc_info())
             l.warning(e.args[0] if len(e.args) else "User input error.")
-            user_input = prompt(message, **kwargs)
 
 def prompt(*args, **kwargs):
     echo = kwargs.get('echo', True)
@@ -763,6 +775,13 @@ def int_filter(field='Input'):
             return int(x)
         except ValueError as e:
             irods.six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
+    return f
+
+def set_filter(set_, field='Input'):
+    def f(x):
+        if x in set_:
+            return x
+        raise InputFilterError('%s must be chosen from %s' % (field, list(set_)))
     return f
 
 def character_count_filter(minimum=None, maximum=None, field='Input'):

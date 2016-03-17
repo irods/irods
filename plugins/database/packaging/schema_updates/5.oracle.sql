@@ -4,6 +4,6 @@ UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM
 
 update r_data_main rdm set resc_id = ( select resc_id from ( select dm.data_id, dm.data_repl_num, rm.resc_id from R_RESC_MAIN rm, ( select data_id, data_repl_num, resc_hier from R_DATA_MAIN ) dm where regexp_replace(dm.resc_hier, '^.*;', '') = rm.resc_name ) am where rdm.data_id = am.data_id and rdm.data_repl_num = am.data_repl_num );
 
-update R_RESC_MAIN rdm set resc_parent = ( select resc_id from ( select resc_name, resc_id from R_RESC_MAIN ) am where am.resc_name = rdm.resc_parent ); 
+update R_RESC_MAIN rdm set resc_parent = ( select resc_id from ( select resc_name, resc_id from R_RESC_MAIN ) am where am.resc_name = rdm.resc_parent );
 
-
+update R_GRID_CONFIGURATION set option_value = '5' where namespace = 'database' and option_name = 'schema_version';

@@ -30,7 +30,7 @@ set(
 set(
   BUILD_SYMBOLS_SERVER
   RODS_SERVER
-  RODS_CLERVER 
+  RODS_CLERVER
   ENABLE_RE
   )
 
@@ -40,7 +40,7 @@ set(
 
 foreach(PLUGIN ${IRODS_NETWORK_PLUGINS})
   foreach(TYPE ${IRODS_PLUGIN_TYPE})
-  
+
     string(TOUPPER ${PLUGIN} PLUGIN_UPPERCASE)
     string(TOUPPER ${TYPE} TYPE_UPPERCASE)
 
@@ -81,7 +81,7 @@ foreach(PLUGIN ${IRODS_NETWORK_PLUGINS})
     target_compile_definitions(${PLUGIN}_${TYPE} PRIVATE ${BUILD_SYMBOLS_${TYPE_UPPERCASE}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
     target_compile_options(${PLUGIN}_${TYPE} PRIVATE -Wno-write-strings)
     set_property(TARGET ${PLUGIN}_${TYPE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-    
+
     SET( TARGET_PLUGINS ${TARGET_PLUGINS} ${PLUGIN}_${TYPE} )
   endforeach()
 endforeach()
