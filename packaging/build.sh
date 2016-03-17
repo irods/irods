@@ -853,7 +853,12 @@ else
     GREPCMD="grep"
 fi
 
-UNIXODBC=`/sbin/ldconfig -p 2> /dev/null | grep libodbc\.so`
+if [ "$DETECTEDOS" == "Solaris" ] ; then
+    UNIXODBC=`ld --verbose --library odbc -o/dev/null 2> /dev/null | sed --quiet 's/^attempt to open \(.*\) succeeded$/\1/p'`
+else
+    UNIXODBC=`/sbin/ldconfig -p 2> /dev/null | grep libodbc\.so`
+fi
+
 if [ "$?" != "0" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT unixodbc"
