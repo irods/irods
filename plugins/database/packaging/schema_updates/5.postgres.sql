@@ -6,3 +6,4 @@ update r_data_main as rdm set resc_id = am.resc_id from ( select dm.data_id, dm.
 
 update r_resc_main as rdm set resc_parent = am.resc_id from ( select resc_name, resc_id from r_resc_main ) as am where am.resc_name = rdm.resc_parent;
 
+update R_GRID_CONFIGURATION set option_value = '5' where namespace = 'database' and option_name = 'schema_version';
