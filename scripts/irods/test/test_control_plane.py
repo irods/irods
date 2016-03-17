@@ -6,6 +6,7 @@ else:
     import unittest
 
 import copy
+import json
 import os
 import time
 
@@ -75,3 +76,69 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         self.admin_sessions[0].assert_icommand('irods-grid status --all', 'STDERR_SINGLELINE', 'USER_INVALID_CLIENT_ENVIRONMENT')
 
         self.admin_sessions[0].environment_file_contents = env_backup
+
+    def test_status_with_invalid_host(self):
+        assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+
+        # update user environment to run the control plane
+        env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
+
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = 'TEMPORARY__32byte_ctrl_plane_key'
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
+
+        output = self.admin_sessions[0].run_icommand(['irods-grid', 'status', '--all'])
+
+        # validate the json is correct
+        try:
+            vals = json.loads(output[1])
+        except ValueError:
+            assert_command('iadmin rmresc invalid_resc')
+            self.admin_sessions[0].environment_file_contents = env_backup
+            raise
+
+        # validate we have the error clause in JSON
+        found = False
+        for obj in vals['hosts']:
+            if 'response_message_is_empty_from' in obj:
+                found = True
+
+        assert_command('iadmin rmresc invalid_resc')
+        self.admin_sessions[0].environment_file_contents = env_backup
+
+        assert found
+
+    def test_shutdown_with_invalid_host(self):
+        assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+
+        # update user environment to run the control plane
+        env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
+
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = 'TEMPORARY__32byte_ctrl_plane_key'
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
+
+
+        _, stdout, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'shutdown', '--all'])
+
+        # validate the json is correct
+        try:
+            vals = json.loads(stdout)
+        except ValueError:
+            assert_command('iadmin rmresc invalid_resc')
+            self.admin_sessions[0].environment_file_contents = env_backup
+            raise
+
+        # validate we have the error clause in JSON
+        found = False
+        for obj in vals['hosts']:
+            if 'response_message_is_empty_from' in obj:
+                found = True
+
+        assert_command('iadmin rmresc invalid_resc')
+        self.admin_sessions[0].environment_file_contents = env_backup
+        IrodsController().start()
+
+        assert found
