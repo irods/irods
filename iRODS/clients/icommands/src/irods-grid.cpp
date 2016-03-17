@@ -252,7 +252,7 @@ irods::error decrypt_response(
 
 } // decrypt_response
 
-std::string format_grid_status(
+std::string format_grid_message(
     const std::string& _status) {
     std::string status = "{\n    \"hosts\": [\n";
     status += _status;
@@ -287,7 +287,7 @@ std::string format_grid_status(
 
     return status;
 
-} // format_grid_status
+} // format_grid_message
 
 irods::error get_and_verify_client_environment(
     rodsEnv& _env ) {
@@ -416,15 +416,11 @@ int main(
         }
 
         if ( irods::SERVER_CONTROL_SUCCESS != rep_str ) {
-            if ( irods::SERVER_CONTROL_STATUS == cmd.command ) {
-                try {
-                    rep_str = format_grid_status( rep_str );
-                    std::cout << rep_str << std::endl;
-                } catch ( const irods::exception& e_ ) {
-                    std::cerr << e_.message_stack()[0];
-                }
-            } else {
+            try {
+                rep_str = format_grid_message( rep_str );
                 std::cout << rep_str << std::endl;
+            } catch ( const irods::exception& e_ ) {
+                std::cerr << e_.message_stack()[0];
             }
         }
 
