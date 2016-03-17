@@ -131,9 +131,9 @@ namespace irods {
         // standard zmq rep-req communication pattern
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
-
         zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
         zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
+        zmq_skt.setsockopt( ZMQ_LINGER, 0 );
 
         // this is the client so we connect rather than bind
         std::string conn_str( "tcp://" );
@@ -145,11 +145,10 @@ namespace irods {
             zmq_skt.connect( conn_str.c_str() );
         }
         catch ( zmq::error_t& e_ ) {
-            std::string msg( "failed to connect to [" );
-            msg + conn_str + "]";
+            _output += "{\n    \"failed_to_connect\" : \"" + conn_str + "\"\n},\n";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
-                       msg );
+                       _output );
         }
 
 
@@ -200,6 +199,7 @@ namespace irods {
         zmq_skt.recv( &req );
 
         if ( 0 == req.size() ) {
+            _output += "{\n    \"response_message_is_empty_from\" : \"" + conn_str + "\"\n},\n";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "empty response string" );
@@ -219,6 +219,7 @@ namespace irods {
                   data_to_process );
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
+            _output += "{\n    \"failed_to_decrpyt_message_from\" : \"" + conn_str + "\"\n},\n";
             rodsLog( LOG_ERROR, "Failed to decrpyt [%s]", req.data() );
             return PASS( ret );
 
@@ -234,6 +235,7 @@ namespace irods {
 
             }
             else {
+                _output += "{\n    \"invalid_message_format_from\" : \"" + conn_str + "\"\n},\n";
                 return ERROR(
                            CONTROL_PLANE_MESSAGE_ERROR,
                            rep_str );
@@ -282,10 +284,9 @@ namespace irods {
         std::string&       _output ) {
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
-        _output += "[ shutting down ";
+        _output += "{\n    \"shutting down\": \"";
         _output += my_env.rodsHost;
-        _output += " ]";
-        _output += "\n";
+        _output += "\"\n},\n";
 
         error ret;
         int sleep_time_out_milli_sec = 0;
@@ -353,10 +354,9 @@ namespace irods {
         std::string& _output ) {
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
-        _output += "[ shutting down ";
+        _output += "{\n    \"shutting down\": \"";
         _output += my_env.rodsHost;
-        _output += " ]";
-        _output += "\n";
+        _output += "\"\n},\n";
 
         server_state& s = server_state::instance();
         s( server_state::STOPPED );
@@ -370,11 +370,9 @@ namespace irods {
         std::string& _output ) {
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
-        _output += "[ pausing ";
+        _output += "{\n    \"pausing\": \"";
         _output += my_env.rodsHost;
-        _output += " ]";
-        _output += "\n";
-
+        _output += "\"\n},\n";
         server_state& s = server_state::instance();
         s( server_state::PAUSED );
 
@@ -388,10 +386,9 @@ namespace irods {
         std::string& _output ) {
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
-        _output += "[ resuming ";
+        _output += "{\n    \"resuming\": \"";
         _output += my_env.rodsHost;
-        _output += " ]";
-        _output += "\n";
+        _output += "\"\n},\n";
 
         server_state& s = server_state::instance();
         s( server_state::RUNNING );
@@ -780,6 +777,7 @@ namespace irods {
         int time_out = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
         zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
         zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
+        zmq_skt.setsockopt( ZMQ_LINGER, 0 );
 
         std::stringstream port_sstr;
         port_sstr << port;
@@ -806,12 +804,13 @@ namespace irods {
             std::string output;
             std::string rep_msg( SERVER_CONTROL_SUCCESS );
             error ret = process_operation( req, output );
+
+            rep_msg = output;
             if ( !ret.ok() ) {
                 log( PASS( ret ) );
-                rep_msg = ret.result();
-
             }
-            else if ( !output.empty() ) {
+
+            if ( !output.empty() ) {
                 rep_msg = output;
 
             }
@@ -1124,6 +1123,7 @@ namespace irods {
                                 _wait_seconds,
                                 output );
                 if ( !ret.ok() ) {
+                    _output += output;
                     log( PASS( ret ) );
                     fwd_err = PASS( ret );
 
@@ -1148,6 +1148,8 @@ namespace irods {
             return SUCCESS();
 
         }
+
+        error final_ret;
 
         int port = 0, num_hash_rounds = 0;
         buffer_crypt::array_t shared_secret;
@@ -1236,18 +1238,16 @@ namespace irods {
                   cmd_hosts,
                   _output );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
-
+            final_ret = PASS( ret );
+            irods::log( final_ret );
         }
 
         host_list_t irods_hosts;
         ret = get_resource_host_names(
                   irods_hosts );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
-
+            final_ret = PASS( ret );
+            irods::log( final_ret );
         }
 
         if ( SERVER_CONTROL_ALL_OPT == cmd_option ) {
@@ -1261,8 +1261,8 @@ namespace irods {
                   cmd_hosts,
                   valid_hosts );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
+            final_ret = PASS( ret );
+            irods::log( final_ret );
 
         }
 
@@ -1273,8 +1273,8 @@ namespace irods {
                   valid_hosts,
                   _output );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
+            final_ret = PASS( ret );
+            irods::log( final_ret );
 
         }
 
@@ -1289,12 +1289,11 @@ namespace irods {
                   cmd_hosts, // dont want sanitized
                   _output );
         if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
-
+            final_ret = PASS( ret );
+            irods::log( final_ret );
         }
 
-        return ret;
+        return final_ret;
 
     } // process_operation
 
