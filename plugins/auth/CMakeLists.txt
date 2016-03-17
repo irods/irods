@@ -1,17 +1,17 @@
 find_package(OpenSSL REQUIRED)
 
 set(
-  IRODS_AUTH_PLUGIN_NATIVE_SOURCES
+  IRODS_AUTH_PLUGIN_native_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/auth/native/libnative.cpp
   )
 
 set(
-  IRODS_AUTH_PLUGIN_OSAUTH_SOURCES
+  IRODS_AUTH_PLUGIN_osauth_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/auth/osauth/libosauth.cpp
   )
 
 set(
-  IRODS_AUTH_PLUGIN_PAM_SOURCES
+  IRODS_AUTH_PLUGIN_pam_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/auth/pam/libpam.cpp
   )
 
@@ -23,41 +23,34 @@ set(
   )
 
 set(
-  IRODS_PLUGIN_TYPE
-  client
-  server
-  )
-
-set(
-  BUILD_SYMBOLS_CLIENT
+  IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_client
   RODS_SERVER
   )
 
 set(
-  BUILD_SYMBOLS_SERVER
+  IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_server
   RODS_SERVER
   RODS_CLERVER
   ENABLE_RE
   )
 
 set(
-  TARGET_PLUGINS
+  IRODS_AUTH_PLUGIN_TYPES
+  client
+  server
   )
 
 foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
-  foreach(TYPE ${IRODS_PLUGIN_TYPE})
-
-      string(TOUPPER ${PLUGIN} PLUGIN_UPPERCASE)
-      string(TOUPPER ${TYPE} TYPE_UPPERCASE)
-
+  foreach(TYPE ${IRODS_AUTH_PLUGIN_TYPES})
+    set(IRODS_CURRENT_PLUGIN_TARGET ${PLUGIN}_${TYPE})
       add_library(
-        ${PLUGIN}_${TYPE}
+        ${IRODS_CURRENT_PLUGIN_TARGET}
         MODULE
-        ${IRODS_AUTH_PLUGIN_${PLUGIN_UPPERCASE}_SOURCES}
+        ${IRODS_AUTH_PLUGIN_${PLUGIN}_SOURCES}
         )
 
       target_include_directories(
-        ${PLUGIN}_${TYPE}
+        ${IRODS_CURRENT_PLUGIN_TARGET}
         PRIVATE
         ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
         ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
@@ -73,7 +66,7 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         )
 
       target_link_libraries(
-        ${PLUGIN}_${TYPE}
+        ${IRODS_CURRENT_PLUGIN_TARGET}
         PRIVATE
         irods_server
         irods_clerver
@@ -82,18 +75,15 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         ${OPENSSL_CRYPTO_LIBRARY}
         )
 
-    target_compile_definitions(${PLUGIN}_${TYPE} PRIVATE ${BUILD_SYMBOLS_${TYPE_UPPERCASE}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
-    target_compile_options(${PLUGIN}_${TYPE} PRIVATE -Wno-write-strings)
-    set_property(TARGET ${PLUGIN}_${TYPE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-
-    SET( TARGET_PLUGINS ${TARGET_PLUGINS} ${PLUGIN}_${TYPE} )
+    target_compile_definitions(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE ${IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_${TYPE}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+    target_compile_options(${IRODS_CURRENT_PLUGIN_TARGET} PRIVATE -Wno-write-strings)
+    set_property(TARGET ${IRODS_CURRENT_PLUGIN_TARGET} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+    install(
+      TARGETS
+      ${TARGET_PLUGINS}
+      LIBRARY
+      DESTINATION ${IRODS_HOME_DIRECTORY}/plugins/auth
+      COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
+      )
     endforeach()
 endforeach()
-
-install(
-  TARGETS
-  ${TARGET_PLUGINS}
-  LIBRARY
-    DESTINATION ${IRODS_HOME_DIRECTORY}/plugins/auth
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
-  )
