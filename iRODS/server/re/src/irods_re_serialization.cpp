@@ -202,6 +202,54 @@ namespace irods {
             return SUCCESS();
         } // serialize_const_char_ptr
 
+        static error serialize_rsComm_ptr(
+                boost::any               _p,
+                serialized_parameter_t& _out) { 
+            try {
+                rsComm_t* l = boost::any_cast<rsComm_t*>(_p);
+                _out["client_addr"] = l->clientAddr;
+
+                if(l->auth_scheme) {_out["auth_scheme"] = l->auth_scheme;}
+
+                _out["proxy_user_name"] = l->proxyUser.userName;
+                _out["proxy_rods_zone"] = l->proxyUser.rodsZone;
+                _out["proxy_user_type"] = l->proxyUser.userType;
+                _out["proxy_sys_uid"] = boost::lexical_cast<std::string>(l->proxyUser.sysUid);
+                _out["proxy_auth_info_auth_scheme"] = l->proxyUser.authInfo.authScheme;
+                _out["proxy_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.authFlag);
+                _out["proxy_auth_info_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.flag);
+                _out["proxy_auth_info_ppid"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.ppid);
+                _out["proxy_auth_info_host"] = l->proxyUser.authInfo.host;
+                _out["proxy_auth_info_auth_str"] = l->proxyUser.authInfo.authStr;
+                _out["proxy_user_other_info_user_info"] = l->proxyUser.userOtherInfo.userInfo;
+                _out["proxy_user_other_info_user_comments"] = l->proxyUser.userOtherInfo.userComments;
+                _out["proxy_user_other_info_user_create"] = l->proxyUser.userOtherInfo.userCreate;
+                _out["proxy_user_other_info_user_modify"] = l->proxyUser.userOtherInfo.userModify;
+
+                _out["user_user_name"] = l->clientUser.userName;
+                _out["user_rods_zone"] = l->clientUser.rodsZone;
+                _out["user_user_type"] = l->clientUser.userType;
+                _out["user_sys_uid"] = boost::lexical_cast<std::string>(l->clientUser.sysUid);
+                _out["user_auth_info_auth_scheme"] = l->clientUser.authInfo.authScheme;
+                _out["user_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.authFlag);
+                _out["user_auth_info_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.flag);
+                _out["user_auth_info_ppid"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.ppid);
+                _out["user_auth_info_host"] = l->clientUser.authInfo.host;
+                _out["user_auth_info_auth_str"] = l->clientUser.authInfo.authStr;
+                _out["user_user_other_info_user_info"] = l->clientUser.userOtherInfo.userInfo;
+                _out["user_user_other_info_user_comments"] = l->clientUser.userOtherInfo.userComments;
+                _out["user_user_other_info_user_create"] = l->clientUser.userOtherInfo.userCreate;
+                _out["user_user_other_info_user_modify"] = l->clientUser.userOtherInfo.userModify;
+            }
+            catch ( std::exception& ) {
+                return ERROR(
+                         INVALID_ANY_CAST,
+                         "failed to cast rsComm ptr" );
+            }
+
+            return SUCCESS();
+        } // serialize_rsComm_ptr
+
         static error serialize_plugin_context(
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
@@ -209,6 +257,13 @@ namespace irods {
                 plugin_context l = boost::any_cast<plugin_context>(_p);
                 if( l.fco().get() ) {
                     l.fco()->get_re_vars( _out );
+                }
+
+                if( l.comm() ) {
+                    error ret = serialize_rsComm_ptr( l.comm(), _out ); 
+                    if(!ret.ok()) {
+                        return PASS(ret);
+                    }
                 }
             }
             catch ( std::exception& ) {
@@ -465,55 +520,6 @@ namespace irods {
 
             return SUCCESS();
         } // serialize_modAVUMetaInp_ptr
-
-
-        static error serialize_rsComm_ptr(
-                boost::any               _p,
-                serialized_parameter_t& _out) { 
-            try {
-                rsComm_t* l = boost::any_cast<rsComm_t*>(_p);
-                _out["client_addr"] = l->clientAddr;
-
-                if(l->auth_scheme) {_out["auth_scheme"] = l->auth_scheme;}
-
-                _out["proxy_user_name"] = l->proxyUser.userName;
-                _out["proxy_rods_zone"] = l->proxyUser.rodsZone;
-                _out["proxy_user_type"] = l->proxyUser.userType;
-                _out["proxy_sys_uid"] = boost::lexical_cast<std::string>(l->proxyUser.sysUid);
-                _out["proxy_auth_info_auth_scheme"] = l->proxyUser.authInfo.authScheme;
-                _out["proxy_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.authFlag);
-                _out["proxy_auth_info_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.flag);
-                _out["proxy_auth_info_ppid"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.ppid);
-                _out["proxy_auth_info_host"] = l->proxyUser.authInfo.host;
-                _out["proxy_auth_info_auth_str"] = l->proxyUser.authInfo.authStr;
-                _out["proxy_user_other_info_user_info"] = l->proxyUser.userOtherInfo.userInfo;
-                _out["proxy_user_other_info_user_comments"] = l->proxyUser.userOtherInfo.userComments;
-                _out["proxy_user_other_info_user_create"] = l->proxyUser.userOtherInfo.userCreate;
-                _out["proxy_user_other_info_user_modify"] = l->proxyUser.userOtherInfo.userModify;
-
-                _out["user_user_name"] = l->clientUser.userName;
-                _out["user_rods_zone"] = l->clientUser.rodsZone;
-                _out["user_user_type"] = l->clientUser.userType;
-                _out["user_sys_uid"] = boost::lexical_cast<std::string>(l->clientUser.sysUid);
-                _out["user_auth_info_auth_scheme"] = l->clientUser.authInfo.authScheme;
-                _out["user_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.authFlag);
-                _out["user_auth_info_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.flag);
-                _out["user_auth_info_ppid"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.ppid);
-                _out["user_auth_info_host"] = l->clientUser.authInfo.host;
-                _out["user_auth_info_auth_str"] = l->clientUser.authInfo.authStr;
-                _out["user_user_other_info_user_info"] = l->clientUser.userOtherInfo.userInfo;
-                _out["user_user_other_info_user_comments"] = l->clientUser.userOtherInfo.userComments;
-                _out["user_user_other_info_user_create"] = l->clientUser.userOtherInfo.userCreate;
-                _out["user_user_other_info_user_modify"] = l->clientUser.userOtherInfo.userModify;
-            }
-            catch ( std::exception& ) {
-                return ERROR(
-                         INVALID_ANY_CAST,
-                         "failed to cast rsComm ptr" );
-            }
-
-            return SUCCESS();
-        } // serialize_rsComm_ptr
 
         static error serialize_modAccessControlInp_ptr(
                 boost::any               _p,
