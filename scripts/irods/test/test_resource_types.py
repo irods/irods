@@ -2600,7 +2600,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = IrodsConfig().core_re_directory + "/core.re"

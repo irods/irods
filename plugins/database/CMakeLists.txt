@@ -155,7 +155,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
   install(
     FILES
     ${CMAKE_SOURCE_DIR}/plugins/database/packaging/localhost_setup_${PLUGIN}.input
-    DESTINATION ${IRODS_HOME_DIRECTORY}/tests
+    DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )
 
