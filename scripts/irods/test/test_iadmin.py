@@ -71,34 +71,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Iadmin, self).tearDown()
 
-    def test_api_plugin(self):
-        rules_to_prepend = """
-pep_rs_hello_world_pre(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
-    writeLine("serverLog", "pep_rs_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
-}
-pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
-    writeLine("serverLog", "pep_rs_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
-}
-"""
-
-        irods_config = IrodsConfig()
-        core_re_path = os.path.join(irods_config.core_re_directory, 'core.re')
-        with lib.file_backed_up(core_re_path):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, core_re_path)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-
-            initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-            self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
-
-            pre_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path,'pep_rs_hello_world_pre - api_instance <unconvertible> that=hello, world.++++this=42, null_value')
-            hello_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'HELLO WORLD')
-            post_count =  lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'pep_rs_hello_world_post - api_instance <unconvertible> that=hello, world.++++this=42, that=hello, world.++++this=42++++value=128')
-
-        assert 1 == pre_count
-        assert 1 == hello_count
-        assert 1 == post_count
-
     ###################
     # iadmin
     ###################
@@ -151,7 +123,7 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
                                    ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/test_%s" %
                                    (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
-    
+
     @unittest.skip("deprecated due to resc id")
     def test_modify_resource_name(self):
         h = lib.get_hostname()
@@ -777,10 +749,6 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
         self.admin.assert_icommand("iadmin rmresc leaf_a")
         self.admin.assert_icommand("iadmin rmresc repl")
 
-    def test_rule_engine_2242(self):
-        self.admin.assert_irule(rule1_2242_contents, 'STDERR_SINGLELINE', 'Operation not permitted')
-        self.admin.assert_irule(rule2_2242_contents, 'EMPTY')
-
     def test_hosts_config(self):
         addy1 = {}
         addy1['address'] = socket.gethostname()
@@ -896,10 +864,8 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
         assert(-1 == out.find("userNameClient"))
 
     def test_server_config_environment_variables(self):
-
         irods_config = IrodsConfig()
         with lib.file_backed_up(irods_config.server_config_path):
-
             # set an arbitrary environment value to find in the log
             the_value = 'THIS_IS_THE_VALUE'
             server_config = copy.deepcopy(irods_config.server_config)
@@ -965,45 +931,6 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
             os.unlink(trigger_file)
             self.user0.assert_icommand('irm -f ' + trigger_file)
         time.sleep(2)  # remove once file hash fix is commited #2279
-
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
-    def test_rule_engine_2309(self):
-        irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/core.re"
-        coredvm = irods_config.core_re_directory + "/core.dvm"
-        with lib.file_backed_up(coredvm):
-            lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-                rules_to_prepend = '''
- acSetNumThreads() {
-     writeLine("serverLog","test_rule_engine_2309: put: acSetNumThreads oprType [$oprType]");
- }
- '''
-                time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
-                time.sleep(1)  # remove once file hash fix is commited #2279
-                trigger_file = 'file_to_trigger_acSetNumThreads'
-                lib.make_file(trigger_file, 4 * pow(10, 7))
-                self.admin.assert_icommand('iput {0}'.format(trigger_file))
-                assert 1 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
-                os.unlink(trigger_file)
-
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-                rules_to_prepend = '''
-acSetNumThreads() {
-    writeLine("serverLog","test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
-}
-'''
-                time.sleep(1)  # remove once file hash fix is commited #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
-                time.sleep(1)  # remove once file hash fix is commited #2279
-                self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
-                assert 1 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
-                os.unlink(trigger_file)
 
     def test_storageadmin_role(self):
         self.admin.assert_icommand("iadmin mkuser nopes storageadmin", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
