@@ -761,9 +761,9 @@ irods::network* plugin_factory(
         NETWORK_OP_WRITE_HEADER,
         function<error(plugin_context&,bytesBuf_t*)>(
             tcp_write_msg_header ) );
-    tcp->add_operation<char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t>(
+    tcp->add_operation<const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t>(
         NETWORK_OP_WRITE_BODY,
-        function<error(plugin_context&,char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t)>(
+        function<error(plugin_context&,const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t)>(
             tcp_send_rods_msg ) );
 
     irods::network* net = dynamic_cast< irods::network* >( tcp );
@@ -771,4 +771,3 @@ irods::network* plugin_factory(
     return net;
 
 } // plugin_factory
-
