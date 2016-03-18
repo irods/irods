@@ -870,7 +870,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             the_value = 'THIS_IS_THE_VALUE'
             server_config = copy.deepcopy(irods_config.server_config)
             server_config['environment_variables']['foo_bar'] = the_value
-            lib.update_json_file_from_dict(irods_config.server_config_path, server_config)
+            irods_config.commit(server_config, irods_config.server_config_path)
 
             # bounce the server to get the new env variable
             IrodsController().restart()

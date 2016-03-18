@@ -56,6 +56,7 @@ import psutil
 import irods.configuration
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
+import irods.lib
 import irods.log
 from irods.exceptions import IrodsError, IrodsWarning
 
@@ -92,7 +93,7 @@ def main():
                 '%s\n'
                 'but \'%s\' was provided.\n'
                 'Exiting...' % (
-                    indent(*operations_dict.keys()),
+                    irods.lib.indent(*operations_dict.keys()),
                     operation))
         return 1
 
