@@ -49,12 +49,12 @@ writeLine( 'serverLog', '*OUT')
         corefile = lib.get_core_re_dir() + "/core.re"
 
         with lib.file_backed_up(corefile):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, corefile)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
+            time.sleep(1)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is commited #2279
 
             initial_size_of_server_log = lib.get_log_size('server')
-            
+
             filename = "test_re_serialization.txt"
             lib.make_file(filename, 1000)
 
@@ -65,7 +65,7 @@ writeLine( 'serverLog', '*OUT')
                             'THIS IS AN OUT VARIABLE',
                             start_index=initial_size_of_server_log)
         output = commands.getstatusoutput('rm ' + filename)
-       
+
         print( "counts: " + str(out_count) )
 
         assert 1 == out_count
@@ -82,12 +82,12 @@ writeLine( 'serverLog', '*OUT')
         corefile = lib.get_core_re_dir() + "/core.re"
 
         with lib.file_backed_up(corefile):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, corefile)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
+            time.sleep(1)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is commited #2279
 
             initial_size_of_server_log = lib.get_log_size('server')
-            
+
             filename = "test_re_serialization.txt"
             lib.make_file(filename, 1000)
 
@@ -98,7 +98,7 @@ writeLine( 'serverLog', '*OUT')
                             'THIS IS AN OUT VARIABLE',
                             start_index=initial_size_of_server_log)
         output = commands.getstatusoutput('rm ' + filename)
-       
+
         print( "counts: " + str(out_count) )
 
         assert 1 == out_count
@@ -115,12 +115,12 @@ writeLine( 'serverLog', '*OUT')
         corefile = lib.get_core_re_dir() + "/core.re"
 
         with lib.file_backed_up(corefile):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, corefile)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
+            time.sleep(1)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is commited #2279
 
             initial_size_of_server_log = lib.get_log_size('server')
-            
+
             filename = "test_re_serialization.txt"
             lib.make_file(filename, 1000)
 
@@ -131,7 +131,7 @@ writeLine( 'serverLog', '*OUT')
                             'THIS IS AN OUT VARIABLE',
                             start_index=initial_size_of_server_log)
         output = commands.getstatusoutput('rm ' + filename)
-       
+
         print( "counts: " + str(out_count) )
 
         assert 1 == out_count
@@ -145,12 +145,12 @@ writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*A] [*B] [*OUT] [*
         corefile = lib.get_core_re_dir() + "/core.re"
 
         with lib.file_backed_up(corefile):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, corefile)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
+            time.sleep(1)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is commited #2279
 
             initial_size_of_server_log = lib.get_log_size('server')
-            
+
             filename = "test_re_serialization.txt"
             lib.make_file(filename, 1000)
 
@@ -173,7 +173,7 @@ writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*A] [*B] [*OUT] [*
                             'ATTR;VALUE;UNIT',
                             start_index=initial_size_of_server_log)
         output = commands.getstatusoutput('rm ' + filename)
-       
+
         print( "counts: " + str(auth_count) + " " + str(zone_count) + " " + str(user_count) + " " + str(mdata_count) )
 
         assert 1 == auth_count
@@ -192,9 +192,9 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
 """
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
-	    time.sleep(1)  # remove once file hash fix is commited #2279
-	    lib.prepend_string_to_file(rules_to_prepend, corefile)
-	    time.sleep(1)  # remove once file hash fix is commited #2279
+            time.sleep(1)  # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is commited #2279
 
             initial_size_of_server_log = lib.get_log_size('server')
             self.admin.assert_icommand("iapitest", 'STDOUT_SINGLELINE', 'this')
@@ -259,4 +259,3 @@ acSetNumThreads() {
                     'server', 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
                 assert 0 == lib.count_occurrences_of_string_in_log('server', 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
-
