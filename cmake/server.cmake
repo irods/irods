@@ -211,7 +211,7 @@ install(
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/iRODS/clients/icommands/test
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/clients/icommands/test
+  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/clients/icommands
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
