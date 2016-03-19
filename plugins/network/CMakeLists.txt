@@ -18,7 +18,6 @@ set(
 
 set(
   IRODS_NETWORK_COMPILE_DEFINTIONS_client
-  RODS_SERVER
   )
 
 set(
