@@ -1,1 +1,2 @@
+add_subdirectory(administration)
 add_subdirectory(mso_drivers)
