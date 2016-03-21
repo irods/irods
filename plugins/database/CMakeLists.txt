@@ -59,11 +59,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
 
   set(IRODS_DATABASE_PLUGIN_TYPE ${PLUGIN})
   set(IRODS_DATABASE_DEFAULT_PORT ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_DEFAULT_PORT})
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/plugins/database/packaging/setup_irods_database.sh.in
-    ${CMAKE_BINARY_DIR}/plugins/database/packaging/setup_irods_database.sh.${PLUGIN}
-    @ONLY
-    )
 
   add_library(
     ${PLUGIN}
@@ -120,24 +115,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/plugins/database/${PLUGIN}/upgrade-3.3.xto4.0.0.sql
     DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
-    )
-
-  install(
-    FILES
-    ${CMAKE_SOURCE_DIR}/plugins/database/packaging/find_odbc_${PLUGIN}.sh
-    ${CMAKE_SOURCE_DIR}/plugins/database/packaging/find_bin_${PLUGIN}.sh
-    DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
-    PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
-    )
-
-  install(
-    FILES
-    ${CMAKE_BINARY_DIR}/plugins/database/packaging/setup_irods_database.sh.${PLUGIN}
-    DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
-    PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
-    RENAME setup_irods_database.sh
     )
 
   foreach(SCHEMA_UPDATE_SOURCE ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_SCHEMA_UPDATE_FILES})
