@@ -29,7 +29,6 @@
 #
 #	MYSQL_HOME	The home directory of MySQL
 #
-#	ORACLE_HOME	The home directory of Oracle
 #
 
 #RELEASE_FLAG=1
@@ -38,7 +37,6 @@ FILE_64BITS=1
 #RODS_CAT=1
 POSTGRES_HOME=
 MYSQL_HOME=
-ORACLE_HOME=
 
 IRODS_BUILD_DIR=
 CPU_COUNT=
