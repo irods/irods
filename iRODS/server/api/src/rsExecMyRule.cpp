@@ -60,7 +60,7 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     irods::error err = re_ctx_mgr.exec_rule_text(
                            my_rule_text,
                            execMyRuleInp->inpParamArray,
-                           out_param_desc,
+                           &out_param_desc,
                            &rei);
     if(!err.ok()) {
         rodsLog(
@@ -70,9 +70,8 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
             err.code(),
             err.result().c_str()
         );
+        return err.code();
     }
-    return err.code();
-
 
     if ( iFlag != NULL ) {
         reTestFlag = oldReTestFlag;
@@ -113,4 +112,3 @@ remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
 
     return status;
 }
-

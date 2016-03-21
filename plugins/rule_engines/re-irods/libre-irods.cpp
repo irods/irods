@@ -4,7 +4,7 @@
 #include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
-#include "execMyRule.h" 
+#include "execMyRule.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -82,7 +82,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         "applying rule %s, params %ld",
         _rn.c_str(),
         _ps.size());
-        
+
     ruleExecInfo_t * rei;
     irods::error err;
     if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
@@ -212,13 +212,14 @@ irods::error exec_rule_text(
     msParamArray_t* ms_params = boost::any_cast<msParamArray_t*>(*itr);
 
     ++itr; // skip msparam
-    std::string out_desc = boost::any_cast<std::string>(*itr);
+    std::string out_desc = *boost::any_cast<std::string*>(*itr);
 
     int status = execMyRule(
                      (char*)_rt.c_str(),
                      ms_params,
-                     (char*)out_desc.c_str(),
+                     const_cast<char*>(out_desc.data()),
                      rei );
+
     return SUCCESS();
 }
 
@@ -238,11 +239,11 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&, std::string, bool&>(
             "rule_exists",
             std::function<irods::error(irods::default_re_ctx&, std::string, bool&)>( rule_exists ) );
-            
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule ) );
- 
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule_text",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_text ) );
@@ -251,4 +252,3 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     return re;
 
 }
-
