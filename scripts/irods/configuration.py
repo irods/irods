@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import pprint
+import shutil
 import sys
 import time
 
@@ -15,15 +16,14 @@ from .exceptions import IrodsError, IrodsWarning
 from . import lib
 from . import json_validation
 from .password_obfuscation import encode, decode
-from .paths import IrodsPaths
+from . import paths
 
-class IrodsConfig(IrodsPaths):
+class IrodsConfig(paths.IrodsPaths):
     def __init__(self,
                  top_level_directory=None,
-                 config_directory=None,
                  injected_environment={},
                  insert_behavior=True):
-        super(IrodsConfig, self).__init__(top_level_directory, config_directory)
+        super(IrodsConfig, self).__init__(top_level_directory)
 
         self._injected_environment = lib.callback_on_change_dict(self.clear_cache, injected_environment)
         self._insert_behavior = insert_behavior
@@ -47,7 +47,8 @@ class IrodsConfig(IrodsPaths):
     @property
     def server_config(self):
         if self._server_config is None:
-            self._server_config = load_json_config(self.server_config_path)
+            self._server_config = load_json_config(self.server_config_path,
+                    template_filepath=self.get_template_filepath(self.server_config_path))
         return self._server_config
 
     @property
@@ -61,7 +62,8 @@ class IrodsConfig(IrodsPaths):
     @property
     def database_config(self):
         if self._database_config is None:
-            self._database_config = load_json_config(self.database_config_path)
+            self._database_config = load_json_config(self.database_config_path,
+                    template_filepath=self.get_template_filepath(self.database_config_path))
             if not 'db_odbc_driver' in self._database_config.keys():
                 l = logging.getLogger(__name__)
                 l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
@@ -89,13 +91,15 @@ class IrodsConfig(IrodsPaths):
     @property
     def hosts_config(self):
         if self._hosts_config is None:
-            self._hosts_config = load_json_config(self.hosts_config_path)
+            self._hosts_config = load_json_config(self.hosts_config_path,
+                    template_filepath=self.get_template_filepath(self.hosts_config_path))
         return self._hosts_config
 
     @property
     def host_access_control_config(self):
         if self._host_access_control_config is None:
-            self._host_access_control_config = load_json_config(self.host_access_control_config_path)
+            self._host_access_control_config = load_json_config(self.host_access_control_config_path,
+                    template_filepath=self.get_template_filepath(self.host_access_control_config_path))
         return self._host_access_control_config
 
     @property
@@ -371,19 +375,18 @@ class IrodsConfig(IrodsPaths):
         self._schema_uri_prefix = None
         self._execution_environment = None
 
-def load_json_config(path):
+def load_json_config(path, template_filepath=None):
     l = logging.getLogger(__name__)
-    if os.path.exists(path):
-        l.debug('Loading %s into dictionary', path)
-        try :
-            return lib.open_and_load_json(path)
-        except ValueError as e:
-            six.reraise(IrodsError,
-                    IrodsError('%s\n%s' % (
-                        'JSON load failed for [%s]:' % (path),
-                        lib.indent('Invalid JSON.',
-                            '%s: %s' % (e.__class__.__name__, e)))),
-                    sys.exc_info()[2])
-    else:
-        raise IrodsError(
-            'File %s does not exist.' % (path))
+    if not os.path.exists(path) and template_filepath is not None:
+        l.debug('%s does not exist, copying from template file %s', path, template_filepath)
+        shutil.copyfile(template_filepath, path)
+    l.debug('Loading %s into dictionary', path)
+    try :
+        return lib.open_and_load_json(path)
+    except ValueError as e:
+        six.reraise(IrodsError,
+                IrodsError('%s\n%s' % (
+                    'JSON load failed for [%s]:' % (path),
+                    lib.indent('Invalid JSON.',
+                        '%s: %s' % (e.__class__.__name__, e)))),
+                sys.exc_info()[2])

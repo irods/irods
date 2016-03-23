@@ -19,8 +19,7 @@ def wrap_if_necessary():
     (options, _) = parse_options()
 
     irods_paths = IrodsPaths(
-        top_level_directory=options.top_level_directory,
-        config_directory=options.config_directory)
+        top_level_directory=options.top_level_directory)
 
     with open(irods_paths.server_config_path) as server_config_path:
         server_config = json.load(server_config_path)
@@ -98,8 +97,7 @@ def main():
         return 1
 
     irods_config = IrodsConfig(
-        top_level_directory=options.top_level_directory,
-        config_directory=options.config_directory)
+        top_level_directory=options.top_level_directory)
 
     irods.log.register_file_handler(irods_config.control_log_path)
     if options.verbose:

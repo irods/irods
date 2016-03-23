@@ -14,13 +14,6 @@ def add_options(parser):
                       'service account in vanilla binary installs and the '
                       'top-level directory of the build in run-in-place')
 
-    parser.add_option('--config-directory',
-                      dest='config_directory', metavar='DIR',
-                      help='The directory in which the iRODS configuration files '
-                      'are located; this will be /etc/irods in vanilla binary '
-                      'installs and the \'config\' subdirectory of the iRODS '
-                      'home directory in run-in-place')
-
     parser.add_option('--server-log-level',
                       dest='server_log_level', type='int', metavar='INT',
                       help='The logging level of the iRODS server')
