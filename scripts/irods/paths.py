@@ -5,11 +5,9 @@ import pwd
 
 class IrodsPaths(object):
     def __init__(self,
-                 top_level_directory=None,
-                 config_directory=None):
+            top_level_directory=None):
 
         self._top_level_directory = top_level_directory
-        self._config_directory = config_directory
         self.clear_cache()
 
     @property
@@ -23,44 +21,18 @@ class IrodsPaths(object):
 
     @property
     def config_directory(self):
-        if self._config_directory:
-            return self._config_directory
-        elif self.binary_installation:
-            return os.path.join(
-                get_root_directory(),
-                'etc',
-                'irods')
-        else:
-            return os.path.join(
-                self.irods_directory,
-                'server',
-                'config')
-
-    @config_directory.setter
-    def config_directory(self, value):
-        self.clear_cache()
-        self._config_directory = value
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(self.top_level_directory))),
+            'etc',
+            'irods')
 
     @property
     def home_directory(self):
         return os.path.expanduser(''.join(['~', self.irods_user]))
 
     @property
-    def binary_installation(self):
-        if self._binary_installation is None:
-            self._binary_installation = os.path.exists(
-                    os.path.join(
-                        self.top_level_directory,
-                        'packaging',
-                        'binary_installation.flag'))
-        return self._binary_installation
-
-    @property
     def core_re_directory(self):
-        if self.binary_installation:
-            return self.config_directory
-        else:
-            return os.path.join(self.config_directory, 'reConfigs')
+        return self.config_directory
 
     @property
     def scripts_directory(self):
@@ -203,18 +175,10 @@ class IrodsPaths(object):
 
     @property
     def database_schema_update_directory(self):
-        if self.binary_installation:
-            return os.path.join(
-                    self.top_level_directory,
-                    'packaging',
-                    'schema_updates')
-        else:
-            return os.path.join(
-                    self.top_level_directory,
-                    'plugins',
-                    'database',
-                    'packaging',
-                    'schema_updates')
+        return os.path.join(
+                self.top_level_directory,
+                'packaging',
+                'schema_updates')
 
     @property
     def service_account_file_path(self):
@@ -243,7 +207,10 @@ class IrodsPaths(object):
         return os.path.join(self.home_directory, '.odbc.ini')
 
     def clear_cache(self):
-        self._binary_installation = None
+        pass
+
+    def get_template_filepath(self, filepath):
+        return os.path.join(self.top_level_directory, 'packaging', '.'.join([os.path.basename(filepath), 'template']))
 
 def get_default_top_level_directory():
     scripts_directory = os.path.dirname(os.path.dirname(os.path.abspath(

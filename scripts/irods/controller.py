@@ -6,6 +6,7 @@ import itertools
 import json
 import logging
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -59,6 +60,11 @@ class IrodsController(object):
             self.config.validate_configuration()
         except IrodsWarning:
             l.warn('Warning encountered in validation:', exc_info=True)
+
+        for f in ['core.re', 'core.dvm', 'core.fnm']:
+            path = os.path.join(self.config.config_directory, f)
+            if not os.path.exists(path):
+                shutil.copyfile(self.config.get_template_filepath(path), path)
 
         try:
             irods_port = int(self.config.server_config['zone_port'])

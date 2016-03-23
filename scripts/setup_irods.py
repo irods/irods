@@ -75,7 +75,8 @@ def setup_server(irods_config):
     setup_service_account(irods_config)
 
     #Do the rest of the setup as the irods user
-    irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
+    if os.getuid() == 0:
+        irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
     try:
         server_config = copy.deepcopy(irods_config.server_config)
@@ -157,7 +158,7 @@ def setup_service_account(irods_config):
     irods_user = irods_config.irods_user
     irods_group = irods_config.irods_group
     l.info('The iRODS service account name needs to be defined.')
-    if irods_config.binary_installation and pwd.getpwnam(irods_user).pw_uid == 0:
+    if pwd.getpwnam(irods_user).pw_uid == 0:
         irods_user = default_prompt('iRODS user', default=['irods'])
         irods_group = default_prompt('iRODS group', default=[irods_user])
     else:
@@ -186,8 +187,8 @@ def setup_service_account(irods_config):
         l.info('Existing Account Detected: %s', irods_user)
 
     with open(irods_config.service_account_file_path, 'wt') as f:
-        print('IRODS_SERVICE_ACCOUNT_NAME=%s', irods_user, file=f)
-        print('IRODS_SERVICE_GROUP_NAME=%s', irods_group, file=f)
+        print('IRODS_SERVICE_ACCOUNT_NAME=%s' % (irods_user), file=f)
+        print('IRODS_SERVICE_GROUP_NAME=%s' % (irods_group), file=f)
 
     l.info('Setting owner of %s to %s:%s',
             irods_config.top_level_directory, irods_user, irods_group)
@@ -812,8 +813,7 @@ def main():
     (options, _) = parse_options()
 
     irods_config = IrodsConfig(
-        top_level_directory=options.top_level_directory,
-        config_directory=options.config_directory)
+        top_level_directory=options.top_level_directory)
 
     irods.log.register_file_handler(irods_config.setup_log_path)
     if options.verbose:
