@@ -8,7 +8,7 @@ install(
     irods_common
     irods_server
   LIBRARY
-    DESTINATION lib
+    DESTINATION usr/lib
     COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
   )
 
