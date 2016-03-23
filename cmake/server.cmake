@@ -25,7 +25,7 @@ install(
 
 install(
   DIRECTORY
-  DESTINATION /etc/irods
+  DESTINATION etc/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
@@ -61,11 +61,12 @@ install(
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/irods
-  DESTINATION /etc/init.d
+  DESTINATION etc/init.d
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
 
-set(IRODS_DOC_DIR /usr/share/doc/irods)
+set(IRODS_DOC_DIR usr/share/doc/irods)
 
 install(
   FILES

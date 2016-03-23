@@ -3,12 +3,12 @@ include(${CMAKE_SOURCE_DIR}/cmake/RequireOutOfSourceBuild.cmake)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
-  message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'")
+  message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'. This is the correct setting for normal builds.")
 endif()
 
 if (NOT IRODS_EXTERNALS_PACKAGE_ROOT)
   set(IRODS_EXTERNALS_PACKAGE_ROOT "/opt/irods-externals" CACHE STRING "Choose the location of iRODS external packages." FORCE)
-  message(STATUS "Setting unspecified IRODS_EXTERNALS_PACKAGE_ROOT to '${IRODS_EXTERNALS_PACKAGE_ROOT}'")
+  message(STATUS "Setting unspecified IRODS_EXTERNALS_PACKAGE_ROOT to '${IRODS_EXTERNALS_PACKAGE_ROOT}'. This is the correct setting for normal builds.")
 endif()
 
 macro(IRODS_MACRO_SET_AND_CHECK_DEPENDENCY_FULL_PATH DEPENDENCY_NAME DEPENDENCY_SUBDIRECTORY)
@@ -33,9 +33,18 @@ set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
 project(irods C CXX)
 
+if (NOT CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/" CACHE STRING "Install root path. Change from \"/\" for run-in-place installations." FORCE)
+  message(STATUS "Setting unspecified CMAKE_INSTALL_PREFIX to '${CMAKE_INSTALL_PREFIX}'. This is the correct setting for normal builds.")
+endif()
+
+if (NOT CPACK_PACKAGING_INSTALL_PREFIX)
+  set(CPACK_PACKAGING_INSTALL_PREFIX "/" CACHE STRING "Package root path. \"/\" is correct for normal package builds.." FORCE)
+  message(STATUS "Setting unspecified CPACK_PACKAGING_INSTALL_PREFIX to '${CPACK_PACKAGING_INSTALL_PREFIX}'. This is the correct setting for normal builds.")
+endif()
+
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
-set(CMAKE_INSTALL_PREFIX /usr)
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -133,13 +142,15 @@ configure_file(
   @ONLY
   )
 
-set(IRODS_HOME_DIRECTORY /var/lib/irods)
+# TODO all relative pathing removes the need for this header file
+set(IRODS_HOME_DIRECTORY var/lib/irods)
 configure_file(
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_home_directory.hpp.in
   ${CMAKE_BINARY_DIR}/iRODS/lib/core/include/irods_home_directory.hpp
   @ONLY
   )
 
+# TODO all relative pathing removes the need for this header file
 set(IRODS_PLUGIN_HOME_DIRECTORY /var/lib/irods/plugins/)
 configure_file(
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_plugin_home_directory.hpp.in
