@@ -158,8 +158,9 @@ class IrodsConfig(paths.IrodsPaths):
         if self._schema_uri_prefix is None:
             l = logging.getLogger(__name__)
             l.debug('Attempting to construct schema URI...')
+
+            key = 'schema_validation_base_uri'
             try:
-                key = 'schema_validation_base_uri'
                 base_uri = self.server_config[key]
             except KeyError:
                 base_uri = None
@@ -167,8 +168,8 @@ class IrodsConfig(paths.IrodsPaths):
                         '%s did not contain \'%s\'' %
                         (self.server_config_path, key))
 
+            key = 'configuration_schema_version'
             try:
-                key = 'configuration_schema_version'
                 uri_version = self.version[key]
             except KeyError:
                 uri_version = None
@@ -327,6 +328,9 @@ class IrodsConfig(paths.IrodsPaths):
 
         skipped = []
 
+        if self.server_config['schema_validation_base_uri'] == 'off':
+            l.warn('Schema validation is disabled; json files will not be validated against schemas. To re-enable schema validation, supply a URL to a set of iRODS schemas in the field "schema_validation_base_uri" and a valid version in the field "schema_version" in the server configuration file (located in %s).', self.server_config_path)
+            return
         for schema_uri_suffix, config_file in configuration_schema_mapping.items():
             try:
                 schema_uri = '%s/%s.json' % (
