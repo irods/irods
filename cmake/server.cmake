@@ -218,7 +218,7 @@ install(
 
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_NAME "irods-server")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_DEPENDS "irods-runtime (= ${IRODS_VERSION}), irods-icommands (= ${IRODS_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, libjson-perl, perl, python, openssl, python-psutil, python-requests, lsof")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), irods-icommands (= ${IRODS_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, libjson-perl, perl, python, openssl, python-psutil, python-requests, lsof")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_CONFLICTS "eirods, irods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_PROVIDES "eirods, irods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/preinst;${CMAKE_SOURCE_DIR}/postinst;${CMAKE_SOURCE_DIR}/prerm;")

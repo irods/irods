@@ -14,4 +14,4 @@ install(
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_NAME "irods-runtime")
 
-## CPACK_DEBIAN_<COMPONENT>_PACKAGE_DEPENDS # TODO add irods-externals deps here
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, libc6, sudo, libssl1.0.0, libfuse2, python, openssl, python-psutil, python-requests")
