@@ -1165,6 +1165,7 @@ target_link_libraries(
   irods_server
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
