@@ -13,5 +13,12 @@ install(
   )
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_NAME "irods-runtime")
-
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, libc6, sudo, libssl1.0.0, libfuse2, python, openssl, python-psutil, python-requests")
+
+
+set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_NAME "irods-runtime")
+if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos" OR IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos linux")
+  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, openssl, python, python-psutil, python-requests, python-jsonschema")
+elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
+  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, libopenssl1_0_0, python, openssl, python-psutil, python-requests, python-jsonschema")
+endif()
