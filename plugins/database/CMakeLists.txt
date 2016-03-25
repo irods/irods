@@ -57,9 +57,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     )
   add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${PLUGIN}.sql ALL DEPENDS ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql) # Forces execution of custom_command
 
-  set(IRODS_DATABASE_PLUGIN_TYPE ${PLUGIN})
-  set(IRODS_DATABASE_DEFAULT_PORT ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_DEFAULT_PORT})
-
   add_library(
     ${PLUGIN}
     MODULE
