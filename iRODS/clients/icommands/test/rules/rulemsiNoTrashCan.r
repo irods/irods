@@ -1,4 +1,0 @@
-acTrashPolicy {
-#System control
-  msiNoTrashCan;
-}

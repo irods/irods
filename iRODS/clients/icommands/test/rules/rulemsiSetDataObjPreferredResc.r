@@ -1,1 +1,0 @@
-acPreProcForDataObjOpen {msiSetDataObjPreferredResc("demoResc%testResc");}

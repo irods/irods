@@ -1,1 +1,0 @@
-acSetPublicUserPolicy {msiSetPublicUserOpr("read%query");}
