@@ -210,12 +210,6 @@ install(
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
   )
 
-install(
-  DIRECTORY ${CMAKE_SOURCE_DIR}/iRODS/clients/icommands/test
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/clients/icommands
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_NAME "irods-server")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), irods-icommands (= ${IRODS_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, libjson-perl, perl, python, openssl, python-psutil, python-requests, lsof")

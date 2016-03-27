@@ -78,6 +78,7 @@ set(
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_plugin_base.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_plugin_context.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_plugin_name_generator.hpp
+  ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_random.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_serialization.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_server_properties.hpp
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include/irods_signal.hpp
@@ -443,6 +444,13 @@ install(
   ${IRODS_SERVER_RE_INCLUDE_HEADERS}
   ${IRODS_SERVER_DRIVERS_INCLUDE_HEADERS}
   DESTINATION usr/include/irods
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  )
+
+install(
+  EXPORT
+  IRODSTargets
+  DESTINATION usr/lib/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
