@@ -1,6 +1,0 @@
-#!/bin/sh
-# echo "execCmdRule: "$execCmdRule
-echo "Hello world $1 from irods"
-echo "$2"
-echo "$3"
-
