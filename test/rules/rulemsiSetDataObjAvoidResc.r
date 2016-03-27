@@ -1,0 +1,1 @@
+acPreProcForDataObjOpen {msiSetDataObjAvoidResc("demoResc");}

@@ -1,0 +1,209 @@
+
+Introduction
+------------
+rulegen is a parser that takes rules written in a nicer language to 
+the cryptic one needed by irule and core.irb. The input files for 
+rulgen is recommended to be *.r (.r extensions) and the output created
+by rulegen is in the form of *.ir (.ir extensions). The grammar for
+the language of the input files are given at the end of this note.
+
+How to use the parser
+---------------------
+There are two steps.
+
+1) Creating the parser. This is done by executing
+   gmake
+in this directory and the binary file 'rulegen' is created in ../bin
+directory. 
+
+2) Parsing a *.r file into the *.ir format. This 
+is done by running rulegen as shown in example below:
+
+  ../bin/rulegen -s test1.r > test1.ir
+
+Then, test1.ir can be used as an input file for the irule command.
+
+  irule -F test1.ir
+
+
+Examples
+--------
+Example use cases can be found in:
+
+  test1.r
+  test2.r
+  test3.r
+
+
+Grammar of the rulegen language
+-------------------------------
+program				
+	: program rule_list inputs outputs    
+	;
+
+inputs
+        : INPUT inp_expr_list        
+        ;
+outputs
+        : OUTPUT out_expr_list        
+        ;
+
+rule_list  
+        : rule                      
+        | rule rule_list            
+        ;
+rule    
+        : action_def '{' first_statement '}' 
+        | action_def '{' first_statement statement_list '}' 
+        ;
+
+action_def
+        : action_name                  
+        | action_name '(' arg_list ')' 
+        ;
+
+microserve
+        : action_name                  
+        | action_name '(' arg_list ')' 
+        ;
+
+action_name
+        : identifier                    
+        ;
+
+arg_list
+        : arg_val                      
+        | arg_val ',' arg_list         
+        ;
+arg_val 
+        : STR_LIT                      
+        | Q_STR_LIT                    
+	| NUM_LIT                      
+        ;
+
+first_statement 
+        :  selection_statement         
+        |                              
+        ; 
+compound_statement		
+	: '{' '}'			
+	| '{' statement_list '}'	
+	;
+
+statement_list
+	: statement
+	| statement_list statement
+			
+	;
+
+statement			
+	: selection_statement
+	| iteration_statement
+        | compound_statement
+        | action_statement ';' 
+        | ass_expr ';' 
+        | execution_statement
+	;
+
+selection_statement	
+	: ON '(' cond_expr ')' statement    
+	| ON '(' cond_expr ')' statement or_list_statement_list 
+	;
+
+iteration_statement		
+	: WHILE '(' cond_expr ')' statement
+	| FOR '(' ass_expr_list ';' cond_expr ';'  ass_expr_list ')' statement
+	| IF '(' cond_expr ')' THEN statement 
+	| IF '(' cond_expr ')' THEN statement ELSE statement
+        | 'break' 
+	;
+or_list_statement_list 
+        : ORON '(' cond_expr ')' statement  
+	| OR  statement                     
+	| ORON '(' cond_expr ')' statement or_list_statement_list 
+	| OR statement or_list_statement_list 
+	;
+
+action_statement
+        : microserve ACRAC_SEP microserve   
+        | microserve                        
+        ;
+
+execution_statement
+        : DELAY '(' cond_expr ')' statement
+					
+        | REMOTE '(' identifier ',' cond_expr ')' statement
+        | PARALLEL '(' cond_expr ')' statement
+        | ONEOF    statement
+        | SOMEOF  '(' identifier ')'   statement
+        | FOREACH  '(' identifier ')'   statement
+        ;
+ /******************************** Expressions *************************/
+inp_expr			
+	: identifier  '=' cond_expr    
+        ;
+inp_expr_list
+	: inp_expr
+        | inp_expr ',' inp_expr_list
+	;
+
+out_expr			
+	: arg_val
+out_expr_list
+	: out_expr
+        | out_expr ',' out_expr_list
+	;
+
+ass_expr			
+	: identifier  '=' cond_expr      
+
+ass_expr_list
+	: ass_expr
+        | ass_expr ',' ass_expr_list
+	;
+
+cond_expr		
+	: logical_expr
+        | '(' logical_expr ')' 
+        | cond_expr AND_OP cond_expr 
+        | cond_expr OR_OP cond_expr  
+        | cond_expr '+'  cond_expr   
+        | cond_expr '-'  cond_expr   
+	;
+
+logical_expr
+        : TRUE                  
+        | FALSE                 
+        | relational_expr
+	| logical_expr EQ_OP logical_expr
+	| logical_expr NE_OP logical_expr
+	| logical_expr '<' logical_expr
+	| logical_expr '>' logical_expr
+	| logical_expr LE_OP logical_expr
+	| logical_expr GE_OP logical_expr
+        | logical_expr LIKE logical_expr
+        | logical_expr NOT LIKE logical_expr
+        ;
+relational_expr
+        :  STR_LIT            
+	|  NUM_LIT            
+	|  Q_STR_LIT          
+        ;
+identifier
+        :  STR_LIT            
+        |  Q_STR_LIT          
+	|  NUM_LIT            
+        ;
+
+
+STR_LIT    : string of characters
+Q_STR_LIT  : quoted (") string of characters
+NUM_LIT    : number-string
+AND_OP     : "&&"                    
+OR_OP     :"||"      
+LE_O     :"<="              
+GE_OP     :">="             
+EQ_OP     :"=="             
+NE_OP     :"!="             
+ACRAC_SE     :":::"         
+

@@ -1,0 +1,1 @@
+acAclPolicy { msiAclPolicy("STRICT"); }

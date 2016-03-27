@@ -1,0 +1,19 @@
+Date: Fri, 21 Sep 2007 08:18:18 -0700
+From: Reagan Moore <moore@sdsc.edu>
+To: sekar@sdsc.edu
+Subject: APAC tutorial
+
+Raja:
+I would like to include in the tutorial two slides on how to compose 
+services.  I need one slide that describes how to pass parameters 
+between micro-services.
+I need a slide that describes how to write parameters to the 
+whiteboard and retrieve them.
+
+I have a list of icat attribute names, and the wiki lists the 
+mico-services.  Is there an easy way to understand the input and 
+output parameters for each micro-service.  I suppose we could look at 
+the C code for each mico-service,
+
+Thanks,
+Reagan
