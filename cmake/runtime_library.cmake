@@ -1,15 +1,16 @@
 install(
   TARGETS
-    irods_clerver
-    irods_client_api
-    irods_client_api_table
-    irods_client_core
-    irods_client_plugins
-    irods_common
-    irods_server
+  irods_clerver
+  irods_client_api
+  irods_client_api_table
+  irods_client_core
+  irods_client_plugins
+  irods_common
+  irods_server
+  EXPORT IRODSTargets
   LIBRARY
-    DESTINATION usr/lib
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
+  DESTINATION usr/lib
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
   )
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}_PACKAGE_NAME "irods-runtime")

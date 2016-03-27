@@ -71,7 +71,6 @@ set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION
 set(IRODS_PACKAGE_COMPONENT_SERVER_NAME IRODS_COMPONENT_SERVER)
 set(IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME IRODS_COMPONENT_DEVELOPMENT)
 set(IRODS_PACKAGE_COMPONENT_RUNTIME_NAME IRODS_COMPONENT_RUNTIME)
-set(IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME IRODS_COMPONENT_ICOMMANDS)
 set(IRODS_PACKAGE_COMPONENT_POSTGRES_NAME IRODS_COMPONENT_POSTGRES)
 set(IRODS_PACKAGE_COMPONENT_MYSQL_NAME IRODS_COMPONENT_MYSQL)
 
@@ -120,17 +119,10 @@ add_custom_command(
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
   )
 
-# TODO only needed until icommands are removed, automatic dependency scanning works for the server target
-add_custom_target(
-  IRODS_PHONY_TARGET_server_control_plane_command.hpp
-  DEPENDS ${CMAKE_BINARY_DIR}/iRODS/lib/core/include/server_control_plane_command.hpp
-  )
-
 set_source_files_properties(
   ${CMAKE_SOURCE_DIR}/iRODS/server/core/src/irods_server_control_plane.cpp
-  ${CMAKE_SOURCE_DIR}/iRODS/clients/icommands/src/irods-grid.cpp
   PROPERTIES
-  OBJECT_DEPENDS IRODS_PHONY_TARGET_server_control_plane_command.hpp
+  OBJECT_DEPENDS ${CMAKE_BINARY_DIR}/iRODS/lib/core/include/server_control_plane_command.hpp
   )
 
 configure_file(
@@ -1359,18 +1351,6 @@ set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 
 ### TODO better place for these
-## icommands
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}_PACKAGE_NAME "irods-icommands")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libc6, libssl1.0.0")
-
-set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}_PACKAGE_NAME "irods-icommands")
-if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos" OR IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos linux")
-  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), openssl")
-elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
-  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ICOMMANDS_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${IRODS_VERSION}), libopenssl1_0_0")
-endif()
-
-
 ## database plugins
 # postgres
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_POSTGRES_NAME}_PACKAGE_NAME "irods-database-plugin-postgres")
@@ -1421,5 +1401,30 @@ if (NOT CPACK_GENERATOR)
     message(FATAL_ERROR "Failed to set CPACK_GENERATOR for unknown Linux Distribution: ${IRODS_LINUX_DISTRIBUTION_NAME}")
   endif()
 endif()
+set(IRODS_CPACK_GENERATOR ${CPACK_GENERATOR})
+
+set(IRODS_INCLUDE_DIRS usr/include/irods)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${CMAKE_SOURCE_DIR}/cmake/IRODSConfig.cmake.in
+  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake
+  INSTALL_DESTINATION usr/lib/irods/cmake/IRODSConfig.cmake
+  PATH_VARS IRODS_INCLUDE_DIRS
+  )
+
+write_basic_package_version_file(
+  ${CMAKE_BINARY_DIR}/IRODSConfigVersion.cmake
+  VERSION ${IRODS_VERSION}
+  COMPATIBILITY ExactVersion
+  )
+
+install(
+  FILES
+  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake
+  ${CMAKE_BINARY_DIR}/IRODSConfigVersion.cmake
+  DESTINATION usr/lib/irods/cmake
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  )
 
 include(CPack)
