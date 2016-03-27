@@ -1,4 +1,0 @@
-acNoChkFilePathPerm {
-#No arguments
-  msiNoChkFilePathPerm;
-}

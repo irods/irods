@@ -1,1 +1,0 @@
-acRescQuotaPolicy {msiSetRescQuotaPolicy("on");}

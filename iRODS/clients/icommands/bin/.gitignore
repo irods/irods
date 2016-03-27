@@ -1,9 +1,0 @@
-*
-!.gitignore
-!chgCoreToCore1.ir
-!chgCoreToCore2.ir
-!chgCoreToOrig.ir
-!delUnusedAVUs.ir
-!igetwild
-!ilocate
-!showCore.ir
