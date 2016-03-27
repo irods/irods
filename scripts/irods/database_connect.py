@@ -32,9 +32,9 @@ def load_odbc_ini(f):
                 raise IrodsError('Section headings of the form [section] must precede entries in %s.' % (f.name))
         elif '=' in line:
             key, _, value = [e.strip() for e in line.partition('=')]
-            if key in odbc[section]:
+            if key in odbc_dict[section]:
                 raise IrodsError('Multiple entries titled \'%s\' in the section titled %s in %s' % (key, section, f.name))
-            odbc[section][key] = value
+            odbc_dict[section][key] = value
         else:
             raise IrodsError('Invalid line in %s. All lines must be section headings of the form [section], '
                     'entries containing an \'=\', or a blank line.' % (f.name))
