@@ -8,8 +8,7 @@ class ColorFormatter(logging.Formatter):
     RESET_SEQ = '\033[0m'
     COLOR_SEQ_TEMPLATE = '\033[1;{fore_color_int}m'
 
-    LEVELNAME_TO_COLOR_INT_DICT = {
-            logging.INFO: WHITE,
+    LEVELNO_TO_COLOR_INT_DICT = {
             logging.WARNING: YELLOW,
             logging.ERROR: RED,
         }
@@ -17,8 +16,8 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         message = logging.Formatter.format(self, record)
         color_seq = ''
-        if record.levelname in self.LEVELNAME_TO_COLOR_INT_DICT:
-            fore_color_int = 30 + self.LEVELNAME_TO_COLOR_INT_DICT[record.levelno]
+        if record.levelno in self.LEVELNO_TO_COLOR_INT_DICT:
+            fore_color_int = 30 + self.LEVELNO_TO_COLOR_INT_DICT[record.levelno]
             color_seq = self.COLOR_SEQ_TEMPLATE.format(fore_color_int=fore_color_int)
         return '{0}{1}{2}'.format(color_seq, message, self.RESET_SEQ)
 
