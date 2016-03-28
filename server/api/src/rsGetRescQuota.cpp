@@ -9,7 +9,7 @@
 
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "genQuery.h"
 
 // =-=-=-=-=-=-=-

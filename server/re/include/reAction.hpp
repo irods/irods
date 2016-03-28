@@ -7,22 +7,15 @@
 #include "rodsUser.h"
 #include "rods.h"
 #include "rcGlobalExtern.h"
-#include "reDefines.h"
 #include "objInfo.h"
-#include "regExpMatch.hpp"
 #include "reSysDataObjOpr.hpp"
-#include "msiHelper.hpp"
 #include "reDataObjOpr.hpp"
 #include "reNaraMetaData.hpp"
 #include "reIn2p3SysRule.hpp"
-#include "reFuncDefs.hpp"
 
-typedef struct {
-    char action[MAX_ACTION_SIZE];
-    int numberOfStringArgs;
-    funcPtr callAction;
-} microsdef_t;
-
+int msiRollback( ruleExecInfo_t *rei );
+int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName,
+               msParam_t *pathName, ruleExecInfo_t *rei );
 int print_hello( ruleExecInfo_t *c );
 int print_hello_arg( msParam_t* xs, ruleExecInfo_t *rei );
 int delayExec( msParam_t* condition, msParam_t* workflow,
@@ -47,8 +40,6 @@ int msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei );
 int msiPrintKeyValPair( msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei );
 int msiGetValByKey( msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei );
 int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei );
-int msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
-                      msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei );
 int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei );
 int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei );
 int msiMakeQuery( msParam_t* selectListParam, msParam_t* conditionsParam,
@@ -75,9 +66,6 @@ int msiDeleteCollByAdmin( msParam_t *parColl, msParam_t *childName, ruleExecInfo
 int msiDeleteUser( ruleExecInfo_t *rei );
 int msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei );
 int msiSendMail( msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei );
-//int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
-int msiAdmShowDVM( msParam_t *bufP, ruleExecInfo_t *rei );
-int msiAdmShowFNM( msParam_t *bufP, ruleExecInfo_t *rei );
 int msiGetObjType( msParam_t *objNameP, msParam_t *objTypeP,
                    ruleExecInfo_t *rei );
 int msiAssociateKeyValuePairsToObj( msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
@@ -146,20 +134,6 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
 int
 msiGetContInxFromGenQueryOut( msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei );
 
-int msiAdmReadDVMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei );
-int msiAdmInsertDVMapsFromStructIntoDB( msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei );
-int msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei );
-int msiAdmWriteDVMapsFromStructIntoFile( msParam_t *inDvmFileNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei );
-
-int msiAdmReadFNMapsFromFileIntoStruct( msParam_t *inDvmFileNameParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei );
-int msiAdmInsertFNMapsFromStructIntoDB( msParam_t *inDvmBaseNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei );
-int msiGetFNMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei );
-int msiAdmWriteFNMapsFromStructIntoFile( msParam_t *inDvmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei );
-
-int msiAdmReadMSrvcsFromFileIntoStruct( msParam_t *inMsrvcFileNameParam, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei );
-int msiAdmInsertMSrvcsFromStructIntoDB( msParam_t *inMsrvcBaseNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei );
-int msiGetMSrvcsFromDBIntoStruct( msParam_t *inStatus, msParam_t *outCoreMsrvcStruct, ruleExecInfo_t *rei );
-int msiAdmWriteMSrvcsFromStructIntoFile( msParam_t *inMsrvcFileNameParam, msParam_t *inCoreMsrvcStruct, ruleExecInfo_t *rei );
 int writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei );
 int readXMsg( msParam_t* inStreamId, msParam_t* inCondRead,
               msParam_t *outMsgNum, msParam_t *outSeqNum,
@@ -226,8 +200,6 @@ namespace irods {
         table_[ "msiDataObjCopy" ] = new irods::ms_table_entry( "msiDataObjCopy", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjCopy ) );
         table_[ "msiExtractNaraMetadata" ] = new irods::ms_table_entry( "msiExtractNaraMetadata", 0, std::function<int(ruleExecInfo_t*)>( msiExtractNaraMetadata ) );
         table_[ "msiSetMultiReplPerResc" ] = new irods::ms_table_entry( "msiSetMultiReplPerResc", 0, std::function<int(ruleExecInfo_t*)>( msiSetMultiReplPerResc ) );
-        table_[ "msiAdmShowDVM" ] = new irods::ms_table_entry( "msiAdmShowDVM", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiAdmShowDVM ) );
-        table_[ "msiAdmShowFNM" ] = new irods::ms_table_entry( "msiAdmShowFNM", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiAdmShowFNM ) );
         table_[ "msiGetObjType" ] = new irods::ms_table_entry( "msiGetObjType", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetObjType ) );
         table_[ "msiAssociateKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiAssociateKeyValuePairsToObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAssociateKeyValuePairsToObj ) );
         table_[ "msiSetKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiSetKeyValuePairsToObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetKeyValuePairsToObj ) );
@@ -268,7 +240,6 @@ namespace irods {
         table_[ "msiPrintKeyValPair" ] = new irods::ms_table_entry( "msiPrintKeyValPair", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintKeyValPair ) );
         table_[ "msiGetValByKey" ] = new irods::ms_table_entry( "msiGetValByKey", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetValByKey ) );
         table_[ "msiAddKeyVal" ] = new irods::ms_table_entry( "msiAddKeyVal", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAddKeyVal ) );
-        table_[ "applyAllRules" ] = new irods::ms_table_entry( "applyAllRules", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiApplyAllRules ) );
         table_[ "msiExecStrCondQuery" ] = new irods::ms_table_entry( "msiExecStrCondQuery", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExecStrCondQuery ) );
         table_[ "msiExecGenQuery" ] = new irods::ms_table_entry( "msiExecGenQuery", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExecGenQuery ) );
         table_[ "msiMakeQuery" ] = new irods::ms_table_entry( "msiMakeQuery", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiMakeQuery ) );
@@ -300,46 +271,22 @@ namespace irods {
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
         table_[ "msiSetReServerNumProc" ] = new irods::ms_table_entry( "msiSetReServerNumProc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetReServerNumProc ) );
-        table_[ "msiGetStdoutInExecCmdOut" ] = new irods::ms_table_entry( "msiGetStdoutInExecCmdOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetStdoutInExecCmdOut ) );
-        table_[ "msiGetStderrInExecCmdOut" ] = new irods::ms_table_entry( "msiGetStderrInExecCmdOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetStderrInExecCmdOut ) );
-        table_[ "msiAddKeyValToMspStr" ] = new irods::ms_table_entry( "msiAddKeyValToMspStr", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAddKeyValToMspStr ) );
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );
         table_[ "msiTarFileExtract" ] = new irods::ms_table_entry( "msiTarFileExtract", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileExtract ) );
         table_[ "msiTarFileCreate" ] = new irods::ms_table_entry( "msiTarFileCreate", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileCreate ) );
         table_[ "msiPhyBundleColl" ] = new irods::ms_table_entry( "msiPhyBundleColl", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPhyBundleColl ) );
-        table_[ "msiWriteRodsLog" ] = new irods::ms_table_entry( "msiWriteRodsLog", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiWriteRodsLog ) );
         table_[ "msiServerMonPerf" ] = new irods::ms_table_entry( "msiServerMonPerf", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiServerMonPerf ) );
         table_[ "msiFlushMonStat" ] = new irods::ms_table_entry( "msiFlushMonStat", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiFlushMonStat ) );
         table_[ "msiDigestMonStat" ] = new irods::ms_table_entry( "msiDigestMonStat", 7, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDigestMonStat ) );
-        table_[ "msiSplitPath" ] = new irods::ms_table_entry( "msiSplitPath", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSplitPath ) );
-        table_[ "msiSplitPathByKey" ] = new irods::ms_table_entry( "msiSplitPathByKey", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSplitPathByKey ) );
-        table_[ "msiGetSessionVarValue" ] = new irods::ms_table_entry( "msiGetSessionVarValue", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetSessionVarValue ) );
         table_[ "msiGetContInxFromGenQueryOut" ] = new irods::ms_table_entry( "msiGetContInxFromGenQueryOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetContInxFromGenQueryOut ) );
         table_[ "msiSetACL" ] = new irods::ms_table_entry( "msiSetACL", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetACL ) );
         table_[ "msiSetRescQuotaPolicy" ] = new irods::ms_table_entry( "msiSetRescQuotaPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetRescQuotaPolicy ) );
-        table_[ "msiAdmReadDVMapsFromFileIntoStruct" ] = new irods::ms_table_entry( "msiAdmReadDVMapsFromFileIntoStruct", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmReadDVMapsFromFileIntoStruct ) );
-        table_[ "msiAdmInsertDVMapsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertDVMapsFromStructIntoDB", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmInsertDVMapsFromStructIntoDB ) );
-        table_[ "msiGetDVMapsFromDBIntoStruct" ] = new irods::ms_table_entry( "msiGetDVMapsFromDBIntoStruct", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetDVMapsFromDBIntoStruct ) );
-        table_[ "msiAdmWriteDVMapsFromStructIntoFile" ] = new irods::ms_table_entry( "msiAdmWriteDVMapsFromStructIntoFile", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmWriteDVMapsFromStructIntoFile ) );
-        table_[ "msiAdmReadFNMapsFromFileIntoStruct" ] = new irods::ms_table_entry( "msiAdmReadFNMapsFromFileIntoStruct", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmReadFNMapsFromFileIntoStruct ) );
-        table_[ "msiAdmInsertFNMapsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertFNMapsFromStructIntoDB", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmInsertFNMapsFromStructIntoDB ) );
-        table_[ "msiGetFNMapsFromDBIntoStruct" ] = new irods::ms_table_entry( "msiGetFNMapsFromDBIntoStruct", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetFNMapsFromDBIntoStruct ) );
-        table_[ "msiAdmWriteFNMapsFromStructIntoFile" ] = new irods::ms_table_entry( "msiAdmWriteFNMapsFromStructIntoFile", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmWriteFNMapsFromStructIntoFile ) );
-        table_[ "msiAdmReadMSrvcsFromFileIntoStruct" ] = new irods::ms_table_entry( "msiAdmReadMSrvcsFromFileIntoStruct", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmReadMSrvcsFromFileIntoStruct ) );
-        table_[ "msiAdmInsertMSrvcsFromStructIntoDB" ] = new irods::ms_table_entry( "msiAdmInsertMSrvcsFromStructIntoDB", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmInsertMSrvcsFromStructIntoDB ) );
-        table_[ "msiGetMSrvcsFromDBIntoStruct" ] = new irods::ms_table_entry( "msiGetMSrvcsFromDBIntoStruct", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetMSrvcsFromDBIntoStruct ) );
-        table_[ "msiAdmWriteMSrvcsFromStructIntoFile" ] = new irods::ms_table_entry( "msiAdmWriteMSrvcsFromStructIntoFile", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAdmWriteMSrvcsFromStructIntoFile ) );
         table_[ "writeXMsg" ] = new irods::ms_table_entry( "writeXMsg", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( writeXMsg ) );
         table_[ "readXMsg" ] = new irods::ms_table_entry( "readXMsg", 8, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( readXMsg ) );
         table_[ "msiSetReplComment" ] = new irods::ms_table_entry( "msiSetReplComment", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetReplComment ) );
         table_[ "msiSetBulkPutPostProcPolicy" ] = new irods::ms_table_entry( "msiSetBulkPutPostProcPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetBulkPutPostProcPolicy ) );
-        table_[ "msiStrlen" ] = new irods::ms_table_entry( "msiStrlen", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiStrlen ) );
-        table_[ "msiStrCat" ] = new irods::ms_table_entry( "msiStrCat", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiStrCat ) );
-        table_[ "msiStrchop" ] = new irods::ms_table_entry( "msiStrchop", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiStrchop ) );
-        table_[ "msiSubstr" ] = new irods::ms_table_entry( "msiSubstr", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSubstr ) );
         table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiCutBufferInHalf ) );
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
-        table_[ "msiExit" ] = new irods::ms_table_entry( "msiExit", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiExit ) );
         table_[ "msiSysMetaModify" ] = new irods::ms_table_entry( "msiSysMetaModify", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysMetaModify ) );
 
     }; // ms_table::ms_table
@@ -354,7 +301,7 @@ namespace irods {
         }
     }
 
-}; // namespace irods::
+}; // namespace irods
 
 //irods::ms_table MicrosTable;
 

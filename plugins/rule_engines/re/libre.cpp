@@ -1,7 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
 
@@ -33,54 +32,89 @@
 #include "irods_server_properties.hpp"
 
 
-
-irods::configuration_parser::array_t get_re_configs() {
-    irods::configuration_parser::array_t re_plugin_configs;
-    irods::get_server_property<irods::configuration_parser::array_t> (std::string("re_plugins"), re_plugin_configs);
-    return re_plugin_configs;
-}
-
 std::vector<std::string> ns;
 
-irods::error start(irods::default_re_ctx& _u) {
-    (void) _u;
-    bool found = false;
-    irods::configuration_parser::array_t re_plugin_configs = get_re_configs();
-    for(auto itr = begin(re_plugin_configs); itr != end(re_plugin_configs); ++itr) {
-        boost::any pn = (*itr)["plugin_name"];
-        if(pn.type() == typeid(std::string)) {
-            if(boost::any_cast< std::string> (pn) == std::string("re")) {
-                if(found) {
-                    return ERROR(-1, "duplicate instances of re");
-                }
-                found = true;
-                boost::any nss = (*itr)["namespaces"];
-                if(nss.type() == typeid(irods::configuration_parser::array_t)) {
-                    auto s = boost::any_cast< irods::configuration_parser::array_t> (nss);
-                    for(auto itr = begin(s); itr != end(s); ++itr) {
-                        auto n = (*itr)["namespace"];
-                        if(n.type() == typeid(std::string)) {
-                            auto ss = boost::any_cast< std::string> (n);
-                            if(std::find(ns.begin(), ns.end(), ss) != ns.end()) {
-                                return ERROR(-1, "duplicate namespaces");
-                            }
-                            ns.push_back(ss);
-                        } else {
-                            return ERROR(-1, "configuration error");
-                        }
-                    }
-                } else {
-                    return ERROR(-1, "configuration error");
-                }
+//irods::configuration_parser::array_t get_re_configs(
+irods::error get_re_configs(
+    const std::string& _instance_name ) {
+
+    typedef irods::configuration_parser::object_t object_t;
+    typedef irods::configuration_parser::array_t  array_t;
+
+    array_t re_plugin_arr;
+    irods::error ret = irods::get_server_property<
+          array_t > (
+              irods::CFG_RULE_ENGINES_KW,
+              re_plugin_arr );
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    bool found_instance = false;
+    object_t plugin_config;
+    for( auto itr : re_plugin_arr ) {
+        try {
+            plugin_config = boost::any_cast<object_t>( itr );
+        } catch( const boost::bad_any_cast& ) {
+            std::stringstream msg;
+            msg << "[" << _instance_name << "] failed to any_cast a rule_engines object";
+            return ERROR(
+                       INVALID_ANY_CAST,
+                       msg.str() );
+        }
+
+        try {
+            const std::string inst_name = boost::any_cast<std::string>(plugin_config[irods::CFG_INSTANCE_NAME_KW]);
+            if( inst_name == _instance_name) {
+                found_instance = true;
+                break;
             }
-        } else {
-            return ERROR(-1, "configuration error");
+        }
+        catch( const boost::bad_any_cast& ) {
+            continue;
         }
     }
+
+    if( !found_instance ) {
+        std::stringstream msg;
+        msg << "failed to find configuration for re-irods plugin ["
+            << _instance_name << "]";
+        rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
+        return ERROR(
+                SYS_INVALID_INPUT_PARAM,
+                msg.str() );
+    }
+
+    object_t plugin_spec_cfg;
+    try {
+        plugin_spec_cfg = boost::any_cast<object_t>( plugin_config[irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW] );
+    } catch( const boost::bad_any_cast& ) {
+        std::stringstream msg;
+        msg << "[" << _instance_name << "] failed to any_cast " << irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW;
+        return ERROR(
+                   INVALID_ANY_CAST,
+                   msg.str() );
+    }
+
+    try {
+        array_t namespaces = boost::any_cast<array_t>( plugin_spec_cfg["namespaces"] );
+        for( auto itr : namespaces ) {
+            std::string n = boost::any_cast<std::string>( itr["namespace"] );
+            ns.push_back( n );
+        }
+    }
+    catch( boost::bad_any_cast& ) {
+        return ERROR( INVALID_ANY_CAST, "failed." );
+    }
+
     return SUCCESS();
 }
 
-irods::error stop(irods::default_re_ctx& _u) {
+irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name) {
+    return get_re_configs( _instance_name );
+}
+
+irods::error stop(irods::default_re_ctx& _u, const std::string& _instance_name) {
     (void) _u;
     return SUCCESS();
 }
@@ -95,7 +129,6 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 //                  "callback type \n[%s]\n[%s]\n[%s]",
 //                  _ps.back().type().name(), typeid(irods::callback<irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> >).name() ,typeid(irods::callback<irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::DONT_AUDIT_RULE> >).name());
 //                  return SUCCESS();
-
     std::stringstream ss;
     ss << _rn << ":";
     int i = 0;
@@ -212,18 +245,29 @@ irods::error exec_rule_text(irods::default_re_ctx&, std::string _rt, std::list<b
     return ERROR(SYS_NOT_SUPPORTED,"not supported");
 }
 
+irods::error exec_rule_expression(irods::default_re_ctx&, std::string _rt, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+    return ERROR(SYS_NOT_SUPPORTED,"not supported");
+}
+
+irods::error refresh(irods::default_re_ctx&,const std::string& _instance_name ) {
+    return SUCCESS();
+}
 
 extern "C"
 irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     irods::pluggable_rule_engine<irods::default_re_ctx>* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
-    re->add_operation<irods::default_re_ctx&>(
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
             "start",
-            std::function<irods::error(irods::default_re_ctx&)>( start ) );
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( start ) );
 
-    re->add_operation<irods::default_re_ctx&>(
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
             "stop",
-            std::function<irods::error(irods::default_re_ctx&)>( stop ) );
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( stop ) );
+
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
+            "refresh",
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( refresh ) );
 
     re->add_operation<irods::default_re_ctx&, std::string, bool&>(
             "rule_exists",
@@ -236,6 +280,9 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule_text",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_text ) );
+    re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
+            "exec_rule_expression",
+            std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_expression ) );
     return re;
 
 }

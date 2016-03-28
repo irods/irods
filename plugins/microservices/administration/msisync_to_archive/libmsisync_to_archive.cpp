@@ -1,7 +1,6 @@
 // =-=-=-=-=-=-=-
 #include "apiHeaderAll.h"
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "irods_ms_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_resource_redirect.hpp"

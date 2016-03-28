@@ -51,6 +51,11 @@ namespace irods {
         "maximum_temporary_password_lifetime_in_seconds" );
     const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS(
         "maximum_number_of_concurrent_rule_engine_server_processes" );
+    
+    const std::string CFG_RE_SERVER_SLEEP_TIME(
+        "rule_engine_server_sleep_time_in_seconds");
+    const std::string CFG_RE_SERVER_EXEC_TIME(
+        "rule_engine_server_execution_time_in_seconds");
 
     // service_account_environment.json keywords
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
@@ -164,6 +169,17 @@ namespace irods {
     const std::string PLUGIN_TYPE_RESOURCE( "resources" );
     const std::string PLUGIN_TYPE_MICROSERVICE( "microservices" );
 
+
+    const std::string CFG_RULE_ENGINES_KW( "rule_engines" );
+    const std::string CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW("plugin_specific_configuration");
+    const std::string CFG_INSTANCE_NAME_KW("instance_name");
+    const std::string CFG_PLUGIN_NAME_KW("plugin_name");
+
+    const std::string CFG_SHARED_MEMORY_INSTANCE_KW("shared_memory_instance");
+    const std::string CFG_SHARED_MEMORY_MUTEX_KW("shared_memory_mutex");
+
+    const std::string DEFAULT_RULE_ENGINE_PLUGIN_NAME_KW("re-irods");
+    const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW("default_rule_engine_instance");
 
 }; // namespace irods
 

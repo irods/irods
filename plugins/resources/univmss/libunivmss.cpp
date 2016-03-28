@@ -1,8 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
-#include "rules.hpp"
-#include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
@@ -17,6 +15,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_re_structs.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See phyPathReg.h for a description of this API call.*/
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "fileStat.h"
 #include "phyPathReg.h"
 #include "rodsLog.h"
@@ -16,7 +16,7 @@
 #include "physPath.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
 

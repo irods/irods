@@ -3,8 +3,6 @@
 #include "rodsDef.h"
 #include "rodsQuota.h"
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
 #include "rcConnect.h"
 #include "readServerConfig.hpp"
 #include "icatStructs.hpp"
@@ -30,6 +28,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_virtual_path.hpp"
+#include "modAccessControl.h"
 #include "checksum.hpp"
 
 // =-=-=-=-=-=-=-

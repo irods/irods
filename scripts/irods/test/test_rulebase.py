@@ -9,6 +9,7 @@ import socket
 import time  # remove once file hash fix is commited #2279
 import copy
 import inspect
+import json
 
 from .. import lib
 from .. import test
@@ -153,6 +154,7 @@ replicateMultiple(*destRgStr) {
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rulebase_update__2585(self):
+        irods_config = IrodsConfig()
         my_rule = """
 my_rule {
     delay("<PLUSET>1s</PLUSET>") {
@@ -166,42 +168,106 @@ OUTPUT ruleExecOut
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
 
-        irods_config = IrodsConfig()
+        server_config_filename = irods_config.server_config_path
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # inject a new rule base into the native rule engine
+        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+
         with lib.file_backed_up(irods_config.server_config_path):
             test_re = os.path.join(irods_config.core_re_directory, 'test.re')
             # write new rule file to config dir
             with open(test_re, 'wt') as f:
                 print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_2585" ); }', file=f, end='')
 
-            # update server config with additional rule file
-            server_config_update = {
-                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
-            }
-            lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
-            IrodsController().restart()
-            time.sleep(35)  # wait for delay rule engine to wake
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
 
             # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(irods_config.re_log_path)
+            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
             self.admin.assert_icommand('irule -F ' + rule_file)
             time.sleep(35)  # wait for test to fire
-            assert lib.count_occurrences_of_string_in_log(irods_config.re_log_path, 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size)
+            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size)
 
             # repave rule with new string
             os.unlink(test_re)
             with open(test_re, 'wt') as f:
                 print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }', file=f, end='')
-            time.sleep(35)  # wait for delay rule engine to wake
 
             # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(irods_config.re_log_path)
+            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
             self.admin.assert_icommand('irule -F ' + rule_file)
             time.sleep(35)  # wait for test to fire
-            assert lib.count_occurrences_of_string_in_log(irods_config.re_log_path, 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size)
+            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size)
 
         # cleanup
         os.unlink(test_re)
         os.unlink(rule_file)
+
+    def test_rulebase_update_without_delay(self):
+        irods_config = IrodsConfig()
+        my_rule = """
+my_rule {
+    do_some_stuff();
+}
+INPUT null
+OUTPUT ruleExecOut
+"""
+        rule_file = 'my_rule.r'
+        with open(rule_file, 'wt') as f:
+            print(my_rule, file=f, end='')
+
+        server_config_filename = irods_config.server_config_path
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # inject a new rule base into the native rule engine
+        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+
+        with lib.file_backed_up(irods_config.server_config_path):
+            test_re = os.path.join(irods_config.core_re_directory, 'test.re')
+            # write new rule file to config dir
+            with open(test_re, 'wt') as f:
+                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_NODELAY" ); }', file=f, end='')
+
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
+            self.admin.assert_icommand('irule -F ' + rule_file)
+            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'TEST_STRING_TO_FIND_1_NODELAY', start_index=initial_log_size)
+
+            time.sleep(5) # ensure modify time is sufficiently different
+
+            # repave rule with new string
+            os.unlink(test_re)
+            with open(test_re, 'wt') as f:
+                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_NODELAY" ); }', file=f, end='')
+
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
+            self.admin.assert_icommand('irule -F ' + rule_file)
+            #time.sleep(35)  # wait for test to fire
+            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'TEST_STRING_TO_FIND_2_NODELAY', start_index=initial_log_size)
+
+        # cleanup
+        os.unlink(test_re)
+        os.unlink(rule_file)
+
 
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
@@ -304,6 +370,15 @@ OUTPUT ruleExecOut
 
         # make sure property list is not empty
         self.assertTrue(len(resource_property_list))
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # inject a new rule base into the native rule engine
+        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
 
         with lib.file_backed_up(server_config_filename):
             # prepare rule
@@ -330,11 +405,9 @@ OUTPUT ruleExecOut
             with open(test_re, 'w') as f:
                 f.write(test_rule)
 
-            # update server config with additional rule file
-            server_config_update = {
-                "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
-            }
-            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
 
             if rule_string is not None:
                 rule_file = "test_rule_file.r"

@@ -1,7 +1,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
 #include "readServerConfig.hpp"
 #include "miscServerFunct.hpp"

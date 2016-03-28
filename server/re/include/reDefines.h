@@ -21,10 +21,9 @@
 #define MAX_FMAP_LENGTH   MAX_NAME_LEN * 4
 #define MAX_ACTION_SIZE    MAX_NAME_LEN * 5
 #define MAX_ACTION_IN_RULE  100
-#define MAX_NUM_OF_ARGS_IN_ACTION 20
 #define MAX_ERROR_STRING  MAX_NAME_LEN
-#define RULE_SET_DEF_LENGTH  MAX_NAME_LEN
 #define RETESTFLAG        "RETESTFLAG"
+#define RULE_SET_DEF_LENGTH  10*MAX_NAME_LEN
 #define RELOOPBACKFLAG        "RELOOPBACKFLAG"
 #define GLOBALREDEBUGFLAG  "GLOBALREDEBUGFLAG"
 #define GLOBALREAUDITFLAG  "GLOBALREAUDITFLAG"
@@ -56,14 +55,7 @@
 
 /* Macro for the Re  Test Stub */
 
-#define RE_TEST_MACRO(msg)      \
-  if (reTestFlag > 0 ) {        \
-    if (reTestFlag == LOG_TEST_2) {     \
-      rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1, msg);	\
-    }   \
-    if (reLoopBackFlag > 0)     \
-      return(0);        \
-  }
+#define RE_TEST_MACRO(msg) if(0){};
 
 
 /*

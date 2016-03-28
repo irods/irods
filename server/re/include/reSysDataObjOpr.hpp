@@ -13,10 +13,7 @@
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.h"
 #include "modDataObjMeta.h"
-#include "reGlobalsExtern.hpp"
-#include "rsGlobalExtern.hpp"
 
-#define MULTI_COPIES_PER_RESC "MULTI_COPIES_PER_RESC"
 
 /* the following are data object operation rule handler */
 int msiSetRescSortScheme( msParam_t *sortScheme, ruleExecInfo_t *rei );

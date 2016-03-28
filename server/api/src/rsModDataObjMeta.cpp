@@ -3,7 +3,7 @@
 /* unregDataObj.c
  */
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "modDataObjMeta.h"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"

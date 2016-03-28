@@ -1036,6 +1036,15 @@ int call_setRoundRobinContextInp(
 #define CALL_SETROUNDROBINCONTEXTINP NULL
 #endif
 
+#ifdef RODS_SERVER
+int call_execRuleExpressionInp(
+    irods::api_entry*,
+    rsComm_t*,
+    exec_rule_expression_t*);
+#define CALL_EXECRULEEXPRESSIONINP call_execRuleExpressionInp
+#else
+#define CALL_EXECRULEEXPRESSIONINP NULL
+#endif
 
 
 

@@ -12,7 +12,7 @@
 #include "physPath.hpp"
 #include "miscServerFunct.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "rsApiHandler.hpp"
 #include "irods_stacktrace.hpp"
 #include "checksum.hpp"
@@ -25,7 +25,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_random.hpp"
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/lexical_cast.hpp>

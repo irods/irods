@@ -7,27 +7,38 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <string.h>
 #include <time.h>
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "execMyRule.h"
 #include "region.h"
-#include "rules.hpp"
-#include "conversion.hpp"
+//#include "rules.hpp"
+//#include "conversion.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_load_plugin.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "sockComm.h"
+#include "ruleExecDel.h"
+
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
+#include "irods_re_structs.hpp"
+#include "irods_ms_plugin.hpp"
+
+#include <string>
+#include <vector>
+
+static std::vector<std::string> GlobalDelayExecStack;
+
+int checkFilePerms( char *fileName );
 
 int
 fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
                       ruleExecSubmitInp_t *ruleSubmitInfo,  ruleExecInfo_t *rei );
 
 
-#define evaluateExpression(expr, eaVal, rei) \
-    computeExpression(expr, NULL,rei, 0, eaVal)
+//#define evaluateExpression(expr, eaVal, rei) \
+//    computeExpression(expr, NULL,rei, 0, eaVal)
 
 /**
  * \cond oldruleengine
@@ -99,6 +110,7 @@ fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedRe
  * \sa  none
  * \endcond
 **/
+int _delayExec(char*, char*, char*, ruleExecInfo_t*);
 int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
     int i;
     char actionCall[MAX_ACTION_SIZE];
@@ -124,13 +136,10 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     char *ruleExecId;
     char *actionCall;
 
-
     RE_TEST_MACRO( "    Calling _delayExec" );
 
     actionCall = inActionCall;
-    /* Get Arguments */
-    actionCall = ( char * ) malloc( strlen( inActionCall ) + strlen( recoveryActionCall ) + 3 );
-    sprintf( actionCall, "%s|%s", inActionCall, recoveryActionCall );
+
     args[1] = NULL;
     argc = 0;
     /* Pack Rei and Args */
@@ -142,7 +151,8 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
         return i;
     }
     /* fill Conditions into Submit Struct */
-    ruleSubmitInfo = ( ruleExecSubmitInp_t * ) mallocAndZero( sizeof( ruleExecSubmitInp_t ) );
+    ruleSubmitInfo = ( ruleExecSubmitInp_t * ) malloc( sizeof( ruleExecSubmitInp_t ) );
+    memset(ruleSubmitInfo, 0, sizeof(ruleExecSubmitInp_t));
     i  = fillSubmitConditions( actionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei );
     if ( actionCall != inActionCall ) {
         free( actionCall );
@@ -165,7 +175,9 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     }
     free( ruleExecId );
     snprintf( tmpStr, NAME_LEN, "%d", i );
-    i = pushStack( &delayStack, tmpStr );
+
+    GlobalDelayExecStack.push_back(tmpStr);
+
     return i;
 }
 
@@ -173,12 +185,21 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
 
     int i;
     ruleExecDelInp_t ruleExecDelInp;
+    memset(&ruleExecDelInp,0,sizeof(ruleExecDelInp));
 
-    RE_TEST_MACRO( "    Calling recover_delayExec" );
-
-    i  = popStack( &delayStack, ruleExecDelInp.ruleExecId );
-    if ( i < 0 ) {
-        return i;
+    if(!GlobalDelayExecStack.empty()) {
+        auto itr = GlobalDelayExecStack.rbegin();
+        itr->copy(
+            ruleExecDelInp.ruleExecId,
+            itr->size());
+        GlobalDelayExecStack.pop_back();
+    }
+    else {
+       rodsLog(
+          LOG_ERROR,
+          "%s - GlobalDelayExecStack is empty",
+          __FUNCTION__ );
+       return SYS_INTERNAL_NULL_INPUT_ERR; 
     }
 
     i = rsRuleExecDel( rei->rsComm, &ruleExecDelInp );
@@ -186,6 +207,40 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
 
 }
 
+
+static int carryOverMsParam(
+    msParamArray_t *sourceMsParamArray,
+    msParamArray_t *targetMsParamArray ) {
+
+    int i;
+    msParam_t *mP, *mPt;
+    char *a;
+    char *b;
+    if ( sourceMsParamArray == NULL ) {
+        return 0;
+    }
+    
+    for ( i = 0; i < sourceMsParamArray->len ; i++ ) {
+        mPt = sourceMsParamArray->msParam[i];
+        if ( ( mP = getMsParamByLabel( targetMsParamArray, mPt->label ) ) != NULL ) {
+            a = mP->label;
+            b = mP->type;
+            mP->label = NULL;
+            mP->type = NULL;
+            /** free(mP->inOutStruct);**/
+            free( mP->inpOutBuf );
+            replMsParam( mPt, mP );
+            free( mP->label );
+            mP->label = a;
+            mP->type = b;
+        }
+        else
+            addMsParamToArray( targetMsParamArray,
+                               mPt->label, mPt->type, mPt->inOutStruct, mPt->inpOutBuf, 1 );
+    }
+
+    return 0;
+}
 
 /**
  * \cond oldruleengine
@@ -226,40 +281,27 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
  * \endcond
 **/
 int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
-    int i;
+    int i = 0;
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;
     char tmpStr[LONG_NAME_LEN];
-    char tmpStr1[MAX_COND_LEN];
-    /*
-    char actionCall[MAX_ACTION_SIZE];
-    char recoveryActionCall[MAX_ACTION_SIZE];
-    char delayCondition[MAX_ACTION_SIZE];
-    char hostName[MAX_ACTION_SIZE];
-    rstrcpy(hostName, (char *) mPD->inOutStruct,MAX_ACTION_SIZE);
-    rstrcpy(delayCondition, (char *) mPA->inOutStruct,MAX_ACTION_SIZE);
-    rstrcpy(actionCall, (char *) mPB->inOutStruct,MAX_ACTION_SIZE);
-    rstrcpy(recoveryActionCall, (char *) mPC->inOutStruct,MAX_ACTION_SIZE);
-    i = _remoteExec(actionCall, recoveryActionCall, delayCondition, hostName, rei);
-    */
+    
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
     execMyRuleInp.condInput.len = 0;
     rstrcpy( execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN );
-    /*  rstrcpy (execMyRuleInp.addr.hostAddr, mPD->inOutStruct, LONG_NAME_LEN);*/
     rstrcpy( tmpStr, ( char * ) mPD->inOutStruct, LONG_NAME_LEN );
-    i = evaluateExpression( tmpStr, tmpStr1, rei );
-    if ( i < 0 ) {
-        return i;
-    }
-    parseHostAddrStr( tmpStr1, &execMyRuleInp.addr );
 
-    if ( strlen( ( char* )mPC->inOutStruct ) != 0 ) {
-        snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s", ( char* )mPB->inOutStruct, ( char* )mPC->inOutStruct );
-    }
-    else {
-        snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", ( char* )mPB->inOutStruct );
-    }
+    //i = evaluateExpression( tmpStr, tmpStr1, rei );
+    //if ( i < 0 ) {
+    //    return i;
+    //}
+    //parseHostAddrStr( tmpStr1, &execMyRuleInp.addr );
+    parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
+
+    
+    snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", ( char* )mPB->inOutStruct );
+
     addKeyVal( &execMyRuleInp.condInput, "execCondition", ( char * ) mPA->inOutStruct );
 
     tmpParamArray = ( msParamArray_t * ) malloc( sizeof( msParamArray_t ) );
@@ -280,87 +322,27 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     return i;
 }
 
-
-/*****
-int _remoteExec(char *inActionCall, char *recoveryActionCall,
-	       char *delayCondition,  char *hostName, ruleExecInfo_t *rei)
-{
-
-  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-  int i, argc;
-  ruleExecSubmitInp_t *ruleSubmitInfo;
-  char action[MAX_ACTION_SIZE];
-  char tmpStr[NAME_LEN];
-  bytesBuf_t *packedReiAndArgBBuf = NULL;
-  char *ruleExecId;
-  char *actionCall;
-
-
-  RE_TEST_MACRO ("    Calling _delayExec");
-
-  actionCall = inActionCall;
-  if (strstr(actionCall,"##") == NULL && !strcmp(recoveryActionCall,"nop")) {
-    i = parseAction(actionCall,action,args, &argc);
-    if (i != 0)
-      return i;
-    mapExternalFuncToInternalProc(action);
-    argc = 0;
-  }
-  else {
-    actionCall = malloc(strlen(inActionCall) + strlen(recoveryActionCall) + 3);
-    sprintf(actionCall,"%s|%s",inActionCall,recoveryActionCall);
-    args[0] = NULL;
-    args[1] = NULL;
-    argc = 0;
-  }
-
-  i = packReiAndArg (rei, args, argc, &packedReiAndArgBBuf);
-  if (i < 0) {
-    if (actionCall != inActionCall)
-      free (actionCall);
-    return i;
-  }
-
-  ruleSubmitInfo = mallocAndZero(sizeof(ruleExecSubmitInp_t));
-  i  = fillSubmitConditions (actionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei);
-  strncpy(ruleSubmitInfo->exeAddress,hostName,NAME_LEN);
-  if (actionCall != inActionCall)
-    free (actionCall);
-  if (i < 0) {
-    free(ruleSubmitInfo);
-    return i;
-  }
-
-  i = rsRemoteRuleExecSubmit(rei->rsComm, ruleSubmitInfo, &ruleExecId);
-  if (packedReiAndArgBBuf != NULL) {
-    clearBBuf (packedReiAndArgBBuf);
-    free (packedReiAndArgBBuf);
-  }
-
-  free(ruleSubmitInfo);
-  if (i < 0)
-    return i;
-  free (ruleExecId);
-  snprintf(tmpStr,NAME_LEN, "%d",i);
-  i = pushStack(&delayStack,tmpStr);
-  return i;
-}
-******/
 int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
-
-    int i;
     ruleExecDelInp_t ruleExecDelInp;
 
     RE_TEST_MACRO( "    Calling recover_delayExec" );
 
-    i  = popStack( &delayStack, ruleExecDelInp.ruleExecId );
-    if ( i < 0 ) {
-        return i;
+    if(!GlobalDelayExecStack.empty()) {
+        auto itr = GlobalDelayExecStack.rbegin();
+        itr->copy(
+            ruleExecDelInp.ruleExecId,
+            itr->size());
+        GlobalDelayExecStack.pop_back();
     }
-    /***
-    i = rsRemoteRuleExecDel(rei->rsComm, &ruleExecDelInp);
-    ***/
-    return i;
+    else {
+       rodsLog(
+          LOG_ERROR,
+          "%s - GlobalDelayExecStack is empty",
+          __FUNCTION__ );
+       return SYS_INTERNAL_NULL_INPUT_ERR; 
+    }
+
+    return 0;
 
 }
 
@@ -439,15 +421,6 @@ doForkExec( char *prog, char *arg1 ) {
 **/
 int
 msiGoodFailure( ruleExecInfo_t* ) {
-
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiGoodFailure So that It will Retry Other Rules Without Recovery\n" );
-        }
-        return RETRY_WITHOUT_RECOVERY_ERR;
-    }
-    /**** This is Just a Test Stub  ****/
     return RETRY_WITHOUT_RECOVERY_ERR;
 }
 
@@ -586,67 +559,6 @@ msiSleep( msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t* ) {
     rodsSleep( sec, microsec );
     return 0;
 }
-
-/**
- * \fn msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei)
- *
- * \brief  DEPRECATED - msiApplyAllRules is too ad-hoc and non-deterministic.
- *      If you need to apply multiple rules and catch the cases where one may fail,
- *      the best practice is to use the errorcode() and test for the result.
- *
- * \module core
- *
- * \since pre-2.1
- *
- * \deprecated Since 4.1.0.  Will be removed in 4.2.0
- *
- * \note Normal operations of the rule engine is to stop after a rule (one of the alternates)
- *   completes successfully. But in some cases, one may want the rule engine to try all
- *   alternatives and succeed in as many as possible. Then by firing that rule under this
- *   microservice all alternatives are tried.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] actionParam - a msParam of type STR_MS_T which is the name of an action to be executed.
- * \param[in] reiSaveFlagParam - a msParam of type STR_MS_T which is 0 or 1 value used to
- *    check if the rei structure needs to be saved at every rule invocation inside the
- *    execution. This helps to save time if the rei structure is known not to be
- *    changed when executing the underlying rules.
- * \param[in] allRuleExecFlagParam - allRuleExecFlagParam is a msParam of type STR_MS_T which
- *    is 0 or 1 whether the "apply all rule" condition applies only to the actionParam
- *    invocation or is recursively done at all levels of invocation of every rule inside the execution.
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
-**/
-int
-msiApplyAllRules( msParam_t *actionParam, msParam_t* reiSaveFlagParam,
-                  msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei ) {
-    int i;
-    char *action;
-    int reiSaveFlag;
-    int allRuleExecFlag;
-
-    action = ( char * ) actionParam->inOutStruct;
-    reiSaveFlag = atoi( ( char * ) reiSaveFlagParam->inOutStruct );
-    allRuleExecFlag = atoi( ( char * ) allRuleExecFlagParam->inOutStruct );
-    i = applyAllRules( action, rei->msParamArray, rei, reiSaveFlag, allRuleExecFlag );
-    return i;
-
-}
-
 
 /**
  * \fn msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei)

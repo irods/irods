@@ -7,9 +7,9 @@
 // irods includes
 #include "generalAdmin.h"
 #include "rodsConnect.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

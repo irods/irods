@@ -84,7 +84,6 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
     int status;
 
     /* write the packedReiAndArgBBuf to local file */
-
     while ( 1 ) {
         status = getReiFilePath( ruleExecSubmitInp->reiFilePath,
                                  ruleExecSubmitInp->userName );
@@ -102,7 +101,7 @@ _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp ) {
             else {
                 status = SYS_OPEN_REI_FILE_ERR - errno;
                 rodsLog( LOG_ERROR,
-                         "rsRuleExecSubmit: creat failed for %s, status = %d",
+                         "rsRuleExecSubmit: create failed for %s, status = %d",
                          ruleExecSubmitInp->reiFilePath, status );
                 return status;
             }

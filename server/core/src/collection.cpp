@@ -11,6 +11,7 @@
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "collCreate.h"
+#include "objMetaOpr.hpp"
 
 #include "irods_virtual_path.hpp"
 

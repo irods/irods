@@ -2,7 +2,6 @@
 // irods includes
 #include "rodsDef.h"
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
 #include "sockComm.h"
 

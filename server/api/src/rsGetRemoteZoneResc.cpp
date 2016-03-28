@@ -10,8 +10,8 @@
 #include "physPath.hpp"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
 

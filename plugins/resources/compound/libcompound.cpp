@@ -1,11 +1,11 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "generalAdmin.h"
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"
+#include "dataObjRepl.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

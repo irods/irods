@@ -5,11 +5,12 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 
+#include "irods_re_structs.hpp"
 
 /**
  * \fn msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
@@ -182,7 +183,8 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
     }
     value = strArray.value;
 
-    kvp = ( keyValPair_t* )mallocAndZero( sizeof( keyValPair_t ) );
+    kvp = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
+    memset(kvp, 0, sizeof(keyValPair_t));
     for ( i = 0; i < strArray.len; i++ ) {
         valPtr = &value[i * strArray.size];
         if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
@@ -244,7 +246,8 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
     }
 
     buf = strdup( ( char * )  inBufferP->inOutStruct );
-    strArray = ( strArray_t * ) mallocAndZero( sizeof( strArray_t ) );
+    strArray = ( strArray_t * ) malloc( sizeof( strArray_t ) );
+    memset(strArray, 0, sizeof(strArray_t));
     i =  parseMultiStr( buf, strArray );
     free( buf );
     if ( i < 0 ) {

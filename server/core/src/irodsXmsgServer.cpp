@@ -14,7 +14,6 @@
 #include "initServer.hpp"
 #include "miscServerFunct.hpp"
 #include "readServerConfig.hpp"
-#include "irods_server_rule_execution_manager_factory.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitely */
 
@@ -28,8 +27,6 @@ main( int argc, char **argv ) {
     char *tmpStr;
     int logFd;
 
-    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
-
     ProcessType = XMSG_SERVER_PT;
 
     // capture server properties
@@ -40,6 +37,14 @@ main( int argc, char **argv ) {
         rodsLog( LOG_ERROR, e.what() );
         return e.code();
     }
+
+    irods::error ret = setRECacheSaltFromEnv();
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "irodsXmsgServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
+        exit( 1 );
+    }
+
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
 #ifndef _WIN32
     signal( SIGINT, signalExit );
@@ -90,12 +95,6 @@ main( int argc, char **argv ) {
     }
 
     if ( ( logFd = logFileOpen( runMode, logDir, XMSG_SVR_LOGFILE ) ) < 0 ) {
-        exit( 1 );
-    }
-
-    irods::error ret = setRECacheSaltFromEnv();
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "irodsXmsgServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
         exit( 1 );
     }
 

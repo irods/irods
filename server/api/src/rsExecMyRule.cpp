@@ -1,54 +1,58 @@
-#include "reGlobalsExtern.hpp"
 #include "execMyRule.h"
-#include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
 #include "rcMisc.h"
 #include "irods_re_plugin.hpp"
 
-int
-rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
-              msParamArray_t **outParamArray ) {
-    ruleExecInfo_t rei;
-    char *iFlag;
-    int oldReTestFlag = 0, oldReLoopBackFlag = 0;
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
+int rsExecMyRule(
+    rsComm_t*        _comm,
+    execMyRuleInp_t* _exec_inp,
+    msParamArray_t** _out_arr ) {
 
-    if ( execMyRuleInp == NULL ) {
+    if ( _exec_inp == NULL ) {
         rodsLog( LOG_NOTICE,
                  "rsExecMyRule error. NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    remoteFlag = resolveHost( &execMyRuleInp->addr, &rodsServerHost );
+    rodsServerHost_t* rods_svr_host = nullptr;
+    int remoteFlag = resolveHost( &_exec_inp->addr, &rods_svr_host );
 
     if ( remoteFlag == REMOTE_HOST ) {
-        return remoteExecMyRule( rsComm, execMyRuleInp,
-                                   outParamArray, rodsServerHost );
+        return remoteExecMyRule( _comm, _exec_inp,
+                                   _out_arr, rods_svr_host );
     }
 
-    initReiWithDataObjInp( &rei, rsComm, NULL );
-    rei.condInputData = &execMyRuleInp->condInput;
+    char* inst_name_str = getValByKey(
+                              &_exec_inp->condInput,
+                              irods::CFG_INSTANCE_NAME_KW.c_str() );
+    std::string inst_name;
+    if( inst_name_str ) {
+        inst_name = inst_name_str;
+    }
+    else {
+        irods::error ret = get_default_rule_plugin_instance( inst_name );
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+    }
+
+    ruleExecInfo_t rei;
+    initReiWithDataObjInp( &rei, _comm, NULL );
+    rei.condInputData = &_exec_inp->condInput;
+
     /* need to have a non zero inpParamArray for execMyRule to work */
-    if ( execMyRuleInp->inpParamArray == NULL ) {
-        execMyRuleInp->inpParamArray =
+    if ( _exec_inp->inpParamArray == NULL ) {
+        _exec_inp->inpParamArray =
             ( msParamArray_t * ) malloc( sizeof( msParamArray_t ) );
-        memset( execMyRuleInp->inpParamArray, 0, sizeof( msParamArray_t ) );
+        memset( _exec_inp->inpParamArray, 0, sizeof( msParamArray_t ) );
     }
-    rei.msParamArray = execMyRuleInp->inpParamArray;
-
-    if ( ( iFlag = getValByKey( rei.condInputData, "looptest" ) ) != NULL &&
-            !strcmp( iFlag, "true" ) ) {
-        oldReTestFlag = reTestFlag;
-        oldReLoopBackFlag = reLoopBackFlag;
-        reTestFlag = LOG_TEST_2;
-        reLoopBackFlag = LOOP_BACK_1;
-    }
+    rei.msParamArray = _exec_inp->inpParamArray;
 
     rstrcpy( rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN );
 
-    std::string my_rule_text   = execMyRuleInp->myRule;
-    std::string out_param_desc = execMyRuleInp->outParamDesc;
+    std::string my_rule_text   = _exec_inp->myRule;
+    std::string out_param_desc = _exec_inp->outParamDesc;
     irods::rule_engine_context_manager<
         irods::unit,
         ruleExecInfo_t*,
@@ -57,7 +61,8 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
                                &rei);
     irods::error err = re_ctx_mgr.exec_rule_text(
                            my_rule_text,
-                           execMyRuleInp->inpParamArray,
+                           "re-irods-instance",
+                           _exec_inp->inpParamArray,
                            &out_param_desc,
                            &rei);
     if(!err.ok()) {
@@ -71,20 +76,15 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
         return err.code();
     }
 
-    if ( iFlag != NULL ) {
-        reTestFlag = oldReTestFlag;
-        reLoopBackFlag = oldReLoopBackFlag;
-    }
+    trimMsParamArray( rei.msParamArray, _exec_inp->outParamDesc );
 
-    trimMsParamArray( rei.msParamArray, execMyRuleInp->outParamDesc );
-
-    *outParamArray = rei.msParamArray;
+    *_out_arr = rei.msParamArray;
     rei.msParamArray = NULL;
 
     if ( err.code() < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsExecMyRule : execMyRule error for %s, status = %d",
-                 execMyRuleInp->myRule, err.code() );
+                 _exec_inp->myRule, err.code() );
         return err.code();
     }
 
@@ -92,21 +92,21 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
 }
 
 int
-remoteExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
-                  msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost ) {
+remoteExecMyRule( rsComm_t *_comm, execMyRuleInp_t *_exec_inp,
+                  msParamArray_t **_out_arr, rodsServerHost_t *rods_svr_host ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rods_svr_host == NULL ) {
         rodsLog( LOG_ERROR,
-                 "remoteExecMyRule: Invalid rodsServerHost" );
+                 "remoteExecMyRule: Invalid rods_svr_host" );
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ( ( status = svrToSvrConnect( rsComm, rodsServerHost ) ) < 0 ) {
+    if ( ( status = svrToSvrConnect( _comm, rods_svr_host ) ) < 0 ) {
         return status;
     }
 
-    status = rcExecMyRule( rodsServerHost->conn, execMyRuleInp, outParamArray );
+    status = rcExecMyRule( rods_svr_host->conn, _exec_inp, _out_arr );
 
     return status;
 }

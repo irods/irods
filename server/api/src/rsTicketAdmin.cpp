@@ -3,9 +3,9 @@
 
 /* See ticketAdmin.h for a description of this API call.*/
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "ticketAdmin.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"

@@ -82,8 +82,6 @@ packInstructArray_t api_pack_table_init[] = {
     {"ticketAdminInp_PI", ticketAdminInp_PI, irods::clearInStruct_noop},
     {"getTempPasswordForOtherInp_PI", getTempPasswordForOtherInp_PI, irods::clearInStruct_noop},
     {"getTempPasswordForOtherOut_PI", getTempPasswordForOtherOut_PI, irods::clearInStruct_noop},
-
-
     {"pamAuthRequestInp_PI", pamAuthRequestInp_PI, irods::clearInStruct_noop},
     {"pamAuthRequestOut_PI", pamAuthRequestOut_PI, irods::clearInStruct_noop},
     {"authPlugReqInp_PI", authPlugReqInp_PI, irods::clearInStruct_noop},
@@ -101,6 +99,7 @@ packInstructArray_t api_pack_table_init[] = {
     {"GetHierInp_PI",GetHierInp_PI,irods::clearInStruct_noop},
     {"GetHierOut_PI",GetHierOut_PI,irods::clearInStruct_noop},
     {"SetRoundRobinContextInp_PI",SetRoundRobinContextInp_PI,irods::clearInStruct_noop},
+    {"ExecRuleExpression_PI",ExecRuleExpression_PI,irods::clearInStruct_noop},
     {PACK_TABLE_END_PI, ( char * ) NULL, irods::clearInStruct_noop},
 };
 

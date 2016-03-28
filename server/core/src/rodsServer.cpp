@@ -4,8 +4,6 @@
 #include "rcMisc.h"
 #include "rodsServer.hpp"
 #include "sharedmemory.hpp"
-#include "cache.hpp"
-#include "resource.hpp"
 #include "initServer.hpp"
 #include "miscServerFunct.hpp"
 
@@ -31,7 +29,6 @@
 #include "irods_network_factory.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_control_plane.hpp"
-#include "irods_server_rule_execution_manager_factory.hpp"
 #include "readServerConfig.hpp"
 #include "initServer.hpp"
 #include "procLog.h"
@@ -288,18 +285,65 @@ serverize( char *logDir ) {
 #endif
 }
 
+static irods::error instantiate_shared_memory( ) {
+    irods::server_properties& props = irods::server_properties::instance();
+
+    std::vector<boost::any> values;
+    irods::error ret = props.gather_values_for_key( 
+                           irods::CFG_SHARED_MEMORY_INSTANCE_KW,
+                           values );
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    for( auto v : values ) {
+        std::string k = boost::any_cast<std::string>(v);
+
+        prepareServerSharedMemory( k );
+        detachSharedMemory( k );
+    }
+
+    return SUCCESS();
+} // instantiate_shared_memory
+
+static irods::error uninstantiate_shared_memory( ) {
+     irods::server_properties& props = irods::server_properties::instance();
+
+    std::vector<boost::any> values;
+    irods::error ret = props.gather_values_for_key( 
+                           irods::CFG_SHARED_MEMORY_INSTANCE_KW,
+                           values );
+    if(!ret.ok()) {
+        return PASS(ret);
+    }   
+
+    for( auto v : values ) {
+        std::string k = boost::any_cast<std::string>(v);
+        removeSharedMemory(k);
+        resetMutex(k.c_str());
+    }
+
+    return SUCCESS();
+} // uninstantiate_shared_memory
+
 int
 serverMain( char *logDir ) {
     int loopCnt = 0;
     int acceptErrCnt = 0;
 
-    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
-
+    // set re cache salt here
     irods::error ret = createAndSetRECacheSalt();
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "serverMain: createAndSetRECacheSalt error.\n%s", ret.result().c_str() );
         exit( 1 );
     }
+
+    ret = instantiate_shared_memory();
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
     rsComm_t svrComm;
     int status = initServerMain( &svrComm );
@@ -471,8 +515,7 @@ serverMain( char *logDir ) {
         return_code = e_.code();
     }
 
-    resetMutex();
-    removeSharedMemory();
+    uninstantiate_shared_memory();
 
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
@@ -842,12 +885,13 @@ initServer( rsComm_t *svrComm ) {
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
+    
+    std::string svc_role;
+    irods::error ret = get_catalog_service_role(svc_role);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+        return ret.code();
+    }
 
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -1006,13 +1050,6 @@ initServerMain( rsComm_t *svrComm ) {
         }
     }
 
-    if ( unsigned char *shared = prepareServerSharedMemory() ) {
-        copyCache( &shared, SHMMAX, &ruleEngineConfig );
-        detachSharedMemory();
-    }
-    else {
-        rodsLog( LOG_ERROR, "Cannot open shared memory." );
-    }
     rodsServerHost_t *xmsgServerHost = NULL;
     getXmsgHost( &xmsgServerHost );
     if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {

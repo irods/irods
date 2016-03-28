@@ -15,12 +15,14 @@
 #include "genQuery.h"
 #include "rsIcatOpr.hpp"
 #include "miscServerFunct.hpp"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
 #include "physPath.hpp"
-#include "reFuncDefs.hpp"
+#include "rsLog.hpp"
+#include "sockComm.h"
+//#include "reFuncDefs.hpp"
 #include "irods_stacktrace.hpp"
 
 #include "irods_get_full_path_for_config_file.hpp"
@@ -109,6 +111,7 @@ initServerInfo( rsComm_t *rsComm ) {
                  status );
         return status;
     }
+
     std::string svc_role;
     ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -193,162 +196,10 @@ int
 initRcatServerHostByFile() {
     typedef irods::configuration_parser::object_t object_t;
     typedef irods::configuration_parser::array_t  array_t;
-
-    array_t prop_arr;
-    irods::error ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_RULEBASE_SET_KW,
-              prop_arr );
-
     std::string prop_str;
-    if ( ret.ok() ) {
-        std::string rule_arr;
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "initRcatServerHostByFile - failed to cast rule base file name entry to string" );
-                continue;
-            }
-            rule_arr += prop_str + ",";
-        }
-
-        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
-
-        snprintf(
-            reRuleStr,
-            sizeof( reRuleStr ),
-            "%s",
-            rule_arr.c_str() );
-
-    }
-    else {
-        std::string prop_str;
-        ret = irods::get_server_property< std::string >(
-                  RE_RULESET_KW,
-                  prop_str );
-        if ( ret.ok() ) {
-            snprintf(
-                reRuleStr,
-                sizeof( reRuleStr ),
-                "%s",
-                prop_str.c_str() );
-
-        }
-        else {
-            irods::log( PASS( ret ) );
-            return ret.code();
-        }
-
-    }
-
-    ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
-              prop_arr );
-    if ( ret.ok() ) {
-        std::string rule_arr;
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "initRcatServerHostByFile - failed to cast rule function file name entry to string" );
-                continue;
-            }
-            rule_arr += prop_str + ",";
-        }
-
-        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
-
-        snprintf(
-            reFuncMapStr,
-            sizeof( reFuncMapStr ),
-            "%s",
-            rule_arr.c_str() );
-
-    }
-    else {
-        ret = irods::get_server_property< std::string >(
-                  RE_FUNCMAPSET_KW,
-                  prop_str );
-        if ( ret.ok() ) {
-            snprintf(
-                reFuncMapStr,
-                sizeof( reFuncMapStr ),
-                "%s",
-                prop_str.c_str() );
-
-        }
-        else {
-            irods::log( PASS( ret ) );
-            return ret.code();
-        }
-    }
-
-    ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
-              prop_arr );
-    if ( ret.ok() ) {
-        std::string rule_arr;
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "initRcatServerHostByFile - failed to cast rule data variable file name entry to string" );
-                continue;
-            }
-            rule_arr += prop_str + ",";
-        }
-
-        rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
-
-        snprintf(
-            reVariableMapStr,
-            sizeof( reVariableMapStr ),
-            "%s",
-            rule_arr.c_str() );
-
-    }
-    else {
-        ret = irods::get_server_property< std::string >(
-                  RE_VARIABLEMAPSET_KW,
-                  prop_str );
-        if ( ret.ok() ) {
-            snprintf(
-                reVariableMapStr,
-                sizeof( reVariableMapStr ),
-                "%s",
-                prop_str.c_str() );
-
-        }
-        else {
-            irods::log( PASS( ret ) );
-            return ret.code();
-        }
-    }
-
-    ret = irods::get_server_property< std::string >(
-              KERBEROS_NAME_KW,
-              prop_str );
+    irods::error ret = irods::get_server_property< std::string >(
+                           KERBEROS_NAME_KW,
+                           prop_str );
     if ( ret.ok() ) {
         snprintf(
             KerberosName,
@@ -572,16 +423,19 @@ initZone( rsComm_t *rsComm ) {
                  "initZone: getSqlResultByInx for COL_ZONE_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
+
     if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_TYPE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
+
     if ( ( zoneConn = getSqlResultByInx( genQueryOut, COL_ZONE_CONNECTION ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_CONNECTION failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
+
     if ( ( zoneComment = getSqlResultByInx( genQueryOut, COL_ZONE_COMMENT ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_COMMENT failed" );
@@ -677,16 +531,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
                  status );
         return status;
     }
-#ifdef TAR_STRUCT_FILE
-//    initStructFileDesc ();
-//    initTarSubFileDesc ();
-#endif
-    status = initRuleEngine( processType, rsComm, reRuleStr, reVariableMapStr, reFuncMapStr );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "initAgent: initRuleEngine error, status = %d", status );
-        return status;
-    }
 
     memset( &rei, 0, sizeof( rei ) );
     rei.rsComm = rsComm;
@@ -764,8 +608,6 @@ cleanup() {
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         disconnectRcat();
     }
-
-    finalizeRuleEngine();
 
     if ( InitialState == INITIAL_DONE ) {
         /* close all opened descriptors */

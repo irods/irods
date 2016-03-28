@@ -260,7 +260,7 @@ namespace irods {
         pdmo << in_pdmo_;
         _kvp[IN_PDMO_KW] = pdmo.str().c_str();
 
-        // TODO serialize physical objects
+        // TODO serialize physical objects ?
 
         return SUCCESS();
 
@@ -277,6 +277,7 @@ namespace irods {
         _file_obj->comm( _comm );
         _file_obj->logical_path( _data_obj_inp->objPath );
         _file_obj->cond_input( _data_obj_inp->condInput );
+        _file_obj->size( _data_obj_inp->dataSize );
 
         // handle the case where we are being called as part of a pdmo
         char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
@@ -340,7 +341,6 @@ namespace irods {
             obj.repl_num( info_ptr->replNum );
             obj.map_id( info_ptr->dataMapId );
             if(info_ptr->dataSize > 0) {
-            obj.size( info_ptr->dataSize );
                 obj.size( info_ptr->dataSize );
             }
             else {

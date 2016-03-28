@@ -7,11 +7,16 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
 #include "genQuery.h"
-#include "reHelpers1.hpp"
+//#include "reHelpers1.hpp"
 #include "rcMisc.h"
+#include "irods_re_structs.hpp"
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 int _makeQuery( char *sel, char *cond, char **sql );
 
@@ -51,23 +56,10 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
     genQueryOut_t *genQueryOut = NULL;
     char *query;
 
-    query = ( char * ) malloc( strlen( ( const char* )queryParam->inOutStruct ) + 10 + MAX_COND_LEN * 8 );
+    query = ( char * ) malloc( strlen( ( const char* )queryParam->inOutStruct ) + 10 + MAX_NAME_LEN * 8 );
 
     strcpy( query, ( const char* )queryParam->inOutStruct );
 
-    /**** Jun 27, 2007
-    if (queryParam->inOutStruct == NULL) {
-      query = (char *) malloc(strlen(queryParam->label) + MAX_COND_LEN);
-      strcpy(query , queryParam->label);
-    }
-    else {
-      query = (char *) malloc(strlen(queryParam->inOutStruct) + MAX_COND_LEN);
-      strcpy(query , queryParam->inOutStruct);
-    }
-    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
-    if (i < 0)
-      return i;
-    ***/
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     i = fillGenQueryInpFromStrCond( query, &genQueryInp );
     free( query );
@@ -541,7 +533,7 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
     rei->status = _makeQuery( sel, cond, &rawQuery );
 
     /* allocate more memory for query string with expanded variable names */
-    query = ( char * )malloc( strlen( rawQuery ) + 10 + MAX_COND_LEN * 8 );
+    query = ( char * )malloc( strlen( rawQuery ) + 10 + MAX_NAME_LEN * 8 );
     strcpy( query, rawQuery );
 
     /* allocate memory for genQueryInp */
@@ -966,13 +958,17 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     /********************************** EXTRACT SQL RESULTS  *********************************/
 
     /* Let's use printGenQueryOut() here for the sake of consistency over efficiency (somewhat). It needs a stream. */
-    char filename[7];
-    memset( filename, 'X', sizeof( filename ) );
+    char filename[MAX_NAME_LEN];
+    
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+
+    sprintf(filename,"%s/scripts/irods/test/msiPrintGenQueryOutToBufferXXXXXXXXXXXXXX", homedir);
     filename[sizeof( filename ) - 1] = '\0';
     umask( S_IRUSR | S_IWUSR );
     int fd = mkstemp( filename );
     if ( fd < 0 ) { /* Since it won't be caught by printGenQueryOut */
-        rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed." );
+        rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed. [%s] %d - %d", filename, fd, errno );
         return ( FILE_OPEN_ERR ); /* accurate enough */
     }
     stream = fdopen( fd, "w" );

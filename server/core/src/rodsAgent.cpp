@@ -38,8 +38,6 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
 
-#include "irods_server_rule_execution_manager_factory.hpp"
-
 /* #define SERVER_DEBUG 1   */
 int
 main( int, char ** ) {
@@ -47,10 +45,6 @@ main( int, char ** ) {
     int status;
     rsComm_t rsComm;
     char *tmpStr;
-
-    irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
-    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
-
     ProcessType = AGENT_PT;
 
     // capture server properties
@@ -61,6 +55,13 @@ main( int, char ** ) {
         rodsLog( LOG_ERROR, e.what() );
         return e.code();
     }
+
+    irods::error ret2 = setRECacheSaltFromEnv();
+    if ( !ret2.ok() ) {
+        rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
+        exit( 1 );
+    }
+
 
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );
@@ -132,18 +133,17 @@ main( int, char ** ) {
     /* Open a connection to syslog */
     openlog( "rodsAgent", LOG_ODELAY | LOG_PID, LOG_DAEMON );
 #endif
+
+    irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
+    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+
+
     status = getRodsEnv( &rsComm.myEnv );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: getRodsEnv failed" );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         cleanupAndExit( status );
-    }
-
-    ret = setRECacheSaltFromEnv();
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
-        exit( 1 );
     }
 
     // =-=-=-=-=-=-=-
@@ -165,7 +165,7 @@ main( int, char ** ) {
     ret = irods::init_api_table(
               RcApiTable,
               ApiPackTable,
-              false );// XXXX - JMC true );
+              false );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return 1;
