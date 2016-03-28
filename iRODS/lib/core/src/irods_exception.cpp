@@ -51,6 +51,9 @@ namespace irods {
 
         std::stringstream what_ss;
         what_ss << "iRODS Exception:" << std::endl
+                << "    file: " << file_name_ << std::endl
+                << "    function: " << function_name_ << std::endl
+                << "    line: " << line_number_ << std::endl
                 << "    code: " << code_ << std::endl
                 << "    message:" << std::endl
                 << message
