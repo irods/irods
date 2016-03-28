@@ -47,16 +47,6 @@ int msiobjget_http(
     msParam_t* cacheFilename,
     ruleExecInfo_t* rei ) {
 
-    int status;
-    FILE *destFd;
-    char curlErrBuf[CURL_ERROR_SIZE];
-    char *reqStr = (char*)requestPath->inOutStruct;
-    char *cacheStr = (char*)cacheFilename->inOutStruct;
-    CURL *curl;
-    CURLcode res;
-
-    curlErrBuf[0] = '\0';
-
     /*  check for input parameters */
     if ( requestPath ==  NULL ||
             strcmp( requestPath->type , STR_MS_T ) != 0 ||
@@ -69,6 +59,16 @@ int msiobjget_http(
             cacheFilename->inOutStruct == NULL ) {
         return USER_PARAM_TYPE_ERR;
     }
+
+    int status;
+    FILE *destFd;
+    char curlErrBuf[CURL_ERROR_SIZE];
+    char *reqStr = (char*)requestPath->inOutStruct;
+    char *cacheStr = (char*)cacheFilename->inOutStruct;
+    CURL *curl;
+    CURLcode res;
+
+    curlErrBuf[0] = '\0';
 
     /* Do the processing */
     /* opening file and passing i to curl */
@@ -160,7 +160,3 @@ irods::ms_table_entry*  plugin_factory( ) {
     return msvc;
 
 } // plugin_factory
-
-
-
-
