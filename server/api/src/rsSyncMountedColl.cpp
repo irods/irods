@@ -11,7 +11,7 @@
 #include "resource.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
 

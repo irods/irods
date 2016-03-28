@@ -26,12 +26,17 @@
 #include "rcPortalOpr.h"
 #include "rcConnect.h"
 #include "rodsConnect.h"
-#include "reFuncDefs.hpp"
+#include "sockComm.h"
+//#include "reFuncDefs.hpp"
+#include "modAccessControl.h"
+
 #include <string>
 #include <vector>
 #include <boost/thread/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <openssl/md5.h>
+
+
 #if !defined(solaris_platform)
 char *__loc1;
 #endif /* solaris_platform */
@@ -3075,8 +3080,10 @@ irods::error setRECacheSaltFromEnv() {
     std::string existing_name;
     irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, existing_name );
     if ( ret.ok() ) {
-        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
-        return ERROR( SYS_ALREADY_INITIALIZED, "setRECacheSaltFromEnv: mutex name already set" );
+        rodsLog( LOG_NOTICE, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
+        return SUCCESS();
+        //rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
+        //return ERROR( SYS_ALREADY_INITIALIZED, "setRECacheSaltFromEnv: mutex name already set" );
     }
 
     const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
@@ -3250,6 +3257,19 @@ irods::error get_catalog_service_role(
 
 } // get_catalog_service_role
 
+irods::error get_default_rule_plugin_instance(
+        std::string& _instance_name ) {
+    irods::error ret = irods::get_server_property<
+                           std::string>(
+                               irods::DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW,
+                               _instance_name );
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    return SUCCESS();
+
+} // get_default_rule_plugin_instance
 
 void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
     if ( !rsComm ) {

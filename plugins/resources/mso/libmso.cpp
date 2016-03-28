@@ -1,9 +1,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
-#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -169,19 +167,17 @@ irods::error mso_file_stage_to_cache(
     // build a string to call the microservice per mso syntax
     std::string call_str( "msiobjget_" );
     call_str += call_code;
-    call_str += "(\"" + phy_path + "\",";
-    call_str += "\""  + lexical_cast< std::string >( fco->mode() ) + "\",";
-    call_str += "\""  + lexical_cast< std::string >( fco->flags() ) + "\",";
-    call_str += "\"";
-    call_str += _cache_file_name;
-    call_str += "\")";
+
+    std::list<boost::any> args;
+    args.push_back( phy_path );
+    args.push_back( lexical_cast< std::string >( fco->mode() ) );
+    args.push_back( lexical_cast< std::string >( fco->flags() ) );
+    args.push_back( std::string( _cache_file_name ) );
 
     // =-=-=-=-=-=-=-
     // prepare necessary artifacts for invocation of the rule engine
     ruleExecInfo_t rei;
-    msParamArray_t ms_params;
     memset( &rei, 0, sizeof( ruleExecInfo_t ) );
-    memset( &ms_params, 0, sizeof( msParamArray_t ) );
 
     rei.rsComm = _ctx.comm();
     if ( _ctx.comm() != NULL ) {
@@ -191,11 +187,10 @@ irods::error mso_file_stage_to_cache(
 
     // =-=-=-=-=-=-=-
     // call the microservice via the rull engine
-    int status = applyRule(
+    int status = applyRuleWithInOutVars(
                      const_cast<char*>( call_str.c_str() ),
-                     &ms_params,
-                     &rei,
-                     NO_SAVE_REI );
+                     args,
+                     &rei );
 
     // =-=-=-=-=-=-=-
     // handle error condition, rei may have more info
@@ -279,18 +274,16 @@ irods::error mso_file_sync_to_arch(
     // build a string to call the microservice per mso syntax
     std::string call_str( "msiobjput_" );
     call_str += call_code;
-    call_str += "(\"" + phy_path + "\", \"";
-    call_str += _cache_file_name;
-    call_str += "\",";
-    //call_str += "\""  + lexical_cast< std::string >( fco->size() ) + "\"";
-    call_str += "\""  + lexical_cast< std::string >( file_size ) + "\")";
+    
+    std::list<boost::any> args;
+    args.push_back( phy_path );
+    args.push_back(  std::string( _cache_file_name ) );
+    args.push_back( lexical_cast< std::string >( file_size ) );
 
     // =-=-=-=-=-=-=-
     // prepare necessary artifacts for invocation of the rule engine
     ruleExecInfo_t rei;
-    msParamArray_t ms_params;
     memset( &rei, 0, sizeof( ruleExecInfo_t ) );
-    memset( &ms_params, 0, sizeof( msParamArray_t ) );
 
     rei.rsComm = _ctx.comm();
     if ( _ctx.comm() != NULL ) {
@@ -300,11 +293,10 @@ irods::error mso_file_sync_to_arch(
 
     // =-=-=-=-=-=-=-
     // call the microservice via the rull engine
-    int status = applyRule(
+    int status = applyRuleWithInOutVars(
                      const_cast<char*>( call_str.c_str() ),
-                     &ms_params,
-                     &rei,
-                     NO_SAVE_REI );
+                     args,
+                     &rei );
 
     // =-=-=-=-=-=-=-
     // handle error condition, rei may have more info

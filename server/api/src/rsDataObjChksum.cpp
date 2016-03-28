@@ -1,4 +1,4 @@
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "dataObjChksum.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"

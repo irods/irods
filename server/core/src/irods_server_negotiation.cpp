@@ -6,9 +6,9 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.h"
-#include "index.hpp"
-#include "reFuncDefs.hpp"
 #include "rsGlobalExtern.hpp"
+
+#include <list>
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -106,39 +106,19 @@ namespace irods {
         ruleExecInfo_t rei;
         memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
 
+        std::string rule_result;
+        std::list<boost::any> params;
+        params.push_back(&rule_result);
+
         // =-=-=-=-=-=-=-
         // if it is, then call the pre PEP and get the result
-        msParamArray_t params;
-        memset( &params, 0, sizeof( params ) );
-        int status = applyRuleUpdateParams(
-                         "acPreConnect(*OUT)",
-                         &params,
-                         &rei,
-                         NO_SAVE_REI );
+        int status = applyRuleWithInOutVars(
+                         "acPreConnect",
+                         params,
+                         &rei );
         if ( 0 != status ) {
             return ERROR( status, "failed in call to applyRuleUpdateParams" );
         }
-
-        // =-=-=-=-=-=-=-
-        // extract the value from the outgoing param to pass out to the operation
-        char* rule_result_ptr = 0;
-        msParam_t* out_ms_param = getMsParamByLabel( &params, "*OUT" );
-        if ( out_ms_param ) {
-            rule_result_ptr = reinterpret_cast< char* >( out_ms_param->inOutStruct );
-
-        }
-        else {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null out parameter" );
-
-        }
-
-        if ( !rule_result_ptr ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "rule_result is null" );
-
-        }
-
-        std::string rule_result( rule_result_ptr );
-        clearMsParamArray( &params, 0 );
 
         // =-=-=-=-=-=-=-
         // check to see if a negoation was requested

@@ -4,11 +4,11 @@
 /* See genQuery.h for a description of this API call.*/
 
 #include "rcMisc.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
-#include "cache.hpp"
+//#include "cache.hpp"
 #include "rsGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
@@ -415,18 +415,9 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
 
-        if ( getRuleEngineStatus() == UNINITIALIZED ) {
-            /* Skip the call to run acAclPolicy if the Rule Engine
-               hasn't been initialized yet, which happens for a couple
-               initial queries made by the agent when starting up.  The
-               new RE logs these types of errors and so this avoids that.
-            */
-            status = -1;
-        }
-        else {
-            status = applyRule( "acAclPolicy", NULL, &rei, NO_SAVE_REI );
-        }
+        status = applyRule( "acAclPolicy", NULL, &rei, NO_SAVE_REI );
         if ( status == 0 ) {
+
             ruleExecuted = 1; /* No need to retry next time since it
                              succeeded.  Since this is called at
                              startup, the Rule Engine may not be

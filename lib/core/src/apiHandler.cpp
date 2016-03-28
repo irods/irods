@@ -5,7 +5,6 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_client_api_table.hpp"
-#include "irods_operation_rule_execution_manager_no_op.hpp"
 #include <boost/filesystem.hpp>
 namespace irods {
 
@@ -255,12 +254,6 @@ void init_client_api_table() {
     irods::api_entry_table&  api_tbl = irods::get_client_api_table();
     irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
     init_api_table( api_tbl, pk_tbl );
-
-    // force inclusion of the factory into irods
-    irods::operation_rule_execution_manager_no_op* op =
-        static_cast<irods::operation_rule_execution_manager_no_op*>(
-                operation_rule_execution_manager_factory( "", "" ));
-    delete op;
 }
 #ifdef __cplusplus
 }

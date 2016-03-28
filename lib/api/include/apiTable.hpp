@@ -1012,6 +1012,13 @@ static irods::apidef_t client_api_table_inp[] = {
         "set_round_robin_context", irods::clearInStruct_noop,
         (funcPtr)CALL_SETROUNDROBINCONTEXTINP
     },
+    {
+        EXEC_RULE_EXPRESSION_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
+        "ExecRuleExpression_PI", 0,  NULL, 0,
+        boost::any(std::function<int(rsComm_t*,exec_rule_expression_t*)>(RS_EXEC_RULE_EXPRESSION)),
+        "set_round_robin_context", irods::clearInStruct_noop,
+        (funcPtr)CALL_EXECRULEEXPRESSIONINP
+    },
 }; // _api_table_inp
 
 

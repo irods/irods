@@ -17,7 +17,7 @@
 #include "rodsType.h"
 #include "rsApiHandler.hpp"
 #include "dataObjPut.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 
 #include "bulkDataObjPut.h"
 #include "putUtil.h"
@@ -3490,7 +3490,7 @@ keyValFromString( char * string, keyValPair_t** list ) {
 
     /* Parse the string.  Extract out the tag and value */
     /* without doing any memory allocations (to save time). */
-    while ( TRUE ) {
+    while ( 1 ) {
         int startTag = -1;
         int endTag = -1;
         char* tag = NULL;
@@ -3669,7 +3669,6 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
     if ( hostAddr == NULL || addr == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-
     if ( splitPathByKey( hostAddr, buffer, LONG_NAME_LEN, port, SHORT_STR_LEN, ':' ) < 0 ) {
         rstrcpy( addr->hostAddr, hostAddr, LONG_NAME_LEN );
         addr->portNum = 0;

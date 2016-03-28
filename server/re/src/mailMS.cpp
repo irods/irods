@@ -5,11 +5,17 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 
 #include "irods_log.hpp"
+#include "irods_re_structs.hpp"
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 
 /**
  * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *)
@@ -59,29 +65,14 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
         return status;
     }
 
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == COMMAND_TEST_1 ) {
-            fprintf( stdout, "  Sending Email\n     To:%s\n     Subject:%s\n     Body:%s\n",
-                     toAddr, subjectLine, body );
-        }
-        else if ( reTestFlag == HTML_TEST_1 ) {
-            fprintf( stdout, "Sending Email\n<UL>\n" );
-            fprintf( stdout, "<LI>To: %s\n", toAddr );
-            fprintf( stdout, "<LI>subjectLine: %s\n", subjectLine );
-            fprintf( stdout, "<LI>Body: %s\n", body );
-            fprintf( stdout, "</UL>\n" );
-        }
-        else if ( reTestFlag == LOG_TEST_1 )
-            rodsLog( LOG_NOTICE, "   Calling msiSendMail To:%s Subject %s\n",
-                     toAddr, subjectLine );
-        if ( reLoopBackFlag > 0 ) {
-            return 0;
-        }
-    }
-    char fName[100];
-    sprintf( fName, "mailFile%d.ml", getpid() );
+    struct passwd *pw = getpwuid(getuid());
+    const char *homedir = pw->pw_dir;
+
+    char fName[MAX_NAME_LEN];
+    sprintf( fName, "%s/scripts/irods/test/mailFile%d.ml", homedir, getpid() );
     FILE* fd = fopen( fName, "w" );
     if ( fd == NULL ) {
+        rodsLog( LOG_ERROR, "failed to create file [%s] errno %d", fName, errno );
         return FILE_CREATE_ERROR;
     }
 #ifdef solaris_platform

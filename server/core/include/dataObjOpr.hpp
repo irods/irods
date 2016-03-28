@@ -15,7 +15,7 @@
 #include "ruleExecSubmit.h"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
-#include "reIn2p3SysRule.hpp"
+//#include "reIn2p3SysRule.hpp"
 #include "irods_file_object.hpp"
 
 /* definition for return value of resolveSingleReplCopy */
@@ -27,6 +27,8 @@
 #define REQUE_MATCHED_RESC_INFO         0x2
 #define TRIM_MATCHED_OBJ_INFO           0x4
 #define TRIM_UNMATCHED_OBJ_INFO         0x8
+
+#define MULTI_COPIES_PER_RESC "MULTI_COPIES_PER_RESC"
 
 irods::error validate_logical_path(const std::string&);
     

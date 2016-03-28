@@ -443,6 +443,14 @@ namespace irods {
 
     } // server_properties::capture()
 
+    error server_properties::gather_values_for_key(
+       const std::string&       _key,
+       std::vector<boost::any>& _values ) {
+
+       return config_props_.gather_values_for_key(
+                  _key,
+                  _values );
+    }
 
 } // namespace irods
 

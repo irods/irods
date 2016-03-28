@@ -3,19 +3,19 @@
 
 #ifndef SHAREDMEMORY_HPP
 #define SHAREDMEMORY_HPP
-#include "debug.hpp"
 
 #include <assert.h>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include "irods_error.hpp"
+#include <string>
 
 #define SHMMAX 30000000
 #define SHM_BASE_ADDR ((void *)0x80000000)
-unsigned char *prepareServerSharedMemory();
-void detachSharedMemory();
-int removeSharedMemory();
-unsigned char *prepareNonServerSharedMemory();
-irods::error getSharedMemoryName( std::string &shared_memory_name );
+unsigned char *prepareServerSharedMemory( const std::string& );
+void detachSharedMemory( const std::string& );
+int removeSharedMemory( const std::string& );
+unsigned char *prepareNonServerSharedMemory( const std::string& );
+irods::error getSharedMemoryName( const std::string&, std::string &shared_memory_name );
 #endif /* SHAREDMEMORY_H */

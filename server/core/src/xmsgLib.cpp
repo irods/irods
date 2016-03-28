@@ -13,10 +13,10 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rsApiHandler.hpp"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "xmsgLib.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "irods_network_factory.hpp"
 #include "initServer.hpp"
 
@@ -193,12 +193,12 @@ int checkMsgCondition( irodsXmsg_t *irodsXmsg, char *msgCond ) {
     if ( strcmp( condStr, "" ) == 0 ) {
         return 0;
     }
-    int ret;
+    int ret = 1;
     int grdf[2];
-    disableReDebugger( grdf );
-    ret = !( computeExpression( condStr, &XMsgMsParamArray, NULL, 0, res ) == 0 );
-    enableReDebugger( grdf );
-    return ret;
+    // disableReDebugger( grdf );
+    // ret = !( computeExpression( condStr, &XMsgMsParamArray, NULL, 0, res ) == 0 );
+    // enableReDebugger( grdf );
+    return 0;//ret;
 
 }
 

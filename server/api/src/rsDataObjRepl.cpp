@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjRepl.h for a description of this API call.*/
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
 #include "dataObjCreate.h"
@@ -16,10 +16,10 @@
 #include "physPath.hpp"
 #include "specColl.hpp"
 #include "resource.hpp"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
 #include "icatDefines.h"
-#include "reSysDataObjOpr.hpp"
+//#include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
 #include "l3FileGetSingleBuf.h"
 #include "l3FilePutSingleBuf.h"
@@ -397,7 +397,7 @@ _rsDataObjRepl(
     if ( !root_resc_name.empty() ) {
         /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
-                                        root_resc_name, transStat,
+                                        root_resc_name.c_str(), transStat,
                                         outDataObjInfo );
         if ( status < 0 ) {
             savedStatus = status;
@@ -524,7 +524,7 @@ _rsDataObjReplNewCopy(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
     dataObjInfo_t *srcDataObjInfoHead,
-    const std::string& _root_resc_name,
+    const char* _root_resc_name,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
     // =-=-=-=-=-=-=-
@@ -546,7 +546,7 @@ _rsDataObjReplNewCopy(
 
     srcDataObjInfo = srcDataObjInfoHead;
     while ( srcDataObjInfo != NULL ) {
-        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _root_resc_name.c_str(), outDataObjInfo, 0 );
+        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _root_resc_name, outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
         }

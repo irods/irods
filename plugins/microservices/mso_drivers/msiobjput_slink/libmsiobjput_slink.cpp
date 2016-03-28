@@ -1,11 +1,9 @@
 #include "rodsClient.h"
-#include "reFuncDefs.hpp"
 #include "rods.h"
-#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "irods_server_properties.hpp"
-
+#include "irods_ms_plugin.hpp"
 
 /**
  * \fn msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,  msParam_t*  inFileSize, ruleExecInfo_t* rei )

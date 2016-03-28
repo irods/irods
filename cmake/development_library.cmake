@@ -39,7 +39,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_buffer_encryption.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_children_parser.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_client_api_table.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_client_rule_execution_manager.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_client_server_negotiation.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_configuration_keywords.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_configuration_parser.hpp
@@ -67,9 +66,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_network_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_network_plugin.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_network_types.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_operation_rule_execution_manager_base.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_operation_rule_execution_manager_no_op.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_operation_wrapper.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_osauth_auth_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pack_table.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pam_auth_object.hpp
@@ -338,7 +334,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_api_call.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_api_table.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_control_plane.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_rule_execution_manager_factory.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_state.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_structured_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/miscServerFunct.hpp
@@ -346,7 +341,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/objMetaOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/physPath.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/procLog.h
-  ${CMAKE_SOURCE_DIR}/server/core/include/reServerLib.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/readServerConfig.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/resource.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rodsAgent.hpp
@@ -370,61 +364,19 @@ set(
 
 set(
   IRODS_SERVER_RE_INCLUDE_HEADERS
-  ${CMAKE_SOURCE_DIR}/server/re/include/arithmetics.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/cache.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/cache.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/cache.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/configuration.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/conversion.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/datetime.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/debug.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/end.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/filesystem.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/functions.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/index.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_ms_plugin.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/irods_operation_rule_execution_manager.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_plugin.hpp
+  ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_structs.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_serialization.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/key.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/key.proto.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/locks.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/msiHelper.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/parser.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/proto.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reAction.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reDataObjOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reDefines.h
-  ${CMAKE_SOURCE_DIR}/server/re/include/reFuncDefs.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reGlobals.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reGlobalsExtern.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reHelpers1.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reIn2p3SysRule.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reNaraMetaData.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reNetcdf.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reSysDataObjOpr.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reVariableMap.gen.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reVariableMap.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/reVariables.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/reconstants.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/regExpMatch.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.check.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.check.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.to.region.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.to.region.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.to.region2.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/region.to.region2.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/restruct.templates.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/restructs.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/rules.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/sharedmemory.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/to.memory.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/to.memory.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/to.region.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/to.region.proto.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/traversal.instance.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/typing.hpp
-  ${CMAKE_SOURCE_DIR}/server/re/include/utils.hpp
   )
 
 set(

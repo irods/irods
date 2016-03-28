@@ -17,16 +17,17 @@
 #include "resource.hpp"
 #include "dataObjClose.h"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
-#include "reSysDataObjOpr.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
+//#include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_re_structs.hpp"
 #include "get_hier_from_leaf_id.h"
 
 int

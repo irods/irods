@@ -1,7 +1,6 @@
 // =-=-=-=-=-=-=-
 // legacy irods includes
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "miscServerFunct.hpp"
 
 // =-=-=-=-=-=-=-

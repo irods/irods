@@ -6,6 +6,40 @@
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "genQuery.h"
+
+int
+getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut ) {
+    genQueryInp_t genQueryInp;
+    char tmpStr[NAME_LEN];
+    int status;
+
+    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ID, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_NAME, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_REI_FILE_PATH, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_USER_NAME, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ADDRESS, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_TIME, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_FREQUENCY, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_PRIORITY, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_ESTIMATED_EXE_TIME, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_NOTIFICATION_ADDR, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_LAST_EXE_TIME, 1 );
+    addInxIval( &genQueryInp.selectInp, COL_RULE_EXEC_STATUS, 1 );
+
+    snprintf( tmpStr, NAME_LEN, "='%s'", ruleExecId );
+    addInxVal( &genQueryInp.sqlCondInp, COL_RULE_EXEC_ID, tmpStr );
+
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
+
+    clearGenQueryInp( &genQueryInp );
+
+    return status;
+}
 
 int
 rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
@@ -56,8 +90,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     return status;
 }
 
-int
-_rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
+int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     genQueryOut_t *genQueryOut = NULL;
     int status;
     sqlResult_t *reiFilePath;
@@ -172,7 +205,6 @@ _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
     }
-
     status = unlink( reiFilePath->value );
     if ( status < 0 ) {
         status = UNIX_FILE_UNLINK_ERR - errno;

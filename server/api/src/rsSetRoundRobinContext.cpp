@@ -2,7 +2,6 @@
 // irods includes
 #include "rcMisc.h"
 #include "rodsConnect.h"
-#include "reGlobalsExtern.hpp"
 #include "apiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "irods_resource_manager.hpp"

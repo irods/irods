@@ -7,7 +7,7 @@
 #include "rods.h"
 #include "objMetaOpr.hpp"
 #include "dataObjRepl.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 

@@ -5,14 +5,15 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
 
+#include "irods_re_structs.hpp"
 
 /**
  * \fn msiCreateUser (ruleExecInfo_t *rei)
@@ -53,22 +54,7 @@
  **/
 int msiCreateUser( ruleExecInfo_t *rei ) {
     int i;
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
-            print_uoi( rei->uoio );
-        }
-        else {
-            rodsLog( LOG_NOTICE, "   Calling msiCreateUser For \n" );
-            print_uoi( rei->uoio );
-        }
-        if ( reLoopBackFlag > 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "   Test mode, returning without performing normal operations (chlRegUserRE)" );
-            return 0;
-        }
-    }
-    /**** End of Test Stub  ****/
+
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -131,23 +117,6 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
 
     parColl = ( char * ) xparColl->inOutStruct;
     childName = ( char * ) xchildName->inOutStruct;
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
-            fprintf( stdout, "  NewCollection =%s/%s\n",
-                     parColl, childName );
-        }
-        else {
-            rodsLog( LOG_NOTICE, "   Calling msiCreateCollByAdmin Coll: %s/%s\n",
-                     parColl, childName );
-        }
-        if ( reLoopBackFlag > 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "   Test mode, returning without performing normal operations (chlRegCollByAdmin)" );
-            return 0;
-        }
-    }
-    /**** End of Test Stub  ****/
     memset( &collInfo, 0, sizeof( collInfo_t ) );
     snprintf( collInfo.collName, sizeof( collInfo.collName ),
               "%s/%s", parColl, childName );
@@ -218,21 +187,6 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
 
     parColl = ( char * ) xparColl->inOutStruct;
     childName = ( char * ) xchildName->inOutStruct;
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
-            fprintf( stdout, "  NewCollection =%s/%s\n",
-                     parColl, childName );
-        }
-        else {
-            rodsLog( LOG_NOTICE, "   Calling msiDeleteCallByAdmin Coll: %s/%s\n",
-                     parColl, childName );
-        }
-        rodsLog( LOG_NOTICE,
-                 "   Test mode, returning without performing normal operations (chlDelCollByAdmin)" );
-        return 0;
-    }
-    /**** End of Test Stub  ****/
 
     snprintf( collInfo.collName, sizeof( collInfo.collName ),
               "%s/%s", parColl, childName );
@@ -304,20 +258,6 @@ int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
 int
 msiDeleteUser( ruleExecInfo_t *rei ) {
     int i;
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
-            print_uoi( rei->uoio );
-        }
-        else {
-            rodsLog( LOG_NOTICE, "   Calling chlDeleteUser For \n" );
-            print_uoi( rei->uoio );
-        }
-        rodsLog( LOG_NOTICE,
-                 "   Test mode, returning without performing normal operations (chlDelUserRE)" );
-        return 0;
-    }
-    /**** End of Test Stub  ****/
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -375,19 +315,6 @@ int
 msiAddUserToGroup( msParam_t *msParam, ruleExecInfo_t *rei ) {
     int i;
     char *groupName;
-
-    if ( reTestFlag > 0 ) { /* Test stub mode */
-        if ( reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1 ) {
-            print_uoi( rei->uoio );
-        }
-        else {
-            rodsLog( LOG_NOTICE, "   Calling chlModGroup For \n" );
-            print_uoi( rei->uoio );
-        }
-        rodsLog( LOG_NOTICE,
-                 "   Test mode, returning without performing normal operations (chlModGroup)" );
-        return 0;
-    }
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {

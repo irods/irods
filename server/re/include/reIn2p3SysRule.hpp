@@ -6,11 +6,11 @@
 #define RE_IN2P3_SYS_RULE_HPP
 
 #include "msParam.h"
-#include "reDataObjOpr.hpp"
+//#include "reDataObjOpr.hpp"
 #include "rods.h"
 #include "rsGlobalExtern.hpp"   /* server global */
 #include "rcGlobalExtern.h"   /* client global */
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "rsLog.hpp"
 #include "rodsLog.h"
 #include "sockComm.h"

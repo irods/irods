@@ -3,14 +3,15 @@
 /* rsStructFileBundle.c. See structFileBundle.h for a description of
  * this API call.*/
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
 #include "miscServerFunct.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+#include "rcMisc.h"
+//#include "reGlobalsExtern.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -54,7 +55,7 @@ rsStructFileBundle( rsComm_t *rsComm,
     dataObjInp_t      data_inp;
     bzero( &data_inp, sizeof( data_inp ) );
     rstrcpy( data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
-    copyKeyValPairStruct( &structFileBundleInp->condInput, &data_inp.condInput );
+    copyKeyVal( &structFileBundleInp->condInput, &data_inp.condInput );
     if ( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
                            &data_inp, hier, host, local );

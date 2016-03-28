@@ -6,7 +6,7 @@
 #include "dataObjPut.h"
 #include "rodsLog.h"
 #include "dataPut.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "filePut.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"

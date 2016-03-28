@@ -3,8 +3,7 @@
 #include "irods_error.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_lookup_table.hpp"
-
-#include "reGlobalsExtern.hpp"
+#include "irods_re_structs.hpp"
 
 #include <boost/any.hpp>
 #include <iostream>
@@ -159,7 +158,7 @@ namespace irods {
     class pluggable_rule_engine final {
     public:
 
-        pluggable_rule_engine(const std::string &_instance_name, const std::string &_context) {
+        pluggable_rule_engine(const std::string &_in, const std::string &_context) : instance_name_(_in) {
         }
 
         template<typename... types_t>
@@ -177,13 +176,13 @@ namespace irods {
         }
 
         error start_operation(T& _in) {
-            auto fcn = boost::any_cast<std::function<error(T&)>>( operations_["start"] );
-            return fcn(_in);
+            auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["start"] );
+            return fcn(_in,instance_name_);
         }
 
         error stop_operation(T& _in) {
-            auto fcn = boost::any_cast<std::function<error(T&)>>( operations_["stop"] );
-            return fcn(_in);
+            auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["stop"] );
+            return fcn(_in,instance_name_);
         }
 
         error rule_exists(std::string _rn, T& _re_ctx, bool& _out) {
@@ -210,10 +209,24 @@ namespace irods {
                                operations_["exec_rule_text"] );
             return fcn(_re_ctx, _rt, l, _callback);
         }
+
+        template<typename ...As>
+        error exec_rule_expression(
+                std::string _rt,
+                T&          _re_ctx,
+                callback    _callback,
+                As&&...     _ps) {
+            auto l = pack(std::forward<As>(_ps)...);
+            auto fcn = boost::any_cast<
+                           std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                               operations_["exec_rule_expression"] );
+            return fcn(_re_ctx, _rt, l, _callback);
+        }
+
     private:
         error load_operation(void *handle, std::string _fcn, std::string _key);
         irods::lookup_table< boost::any > operations_;
-        std::string _instance_name;
+        std::string instance_name_;
     };
 
     template<typename T, typename C, rule_execution_manager_pack Audit>
@@ -230,13 +243,27 @@ namespace irods {
         template<typename... As >
         error exec_rule_text(
             std::string _rule_text,
+            std::string _instance_name,
             As&& ... _ps) {
                 return re_mgr_->exec_rule_text(
                            _rule_text,
+                           _instance_name,
                            clone(_ps)...);
 
         }
 
+        template<typename... As >
+        error exec_rule_expression(
+            std::string _rule_text,
+            std::string _instance_name,
+            As&& ... _ps) {
+                return re_mgr_->exec_rule_expression(
+                           _rule_text,
+                           _instance_name,
+                           clone(_ps)...);
+
+        }
+        
         template<typename OP, typename... As >
         error call(
             std::string _instance_name,
@@ -301,15 +328,15 @@ namespace irods {
             for (auto itr = begin(re_plugin_map_);itr != end(re_plugin_map_); ++itr) delete itr->second;
         }
 
-        error resolve(std::string _plugin_name, pluggable_rule_engine<T> *& _re_ptr) {
-            auto itr = re_plugin_map_.find(_plugin_name);
+        error resolve(std::string& _plugin_name, const std::string& _inst_name, pluggable_rule_engine<T> *& _re_ptr) {
+            auto itr = re_plugin_map_.find(_inst_name);
             if(itr == end(re_plugin_map_)) {
-                error err = load_plugin <pluggable_rule_engine<T> > (_re_ptr, _plugin_name, dir_, std::string(""), std::string("")); // don't use _instance_name and _context here
+                error err = load_plugin <pluggable_rule_engine<T> > (_re_ptr, _plugin_name, dir_, _inst_name, std::string("empty_context"));
                 if (!err.ok()) {
                     irods::log( PASS( err ) );
                     return err;
                 }
-                re_plugin_map_[_plugin_name] = _re_ptr;
+                re_plugin_map_[_inst_name] = _re_ptr;
             } else {
                 _re_ptr = itr->second;
             }
@@ -347,7 +374,7 @@ namespace irods {
             pluggable_rule_engine<T>* pre = NULL;
             error err;
 
-            err = re_plugin_mgr_.resolve(_inp.plugin_name_, pre);
+            err = re_plugin_mgr_.resolve(_inp.plugin_name_, _inp.instance_name_, pre);
             if(!err.ok()) {
                 return PASS( err );
             }
@@ -444,21 +471,53 @@ namespace irods {
         }
 
         template <typename ...As>
-        error exec_rule_text(std::string _rt, As &&... _ps) {
+        error exec_rule_text(std::string _rt, std::string instance_name_, As &&... _ps) {
             error ret;
             for( auto itr  = begin(this->re_mgr_.re_packs_);
                       itr != end(this->re_mgr_.re_packs_);
                             ++itr ) {
-                ret = this->rex_mgr_.exec_rule_text(
-                        _rt,
-                        itr->re_ctx_,
-                        callback(*this),
-                        std::forward<As>(_ps)...);
-                if(ret.ok()) {
+                if( instance_name_ == itr->instance_name_ ) {
+                    ret = this->rex_mgr_.exec_rule_text(
+                            _rt,
+                            itr->instance_name_,
+                            itr->re_ctx_,
+                            callback(*this),
+                            std::forward<As>(_ps)...);
                     return ret;
                 }
             }
-            return ret;
+
+            std::string msg( "instance not found [" );
+            msg += instance_name_;
+            msg += "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
+        }
+
+        template <typename ...As>
+        error exec_rule_expression(std::string _rt, std::string instance_name_, As &&... _ps) {
+            error ret;
+            for( auto itr  = begin(this->re_mgr_.re_packs_);
+                      itr != end(this->re_mgr_.re_packs_);
+                            ++itr ) {
+                if( instance_name_ == itr->instance_name_ ) {
+                    ret = this->rex_mgr_.exec_rule_expression(
+                            _rt,
+                            itr->instance_name_,
+                            itr->re_ctx_,
+                            callback(*this),
+                            std::forward<As>(_ps)...);
+                    return ret;
+                }
+            }
+
+            std::string msg( "instance not found [" );
+            msg += instance_name_;
+            msg += "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
         }
 
     protected:
@@ -487,21 +546,51 @@ namespace irods {
         }
 
         template <typename ...As>
-        error exec_rule_text(std::string _rt, As &&... _ps) {
+        error exec_rule_text(std::string _rt, std::string instance_name_, As &&... _ps) {
             error ret;
             for( auto itr  = begin(this->re_mgr_.re_packs_);
                       itr != end(this->re_mgr_.re_packs_);
                             ++itr ) {
-                ret = itr->re_->exec_rule_text(
-                        _rt,
-                        itr->re_ctx_,
-                        callback(*this),
-                        std::forward<As>(_ps)...);
-                if(ret.ok()) {
+                if( instance_name_ == itr->instance_name_ ) {
+                    ret = itr->re_->exec_rule_text(
+                            _rt,
+                            itr->re_ctx_,
+                            callback(*this),
+                            std::forward<As>(_ps)...);
                     return ret;
                 }
             }
-            return ret;
+
+            std::string msg( "instance not found [" );
+            msg += instance_name_;
+            msg += "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
+        }
+
+        template <typename ...As>
+        error exec_rule_expression(std::string _rt, std::string instance_name_, As &&... _ps) {
+            error ret;
+            for( auto itr  = begin(this->re_mgr_.re_packs_);
+                      itr != end(this->re_mgr_.re_packs_);
+                            ++itr ) {
+                if( instance_name_ == itr->instance_name_ ) {
+                    ret = itr->re_->exec_rule_expression(
+                            _rt,
+                            itr->re_ctx_,
+                            callback(*this),
+                            std::forward<As>(_ps)...);
+                    return ret;
+                }
+            }
+ 
+            std::string msg( "instance not found [" );
+            msg += instance_name_;
+            msg += "]";
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       msg );
         }
 
     protected:

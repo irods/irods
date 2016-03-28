@@ -3,7 +3,7 @@
 /* rsDataObjRename.c - rename a data object.
  */
 #include "dataObjRename.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "collection.hpp"
@@ -28,6 +28,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_re_structs.hpp"
 
 int
 rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {

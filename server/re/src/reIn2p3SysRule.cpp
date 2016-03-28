@@ -11,6 +11,8 @@
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.h"
 #include "phyBundleColl.h"
+#include "reDataObjOpr.hpp"
+
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>

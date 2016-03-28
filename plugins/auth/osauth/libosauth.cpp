@@ -3,7 +3,6 @@
 #include "rodsDef.h"
 #include "osauth.h"
 #include "msParam.h"
-#include "reGlobalsExtern.hpp"
 #include "rcConnect.h"
 #include "authRequest.h"
 #include "authResponse.h"

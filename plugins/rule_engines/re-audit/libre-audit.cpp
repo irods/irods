@@ -65,13 +65,13 @@ std::string escapeJsonString(const std::string& input) {
 
 std::vector<std::string> ns;
 
-irods::error start(irods::default_re_ctx& _u) {
+irods::error start(irods::default_re_ctx& _u,const std::string&) {
     (void) _u;
 
     return SUCCESS();
 }
 
-irods::error stop(irods::default_re_ctx& _u) {
+irods::error stop(irods::default_re_ctx& _u,const std::string&) {
     (void) _u;
     return SUCCESS();
 }
@@ -131,17 +131,29 @@ irods::error exec_rule_text(irods::default_re_ctx&, std::string _rt, std::list<b
     return ERROR(SYS_NOT_SUPPORTED,"not supported");
 }
 
+irods::error exec_rule_expression(irods::default_re_ctx&, std::string _rt, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+    return ERROR(SYS_NOT_SUPPORTED,"not supported");
+}
+
+irods::error refresh(irods::default_re_ctx&,const std::string& _instance_name ) {
+    return SUCCESS();
+}
+
 extern "C"
 irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     irods::pluggable_rule_engine<irods::default_re_ctx>* re = new irods::pluggable_rule_engine<irods::default_re_ctx>( _inst_name , _context);
-    re->add_operation<irods::default_re_ctx&>(
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
             "start",
-            std::function<irods::error(irods::default_re_ctx&)>( start ) );
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( start ) );
 
-    re->add_operation<irods::default_re_ctx&>(
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
             "stop",
-            std::function<irods::error(irods::default_re_ctx&)>( stop ) );
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( stop ) );
+
+    re->add_operation<irods::default_re_ctx&,const std::string&>(
+            "refresh",
+            std::function<irods::error(irods::default_re_ctx&,const std::string&)>( refresh ) );
 
     re->add_operation<irods::default_re_ctx&, std::string, bool&>(
             "rule_exists",
@@ -153,6 +165,9 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule_text",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_text ) );
+    re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
+            "exec_rule_expression",
+            std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_expression ) );
 
     return re;
 

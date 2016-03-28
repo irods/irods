@@ -15,7 +15,7 @@
 #include "ruleExecSubmit.h"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
-#include "reIn2p3SysRule.hpp"
+//#include "reIn2p3SysRule.hpp"
 
 #define DEF_NUM_RE_PROCS	1
 #define RESC_UPDATE_TIME        60
@@ -58,7 +58,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
 int
 initReExec( rsComm_t *rsComm, reExec_t *reExec );
 int
-allocReThr( reExec_t *reExec ); // JMC - backport 4695
+allocReThr( reExec_t *reExec );
 int
 freeReThr( reExec_t *reExec, int thrInx );
 int

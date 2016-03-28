@@ -27,9 +27,9 @@ uint CoreIrbTimeStamp = 0;
 #define v_FLAG  0x1
 
 void
-reServerMain( rsComm_t *rsComm, char* logDir );
+reServerMain( char* logDir );
 int
-reSvrSleep( rsComm_t *rsComm );
+reSvrSleep( );
 int
 chkAndResetRule();
 #endif	/* RE_SERVER_H */

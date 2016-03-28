@@ -1,11 +1,9 @@
 #include "rodsClient.h"
 #include "rods.h"
-#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "reFuncDefs.hpp"
 #include "irods_server_properties.hpp"
-
+#include "irods_ms_plugin.hpp"
 #include <strings.h>
 
 extern int rsDataObjWrite( rsComm_t *rsComm,

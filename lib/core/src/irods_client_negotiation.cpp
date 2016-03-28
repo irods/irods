@@ -17,13 +17,14 @@
 #include "rodsDef.h"
 #include "rodsConnect.h"
 #include "rcMisc.h"
-#include "index.hpp"
-#include "reFuncDefs.hpp"
+//#include "index.hpp"
+//#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <map>
 
+extern const packInstructArray_t RodsPackTable[];
 
 namespace irods {
 /// =-=-=-=-=-=-=-
