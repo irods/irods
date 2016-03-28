@@ -6,6 +6,7 @@ install(
     irodsServer
     irodsReServer
     irodsXmsgServer
+    hostname_resolves_to_local_address
   RUNTIME
     DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/bin
     COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}

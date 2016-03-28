@@ -827,6 +827,7 @@ target_compile_options(irods_server PRIVATE -Wno-write-strings)
 set(
   IRODS_LIBIRODS_COMMON_SOURCES
   ${CMAKE_SOURCE_DIR}/iRODS/lib/core/src/irods_random.cpp
+  ${CMAKE_SOURCE_DIR}/iRODS/lib/core/src/irods_hostname.cpp
   )
 add_library(
   irods_common
@@ -1228,12 +1229,18 @@ set(
   )
 
 set(
+  IRODS_MAIN_EXECUTABLE_HOSTNAME_RESOLVES_TO_LOCAL_ADDRESS_SOURCES
+  ${CMAKE_SOURCE_DIR}/iRODS/server/core/src/hostname_resolves_to_local_address.cpp
+  )
+
+set(
   IRODS_MAIN_EXECUTABLES
   irodsAgent
   irodsServer
   irodsReServer
   irodsXmsgServer
   test_chl
+  hostname_resolves_to_local_address
   )
 
 foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
