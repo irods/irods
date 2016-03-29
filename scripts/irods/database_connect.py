@@ -26,18 +26,22 @@ def load_odbc_ini(f):
         if line[0] == '[' and line[-1] == ']':
             section = line[1:-1]
             if section in odbc_dict:
-                raise IrodsError('Multiple sections named %s in %s.' % (section, f.name))
+                raise IrodsError('Multiple sections named %s in %s.' %
+                        (section, f.name))
             odbc_dict[section] = {}
         elif section is None:
-                raise IrodsError('Section headings of the form [section] must precede entries in %s.' % (f.name))
+                raise IrodsError('Section headings of the form [section] '
+                        'must precede entries in %s.' % (f.name))
         elif '=' in line:
             key, _, value = [e.strip() for e in line.partition('=')]
             if key in odbc_dict[section]:
-                raise IrodsError('Multiple entries titled \'%s\' in the section titled %s in %s' % (key, section, f.name))
+                raise IrodsError('Multiple entries titled \'%s\' in the '
+                        'section titled %s in %s' % (key, section, f.name))
             odbc_dict[section][key] = value
         else:
-            raise IrodsError('Invalid line in %s. All lines must be section headings of the form [section], '
-                    'entries containing an \'=\', or a blank line.' % (f.name))
+            raise IrodsError('Invalid line in %s. All lines must be section '
+                    'headings of the form [section], entries containing an '
+                    '\'=\', or a blank line.' % (f.name))
 
     return odbc_dict
 
