@@ -6,6 +6,7 @@ install(
   irods_client_core
   irods_client_plugins
   irods_common
+  irods_plugin_dependencies
   irods_server
   EXPORT IRODSTargets
   LIBRARY

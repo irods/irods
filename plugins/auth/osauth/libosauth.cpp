@@ -289,6 +289,7 @@ irods::error osauth_auth_client_request(
 
 } // osauth_auth_client_request
 
+#ifdef RODS_SERVER
 // =-=-=-=-=-=-=-
 // handle an agent-side auth request call
 irods::error osauth_auth_agent_request(
@@ -327,6 +328,7 @@ irods::error osauth_auth_agent_request(
     return SUCCESS();
 
 } // osauth_auth_agent_request
+#endif
 
 // =-=-=-=-=-=-=-
 // handle a client-side auth request call
@@ -388,6 +390,7 @@ irods::error osauth_auth_client_response(
 
 } // osauth_auth_client_response
 
+#ifdef RODS_SERVER
 // =-=-=-=-=-=-=-
 // handle an agent-side auth request call
 irods::error osauth_auth_agent_response(
@@ -686,7 +689,7 @@ irods::error osauth_auth_agent_verify(
     return SUCCESS();
 
 } // osauth_auth_agent_verify
-
+#endif
 
 // =-=-=-=-=-=-=-
 // derive a new osauth_auth auth plugin from
@@ -728,10 +731,6 @@ irods::auth* plugin_factory(
         AUTH_CLIENT_START,
         function<error(plugin_context&,rcComm_t*,const char*)>(
             osauth_auth_client_start ) );
-    nat->add_operation<const char*>(
-        AUTH_AGENT_START,
-        function<error(plugin_context&,const char*)>(
-            osauth_auth_agent_start ) );
     nat->add_operation(
         AUTH_ESTABLISH_CONTEXT,
         function<error(plugin_context&)>(
@@ -740,14 +739,19 @@ irods::auth* plugin_factory(
         AUTH_CLIENT_AUTH_REQUEST,
         function<error(plugin_context&,rcComm_t*)>(
             osauth_auth_client_request ) );
-    nat->add_operation(
-        AUTH_AGENT_AUTH_REQUEST,
-        function<error(plugin_context&)>(
-            osauth_auth_agent_request )  );
     nat->add_operation<rcComm_t*>(
         AUTH_CLIENT_AUTH_RESPONSE,
         function<error(plugin_context&,rcComm_t*)>(
             osauth_auth_client_response ) );
+#ifdef RODS_SERVER
+    nat->add_operation<const char*>(
+        AUTH_AGENT_START,
+        function<error(plugin_context&,const char*)>(
+            osauth_auth_agent_start ) );
+    nat->add_operation(
+        AUTH_AGENT_AUTH_REQUEST,
+        function<error(plugin_context&)>(
+            osauth_auth_agent_request )  );
     nat->add_operation<authResponseInp_t*>(
         AUTH_AGENT_AUTH_RESPONSE,
         function<error(plugin_context&,authResponseInp_t*)>(
@@ -756,10 +760,10 @@ irods::auth* plugin_factory(
         AUTH_AGENT_AUTH_VERIFY,
         function<error(plugin_context&,const char*,const char*,const char*)>(
             osauth_auth_agent_verify ) );
+#endif
 
     irods::auth* auth = dynamic_cast< irods::auth* >( nat );
 
     return auth;
 
 } // plugin_factory
-

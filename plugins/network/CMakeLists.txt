@@ -28,6 +28,19 @@ set(
   )
 
 set(
+  IRODS_NETWORK_LINK_LIBRARIES_client
+  irods_client_core
+  irods_client_plugins
+  irods_client_api_table
+  )
+
+set(
+  IRODS_NETWORK_LINK_LIBRARIES_server
+  irods_server
+  irods_clerver
+  )
+
+set(
   IRODS_NETWORK_PLUGIN_TYPES
   client
   server
@@ -62,8 +75,9 @@ foreach(PLUGIN ${IRODS_NETWORK_PLUGINS})
     target_link_libraries(
       ${IRODS_CURRENT_PLUGIN_TARGET}
       PRIVATE
-      irods_server
-      irods_clerver
+      ${IRODS_NETWORK_LINK_LIBRARIES_${TYPE}}
+      irods_plugin_dependencies
+      irods_common
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
       ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
