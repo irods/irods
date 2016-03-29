@@ -24,7 +24,6 @@ set(
 
 set(
   IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_client
-  RODS_SERVER
   )
 
 set(
@@ -32,6 +31,19 @@ set(
   RODS_SERVER
   RODS_CLERVER
   ENABLE_RE
+  )
+
+set(
+  IRODS_AUTH_PLUGIN_LINK_LIBRARIES_client
+  irods_client_core
+  irods_client_plugins
+  irods_client_api_table
+  )
+
+set(
+  IRODS_AUTH_PLUGIN_LINK_LIBRARIES_server
+  irods_server
+  irods_clerver
   )
 
 set(
@@ -68,8 +80,9 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
       target_link_libraries(
         ${IRODS_CURRENT_PLUGIN_TARGET}
         PRIVATE
-        irods_server
-        irods_clerver
+        ${IRODS_AUTH_PLUGIN_LINK_LIBRARIES_${TYPE}}
+        irods_common
+        irods_plugin_dependencies
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
         ${OPENSSL_CRYPTO_LIBRARY}

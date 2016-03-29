@@ -8,36 +8,26 @@ if (NOT ODBC_LIBRARY)
 endif()
 
 set(
-  IRODS_DATABASE_PLUGIN_POSTGRES_COMPILE_DEFINITIONS
+  IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_postgres
   )
 set(
-  IRODS_DATABASE_PLUGIN_MYSQL_COMPILE_DEFINITIONS
+  IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_mysql
   MY_ICAT
   )
 
 set(
-  IRODS_DATABASE_PLUGIN_POSTGRES_SCHEMA_UPDATE_FILES
+  IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_postgres
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/2.postgres.mysql.oracle.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/3.postgres.mysql.oracle.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/4.postgres.oracle.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/5.postgres.sql
   )
 set(
-  IRODS_DATABASE_PLUGIN_MYSQL_SCHEMA_UPDATE_FILES
+  IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_mysql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/2.postgres.mysql.oracle.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/3.postgres.mysql.oracle.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/4.mysql.sql
   ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/5.mysql.sql
-  )
-
-set(
-  IRODS_DATABASE_PLUGIN_POSTGRES_DEFAULT_PORT
-  5432
-  )
-
-set(
-  IRODS_DATABASE_PLUGIN_MYSQL_DEFAULT_PORT
-  3306
   )
 
 set(
@@ -90,12 +80,14 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     PRIVATE
     irods_server
     irods_clerver
+    irods_plugin_dependencies
+    irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
     ${ODBC_LIBRARY}
     )
 
-  target_compile_definitions(${PLUGIN} PRIVATE ENABLE_RE ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_COMPILE_DEFINITIONS} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+  target_compile_definitions(${PLUGIN} PRIVATE ENABLE_RE ${IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 
@@ -114,8 +106,8 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )
 
-  foreach(SCHEMA_UPDATE_SOURCE ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_SCHEMA_UPDATE_FILES})
-    list(FIND IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_SCHEMA_UPDATE_FILES ${SCHEMA_UPDATE_SOURCE} SCHEMA_UPDATE_SOURCE_INDEX)
+  foreach(SCHEMA_UPDATE_SOURCE ${IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_${PLUGIN}})
+    list(FIND IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_${PLUGIN} ${SCHEMA_UPDATE_SOURCE} SCHEMA_UPDATE_SOURCE_INDEX)
     math(EXPR SCHEMA_UPDATE_STEP "${SCHEMA_UPDATE_SOURCE_INDEX}+2")
     install(
       FILES
@@ -184,10 +176,12 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
       PRIVATE
       irods_server
       irods_clerver
+      irods_plugin_dependencies
+      irods_common
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
       ${ODBC_LIBRARY}
       )
-    target_compile_definitions(test_${TEST_BINARY}_${PLUGIN} PRIVATE ${IRODS_DATABASE_PLUGIN_${PLUGIN_UPPERCASE}_COMPILE_DEFINITIONS} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+    target_compile_definitions(test_${TEST_BINARY}_${PLUGIN} PRIVATE ${IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
     target_compile_options(test_${TEST_BINARY}_${PLUGIN} PRIVATE -Wno-write-strings)
     set_property(TARGET test_${TEST_BINARY}_${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
     set_property(TARGET test_${TEST_BINARY}_${PLUGIN} PROPERTY OUTPUT_NAME test_${TEST_BINARY})
