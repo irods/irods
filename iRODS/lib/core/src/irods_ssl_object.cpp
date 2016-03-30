@@ -5,6 +5,8 @@
 #include "rodsKeyWdDef.h"
 #include "rcMisc.h"
 
+extern int ProcessType;
+
 namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -128,6 +130,7 @@ namespace irods {
             // the need for one instance of a ssl object, etc.
             std::string empty_context( "" );
             ret = netwk_mgr.init_from_type(
+                      ProcessType,
                       SSL_NETWORK_PLUGIN,
                       SSL_NETWORK_PLUGIN,
                       SSL_NETWORK_PLUGIN,

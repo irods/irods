@@ -2,6 +2,8 @@
 #include "irods_tcp_object.hpp"
 #include "irods_network_manager.hpp"
 
+extern int ProcessType;
+
 namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -86,6 +88,7 @@ namespace irods {
             // the need for one instance of a tcp object, etc.
             std::string empty_context( "" );
             ret = netwk_mgr.init_from_type(
+                      ProcessType,
                       TCP_NETWORK_PLUGIN,
                       TCP_NETWORK_PLUGIN,
                       TCP_NETWORK_PLUGIN,

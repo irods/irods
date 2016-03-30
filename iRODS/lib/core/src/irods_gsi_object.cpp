@@ -4,6 +4,8 @@
 #include "irods_auth_manager.hpp"
 #include "irods_auth_plugin.hpp"
 
+extern int ProcessType;
+
 namespace irods {
 
     gsi_auth_object::gsi_auth_object(
@@ -30,7 +32,7 @@ namespace irods {
 
                 // Attempt to load the plugin.
                 std::string empty_context( "" );
-                ret = auth_mgr.init_from_type( AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, empty_context, ath );
+                ret = auth_mgr.init_from_type( ProcessType, AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, AUTH_GSI_SCHEME, empty_context, ath );
                 result = ASSERT_PASS( ret, "Failed to load the GSI auth plugin." );
             }
 

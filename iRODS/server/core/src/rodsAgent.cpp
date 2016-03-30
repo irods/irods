@@ -165,7 +165,7 @@ main( int, char ** ) {
     ret = irods::init_api_table(
               RcApiTable,
               ApiPackTable,
-              true );
+              false );// XXXX - JMC true );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return 1;

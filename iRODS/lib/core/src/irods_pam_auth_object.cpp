@@ -3,6 +3,8 @@
 #include "irods_auth_manager.hpp"
 #include "irods_auth_plugin.hpp"
 
+extern int ProcessType;
+
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcMisc.h"
@@ -78,6 +80,7 @@ namespace irods {
             // the need for one instance of a native object, etc.
             std::string empty_context( "" );
             ret = auth_mgr.init_from_type(
+                      ProcessType,
                       AUTH_PAM_SCHEME,
                       AUTH_PAM_SCHEME,
                       AUTH_PAM_SCHEME,

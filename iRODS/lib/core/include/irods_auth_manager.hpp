@@ -27,6 +27,7 @@ namespace irods {
 
             /// @brief Load up a plugin corresponding to the specified type.
             error init_from_type(
+                const int&,               // process type
                 const std::string& _type, // type
                 const std::string& _key,  // key
                 const std::string& _inst, // instance name

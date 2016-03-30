@@ -81,6 +81,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - given a type, load up a network plugin
     error network_manager::init_from_type(
+        const int&         _proc_type,
         const std::string& _type,
         const std::string& _key,
         const std::string& _inst,
@@ -88,11 +89,12 @@ namespace irods {
         network_ptr&       _net ) {
 
         std::string type = _type;
-        #ifdef RODS_CLERVER
-        type += "_server";
-        #else
-        type += "_client";
-        #endif
+        if( CLIENT_PT == _proc_type ) {
+            type += "_client";
+        } 
+        else {
+            type += "_server";
+        }
 
         // =-=-=-=-=-=-=-
         // create the network plugin and add it to the table
