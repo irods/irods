@@ -34,6 +34,7 @@ namespace irods {
             /// @brief given a type, load up a network plugin from
             ///        a shared object
             error init_from_type(
+                const int&,           // proc type
                 const std::string&,   // type
                 const std::string&,   // key
                 const std::string&,   // instance name

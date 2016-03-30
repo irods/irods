@@ -7,6 +7,8 @@
 // irods includes
 #include "rcMisc.h"
 
+extern int ProcessType;
+
 namespace irods {
 
 // =-=-=-=-=-=-=-
@@ -79,6 +81,7 @@ namespace irods {
             // the need for one instance of a native object, etc.
             std::string empty_context( "" );
             ret = auth_mgr.init_from_type(
+                      ProcessType,
                       AUTH_NATIVE_SCHEME,
                       AUTH_NATIVE_SCHEME,
                       AUTH_NATIVE_SCHEME,

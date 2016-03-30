@@ -63,6 +63,7 @@ namespace irods {
     } // load_auth_plugin
 
     error auth_manager::init_from_type(
+        const int&         _proc_type,
         const std::string& _type,
         const std::string& _key,
         const std::string& _inst,
@@ -73,11 +74,12 @@ namespace irods {
         auth_ptr auth;
 
         std::string type = _type;
-        #ifdef RODS_CLERVER
-        type += "_server";
-        #else
-        type += "_client";
-        #endif
+        if( CLIENT_PT == _proc_type ) {        
+            type += "_client";
+        }
+        else {
+            type += "_server";
+        }
 
         ret = load_auth_plugin( auth, type, _inst, _ctx );
         if ( ( result = ASSERT_PASS( ret, "Failed to load auth plugin." ) ).ok() ) {
