@@ -183,42 +183,6 @@ class IrodsConfig(paths.IrodsPaths):
             l.debug('Successfully constructed schema URI.')
         return self._schema_uri_prefix
 
-    def list_database_tables(self, cursor=None):
-        if cursor is None:
-            with contextlib.closing(self.get_database_connection()) as connection:
-                with contextlib.closing(connection.cursor()) as cursor:
-                    return self.list_database_tables(cursor)
-        l = logging.getLogger(__name__)
-        l.info('Listing database tables...')
-        table_names = [row[2] for row in cursor.tables()]
-        l.debug('List of tables:\n%s', pprint.pformat(table_names))
-        return table_names
-
-    def irods_tables_in_database(self, cursor=None):
-        with open(os.path.join(self.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql')) as f:
-            irods_tables = [l.split()[2].lower() for l in f.readlines() if l.lower().startswith('create table')]
-        table_names = self.list_database_tables(cursor)
-        return [t for t in table_names if t.lower() in irods_tables]
-
-    def update_catalog_schema(self, cursor=None):
-        if cursor is None:
-            with contextlib.closing(self.get_database_connection()) as connection:
-                connection.autocommit = False
-                with contextlib.closing(connection.cursor()) as cursor:
-                    self.update_catalog_schema(cursor)
-                    return
-        l = logging.getLogger(__name__)
-        l.info('Updating schema version...')
-        while self.get_schema_version_in_database(cursor) != self.version['catalog_schema_version']:
-            schema_update_path = self.get_next_schema_update_path(cursor)
-            l.info('Running update to schema version %d...', int(os.path.basename(schema_update_path).partition('.')[0]))
-            try:
-                database_connect.execute_sql_file(schema_update_path, cursor, by_line=True)
-            except IrodsError:
-                six.reraise(IrodsError,
-                        IrodsError('Updating database schema version failed while running %s' % (schema_update_path)),
-                        sys.exc_info()[2])
-
     @property
     def admin_password(self):
         if not os.path.exists(os.path.dirname(self.password_file_path)):
@@ -234,70 +198,6 @@ class IrodsConfig(paths.IrodsPaths):
         with open(self.password_file_path, 'wt') as f:
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(self.password_file_path, (mtime, mtime))
-
-    def get_database_connection(self):
-        return database_connect.get_database_connection(self)
-
-    def sync_odbc_ini(self):
-        odbc_dict = database_connect.get_odbc_entry(self.database_config)
-
-        #The 'Driver' keyword must be first
-        keys = [k for k in odbc_dict.keys()]
-        keys[keys.index('Driver')] = keys[0]
-        keys[0] = 'Driver'
-
-        template = '\n'.join(itertools.chain(['[iRODS Catalog]'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
-        lib.execute_command(['odbcinst', '-i', '-s', '-h', '-r'],
-                input=template,
-                env={'ODBCINI': self.odbc_ini_path, 'ODBCSYSINI': '/etc'})
-
-    def get_next_schema_update_path(self, cursor=None):
-        if not self.is_catalog:
-            return None
-
-        l = logging.getLogger(__name__)
-        database_schema_version = self.get_schema_version_in_database(cursor)
-        if database_schema_version is not None:
-            return os.path.join(
-                    self.database_schema_update_directory,
-                    '%d.%s.sql' % (
-                        database_schema_version + 1,
-                        self.database_config['catalog_database_type']))
-        return None
-
-    def get_schema_version_in_database(self, cursor=None):
-        if not self.is_catalog:
-            return None
-
-        if cursor is None:
-            with contextlib.closing(self.get_database_connection()) as connection:
-                with contextlib.closing(connection.cursor()) as cursor:
-                    return self.get_schema_version_in_database(cursor)
-        l = logging.getLogger(__name__)
-        query = "select option_value from R_GRID_CONFIGURATION where namespace='database' and option_name='schema_version';"
-        try :
-            rows = database_connect.execute_sql_statement(cursor, query).fetchall()
-        except IrodsError:
-            six.reraise(IrodsError,
-                IrodsError('pypyodbc encountered an error executing '
-                    'the query:\n\t%s' % (query)),
-                sys.exc_info()[2])
-        if len(rows) == 0:
-            raise IrodsError('No schema version present, unable to upgrade. '
-                    'If this is an upgrade from a pre-4.0 installation, '
-                    'a manual upgrade is required.')
-        if len(rows) > 1:
-            raise IrodsError('Expected one row when querying '
-                'for database schema version, received %d rows' % (len(rows)))
-
-        try:
-            schema_version = int(rows[0][0])
-        except ValueError:
-            raise RuntimeError(
-                'Failed to convert [%s] to an int for database schema version' % (rows[0][0]))
-        l.debug('Schema_version in database: %s' % (schema_version))
-
-        return schema_version
 
     def validate_configuration(self):
         l = logging.getLogger(__name__)

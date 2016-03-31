@@ -54,8 +54,8 @@ import tempfile
 from irods import six
 
 import irods.database_connect
+import irods.database_interface
 import irods.lib
-import irods.password_obfuscation
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
@@ -96,15 +96,15 @@ def setup_server(irods_config):
     setup_server_config(irods_config)
     setup_client_environment(irods_config)
 
+    default_resource_directory = get_and_create_default_vault(irods_config)
     if irods_config.is_catalog:
-        default_resource_directory = get_and_create_default_vault(irods_config)
-        setup_catalog(irods_config, default_resource_directory=default_resource_directory)
+        l.info(get_header('Setting up the database'))
+        irods.database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
     l.info(get_header('Starting iRODS...'))
     IrodsController(irods_config).start()
 
     if irods_config.is_resource:
-        default_resource_directory = get_and_create_default_vault(irods_config)
         irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     test_put(irods_config)
@@ -414,7 +414,7 @@ def setup_database_config(irods_config):
 
     irods_config.commit(db_config, irods_config.database_config_path)
 
-    if irods_config.irods_tables_in_database():
+    if irods.database_interface.database_already_in_use_by_irods(irods_config):
         l.warning(get_header(
             'WARNING:\n'
             'The database specified is an already-configured\n'
@@ -438,218 +438,6 @@ def setup_database_config(irods_config):
         server_config['environment_variables']['IRODS_DATABASE_USER_PASSWORD_SALT'] = db_password_salt
 
     irods_config.commit(server_config, irods_config.server_config_path)
-
-def setup_catalog(irods_config, default_resource_directory=None):
-    l = logging.getLogger(__name__)
-    l.info(get_header('Setting up the database'))
-
-    with contextlib.closing(irods_config.get_database_connection()) as connection:
-        connection.autocommit = False
-        with contextlib.closing(connection.cursor()) as cursor:
-            try:
-                create_database_tables(irods_config, cursor, default_resource_directory=default_resource_directory)
-                irods_config.update_catalog_schema(cursor)
-                l.debug('Committing database changes...')
-                cursor.commit()
-            except:
-                cursor.rollback()
-                raise
-
-    # Make sure communications are working.
-    #       This simple test issues a few SQL statements
-    #       to the database, testing that the connection
-    #       works.  iRODS is uninvolved at this point.
-
-    l.info('Testing database communications...');
-    irods.lib.execute_command([os.path.join(irods_config.server_test_directory, 'test_cll')])
-
-def create_database_tables(irods_config, cursor=None, default_resource_directory=None):
-    if cursor is None:
-        with contextlib.closing(irods_config.get_database_connection()) as connection:
-            with contextlib.closing(connection.cursor()) as cursor:
-                create_database_tables(irods_config, cursor)
-                return
-    l = logging.getLogger(__name__)
-    irods_table_names = irods_config.irods_tables_in_database()
-    if irods_table_names:
-        l.info('The following tables already exist in the database, table creation will be skipped:\n%s', pprint.pformat(irods_table_names))
-    else:
-        if irods_config.database_config['catalog_database_type'] == 'mysql':
-            l.info('Defining mysql functions...')
-            with tempfile.NamedTemporaryFile() as f:
-                f.write('\n'.join([
-                        '[client]',
-                        '='.join(['user', irods_config.database_config['db_username']]),
-                        '='.join(['password', irods_config.database_config['db_password']]),
-                        '='.join(['port', str(irods_config.database_config['db_port'])]),
-                        '='.join(['host', irods_config.database_config['db_host']])
-                    ]))
-                f.flush()
-                with open(os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'mysql_functions.sql'), 'r') as sql_file:
-                    irods.lib.execute_command(
-                        ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
-                        stdin=sql_file)
-        l.info('Creating database tables...')
-        sql_files = [
-                os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
-                os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysInserts.sql')
-            ]
-        for sql_file in sql_files:
-            try:
-                irods.database_connect.execute_sql_file(sql_file, cursor, by_line=True)
-            except IrodsError:
-                six.reraise(IrodsError,
-                        IrodsError('Database setup failed while running %s' % (sql_file)),
-                        sys.exc_info()[2])
-        setup_database_values(irods_config, cursor, default_resource_directory=default_resource_directory)
-
-def setup_database_values(irods_config, cursor=None, default_resource_directory=None):
-    if cursor is None:
-        with contextlib.closing(irods_config.get_database_connection()) as connection:
-            with contextlib.closing(connection.cursor()) as cursor:
-                setup_database_values(irods_config, cursor)
-                return
-    l = logging.getLogger(__name__)
-    timestamp = '{0:011d}'.format(int(time.time()))
-
-    def get_next_object_id():
-        if irods_config.database_config['catalog_database_type'] == 'postgres':
-            return irods.database_connect.execute_sql_statement(cursor, "select nextval('R_OBJECTID');").fetchone()[0]
-        elif irods_config.database_config['catalog_database_type'] == 'mysql':
-            return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID_nextval();").fetchone()[0]
-        elif irods_config.database_config['catalog_database_type'] == 'oracle':
-            return irods.database_connect.execute_sql_statement(cursor, "select R_OBJECTID.nextval from DUAL;").fetchone()[0]
-        else:
-            raise IrodsError('no next object id function defined for %s' % irods_config.database_config['catalog_database_type'])
-
-    #zone
-    zone_id = get_next_object_id()
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_ZONE_MAIN values (?,?,'local','','',?,?);",
-            zone_id,
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
-    #groups
-    admin_group_id = get_next_object_id()
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_MAIN values (?,?,?,?,'','',?,?);",
-            admin_group_id,
-            'rodsadmin',
-            'rodsgroup',
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
-    public_group_id = get_next_object_id()
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_MAIN values (?,?,?,?,'','',?,?);",
-            public_group_id,
-            'public',
-            'rodsgroup',
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
-    #users
-    admin_user_id = get_next_object_id()
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_MAIN values (?,?,?,?,'','',?,?);",
-            admin_user_id,
-            irods_config.server_config['zone_user'],
-            'rodsadmin',
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
-    #group membership
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_GROUP values (?,?,?,?);",
-            admin_group_id,
-            admin_user_id,
-            timestamp,
-            timestamp)
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_GROUP values (?,?,?,?);",
-            admin_user_id,
-            admin_user_id,
-            timestamp,
-            timestamp)
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_GROUP values (?,?,?,?);",
-            public_group_id,
-            admin_user_id,
-            timestamp,
-            timestamp)
-
-    #password
-    scrambled_password = irods.password_obfuscation.scramble(irods_config.admin_password,
-            key=irods_config.server_config.get('environment_variables', {}).get('IRODS_DATABASE_USER_PASSWORD_SALT', None))
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_USER_PASSWORD values (?,?,'9999-12-31-23.59.00',?,?);",
-            admin_user_id,
-            scrambled_password,
-            timestamp,
-            timestamp,
-            log_params=False)
-
-    #collections
-    system_collections = [
-            '/',
-            '/'.join(['', irods_config.server_config['zone_name']]),
-            '/'.join(['', irods_config.server_config['zone_name'], 'home']),
-            '/'.join(['', irods_config.server_config['zone_name'], 'trash']),
-            '/'.join(['', irods_config.server_config['zone_name'], 'trash', 'home'])
-        ]
-    public_collections = [
-            '/'.join(['', irods_config.server_config['zone_name'], 'home', 'public']),
-            '/'.join(['', irods_config.server_config['zone_name'], 'trash', 'home', 'public'])
-        ]
-    admin_collections = [
-            '/'.join(['', irods_config.server_config['zone_name'], 'home', irods_config.server_config['zone_user']]),
-            '/'.join(['', irods_config.server_config['zone_name'], 'trash', 'home', irods_config.server_config['zone_user']])
-        ]
-    for collection in itertools.chain(system_collections, public_collections, admin_collections):
-        parent_collection = '/'.join(['', collection[1:].rpartition('/')[0]])
-        collection_id = get_next_object_id()
-        irods.database_connect.execute_sql_statement(cursor,
-                "insert into R_COLL_MAIN values (?,?,?,?,?,0,'','','','','','',?,?);",
-                collection_id,
-                parent_collection,
-                collection,
-                irods_config.server_config['zone_user'],
-                irods_config.server_config['zone_name'],
-                timestamp,
-                timestamp)
-
-        irods.database_connect.execute_sql_statement(cursor,
-                "insert into R_OBJT_ACCESS values (?,?,1200,?,?);",
-                collection_id,
-                public_group_id if collection in public_collections else admin_user_id,
-                timestamp,
-                timestamp)
-
-    #bundle resource
-    bundle_resc_id = get_next_object_id()
-    irods.database_connect.execute_sql_statement(cursor,
-            "insert into R_RESC_MAIN (resc_id,resc_name,zone_name,resc_type_name,resc_class_name,resc_net,resc_def_path,free_space,free_space_ts,resc_info,r_comment,resc_status,create_ts,modify_ts) values (?,'bundleResc',?,'unixfilesystem','bundle','localhost','/bundle','','','','','',?,?);",
-            bundle_resc_id,
-            irods_config.server_config['zone_name'],
-            timestamp,
-            timestamp)
-
-    if default_resource_directory:
-        default_resc_id = get_next_object_id()
-        irods.database_connect.execute_sql_statement(cursor,
-                "insert into R_RESC_MAIN (resc_id,resc_name,zone_name,resc_type_name,resc_class_name,resc_net,resc_def_path,free_space,free_space_ts,resc_info,r_comment,resc_status,create_ts,modify_ts) values (?,?,?,'unixfilesystem','cache',?,?,'','','','','',?,?);",
-                default_resc_id,
-                'demoResc',
-                irods_config.server_config['zone_name'],
-                irods.lib.get_hostname(),
-                default_resource_directory,
-                timestamp,
-                timestamp)
 
 def setup_client_environment(irods_config):
     l = logging.getLogger(__name__)
