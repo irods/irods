@@ -101,6 +101,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     irods_client_plugins
     irods_client_api_table
     irods_common
+    irods_plugin_dependencies
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
