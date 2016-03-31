@@ -17,6 +17,7 @@ import psutil
 from . import six
 
 from .configuration import IrodsConfig
+from . import database_interface
 from . import database_connect
 from . import lib
 from . import paths
@@ -80,36 +81,7 @@ class IrodsController(object):
             l.debug('Socket %s bound and released successfully.')
 
             if self.config.is_catalog:
-                l.debug('Syncing .odbc.ini file...')
-                self.config.sync_odbc_ini()
-
-                if self.config.database_config['catalog_database_type'] == 'oracle':
-                    two_task = database_connect.get_two_task_for_oracle(self.config.database_config)
-                    l.debug('Setting TWO_TASK for oracle...')
-                    self.config.execution_environment['TWO_TASK'] = two_task
-
-                with contextlib.closing(self.config.get_database_connection()) as connection:
-                    connection.autocommit = False
-                    with contextlib.closing(connection.cursor()) as cursor:
-                        if self.config.get_schema_version_in_database(cursor) < self.config.version['catalog_schema_version']:
-                            try:
-                                self.config.update_catalog_schema(cursor)
-                                l.debug('Committing database changes...')
-                                cursor.commit()
-                            except:
-                                cursor.rollback()
-                                raise
-                        if self.config.get_schema_version_in_database(cursor) > self.config.version['catalog_schema_version']:
-                            l.error('catalog_schema_version in database [%d], '
-                                    'catalog_schema_version in %s [%d]' % (
-                                        int(schema_version_in_db),
-                                        self.get_version_path(),
-                                        int(schema_version_in_file)))
-                            raise IrodsError('\n\t'.join([
-                                'Preflight Check problem:',
-                                'Database Schema in the database is ahead',
-                                'of {0} - Please upgrade.'.format(
-                                    os.path.basename(self.config.version_path))]))
+                database_interface.server_launch_hook(self.config)
 
             l.info('Starting iRODS server...')
             lib.execute_command(
