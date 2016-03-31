@@ -257,7 +257,8 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     if ( level <= LOG_DEBUG ) {
         prefix = "DEBUG";
     }
-    if ( message[strlen( message ) - 1] == '\n' ) {
+    const size_t message_len = strlen( message );
+    if ( message_len > 0 && message[message_len - 1] == '\n' ) {
 #ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
         if ( myError != NULL ) {
@@ -490,5 +491,3 @@ generateLogTimestamp( char *ts, int tsLen ) {
 
     snprintf( ts, strlen( timestamp ) + 9, "%s.%06dZ", timestamp, ( int )tv.tv_usec );
 }
-
-
