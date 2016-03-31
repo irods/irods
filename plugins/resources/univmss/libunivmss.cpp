@@ -185,7 +185,6 @@ irods::error univ_mss_file_stat(
     int i, status;
     execCmd_t execCmdInp;
     char cmdArgv[HUGE_NAME_LEN] = "";
-    char *outputStr;
     const char *delim1 = ":\n";
     const char *delim2 = "-";
     const char *delim3 = ".";
@@ -202,7 +201,7 @@ irods::error univ_mss_file_stat(
 
     if ( status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
         if ( execCmdOut->stdoutBuf.buf != NULL ) {
-            outputStr = ( char* )execCmdOut->stdoutBuf.buf;
+            const std::string outputStr(static_cast<char*>(execCmdOut->stdoutBuf.buf), execCmdOut->stdoutBuf.len);
             std::vector<std::string> output_tokens;
             boost::algorithm::split( output_tokens, outputStr, boost::is_any_of( delim1 ) );
             _statbuf->st_dev = atoi( output_tokens[0].c_str() );
@@ -1029,4 +1028,3 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
