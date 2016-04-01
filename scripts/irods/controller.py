@@ -36,7 +36,7 @@ class IrodsController(object):
     def start(self):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
-        if self.status():
+        if self.get_binary_to_pids_dict():
             raise IrodsError('iRODS already running')
 
         self.config.clear_cache()
