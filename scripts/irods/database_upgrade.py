@@ -54,21 +54,23 @@ def run_update(irods_config, cursor):
 
         database_connect.execute_sql_statement(cursor, "UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM r_coll_main WHERE R_COLL_MAIN.coll_name = ? OR R_COLL_MAIN.coll_name LIKE ?) SELECT DISTINCT d.data_id, (SELECT coll_name FROM coll WHERE coll.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id FROM R_DATA_MAIN d WHERE d.coll_id = ANY(ARRAY(SELECT coll_id FROM coll)) ORDER BY coll_name, d.data_name, d.data_repl_num' where alias='DataObjInCollReCur';")
 
+        rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_name from r_resc_main").fetchall()
+        for row in rows:
+            resc_id = row[0]
+            resc_name = row[1]
+            database_connect.execute_sql_statement(cursor, "update r_data_main set resc_id=? where resc_hier=? or resc_hier like ?", resc_id, resc_name, ''.join(['%;', resc_name]))
         if irods_config.database_config['catalog_database_type'] == 'postgres':
-            database_connect.execute_sql_statement(cursor, "update r_data_main as rdm set resc_id = am.resc_id from ( select dm.data_id, dm.data_repl_num, rm.resc_id from r_resc_main as rm, ( select data_id, data_repl_num, regexp_replace(resc_hier, '^.*;', '') from r_data_main ) as dm where dm.regexp_replace = rm.resc_name ) as am where rdm.data_id=am.data_id and rdm.data_repl_num=am.data_repl_num;")
             database_connect.execute_sql_statement(cursor, "update r_resc_main as rdm set resc_parent = am.resc_id from ( select resc_name, resc_id from r_resc_main ) as am where am.resc_name = rdm.resc_parent;")
         elif irods_config.database_config['catalog_database_type'] == 'mysql':
-            database_connect.execute_sql_statement(cursor, "update R_DATA_MAIN as rdm, ( select dm.data_id, dm.data_repl_num, rm.resc_id from R_RESC_MAIN as rm, ( select data_id, data_repl_num, resc_hier from R_DATA_MAIN ) as dm where PREG_REPLACE('/^.*;/', '', dm.resc_hier) = rm.resc_name ) as am set rdm.resc_id = am.resc_id where rdm.data_id = am.data_id and rdm.data_repl_num = am.data_repl_num;")
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN as rdm, ( select resc_name, resc_id from R_RESC_MAIN ) as am set rdm.resc_parent = am.resc_id where am.resc_name = rdm.resc_parent;")
         else:
-            database_connect.execute_sql_statement(cursor, "update r_data_main rdm set resc_id = ( select resc_id from ( select dm.data_id, dm.data_repl_num, rm.resc_id from R_RESC_MAIN rm, ( select data_id, data_repl_num, resc_hier from R_DATA_MAIN ) dm where regexp_replace(dm.resc_hier, '^.*;', '') = rm.resc_name ) am where rdm.data_id = am.data_id and rdm.data_repl_num = am.data_repl_num );")
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN rdm set resc_parent = ( select resc_id from ( select resc_name, resc_id from R_RESC_MAIN ) am where am.resc_name = rdm.resc_parent );")
 
         rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_children from r_resc_main where resc_children is not null;").fetchall()
         context_expression = re.compile('^([^{}]*)\\{([^{}]*)\\}')
         for row in rows:
             resc_id = row[0]
-            child_contexts = [(m[1], m[2]) for m in [context_expression.match(s) for s in row[1].split(';')] if m]
+            child_contexts = [(m.group(1), m.group(2)) for m in [context_expression.match(s) for s in row[1].split(';')] if m]
             for child_name, context in child_contexts:
                 database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN set RESC_PARENT_CONTEXT=? where RESC_NAME=?", context, child_name)
 
