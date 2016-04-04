@@ -28,10 +28,8 @@ else
   exit 1
 fi
 
-IRODS_HOME_DIR=$1
+IRODS_HOME=$1
 SERVER_TYPE=$2
-
-IRODS_HOME=$IRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
 # default service account information
@@ -46,7 +44,7 @@ fi
 # debugging
 #echo "THREE_OH_SCRIPT=[$THREE_OH_SCRIPT]"
 #echo "PACKAGER_COMMAND=[$PACKAGER_COMMAND]"
-#echo "IRODS_HOME_DIR=[$IRODS_HOME_DIR]"
+#echo "IRODS_HOME_DIR=[$IRODS_HOME]"
 #echo "SERVER_TYPE=[$SERVER_TYPE]"
 #echo "IRODS_SERVICE_ACCOUNT_NAME=[$IRODS_SERVICE_ACCOUNT_NAME]"
 #echo "IRODS_SERVICE_GROUP_NAME=[$IRODS_SERVICE_GROUP_NAME]"
@@ -133,7 +131,7 @@ if [ "$PACKAGEUPGRADE" == "false" ] ; then
 
 	# =-=-=-=-=-=-=-
 	# detect operating system
-	DETECTEDOS=`bash $IRODS_HOME_DIR/packaging/find_os.sh`
+	DETECTEDOS=`bash $IRODS_HOME/packaging/find_os.sh`
 
 	# =-=-=-=-=-=-=-
 	# report that we are not deleting some things

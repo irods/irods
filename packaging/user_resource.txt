@@ -1,4 +1,3 @@
-
 =======================================================================
 
 Welcome to iRODS.
@@ -12,10 +11,8 @@ information and then populate your server_config.json accordingly:
 
 This will result in a running resource server with a default
 resource named with your hostname concatenated with "Resource"
-and a local vault in /var/lib/irods/iRODS/Vault.
+and a local vault in /var/lib/irods/Vault.
 
 Please consult the documentation for further configuration details.
 
 =======================================================================
-
-

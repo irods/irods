@@ -51,9 +51,9 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         irods_config = IrodsConfig()
         self.admin.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
         self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                      irods_config.top_level_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                      irods_config.irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                      irods_config.top_level_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                      irods_config.irods_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
 
@@ -76,9 +76,9 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         irods_config = IrodsConfig()
         self.admin.assert_icommand("iadmin mkresc rrResc roundrobin", 'STDOUT_SINGLELINE', 'roundrobin')
         self.admin.assert_icommand("iadmin mkresc unix1Resc 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
-                                      irods_config.top_level_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                      irods_config.irods_directory + "/unix1RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin mkresc unix2Resc 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
-                                      irods_config.top_level_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                      irods_config.irods_directory + "/unix2RescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix1Resc")
         self.admin.assert_icommand("iadmin addchildtoresc rrResc unix2Resc")
 
@@ -96,7 +96,3 @@ class Test_iPhymv(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc unix2Resc")
         self.admin.assert_icommand("iadmin rmresc unix1Resc")
         self.admin.assert_icommand("iadmin rmresc rrResc")
-
-
-
-

@@ -20,14 +20,11 @@ def print_debug(*args, **kwargs):
     if DEBUG:
         print(*args, **kwargs)
 
-
 def print_error(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-
 def run_in_place():
     return False
-
 
 def already_converted(legacy_file, new_file):
     if os.path.isfile(new_file):
@@ -35,18 +32,14 @@ def already_converted(legacy_file, new_file):
         return True
     return False
 
-
 def get_install_dir():
     return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
 
 def get_owner(filename):
     return pwd.getpwuid(os.stat(filename).st_uid).pw_name
 
-
 def get_group(filename):
     return grp.getgrgid(os.stat(filename).st_gid).gr_name
-
 
 def get_config_file_path(config_file):
     fullpath = get_install_dir() + '/iRODS/server/config/' + config_file
@@ -58,7 +51,6 @@ def get_config_file_path(config_file):
         fullpath = '/etc/irods/' + config_file
         return fullpath
 
-
 def get_env_file_path(env_file):
     fullpath = get_install_dir() + '/.irods/' + env_file
     # run-in-place
@@ -69,16 +61,13 @@ def get_env_file_path(env_file):
         fullpath = '/var/lib/irods/.irods/' + env_file
         return fullpath
 
-
 def convert_irodshost():
     legacy_file = get_config_file_path('irodsHost')
     if run_in_place():
         new_file = get_install_dir() + '/iRODS/server/config/hosts_config.json'
     else:
         new_file = '/etc/irods/hosts_config.json'
-    #
-    # read the template
-    #
+
     with open(get_install_dir() + '/packaging/hosts_config.json.template') as fh:
         container_name = json.load(fh)
 
@@ -104,7 +93,7 @@ def convert_irodshost():
                         for j in columns:
                             addresses.append({'address': j})
                         container_name['host_entries'].append({'address_type': 'remote', 'addresses': addresses})
-#            print_debug(json.dumps(container_name, indent=4))
+            # print_debug(json.dumps(container_name, indent=4))
             # write out new file
             print_debug('writing [' + new_file + '] begin')
             with open(new_file, 'w') as fh:
@@ -113,7 +102,6 @@ def convert_irodshost():
         else:
             print_debug(' -- not found')
         print_debug('reading [' + legacy_file + '] end')
-
 
 def convert_hostaccesscontrol():
     legacy_file = get_config_file_path('HostAccessControl')

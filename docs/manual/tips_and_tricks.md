@@ -13,7 +13,7 @@ $ ls -l foo
 
 $ ils -L foo
   rods              0 demoResc          423 2016-02-24.09:54 & foo
-    sha2:zE1sR70ZVlbPawuHeN5fat+xNFVY9RB/cO3gULvPfs8=    generic    /var/lib/irods/iRODS/Vault/home/rods/foo
+    sha2:zE1sR70ZVlbPawuHeN5fat+xNFVY9RB/cO3gULvPfs8=    generic    /var/lib/irods/Vault/home/rods/foo
 
 $ sha256sum foo
 cc4d6c47bd195656cf6b0b8778de5f6adfb1345558f5107f70ede050bbcf7ecf  foo

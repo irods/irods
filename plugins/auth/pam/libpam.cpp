@@ -265,7 +265,7 @@ irods::error pam_auth_client_request(
 /// @brief function to run the local exec which will
 ///        actually do the auth check for us
 #ifndef PAM_AUTH_CHECK_PROG
-#define PAM_AUTH_CHECK_PROG  "./PamAuthCheck"
+#define PAM_AUTH_CHECK_PROG  "./irodsPamAuthCheck"
 #endif
 int run_pam_auth_check(
     const std::string& _username,

@@ -64,7 +64,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Auth, self).setUp()
-        cfg = lib.open_and_load_json(os.path.join(IrodsConfig().top_level_directory, 'tests', 'test_framework_configuration.json'))
+        cfg = lib.open_and_load_json(os.path.join(IrodsConfig().irods_directory, 'tests', 'test_framework_configuration.json'))
         auth_user = cfg['irods_authuser_name']
         auth_pass = cfg['irods_authuser_password']
         self.auth_session = session.mkuser_and_return_session('rodsuser', auth_user, auth_pass, lib.get_hostname())
@@ -77,10 +77,10 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
         irods_config = IrodsConfig()
-        server_key_path = os.path.join(irods_config.top_level_directory, 'tests', 'server.key')
-        server_csr_path = os.path.join(irods_config.top_level_directory, 'tests', 'server.csr')
-        chain_pem_path = os.path.join(irods_config.top_level_directory, 'tests', 'chain.pem')
-        dhparams_pem_path = os.path.join(irods_config.top_level_directory, 'tests', 'dhparams.pem')
+        server_key_path = os.path.join(irods_config.irods_directory, 'tests', 'server.key')
+        server_csr_path = os.path.join(irods_config.irods_directory, 'tests', 'server.csr')
+        chain_pem_path = os.path.join(irods_config.irods_directory, 'tests', 'chain.pem')
+        dhparams_pem_path = os.path.join(irods_config.irods_directory, 'tests', 'dhparams.pem')
         lib.execute_command(['openssl', 'genrsa', '-out', server_key_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
@@ -130,10 +130,10 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or test.settings.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
         irods_config = IrodsConfig()
-        server_key_path = os.path.join(irods_config.top_level_directory, 'tests', 'server.key')
-        server_csr_path = os.path.join(irods_config.top_level_directory, 'tests', 'server.csr')
-        chain_pem_path = os.path.join(irods_config.top_level_directory, 'tests', 'chain.pem')
-        dhparams_pem_path = os.path.join(irods_config.top_level_directory, 'tests', 'dhparams.pem')
+        server_key_path = os.path.join(irods_config.irods_directory, 'tests', 'server.key')
+        server_csr_path = os.path.join(irods_config.irods_directory, 'tests', 'server.csr')
+        chain_pem_path = os.path.join(irods_config.irods_directory, 'tests', 'chain.pem')
+        dhparams_pem_path = os.path.join(irods_config.irods_directory, 'tests', 'dhparams.pem')
         lib.execute_command(['openssl', 'genrsa', '-out', server_key_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])

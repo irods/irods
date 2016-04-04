@@ -48,7 +48,7 @@ class IrodsController(object):
 
         try:
             (test_file_handle, test_file_name) = tempfile.mkstemp(
-                dir=self.config.server_log_directory)
+                dir=self.config.log_directory)
             os.close(test_file_handle)
             os.unlink(test_file_name)
         except (IOError, OSError):
@@ -56,7 +56,7 @@ class IrodsController(object):
                     'Configuration problem:\n'
                     'The server log directory, \'%s\''
                     'is not writeable.' % (
-                        self.config.server_log_directory)),
+                        self.config.log_directory)),
                     sys.exc_info()[2])
 
         try:
@@ -240,15 +240,16 @@ def format_binary_to_pids_dict(d):
 def delete_cache_files_by_pid(pid):
     l = logging.getLogger(__name__)
     l.debug('Deleting cache files for pid %s...', pid)
+    irods_paths = paths.IrodsPaths()
     ubuntu_cache = glob.glob(os.path.join(
-        paths.get_root_directory(),
+        irods_paths.root_directory,
         'var',
         'run',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*ubuntu_cache)
     other_linux_cache = glob.glob(os.path.join(
-        paths.get_root_directory(),
+        irods_paths.root_directory,
         'dev',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))

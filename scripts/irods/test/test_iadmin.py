@@ -876,7 +876,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().restart()
 
             # look for the error "unable to read session variable $userNameClient."
-            cmd_directory = os.path.join(irods_config.server_bin_directory, 'cmd')
+            cmd_directory = os.path.join(irods_config.irods_directory, 'server', 'bin', 'cmd')
             with contextlib.closing(tempfile.NamedTemporaryFile(mode='wt', dir=cmd_directory, delete=False)) as env_script:
                 print('#!/bin/sh\nenv\n', file=env_script, end='')
             os.chmod(env_script.name, 0o700)
@@ -973,7 +973,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_dlopen_failure_error_message(self):
         irods_config = IrodsConfig()
-        plugin_dir = os.path.join(irods_config.top_level_directory, 'plugins', 'resources')
+        plugin_dir = os.path.join(irods_config.irods_directory, 'plugins', 'resources')
         name_of_corrupt_plugin = 'name_of_corrupt_plugin'
         name_of_corrupt_so = 'lib' + name_of_corrupt_plugin + '.so'
         path_of_corrupt_so = os.path.join(plugin_dir, name_of_corrupt_so)

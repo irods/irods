@@ -22,7 +22,7 @@ class Test_DeferredToDeferred(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
-            context_prefix = lib.get_hostname() + ':' + IrodsConfig().top_level_directory
+            context_prefix = lib.get_hostname() + ':' + IrodsConfig().irods_directory
             admin_session.assert_icommand('iadmin modresc demoResc name origResc', 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand('iadmin mkresc demoResc deferred', 'STDOUT_SINGLELINE', 'deferred')
             admin_session.assert_icommand('iadmin mkresc defResc1 deferred', 'STDOUT_SINGLELINE', 'deferred')
@@ -57,8 +57,8 @@ class Test_DeferredToDeferred(resource_suite.ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
         irods_config = IrodsConfig()
-        shutil.rmtree(irods_config.top_level_directory + "/rescAVault", ignore_errors=True)
-        shutil.rmtree(irods_config.top_level_directory + "/rescBVault", ignore_errors=True)
+        shutil.rmtree(irods_config.irods_directory + "/rescAVault", ignore_errors=True)
+        shutil.rmtree(irods_config.irods_directory + "/rescBVault", ignore_errors=True)
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iput_irm(self):
@@ -70,5 +70,3 @@ class Test_DeferredToDeferred(resource_suite.ResourceBase, unittest.TestCase):
             # put a test_file.txt - should be on rescA given load table values
             self.admin.assert_icommand("iput -f %s %s" % (self.testfile, test_file))
             self.admin.assert_icommand("irm -f " + test_file)
-
-

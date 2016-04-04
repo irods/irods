@@ -23,10 +23,10 @@ $IRODS_DOC_DIR=/usr/share/doc/$IRODS_PACKAGENAME
 # =-=-=-=-=-=-=-
 
 #d 755 root root ${IRODS_DOC_DIR}/doxygen -
-#f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.html
-#f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.css
-#f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.png
-#f 644 root root ${IRODS_DOC_DIR}/doxygen ./iRODS/doc/html/*.js
+#f 644 root root ${IRODS_DOC_DIR}/doxygen ./docs/html/*.html
+#f 644 root root ${IRODS_DOC_DIR}/doxygen ./docs/html/*.css
+#f 644 root root ${IRODS_DOC_DIR}/doxygen ./docs/html/*.png
+#f 644 root root ${IRODS_DOC_DIR}/doxygen ./docs/html/*.js
 
 d 755 root root ${IRODS_DOC_DIR} -
 

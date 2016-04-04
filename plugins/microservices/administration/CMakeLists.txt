@@ -14,13 +14,13 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
     ${PLUGIN}
     PRIVATE
     ${CMAKE_SOURCE_DIR}/plugins/microservices/mso_drivers
-    ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/drivers/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/re/include
+    ${CMAKE_BINARY_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/server/drivers/include
+    ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/icat/include
+    ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${CURL_INCLUDE_DIRS}
     )

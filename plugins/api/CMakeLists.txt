@@ -49,13 +49,13 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/drivers/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/re/include
+    ${CMAKE_BINARY_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/server/drivers/include
+    ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/icat/include
+    ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include

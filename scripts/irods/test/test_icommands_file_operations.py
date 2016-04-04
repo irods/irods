@@ -557,9 +557,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def test_iphymv_root(self):
         irods_config = IrodsConfig()
-        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.top_level_directory + '/test1',
+        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.irods_directory + '/test1',
                 'STDOUT_SINGLELINE', '')
-        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.top_level_directory + '/test2',
+        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.irods_directory + '/test2',
                 'STDOUT_SINGLELINE', '')
         self.admin.assert_icommand('iphymv -S test1 -R test2 -r /', 'STDERR_SINGLELINE',
                 'ERROR: phymvUtil: \'/\' does not specify a zone; physical move only makes sense within a zone.')

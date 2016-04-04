@@ -21,7 +21,7 @@ if [ "$PACKAGEUPGRADE" = "true" ] ; then
   MYGROUPNAME=`ls -l /etc/irods/core.re | awk '{print $4}'`
 
   # Stop server to prevent db plugin / irods server mismatch
-  HIDE_OUTPUT=`su - $MYACCTNAME -c "/var/lib/irods/iRODS/irodsctl stop"`
+  HIDE_OUTPUT=`su - $MYACCTNAME -c "/var/lib/irods/irodsctl stop"`
   # Upgrade
   echo "Upgrading Existing iRODS Installation"
   mkdir -p /var/lib/irods

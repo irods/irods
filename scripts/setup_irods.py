@@ -72,6 +72,9 @@ def setup_server(irods_config):
     l.info(get_header('Stopping iRODS...'))
     IrodsController(irods_config).stop()
 
+    if not os.path.exists(irods_config.version_path):
+        irods_config.commit(irods_config.version, irods_config.version_path)
+
     setup_service_account(irods_config)
 
     #Do the rest of the setup as the irods user
@@ -100,6 +103,7 @@ def setup_server(irods_config):
     if irods_config.is_catalog:
         l.info(get_header('Setting up the database'))
         irods.database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
+        irods.database_interface.test_catalog(irods_config)
 
     l.info(get_header('Starting iRODS...'))
     IrodsController(irods_config).start()
@@ -176,7 +180,7 @@ def setup_service_account(irods_config):
         irods.lib.execute_command([
             'useradd',
             '-r',
-            '-d', irods_config.top_level_directory,
+            '-d', irods_config.irods_directory,
             '-M',
             '-s', '/bin/bash',
             '-g', irods_group,
@@ -191,8 +195,8 @@ def setup_service_account(irods_config):
         print('IRODS_SERVICE_GROUP_NAME=%s' % (irods_group), file=f)
 
     l.info('Setting owner of %s to %s:%s',
-            irods_config.top_level_directory, irods_user, irods_group)
-    for (root, _, files) in os.walk(irods_config.top_level_directory):
+            irods_config.irods_directory, irods_user, irods_group)
+    for (root, _, files) in os.walk(irods_config.irods_directory):
         os.lchown(root,
                 pwd.getpwnam(irods_user).pw_uid,
                 grp.getgrnam(irods_group).gr_gid)
@@ -212,8 +216,6 @@ def setup_service_account(irods_config):
                     pwd.getpwnam(irods_user).pw_uid,
                     grp.getgrnam(irods_group).gr_gid)
 
-    os.lchown(os.path.join(irods_config.server_bin_directory, 'PamAuthCheck'), 0, 0)
-    os.chmod(os.path.join(irods_config.server_bin_directory, 'PamAuthCheck'), stat.S_ISUID | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     #owner of top-level directory changed, clear the cache
     irods_config.clear_cache()
 
@@ -327,11 +329,11 @@ def setup_database_config(irods_config):
     l = logging.getLogger(__name__)
     l.info(get_header('Configuring the database communications'))
 
-    if os.path.exists(os.path.join(irods_config.top_level_directory, 'plugins', 'database', 'libpostgres.so')):
+    if os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libpostgres.so')):
         db_type = 'postgres'
-    elif os.path.exists(os.path.join(irods_config.top_level_directory, 'plugins', 'database', 'libmysql.so')):
+    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libmysql.so')):
         db_type = 'mysql'
-    elif os.path.exists(os.path.join(irods_config.top_level_directory, 'plugins', 'database', 'liboracle.so')):
+    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'liboracle.so')):
         db_type = 'oracle'
     else:
         raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
@@ -600,8 +602,7 @@ def main():
 
     (options, _) = parse_options()
 
-    irods_config = IrodsConfig(
-        top_level_directory=options.top_level_directory)
+    irods_config = IrodsConfig()
 
     irods.log.register_file_handler(irods_config.setup_log_path)
     if options.verbose:

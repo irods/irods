@@ -4,27 +4,22 @@ import os
 import pwd
 
 class IrodsPaths(object):
-    def __init__(self,
-            top_level_directory=None):
-
-        self._top_level_directory = top_level_directory
+    def __init__(self):
         self.clear_cache()
 
     @property
-    def top_level_directory(self):
-        return self._top_level_directory if self._top_level_directory else get_default_top_level_directory()
+    def root_directory(self):
+        scripts_directory = os.path.dirname(os.path.dirname(os.path.abspath(
+            inspect.stack()[0][1])))
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(scripts_directory))))
 
-    @top_level_directory.setter
-    def top_level_directory(self, value):
-        self.clear_cache()
-        self._top_level_directory = value
+    @property
+    def irods_directory(self):
+        return os.path.join(self.root_directory, 'var', 'lib', 'irods')
 
     @property
     def config_directory(self):
-        return os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(self.top_level_directory))),
-            'etc',
-            'irods')
+        return os.path.join(self.root_directory, 'etc', 'irods')
 
     @property
     def home_directory(self):
@@ -36,13 +31,7 @@ class IrodsPaths(object):
 
     @property
     def scripts_directory(self):
-        return os.path.join(self.top_level_directory, 'scripts')
-
-    @property
-    def irods_directory(self):
-        return os.path.join(
-            self.top_level_directory,
-            'iRODS')
+        return os.path.join(self.irods_directory, 'scripts')
 
     @property
     def server_config_path(self):
@@ -59,7 +48,7 @@ class IrodsPaths(object):
     @property
     def version_path(self):
         return os.path.join(
-            self.top_level_directory,
+            self.irods_directory,
             'VERSION.json')
 
     @property
@@ -84,7 +73,7 @@ class IrodsPaths(object):
     @property
     def log_directory(self):
         return os.path.join(
-            self.top_level_directory,
+            self.irods_directory,
             'log')
 
     @property
@@ -117,37 +106,29 @@ class IrodsPaths(object):
     def server_test_directory(self):
         return os.path.join(
             self.irods_directory,
-            'server',
             'test',
             'bin')
 
     @property
-    def server_log_directory(self):
-        return os.path.join(
-            self.irods_directory,
-            'server',
-            'log')
-
-    @property
     def server_log_path(self):
-        return sorted([os.path.join(self.server_log_directory, name)
-                for name in os.listdir(self.server_log_directory)
+        return sorted([os.path.join(self.log_directory, name)
+                for name in os.listdir(self.log_directory)
                 if name.startswith('rodsLog')],
             key=lambda path: os.path.getctime(path))[-1]
 
     @property
     def re_log_path(self):
-        return sorted([os.path.join(self.server_log_directory, name)
-                for name in os.listdir(self.server_log_directory)
+        return sorted([os.path.join(self.log_directory, name)
+                for name in os.listdir(self.log_directory)
                 if name.startswith('reLog')],
             key=lambda path: os.path.getctime(path))[-1]
 
     @property
     def server_bin_directory(self):
         return os.path.join(
-            self.irods_directory,
-            'server',
-            'bin')
+            self.root_directory,
+            'usr',
+            'sbin')
 
     @property
     def server_executable(self):
@@ -176,7 +157,7 @@ class IrodsPaths(object):
     @property
     def database_schema_update_directory(self):
         return os.path.join(
-                self.top_level_directory,
+                self.irods_directory,
                 'packaging',
                 'schema_updates')
 
@@ -186,19 +167,19 @@ class IrodsPaths(object):
 
     @property
     def irods_user(self):
-        return pwd.getpwuid(os.stat(self.top_level_directory).st_uid).pw_name
+        return pwd.getpwuid(os.stat(self.irods_directory).st_uid).pw_name
 
     @property
     def irods_uid(self):
-        return os.stat(self.top_level_directory).st_uid
+        return os.stat(self.irods_directory).st_uid
 
     @property
     def irods_group(self):
-        return grp.getgrgid(os.stat(self.top_level_directory).st_gid).gr_name
+        return grp.getgrgid(os.stat(self.irods_directory).st_gid).gr_name
 
     @property
     def irods_gid(self):
-        return os.stat(self.top_level_directory).st_gid
+        return os.stat(self.irods_directory).st_gid
 
     @property
     def odbc_ini_path(self):
@@ -210,13 +191,4 @@ class IrodsPaths(object):
         pass
 
     def get_template_filepath(self, filepath):
-        return os.path.join(self.top_level_directory, 'packaging', '.'.join([os.path.basename(filepath), 'template']))
-
-def get_default_top_level_directory():
-    scripts_directory = os.path.dirname(os.path.dirname(os.path.abspath(
-        inspect.stack()[0][1])))
-    return os.path.dirname(
-            scripts_directory)
-
-def get_root_directory():
-    return os.path.abspath(os.sep)
+        return os.path.join(self.irods_directory, 'packaging', '.'.join([os.path.basename(filepath), 'template']))

@@ -1,9 +1,0 @@
-*
-!.gitignore
-!checkIcatLog.pl
-!dataTest.pl
-!icatMiscTest.pl
-!icatTest.pl
-!moveTest.pl
-!quotaTest.pl
-!specNameTest.pl
