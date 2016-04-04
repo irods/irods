@@ -16,21 +16,6 @@ set(
   )
 
 set(
-  IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_postgres
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/2.postgres.mysql.oracle.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/3.postgres.mysql.oracle.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/4.postgres.oracle.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/5.postgres.sql
-  )
-set(
-  IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_mysql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/2.postgres.mysql.oracle.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/3.postgres.mysql.oracle.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/4.mysql.sql
-  ${CMAKE_SOURCE_DIR}/plugins/database/packaging/schema_updates/5.mysql.sql
-  )
-
-set(
   IRODS_DATABASE_PLUGINS
   postgres
   mysql
@@ -105,18 +90,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )
-
-  foreach(SCHEMA_UPDATE_SOURCE ${IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_${PLUGIN}})
-    list(FIND IRODS_DATABASE_PLUGIN_SCHEMA_UPDATE_FILES_${PLUGIN} ${SCHEMA_UPDATE_SOURCE} SCHEMA_UPDATE_SOURCE_INDEX)
-    math(EXPR SCHEMA_UPDATE_STEP "${SCHEMA_UPDATE_SOURCE_INDEX}+2")
-    install(
-      FILES
-      ${SCHEMA_UPDATE_SOURCE}
-      DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/schema_updates
-      COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
-      RENAME "${SCHEMA_UPDATE_STEP}.${PLUGIN}.sql"
-      )
-  endforeach()
 
   install(
     FILES
