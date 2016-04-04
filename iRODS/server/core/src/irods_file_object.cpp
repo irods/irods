@@ -237,12 +237,6 @@ namespace irods {
     error file_object::get_re_vars(
         rule_engine_vars_t& _kvp ) {
         data_object::get_re_vars( _kvp );
-rodsLog( LOG_NOTICE, "XXXX - %s :: file_object", __FUNCTION__ );
-#if 0
-        for( int i = 0; i < cond_input_.len; ++i ) {
-            _kvp[cond_input_.keyWord[i]] = cond_input_.value[i];
-        }
-#endif
         _kvp[LOGICAL_PATH_KW] = logical_path_.c_str();
         _kvp[DATA_TYPE_KW]    = data_type_.c_str();
 

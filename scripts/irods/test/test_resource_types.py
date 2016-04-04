@@ -2991,7 +2991,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
         # manipulate the core.re to add the new policy
         with open(corefile, 'at') as f:
-            print('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
+            f.write('pep_resource_resolve_hierarchy_pre(*A, *B, *OUT, *E, *F, *G, *H){*OUT="compound_resource_cache_refresh_policy=always";}\n')
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
