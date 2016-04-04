@@ -7,13 +7,6 @@ def add_options(parser):
                       dest='verbose', action='store_true', default=True,
                       help='Enable verbose output')
 
-    parser.add_option('--irods-home-directory',
-                      dest='top_level_directory',
-                      metavar='DIR', help='The directory in which the iRODS '
-                      'install is located; this is the home directory of the '
-                      'service account in vanilla binary installs and the '
-                      'top-level directory of the build in run-in-place')
-
     parser.add_option('--server-log-level',
                       dest='server_log_level', type='int', metavar='INT',
                       help='The logging level of the iRODS server')

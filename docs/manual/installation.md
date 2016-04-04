@@ -468,7 +468,7 @@ ERROR: client-server negotiation_key mismatch
 
 ## Add additional resource(s)
 
-The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path:
+The default installation of iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/irods/Vault` directory.  You will want to create additional resources at disk locations of your choosing as the 'demoResc' may not have sufficient disk space available for your intended usage scenarios.  The following command will create a basic 'unixfilesystem' resource at a designated host at the designated full path:
 
 ~~~
 irods@hostname:~/ $ iadmin mkresc <newrescname> unixfilesystem <fully.qualified.domain.name>:</full/path/to/new/vault>
@@ -519,4 +519,3 @@ Tip: Use moduser to set a password or other attributes,
 ~~~
 
 It is best to change your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local irods_environment.json files.
-

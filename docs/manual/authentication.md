@@ -186,20 +186,20 @@ auth        required      pam_deny.so
 
 For more information on the syntax of the pam.d configuration please refer to [The Linux Documentation Project](http://tldp.org/HOWTO/User-Authentication-HOWTO/x115.html)
 
-A quick test for the basic authentication mechanism for PAM is to run the `iRODS/server/bin/PamAuthCheck` tool.
-PamAuthCheck reads the password from stdin (without any prompting).
+A quick test for the basic authentication mechanism for PAM is to run the `/usr/sbin/irodsPamAuthCheck` tool.
+irodsPamAuthCheck reads the password from stdin (without any prompting).
 
-If PamAuthCheck returns `Not Authenticated`, that suggests that PAM is not set up correctly. You will need to configure PAM correctly (and therefore get PamAuthCheck returning Authenticated) before using PAM through iRODS.
+If irodsPamAuthCheck returns `Not Authenticated`, that suggests that PAM is not set up correctly. You will need to configure PAM correctly (and therefore get irodsPamAuthCheck returning Authenticated) before using PAM through iRODS.
 
-A simple way to check that you are using PamAuthCheck correctly, and that it is the PAM settings that need updated, is to create a fully permissive PAM setup with the following command.
+A simple way to check that you are using irodsPamAuthCheck correctly, and that it is the PAM settings that need updated, is to create a fully permissive PAM setup with the following command.
 
 ~~~
 sudo su - root -c 'echo "auth sufficient pam_permit.so" > /etc/pam.d/irods'
 ~~~
 
-This will allow any username/password combination to successfully authenticate with the irods PAM service, meaning that any username/password combination should cause PamAuthCheck to return `Authenticated`.
+This will allow any username/password combination to successfully authenticate with the irods PAM service, meaning that any username/password combination should cause irodsPamAuthCheck to return `Authenticated`.
 
-With the permissive configuration working with PamAuthCheck, the next step is to adjust your PAM configuration to your desired settings (LDAP, in this case). You will know that is correct when PamAuthCheck behaves as you would expect when using LDAP username/passwords. iRODS uses PamAuthCheck directly, so if it is working on the command line, it should work when run by iRODS.
+With the permissive configuration working with irodsPamAuthCheck, the next step is to adjust your PAM configuration to your desired settings (LDAP, in this case). You will know that is correct when irodsPamAuthCheck behaves as you would expect when using LDAP username/passwords. iRODS uses irodsPamAuthCheck directly, so if it is working on the command line, it should work when run by iRODS.
 
 Since PAM requires the user's password in plaintext, iRODS relies on SSL encryption to protect these credentials.  PAM authentication makes use of SSL regardless of the iRODS Zone SSL configuration (meaning even if iRODS explicitly does *not* encrypt data traffic, PAM will use SSL during authentication).
 
@@ -295,7 +295,7 @@ The server expects to have the following irods service account's `irods_environm
 Restart the server:
 
 ~~~
-irods@hostname:~/ $ ./iRODS/irodsctl restart
+irods@hostname:~/ $ ./irodsctl restart
 ~~~
 
 ### Client SSL Setup
@@ -374,6 +374,3 @@ irods_ssl_ca_certificate_file (client)
 
 irods_ssl_ca_certificate_path (client)
 :       Location of a directory containing CA certificates in PEM format. The files each contain one CA certificate. The files are looked up by the CA subject name hash value, which must be available. If more than one CA certificate with the same name hash value exist, the extension must be different (e.g. 9d66eef0.0, 9d66eef0.1, etc.).  The search is performed based on the ordering of the extension number, regardless of other properties of the certificates.  Use the 'c_rehash' utility to create the necessary links.
-
-
-

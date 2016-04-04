@@ -19,11 +19,6 @@ from ..configuration import IrodsConfig
 from . import session
 
 
-RODSHOME = "/home/irodstest/irodsfromsvn/iRODS"
-ABSPATHTESTDIR = os.path.abspath(os.path.dirname(sys.argv[0]))
-RODSHOME = ABSPATHTESTDIR + "/../../iRODS"
-
-
 class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -32,7 +27,7 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
             admin_session.assert_icommand("iadmin mkresc demoResc compound", 'STDOUT_SINGLELINE', 'compound')
             admin_session.assert_icommand("iadmin mkresc cacheResc 'unixfilesystem' " + hostname + ":" +
-                                          IrodsConfig().top_level_directory + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+                                          IrodsConfig().irods_directory + "/cacheRescVault", 'STDOUT_SINGLELINE', 'unixfilesystem')
             admin_session.assert_icommand("iadmin mkresc archiveResc mso " + hostname + ":/fake/vault/", 'STDOUT_SINGLELINE', 'mso')
             admin_session.assert_icommand("iadmin addchildtoresc demoResc cacheResc cache")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc archiveResc archive")
@@ -47,7 +42,7 @@ class Test_MSOSuite(resource_suite.ResourceBase, unittest.TestCase):
             admin_session.assert_icommand("iadmin rmresc cacheResc")
             admin_session.assert_icommand("iadmin rmresc demoResc")
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
-        shutil.rmtree(IrodsConfig().top_level_directory + "/cacheRescVault")
+        shutil.rmtree(IrodsConfig().irods_directory + "/cacheRescVault")
 
     def test_mso_http(self):
         test_file_path = self.admin.session_collection

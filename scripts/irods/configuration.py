@@ -20,10 +20,9 @@ from . import paths
 
 class IrodsConfig(paths.IrodsPaths):
     def __init__(self,
-                 top_level_directory=None,
                  injected_environment={},
                  insert_behavior=True):
-        super(IrodsConfig, self).__init__(top_level_directory)
+        super(IrodsConfig, self).__init__()
 
         self._injected_environment = lib.callback_on_change_dict(self.clear_cache, injected_environment)
         self._insert_behavior = insert_behavior
@@ -34,7 +33,7 @@ class IrodsConfig(paths.IrodsPaths):
         if os.path.exists(self.version_path):
             return tuple(map(int, self.version['irods_version'].split('.')))
 
-        legacy_version_file_path = os.path.join(self.top_level_directory, 'VERSION')
+        legacy_version_file_path = os.path.join(self.irods_directory, 'VERSION')
         if os.path.exists(legacy_version_file_path):
             with open(legacy_version_file_path) as f:
                 for line in f:
@@ -85,7 +84,7 @@ class IrodsConfig(paths.IrodsPaths):
     @property
     def version(self):
         if self._version is None:
-            self._version = load_json_config(self.version_path)
+            self._version = load_json_config(self.version_path, template_filepath=os.path.join(self.irods_directory, 'VERSION.json.dist'))
         return self._version
 
     @property

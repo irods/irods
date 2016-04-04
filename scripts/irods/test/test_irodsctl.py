@@ -22,7 +22,7 @@ class Test_Irodsctl(unittest.TestCase):
         assert lib.re_shm_exists()
 
     def test_re_shm_cleanup(self):
-        irodsctl_fullpath = os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'irodsctl')
+        irodsctl_fullpath = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
         assert_command([irodsctl_fullpath, 'stop'], 'STDOUT_SINGLELINE', 'Stopping iRODS server')
         assert not lib.re_shm_exists(), lib.re_shm_exists()
         IrodsController().start()
@@ -41,7 +41,7 @@ class Test_Irodsctl(unittest.TestCase):
                     server_config = lib.open_and_load_json(server_config_filename)
                     server_config['schema_validation_base_uri'] = 'file://' + schemas_deploy_dir
                     lib.update_json_file_from_dict(server_config_filename, server_config)
-                    irodsctl_fullpath = os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'irodsctl')
+                    irodsctl_fullpath = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
 
                     if lib.is_jsonschema_installed():
                         expected_lines = ['Validating [/var/lib/irods/.irods/irods_environment.json]... Success',
@@ -56,7 +56,7 @@ class Test_Irodsctl(unittest.TestCase):
                         assert_command([irodsctl_fullpath, 'restart'], 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0)
 
 def stop_irods_server():
-    assert_command([os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'irodsctl'), 'stop'],
+    assert_command([os.path.join(IrodsConfig().irods_directory, 'irodsctl'), 'stop'],
                    'STDOUT_SINGLELINE', 'Success')
 
 def start_irods_server(env=None):
@@ -68,10 +68,10 @@ def start_irods_server(env=None):
             return False
 
     if is_jsonschema_available():
-        assert_command('{0} graceful_start'.format(os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'irodsctl')),
+        assert_command('{0} graceful_start'.format(os.path.join(IrodsConfig().irods_directory, 'irodsctl')),
                        'STDOUT_SINGLELINE', 'Success', env=env)
     else:
-        assert_command('{0} graceful_start'.format(os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'irodsctl')),
+        assert_command('{0} graceful_start'.format(os.path.join(IrodsConfig().irods_directory, 'irodsctl')),
                        'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0, env=env)
     with make_session_for_existing_admin() as admin_session:
         admin_session.assert_icommand('ils', 'STDOUT_SINGLELINE', admin_session.zone_name)

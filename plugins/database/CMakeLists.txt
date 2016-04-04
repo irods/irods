@@ -48,13 +48,13 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/hasher/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/re/include
+    ${CMAKE_BINARY_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/lib/hasher/include
+    ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/icat/include
+    ${CMAKE_SOURCE_DIR}/server/re/include
     ${CMAKE_SOURCE_DIR}/plugins/database/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
@@ -105,14 +105,14 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSetupValues.sql.template
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatPurgeRecycleBin.sql
     ${CMAKE_SOURCE_DIR}/plugins/database/src/convertSql.pl
-    DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/icat/src
+    DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )
 
   install(
     FILES
     ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
-    DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/icat/src
+    DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     RENAME icatSysTables.sql
     )
@@ -133,13 +133,13 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     target_include_directories(
       test_${TEST_BINARY}_${PLUGIN}
       PRIVATE
-      ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
-      ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
-      ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
-      ${CMAKE_SOURCE_DIR}/iRODS/lib/hasher/include
-      ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
-      ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
-      ${CMAKE_SOURCE_DIR}/iRODS/server/re/include
+      ${CMAKE_BINARY_DIR}/lib/core/include
+      ${CMAKE_SOURCE_DIR}/lib/core/include
+      ${CMAKE_SOURCE_DIR}/lib/api/include
+      ${CMAKE_SOURCE_DIR}/lib/hasher/include
+      ${CMAKE_SOURCE_DIR}/server/core/include
+      ${CMAKE_SOURCE_DIR}/server/icat/include
+      ${CMAKE_SOURCE_DIR}/server/re/include
       ${CMAKE_SOURCE_DIR}/plugins/database/include
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
       ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
@@ -164,7 +164,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
       TARGETS
       test_${TEST_BINARY}_${PLUGIN}
       RUNTIME
-      DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/test/bin
+      DESTINATION ${IRODS_HOME_DIRECTORY}/test/bin
       COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
       )
   endforeach()

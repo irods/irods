@@ -241,7 +241,7 @@ def list_database_tables(cursor):
     return table_names
 
 def irods_tables_in_database(irods_config, cursor):
-    with open(os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql')) as f:
+    with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'icatSysTables.sql')) as f:
         irods_tables = [l.split()[2].lower() for l in f.readlines() if l.lower().startswith('create table')]
     table_names = list_database_tables(cursor)
     return [t for t in table_names if t.lower() in irods_tables]
@@ -303,14 +303,14 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
                         '='.join(['host', irods_config.database_config['db_host']])
                     ]))
                 f.flush()
-                with open(os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'mysql_functions.sql'), 'r') as sql_file:
+                with open(os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'mysql_functions.sql'), 'r') as sql_file:
                     lib.execute_command(
                         ['mysql', '='.join(['--defaults-file', f.name]), irods_config.database_config['db_name']],
                         stdin=sql_file)
         l.info('Creating database tables...')
         sql_files = [
-                os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysTables.sql'),
-                os.path.join(irods_config.irods_directory, 'server', 'icat', 'src', 'icatSysInserts.sql')
+                os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'icatSysTables.sql'),
+                os.path.join(irods_config.irods_directory, 'packaging', 'sql', 'icatSysInserts.sql')
             ]
         for sql_file in sql_files:
             try:
@@ -462,5 +462,3 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
                 default_resource_directory,
                 timestamp,
                 timestamp)
-
-

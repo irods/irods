@@ -2,18 +2,18 @@
 
 install(
   TARGETS
-    irodsAgent
-    irodsServer
-    irodsReServer
-    irodsXmsgServer
-    hostname_resolves_to_local_address
+  irodsAgent
+  irodsServer
+  irodsReServer
+  irodsXmsgServer
+  hostname_resolves_to_local_address
   RUNTIME
-    DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/bin
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  DESTINATION usr/sbin
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
-  FILES ${CMAKE_BINARY_DIR}/VERSION.json
+  FILES ${CMAKE_BINARY_DIR}/VERSION.json.dist
   DESTINATION ${IRODS_HOME_DIRECTORY}
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
@@ -32,6 +32,7 @@ install(
 
 install(
   FILES
+  ${CMAKE_SOURCE_DIR}/packaging/connectControl.config.template
   ${CMAKE_SOURCE_DIR}/packaging/convert_configuration_to_json.py
   ${CMAKE_SOURCE_DIR}/packaging/core.dvm.template
   ${CMAKE_SOURCE_DIR}/packaging/core.fnm.template
@@ -39,11 +40,10 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/database_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/host_access_control_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/hosts_config.json.template
+  ${CMAKE_SOURCE_DIR}/packaging/irodsMonPerf.config.in
   ${CMAKE_SOURCE_DIR}/packaging/server_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/update_configuration_schema.py
-  ${CMAKE_SOURCE_DIR}/packaging/update_json.py
   ${CMAKE_SOURCE_DIR}/packaging/user_icat.txt
-  ${CMAKE_SOURCE_DIR}/packaging/user_irodsenv.txt
   ${CMAKE_SOURCE_DIR}/packaging/user_resource.txt
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
@@ -95,12 +95,6 @@ else()
 endif()
 
 install(
-  DIRECTORY
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/installLogs
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/scripts
   DESTINATION ${IRODS_HOME_DIRECTORY}
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
@@ -108,105 +102,61 @@ install(
 
 install(
   DIRECTORY
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/log
+  DESTINATION ${IRODS_HOME_DIRECTORY}/server/config/lockFileDir
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
   DIRECTORY
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/config/lockFileDir
+  DESTINATION ${IRODS_HOME_DIRECTORY}/server/config/reConfigs
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
   DIRECTORY
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/config/reConfigs
+  DESTINATION ${IRODS_HOME_DIRECTORY}/server/config/packedRei
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/config/connectControl.config.template
-  ${CMAKE_SOURCE_DIR}/iRODS/server/config/irodsMonPerf.config.in
-  ${CMAKE_SOURCE_DIR}/iRODS/server/config/s3Auth.template
-  ${CMAKE_SOURCE_DIR}/iRODS/server/config/README.txt
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/config
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
-  DIRECTORY
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/config/packedRei
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/bin/cmd/irodsServerMonPerf
-  ${CMAKE_SOURCE_DIR}/iRODS/server/bin/cmd/test_execstream.py
-  ${CMAKE_SOURCE_DIR}/iRODS/server/bin/cmd/hello
-  ${CMAKE_SOURCE_DIR}/iRODS/server/bin/cmd/univMSSInterface.sh
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/bin/cmd
+  ${CMAKE_SOURCE_DIR}/server/bin/cmd/irodsServerMonPerf
+  ${CMAKE_SOURCE_DIR}/server/bin/cmd/test_execstream.py
+  ${CMAKE_SOURCE_DIR}/server/bin/cmd/hello
+  ${CMAKE_SOURCE_DIR}/server/bin/cmd/univMSSInterface.sh
+  DESTINATION ${IRODS_HOME_DIRECTORY}/server/bin/cmd
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
   )
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/bin/list.pl
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/bin
+  ${CMAKE_SOURCE_DIR}/test/test_framework_configuration.json
+  DESTINATION ${IRODS_HOME_DIRECTORY}/test
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
   TARGETS
-    PamAuthCheck
+  irodsPamAuthCheck
   RUNTIME
-    DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/bin
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-    PERMISSIONS SETUID OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
-
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/re/include/reAction.hpp
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/re/include
+  DESTINATION ${IRODS_HOME_DIRECTORY}/server/bin
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/checkIcatLog.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/dataTest.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/icatMiscTest.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/icatTest.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/moveTest.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/quotaTest.pl
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/bin/specNameTest.pl
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/test/bin
-  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS SETUID OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
 
 install(
   TARGETS
-    test_chl
+  test_chl
   RUNTIME
-    DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/test/bin
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
-  )
-
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/ltest.sh
-  ${CMAKE_SOURCE_DIR}/iRODS/server/test/README.txt
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS/server/test
+  DESTINATION ${IRODS_HOME_DIRECTORY}/test/bin
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/iRODS/irodsctl
-  DESTINATION ${IRODS_HOME_DIRECTORY}/iRODS
+  ${CMAKE_SOURCE_DIR}/irodsctl
+  DESTINATION ${IRODS_HOME_DIRECTORY}
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
   )

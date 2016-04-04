@@ -297,7 +297,7 @@ Microservice plugins and API plugins are not wrapped with dynamic policy enforce
 
 ### Available Values within Dynamic PEPs
 
-The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of `$KVPairs.VARIABLE_NAME` and are originally defined in `iRODS/lib/core/include/rodsKeyWdDef.h`.
+The following Key-Value Pairs are made available within the running context of each dynamic policy enforcement point (PEP) based both on the plugin type as well as the first class object of interest.  They are available via the rule engine in the form of `$KVPairs.VARIABLE_NAME` and are originally defined in `lib/core/include/rodsKeyWdDef.h`.
 
 
 <table border="1">
@@ -602,7 +602,7 @@ The mock archive storage resource was created mainly for testing purposes to emu
 
 #### Universal Mass Storage Service
 
-The univMSS storage resource delegates stage_to_cache and sync_to_arch operations to an external script which is located in the iRODS/server/bin/cmd directory.  It currently writes to the Vault path of that resource instance, treating it as a unix file system.
+The univMSS storage resource delegates stage_to_cache and sync_to_arch operations to an external script which is located in the server/bin/cmd directory.  It currently writes to the Vault path of that resource instance, treating it as a unix file system.
 
 When creating a "univmss" resource, the context string provides the location of the Universal MSS script.
 

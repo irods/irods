@@ -22,7 +22,7 @@ set -e
 . /etc/irods/service_account.config
 
 IRODS_HOME=/var/lib/irods
-IRODS_CTL=$IRODS_HOME/iRODS/irodsctl
+IRODS_CTL=$IRODS_HOME/irodsctl
 
 DETECTEDOS=`$IRODS_HOME/packaging/find_os.sh`
 

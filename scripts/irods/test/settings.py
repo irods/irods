@@ -12,15 +12,15 @@ class FEDERATION(object):
     REMOTE_IRODS_VERSION = (4, 2, 0)
     RODSUSER_NAME_PASSWORD_LIST = [('zonehopper', '53CR37')]
     RODSADMIN_NAME_PASSWORD_LIST = [('admin', PREEXISTING_ADMIN_PASSWORD)]
-    IRODS_DIR = '/var/lib/irods/iRODS'
+    IRODS_DIR = '/var/lib/irods'
     REMOTE_ZONE = 'buntest'
     REMOTE_HOST = 'buntest'
-    REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
+    REMOTE_VAULT = '/var/lib/irods/Vault'
     TEST_FILE_SIZE = 4*1024*1024
     LARGE_FILE_SIZE = 64*1024*1024
     TEST_FILE_COUNT = 300
     MAX_THREADS = 16
-    
+
     # resource hierarchies
     REMOTE_PT_RESC_HIER = 'federation_remote_passthrough;federation_remote_unixfilesystem_leaf'
     LOCAL_PT_RESC_HIER = 'pt;leaf'

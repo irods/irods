@@ -506,7 +506,7 @@ class ResourceSuite(ResourceBase):
         with open(datafilename, 'wt') as f:
             print("TESTFILE -- [" + datafilename + "]", file=f, end='')
         # assertions
-        fullpath = IrodsConfig().top_level_directory + "/newphysicalpath.txt"
+        fullpath = IrodsConfig().irods_directory + "/newphysicalpath.txt"
         self.admin.assert_icommand("iput -p " + fullpath + " " + datafilename)  # should complete
         self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', datafilename)  # should be listed
         self.admin.assert_icommand("ils -L " + datafilename, 'STDOUT_SINGLELINE', fullpath)  # should be listed

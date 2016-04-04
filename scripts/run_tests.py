@@ -22,11 +22,9 @@ import irods.test
 import irods.test.settings
 import irods.log
 
-def get_irods_root_directory():
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def run_irodsctl_with_arg(arg):
-    irodsctl = os.path.join(get_irods_root_directory(), 'iRODS', 'irodsctl')
+    irodsctl = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
     subprocess.check_call([irodsctl, arg])
 
 def run_devtesty():
@@ -120,7 +118,7 @@ if __name__ == '__main__':
         test_identifiers.extend(['test_xmsg', 'test_iadmin', 'test_mso_suite', 'test_resource_types', 'test_catalog', 'test_rulebase',
                                  'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
-                                 'test_control_plane', 'test_iticket', 'test_irodsctl', 'test_fuse', 'test_resource_configuration'])
+                                 'test_control_plane', 'test_iticket', 'test_irodsctl', 'test_resource_configuration'])
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
 

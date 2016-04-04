@@ -22,7 +22,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
-    rulesdir = os.path.join(IrodsConfig().top_level_directory, 'iRODS', 'clients', 'icommands', 'test', 'rules')
+    rulesdir = os.path.join(IrodsConfig().irods_directory, 'clients', 'icommands', 'test', 'rules')
     conf_dir = IrodsConfig().core_re_directory
 
     def setUp(self):

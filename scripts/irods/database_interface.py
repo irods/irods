@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import contextlib
 import logging
+import os
 
 from . import database_connect
 from . import database_upgrade
