@@ -5,7 +5,7 @@ myTestRule {
 #  Master collection path
 #  Note that the directory structures within the current collection are mirrored into the master
 #  Merges one file at a time, if file already exists creates a replica
-#  The microservice uses two commands in iRODS/server/bin/cmd:
+#  The microservice uses two commands in server/bin/cmd:
 #    ln    - softlink
 #    mkdir - make directory
 #Output parameter is:
