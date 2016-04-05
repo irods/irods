@@ -1,5 +1,5 @@
 myTestRule {
-#Turn on audit trail in iRODS/server/icat/src/icatMidLevelRoutines.c
+#Turn on audit trail in server/icat/src/icatMidLevelRoutines.c
 #Input parameters are:
 #  Keyword to search for within audit comment field
 #     read

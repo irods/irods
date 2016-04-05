@@ -1,7 +1,7 @@
 myTestRule {
-#Turn on audit trail in iRODS/server/icat/src/icatMidLevelRoutines.c
+#Turn on audit trail in server/icat/src/icatMidLevelRoutines.c
 #Input parameters are defined in:
-# iRODS/server/icat/include/icatDefines.h
+# server/icat/include/icatDefines.h
 #  Identifier of action
 #    1000   - grant access
 #    2040   - delete user

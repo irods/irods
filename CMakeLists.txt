@@ -134,7 +134,7 @@ install(
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
-  DESTINATION var/lib/irods/iRODS/clients/icommands
+  DESTINATION var/lib/irods/clients/icommands
   )
 
 set(CPACK_COMPONENTS_GROUPING IGNORE)
