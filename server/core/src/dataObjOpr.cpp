@@ -91,7 +91,6 @@ getDataObjInfo(
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
     dataObjInfo_t *dataObjInfo;
-    char condStr[MAX_NAME_LEN];
     char *tmpStr;
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
                 *rescIdString, *filePath, *dataOwnerName, *dataOwnerZone,
@@ -1136,7 +1135,7 @@ chkOrphanFile(
     if ( strncmp( ANONYMOUS_USER, rsComm->clientUser.userName, NAME_LEN ) == 0 ) {
         return SYS_USER_NO_PERMISSION;
     }
-    
+
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int status;
@@ -1146,7 +1145,7 @@ chkOrphanFile(
     irods::error ret = resc_mgr.hier_to_leaf_id(rescName,resc_id);
     if(!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();    
+        return ret.code();
     }
     std::string resc_id_str = boost::lexical_cast<std::string>(resc_id);;
 
@@ -1155,7 +1154,7 @@ chkOrphanFile(
     ret = resc_mgr.leaf_id_to_hier(resc_id, resc_hier);
     if(!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();    
+        return ret.code();
     }
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
