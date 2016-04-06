@@ -34,7 +34,8 @@ def wrap_if_necessary():
     current_ld_library_path_list = [p for p in os.environ.get('LD_LIBRARY_PATH', '').split(':') if p]
     if ld_library_path_list != current_ld_library_path_list[0:len(ld_library_path_list)]:
         os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list + current_ld_library_path_list)
-        os.execve(sys.argv[0], sys.argv, os.environ)
+        argv = [sys.executable] + sys.argv
+        os.execve(argv[0], argv, os.environ)
 
 wrap_if_necessary()
 
@@ -81,10 +82,7 @@ def setup_server(irods_config):
     if os.getuid() == 0:
         irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
-    try:
-        server_config = copy.deepcopy(irods_config.server_config)
-    except (OSError, ValueError):
-        server_config = {}
+    server_config = copy.deepcopy(irods_config.server_config)
 
     catalog_service_roles = set(['provider', 'consumer'])
     default_catalog_service_role = server_config.get('catalog_service_role', 'provider')
@@ -225,10 +223,7 @@ def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
     l.info(get_header('Configuring the server options'))
 
-    try :
-        server_config = copy.deepcopy(irods_config.server_config)
-    except (OSError, ValueError):
-        server_config = {}
+    server_config = copy.deepcopy(irods_config.server_config)
 
     ld_library_path_list = get_ld_library_path_list()
     if ld_library_path_list:
@@ -339,15 +334,9 @@ def setup_database_config(irods_config):
         raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
     l.debug('setup_database_config has been called with database type \'%s\'.', db_type)
 
-    try :
-        db_config = copy.deepcopy(irods_config.database_config)
-    except (OSError, ValueError):
-        db_config = {}
+    db_config = copy.deepcopy(irods_config.database_config)
 
-    try :
-        server_config = copy.deepcopy(irods_config.server_config)
-    except (OSError, ValueError):
-        server_config = {}
+    server_config = copy.deepcopy(irods_config.server_config)
 
     l.info('You are configuring an iRODS database plugin. '
         'The iRODS server cannot be started until its database '
@@ -455,6 +444,8 @@ def setup_client_environment(irods_config):
     print('\n', end='')
 
     service_account_dict = {
+            'schema_name': 'irods_environment',
+            'schema_version': 'v3',
             'irods_host': irods.lib.get_hostname(),
             'irods_port': irods_config.server_config['zone_port'],
             'irods_default_resource': irods_config.server_config['default_resource_name'],

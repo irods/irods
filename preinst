@@ -28,8 +28,6 @@ if [ "$PACKAGEUPGRADE" = "true" ] ; then
   # write version information down for postinstall
   UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"
   if [ -f "/var/lib/irods/VERSION.json" ] ; then
-    cp /var/lib/irods/VERSION.json $UPGRADE_TEMP_FILE
-    cp /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
   else
     cp /var/lib/irods/VERSION $UPGRADE_TEMP_FILE
     # get version information from 4.0 bash-style VERSION file

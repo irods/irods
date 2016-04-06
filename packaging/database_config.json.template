@@ -1,4 +1,6 @@
 {
+    "schema_name": "database_config",
+    "schema_version": "v3",
     "catalog_database_type": "postgres", 
     "db_host": "localhost", 
     "db_name": "ICAT", 

@@ -429,6 +429,8 @@ def count_occurrences_of_string_in_log(log_path, string, start_index=0):
         m.close()
         return n
 
+def version_string_to_tuple(version_string):
+    return tuple(map(int, version_string.split('.')))
 
 
 class callback_on_change_dict(dict):
