@@ -42,8 +42,8 @@ namespace irods {
     ms_table_entry::ms_table_entry(
         const ms_table_entry& _rhs ) :
         plugin_base( _rhs ),
-        num_args_( _rhs.num_args_ ),
-        operation_name_( _rhs.operation_name_ ) {
+        operation_name_( _rhs.operation_name_ ),
+        num_args_( _rhs.num_args_ ) {
     } // cctor
 
     ms_table_entry& ms_table_entry::operator=(
