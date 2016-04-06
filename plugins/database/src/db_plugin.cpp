@@ -2909,19 +2909,17 @@ irods::error db_reg_replica_op(
                        r_comment, \
                        create_ts, \
                        modify_ts";
-    int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
+    const int IX_DATA_REPL_NUM = 3; /* index of data_repl_num in theColls */
 //        int IX_RESC_GROUP_NAME = 7; /* index into theColls */
-    int IX_RESC_NAME = 8;    /* index into theColls */
-    int IX_RESC_HIER = 9;    /* index into theColls */
-    int IX_RESC_ID = 10;
-    int IX_DATA_PATH = 11;    /* index into theColls */
+    const int IX_RESC_ID = 10;
+    const int IX_DATA_PATH = 11;    /* index into theColls */
 
-    int IX_DATA_MODE = 19;
-    int IX_CREATE_TS = 21;
-    int IX_MODIFY_TS = 22;
-    int IX_RESC_NAME2 = 23;
-    int IX_DATA_PATH2 = 24;
-    int IX_DATA_ID2 = 25;
+    const int IX_DATA_MODE = 19;
+    const int IX_CREATE_TS = 21;
+    const int IX_MODIFY_TS = 22;
+    const int IX_RESC_NAME2 = 23;
+    const int IX_DATA_PATH2 = 24;
+    const int IX_DATA_ID2 = 25;
     int nColumns = 26;
 
     char objIdString[MAX_NAME_LEN];
