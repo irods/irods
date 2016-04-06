@@ -8,7 +8,6 @@
 int
 rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
               msParamArray_t **outParamArray ) {
-    int status;
     ruleExecInfo_t rei;
     char *iFlag;
     int oldReTestFlag = 0, oldReLoopBackFlag = 0;
@@ -24,9 +23,8 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     remoteFlag = resolveHost( &execMyRuleInp->addr, &rodsServerHost );
 
     if ( remoteFlag == REMOTE_HOST ) {
-        status = remoteExecMyRule( rsComm, execMyRuleInp,
+        return remoteExecMyRule( rsComm, execMyRuleInp,
                                    outParamArray, rodsServerHost );
-        return status;
     }
 
     initReiWithDataObjInp( &rei, rsComm, NULL );
@@ -83,14 +81,14 @@ rsExecMyRule( rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
     *outParamArray = rei.msParamArray;
     rei.msParamArray = NULL;
 
-    if ( status < 0 ) {
+    if ( err.code() < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsExecMyRule : execMyRule error for %s, status = %d",
-                 execMyRuleInp->myRule, status );
-        return status;
+                 execMyRuleInp->myRule, err.code() );
+        return err.code();
     }
 
-    return status;
+    return err.code();
 }
 
 int
