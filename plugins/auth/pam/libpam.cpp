@@ -47,7 +47,9 @@ int get64RandomBytes( char *buf );
 // Set requireServerAuth to 1 to fail authentications from
 // un-authenticated Servers (for example, if the LocalZoneSID
 // is not set)
+#ifdef RODS_SERVER
 const int requireServerAuth = 0;
+#endif
 
 // =-=-=-=-=-=-=-
 // establish context - take the auth request results and massage them
