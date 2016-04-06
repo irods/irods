@@ -111,7 +111,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
 int
 _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead ) {
-    int status;
+    int status = 0;
     int phyOpenFlag = DO_PHYOPEN;
     if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != NULL ) {
         phyOpenFlag = DO_NOT_PHYOPEN;
