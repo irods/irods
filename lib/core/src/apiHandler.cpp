@@ -24,9 +24,9 @@ namespace irods {
         inBsFlag( _def.inBsFlag ),
         outPackInstruct( _def.outPackInstruct ),
         outBsFlag( _def.outBsFlag ),
-        clearInStruct( _def.clearInStruct ),
         call_wrapper(_def.call_wrapper),
-        operation_name(_def.operation_name) {
+        operation_name(_def.operation_name),
+        clearInStruct( _def.clearInStruct ) {
         operations_[ _def.operation_name ] = _def.svrHandler;
     } // ctor
 
@@ -265,4 +265,3 @@ void init_client_api_table() {
 #ifdef __cplusplus
 }
 #endif
-
