@@ -188,7 +188,6 @@ doTest6( char *arg1, char *arg2, char *arg3, char *arg4 ) {
 int
 main( int argc, char **argv ) {
     int mode;
-    rodsServerConfig_t serverConfig;
     int status;
     rodsEnv myEnv;
 
