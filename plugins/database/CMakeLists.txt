@@ -14,11 +14,16 @@ set(
   IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_mysql
   MY_ICAT
   )
+set(
+  IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_oracle
+  ORA_ICAT
+  )
 
 set(
   IRODS_DATABASE_PLUGINS
   postgres
   mysql
+  oracle
   )
 
 foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
