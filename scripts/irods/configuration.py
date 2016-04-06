@@ -7,6 +7,7 @@ import os
 import pprint
 import shutil
 import sys
+import tempfile
 import time
 
 from . import six
@@ -18,36 +19,34 @@ from . import json_validation
 from .password_obfuscation import encode, decode
 from . import paths
 
-class IrodsConfig(paths.IrodsPaths):
+class IrodsConfig():
     def __init__(self,
                  injected_environment={},
                  insert_behavior=True):
-        super(IrodsConfig, self).__init__()
-
         self._injected_environment = lib.callback_on_change_dict(self.clear_cache, injected_environment)
         self._insert_behavior = insert_behavior
         self.clear_cache()
 
     @property
     def version_tuple(self):
-        if os.path.exists(self.version_path):
-            return tuple(map(int, self.version['irods_version'].split('.')))
+        if os.path.exists(paths.version_path()):
+            return lib.version_string_to_tuple(self.version['irods_version'])
 
-        legacy_version_file_path = os.path.join(self.irods_directory, 'VERSION')
+        legacy_version_file_path = os.path.join(paths.irods_directory(), 'VERSION')
         if os.path.exists(legacy_version_file_path):
             with open(legacy_version_file_path) as f:
                 for line in f:
                     key, _, value = line.strip().partition('=')
                     if key == 'IRODSVERSION':
-                        return tuple(map(int, value.split('.')))
+                        return lib.version_string_to_tuple(value)
 
         raise IrodsError('Unable to determine iRODS version')
 
     @property
     def server_config(self):
         if self._server_config is None:
-            self._server_config = load_json_config(self.server_config_path,
-                    template_filepath=self.get_template_filepath(self.server_config_path))
+            self._server_config = load_json_config(paths.server_config_path(),
+                    template_filepath=paths.get_template_filepath(paths.server_config_path()))
         return self._server_config
 
     @property
@@ -61,8 +60,8 @@ class IrodsConfig(paths.IrodsPaths):
     @property
     def database_config(self):
         if self._database_config is None:
-            self._database_config = load_json_config(self.database_config_path,
-                    template_filepath=self.get_template_filepath(self.database_config_path))
+            self._database_config = load_json_config(paths.database_config_path(),
+                    template_filepath=paths.get_template_filepath(paths.database_config_path()))
             if not 'db_odbc_driver' in self._database_config.keys():
                 l = logging.getLogger(__name__)
                 l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
@@ -75,30 +74,36 @@ class IrodsConfig(paths.IrodsPaths):
                 if self._database_config['catalog_database_type'] in odbc_ini_contents.keys() and 'Driver' in odbc_ini_contents[self._database_config['catalog_database_type']].keys():
                     self._database_config['db_odbc_driver'] = odbc_ini_contents[self._database_config['catalog_database_type']]['Driver']
                     l.debug('Adding driver "%s" to database_config', self._database_config['db_odbc_driver'])
-                    self.commit(self._database_config, self.database_config_path, clear_cache=False)
+                    self.commit(self._database_config, paths.database_config_path(), clear_cache=False)
                 else:
                     l.debug('Unable to retrieve "Driver" field from odbc ini file')
 
         return self._database_config
 
     @property
+    def odbc_ini_path(self):
+        if 'ODBCINI' in self.execution_environment:
+            return self.execution_environment['ODBCINI']
+        return os.path.join(paths.home_directory(), '.odbc.ini')
+
+    @property
     def version(self):
         if self._version is None:
-            self._version = load_json_config(self.version_path, template_filepath=os.path.join(self.irods_directory, 'VERSION.json.dist'))
+            self._version = load_json_config(paths.version_path(), template_filepath='.'.join([paths.version_path(), 'dist']))
         return self._version
 
     @property
     def hosts_config(self):
         if self._hosts_config is None:
-            self._hosts_config = load_json_config(self.hosts_config_path,
-                    template_filepath=self.get_template_filepath(self.hosts_config_path))
+            self._hosts_config = load_json_config(paths.hosts_config_path(),
+                    template_filepath=paths.get_template_filepath(paths.hosts_config_path()))
         return self._hosts_config
 
     @property
     def host_access_control_config(self):
         if self._host_access_control_config is None:
-            self._host_access_control_config = load_json_config(self.host_access_control_config_path,
-                    template_filepath=self.get_template_filepath(self.host_access_control_config_path))
+            self._host_access_control_config = load_json_config(paths.host_access_control_config_path(),
+                    template_filepath=paths.get_template_filepath(paths.host_access_control_config_path()))
         return self._host_access_control_config
 
     @property
@@ -107,7 +112,7 @@ class IrodsConfig(paths.IrodsPaths):
             return self.execution_environment['IRODS_ENVIRONMENT_FILE']
         else:
             return os.path.join(
-                self.home_directory,
+                paths.home_directory(),
                 '.irods',
                 'irods_environment.json')
 
@@ -127,8 +132,8 @@ class IrodsConfig(paths.IrodsPaths):
             if self.insert_behavior:
                 self._execution_environment = dict(self.server_environment)
                 self._execution_environment.update(os.environ)
-                self._execution_environment['irodsConfigDir'] = self.config_directory
-                self._execution_environment['PWD'] = self.server_bin_directory
+                self._execution_environment['irodsConfigDir'] = paths.config_directory()
+                self._execution_environment['PWD'] = paths.server_bin_directory()
                 self._execution_environment.update(self.injected_environment)
             else:
                 self._execution_environment = dict(self.injected_environment)
@@ -165,7 +170,7 @@ class IrodsConfig(paths.IrodsPaths):
                 base_uri = None
                 raise IrodsWarning(
                         '%s did not contain \'%s\'' %
-                        (self.server_config_path, key))
+                        (paths.server_config_path(), key))
 
             key = 'configuration_schema_version'
             try:
@@ -174,7 +179,7 @@ class IrodsConfig(paths.IrodsPaths):
                 uri_version = None
                 raise IrodsWarning(
                         '%s did not contain \'%s\'' %
-                        (self.version_path, key))
+                        (paths.version_path(), key))
 
             self._schema_uri_prefix = '/'.join([
                     base_uri,
@@ -184,19 +189,19 @@ class IrodsConfig(paths.IrodsPaths):
 
     @property
     def admin_password(self):
-        if not os.path.exists(os.path.dirname(self.password_file_path)):
+        if not os.path.exists(os.path.dirname(paths.password_file_path())):
             return None
-        with open(self.password_file_path, 'rt') as f:
+        with open(paths.password_file_path(), 'rt') as f:
             return decode(f.read())
 
     @admin_password.setter
     def admin_password(self, value):
-        if not os.path.exists(os.path.dirname(self.password_file_path)):
-            os.makedirs(os.path.dirname(self.password_file_path), mode=0o700)
+        if not os.path.exists(os.path.dirname(paths.password_file_path())):
+            os.makedirs(os.path.dirname(paths.password_file_path()), mode=0o700)
         mtime = int(time.time())
-        with open(self.password_file_path, 'wt') as f:
+        with open(paths.password_file_path(), 'wt') as f:
             print(encode(value, mtime=mtime), end='', file=f)
-        os.utime(self.password_file_path, (mtime, mtime))
+        os.utime(paths.password_file_path(), (mtime, mtime))
 
     def validate_configuration(self):
         l = logging.getLogger(__name__)
@@ -204,31 +209,31 @@ class IrodsConfig(paths.IrodsPaths):
         configuration_schema_mapping = {
                 'server_config': {
                     'dict': self.server_config,
-                    'path': self.server_config_path},
+                    'path': paths.server_config_path()},
                 'VERSION': {
                     'dict': self.version,
-                    'path': self.version_path},
+                    'path': paths.version_path()},
                 'hosts_config': {
                     'dict': self.hosts_config,
-                    'path': self.hosts_config_path},
+                    'path': paths.hosts_config_path()},
                 'host_access_control_config': {
                     'dict': self.host_access_control_config,
-                    'path': self.host_access_control_config_path},
+                    'path': paths.host_access_control_config_path()},
                 'irods_environment': {
                     'dict': self.client_environment,
                     'path': self.client_environment_path}}
 
-        if os.path.exists(self.database_config_path):
+        if self.is_catalog:
             configuration_schema_mapping['database_config'] = {
                     'dict': self.database_config,
-                    'path': self.database_config_path}
+                    'path': paths.database_config_path()}
         else:
-            l.debug('The database config file, \'%s\', does not exist.', self.database_config_path)
+            l.debug('The database config file, \'%s\', does not exist.', paths.database_config_path())
 
         skipped = []
 
         if self.server_config['schema_validation_base_uri'] == 'off':
-            l.warn('Schema validation is disabled; json files will not be validated against schemas. To re-enable schema validation, supply a URL to a set of iRODS schemas in the field "schema_validation_base_uri" and a valid version in the field "schema_version" in the server configuration file (located in %s).', self.server_config_path)
+            l.warn('Schema validation is disabled; json files will not be validated against schemas. To re-enable schema validation, supply a URL to a set of iRODS schemas in the field "schema_validation_base_uri" and a valid version in the field "schema_version" in the server configuration file (located in %s).', paths.server_config_path())
             return
         for schema_uri_suffix, config_file in configuration_schema_mapping.items():
             try:
@@ -259,16 +264,18 @@ class IrodsConfig(paths.IrodsPaths):
                 'Skipped validation for the following files:',
                 lib.indent(*skipped)))
 
-    def commit(self, config_dict, path, clear_cache=True):
+    def commit(self, config_dict, path, clear_cache=True, make_backup=False):
         l = logging.getLogger(__name__)
         l.info('Updating %s...', path)
-        with open(path, mode='w') as f:
+        if make_backup and os.path.exists(path):
+            shutil.copyfile(path, '.'.join([path, 'prev', str(time.time())]))
+        with tempfile.NamedTemporaryFile(mode='wt', delete=False) as f:
             json.dump(config_dict, f, indent=4, sort_keys=True)
+        shutil.move(f.name, path)
         if clear_cache:
             self.clear_cache()
 
     def clear_cache(self):
-        super(IrodsConfig, self).clear_cache()
         self._database_config = None
         self._server_config = None
         self._version = None
@@ -277,6 +284,131 @@ class IrodsConfig(paths.IrodsPaths):
         self._client_environment = None
         self._schema_uri_prefix = None
         self._execution_environment = None
+
+    #provide accessors for all the paths
+    @property
+    def root_directory(self):
+        return paths.root_directory()
+
+    @property
+    def irods_directory(self):
+        return paths.irods_directory()
+
+    @property
+    def config_directory(self):
+        return paths.config_directory()
+
+    @property
+    def home_directory(self):
+        return paths.home_directory()
+
+    @property
+    def core_re_directory(self):
+        return paths.core_re_directory()
+
+    @property
+    def scripts_directory(self):
+        return paths.scripts_directory()
+
+    @property
+    def server_config_path(self):
+        return paths.server_config_path()
+
+    @property
+    def database_config_path(self):
+        return paths.database_config_path()
+
+    @property
+    def version_path(self):
+        return paths.version_path()
+
+    @property
+    def hosts_config_path(self):
+        return paths.hosts_config_path()
+
+    @property
+    def host_access_control_config_path(self):
+        return paths.host_access_control_config_path()
+
+    @property
+    def password_file_path(self):
+        return paths.password_file_path()
+
+    @property
+    def log_directory(self):
+        return paths.log_directory()
+
+    @property
+    def control_log_path(self):
+        return paths.control_log_path()
+
+    @property
+    def setup_log_path(self):
+        return paths.setup_log_path()
+
+    @property
+    def test_log_path(self):
+        return paths.test_log_path()
+
+    @property
+    def icommands_test_directory(self):
+        return paths.icommands_test_directory()
+
+    @property
+    def server_test_directory(self):
+        return paths.server_test_directory()
+
+    @property
+    def server_log_path(self):
+        return paths.server_log_path()
+
+    @property
+    def re_log_path(self):
+        return paths.re_log_path()
+
+    @property
+    def server_bin_directory(self):
+        return paths.server_bin_directory()
+
+    @property
+    def server_executable(self):
+        return paths.server_executable()
+
+    @property
+    def rule_engine_executable(self):
+        return paths.rule_engine_executable()
+
+    @property
+    def xmsg_server_executable(self):
+        return paths.xmsg_server_executable()
+
+    @property
+    def agent_executable(self):
+        return paths.agent_executable()
+
+    @property
+    def database_schema_update_directory(self):
+        return paths.database_schema_update_directory()
+
+    @property
+    def service_account_file_path(self):
+        return paths.service_account_file_path()
+
+    @property
+    def irods_user(self):
+        return paths.irods_user()
+
+    @property
+    def irods_uid(self):
+        return paths.irods_uid()
+
+    @property
+    def irods_group(self):
+        return paths.irods_group()
+
+    @property
+    def irods_gid(self):
+        return paths.irods_gid()
 
 def load_json_config(path, template_filepath=None):
     l = logging.getLogger(__name__)

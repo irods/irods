@@ -1,4 +1,6 @@
 {
+    "schema_name": "server_config",
+    "schema_version": "v3",
     "advanced_settings": {
         "default_number_of_transfer_threads": 4, 
         "default_temporary_password_lifetime_in_seconds": 120, 

@@ -21,6 +21,7 @@ from . import database_interface
 from . import database_connect
 from . import lib
 from . import paths
+from . import upgrade_configuration
 
 from .exceptions import IrodsError, IrodsWarning
 
@@ -36,6 +37,14 @@ class IrodsController(object):
     def start(self):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
+        try:
+            self.config.validate_configuration()
+        except IrodsWarning:
+            l.warn('Warning encountered in validation:', exc_info=True)
+
+        if upgrade_configuration.requires_upgrade(self.config):
+            upgrade_configuration.upgrade(self.config)
+
         if self.get_binary_to_pids_dict():
             raise IrodsError('iRODS already running')
 
@@ -59,15 +68,10 @@ class IrodsController(object):
                         self.config.log_directory)),
                     sys.exc_info()[2])
 
-        try:
-            self.config.validate_configuration()
-        except IrodsWarning:
-            l.warn('Warning encountered in validation:', exc_info=True)
-
         for f in ['core.re', 'core.dvm', 'core.fnm']:
             path = os.path.join(self.config.config_directory, f)
             if not os.path.exists(path):
-                shutil.copyfile(self.config.get_template_filepath(path), path)
+                shutil.copyfile(paths.get_template_filepath(path), path)
 
         try:
             irods_port = int(self.config.server_config['zone_port'])
@@ -240,24 +244,23 @@ def format_binary_to_pids_dict(d):
 def delete_cache_files_by_pid(pid):
     l = logging.getLogger(__name__)
     l.debug('Deleting cache files for pid %s...', pid)
-    irods_paths = paths.IrodsPaths()
     ubuntu_cache = glob.glob(os.path.join(
-        irods_paths.root_directory,
+        paths.root_directory(),
         'var',
         'run',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*ubuntu_cache)
     other_linux_cache = glob.glob(os.path.join(
-        irods_paths.root_directory,
+        paths.root_directory(),
         'dev',
         'shm',
         '*irods_re_cache*pid{0}_*'.format(pid)))
     delete_cache_files_by_name(*other_linux_cache)
 
-def delete_cache_files_by_name(*paths):
+def delete_cache_files_by_name(*filepaths):
     l = logging.getLogger(__name__)
-    for path in paths:
+    for path in filepaths:
         try:
             l.debug('Deleting %s', path)
             os.unlink(path)

@@ -5,7 +5,7 @@ import os, sys
 import json
 
 import irods.start_options
-from irods.paths import IrodsPaths
+import irods.paths
 
 def parse_options():
     parser = optparse.OptionParser()
@@ -18,17 +18,13 @@ def wrap_if_necessary():
 
     (options, _) = parse_options()
 
-    irods_paths = IrodsPaths()
-
-    with open(irods_paths.server_config_path) as server_config_path:
+    with open(irods.paths.server_config_path()) as server_config_path:
         server_config = json.load(server_config_path)
     ld_library_path_list = [p
             for p in server_config.get('environment_variables', {}).get('LD_LIBRARY_PATH', '').split(':')
             if p]
 
     #for oracle, ORACLE_HOME must be in LD_LIBRARY_PATH
-    with open(irods_paths.server_config_path) as server_config_path:
-        server_config = json.load(server_config_path)
     oracle_home = server_config.get('environment_variables', {}).get('ORACLE_HOME', None)
     if oracle_home is None:
         oracle_home = os.environ.get('ORACLE_HOME', None)
@@ -40,7 +36,8 @@ def wrap_if_necessary():
     current_ld_library_path_list = [p for p in os.environ.get('LD_LIBRARY_PATH', '').split(':') if p]
     if ld_library_path_list != current_ld_library_path_list[0:len(ld_library_path_list)]:
         os.environ['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list + current_ld_library_path_list)
-        os.execve(sys.argv[0], sys.argv, os.environ)
+        argv = [sys.executable] + sys.argv
+        os.execve(argv[0], argv, os.environ)
 
 wrap_if_necessary()
 
