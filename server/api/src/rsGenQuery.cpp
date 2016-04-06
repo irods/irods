@@ -127,9 +127,6 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 
 static
 irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos ) {
-
-    const int COL_D_RESC_GROUP_NAME  = 408;
-
     // sanity check
     if ( !_inp ) {
         return CODE( SYS_INTERNAL_NULL_INPUT_ERR );
@@ -313,7 +310,7 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGenQuery( rsComm, genQueryInp, genQueryOut );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -535,4 +532,3 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
     return status;
 }
-
