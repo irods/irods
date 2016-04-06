@@ -25,11 +25,11 @@ namespace irods {
         int                _mode,
         int                _flags ) :
         physical_path_( _phy_path ),
-        resc_id_( _resc_id ),
         mode_( _mode ),
-        flags_( _flags ) {
+        flags_( _flags ),
+        resc_id_( _resc_id ) {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
-        
+
         std::string resc_hier;
         resc_mgr.leaf_id_to_hier( resc_id_, resc_hier );
         resc_hier_ = resc_hier;
@@ -44,11 +44,11 @@ namespace irods {
         int                _flags,
         const keyValPair_t& _cond_input ) :
         physical_path_( _phy_path ),
-        resc_id_( _resc_id ),
         mode_( _mode ),
-        flags_( _flags ) {
+        flags_( _flags ),
+        resc_id_( _resc_id ) {
         replKeyVal( &_cond_input, &cond_input_ );
-        
+
         std::string resc_hier;
         resc_mgr.leaf_id_to_hier( resc_id_, resc_hier );
         resc_hier_ = resc_hier;
@@ -66,7 +66,7 @@ namespace irods {
         mode_( _mode ),
         flags_( _flags ) {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
-       
+
         rodsLong_t resc_id;
         resc_mgr.hier_to_leaf_id( resc_hier_, resc_id );
         resc_id_ = resc_id;
@@ -98,10 +98,10 @@ namespace irods {
         const data_object& _rhs ) :
         first_class_object( _rhs ),
         physical_path_( _rhs.physical_path_ ),
-        resc_id_( _rhs.resc_id_ ),
         resc_hier_( _rhs.resc_hier_ ),
         mode_( _rhs.mode_ ),
-        flags_( _rhs.flags_ ) {
+        flags_( _rhs.flags_ ),
+        resc_id_( _rhs.resc_id_ ) {
         replKeyVal( &_rhs.cond_input_, &cond_input_ );
     } // cctor
 
@@ -169,6 +169,3 @@ namespace irods {
 
     }
 }; // namespace irods
-
-
-

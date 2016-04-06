@@ -138,6 +138,3 @@ namespace irods {
 }; // namespace irods
 
 #endif // __IRODS_DATA_OBJECT_HPP__
-
-
-
