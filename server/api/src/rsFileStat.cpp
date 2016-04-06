@@ -17,7 +17,6 @@ int
 rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
             rodsStat_t **fileStatOut ) {
     rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
     int status;
 
     *fileStatOut = NULL;
@@ -170,7 +169,3 @@ int _rsFileStat(
     return status;
 
 } // _rsFileStat
-
-
-
-
