@@ -258,6 +258,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client_core PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_client_core PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_client_core PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_options(irods_client_core PRIVATE -Wno-write-strings)
 target_compile_definitions(
   irods_client_core
@@ -431,6 +433,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client_api_table PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_client_api_table PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_client_api_table PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(
   irods_client_api_table
   PRIVATE
@@ -473,6 +477,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client_plugins PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_client_plugins PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_client_plugins PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(
   irods_client_plugins
   PRIVATE
@@ -510,6 +516,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client_api PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_client_api PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_client_api PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(
   irods_client_api
   PRIVATE
@@ -778,6 +786,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_server PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(
   irods_server
   PRIVATE
@@ -829,11 +839,9 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-target_compile_definitions(
-  irods_common
-  PRIVATE
-  ${IRODS_COMPILE_DEFINITIONS}
-  )
+set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
+target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_common PRIVATE -Wno-write-strings)
 
 
@@ -878,6 +886,8 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 set_property(TARGET irods_plugin_dependencies PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_plugin_dependencies PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_plugin_dependencies PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_plugin_dependencies PRIVATE -Wno-write-strings)
 
@@ -1208,6 +1218,8 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_clerver PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+set_property(TARGET irods_clerver PROPERTY VERSION ${IRODS_VERSION})
+set_property(TARGET irods_clerver PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_options(irods_clerver PRIVATE -Wno-write-strings)
 target_compile_definitions(
   irods_clerver
