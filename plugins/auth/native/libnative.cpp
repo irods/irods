@@ -57,13 +57,17 @@ static irods::error check_proxy_user_privileges(
 // Set requireServerAuth to 1 to fail authentications from
 // un-authenticated Servers (for example, if the LocalZoneSID
 // is not set)
+#ifdef RODS_SERVER
 const int requireServerAuth = 1;
+#endif
 
 // =-=-=-=-=-=-=-
 // NOTE:: this needs to become a property
 // If set, then SIDs are always required, errors will be return if a SID
 // is not locally set for a remote server
+#ifdef RODS_SERVER
 const int requireSIDs = 0;
+#endif
 
 // =-=-=-=-=-=-=-
 // given the client connection and context string, set up the

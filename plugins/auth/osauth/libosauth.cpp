@@ -67,7 +67,9 @@ int check_proxy_user_privileges(
 // Set requireServerAuth to 1 to fail authentications from
 // un-authenticated Servers (for example, if the LocalZoneSID
 // is not set)
+#ifdef RODS_SERVER
 const int requireServerAuth = 0;
+#endif
 
 // =-=-=-=-=-=-=-
 // given the client connection and context string, set up the
