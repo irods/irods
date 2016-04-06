@@ -511,7 +511,6 @@ namespace irods {
         // iterate over the result set and repl the objects
         dist_child_result_t::const_iterator r_itr = _results.begin();
         for ( ; r_itr != _results.end(); ++r_itr ) {
-            bool repl_data_id = false;
             // =-=-=-=-=-=-=-
             // get a valid source object from which to replicate
             int src_mode = 0;
