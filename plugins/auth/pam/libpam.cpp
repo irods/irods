@@ -43,15 +43,6 @@
 int get64RandomBytes( char *buf );
 
 // =-=-=-=-=-=-=-
-// NOTE:: this needs to become a property
-// Set requireServerAuth to 1 to fail authentications from
-// un-authenticated Servers (for example, if the LocalZoneSID
-// is not set)
-#ifdef RODS_SERVER
-const int requireServerAuth = 0;
-#endif
-
-// =-=-=-=-=-=-=-
 // establish context - take the auth request results and massage them
 // for the auth response call
 irods::error pam_auth_client_start(
