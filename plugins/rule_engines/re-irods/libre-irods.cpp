@@ -214,12 +214,15 @@ irods::error exec_rule_text(
     ++itr; // skip msparam
     std::string out_desc = *boost::any_cast<std::string*>(*itr);
 
-    int status = execMyRule(
+    const int status = execMyRule(
                      (char*)_rt.c_str(),
                      ms_params,
                      const_cast<char*>(out_desc.data()),
                      rei );
 
+    if (status != 0) {
+        return ERROR(status, "execMyRule failed");
+    }
     return SUCCESS();
 }
 
