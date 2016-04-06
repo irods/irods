@@ -533,7 +533,6 @@ irods::error _childIsValid(
     const std::string&          _new_child ) {
     // =-=-=-=-=-=-=-
     // Lookup the child resource and make sure its parent field is empty
-    int result = 0;
     char parent[MAX_NAME_LEN];
     int status;
 
@@ -2172,7 +2171,7 @@ irods::error db_mod_data_obj_meta_op(
         DATA_EXPIRY_KW,     DATA_COMMENTS_KW,   DATA_CREATE_KW,
         DATA_MODIFY_KW,     DATA_MODE_KW,       RESC_HIER_STR_KW,
         RESC_ID_KW, "END"
-        
+
     };
 
     /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
@@ -3781,18 +3780,18 @@ irods::error db_add_child_resc_op(
 
     irods::children_parser child_parser;
     child_parser.set_string( new_child_string );
-    
+
     irods::children_parser::children_map_t c_map;
     child_parser.list( c_map );
 
     if(c_map.empty()) {
        return ERROR(
                   SYS_INVALID_INPUT_PARAM,
-                  "child map is empty" ); 
+                  "child map is empty" );
     }
 
-    std::string child_name    = c_map.begin()->first; 
-    std::string child_context = c_map.begin()->second; 
+    std::string child_name    = c_map.begin()->first;
+    std::string child_context = c_map.begin()->second;
 
     std::string child_resource_id;
     std::string child_parent_name;
@@ -3800,7 +3799,7 @@ irods::error db_add_child_resc_op(
               child_name,
               child_resource_id,
               child_parent_name);
-              
+
     if(!ret.ok()) {
 	if( SYS_RESC_DOES_NOT_EXIST == ret.code() ) {
 	    return ERROR(
@@ -3859,7 +3858,7 @@ irods::error db_add_child_resc_op(
         addRErrorMsg(
             &_ctx.comm()->rError, 0,
             "Currently, resources must be in the local zone" );
-            
+
         return ERROR(
                    CAT_INVALID_ZONE,
                    "resources must be in the local zone");
@@ -4101,7 +4100,7 @@ irods::error db_del_child_resc_op(
 
     irods::children_parser parser;
     parser.set_string( child_string );
-    
+
     std::string child_name;
     parser.first_child( child_name );
 
@@ -14330,7 +14329,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
             not_child_stream << id << ",";
         }
     } // for idx
-    
+
     std::string not_child_array = not_child_stream.str();
     not_child_array.pop_back(); // trim last ','
 
@@ -15824,4 +15823,3 @@ irods::database* plugin_factory(
     return pg;
 
 } // plugin_factory
-
