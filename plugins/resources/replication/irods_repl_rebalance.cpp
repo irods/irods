@@ -106,7 +106,7 @@ namespace irods {
         }
         std::string cond_str = cond_ss.str();
         cond_str = cond_str.substr(0,cond_str.size()-4);
-        
+
         addInxVal(
             &gen_inp.sqlCondInp,
             COL_D_RESC_ID,
@@ -164,7 +164,7 @@ namespace irods {
             _results.push_back( data_id );
 
         } // for i
-			
+
         freeGenQueryOut( &gen_out );
 
         return SUCCESS();
@@ -340,7 +340,7 @@ namespace irods {
                      get_virtual_path_separator() +
                      data_name;
         _data_mode = atoi( data_mode_ptr );
-        
+
         irods::error ret = resc_mgr.leaf_id_to_hier( strtoll(resc_id_ptr,0,0), _resc_hier );
         if(!ret.ok()) {
             return PASS(ret);
@@ -475,7 +475,7 @@ namespace irods {
                 break;
             }
         } // for i
-			
+
         freeGenQueryOut( &gen_out );
 
 
@@ -516,7 +516,6 @@ namespace irods {
             // get a valid source object from which to replicate
             int src_mode = 0;
             std::string obj_path, src_hier;
-            size_t not_child_idx = ( _bun_idx == 0 ) ? 1 : 0;
             irods::error ret = get_source_data_object_attributes(
                                    *r_itr,
                                    _bundles,
@@ -634,6 +633,3 @@ namespace irods {
     } // proc_results_for_rebalance
 
 }; // namespace irods
-
-
-
