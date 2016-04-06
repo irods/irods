@@ -97,7 +97,6 @@ msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t*
 **/
 int
 msiQuota( ruleExecInfo_t *rei ) {
-    int status;
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -105,13 +104,11 @@ msiQuota( ruleExecInfo_t *rei ) {
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
-        status = chlCalcUsageAndQuota( rei->rsComm );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-        status =  SYS_NO_RCAT_SERVER_ERR;
+    if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
+        return SYS_NO_RCAT_SERVER_ERR;
     }
-    return status;
+    rodsLog( LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n" );
+    return chlCalcUsageAndQuota( rei->rsComm );
 }
 
 /**
