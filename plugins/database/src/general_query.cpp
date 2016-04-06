@@ -2114,7 +2114,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                      ( char* )zoneName.c_str(),
                      genQueryInp.condInput.value[accessIx], icss );
     }
-    return status;
+    return 0;
 }
 
 /* Save some pre-provided parameters if msiAclPolicy is STRICT.
