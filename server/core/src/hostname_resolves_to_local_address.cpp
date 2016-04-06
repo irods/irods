@@ -13,10 +13,11 @@ int main(int argc, char** argv) {
         const bool hostname_is_local = hostname_resolves_to_local_address(argv[1]);
         if (hostname_is_local) {
             std::cout << "yes" << std::endl;
+            return 0;
         } else {
             std::cout << "no" << std::endl;
+            return 1;
         }
-        return 0;
     } catch ( const irods::exception& e ) {
         std::cerr << e.what() << std::endl;
     }
