@@ -137,6 +137,12 @@ install(
   )
 
 install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/test/filesystem
+  DESTINATION ${IRODS_HOME_DIRECTORY}/test
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  )
+
+install(
   TARGETS
   irodsPamAuthCheck
   RUNTIME
