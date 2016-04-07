@@ -93,7 +93,7 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
     char *columnNames[] = {
         "resource name", "id", "zone", "type", "class",
         "location",  "vault", "free space", "free space time", "status",
-        "info", "comment", "create time", "modify time", "children",
+        "info", "comment", "create time", "modify time",
         "context", "parent", "parent context"
     };
 
@@ -220,7 +220,7 @@ void printRescTree(
     if (it_resc_map == resc_map.end()) {
         THROW( SYS_INTERNAL_NULL_INPUT_ERR, std::string("Missing node in resc_map: [") + node_name + "]" );
     }
-    
+
     const int resc_index = it_resc_map->second;
     const std::string& children_str = resc_children[resc_index];
 
