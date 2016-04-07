@@ -363,15 +363,17 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
 
     def test_next_child_iteration__2884(self):
-        filename="foobar"
-        lib.make_file( filename, 100 )
+        filename = 'foobar'
+        lib.make_file(filename, 100)
+
+        def get_resource_property(session, resource_name, property_):
+            _, out, _ = session.assert_icommand(['ilsresc', '-l', resource_name], 'STDOUT_SINGLELINE', 'id')
+            for line in out.split('\n'):
+                if property_ in line:
+                    return line.partition(property_ + ':')[2].strip()
 
         # extract the next resource in the rr from the context string
-        _, out, _ =self.admin.assert_icommand('ilsresc -l rrResc', 'STDOUT_SINGLELINE', 'demoResc')
-        for line in out.split('\n'):
-            if 'context:' in line:
-                _, _, next_resc = line.partition('context:')
-                next_resc = next_resc.strip()
+        next_resc = get_resource_property(self.admin, 'rrResc', 'context')
 
         # determine the 'other' resource
         resc_set = set(['unixB1', 'unixB2'])
@@ -379,16 +381,16 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         resc_remaining = remaining_set.pop()
 
         # resources listed should be 'next_resc'
-        self.admin.assert_icommand('iput ' + filename + ' file0')  # put file
-        self.admin.assert_icommand('ils -L file0', 'STDOUT_SINGLELINE', next_resc)  # put file
+        self.admin.assert_icommand(['iput', filename, 'file0'])  # put file
+        self.admin.assert_icommand(['ils', '-L', 'file0'], 'STDOUT_SINGLELINE', next_resc)  # put file
 
         # resources listed should be 'resc_remaining'
-        self.admin.assert_icommand('iput ' + filename + ' file1')  # put file
-        self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', resc_remaining)  # put file
+        self.admin.assert_icommand(['iput', filename, 'file1'])  # put file
+        self.admin.assert_icommand(['ils', '-L', 'file1'], 'STDOUT_SINGLELINE', resc_remaining)  # put file
 
         # resources listed should be 'next_resc' once again
-        self.admin.assert_icommand('iput ' + filename + ' file2')  # put file
-        self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', next_resc)  # put file
+        self.admin.assert_icommand(['iput', filename, 'file2'])  # put file
+        self.admin.assert_icommand(['ils', '-L', 'file2'], 'STDOUT_SINGLELINE', next_resc)  # put file
 
         os.remove(filename)
 
