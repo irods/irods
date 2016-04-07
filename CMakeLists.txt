@@ -133,6 +133,14 @@ install(
   )
 
 install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/bin/igetwild
+  ${CMAKE_SOURCE_DIR}/bin/ilocate
+  DESTINATION usr/bin
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+
+install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
   DESTINATION var/lib/irods/clients/icommands
   )
