@@ -322,7 +322,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "getNumThreads: acGetNumThreads error, status = %d",
+                         "getNumThreads: acSetNumThreads error, status = %d",
                          status );
             }
             else {
@@ -357,7 +357,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "getNumThreads: acGetNumThreads error, status = %d",
+                         "getNumThreads: acSetNumThreads error, status = %d",
                          status );
             }
             else {

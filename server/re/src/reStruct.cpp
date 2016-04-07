@@ -269,6 +269,10 @@ initReiWithDataObjInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
         rei->uoip = &rsComm->proxyUser;
     }
 
+    // also initialize condInputData for resource session variables
+    rei->condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
+    memset(rei->condInputData, 0, sizeof(keyValPair_t));
+
     return 0;
 }
 
