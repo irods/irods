@@ -19,7 +19,7 @@ from . import json_validation
 from .password_obfuscation import encode, decode
 from . import paths
 
-class IrodsConfig():
+class IrodsConfig(object):
     def __init__(self,
                  injected_environment={},
                  insert_behavior=True):
@@ -196,10 +196,12 @@ class IrodsConfig():
 
     @admin_password.setter
     def admin_password(self, value):
+        l = logging.getLogger(__name__)
         if not os.path.exists(os.path.dirname(paths.password_file_path())):
             os.makedirs(os.path.dirname(paths.password_file_path()), mode=0o700)
         mtime = int(time.time())
         with open(paths.password_file_path(), 'wt') as f:
+            l.debug('Writing password file %s', f.name)
             print(encode(value, mtime=mtime), end='', file=f)
         os.utime(paths.password_file_path(), (mtime, mtime))
 
