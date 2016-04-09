@@ -24,7 +24,14 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Rulebase, self).setUp()
 
+        # make large test file
+        self.large_file = '/tmp/largefile'
+        lib.make_file(self.large_file, '64M')
+
     def tearDown(self):
+        # remove large test file
+        os.unlink(self.large_file)
+
         super(Test_Rulebase, self).tearDown()
 
     def test_client_server_negotiation__2564(self):
@@ -268,6 +275,11 @@ OUTPUT ruleExecOut
         self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['iput -f {testfile}'])
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+    def test_acSetNumThreads__3024(self):
+        rule_body = 'msiSetNumThreads("default","0","default");'
+        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['iput -f {large_file}'], rule_body=rule_body)
+
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
     def test_acDataDeletePolicy__3024(self):
         self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
 
@@ -322,7 +334,7 @@ OUTPUT ruleExecOut
 
         self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irule -F {rule_file}'], rule_string=rule_string)
 
-    def pep_test_helper__3024(self, pep_name, precommands=[], commands=[], rule_string=None, target_name=None, user_session=None):
+    def pep_test_helper__3024(self, pep_name, precommands=[], commands=[], rule_body='', rule_string=None, target_name=None, user_session=None):
         irods_config = IrodsConfig()
         test_re = os.path.join(irods_config.core_re_directory, 'test.re')
         server_config_filename = irods_config.server_config_path
@@ -331,6 +343,7 @@ OUTPUT ruleExecOut
         if user_session is None:
             user_session = self.user0
         testfile = self.testfile
+        large_file = self.large_file
         target_name = target_name if target_name is not None else testfile
         target_obj = '/'.join([user_session.session_collection, target_name])
 
@@ -369,8 +382,8 @@ OUTPUT ruleExecOut
             # prepare rule
             # rule will write PEP name as well as
             # resource related rule session vars to server log
-            rule_body = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
-            rule_body += ('writeLine("serverLog", $KVPairs.zoneName);'
+            write_statements = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+            write_statements += ('writeLine("serverLog", $KVPairs.zoneName);'
                           'writeLine("serverLog", $KVPairs.freeSpace);'
                           'writeLine("serverLog", $KVPairs.quotaLimit);'
                           'writeLine("serverLog", $KVPairs.rescStatus);'
@@ -383,8 +396,8 @@ OUTPUT ruleExecOut
                           'writeLine("serverLog", $KVPairs.rescInfo);'
                           'writeLine("serverLog", $KVPairs.rescComments);'
                           'writeLine("serverLog", $KVPairs.rescCreate);'
-                          'writeLine("serverLog", $KVPairs.rescModify);')
-            test_rule = '{pep_name} {{ {rule_body} }}'.format(**locals())
+                          'writeLine("serverLog", $KVPairs.rescModify)')
+            test_rule = '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
 
             # write new rule file
             with open(test_re, 'w') as f:
