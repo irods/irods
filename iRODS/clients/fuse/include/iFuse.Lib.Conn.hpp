@@ -40,6 +40,7 @@ typedef struct IFuseConn {
  * - iFuseConnDestroy
  */
 
+int iFuseConnTest();
 void iFuseConnInit();
 void iFuseConnDestroy();
 int iFuseConnGetAndUse(iFuseConn_t **iFuseConn, int connType);
