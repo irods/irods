@@ -141,7 +141,7 @@ replicateMultiple(*destRgStr) {
 
         # add dynamic PEP with rscomm usage
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system('''echo "pep_resource_open_pre(*A,*B,*C) { msiGetSystemTime( *junk, '' ); }" >> ''' + corefile)
+        os.system('''echo "pep_resource_open_pre(*OUT,*FOO,*BAR) { msiGetSystemTime( *junk, '' ); }" >> ''' + corefile)
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # check rei functioning
