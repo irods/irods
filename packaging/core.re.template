@@ -260,7 +260,7 @@ acPostProcForOpen { }
 acPostProcForPhymv { }
 acPostProcForRepl { }
 # 9) acSetNumThreads - Rule to set the number of threads for a data transfer
-# This rule supports condition based on $rescName so that different
+# This rule supports condition based on $KVPairs.rescName so that different
 # policies can be set for different resources.
 # Only one function can be used for this rule
 #    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number
@@ -280,7 +280,7 @@ acPostProcForRepl { }
 # for all transfer
 # acSetNumThreads {msiSetNumThreads("16","4","default"); }
 # acSetNumThreads {msiSetNumThreads("default","16","default"); }
-# acSetNumThreads {ON($rescName == "macResc") {msiSetNumThreads("default","0","default"); } }
+# acSetNumThreads {ON($KVPairs.rescName == "macResc") {msiSetNumThreads("default","0","default"); } }
 acSetNumThreads {msiSetNumThreads("default","16","default"); }
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.
@@ -290,7 +290,7 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 #    acDataDeletePolicy {ON($objPath like "/foo/bar/*") {msiDeleteDisallowed; } }
 #      this rule prevents the deletion of any data objects or collections
 #      beneath the collection /foo/bar/
-#    acDataDeletePolicy {ON($rescName == "demoResc8") {msiDeleteDisallowed; } }
+#    acDataDeletePolicy {ON($KVPairs.rescName == "demoResc8") {msiDeleteDisallowed; } }
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
 #acDataDeletePolicy {ON($objPath like "/tempZone/home/rods/*") {msiDeleteDisallowed; } }
