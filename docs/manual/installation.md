@@ -152,7 +152,6 @@ The `setup_irods.py` script below will prompt for, and then create if necessary,
 Installation of the Resource RPM:
 
 ~~~
-- Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
  $ (sudo) rpm -i irods-resource-TEMPLATE_IRODSVERSION-centos6-x86_64.rpm
  $ (sudo) /var/lib/irods/scripts/setup_irods.py
 ~~~
