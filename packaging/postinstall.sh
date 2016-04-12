@@ -80,9 +80,6 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME
 
 
-    # convert any legacy configuration files
-    su - $IRODS_SERVICE_ACCOUNT_NAME -c "python $IRODS_HOME/packaging/convert_configuration_to_json.py $SERVER_TYPE"
-
 else
     cat $IRODS_HOME/packaging/server_setup_instructions.txt
 fi

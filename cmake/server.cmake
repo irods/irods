@@ -33,7 +33,6 @@ install(
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/packaging/connectControl.config.template
-  ${CMAKE_SOURCE_DIR}/packaging/convert_configuration_to_json.py
   ${CMAKE_SOURCE_DIR}/packaging/core.dvm.template
   ${CMAKE_SOURCE_DIR}/packaging/core.fnm.template
   ${CMAKE_SOURCE_DIR}/packaging/core.re.template
@@ -42,9 +41,7 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/hosts_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/irodsMonPerf.config.in
   ${CMAKE_SOURCE_DIR}/packaging/server_config.json.template
-  ${CMAKE_SOURCE_DIR}/packaging/update_configuration_schema.py
-  ${CMAKE_SOURCE_DIR}/packaging/user_icat.txt
-  ${CMAKE_SOURCE_DIR}/packaging/user_resource.txt
+  ${CMAKE_SOURCE_DIR}/packaging/server_setup_instructions.txt
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
