@@ -11,7 +11,7 @@
 #include "apiNumber.h"
 #include "dataObjInpOut.h"
 
-#define CMD_DIR "../../var/lib/irods/server/bin/cmd"
+#define CMD_DIR "../../var/lib/irods/msiExecCmd_bin"
 
 typedef struct ExecCmd {
     char cmd[LONG_NAME_LEN];

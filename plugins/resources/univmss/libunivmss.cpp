@@ -927,7 +927,7 @@ class univ_mss_resource : public irods::resource {
                 std::stringstream msg;
                 msg << "univmss resource :: the path [";
                 msg << context_;
-                msg << "] should be a single file name which should reside in server/bin/cmd/";
+                msg << "] should be a single file name which should reside in msiExecCmd_bin";
                 rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
             }
 

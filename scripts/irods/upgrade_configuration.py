@@ -42,7 +42,7 @@ def upgrade(irods_config):
     previous_version_tuple = tuple(map(int, new_version['previous_version']['irods_version'].split('.')))
     if previous_version_tuple < (4, 2, 0):
         old_dir_to_new_dir_map = {
-                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'server', 'bin', 'cmd'),
+                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'server', 'config', 'packedRei'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'server', 'config', 'lockFileDir'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'reConfigs'): os.path.join(paths.irods_directory(), 'server', 'config', 'reConfigs')
