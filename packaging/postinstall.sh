@@ -75,7 +75,7 @@ if [ -f /etc/irods/service_account.config ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
     # make sure the service acount owns everything
-    # careful not to stomp server/bin/cmd contents (perhaps managed by others)
+    # careful not to stomp msiExecCmd_bin contents (perhaps managed by others)
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/clients
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/log
@@ -85,7 +85,11 @@ if [ -f /etc/irods/service_account.config ] ; then
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/server/config
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/test
     chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/irodsctl
-    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/VERSION.json
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/VERSION*
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/test_execstream.py
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/univMSSInterface.sh
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/irodsServerMonPerf
+    chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/hello
     # set PAM and OSAuth executables with setuid bit
     chown root:root /usr/sbin/irodsPamAuthCheck
     chmod 4755 /usr/sbin/irodsPamAuthCheck

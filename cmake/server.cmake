@@ -117,11 +117,11 @@ install(
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/server/bin/cmd/irodsServerMonPerf
-  ${CMAKE_SOURCE_DIR}/server/bin/cmd/test_execstream.py
-  ${CMAKE_SOURCE_DIR}/server/bin/cmd/hello
-  ${CMAKE_SOURCE_DIR}/server/bin/cmd/univMSSInterface.sh
-  DESTINATION ${IRODS_HOME_DIRECTORY}/server/bin/cmd
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/irodsServerMonPerf
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/test_execstream.py
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/hello
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/univMSSInterface.sh
+  DESTINATION ${IRODS_HOME_DIRECTORY}/msiExecCmd_bin
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
   )

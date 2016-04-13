@@ -602,7 +602,7 @@ The mock archive storage resource was created mainly for testing purposes to emu
 
 #### Universal Mass Storage Service
 
-The univMSS storage resource delegates stage_to_cache and sync_to_arch operations to an external script which is located in the server/bin/cmd directory.  It currently writes to the Vault path of that resource instance, treating it as a unix file system.
+The univMSS storage resource delegates stage_to_cache and sync_to_arch operations to an external script which is located in the msiExecCmd_bin directory.  It currently writes to the Vault path of that resource instance, treating it as a unix file system.
 
 When creating a "univmss" resource, the context string provides the location of the Universal MSS script.
 
