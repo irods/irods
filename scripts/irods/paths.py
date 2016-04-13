@@ -53,6 +53,13 @@ def password_file_path():
         '.irods',
         '.irodsA')
 
+def default_client_environment_path():
+    return os.path.join(
+        home_directory(),
+        '.irods',
+        'irods_environment.json')
+
+
 def log_directory():
     return os.path.join(
         irods_directory(),

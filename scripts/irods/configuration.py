@@ -111,10 +111,7 @@ class IrodsConfig(object):
         if 'IRODS_ENVIRONMENT_FILE' in self.execution_environment:
             return self.execution_environment['IRODS_ENVIRONMENT_FILE']
         else:
-            return os.path.join(
-                paths.home_directory(),
-                '.irods',
-                'irods_environment.json')
+            return paths.default_client_environment_path()
 
     @property
     def client_environment(self):
