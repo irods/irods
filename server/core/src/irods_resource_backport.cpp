@@ -31,8 +31,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get the resource property - id
         prop_name = RESOURCE_ID;
-        long id = 0;
-        err = _resc->get_property< long >( prop_name, id );
+        rodsLong_t id = 0;
+        err = _resc->get_property< rodsLong_t >( prop_name, id );
         if ( !err.ok() ) {
             std::stringstream msg;
             msg << "failed to get property [";
