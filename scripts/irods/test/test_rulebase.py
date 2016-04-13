@@ -24,14 +24,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Rulebase, self).setUp()
 
-        # make large test file
-        self.large_file = '/tmp/largefile'
-        lib.make_file(self.large_file, '64M')
-
     def tearDown(self):
-        # remove large test file
-        os.unlink(self.large_file)
-
         super(Test_Rulebase, self).tearDown()
 
     def test_client_server_negotiation__2564(self):
@@ -269,48 +262,69 @@ OUTPUT ruleExecOut
         os.unlink(rule_file)
 
 
+@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
+class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPostProcForPut__3024(self):
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['iput -f {testfile}'])
+    def setUp(self):
+        super(Test_Resource_Session_Vars__3024, self).setUp()
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acSetNumThreads__3024(self):
+        # get PEP name
+        self.pep_name = self._testMethodName.split('_')[1]
+
+        # make large test file
+        self.large_file = '/tmp/largefile'
+        lib.make_file(self.large_file, '64M')
+
+    def tearDown(self):
+        del self.pep_name
+
+        # remove large test file
+        os.unlink(self.large_file)
+
+        super(Test_Resource_Session_Vars__3024, self).tearDown()
+
+    def test_acPostProcForPut(self):
+        self.pep_test_helper(commands=['iput -f {testfile}'])
+
+    def test_acSetNumThreads(self):
         rule_body = 'msiSetNumThreads("default","0","default");'
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['iput -f {large_file}'], rule_body=rule_body)
+        self.pep_test_helper(commands=['iput -f {large_file}'], rule_body=rule_body)
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acDataDeletePolicy__3024(self):
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
+    def test_acDataDeletePolicy(self):
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPostProcForDelete__3024(self):
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
+    def test_acPostProcForDelete(self):
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irm -f {testfile}'])
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acSetChkFilePathPerm__3024(self):
+    def test_acSetChkFilePathPerm(self):
+        # regular user will try to register a system file
+        # e.g: /var/lib/irods/VERSION.json
         irods_config = IrodsConfig()
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=[('ireg %s {target_obj}' % irods_config.version_path, 'STDERR_SINGLELINE', 'PATH_REG_NOT_ALLOWED')], target_name=os.path.basename(irods_config.version_path))
+        path_to_register = irods_config.version_path
+        commands = [('ireg {path_to_register} {{target_obj}}'.format(**locals()), 'STDERR_SINGLELINE', 'PATH_REG_NOT_ALLOWED')]
+        self.pep_test_helper(commands=commands, target_name=os.path.basename(path_to_register))
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPostProcForFilePathReg__3024(self):
-        reg_file_path = os.path.join(self.user0.get_vault_session_path(), 'reg_test_file')
+    def test_acPostProcForFilePathReg(self):
+        # admin user will register a file
+        sess=self.admin
+
+        # make new pysical file in user's vault
+        reg_file_path = os.path.join(sess.get_vault_session_path(), 'reg_test_file')
         lib.make_dir_p(os.path.dirname(reg_file_path))
         lib.touch(reg_file_path)
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['ireg %s {target_obj}' % reg_file_path], target_name=os.path.basename(reg_file_path), user_session=self.admin)
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPostProcForCopy__3024(self):
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['icp {testfile} {testfile}_copy'])
+        commands = ['ireg {reg_file_path} {{target_obj}}'.format(**locals())]
+        self.pep_test_helper(commands=commands, target_name=os.path.basename(reg_file_path), user_session=sess)
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acSetVaultPathPolicy__3024(self):
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], commands=['iput -f {testfile}'])
+    def test_acPostProcForCopy(self):
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['icp {testfile} {testfile}_copy'])
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPreprocForDataObjOpen__3024(self):
-        rule_string = '''
-test_{pep_name}__3024 {{
+    def test_acSetVaultPathPolicy(self):
+        self.pep_test_helper(commands=['iput -f {testfile}'])
+
+    def test_acPreprocForDataObjOpen(self):
+        client_rule = '''
+test_{pep_name} {{
     msiDataObjOpen("{target_obj}",*FD);
     msiDataObjClose(*FD,*Status);
 }}
@@ -318,13 +332,12 @@ INPUT null
 OUTPUT ruleExecOut
 '''
 
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irule -F {rule_file}'], rule_string=rule_string)
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
-    def test_acPostProcForOpen__3024(self):
+    def test_acPostProcForOpen(self):
         # prepare rule file
-        rule_string = '''
-test_{pep_name}__3024 {{
+        client_rule = '''
+test_{pep_name} {{
     msiDataObjOpen("{target_obj}",*FD);
     msiDataObjClose(*FD,*Status);
 }}
@@ -332,21 +345,9 @@ INPUT null
 OUTPUT ruleExecOut
 '''
 
-        self.pep_test_helper__3024(inspect.stack()[0][3].split('_')[1], precommands=['iput -f {testfile}'], commands=['irule -F {rule_file}'], rule_string=rule_string)
+        self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
-    def pep_test_helper__3024(self, pep_name, precommands=[], commands=[], rule_body='', rule_string=None, target_name=None, user_session=None):
-        irods_config = IrodsConfig()
-        test_re = os.path.join(irods_config.core_re_directory, 'test.re')
-        server_config_filename = irods_config.server_config_path
-
-        # user session
-        if user_session is None:
-            user_session = self.user0
-        testfile = self.testfile
-        large_file = self.large_file
-        target_name = target_name if target_name is not None else testfile
-        target_obj = '/'.join([user_session.session_collection, target_name])
-
+    def get_resource_property_list(self, session):
         # query for resource properties
         columns = ('RESC_ZONE_NAME, '
                    'RESC_FREE_SPACE, '
@@ -361,9 +362,9 @@ OUTPUT ruleExecOut
                    'RESC_COMMENT, '
                    'RESC_CREATE_TIME, '
                    'RESC_MODIFY_TIME')
-        resource = user_session.default_resource
+        resource = session.default_resource
         query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
-        result = user_session.run_icommand(query)[0]
+        result = session.run_icommand(query)[0]
 
         # last line is iquest default formatting separator
         resource_property_list = result.splitlines()[:-1]
@@ -371,6 +372,31 @@ OUTPUT ruleExecOut
         # make sure property list is not empty
         self.assertTrue(len(resource_property_list))
 
+        return resource_property_list
+
+    def make_pep_rule(self, pep_name, rule_body):
+        # prepare rule
+        # rule will write PEP name as well as
+        # resource related rule session vars to server log
+        write_statements = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
+        write_statements += ('writeLine("serverLog", $KVPairs.zoneName);'
+                      'writeLine("serverLog", $KVPairs.freeSpace);'
+                      'writeLine("serverLog", $KVPairs.quotaLimit);'
+                      'writeLine("serverLog", $KVPairs.rescStatus);'
+                      'writeLine("serverLog", $KVPairs.rescId);'
+                      'writeLine("serverLog", $KVPairs.rescName);'
+                      'writeLine("serverLog", $KVPairs.rescType);'
+                      'writeLine("serverLog", $KVPairs.rescLoc);'
+                      'writeLine("serverLog", $KVPairs.rescClass);'
+                      'writeLine("serverLog", $KVPairs.rescVaultPath);'
+                      'writeLine("serverLog", $KVPairs.rescInfo);'
+                      'writeLine("serverLog", $KVPairs.rescComments);'
+                      'writeLine("serverLog", $KVPairs.rescCreate);'
+                      'writeLine("serverLog", $KVPairs.rescModify)')
+
+        return '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
+
+    def make_new_server_config_json(self, server_config_filename):
         # load server_config.json to inject a new rule base
         with open(server_config_filename) as f:
             svr_cfg = json.load(f)
@@ -379,41 +405,48 @@ OUTPUT ruleExecOut
         svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
 
         # dump to a string to repave the existing server_config.json
-        new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+        return json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+
+    def pep_test_helper(self, precommands=[], commands=[], rule_body='', client_rule=None, target_name=None, user_session=None):
+        irods_config = IrodsConfig()
+        test_re = os.path.join(irods_config.core_re_directory, 'test.re')
+        server_config_filename = irods_config.server_config_path
+        pep_name = self.pep_name
+
+        # user session
+        if user_session is None:
+            user_session = self.user0
+
+        # local vars to format command strings
+        testfile = self.testfile
+        large_file = self.large_file
+        if target_name is None:
+            target_name = testfile
+        target_obj = '/'.join([user_session.session_collection, target_name])
+
+        # query for resource properties
+        resource_property_list = self.get_resource_property_list(user_session)
+
+        # make new server configuration with additional re file
+        new_server_config = self.make_new_server_config_json(server_config_filename)
 
         with lib.file_backed_up(server_config_filename):
-            # prepare rule
-            # rule will write PEP name as well as
-            # resource related rule session vars to server log
-            write_statements = 'writeLine("serverLog", "{pep_name}");'.format(**locals())
-            write_statements += ('writeLine("serverLog", $KVPairs.zoneName);'
-                          'writeLine("serverLog", $KVPairs.freeSpace);'
-                          'writeLine("serverLog", $KVPairs.quotaLimit);'
-                          'writeLine("serverLog", $KVPairs.rescStatus);'
-                          'writeLine("serverLog", $KVPairs.rescId);'
-                          'writeLine("serverLog", $KVPairs.rescName);'
-                          'writeLine("serverLog", $KVPairs.rescType);'
-                          'writeLine("serverLog", $KVPairs.rescLoc);'
-                          'writeLine("serverLog", $KVPairs.rescClass);'
-                          'writeLine("serverLog", $KVPairs.rescVaultPath);'
-                          'writeLine("serverLog", $KVPairs.rescInfo);'
-                          'writeLine("serverLog", $KVPairs.rescComments);'
-                          'writeLine("serverLog", $KVPairs.rescCreate);'
-                          'writeLine("serverLog", $KVPairs.rescModify)')
-            test_rule = '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
+            # make pep rule
+            test_rule = self.make_pep_rule(pep_name, rule_body)
 
-            # write new rule file
+            # write pep rule into test_re
             with open(test_re, 'w') as f:
                 f.write(test_rule)
 
-            # repave the existing server_config.json 
+            # repave the existing server_config.json to add test_re
             with open(server_config_filename, 'w') as f:
                 f.write(new_server_config)
 
-            if rule_string is not None:
-                rule_file = "test_rule_file.r"
-                with open(rule_file, 'w') as f:
-                    f.write(rule_string.format(**locals()))
+            # make client-side rule file
+            if client_rule is not None:
+                client_rule_file = "test_rule_file.r"
+                with open(client_rule_file, 'w') as f:
+                    f.write(client_rule.format(**locals()))
 
             # perform precommands
             for c in precommands:
@@ -432,8 +465,9 @@ OUTPUT ruleExecOut
                 else:
                     user_session.assert_icommand(c.format(**locals()))
 
-            if rule_string is not None:
-                os.unlink(rule_file)
+            # delete client-side rule file
+            if client_rule is not None:
+                os.unlink(client_rule_file)
 
             # confirm that PEP was hit by looking for pep name in server log
             assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, pep_name, start_index=initial_log_size)
