@@ -432,6 +432,15 @@ def count_occurrences_of_string_in_log(log_path, string, start_index=0):
 def version_string_to_tuple(version_string):
     return tuple(map(int, version_string.split('.')))
 
+def hostname_resolves_to_local_address(hostname):
+    ret, _, _ = lib.execute_command_permissive([
+        os.path.join( paths.server_bin_directory, 'hostname_resolves_to_local_address'),
+        hostname])
+    if ret == 0:
+        return True
+    elif ret == 1:
+        return False
+    raise IrodsError('Invalid hostname "%s" in call to hostname_resolves_to_local_address.' % (hostname))
 
 class callback_on_change_dict(dict):
     def __init__(self, *args, **kwargs):
