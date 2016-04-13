@@ -5,15 +5,15 @@
 ## Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation
 
 # This script is a template which must be updated if one wants to use the universal MSS driver.
-# Your working version should be in this directory server/bin/cmd/univMSSInterface.sh.
+# Your working version should be in this directory msiExecCmd_bin/univMSSInterface.sh.
 # Functions to modify: syncToArch, stageToCache, mkdir, chmod, rm, stat
 # These functions need one or two input parameters which should be named $1 and $2.
 # If some of these functions are not implemented for your MSS, just let this function as it is.
 #
- 
+
 # function for the synchronization of file $1 on local disk resource to file $2 in the MSS
 syncToArch () {
-	# <your command or script to copy from cache to MSS> $1 $2 
+	# <your command or script to copy from cache to MSS> $1 $2
 	# e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
         op=`which cp`
         `$op $1 $2`
@@ -23,7 +23,7 @@ syncToArch () {
 
 # function for staging a file $1 from the MSS to file $2 on disk
 stageToCache () {
-	# <your command to stage from MSS to cache> $1 $2	
+	# <your command to stage from MSS to cache> $1 $2
 	# e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
         op=`which cp`
         `$op $1 $2`
@@ -40,7 +40,7 @@ mkdir () {
 	return
 }
 
-# function to modify ACLs $2 (octal) in the MSS logical name space for a given directory $1 
+# function to modify ACLs $2 (octal) in the MSS logical name space for a given directory $1
 chmod () {
 	# <your command to modify ACL> $2 $1
 	# e.g: /usr/local/bin/rfchmod $2 rfioServerFoo:$1
@@ -85,20 +85,20 @@ stat () {
 		return $error
 	fi
 	# parse the output.
-	# Parameters to retrieve: device ID of device containing file("device"), 
+	# Parameters to retrieve: device ID of device containing file("device"),
 	#                         file serial number ("inode"), ACL mode in octal ("mode"),
 	#                         number of hard links to the file ("nlink"),
 	#                         user id of file ("uid"), group id of file ("gid"),
 	#                         device id ("devid"), file size ("size"), last access time ("atime"),
 	#                         last modification time ("mtime"), last change time ("ctime"),
 	#                         block size in bytes ("blksize"), number of blocks ("blkcnt")
-	# e.g: device=`echo $output | awk '{print $3}'`	
+	# e.g: device=`echo $output | awk '{print $3}'`
 	# Note 1: if some of these parameters are not relevant, set them to 0.
-	# Note 2: the time should have this format: YYYY-MM-dd-hh.mm.ss with: 
+	# Note 2: the time should have this format: YYYY-MM-dd-hh.mm.ss with:
 	#                                           YYYY = 1900 to 2xxxx, MM = 1 to 12, dd = 1 to 31,
 	#                                           hh = 0 to 24, mm = 0 to 59, ss = 0 to 59
 
-        
+
 
     device=` echo $output | sed -nr 's/.*\<Device: *(\S*)\>.*/\1/p'`
     inode=`  echo $output | sed -nr 's/.*\<Inode: *(\S*)\>.*/\1/p'`

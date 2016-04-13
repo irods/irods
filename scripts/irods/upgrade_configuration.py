@@ -45,7 +45,6 @@ def upgrade(irods_config):
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'server', 'config', 'packedRei'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'server', 'config', 'lockFileDir'),
-                os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'reConfigs'): os.path.join(paths.irods_directory(), 'server', 'config', 'reConfigs')
             }
         for old_dir, new_dir in old_dir_to_new_dir_map.items():
             if os.path.isdir(old_dir):

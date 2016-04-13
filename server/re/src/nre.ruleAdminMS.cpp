@@ -156,7 +156,7 @@ int _admShowFNM( ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx )
  * \note This microservice requires iRODS administration privileges.
  *
  * \note Reads the given file in the configuration directory
- * 'server/config/reConfigs' or any file in the server local file system and
+ * '/etc/irods' or any file in the server local file system and
  * puts them into a DVM structure.
  *
  * \usage See clients/icommands/test/rules/
@@ -377,7 +377,7 @@ msiGetDVMapsFromDBIntoStruct( msParam_t *inDvmBaseNameParam, msParam_t *inVersio
  * \note This microservice requires iRODS administration privileges.
  *
  * \note  This is a microservice that writes into a given file the contents of a given DVM structure.
- * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ * The file can be in '/etc/irods' or any path on the server local file system.
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -438,7 +438,7 @@ msiAdmWriteDVMapsFromStructIntoFile( msParam_t *inDvmFileNameParam, msParam_t *i
  * \note This microservice requires iRODS administration privileges.
  *
  * \note Reads the given file in the configuration directory
- * 'server/config/reConfigs' or any file in the server local file system and
+ * '/etc/irods' or any file in the server local file system and
  * puts them into a FNM structure.
  *
  * \usage See clients/icommands/test/rules/
@@ -665,7 +665,7 @@ msiGetFNMapsFromDBIntoStruct( msParam_t *inFnmBaseNameParam, msParam_t *inVersio
  * \note This microservice requires iRODS administration privileges.
  *
  * \note  This is a microservice that writes into a given file the contents of a given FNM structure.
- * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ * The file can be in '/etc/irods' or any path on the server local file system.
  *
  * \usage See clients/icommands/test/rules/
  *
@@ -726,7 +726,7 @@ msiAdmWriteFNMapsFromStructIntoFile( msParam_t *inFnmFileNameParam, msParam_t *i
  * \note This microservice requires iRODS administration privileges.
  *
  * \note Reads the given file in the configuration directory
- * 'server/config/reConfigs' or any file in the server local file system and
+ * '/etc/irods' or any file in the server local file system and
  * puts them into a microservice structure.
  *
  * \usage See clients/icommands/test/rules/
@@ -948,7 +948,7 @@ msiGetMSrvcsFromDBIntoStruct( msParam_t *inStatus, msParam_t *outCoreMsrvcStruct
  * \note This microservice requires iRODS administration privileges.
  *
  * \note  This is a microservice that writes into a given file the contents of a given microservice structure.
- * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
+ * The file can be in '/etc/irods' or any path on the server local file system.
  *
  * \usage See clients/icommands/test/rules/
  *
