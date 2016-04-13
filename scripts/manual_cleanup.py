@@ -17,6 +17,9 @@ zone_name = irods_config.client_environment['irods_zone_name']
 env_dict = lib.make_environment_dict(admin_name, settings.ICAT_HOSTNAME, zone_name, use_ssl=settings.USE_SSL)
 sess = session.IrodsSession(env_dict, settings.PREEXISTING_ADMIN_PASSWORD, False)
 
+# clean trash
+sess.run_icommand('irmtrash -M')
+
 # remove test stuff
 for user_name in test_user_list:
     # get permission on user's collection
