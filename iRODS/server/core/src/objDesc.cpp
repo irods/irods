@@ -317,6 +317,13 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
         irods::error err = irods::is_resc_live( last_resc.c_str() );
         if ( err.ok() ) {
+            // fill rei.condInputData with resource properties
+            ret = irods::get_resc_properties_as_kvp(destRescHier, rei.condInputData);
+            if ( !ret.ok() ) {
+                irods::log( PASSMSG( "getNumThreads - failed in get_resc_properties_as_kvp", ret ) );
+            }
+
+            // PEP
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
 
             if ( status < 0 ) {
@@ -360,7 +367,15 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         irods::error err = irods::is_resc_live( last_resc.c_str() );
 
         if ( err.ok() ) {
+            // fill rei.condInputData with resource properties
+            ret = irods::get_resc_properties_as_kvp(destRescHier, rei.condInputData);
+            if ( !ret.ok() ) {
+                irods::log( PASSMSG( "getNumThreads - failed in get_resc_properties_as_kvp", ret ) );
+            }
+
+            // PEP
             status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
+
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "getNumThreads: acSetNumThreads error, status = %d",
