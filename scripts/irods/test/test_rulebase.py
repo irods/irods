@@ -297,10 +297,13 @@ OUTPUT ruleExecOut
                    'RESC_MODIFY_TIME')
         resource = user_session.default_resource
         query = '''iquest "SELECT {columns} WHERE RESC_NAME ='{resource}'"'''.format(**locals())
-        result = user_session.run_icommand(query)[1]
+        result = user_session.run_icommand(query)[0]
 
         # last line is iquest default formatting separator
         resource_property_list = result.splitlines()[:-1]
+
+        # make sure property list is not empty
+        self.assertTrue(len(resource_property_list))
 
         with lib.file_backed_up(server_config_filename):
             # prepare rule
