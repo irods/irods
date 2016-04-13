@@ -230,7 +230,7 @@ class IrodsConfig(object):
                     'dict': self.database_config,
                     'path': paths.database_config_path()}
         else:
-            l.debug('The database config file, \'%s\', does not exist.', paths.database_config_path())
+            raise IrodsError('The database config file, \'%s\', does not exist.', paths.database_config_path())
 
         skipped = []
 

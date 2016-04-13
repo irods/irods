@@ -40,21 +40,21 @@ def upgrade(irods_config):
     new_version['previous_version'] = irods_config.version
     l.debug('Upgrading from version %s to version %s.', new_version['previous_version']['irods_version'], new_version['irods_version'])
     previous_version_tuple = tuple(map(int, new_version['previous_version']['irods_version'].split('.')))
-    if previous_version < (4, 2, 0):
+    if previous_version_tuple < (4, 2, 0):
         old_dir_to_new_dir_map = {
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'server', 'bin', 'cmd'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'server', 'config', 'packedRei'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'server', 'config', 'lockFileDir'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'reConfigs'): os.path.join(paths.irods_directory(), 'server', 'config', 'reConfigs')
             }
-        for old_dir, new_dir in old_dir_to_new_dir_map:
+        for old_dir, new_dir in old_dir_to_new_dir_map.items():
             if os.path.isdir(old_dir):
                 for entry in os.listdir(old_dir):
                     old_path = os.path.join(old_dir, entry)
                     new_path = os.path.join(new_dir, entry)
                     if os.path.exists(new_path):
                         raise IrodsError('File conflict encountered during upgrade: %s could not be moved to %s, as %s already exists. '
-                                'Please resolve this naming conflict manually and try again.' % (old_dir, new_dir, new_dir))
+                                'Please resolve this naming conflict manually and try again.' % (old_path, new_path, new_path))
                     shutil.move(old_path, new_path)
 
     configuration_file_list = [
