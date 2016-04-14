@@ -5,11 +5,12 @@
 
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
+#include "irods_re_structs.hpp"
 
 #if defined(_LP64) || defined(__LP64__)
 #define CAST_PTR_INT (long int)
@@ -78,177 +79,6 @@ int writeLine( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
     return i;
 
 }
-
-/**
- * \cond oldruleengine
- * \fn writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
- *
- * \brief  This microservice writes a given string into the target buffer
- *
- * \module core
- *
- * \since pre-2.1
- *
- *
- * \note   This microservice takes a given buffer string and appends it to the end of the buffer
- * (either stdout or stderr in ruleExecOut parameter). This may be extended later for writing into local log file
- * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in] where - where is a msParam of type STR_MS_T which is the buffer name in ruleExecOut.
- * Currently stdout, stderr and an existing iRODS file.
- * \param[in] inString - inString is a msParam of type STR_MS_T which is a string to be written into buffer
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified none
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect ruleExecOut structure in msParamArray gets modified.
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
- * \endcond
- **/
-int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
-    int i;
-    char *writeId;
-    char *writeStr;
-
-    if ( where->inOutStruct == NULL ) {
-        writeId = where->label;
-    }
-    else {
-        writeId = ( char* )where->inOutStruct;
-    }
-
-    if ( inString->inOutStruct == NULL ) {
-        writeStr = strdup( ( char * ) inString->label );
-    }
-    else {
-        writeStr = strdup( ( char * ) inString->inOutStruct );
-    }
-    i = _writeString( writeId, writeStr, rei );
-
-    free( writeStr );
-    return i;
-}
-
-int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4619
-    dataObjInp_t dataObjInp;
-    openedDataObjInp_t openedDataObjInp;
-    bytesBuf_t tmpBBuf;
-    int fd, i;
-    // =-=-=-=-=-=-=-
-
-    if ( writeId != NULL && strcmp( writeId, "serverLog" ) == 0 ) {
-        rodsLog( LOG_NOTICE, "writeString: inString = %s", writeStr );
-        return 0;
-    }
-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4619
-    if ( writeId != NULL && writeId[0] == '/' ) {
-        /* writing to an existing iRODS file */
-
-        if ( rei == NULL || rei->rsComm == NULL ) {
-            rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
-        dataObjInp.openFlags = O_RDWR;
-        snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s", writeId );
-        fd = rsDataObjOpen( rei->rsComm, &dataObjInp );
-        if ( fd < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd );
-            return fd;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        openedDataObjInp.offset = 0;
-        openedDataObjInp.whence = SEEK_END;
-        fileLseekOut_t *dataObjLseekOut = NULL;
-        i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
-        free( dataObjLseekOut );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr ) + 1;
-        tmpBBuf.buf =  writeStr;
-        i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        i = rsDataObjClose( rei->rsComm, &openedDataObjInp );
-        return i;
-    }
-
-    // =-=-=-=-=-=-=-
-
-    msParam_t * mP = NULL;
-    msParamArray_t * inMsParamArray = rei->msParamArray;
-    execCmdOut_t *myExecCmdOut;
-    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-            ( mP->inOutStruct != NULL ) ) {
-        if ( !strcmp( mP->type, STR_MS_T ) ) {
-            myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
-            memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-            mP->inOutStruct = myExecCmdOut;
-            mP->type = strdup( ExecCmdOut_MS_T );
-        }
-        else {
-            myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
-        }
-    }
-    else {
-        myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
-        memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-        if ( mP == NULL ) {
-            addMsParam( inMsParamArray, "ruleExecOut", ExecCmdOut_MS_T, myExecCmdOut, NULL );
-        }
-        else {
-            mP->inOutStruct = myExecCmdOut;
-            mP->type = strdup( ExecCmdOut_MS_T );
-        }
-    }
-
-    /***** Jun 27, 2007
-           i  = replaceVariablesAndMsParams("",writeStr, rei->msParamArray, rei);
-           if (i < 0)
-           return i;
-    ****/
-
-    if ( writeId != NULL ) {
-        if ( !strcmp( writeId, "stdout" ) ) {
-            appendToByteBuf( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
-        }
-        else if ( !strcmp( writeId, "stderr" ) ) {
-            appendToByteBuf( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
-        }
-    }
-
-    return 0;
-}
-
 
 /**
  * \fn writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
@@ -516,6 +346,8 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
  * \post none
  * \sa msiXmsgCreateStream, readXMsg
  **/
+int _writeXMsg( int streamId, char *hdr, char *msg );
+
 int
 writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei ) {
     int i;
@@ -582,7 +414,7 @@ writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecIn
  * \post none
  * \sa msiXmsgCreateStream, writeXMsg
  **/
-
+int _readXMsg( int streamId, char *condRead, int *msgNum, int *seqNum, char **hdr, char **msg, char **user, char **addr );
 int
 readXMsg( msParam_t* inStreamId, msParam_t *inCondRead,
           msParam_t *outMsgNum, msParam_t *outSeqNum,

@@ -8,7 +8,7 @@
 #include "rodsLog.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 
 int
 rsDataObjOpenAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,

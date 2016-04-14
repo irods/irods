@@ -1,7 +1,5 @@
 #include "rodsClient.h"
-#include "reFuncDefs.hpp"
 #include "rods.h"
-#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 
@@ -9,6 +7,7 @@
 #include <boost/regex.hpp>
 #include <string>
 #include "irods_server_properties.hpp"
+#include "irods_ms_plugin.hpp"
 
 
 static

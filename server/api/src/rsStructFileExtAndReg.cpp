@@ -3,7 +3,7 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of
  * this API call.*/
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -15,7 +15,7 @@
 #include "miscServerFunct.hpp"
 #include "fileOpr.hpp"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "structFileExtAndReg.h"
 
 // =-=-=-=-=-=-=-

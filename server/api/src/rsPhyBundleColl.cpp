@@ -22,6 +22,7 @@
 #include "regReplica.h"
 #include "unbunAndRegPhyBunfile.h"
 #include "fileChksum.h"
+#include "modDataObjMeta.h"
 #include "irods_stacktrace.hpp"
 
 // =-=-=-=-=-=-=-

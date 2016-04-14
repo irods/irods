@@ -27,7 +27,7 @@ _rsDataObjReplUpdate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                       transferStat_t *transStat );
 int
 _rsDataObjReplNewCopy( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                       dataObjInfo_t *srcDataObjInfoHead, const std::string& _resc_name,
+                       dataObjInfo_t *srcDataObjInfoHead, const char* _resc_name,
                        transferStat_t *transStat, dataObjInfo_t *outDataObjInfo );
 int
 _rsDataObjReplS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,

@@ -74,6 +74,7 @@ fi
 if [ -f /etc/irods/service_account.config ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
+
     # make sure the service acount owns everything
     # careful not to stomp msiExecCmd_bin contents (perhaps managed by others)
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
@@ -93,6 +94,7 @@ if [ -f /etc/irods/service_account.config ] ; then
     chown root:root /usr/sbin/irodsPamAuthCheck
     chmod 4755 /usr/sbin/irodsPamAuthCheck
     chmod 4755 /usr/bin/genOSAuth
+
 else
     cat $IRODS_HOME/packaging/server_setup_instructions.txt
 fi

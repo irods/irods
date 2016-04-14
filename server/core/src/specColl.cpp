@@ -11,6 +11,7 @@
 #include "modColl.h"
 #include "icatDefines.h"
 #include "dataObjClose.h"
+#include "objMetaOpr.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

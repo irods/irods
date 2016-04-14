@@ -1,10 +1,8 @@
 //#include "rsApiHandler.hpp"
 #include "rods.h"
-#include "reFuncDefs.hpp"
-#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-
+#include "irods_ms_plugin.hpp"
 #include <curl/curl.h>
 #include "microservice.hpp"
 

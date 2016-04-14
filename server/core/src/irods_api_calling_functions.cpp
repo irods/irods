@@ -1229,6 +1229,17 @@ int call_setRoundRobinContextInp(
                    _inp);
 }
 
+int call_execRuleExpressionInp(
+    irods::api_entry*       _api,
+    rsComm_t*               _comm,
+    exec_rule_expression_t* _inp) {
+    return _api->call_handler<
+               rsComm_t*,
+               exec_rule_expression_t*>(
+                   _comm,
+                   _inp);
+
+}
 
 
 

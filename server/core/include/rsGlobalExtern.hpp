@@ -53,9 +53,9 @@ extern int IcatConnState;
 
 extern specCollCache_t *SpecCollCacheHead;
 
-int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet );
-int clearCoreRule();
-int finalizeRuleEngine();
+//int initRuleEngine( int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet );
+//int clearCoreRule();
+//int finalizeRuleEngine();
 
 extern char localSID[MAX_PASSWORD_LEN];
 extern irods::lookup_table <std::pair <std::string, std::string> > remote_SID_key_map; // remote zone SIDs and negotiation keys

@@ -1,6 +1,5 @@
 // =-=-=-=-=-=-=-
 //
-#include "irods_operation_rule_execution_manager.hpp"
 #include "irods_resource_plugin_impostor.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_plugin.hpp"

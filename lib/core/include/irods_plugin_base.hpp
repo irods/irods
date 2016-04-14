@@ -11,7 +11,8 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
+#include "irods_re_structs.hpp"
 #include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
@@ -21,7 +22,6 @@
 #include "irods_error.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_context.hpp"
-#include "irods_operation_rule_execution_manager_base.hpp"
 
 static double PLUGIN_INTERFACE_VERSION = 2.0;
 

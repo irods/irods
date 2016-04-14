@@ -6,12 +6,15 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rcMisc.h"
-#include "reFuncDefs.hpp"
-#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"
+#include "modAccessControl.h"
 #include "irods_configuration_keywords.hpp"
+
+#include "irods_re_structs.hpp"
 
 /**
  * \fn msiGetIcatTime (msParam_t *timeOutParam, msParam_t *typeInParam, ruleExecInfo_t *)
@@ -146,11 +149,6 @@ int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
     char *rescName;
 
     rescName = ( char * ) xrescName->inOutStruct;
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiSetResource\n" );
-        }
-    }
 
     snprintf( rei->doi->rescName, sizeof( rei->doi->rescName ), "%s", rescName );
     return 0;
@@ -186,12 +184,6 @@ int  msiSetResource( msParam_t* xrescName, ruleExecInfo_t *rei ) {
  * \sa none
 **/
 int msiCheckOwner( ruleExecInfo_t *rei ) {
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiCheckOwner\n" );
-        }
-    }
-
     if ( !strcmp( rei->doi->dataOwnerName, rei->uoic->userName ) &&
             !strcmp( rei->doi->dataOwnerZone, rei->uoic->rodsZone ) ) {
         return 0;
@@ -235,11 +227,6 @@ int msiCheckPermission( msParam_t* xperm, ruleExecInfo_t *rei ) {
     char *perm;
 
     perm = ( char * ) xperm->inOutStruct;
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiCheckPermission\n" );
-        }
-    }
     if ( strstr( rei->doi->dataAccess, perm ) != NULL ) {
         return 0;
     }
@@ -373,17 +360,6 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
 int
 msiCommit( ruleExecInfo_t *rei ) {
     int status;
-
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiCommit\n" );
-        }
-        if ( reLoopBackFlag > 0 ) {
-            return 0;
-        }
-    }
-    /**** This is Just a Test Stub  ****/
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -440,17 +416,6 @@ msiCommit( ruleExecInfo_t *rei ) {
 int
 msiRollback( ruleExecInfo_t *rei ) {
     int status;
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiRollback\n" );
-        }
-        if ( reLoopBackFlag > 0 ) {
-            return 0;
-        }
-    }
-    /**** This is Just a Test Stub  ****/
-
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -635,17 +600,6 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
 int
 msiDeleteUnusedAVUs( ruleExecInfo_t *rei ) {
     int status;
-
-    /**** This is Just a Test Stub  ****/
-    if ( reTestFlag > 0 ) {
-        if ( reTestFlag == LOG_TEST_1 ) {
-            rodsLog( LOG_NOTICE, "   Calling msiDeleteUnusedAVUs\n" );
-        }
-        if ( reLoopBackFlag > 0 ) {
-            return 0;
-        }
-    }
-    /**** This is Just a Test Stub  ****/
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {

@@ -3,7 +3,6 @@
 /* reServerLib.cpp - functions for the irodsReServer */
 
 #ifndef windows_platform
-// JMC #include <pthread.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
@@ -14,16 +13,18 @@
 #include "ruleExecDel.h"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
-#include "reSysDataObjOpr.hpp"
 #include "miscUtil.h"
 #include "ruleExecMod.h"
 #include "rsIcatOpr.hpp"
 #include "resource.hpp"
-#include "reFuncDefs.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "initServer.hpp"
 #include "miscServerFunct.hpp"
+#include "objMetaOpr.hpp"
+#include "irods_re_structs.hpp"
+#include "exec_rule_expression.h"
+#include "irods_configuration_keywords.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -275,7 +276,10 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
         addKeyVal( regParam, RULE_EXE_STATUS_KW, "" );
         addKeyVal( regParam, RULE_LAST_EXE_TIME_KW, myTimeNow );
         addKeyVal( regParam, RULE_EXE_TIME_KW, myTimeNext );
-        status = rsRuleExecMod( rsComm, &ruleExecModInp );
+        status = rcRuleExecMod( rcComm, &ruleExecModInp );
+        if( status < 0 ) {
+            rodsLog( LOG_ERROR, "%s:%d - rcRuleExecMod failed %d", __FUNCTION__, __LINE__, status );
+        }
     }
     else if ( status1 == 1 ) {
         if ( opStatus == 0 ) {
@@ -287,33 +291,48 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
             addKeyVal( regParam, RULE_EXE_STATUS_KW, "" );
             addKeyVal( regParam, RULE_LAST_EXE_TIME_KW, myTimeNow );
             addKeyVal( regParam, RULE_EXE_TIME_KW, myTimeNext );
-            status = rsRuleExecMod( rsComm, &ruleExecModInp );
+            status = rcRuleExecMod( rcComm, &ruleExecModInp );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "%s:%d - rcRuleExecMod failed %d", __FUNCTION__, __LINE__, status );
+            }
         }
     }
     else if ( status1 == 2 ) {
         /* entry remove  */
         rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
-        status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+        status = rcRuleExecDel( rcComm, &ruleExecDelInp );
+        if( status < 0 ) {
+            rodsLog( LOG_ERROR, "%s:%d - rcRuleExecDel failed %d", __FUNCTION__, __LINE__, status );
+        }
     }
     else if ( status1 == 3 ) {
         addKeyVal( regParam, RULE_EXE_STATUS_KW, "" );
         addKeyVal( regParam, RULE_LAST_EXE_TIME_KW, myTimeNow );
         addKeyVal( regParam, RULE_EXE_TIME_KW, myTimeNext );
         addKeyVal( regParam, RULE_EXE_FREQUENCY_KW, delay );
-        status = rsRuleExecMod( rsComm, &ruleExecModInp );
+        status = rcRuleExecMod( rcComm, &ruleExecModInp );
+        if( status < 0 ) {
+            rodsLog( LOG_ERROR, "%s:%d - rcRuleExecMod failed %d", __FUNCTION__, __LINE__, status );
+        }
     }
     else if ( status1 == 4 ) {
         if ( opStatus == 0 ) {
             /* entry remove  */
             rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
-            status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+            status = rcRuleExecDel( rcComm, &ruleExecDelInp );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "%s:%d - rcRuleExecDel failed %d", __FUNCTION__, __LINE__, status );
+            }
         }
         else {
             addKeyVal( regParam, RULE_EXE_STATUS_KW, "" );
             addKeyVal( regParam, RULE_LAST_EXE_TIME_KW, myTimeNow );
             addKeyVal( regParam, RULE_EXE_TIME_KW, myTimeNext );
             addKeyVal( regParam, RULE_EXE_FREQUENCY_KW, delay );
-            status = rsRuleExecMod( rsComm, &ruleExecModInp );
+            status = rcRuleExecMod( rcComm, &ruleExecModInp );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "%s:%d - rcRuleExecMod failed %d", __FUNCTION__, __LINE__, status );
+            }
         }
     }
     if ( regParam->len > 0 ) {
@@ -346,7 +365,6 @@ regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
     addKeyVal( regParam, RULE_EXE_STATUS_KW, exeStatus );
     status = rsRuleExecMod( rsComm, &ruleExecModInp );
 
-
     clearKeyVal( regParam );
 
     if ( status < 0 ) {
@@ -373,9 +391,8 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
     int thrInx;
 
     inx = -1;
-    while ( time( NULL ) <= endTime && ( thrInx = allocReThr( reExec ) ) >= 0 ) { // JMC - backport 4695
+    while ( time( NULL ) <= endTime && ( thrInx = allocReThr( reExec ) ) >= 0 ) {
         myRuleExecInp = &reExec->reExecProc[thrInx].ruleExecSubmitInp;
-        chkAndUpdateResc( rsComm );
         if ( ( inx = getNextQueuedRuleExec( genQueryOut, inx + 1,
                                             myRuleExecInp, reExec, jobType ) ) < 0 ) {
             /* no job to run */
@@ -409,116 +426,72 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
             continue;
         }
         else {
-#ifdef RE_EXEC_PROC
             if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
-                /* child. need to disconnect Rcat */
-
-                std::string zone_name;
-                irods::error ret = irods::get_server_property<
-                      std::string > (
-                          irods::CFG_ZONE_NAME,
-                          zone_name );
-                if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-                    return ret.code();
-
-                }
-                status = resetRcatHost(
-                             rsComm,
-                             MASTER_RCAT,
-                             zone_name.c_str() );
-                if ( LOCAL_HOST == status ) {
-                    std::string svc_role;
-                    irods::error ret = get_catalog_service_role(svc_role);
-                    if(!ret.ok()) {
-                        irods::log(PASS(ret));
-                        return ret.code();
-                    }
-
-                    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-                        resetRcat();
-                    }
-                }
-                /* this call doesn't come back */
-                execRuleExec( &reExec->reExecProc[thrInx] );
-#else
-            if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
-                status = postForkExecProc( rsComm,
-                                           &reExec->reExecProc[thrInx] );
-                cleanupAndExit( status );
-#endif
+                int status = postForkExecProc( &reExec->reExecProc[thrInx] );
+                exit( status );
             }
             else {
-#ifdef RE_SERVER_DEBUG
-                rodsLog( LOG_NOTICE,
-                         "runQueuedRuleExec: started proc %d, thrInx %d",
-                         reExec->reExecProc[thrInx].pid, thrInx );
-#endif
                 /* parent fall through here */
-                // r5676 - reExec->runCnt++;
                 continue;
             }
         }
     }
+
     if ( reExec->doFork == 1 ) {
         /* wait for all jobs to finish */
-        while ( reExec->runCnt + 1 >= reExec->maxRunCnt &&
-                waitAndFreeReThr( rsComm, reExec ) >= 0 ) {
-            ;    // JMC - backport 4695
+        bool wait_done  = false;
+        while ( !wait_done ) {
+            //if( reExec->runCnt + 1 >= reExec->maxRunCnt ) 
+            {
+                  int w = waitAndFreeReThr( rcComm, reExec );
+                  if( w >= 0 ) {
+                      continue;
+                  }
+                  else {
+                      wait_done = true;
+                  }
+            }
         }
     }
 
     return runCnt;
 }
 
-int
-postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
-    int status;
-
-    /* child. need to disconnect Rcat */
-    rodsServerHost_t *rodsServerHost = NULL;
-
-    std::string zone_name;
-    irods::error ret = irods::get_server_property<
-          std::string > (
-              irods::CFG_ZONE_NAME,
-              zone_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-
-    }
-
-    std::string svc_role;
-    ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
-        return ret.code();
-    }
-
-    if ( ( status = resetRcatHost( MASTER_RCAT, zone_name.c_str() ) )
-            == LOCAL_HOST ) {
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            resetRcat();
+int postForkExecProc( reExecProc_t * reExecProc ) {
+    rodsEnv env;
+    getRodsEnv(&env);
+    rcComm_t* rc_comm = nullptr;
+    while( !rc_comm ) {  
+        rc_comm = rcConnect(
+                      env.rodsHost,
+                      env.rodsPort,
+                      env.rodsUserName,
+                      env.rodsZone,
+                      NO_RECONN, NULL );
+        if(!rc_comm) {
+            rodsLog(
+                    LOG_ERROR,
+                    "rcConnect failedd");
         }
     }
-    if ( ( status = getAndConnRcatHost( rsComm, MASTER_RCAT,
-                                        zone_name.c_str(), &rodsServerHost ) ) == LOCAL_HOST ) {
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = connectRcat();
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "runQueuedRuleExec: connectRcat error. status=%d", status );
-            }
-        }
+
+    int status = clientLogin( rc_comm );
+    if( status < 0 ) {
+        rodsLog(
+                LOG_ERROR,
+                "clientLogin failed %d",
+                status );
+        return status;
     }
+
+
     seedRandom();
-    status = runRuleExec( reExecProc );
-    postProcRunRuleExec( rsComm, reExecProc );
-#ifdef RE_SERVER_DEBUG
-    rodsLog( LOG_NOTICE,
-             "runQueuedRuleExec: process %d exiting", getpid() );
-#endif
+
+    status = runRuleExec( rc_comm, reExecProc );
+    postProcRunRuleExec( rc_comm, reExecProc );
+
+    rcDisconnect( rc_comm );
+
     return reExecProc->status;
 }
 
@@ -553,7 +526,7 @@ execRuleExec( reExecProc_t * reExecProc ) {
 
 #ifndef windows_platform
 int
-initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
+initReExec( reExec_t * reExec ) {
     int i;
     ruleExecInfo_t rei;
     int status;
@@ -562,45 +535,24 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    // JMC :: do not bzero std::vector -- bzero( reExec, sizeof( reExec_t ) );
     // initialize
     reExec->runCnt = 0;
     reExec->maxRunCnt = 0;
     reExec->doFork = 0;
 
-    bzero( &rei, sizeof( ruleExecInfo_t ) ); /*  June 17. 2009 */
-
-    rei.rsComm = rsComm;
-    status = applyRule( "acSetReServerNumProc", NULL, &rei, NO_SAVE_REI );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "initReExec: rule acSetReServerNumProc error, status = %d",
-                 status );
-        reExec->maxRunCnt = 1;
-        reExec->doFork = 0;
+    int max_re_procs = 0;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
+                           max_re_procs );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
     }
-    else {
-        reExec->maxRunCnt = rei.status;
-        if ( reExec->maxRunCnt <= 0 ) {
-            reExec->maxRunCnt = 1;
-            reExec->doFork = 0;
-        }
-        else {
-            int max_re_procs = 0;
-            irods::error ret = irods::get_advanced_setting<int>(
-                                   irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
-                                   max_re_procs );
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
-                return ret.code();
-            }
 
-            if ( reExec->maxRunCnt > max_re_procs ) {
-                reExec->maxRunCnt = max_re_procs;
-            }
-            reExec->doFork = 1;
-        }
+    if ( reExec->maxRunCnt > max_re_procs ) {
+        reExec->maxRunCnt = max_re_procs;
     }
+    reExec->doFork = 1;
 
     reExec->reExecProc.resize( reExec->maxRunCnt );
 
@@ -612,16 +564,12 @@ initReExec( rsComm_t * rsComm, reExec_t * reExec ) {
             malloc( REI_BUF_LEN );
         reExec->reExecProc[i].ruleExecSubmitInp.packedReiAndArgBBuf->len =
             REI_BUF_LEN;
-
-        /* init reComm */
-        reExec->reExecProc[i].reComm.proxyUser = rsComm->proxyUser;
-        reExec->reExecProc[i].reComm.myEnv = rsComm->myEnv;
     }
     return 0;
 }
 
 int
-allocReThr( reExec_t * reExec ) { // JMC - backport 4695
+allocReThr( reExec_t * reExec ) {
     int i;
     int thrInx = SYS_NO_FREE_RE_THREAD;
 
@@ -635,34 +583,20 @@ allocReThr( reExec_t * reExec ) { // JMC - backport 4695
         return 0;
     }
 
-    // r5676 - reExec->runCnt = 0;		/* reset each time */
     for ( i = 0; i < reExec->maxRunCnt; i++ ) {
         if ( reExec->reExecProc[i].procExecState == RE_PROC_IDLE ) {
-            //if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
             thrInx = i;
             reExec->runCnt++;
             reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
             break;
-            //}
-            //    }
-            //    else {
-            //        reExec->runCnt++;
         }
     }
-    // r5679 - reExec->runCnt++; // r5676
-    // r5675 from hao
-    //if ( thrInx == SYS_NO_FREE_RE_THREAD ) {
-    //    thrInx = waitAndFreeReThr( rsComm, reExec ); // JMC - backport 4695
-    //}
-    //if ( thrInx >= 0 ) {
-    //    reExec->reExecProc[thrInx].procExecState = RE_PROC_RUNNING;
-    //}
 
     return thrInx;
 }
 
 int
-waitAndFreeReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 4695
+waitAndFreeReThr( rcComm_t * rcComm, reExec_t * reExec ) {
     pid_t childPid;
     int status = 0;
     int thrInx = SYS_NO_FREE_RE_THREAD;
@@ -685,8 +619,6 @@ waitAndFreeReThr( rsComm_t * rsComm, reExec_t * reExec ) { // JMC - backport 469
     }
     else {
         thrInx = matchPidInReExec( reExec, childPid );
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4695
         if ( thrInx >= 0 ) {
             genQueryOut_t *genQueryOut = NULL;
             int status1;
@@ -763,7 +695,7 @@ int
 freeReThr( reExec_t * reExec, int thrInx ) {
     bytesBuf_t *packedReiAndArgBBuf;
 
-    if ( NULL == reExec ) { // JMC cppcheck - nullptr
+    if ( NULL == reExec ) {
         rodsLog( LOG_ERROR, "freeReThr :: NULL reExec ptr" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -771,7 +703,6 @@ freeReThr( reExec_t * reExec, int thrInx ) {
     rodsLog( LOG_NOTICE,
              "freeReThr: thrInx %d, pid %d", thrInx, reExec->reExecProc[thrInx].pid );
 #endif
-    //if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR; // JMC cppcheck - redundant nullptr test
     if ( thrInx < 0 || thrInx >= reExec->maxRunCnt ) {
         rodsLog( LOG_ERROR, "freeReThr: Bad input thrInx %d", thrInx );
         return SYS_BAD_RE_THREAD_INX;
@@ -794,43 +725,61 @@ freeReThr( reExec_t * reExec, int thrInx ) {
     return 0;
 }
 
-int
-runRuleExec( reExecProc_t * reExecProc ) {
-    ruleExecSubmitInp_t *myRuleExec;
-    ruleExecInfoAndArg_t *reiAndArg = NULL;
-    rsComm_t *reComm;
-
-    if ( reExecProc == NULL ) { // JMC cppcheck - nullptr
-        rodsLog( LOG_ERROR, "runRuleExec: NULL reExecProc input" );
-        //reExecProc->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        return SYS_INTERNAL_NULL_INPUT_ERR;//reExecProc->status;
+int runRuleExec(
+    rcComm_t*     _comm,
+    reExecProc_t* _re_exec_proc ) {
+    if ( !_comm || !_re_exec_proc ) {
+        rodsLog(
+            LOG_ERROR,
+            "%s :: NULL input parameter",
+            __FUNCTION__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    reComm = &reExecProc->reComm;
-    myRuleExec = &reExecProc->ruleExecSubmitInp;
-
-    reExecProc->status = unpackReiAndArg( reComm, &reiAndArg,
-                                          myRuleExec->packedReiAndArgBBuf );
-
-    if ( reExecProc->status < 0 || NULL == reiAndArg ) { // JMC cppcheck - nullptr
-        rodsLog( LOG_ERROR,
-                 "runRuleExec: unpackReiAndArg of id %s failed, status = %d",
-                 myRuleExec->ruleExecId, reExecProc->status );
-        return reExecProc->status;
+    // unpack the rei to get the user information
+    ruleExecInfoAndArg_t* rei_and_arg = NULL;
+    int status = unpackStruct(
+                     _re_exec_proc->ruleExecSubmitInp.packedReiAndArgBBuf->buf,
+                     ( void ** ) &rei_and_arg,
+                     "ReiAndArg_PI",
+                     RodsPackTable,
+                     NATIVE_PROT );
+    if ( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "%s :: unpackStruct error. status = %d",
+            __FUNCTION__,
+            status );
+        return status;
     }
 
-    /* execute the rule */
-    reExecProc->status = applyRule( myRuleExec->ruleName,
-                                    reiAndArg->rei->msParamArray,
-                                    reiAndArg->rei, SAVE_REI );
+    // set the proxy user from the rei before deleagting to the agent
+    // following behavior from touchupPackedRei
+    _comm->proxyUser = *rei_and_arg->rei->uoic;
 
-    if ( reiAndArg->rei->status < 0 ) {
-        reExecProc->status = reiAndArg->rei->status;
-    }
-    freeRuleExecInfoStruct( reiAndArg->rei, FREE_MS_PARAM | FREE_DOINP );
-    free( reiAndArg );
+    exec_rule_expression_t exec_rule;
+    memset(&exec_rule,0,sizeof(exec_rule));
 
-    return reExecProc->status;
+    int packed_rei_len = _re_exec_proc->ruleExecSubmitInp.packedReiAndArgBBuf->len;
+    exec_rule.packed_rei_.len = packed_rei_len;
+    exec_rule.packed_rei_.buf = _re_exec_proc->ruleExecSubmitInp.packedReiAndArgBBuf->buf;
+
+    size_t rule_len = strlen(_re_exec_proc->ruleExecSubmitInp.ruleName);
+    exec_rule.rule_text_.buf = (char*)malloc(rule_len+1);
+    memset(exec_rule.rule_text_.buf,0,rule_len+1);
+    exec_rule.rule_text_.len = rule_len+1;
+    rstrcpy(
+        (char*)exec_rule.rule_text_.buf,
+        _re_exec_proc->ruleExecSubmitInp.ruleName,
+        rule_len);
+    exec_rule.params_ = rei_and_arg->rei->msParamArray;
+
+    status = rcExecRuleExpression(
+                     _comm,
+                     &exec_rule );
+    _re_exec_proc->status = status;
+    
+    return status;
 }
 
 int
@@ -914,30 +863,6 @@ matchRuleExecId( reExec_t * reExec, char * ruleExecIdStr,
 }
 
 int
-chkAndUpdateResc( rsComm_t * rsComm ) {
-    time_t curTime;
-    int status = 0;
-
-    curTime = time( NULL );
-
-    if ( LastRescUpdateTime > curTime ) {
-        LastRescUpdateTime = curTime;
-        return 0;
-    }
-
-    if ( curTime >= LastRescUpdateTime + RESC_UPDATE_TIME ) {
-        //status = updateResc (rsComm);
-        resc_mgr.init_from_catalog( rsComm );
-
-        LastRescUpdateTime = curTime;
-        return status;
-    }
-    else {
-        return 0;
-    }
-}
-
-int
 fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
                    char * exeTime, char * ruleExecId, char * reiFilePath, char * ruleName,
                    char * userName, char * exeAddress, char * exeFrequency, char * priority,
@@ -950,7 +875,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
     path p( ruleExecSubmitInp->reiFilePath );
     if ( !exists( p ) ) {
         status = UNIX_FILE_STAT_ERR - errno;
-        rodsLogError( LOG_ERROR, status, // JMC - backport 4557
+        rodsLogError( LOG_ERROR, status,
                       "fillExecSubmitInp: stat error for rei file %s, id %s rule %s",
                       ruleExecSubmitInp->reiFilePath, ruleExecId, ruleName );
 
@@ -980,7 +905,6 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
            ruleExecSubmitInp->packedReiAndArgBBuf->len );
     status = read( fd, ruleExecSubmitInp->packedReiAndArgBBuf->buf,
                    ruleExecSubmitInp->packedReiAndArgBBuf->len );
-
     close( fd );
     if ( status != ( int ) st_size ) {
         if ( status < 0 ) {
@@ -1014,9 +938,35 @@ fillExecSubmitInp( ruleExecSubmitInp_t * ruleExecSubmitInp,  char * exeStatus,
 }
 
 int
-reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
+reServerSingleExec( char * ruleExecId, int jobType ) {
+    rodsEnv env;
+    getRodsEnv(&env);
+
+    rcComm_t* rc_comm = nullptr;
+    while( !rc_comm ) {  
+        rc_comm = rcConnect(
+                env.rodsHost,
+                env.rodsPort,
+                env.rodsUserName,
+                env.rodsZone,
+                NO_RECONN, NULL );
+        if(!rc_comm) {
+            rodsLog(
+                    LOG_ERROR,
+                    "rcConnect failed %d");
+        }
+    }
+
+    int status = clientLogin( rc_comm );
+    if( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "clientLogin failed %d",
+            status );
+        return status;
+    }
+
     reExecProc_t reExecProc;
-    int status;
     sqlResult_t *ruleName, *reiFilePath, *userName, *exeAddress,
                 *exeTime, *exeFrequency, *priority, *lastExecTime, *exeStatus,
                 *estimateExeTime, *notificationAddr;
@@ -1024,25 +974,22 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
 
     bzero( &reExecProc, sizeof( reExecProc ) );
     /* init reComm */
-    reExecProc.reComm.proxyUser = rsComm->proxyUser;
-    reExecProc.reComm.myEnv = rsComm->myEnv;
     reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
         ( bytesBuf_t * ) calloc( 1, sizeof( bytesBuf_t ) );
     reExecProc.procExecState = RE_PROC_RUNNING;
     reExecProc.jobType = jobType;
 
-    status = getReInfoById( rsComm, ruleExecId, &genQueryOut );
+    status = getReInfoById( rc_comm, ruleExecId, &genQueryOut );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "reServerSingleExec: getReInfoById error for %s, status = %d",
                  ruleExecId, status );
+        rcDisconnect( rc_comm );
         return status;
     }
 
     bzero( &reExecProc, sizeof( reExecProc ) );
     /* init reComm */
-    reExecProc.reComm.proxyUser = rsComm->proxyUser;
-    reExecProc.reComm.myEnv = rsComm->myEnv;
     reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
         ( bytesBuf_t * ) calloc( 1, sizeof( bytesBuf_t ) );
     reExecProc.procExecState = RE_PROC_RUNNING;
@@ -1052,66 +999,77 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
                                          COL_RULE_EXEC_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_NAME failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
                                             COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for REI_FILE_PATH failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( userName = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for USER_NAME failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeAddress = getSqlResultByInx( genQueryOut,
                                            COL_RULE_EXEC_ADDRESS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_ADDRESS failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeTime = getSqlResultByInx( genQueryOut,
                                         COL_RULE_EXEC_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_TIME failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeFrequency = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_FREQUENCY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for RULE_EXEC_FREQUENCY failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( priority = getSqlResultByInx( genQueryOut,
                                          COL_RULE_EXEC_PRIORITY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for PRIORITY failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( lastExecTime = getSqlResultByInx( genQueryOut,
                           COL_RULE_EXEC_LAST_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for LAST_EXE_TIME failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( exeStatus = getSqlResultByInx( genQueryOut,
                                           COL_RULE_EXEC_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_STATUS failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( estimateExeTime = getSqlResultByInx( genQueryOut,
                              COL_RULE_EXEC_ESTIMATED_EXE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getResultByInx for ESTIMATED_EXE_TIME failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
     if ( ( notificationAddr = getSqlResultByInx( genQueryOut,
                               COL_RULE_EXEC_NOTIFICATION_ADDR ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for NOTIFICATION_ADDR failed" );
+        rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -1121,13 +1079,16 @@ reServerSingleExec( rsComm_t * rsComm, char * ruleExecId, int jobType ) {
                                 priority->value, estimateExeTime->value, notificationAddr->value );
 
     if ( status < 0 ) {
+        rcDisconnect( rc_comm );
         return status;
     }
     seedRandom();
-    status = runRuleExec( &reExecProc );
-    postProcRunRuleExec( rsComm, &reExecProc );
+    status = runRuleExec( rc_comm, &reExecProc );
+    postProcRunRuleExec( rc_comm, &reExecProc );
 
-    freeGenQueryOut( &genQueryOut ); // JMC - backport 4695
+    freeGenQueryOut( &genQueryOut );
+
+    rcDisconnect( rc_comm );
 
     return reExecProc.status;
 }

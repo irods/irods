@@ -1,10 +1,8 @@
 #include "rsApiHandler.hpp"
-#include "reFuncDefs.hpp"
 #include "rods.h"
-#include "reGlobalsExtern.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-
+#include "irods_ms_plugin.hpp"
 #include <curl/curl.h>
 
 #define MSO_OBJ_PUT_FAILED -1118000

@@ -18,12 +18,12 @@
 #include "dataObjLock.h" // JMC - backport 4604
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
 #include "icatHighLevelRoutines.hpp"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 
 #include "irods_hierarchy_parser.hpp"
 

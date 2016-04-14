@@ -40,6 +40,7 @@ def upgrade(irods_config):
     new_version['previous_version'] = irods_config.version
     l.debug('Upgrading from version %s to version %s.', new_version['previous_version']['irods_version'], new_version['irods_version'])
     previous_version_tuple = tuple(map(int, new_version['previous_version']['irods_version'].split('.')))
+
     if previous_version_tuple < (4, 2, 0):
         old_dir_to_new_dir_map = {
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
@@ -47,6 +48,7 @@ def upgrade(irods_config):
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'lockFileDir'): os.path.join(paths.irods_directory(), 'server', 'config', 'lockFileDir'),
             }
         for old_dir, new_dir in old_dir_to_new_dir_map.items():
+
             if os.path.isdir(old_dir):
                 for entry in os.listdir(old_dir):
                     old_path = os.path.join(old_dir, entry)

@@ -4,7 +4,7 @@
 /* See collCreate.h for a description of this API call.*/
 
 #include "rcMisc.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "collCreate.h"
 #include "rodsConnect.h"
 #include "rodsLog.h"

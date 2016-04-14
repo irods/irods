@@ -19,7 +19,7 @@
 #include "ruleExecDel.h"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
-#include "reSysDataObjOpr.hpp"
+//#include "reSysDataObjOpr.hpp"
 #include "miscUtil.h"
 #include "rsIcatOpr.hpp"
 #include "getHierarchyForResc.h"

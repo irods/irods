@@ -14,8 +14,8 @@
 #include "dataObjInpOut.h"
 #include "ruleExecSubmit.h"
 #include "rcGlobalExtern.h"
-#include "rsGlobalExtern.hpp"
-#include "reIn2p3SysRule.hpp"
+//#include "rsGlobalExtern.hpp"
+//#include "reIn2p3SysRule.hpp"
 
 int
 checkCollAccessPerm( rsComm_t *rsComm, char *collection, char *accessPerm );

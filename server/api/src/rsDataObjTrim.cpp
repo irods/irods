@@ -8,10 +8,10 @@
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
-#include "reGlobalsExtern.hpp"
-#include "reDefines.h"
+//#include "reGlobalsExtern.hpp"
+//#include "reDefines.h"
 #include "icatDefines.h"
-#include "reSysDataObjOpr.hpp"
+//#include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-

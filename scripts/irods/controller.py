@@ -46,6 +46,9 @@ class IrodsController(object):
         except IrodsWarning:
             l.warn('Warning encountered in validation:', exc_info=True)
 
+        if upgrade_configuration.requires_upgrade(self.config):
+            upgrade_configuration.upgrade(self.config)
+
         if self.get_binary_to_pids_dict():
             raise IrodsError('iRODS already running')
 

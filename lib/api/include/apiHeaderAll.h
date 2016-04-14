@@ -149,5 +149,6 @@
 
 #include "get_hier_from_leaf_id.h"
 #include "set_round_robin_context.h"
+#include "exec_rule_expression.h"
 
 #endif	// API_HEADER_ALL_H__

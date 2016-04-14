@@ -18,7 +18,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;

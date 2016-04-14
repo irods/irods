@@ -16,8 +16,8 @@
 #include "ruleExecSubmit.h"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
-#include "reIn2p3SysRule.hpp"
-#include "reSysDataObjOpr.hpp"
+//#include "reIn2p3SysRule.hpp"
+//#include "reSysDataObjOpr.hpp"
 
 /* definition for the flag in queRescGrp and queResc */
 #define BOTTOM_FLAG     0

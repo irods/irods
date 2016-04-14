@@ -78,6 +78,8 @@ namespace irods {
              */
             void capture_json( const std::string& );
 
+            error gather_values_for_key( const std::string&, std::vector<boost::any>& );
+
             /**
              * @brief Get a property from the map if it exists.  catch the exception in the case where
              * the template types may not match and return success/fail

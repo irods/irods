@@ -26,6 +26,7 @@ namespace irods {
             error load( const std::string& );
             error write( const std::string& );
             error write( );
+            error gather_values_for_key( const std::string&, std::vector<boost::any>& );
 
             bool has_entry(
                 const std::string& ); // key
@@ -82,6 +83,8 @@ namespace irods {
             }
 
         private:
+            error gather_values_for_key_impl( const std::string&, object_t&, std::vector<boost::any>&);
+            error gather_values_for_key_impl( const std::string&, array_t&, std::vector<boost::any>&);
             error load_json_object(
                 const std::string& ); // file name
 

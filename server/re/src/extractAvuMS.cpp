@@ -6,9 +6,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "rcMisc.h"
-#include "reFuncDefs.hpp"
+//#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"
 
@@ -20,6 +20,7 @@
 
 #include <regex.h>
 
+#include "irods_re_structs.hpp"
 
 extern char *__loc1;
 
@@ -108,7 +109,8 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     t = ( char* )malloc( tmplObjBuf->len + 1 );
     t[tmplObjBuf->len] = '\0';
     memcpy( t, tmplObjBuf->buf, tmplObjBuf->len );
-    tagValues = ( tagStruct_t* )mallocAndZero( sizeof( tagStruct_t ) );
+    tagValues = ( tagStruct_t* )malloc( sizeof( tagStruct_t ) );
+    memset(tagValues,0,sizeof(tagStruct_t));
     tagValues->len = 0;
     t1 = t;
     while ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
@@ -327,7 +329,8 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     t = ( char* )malloc( metaObjBuf->len + 1 );
     t[metaObjBuf->len] = '\0';
     memcpy( t, metaObjBuf->buf, metaObjBuf->len );
-    metaDataPairs = ( keyValPair_t* )mallocAndZero( sizeof( keyValPair_t ) );
+    metaDataPairs = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
+    memset(metaDataPairs,0,sizeof(keyValPair_t));
     t1 = t;
     for ( i = 0; i  < tagValues->len ; i++ ) {
         t1 = t;

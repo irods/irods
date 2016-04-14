@@ -9,8 +9,8 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+//#include "reGlobalsExtern.hpp"
+//#include "reFuncDefs.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -32,7 +32,9 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
-    rei2.doi = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
+    rei2.doi = ( dataObjInfo_t* )malloc( sizeof( dataObjInfo_t ) );
+    memset(rei2.doi,0,sizeof(dataObjInfo_t));
+
     snprintf( rei2.doi->objPath, sizeof( rei2.doi->objPath ), "%s", objPath );
 
     memset( &msParamArray, 0, sizeof( msParamArray ) );

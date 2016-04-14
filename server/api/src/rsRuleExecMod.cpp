@@ -4,7 +4,7 @@
 
 #include "miscServerFunct.hpp"
 #include "ruleExecMod.h"
-#include "reGlobalsExtern.hpp"
+//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "irods_log.hpp"
 #include "irods_configuration_keywords.hpp"

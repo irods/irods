@@ -18,16 +18,178 @@
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
-#include "filesystem.hpp"
+#include "objMetaOpr.hpp"
+#include "genQuery.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_get_full_path_for_config_file.hpp"
-#include "irods_server_rule_execution_manager_factory.hpp"
+
+#include "irods_re_plugin.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
+
+time_t LastRescUpdateTime;
+char *CurLogfileName = NULL;    /* the path of the current logfile */
+static time_t LogfileLastChkTime = 0;
+static time_t LastBrokenPipeTime = 0;
+static int BrokenPipeCnt = 0;
+void
+cleanupAndExit( int status ) {
+    rodsLog( LOG_NOTICE,
+             "Agent exiting with status = %d", status );
+
+    if ( status >= 0 ) {
+        exit( 0 );
+    }
+    else {
+        exit( 1 );
+    }
+}
+
+void
+signalExit( int ) {
+    rodsLog( LOG_NOTICE,
+             "caught a signal and exiting\n" );
+    cleanupAndExit( SYS_CAUGHT_SIGNAL );
+}
+
+char *
+getLogDir() {
+#ifndef windows_platform
+    char *myDir;
+
+    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
+        return myDir;
+    }
+    return DEF_LOG_DIR;
+#else
+    return iRODSNtServerGetLogDir;
+#endif
+}
+
+void
+getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
+#ifndef _WIN32
+    time_t myTime;
+    struct tm *mytm;
+    char *logfilePattern; // JMC - backport 4793
+    char *logfileIntStr;
+    int logfileInt;
+    int tm_mday = 1;
+    char logfileSuffix[MAX_NAME_LEN]; // JMC - backport 4793
+    char myLogDir[MAX_NAME_LEN];
+
+    /* Put together the full pathname of the logFile */
+
+    if ( logDir == NULL ) {
+        snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
+    }
+    else {
+        snprintf( myLogDir, MAX_NAME_LEN, "%-s", logDir );
+    }
+    *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
+
+    LogfileLastChkTime = myTime = time( 0 );
+    mytm = localtime( &myTime );
+    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
+            ( logfileInt = atoi( logfileIntStr ) ) < 1 ) {
+        logfileInt = DEF_LOGFILE_INT;
+    }
+
+    tm_mday = ( mytm->tm_mday / logfileInt ) * logfileInt + 1;
+    if ( tm_mday > mytm->tm_mday ) {
+        tm_mday -= logfileInt;
+    }
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4793
+    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
+        logfilePattern = DEF_LOGFILE_PATTERN;
+    }
+    mytm->tm_mday = tm_mday;
+    strftime( logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm );
+    sprintf( *logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix );
+    // =-=-=-=-=-=-=-
+
+
+#else /* for Windows */
+    char tmpstr[1024];
+    iRODSNtGetLogFilenameWithPath( tmpstr );
+    *logFile = _strdup( tmpstr );
+#endif
+}
+
+int
+logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
+    char *logFile = NULL;
+#ifdef SYSLOG
+    int logFd = 0;
+#else
+    int logFd;
+#endif
+
+    if ( runMode == SINGLE_PASS && logDir == NULL ) {
+        return 1;
+    }
+
+    if ( logFileName == NULL ) {
+        fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    getLogfileName( &logFile, logDir, logFileName );
+    if ( NULL == logFile ) { // JMC cppcheck - nullptr
+        fprintf( stderr, "logFileOpen: unable to open log file" );
+        return -1;
+    }
+
+#ifndef SYSLOG
+    logFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0666 );
+#endif
+    if ( logFd < 0 ) {
+        fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
+                 logFile, errno );
+        free( logFile );
+        return -1 * errno;
+    }
+
+    free( logFile );
+    return logFd;
+}
+
+void
+daemonize( int runMode, int logFd ) {
+#ifndef _WIN32
+    if ( runMode == SINGLE_PASS ) {
+        return;
+    }
+
+    if ( runMode == STANDALONE_SERVER ) {
+        if ( fork() ) {
+            exit( 0 );
+        }
+
+        if ( setsid() < 0 ) {
+            fprintf( stderr, "daemonize" );
+            perror( "cannot create a new session." );
+            exit( 1 );
+        }
+    }
+
+    close( 0 );
+    close( 1 );
+    close( 2 );
+
+    ( void ) dup2( logFd, 0 );
+    ( void ) dup2( logFd, 1 );
+    ( void ) dup2( logFd, 2 );
+    close( logFd );
+#endif
+}
+
+
 
 
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
@@ -38,7 +200,6 @@ int
 main( int argc, char **argv ) {
     int status;
     int c;
-    rsComm_t rsComm;
     int runMode = SERVER;
     int flagval = 0;
     char *logDir = NULL;
@@ -47,25 +208,14 @@ main( int argc, char **argv ) {
     char *ruleExecId = NULL;
     int jobType = 0;
 
-    irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
-
     ProcessType = RE_SERVER_PT;
-
-    //capture server properties
-    try {
-        irods::server_properties::instance().capture_if_needed();
-    }
-    catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
-        return e.code();
-    }
 
 #ifndef _WIN32
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
     signal( SIGUSR1, signalExit );
-    signal( SIGPIPE, rsPipeSignalHandler );
+    signal( SIGPIPE, signalExit );
     /* XXXXX switched to SIG_DFL for embedded python. child process
      * went away. But probably have to call waitpid.
      * signal(SIGCHLD, SIG_IGN); */
@@ -122,48 +272,30 @@ main( int argc, char **argv ) {
             break;
         default:
             usage( argv[0] );
-            exit( 1 );
+            return 1;
         }
     }
 
-    status = initRsComm( &rsComm );
-
-    if ( status < 0 ) {
-        cleanupAndExit( status );
-    }
-
     if ( ( logFd = logFileOpen( runMode, logDir, RULE_EXEC_LOGFILE ) ) < 0 ) {
-        exit( 1 );
+        return 1;
     }
 
     daemonize( runMode, logFd );
 
-    irods::error ret = setRECacheSaltFromEnv();
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "irodsReServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
-        exit( 1 );
-    }
-
-    status = initAgent( RULE_ENGINE_INIT_CACHE, &rsComm );
-    if ( status < 0 ) {
-        cleanupAndExit( status );
-    }
-
     if ( ruleExecId != NULL ) {
-        status = reServerSingleExec( &rsComm, ruleExecId, jobType );
+        status = reServerSingleExec( ruleExecId, jobType );
         if ( status >= 0 ) {
-            exit( 0 );
+            return 0;
         }
         else {
-            exit( 1 );
+            return 1;
         }
     }
     else {
-        reServerMain( &rsComm, logDir );
+        reServerMain( logDir );
     }
-    cleanupAndExit( status );
 
-    exit( 0 );
+    return 0;
 }
 
 int usage( char *prog ) {
@@ -175,20 +307,123 @@ int usage( char *prog ) {
     return 0;
 }
 
+int
+closeQueryOut( rcComm_t* _comm, genQueryOut_t *genQueryOut ) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *junk = NULL;
+    int status;
+
+    if ( genQueryOut->continueInx <= 0 ) {
+        return 0;
+    }
+
+    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+
+    /* maxRows = 0 specifies that the genQueryOut should be closed */
+    genQueryInp.maxRows = 0;;
+    genQueryInp.continueInx = genQueryOut->continueInx;
+
+    status = rcGenQuery( _comm, &genQueryInp, &junk );
+
+    return status;
+}
+
+int
+chkLogfileName( const char *logDir, const char *logFileName ) {
+    time_t myTime;
+    char *logFile = NULL;
+    int i;
+
+    myTime = time( 0 );
+    if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
+        /* not time yet */
+        return 0;
+    }
+
+    getLogfileName( &logFile, logDir, logFileName );
+
+    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
+        free( logFile );
+        return 0;
+    }
+
+    /* open the logfile */
+
+    if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
+        fprintf( stderr, "Unable to open logFile %s\n", logFile );
+        free( logFile );
+        return -1;
+    }
+    else {
+        lseek( i, 0, SEEK_END );
+    }
+
+    if ( CurLogfileName != NULL ) {
+        free( CurLogfileName );
+    }
+
+    CurLogfileName = logFile;
+
+    close( 0 );
+    close( 1 );
+    close( 2 );
+    ( void ) dup2( i, 0 );
+    ( void ) dup2( i, 1 );
+    ( void ) dup2( i, 2 );
+    ( void ) close( i );
+
+    return 0;
+}
+
+
+
 void
-reServerMain( rsComm_t *rsComm, char* logDir ) {
-    int status = 0;
+reServerMain( char* logDir ) {
+
     genQueryOut_t *genQueryOut = NULL;
     time_t endTime;
     int runCnt;
     reExec_t reExec;
-    int repeatedQueryErrorCount = 0; // JMC - backport 4520
-
-    initReExec( rsComm, &reExec );
+    int repeatedQueryErrorCount = 0;
+    
+    initReExec( &reExec );
     LastRescUpdateTime = time( NULL );
+
+    int re_exec_time = RE_SERVER_EXEC_TIME;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_RE_SERVER_EXEC_TIME,
+                           re_exec_time );
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
 
     try {
         while ( true ) {
+            rodsEnv env;
+            getRodsEnv(&env);
+            rcComm_t* rc_comm = nullptr;
+              rc_comm = rcConnect(
+                      env.rodsHost,
+                      env.rodsPort,
+                      env.rodsUserName,
+                      env.rodsZone,
+                      NO_RECONN, NULL );
+              if(!rc_comm) {
+                  rodsLog(
+                          LOG_ERROR,
+                          "rcConnect failed %d");
+                  continue;
+              }
+
+            int status = clientLogin( rc_comm );
+            if( status < 0 ) {
+                rodsLog(
+                    LOG_ERROR,
+                    "clientLogin failed %d",
+                    status );
+                continue; 
+            }
+
 
 #ifndef windows_platform
 #ifndef SYSLOG
@@ -198,8 +433,7 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
             rodsLog(
                 LOG_NOTICE,
                 "reServerMain: checking the queue for jobs" );
-            chkAndResetRule();
-            status = getReInfo( rsComm, &genQueryOut );
+            status = getReInfo( rc_comm, &genQueryOut );
             if ( status < 0 ) {
                 if ( status != CAT_NO_ROWS_FOUND ) {
                     rodsLog( LOG_ERROR,
@@ -208,42 +442,52 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
                 else {   // JMC - backport 4520
                     repeatedQueryErrorCount++;
                 }
-                reSvrSleep( rsComm );
+                rcDisconnect( rc_comm );
+                reSvrSleep( );
                 continue;
             }
             else {   // JMC - backport 4520
                 repeatedQueryErrorCount = 0;
             }
+            
             endTime = time( NULL ) + RE_SERVER_EXEC_TIME;
-            runCnt = runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime, 0 );
+            runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
+
             if ( runCnt > 0 ||
                     ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
                 /* need to refresh */
-                svrCloseQueryOut( rsComm, genQueryOut );
+                closeQueryOut( rc_comm, genQueryOut );
                 freeGenQueryOut( &genQueryOut );
-                status = getReInfo( rsComm, &genQueryOut );
+                status = getReInfo( rc_comm, &genQueryOut );
                 if ( status < 0 ) {
-                    reSvrSleep( rsComm );
+                    rcDisconnect( rc_comm );
+                    reSvrSleep( );
                     continue;
                 }
             }
 
             /* run the failed job */
-
-            runCnt =
-                runQueuedRuleExec( rsComm, &reExec, &genQueryOut, endTime,
-                                   RE_FAILED_STATUS );
-            svrCloseQueryOut( rsComm, genQueryOut );
+            runCnt = runQueuedRuleExec(
+                         rc_comm,
+                         &reExec,
+                         &genQueryOut,
+                         endTime,
+                         RE_FAILED_STATUS );
+            closeQueryOut( rc_comm, genQueryOut );
             freeGenQueryOut( &genQueryOut );
             if ( runCnt > 0 ||
                     ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+                rcDisconnect( rc_comm );
                 continue;
             }
             else {
                 /* nothing got run */
-                reSvrSleep( rsComm );
+                reSvrSleep( );
             }
-        }
+        
+            rcDisconnect( rc_comm );
+
+        } // while
 
         rodsLog(
             LOG_NOTICE,
@@ -254,214 +498,21 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
         const char* what = e_.what();
         std::cerr << what << std::endl;
         return;
-
     }
 
-}
+} // reServerMain
 
-int
-reSvrSleep( rsComm_t *rsComm ) {
-    rodsServerHost_t *rodsServerHost = NULL;
-
-    std::string zone_name;
-    irods::error ret = irods::get_server_property<
-          std::string > (
-              irods::CFG_ZONE_NAME,
-              zone_name );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-
-    }
-    std::string svc_role;
-    ret = get_catalog_service_role(svc_role);
+int reSvrSleep( ) {
+    int re_sleep_time = RE_SERVER_SLEEP_TIME;
+    irods::error ret = irods::get_advanced_setting<int>(
+                           irods::CFG_RE_SERVER_SLEEP_TIME,
+                           re_sleep_time );
     if(!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();
     }
 
-    int status = disconnRcatHost( MASTER_RCAT, zone_name.c_str() );
-    if ( status == LOCAL_HOST ) {
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = disconnectRcat();
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "reSvrSleep: disconnectRcat error. status = %d", status );
-            }
-        }
-    }
-    rodsSleep( RE_SERVER_SLEEP_TIME, 0 );
+    rodsSleep( re_sleep_time, 0 );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, zone_name.c_str(), &rodsServerHost );
-    if ( status == LOCAL_HOST ) {
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = connectRcat();
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "reSvrSleep: connectRcat error. status = %d", status );
-            }
-        }
-    }
-    return status;
+    return 0;
 }
-
-irods::error capture_rulesets(
-    std::string& _res,
-    std::string& _fnm,
-    std::string& _dvm ) {
-    typedef irods::configuration_parser::array_t  array_t;
-
-    array_t prop_arr;
-    irods::error ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_RULEBASE_SET_KW,
-              prop_arr );
-
-    std::string prop_str;
-    if ( ret.ok() ) {
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                _res += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "failed to cast rule base file name entry to string" );
-                continue;
-            }
-            _res += ",";
-        }
-
-        _res = _res.substr( 0, _res.size() - 1 );
-
-    }
-
-    ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
-              prop_arr );
-    if ( ret.ok() ) {
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                _fnm += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "failed to cast rule function file name entry to string" );
-                continue;
-            }
-            _fnm += ",";
-        }
-
-        _fnm = _fnm.substr( 0, _fnm.size() - 1 );
-
-    }
-
-    ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
-              prop_arr );
-    if ( ret.ok() ) {
-        for ( size_t i = 0;
-                i < prop_arr.size();
-                ++i ) {
-            try {
-                _dvm += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
-            }
-            catch ( boost::bad_any_cast& _e ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "failed to cast rule data variable file name entry to string" );
-                continue;
-            }
-            _dvm += ",";
-        }
-
-        _dvm = _dvm.substr( 0, _dvm.size() - 1 );
-
-    }
-
-    return SUCCESS();
-
-} // capture_rulesets
-
-int
-chkAndResetRule() {
-    int status = 0;
-
-    std::string re_str, fnm_str, dvm_str;
-    irods::error ret = capture_rulesets(
-                           re_str,
-                           fnm_str,
-                           dvm_str );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    /* get max timestamp */
-    char fn[MAX_NAME_LEN];
-    char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
-    snprintf( r2, sizeof( r2 ), "%s", re_str.c_str() );
-    uint mtime = 0;
-
-    std::string re_full_path;
-    while ( strlen( r2 ) > 0 ) {
-        rSplitStr( r2, r1, NAME_LEN, r3, RULE_SET_DEF_LENGTH, ',' );
-        getRuleBasePath( r1, fn );
-
-        re_full_path = fn;
-        path p( re_full_path );
-        if ( !exists( p ) ) {
-            status = UNIX_FILE_STAT_ERR - errno;
-            rodsLog( LOG_ERROR,
-                     "chkAndResetRule: unable to read rule config file %s, status = %d",
-                     re_full_path.c_str(), status );
-            return status;
-        }
-
-        const uint mt = ( uint ) last_write_time( p );
-        if ( mt > mtime ) {
-            mtime = mt;
-        }
-        snprintf( r2, sizeof( r2 ), "%s", r3 );
-    }
-
-    if ( CoreIrbTimeStamp == 0 ) {
-        /* first time */
-        CoreIrbTimeStamp = mtime;
-        return 0;
-    }
-
-    if ( mtime > CoreIrbTimeStamp ) {
-        /* file has been changed */
-        rodsLog(
-            LOG_NOTICE,
-            "chkAndResetRule: reconf file %s has been changed. re-initializing",
-            re_full_path.c_str() );
-        CoreIrbTimeStamp = mtime;
-        clearCoreRule();
-        /* The shared memory cache may have already been updated, do not force reload */
-        status = initRuleEngine(
-                     RULE_ENGINE_TRY_CACHE,
-                     NULL,
-                     ( char* )re_str.c_str(),
-                     ( char* )dvm_str.c_str(),
-                     ( char* )fnm_str.c_str() );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "chkAndResetRule: initRuleEngine error, status = %d", status );
-        }
-    }
-
-    return status;
-
-}
+ 

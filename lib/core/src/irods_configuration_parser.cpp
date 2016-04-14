@@ -193,4 +193,61 @@ namespace irods {
                std::string > ( _v );
     }
 
+    error configuration_parser::gather_values_for_key_impl(
+        const std::string&       _key,
+        array_t&           _arr,
+        std::vector<boost::any>& _values ) {
+        for( auto itr : _arr ) {
+            error ret = gather_values_for_key_impl(
+                            _key,
+                            itr,
+                            _values);
+            if(!ret.ok()) {
+                irods::log(PASS(ret));
+            }
+        }
+
+        return SUCCESS();
+    }
+
+    error configuration_parser::gather_values_for_key_impl(
+        const std::string&       _key,
+        object_t&          _obj,
+        std::vector<boost::any>& _values ) {
+
+        for( auto itr : _obj ) {
+            if( _key == itr.first ) {
+                _values.push_back(itr.second);
+            }/*
+            else if(itr.second.type() == typeid(object_t)) {
+                error ret = gather_values_for_key_impl(
+                                _key,
+                                boost::any_cast<object_t>(itr.second),
+                                _values);
+                if(!ret.ok()) {
+                    irods::log(PASS(ret));
+                }
+            }*/
+            else if(itr.second.type() == typeid(array_t)) {
+                array_t arr = boost::any_cast<array_t>(itr.second);
+                error ret = gather_values_for_key_impl(
+                                _key,
+                                arr, 
+                                _values);
+                if(!ret.ok()) {
+                    irods::log(PASS(ret));
+                }
+            }
+
+        }
+        return SUCCESS();
+
+    }
+
+    error configuration_parser::gather_values_for_key(
+        const std::string&       _key,
+        std::vector<boost::any>& _values ) {
+        return gather_values_for_key_impl( _key, root_, _values ); 
+    }
+
 }; // namespace irods
