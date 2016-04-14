@@ -709,23 +709,14 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/rsApiHandler.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsLog.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/rsRe.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/xmsgLib.cpp
   ${CMAKE_SOURCE_DIR}/server/drivers/src/fileDriver.cpp
   ${CMAKE_SOURCE_DIR}/server/icat/src/icatHighLevelRoutines.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/arithmetics.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/cache.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/configuration.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/conversion.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/datetime.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/extractAvuMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/filesystem.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/functions.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/genQueryMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/icatAdminMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/icatGeneralMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/index.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_ms_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_re_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_re_serialization.cpp
@@ -733,27 +724,13 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/locks.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/mailMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/miscMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/msiHelper.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/nre.reHelpers1.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/nre.reHelpers2.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/nre.reLib1.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/nre.ruleAdminMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/nre.systemMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/parser.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/printMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reIn2p3SysRule.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reNaraMetaData.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/reStruct.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reSysDataObjOpr.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/reVariableMap.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/reVariableMap.gen.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/restructs.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/rules.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/sharedmemory.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/typing.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/utils.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/xmsgMS.cpp
   )
 
@@ -1255,7 +1232,7 @@ set(
 
 set(
   IRODS_MAIN_EXECUTABLE_IRODSXMSGSERVER_SOURCES
-  ${CMAKE_SOURCE_DIR}/iRODS/server/core/src/irodsXmsgServer.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irodsXmsgServer.cpp
   )
 
 set(
@@ -1339,7 +1316,7 @@ endforeach()
 
 add_executable(
     irodsReServer
-    ${CMAKE_SOURCE_DIR}/iRODS/server/core/src/irodsReServer.cpp
+    ${CMAKE_SOURCE_DIR}/server/core/src/irodsReServer.cpp
     )
 target_link_libraries(
     irodsReServer
@@ -1366,15 +1343,15 @@ target_link_libraries(
 target_include_directories(
     irodsReServer
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/iRODS/server/re/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/drivers/include
-    ${CMAKE_SOURCE_DIR}/iRODS/server/icat/include
-    ${CMAKE_BINARY_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/core/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/hasher/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/api/include
-    ${CMAKE_SOURCE_DIR}/iRODS/lib/rbudp/include
+    ${CMAKE_SOURCE_DIR}/server/re/include
+    ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/drivers/include
+    ${CMAKE_SOURCE_DIR}/server/icat/include
+    ${CMAKE_BINARY_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/hasher/include
+    ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/lib/rbudp/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
