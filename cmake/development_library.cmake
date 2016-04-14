@@ -193,6 +193,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/endTransaction.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/execCmd.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/execMyRule.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/exec_rule_expression.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileChksum.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileChmod.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileClose.h

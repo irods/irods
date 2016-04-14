@@ -281,22 +281,21 @@ static int carryOverMsParam(
  * \endcond
 **/
 int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
-    int i;
+    int i = 0;
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;
     char tmpStr[LONG_NAME_LEN];
-    char tmpStr1[MAX_COND_LEN];
     
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
     execMyRuleInp.condInput.len = 0;
     rstrcpy( execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN );
     rstrcpy( tmpStr, ( char * ) mPD->inOutStruct, LONG_NAME_LEN );
 
-    //  i = evaluateExpression( tmpStr, tmpStr1, rei );
-    if ( i < 0 ) {
-        return i;
-    }
+    //i = evaluateExpression( tmpStr, tmpStr1, rei );
+    //if ( i < 0 ) {
+    //    return i;
+    //}
     //parseHostAddrStr( tmpStr1, &execMyRuleInp.addr );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
 
@@ -324,8 +323,6 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
 }
 
 int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
-
-    int i;
     ruleExecDelInp_t ruleExecDelInp;
 
     RE_TEST_MACRO( "    Calling recover_delayExec" );
@@ -345,7 +342,7 @@ int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
        return SYS_INTERNAL_NULL_INPUT_ERR; 
     }
 
-    return i;
+    return 0;
 
 }
 

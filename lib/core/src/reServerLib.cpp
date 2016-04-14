@@ -30,8 +30,28 @@
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
+int closeQueryOut( rcComm_t *rsComm, genQueryOut_t *genQueryOut ) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *junk = NULL;
+    int status;
+
+    if ( genQueryOut->continueInx <= 0 ) {
+        return 0;
+    }
+
+    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+
+    /* maxRows = 0 specifies that the genQueryOut should be closed */
+    genQueryInp.maxRows = 0;;
+    genQueryInp.continueInx = genQueryOut->continueInx;
+
+    status = rcGenQuery( rsComm, &genQueryInp, &junk );
+
+    return status;
+}
+
 int
-getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
+getReInfo( rcComm_t *rcComm, genQueryOut_t **genQueryOut ) {
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -52,7 +72,7 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     *genQueryOut = NULL;
-    int status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
+    int status =  rcGenQuery( rcComm, &genQueryInp, genQueryOut );
     clearGenQueryInp( &genQueryInp );
 
     if ( status < 0 ) {
@@ -60,13 +80,13 @@ getReInfo( rsComm_t *rsComm, genQueryOut_t **genQueryOut ) {
         *genQueryOut = NULL;
     }
     else if ( *genQueryOut != NULL ) {
-        svrCloseQueryOut( rsComm, *genQueryOut );
+        closeQueryOut( rcComm, *genQueryOut );
     }
     return status;
 }
 
 int
-getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut ) {
+getReInfoById( rcComm_t *rcComm, char *ruleExecId, genQueryOut_t **genQueryOut ) {
     genQueryInp_t genQueryInp;
     char tmpStr[NAME_LEN];
     int status;
@@ -91,7 +111,7 @@ getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut )
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    status =  rsGenQuery( rsComm, &genQueryInp, genQueryOut );
+    status =  rcGenQuery( rcComm, &genQueryInp, genQueryOut );
 
     clearGenQueryInp( &genQueryInp );
 
@@ -244,7 +264,7 @@ getNextQueuedRuleExec( genQueryOut_t **inGenQueryOut,
 }
 
 int
-modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
+modExeInfoForRepeat( rcComm_t *rcComm, char *ruleExecId, char* pastTime,
                      char *delay, int opStatus ) {
     keyValPair_t *regParam;
     int status = 0;
@@ -285,7 +305,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
         if ( opStatus == 0 ) {
             /* entry remove  */
             rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
-            status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+            status = rcRuleExecDel( rcComm, &ruleExecDelInp );
         }
         else {
             addKeyVal( regParam, RULE_EXE_STATUS_KW, "" );
@@ -341,7 +361,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "modExeInfoForRepeat: rsRuleExecMod/rsRuleExecDel Error of id %s failed, status = %d",
+                 "modExeInfoForRepeat: rcRuleExecMod/rcRuleExecDel Error of id %s failed, status = %d",
                  ruleExecId, status );
     }
     else {
@@ -355,7 +375,7 @@ modExeInfoForRepeat( rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 }
 
 int
-regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
+regExeStatus( rcComm_t *rcComm, char *ruleExecId, char *exeStatus ) {
     keyValPair_t *regParam;
     ruleExecModInp_t ruleExecModInp;
     int status;
@@ -363,13 +383,13 @@ regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
     memset( regParam, 0, sizeof( keyValPair_t ) );
     rstrcpy( ruleExecModInp.ruleId, ruleExecId, NAME_LEN );
     addKeyVal( regParam, RULE_EXE_STATUS_KW, exeStatus );
-    status = rsRuleExecMod( rsComm, &ruleExecModInp );
+    status = rcRuleExecMod( rcComm, &ruleExecModInp );
 
     clearKeyVal( regParam );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "regExeStatus: rsRuleExecMod of id %s failed, status = %d",
+                 "regExeStatus: rcRuleExecMod of id %s failed, status = %d",
                  ruleExecId, status );
     }
 
@@ -383,7 +403,7 @@ regExeStatus( rsComm_t *rsComm, char *ruleExecId, char *exeStatus ) {
  */
 
 int
-runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
+runQueuedRuleExec( rcComm_t *rcComm, reExec_t *reExec,
                    genQueryOut_t **genQueryOut, time_t endTime, int jobType ) {
     int inx, status;
     ruleExecSubmitInp_t *myRuleExecInp;
@@ -404,7 +424,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
         }
 
         /* mark running */
-        status = regExeStatus( rsComm, myRuleExecInp->ruleExecId,
+        status = regExeStatus( rcComm, myRuleExecInp->ruleExecId,
                                RE_RUNNING );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
@@ -421,7 +441,7 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR, "execRuleExec failed in runQueuedRuleExec with status %d", status );
             }
-            postProcRunRuleExec( rsComm, &reExec->reExecProc[thrInx] );
+            postProcRunRuleExec( rcComm, &reExec->reExecProc[thrInx] );
             freeReThr( reExec, thrInx );
             continue;
         }
@@ -528,8 +548,6 @@ execRuleExec( reExecProc_t * reExecProc ) {
 int
 initReExec( reExec_t * reExec ) {
     int i;
-    ruleExecInfo_t rei;
-    int status;
 
     if ( reExec == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -537,10 +555,10 @@ initReExec( reExec_t * reExec ) {
 
     // initialize
     reExec->runCnt = 0;
-    reExec->maxRunCnt = 0;
-    reExec->doFork = 0;
+    reExec->maxRunCnt = 4;
+    reExec->doFork = 1;
 
-    int max_re_procs = 0;
+        int max_re_procs = 0;
     irods::error ret = irods::get_advanced_setting<int>(
                            irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
                            max_re_procs );
@@ -625,7 +643,7 @@ waitAndFreeReThr( rcComm_t * rcComm, reExec_t * reExec ) {
             reExecProc_t *reExecProc = &reExec->reExecProc[thrInx];
             char *ruleExecId = reExecProc->ruleExecSubmitInp.ruleExecId;
 
-            status1 = getReInfoById( rsComm, ruleExecId, &genQueryOut );
+            status1 = getReInfoById( rcComm, ruleExecId, &genQueryOut );
             if ( status1 >= 0 ) {
                 sqlResult_t *exeFrequency, *exeStatus;
                 if ( ( exeFrequency = getSqlResultByInx( genQueryOut,
@@ -654,7 +672,7 @@ waitAndFreeReThr( rcComm_t * rcComm, reExec_t * reExec ) {
                          * be core dump */
                         if ( ( reExecProc->jobType & RE_FAILED_STATUS ) == 0 ) {
                             /* first time. just mark it RE_FAILED */
-                            regExeStatus( rsComm, ruleExecId, RE_FAILED );
+                            regExeStatus( rcComm, ruleExecId, RE_FAILED );
                         }
                         else {
                             ruleExecDelInp_t ruleExecDelInp;
@@ -662,7 +680,7 @@ waitAndFreeReThr( rcComm_t * rcComm, reExec_t * reExec ) {
                                      "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
                                      ruleExecId );
                             rstrcpy( ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN );
-                            status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+                            status = rcRuleExecDel( rcComm, &ruleExecDelInp );
                         }
                     } // r5676
                 }
@@ -783,7 +801,7 @@ int runRuleExec(
 }
 
 int
-postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
+postProcRunRuleExec( rcComm_t * rcComm, reExecProc_t * reExecProc ) {
     int status = 0;
     int savedStatus = 0;
     ruleExecDelInp_t ruleExecDelInp;
@@ -795,7 +813,7 @@ postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
         rodsLog( LOG_NOTICE, "postProcRunRuleExec: exec of freq: %s",
                  myRuleExecInp->exeFrequency );
 
-        savedStatus = modExeInfoForRepeat( rsComm, myRuleExecInp->ruleExecId,
+        savedStatus = modExeInfoForRepeat( rcComm, myRuleExecInp->ruleExecId,
                                            myRuleExecInp->exeTime, myRuleExecInp->exeFrequency,
                                            reExecProc->status );
     }
@@ -805,7 +823,7 @@ postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
                  myRuleExecInp->ruleExecId, reExecProc->status );
         if ( ( reExecProc->jobType & RE_FAILED_STATUS ) == 0 ) {
             /* first time. just mark it RE_FAILED */
-            regExeStatus( rsComm, myRuleExecInp->ruleExecId, RE_FAILED );
+            regExeStatus( rcComm, myRuleExecInp->ruleExecId, RE_FAILED );
         }
         else {
 
@@ -815,10 +833,10 @@ postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
                      myRuleExecInp->ruleExecId, myRuleExecInp->ruleName );
             rstrcpy( ruleExecDelInp.ruleExecId, myRuleExecInp->ruleExecId,
                      NAME_LEN );
-            status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+            status = rcRuleExecDel( rcComm, &ruleExecDelInp );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "postProcRunRuleExec: rsRuleExecDel failed for %s, stat=%d",
+                         "postProcRunRuleExec: rcRuleExecDel failed for %s, stat=%d",
                          myRuleExecInp->ruleExecId, status );
             }
         }
@@ -828,10 +846,10 @@ postProcRunRuleExec( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
                  NAME_LEN );
         rodsLog( LOG_NOTICE,
                  "postProcRunRuleExec: exec of %s done", myRuleExecInp->ruleExecId );
-        status = rsRuleExecDel( rsComm, &ruleExecDelInp );
+        status = rcRuleExecDel( rcComm, &ruleExecDelInp );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
-                     "postProcRunRuleExec: rsRuleExecDel failed for %s, status = %d",
+                     "postProcRunRuleExec: rcRuleExecDel failed for %s, status = %d",
                      myRuleExecInp->ruleExecId, status );
         }
     }

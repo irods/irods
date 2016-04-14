@@ -34,8 +34,7 @@ using namespace boost::filesystem;
 time_t LastRescUpdateTime;
 char *CurLogfileName = NULL;    /* the path of the current logfile */
 static time_t LogfileLastChkTime = 0;
-static time_t LastBrokenPipeTime = 0;
-static int BrokenPipeCnt = 0;
+
 void
 cleanupAndExit( int status ) {
     rodsLog( LOG_NOTICE,

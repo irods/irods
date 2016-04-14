@@ -332,6 +332,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcFileOpen.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcDataObjPut.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcExecCmd.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rcExecRuleExpression.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileCreate.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcFileGetFsFreeSpace.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSpecificQuery.cpp
@@ -574,6 +575,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsEndTransaction.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsExecCmd.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsExecMyRule.cpp
+  ${CMAKE_SOURCE_DIR}/server/api/src/rsExecRuleExpression.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsFileChksum.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsFileChmod.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsFileClose.cpp
@@ -704,7 +706,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/objMetaOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/physPath.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/procLog.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/reServerLib.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsConnect.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsApiHandler.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
@@ -719,6 +720,9 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/icatGeneralMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_ms_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_re_plugin.cpp
+  ${CMAKE_SOURCE_DIR}/server/re/src/irods_re_structs.cpp
+  ${CMAKE_SOURCE_DIR}/server/re/src/reAction.cpp
+  ${CMAKE_SOURCE_DIR}/server/re/src/nre.systemMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/irods_re_serialization.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/keyValPairMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/locks.cpp
@@ -785,6 +789,7 @@ target_compile_options(irods_server PRIVATE -Wno-write-strings)
 
 set(
   IRODS_LIBIRODS_COMMON_SOURCES
+  ${CMAKE_SOURCE_DIR}/lib/core/src/reServerLib.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_error.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_exception.cpp
@@ -801,6 +806,7 @@ set(
 add_library(
   irods_common
   SHARED
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${IRODS_LIBIRODS_COMMON_SOURCES}
   )
 target_link_libraries(
@@ -820,6 +826,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
@@ -928,6 +935,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcFileRename.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcModAccessControl.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecSubmit.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rcExecRuleExpression.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecDel.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcExecMyRule.cpp
@@ -1017,6 +1025,7 @@ set(
 
 set(
   IRODS_LIB_CORE_SOURCES
+  ${CMAKE_SOURCE_DIR}/lib/core/src/reServerLib.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/apiHandler.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/bunUtil.cpp
