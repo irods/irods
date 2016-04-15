@@ -287,7 +287,7 @@ json_env_map = {'irods_host': 'irodsHost',
         'irods_encryption_algorithm': 'irodsEncryptionAlgorithm',
         'irods_default_hash_scheme': 'irodsDefaultHashScheme',
         'irods_match_hash_policy': 'irodsMatchHashPolicy'}
-json_env_map.update((val, key) for key, val in json_env_map.items())
+json_env_map.update(dict([(val, key) for key, val in json_env_map.items()]))
 
 def open_and_load_pre410_env_file(filename):
 
