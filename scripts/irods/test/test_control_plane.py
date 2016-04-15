@@ -84,27 +84,27 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
 
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = 'TEMPORARY__32byte_ctrl_plane_key'
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = '32_byte_server_control_plane_key'
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
 
-        output = self.admin_sessions[0].run_icommand(['irods-grid', 'status', '--all'])
+        stdout, _, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'status', '--all'])
+
+        assert_command('iadmin rmresc invalid_resc')
 
         # validate the json is correct
         try:
-            vals = json.loads(output[1])
+            vals = json.loads(stdout)
         except ValueError:
-            assert_command('iadmin rmresc invalid_resc')
             self.admin_sessions[0].environment_file_contents = env_backup
             raise
 
         # validate we have the error clause in JSON
         found = False
         for obj in vals['hosts']:
-            if 'response_message_is_empty_from' in obj:
+            if 'failed_to_connect' in obj:
                 found = True
 
-        assert_command('iadmin rmresc invalid_resc')
         self.admin_sessions[0].environment_file_contents = env_backup
 
         assert found
@@ -116,12 +116,15 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
 
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = 'TEMPORARY__32byte_ctrl_plane_key'
+        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = '32_byte_server_control_plane_key'
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
         self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
 
 
-        _, stdout, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'shutdown', '--all'])
+        stdout, _, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'shutdown', '--all'])
+        self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','SYS_HEADER_READ_LEN_ERR')
+
+        IrodsController().start()
 
         # validate the json is correct
         try:
@@ -134,11 +137,30 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         # validate we have the error clause in JSON
         found = False
         for obj in vals['hosts']:
-            if 'response_message_is_empty_from' in obj:
+            if 'failed_to_connect' in obj:
                 found = True
 
         assert_command('iadmin rmresc invalid_resc')
         self.admin_sessions[0].environment_file_contents = env_backup
-        IrodsController().start()
 
         assert found
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
