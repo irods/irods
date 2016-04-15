@@ -181,21 +181,6 @@ testEvalRule(*RES) {
 	assert("*a == 0", *RES);
 }
 
-testEvalRule2(*RES) {
-	*a = errorcode(evalrule("rule{msiAdmAddAppRuleStruct('add');testRule1();}"));
-	assert("*a == 0", *RES);
-}
-
-testAdmShowCoreRE(*RES) {
-	msiAdmShowCoreRE();
-	assert("true", *RES);
-}
-
-testAdmShowIRB(*RES) {
-	msiAdmShowIRB();
-	assert("true", *RES);
-}
-
 testStrTime(*RES) {
     *a = str(time);
     assert("true", *RES);
