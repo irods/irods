@@ -6,6 +6,7 @@ import logging
 import os
 import pprint
 import sys
+import tempfile
 import time
 
 try:
