@@ -52,13 +52,13 @@ def run_update(irods_config, cursor):
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID BIGINT;")
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT TEXT;")
 
-        database_connect.execute_sql_statement(cursor, "UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM r_coll_main WHERE R_COLL_MAIN.coll_name = ? OR R_COLL_MAIN.coll_name LIKE ?) SELECT DISTINCT d.data_id, (SELECT coll_name FROM coll WHERE coll.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id FROM R_DATA_MAIN d WHERE d.coll_id = ANY(ARRAY(SELECT coll_id FROM coll)) ORDER BY coll_name, d.data_name, d.data_repl_num' where alias='DataObjInCollReCur';")
+        database_connect.execute_sql_statement(cursor, "UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM R_COLL_MAIN WHERE R_COLL_MAIN.coll_name = ? OR R_COLL_MAIN.coll_name LIKE ?) SELECT DISTINCT d.data_id, (SELECT coll_name FROM coll WHERE coll.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id FROM R_DATA_MAIN d WHERE d.coll_id = ANY(ARRAY(SELECT coll_id FROM coll)) ORDER BY coll_name, d.data_name, d.data_repl_num' where alias='DataObjInCollReCur';")
 
-        rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_name from r_resc_main;").fetchall()
+        rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_name from R_RESC_MAIN;").fetchall()
         for row in rows:
             resc_id = row[0]
             resc_name = row[1]
-            database_connect.execute_sql_statement(cursor, "update r_data_main set resc_id=? where resc_hier=? or resc_hier like ?", resc_id, resc_name, ''.join(['%;', resc_name]))
+            database_connect.execute_sql_statement(cursor, "update R_DATA_MAIN set resc_id=? where resc_hier=? or resc_hier like ?", resc_id, resc_name, ''.join(['%;', resc_name]))
         if irods_config.database_config['catalog_database_type'] == 'postgres':
             database_connect.execute_sql_statement(cursor, "update r_resc_main as rdm set resc_parent = am.resc_id from ( select resc_name, resc_id from r_resc_main ) as am where am.resc_name = rdm.resc_parent;")
         elif irods_config.database_config['catalog_database_type'] == 'mysql':
@@ -66,7 +66,7 @@ def run_update(irods_config, cursor):
         else:
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN rdm set resc_parent = ( select resc_id from ( select resc_name, resc_id from R_RESC_MAIN ) am where am.resc_name = rdm.resc_parent );")
 
-        rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_children from r_resc_main where resc_children is not null;").fetchall()
+        rows = database_connect.execute_sql_statement(cursor, "select resc_id, resc_children from R_RESC_MAIN where resc_children is not null;").fetchall()
         context_expression = re.compile('^([^{}]*)\\{([^{}]*)\\}')
         for row in rows:
             resc_id = row[0]
