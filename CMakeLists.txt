@@ -1377,17 +1377,6 @@ target_compile_definitions(
     )
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
-
-
-
-
-
-
-
-
-
-
-
 add_executable(
   irodsPamAuthCheck
   ${CMAKE_SOURCE_DIR}/server/auth/src/irodsPamAuthCheck.cpp
@@ -1412,6 +1401,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/development_library.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/runtime_library.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/server.cmake)
 
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_COMPONENTS_GROUPING IGNORE)
 set(CPACK_PACKAGE_VERSION ${IRODS_VERSION})
 set(CPACK_PACKAGE_VERSION_MAJOR ${IRODS_VERSION_MAJOR})
