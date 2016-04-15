@@ -23,7 +23,7 @@
     "icat_host": null, 
     "match_hash_policy": "compatible", 
     "negotiation_key": "TEMPORARY_32byte_negotiation_key", 
-    "schema_validation_base_uri": "off",
+    "schema_validation_base_uri": "https://schemas.irods.org/configuration",
     "re_data_variable_mapping_set": [
         {
             "filename": "core"
