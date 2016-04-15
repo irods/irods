@@ -1,3 +1,5 @@
+SET SESSION storage_engine='InnoDB';
+
 drop function if exists R_ObjectId_nextval;
 delimiter %%
 create function R_ObjectId_nextval()

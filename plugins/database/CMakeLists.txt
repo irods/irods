@@ -174,3 +174,10 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
       )
   endforeach()
 endforeach()
+
+install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/plugins/database/src/mysql_functions.sql
+  DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_MYSQL_NAME}
+  )
