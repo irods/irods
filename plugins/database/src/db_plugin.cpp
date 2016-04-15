@@ -2859,6 +2859,18 @@ irods::error db_reg_replica_op(
                    "null parameter" );
     }
 
+    if( _dst_data_obj_info->rescId <= 0 ) {
+        std::stringstream msg;
+        msg << "invalid resource id "
+            << _dst_data_obj_info->rescId
+            << " for ["
+            << _dst_data_obj_info->objPath
+            << "]";
+        return ERROR(
+                SYS_INVALID_INPUT_PARAM,
+                msg.str() );
+    }
+
     // =-=-=-=-=-=-=-
     // get a postgres object from the context
     /*irods::postgres_object_ptr pg;

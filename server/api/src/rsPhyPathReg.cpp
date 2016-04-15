@@ -458,6 +458,10 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
     rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
     rstrcpy( destDataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
+    irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,destDataObjInfo.rescId);
+    if( !ret.ok() ) {
+        irods::log(PASS(ret));
+    }
 
     memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
