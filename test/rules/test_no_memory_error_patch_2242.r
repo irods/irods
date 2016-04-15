@@ -1,5 +1,5 @@
 test{
-	*a="hello/world";
+	*a="hello/world/";
 	for(*i=0;*i<1000;*i=*i+1) {
 		test2(*a,*b,*c);
 	}
