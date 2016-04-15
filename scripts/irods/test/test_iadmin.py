@@ -876,7 +876,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             IrodsController().restart()
 
             # look for the error "unable to read session variable $userNameClient."
-            cmd_directory = os.path.join(irods_config.irods_directory, 'server', 'bin', 'cmd')
+            cmd_directory = os.path.join(irods_config.irods_directory, 'msiExecCmd_bin')
             with contextlib.closing(tempfile.NamedTemporaryFile(mode='wt', dir=cmd_directory, delete=False)) as env_script:
                 print('#!/bin/sh\nenv\n', file=env_script, end='')
             os.chmod(env_script.name, 0o700)
