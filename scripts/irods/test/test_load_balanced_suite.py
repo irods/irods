@@ -18,6 +18,7 @@ from . import settings
 from . import resource_suite
 from . import session
 from .. import lib
+from .. import database_connect
 from ..configuration import IrodsConfig
 
 
@@ -61,7 +62,7 @@ class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase)
         if cfg.database_config['catalog_database_type'] == "postgres":
             # =-=-=-=-=-=-=-
             # seed load table with fake values - rescA should win
-            with contextlib.closing(cfg.get_database_connection()) as connection:
+            with contextlib.closing(database_connect.get_database_connection(cfg)) as connection:
                 with contextlib.closing(connection.cursor()) as cursor:
                     secs = int(time.time())
                     cursor.execute("insert into r_server_load_digest values ('rescA', 50, %s)" % secs)
