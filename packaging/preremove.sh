@@ -35,8 +35,8 @@ if [ -f /etc/irods/service_account.config ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
 else
-    IRODS_SERVICE_ACCOUNT_NAME=`ls -l /var/lib/irods | awk '{print $3}'`
-    IRODS_SERVICE_GROUP_NAME=`ls -l /var/lib/irods | awk '{print $4}'`
+    IRODS_SERVICE_ACCOUNT_NAME=`ls -ld /var/lib/irods | awk '{print $3}'`
+    IRODS_SERVICE_GROUP_NAME=`ls -ld /var/lib/irods | awk '{print $4}'`
 fi
 
 # =-=-=-=-=-=-=-
