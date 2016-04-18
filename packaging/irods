@@ -19,7 +19,13 @@
 set -e
 
 # import service account information
-. /etc/irods/service_account.config
+if [ -f /etc/irods/service_account.config ] ; then
+    # get service account information
+    source /etc/irods/service_account.config 2> /dev/null
+else
+    IRODS_SERVICE_ACCOUNT_NAME=`ls -l /var/lib/irods | awk '{print $3}'`
+    IRODS_SERVICE_GROUP_NAME=`ls -l /var/lib/irods | awk '{print $4}'`
+fi
 
 IRODS_HOME=/var/lib/irods
 IRODS_CTL=$IRODS_HOME/irodsctl

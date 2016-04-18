@@ -45,8 +45,6 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then
     /sbin/chkconfig --add irods
 fi
 
-# =-=-=-=-=-=-=-
-# set upgrade perms and display helpful information
 if [ -f /etc/irods/service_account.config ] ; then
     # get service account information
     source /etc/irods/service_account.config 2> /dev/null
@@ -55,6 +53,8 @@ else
     IRODS_SERVICE_GROUP_NAME=`ls -l /var/lib/irods | awk '{print $4}'`
 fi
 
+# =-=-=-=-=-=-=-
+# set upgrade perms and display helpful information
 # make sure the service acount owns everything
 # careful not to stomp msiExecCmd_bin contents (perhaps managed by others)
 chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
