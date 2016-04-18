@@ -305,8 +305,8 @@ namespace irods {
 
         int wait_milliseconds = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
-        server_state& s = server_state::instance();
-        s( server_state::PAUSED );
+        server_state& svr_state = server_state::instance();
+        svr_state( server_state::PAUSED );
 
         int  sleep_time  = 0;
         bool timeout_flg = false;
@@ -342,7 +342,26 @@ namespace irods {
         }
 
         // actually shut down the server
-        s( server_state::STOPPED );
+        svr_state( server_state::STOPPED );
+
+        // block until server exits to return
+        while( !timeout_flg ) {
+            // takes sec, millisec
+            ctrl_plane_sleep(
+                0,
+                wait_milliseconds );
+
+            sleep_time += SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+            if ( sleep_time > sleep_time_out_milli_sec ) {
+                timeout_flg = true;
+            }
+
+            std::string the_server_state = svr_state();
+            if ( irods::server_state::EXITED == the_server_state ) {
+                break;
+            }
+
+        } // while
 
         return SUCCESS();
 

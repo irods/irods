@@ -17,6 +17,7 @@ namespace irods {
             static const std::string RUNNING;
             static const std::string PAUSED;
             static const std::string STOPPED;
+            static const std::string EXITED;
 
         private:
             server_state();
