@@ -381,9 +381,9 @@ serverMain( char *logDir ) {
         FD_ZERO( &sockMask );
         SvrSock = svrComm.sock;
 
-        irods::server_state& state = irods::server_state::instance();
+        irods::server_state& server_state = irods::server_state::instance();
         while ( true ) {
-            std::string the_server_state = state();
+            std::string the_server_state = server_state();
             if ( irods::server_state::STOPPED == the_server_state ) {
                 procChildren( &ConnectedAgentHead );
                 rodsLog(
@@ -509,6 +509,7 @@ serverMain( char *logDir ) {
         procChildren( &ConnectedAgentHead );
         stopProcConnReqThreads();
 
+        server_state( irods::server_state::EXITED );
     }
     catch ( const irods::exception& e_ ) {
         rodsLog( LOG_ERROR, "Exception caught in server loop\n%s", e_.what() );
@@ -1102,8 +1103,8 @@ agentProc_t *
 getConnReqFromQue() {
     agentProc_t *myConnReq = NULL;
 
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() && myConnReq == NULL ) {
+    irods::server_state& server_state = irods::server_state::instance();
+    while ( irods::server_state::STOPPED != server_state() && myConnReq == NULL ) {
         boost::unique_lock<boost::mutex> read_req_lock( ReadReqCondMutex );
         if ( ConnReqHead != NULL ) {
             myConnReq = ConnReqHead;
@@ -1192,8 +1193,8 @@ readWorkerTask() {
         return;
     }
 
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() ) {
+    irods::server_state& server_state = irods::server_state::instance();
+    while ( irods::server_state::STOPPED != server_state() ) {
         agentProc_t *myConnReq = getConnReqFromQue();
         if ( myConnReq == NULL ) {
             /* someone else took care of it */
@@ -1262,8 +1263,8 @@ spawnManagerTask() {
     uint curTime;
     uint agentQueChkTime = 0;
 
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() ) {
+    irods::server_state& server_state = irods::server_state::instance();
+    while ( irods::server_state::STOPPED != server_state() ) {
 
         boost::unique_lock<boost::mutex> spwn_req_lock( SpawnReqCondMutex );
         SpawnReqCond.wait( spwn_req_lock );
@@ -1398,8 +1399,8 @@ purgeLockFileWorkerTask() {
     size_t wait_time_ms = 0;
     const size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
 
-    irods::server_state& state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != state() ) {
+    irods::server_state& server_state = irods::server_state::instance();
+    while ( irods::server_state::STOPPED != server_state() ) {
         rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // second, microseconds
         wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
