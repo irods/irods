@@ -142,7 +142,7 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
     return config_dict
 
-def load_legacy_file(filepath, load_as='dict'):
+def load_legacy_file(filepath, load_as='dict', token=' '):
     l = logging.getLogger(__name__)
     l.debug('Loading %s for conversion to json...', filepath)
     with open(filepath, 'rt') as f:
@@ -156,10 +156,10 @@ def load_legacy_file(filepath, load_as='dict'):
             if line and not line.startswith('#'):
                 continue
             if load_as == 'dict':
-                key, _, val = l.strip().partition(' ')
+                key, _, val = l.strip().partition(token)
                 legacy_dict[key] = val
             if load_as == 'list':
-                container.append(l.strip().split())
+                container.append(l.strip().split(token))
     return container
 
 
@@ -175,7 +175,7 @@ def convert_legacy_configuration_to_json(irods_config):
     legacy_irods_environment = load_legacy_file(os.getenv('irodsEnvFile',
         os.path.join(paths.home_directory, '.irods', '.irodsEnv')))
     legacy_irods_host = load_legacy_file(os.path.join(paths.config_directory(), 'irodsHost'), load_as='list')
-    legacy_version = load_legacy_file(os.path.join(paths.irods_directory(), 'VERSION.previous'))
+    legacy_version = load_legacy_file(os.path.join(paths.irods_directory(), 'VERSION.previous'), token='=')
 
     config_dicts = {}
 
@@ -346,8 +346,8 @@ def convert_legacy_configuration_to_json(irods_config):
     previous_version = {
         'schema_name': 'VERSION',
         'schema_version': 'v2',
-        'irods_version': legacy_version.get('$IRODSVERSION', '4.0.0'),
-        'catalog_schema_version': int(legacy_version.get('$CATALOG_SCHEMA_VERSION', 1)),
+        'irods_version': legacy_version.get('IRODSVERSION', '4.0.0'),
+        'catalog_schema_version': int(legacy_version.get('CATALOG_SCHEMA_VERSION', 1)),
         'configuration_schema_version': 'v0',
         'commit_id': '0000000000000000000000000000000000000000',
         'build_system_information': 'unavailable',
