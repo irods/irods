@@ -4,21 +4,6 @@ from .exceptions import IrodsError, IrodsWarning
 import logging
 import re
 
-def update_catalog_schema(irods_config, cursor):
-    l = logging.getLogger(__name__)
-    l.info('Ensuring catalog schema is up-to-date...')
-    while True:
-        schema_version_in_database = database_connect.get_schema_version_in_database(cursor)
-        if schema_version_in_database == irods_config.version['catalog_schema_version']:
-            l.info('Catalog schema is up-to-date.')
-            return
-        elif schema_version_in_database < irods_config.version['catalog_schema_version']:
-            run_update(irods_config, cursor)
-        elif schema_version_in_database > irods_config.version['catalog_schema_version']:
-            raise IrodsError('Schema version in catalog (%d) is newer than schema version in the version file (%d); '
-                    'downgrading of catalog schema risks losing data and is unsupported.',
-                    schema_version_in_database, irods_config.version['catalog_schema_version'])
-
 def run_update(irods_config, cursor):
     l = logging.getLogger(__name__)
     new_schema_version = database_connect.get_schema_version_in_database(cursor) + 1

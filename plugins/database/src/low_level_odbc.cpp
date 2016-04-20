@@ -1027,7 +1027,6 @@ extern "C" int cllTest() {
         ret = irods::get_server_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
     }
     snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
-    printf( "Password: \"%s\"\n", icss.databasePassword );
 
     ret = irods::get_server_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
     if ( !ret.ok() ) {
