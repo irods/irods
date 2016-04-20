@@ -362,7 +362,7 @@ def setup_database_config(irods_config):
 
         db_config['db_port'] = default_prompt(
             'Database server\'s port',
-            default=[db_config.get('db_port', 5432)],
+            default=[db_config.get('db_port', irods.database_connect.get_default_port_for_database_type(db_config['catalog_database_type']))],
             input_filter=int_filter(field='Port'))
 
         if db_config['catalog_database_type'] == 'oracle':

@@ -146,6 +146,15 @@ def is_64_bit_ELF(path):
                     return False
     return False
 
+def get_default_port_for_database_type(catalog_database_type):
+    if catalog_database_type == 'postgres':
+        return 5432
+    elif catalog_database_type == 'mysql':
+        return 3306
+    elif catalog_database_type == 'oracle':
+        return 1521
+    raise IrodsError('Unknown database type: %s' % (catalog_database_type))
+
 #oracle completely ignores all settings in the odbc.ini file (though
 #the unixODBC driver will pick up Driver and Password), so we have
 #to set TWO_TASK to '//<host>:<port>/<service_name>' as well.
