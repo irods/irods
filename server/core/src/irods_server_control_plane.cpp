@@ -810,7 +810,8 @@ namespace irods {
             port );
 
         server_state& s = server_state::instance();
-        while ( server_state::STOPPED != s() ) {
+        while ( server_state::STOPPED != s() &&
+                server_state::EXITED != s() ) {
 
             zmq::message_t req;
             zmq_skt.recv( &req );
@@ -1168,7 +1169,7 @@ namespace irods {
 
         }
 
-        error final_ret;
+        error final_ret = SUCCESS();
 
         int port = 0, num_hash_rounds = 0;
         buffer_crypt::array_t shared_secret;
