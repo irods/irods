@@ -1104,7 +1104,9 @@ getConnReqFromQue() {
     agentProc_t *myConnReq = NULL;
 
     irods::server_state& server_state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != server_state() && myConnReq == NULL ) {
+    while ( irods::server_state::STOPPED != server_state() &&
+            irods::server_state::EXITED != server_state() &&
+            myConnReq == NULL ) {
         boost::unique_lock<boost::mutex> read_req_lock( ReadReqCondMutex );
         if ( ConnReqHead != NULL ) {
             myConnReq = ConnReqHead;
@@ -1194,7 +1196,8 @@ readWorkerTask() {
     }
 
     irods::server_state& server_state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != server_state() ) {
+    while ( irods::server_state::STOPPED != server_state() &&
+            irods::server_state::EXITED != server_state() ) {
         agentProc_t *myConnReq = getConnReqFromQue();
         if ( myConnReq == NULL ) {
             /* someone else took care of it */
@@ -1264,7 +1267,8 @@ spawnManagerTask() {
     uint agentQueChkTime = 0;
 
     irods::server_state& server_state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != server_state() ) {
+    while ( irods::server_state::STOPPED != server_state() &&
+            irods::server_state::EXITED != server_state() ) {
 
         boost::unique_lock<boost::mutex> spwn_req_lock( SpawnReqCondMutex );
         SpawnReqCond.wait( spwn_req_lock );
@@ -1400,7 +1404,8 @@ purgeLockFileWorkerTask() {
     const size_t purge_time_ms = LOCK_FILE_PURGE_TIME * 1000; // s to ms
 
     irods::server_state& server_state = irods::server_state::instance();
-    while ( irods::server_state::STOPPED != server_state() ) {
+    while ( irods::server_state::STOPPED != server_state() &&
+            irods::server_state::EXITED != server_state() ) {
         rodsSleep( 0, irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC * 1000 ); // second, microseconds
         wait_time_ms += irods::SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
 
