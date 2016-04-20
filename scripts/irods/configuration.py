@@ -226,8 +226,6 @@ class IrodsConfig(object):
             configuration_schema_mapping['database_config'] = {
                     'dict': self.database_config,
                     'path': paths.database_config_path()}
-        else:
-            raise IrodsError('The database config file, \'%s\', does not exist.', paths.database_config_path())
 
         skipped = []
 
