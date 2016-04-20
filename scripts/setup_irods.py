@@ -100,8 +100,8 @@ def setup_server(irods_config):
     default_resource_directory = get_and_create_default_vault(irods_config)
     if irods_config.is_catalog:
         l.info(get_header('Setting up the database'))
-        irods.database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
         irods.database_interface.test_catalog(irods_config)
+        irods.database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
     l.info(get_header('Starting iRODS...'))
     IrodsController(irods_config).start()

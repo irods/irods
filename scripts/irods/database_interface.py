@@ -21,10 +21,10 @@ def setup_catalog(irods_config, default_resource_directory=None):
             try:
                 database_connect.create_database_tables(irods_config, cursor)
                 database_connect.setup_database_values(irods_config, cursor, default_resource_directory=default_resource_directory)
-                database_upgrade.update_catalog_schema(irods_config, cursor)
                 l.debug('Committing database changes...')
                 cursor.commit()
             except:
+                l.debug('Rolling back database changes...')
                 cursor.rollback()
                 raise
 
@@ -41,6 +41,28 @@ def test_catalog(irods_config):
 def server_launch_hook(irods_config):
     l = logging.getLogger(__name__)
     l.debug('Syncing .odbc.ini file...')
+    def update_catalog_schema(irods_config, cursor):
+        l = logging.getLogger(__name__)
+        l.info('Ensuring catalog schema is up-to-date...')
+        while True:
+            schema_version_in_database = database_connect.get_schema_version_in_database(cursor)
+            if schema_version_in_database == irods_config.version['catalog_schema_version']:
+                l.info('Catalog schema is up-to-date.')
+                return
+            elif schema_version_in_database < irods_config.version['catalog_schema_version']:
+                try:
+                    database_upgrade.run_update(irods_config, cursor)
+                    l.debug('Committing database changes...')
+                    cursor.commit()
+                except:
+                    l.debug('Rolling back database changes...')
+                    cursor.rollback()
+                    raise
+            elif schema_version_in_database > irods_config.version['catalog_schema_version']:
+                raise IrodsError('Schema version in catalog (%d) is newer than schema version in the version file (%d); '
+                                 'downgrading of catalog schema risks losing data and is unsupported.',
+                                 schema_version_in_database, irods_config.version['catalog_schema_version'])
+
     database_connect.sync_odbc_ini(irods_config)
 
     if irods_config.database_config['catalog_database_type'] == 'oracle':
@@ -51,12 +73,7 @@ def server_launch_hook(irods_config):
     with contextlib.closing(database_connect.get_database_connection(irods_config)) as connection:
         connection.autocommit = False
         with contextlib.closing(connection.cursor()) as cursor:
-            try:
-                database_upgrade.update_catalog_schema(irods_config, cursor)
-                cursor.commit()
-            except:
-                cursor.rollback()
-                raise
+            update_catalog_schema(irods_config, cursor)
 
 def database_already_in_use_by_irods(irods_config):
     with contextlib.closing(database_connect.get_database_connection(irods_config)) as connection:
