@@ -1,8 +1,7 @@
-
 #include "irods_re_structs.hpp"
 #include "irods_re_plugin.hpp"
 #include "rcMisc.h"
-#include "rodsPackTable.h"
+#include "packStruct.h"
 #include "dataObjOpen.h"
 #include "dataObjWrite.h"
 #include "dataObjClose.h"
@@ -15,6 +14,7 @@
 
 #include <list>
 
+extern const packInstructArray_t RodsPackTable[];
 irods::ms_table& get_microservice_table();
 
 // =-=-=-=-=-=-=-
@@ -581,7 +581,3 @@ fillSubmitConditions( char *action, char *inDelayCondition,
     free( delayCondition );
     return 0;
 }
-
-
-
-
