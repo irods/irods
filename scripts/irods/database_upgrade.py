@@ -47,10 +47,10 @@ def run_update(irods_config, cursor):
     elif new_schema_version == 5:
         if irods_config.database_config['catalog_database_type'] == 'oracle':
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID integer;")
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT CLOB;")
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT varchar2(4000);") # max oracle varchar2 for sql is 4000, 32767 pl/sql
         else:
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID BIGINT;")
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT TEXT;")
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT varchar(4000);")
 
         database_connect.execute_sql_statement(cursor, "UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM R_COLL_MAIN WHERE R_COLL_MAIN.coll_name = ? OR R_COLL_MAIN.coll_name LIKE ?) SELECT DISTINCT d.data_id, (SELECT coll_name FROM coll WHERE coll.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id FROM R_DATA_MAIN d WHERE d.coll_id = ANY(ARRAY(SELECT coll_id FROM coll)) ORDER BY coll_name, d.data_name, d.data_repl_num' where alias='DataObjInCollReCur';")
 
