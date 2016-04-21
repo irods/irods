@@ -552,7 +552,7 @@ def character_count_filter(minimum=None, maximum=None, field='Input'):
                 raise InputFilterError('%s must be between %s and %s characters in length.' % (field, new_minimum, maximum))
             raise IrodsError('Minimum character count %s must not be greater than maximum character count %s.' % (new_minimum, maximum))
         if new_minimum is not None:
-            raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if maximum == 1 else 's'))
+            raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if new_minimum == 1 else 's'))
         raise InputFilterError('%s may be at most %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
     return f
 
