@@ -17,7 +17,6 @@ import psutil
 from . import six
 
 from .configuration import IrodsConfig
-from . import database_connect
 from . import lib
 from . import paths
 from . import upgrade_configuration
