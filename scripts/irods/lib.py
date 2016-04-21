@@ -3,6 +3,7 @@ import base64
 import contextlib
 import copy
 import errno
+import getpass
 import grp
 import hashlib
 import itertools
@@ -553,6 +554,9 @@ def character_count_filter(minimum=None, maximum=None, field='Input'):
             raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if maximum == 1 else 's'))
         raise InputFilterError('%s may be at most %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
     return f
+
+class InputFilterError(Exception):
+    pass
 
 class callback_on_change_dict(dict):
     def __init__(self, *args, **kwargs):
