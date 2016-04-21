@@ -41,7 +41,6 @@ wrap_if_necessary()
 
 import contextlib
 import copy
-import getpass
 import grp
 import itertools
 import json
@@ -59,9 +58,6 @@ from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
-
-class InputFilterError(Exception):
-    pass
 
 def setup_server(irods_config):
     l = logging.getLogger(__name__)
