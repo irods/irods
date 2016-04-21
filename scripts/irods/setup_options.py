@@ -19,10 +19,10 @@ def add_options(parser):
                       'at all, this may need to be set even if you have '
                       'LD_LIBRARY_PATH configured in your environment.')
 
-    parser.add_option('--zone-bundle',
-            dest='zone_bundle', metavar='FILE_PATH',
-            help='The zone bundle to use when setting up the server. '
-            'This option will ingest a json zone bundle instead of '
+    parser.add_option('--json_configuration_file',
+            dest='json_configuration_file', metavar='FILE_PATH',
+            help='The json file to use when setting up the server. '
+            'This option will ingest a json file instead of '
             'prompting the user for input to perform server '
             'configuration.')
 

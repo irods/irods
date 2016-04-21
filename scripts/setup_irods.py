@@ -40,7 +40,6 @@ def wrap_if_necessary():
 wrap_if_necessary()
 
 import contextlib
-import copy
 import grp
 import itertools
 import json
@@ -59,10 +58,16 @@ from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
 
-def setup_server(irods_config):
+def setup_server(irods_config, json_configuration_file=None):
     l = logging.getLogger(__name__)
 
     check_hostname()
+
+    if json_configuration_file is None:
+        json_configuration_dict = None
+    else:
+        with open(json_configuration_file) as f:
+            json_configuration_dict = json.load(f)
 
     l.info(irods.lib.get_header('Stopping iRODS...'))
     IrodsController(irods_config).stop()
@@ -76,15 +81,7 @@ def setup_server(irods_config):
     if os.getuid() == 0:
         irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
-    server_config = copy.deepcopy(irods_config.server_config)
-
-    catalog_service_roles = set(['provider', 'consumer'])
-    default_catalog_service_role = server_config.get('catalog_service_role', 'provider')
-    server_config['catalog_service_role'] = irods.lib.default_prompt(
-        'iRODS server\'s role',
-        default=[default_catalog_service_role] + list(catalog_service_roles - set([default_catalog_service_role])),
-        input_filter=irods.lib.set_filter(catalog_service_roles, field='Server role'))
-    irods_config.commit(server_config, irods_config.server_config_path)
+    determine_server_role(irods_config)
 
     if irods_config.is_catalog:
         from irods import database_interface
@@ -132,10 +129,24 @@ def test_put(irods_config):
 def check_hostname():
     l = logging.getLogger(__name__)
 
+    hostname = irods.lib.get_hostname()
     try:
-        irods.lib.get_hostname().index('.')
+        hostname.index('.')
     except ValueError:
-        l.warning('Warning: Hostname `%s` should be a fully qualified domain name.')
+        l.warning('Warning: Hostname `%s` should be a fully qualified domain name.' % (hostname))
+
+    if not irods.lib.hostname_resolves_to_local_address(hostname):
+        raise IrodsError('The hostname (%s) must resolve to the local machine.' % (hostname))
+
+def determine_server_role(irods_config):
+    catalog_service_roles = set(['provider', 'consumer'])
+    default_catalog_service_role = irods_config.server_config.get('catalog_service_role', 'provider')
+    irods_config.server_config['catalog_service_role'] = irods.lib.default_prompt(
+        'iRODS server\'s role',
+        default=[default_catalog_service_role] + list(catalog_service_roles - set([default_catalog_service_role])),
+        input_filter=irods.lib.set_filter(catalog_service_roles, field='Server role'))
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
+
 
 def get_and_create_default_vault(irods_config):
     l = logging.getLogger(__name__)
@@ -219,55 +230,53 @@ def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
     l.info(irods.lib.get_header('Configuring the server options'))
 
-    server_config = copy.deepcopy(irods_config.server_config)
-
     ld_library_path_list = get_ld_library_path_list()
     if ld_library_path_list:
-        if 'environment_variables' not in server_config:
-            server_config['environment_variables'] = {}
-        server_config['environment_variables']['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list)
+        if 'environment_variables' not in irods_config.server_config:
+            irods_config.server_config['environment_variables'] = {}
+        irods_config.server_config['environment_variables']['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list)
 
     while True:
-        server_config['zone_name'] = irods.lib.default_prompt(
+        irods_config.server_config['zone_name'] = irods.lib.default_prompt(
             'iRODS server\'s zone name',
-            default=[server_config.get('zone_name', 'tempZone')],
+            default=[irods_config.server_config.get('zone_name', 'tempZone')],
             input_filter=irods.lib.character_count_filter(minimum=1, field='Zone name'))
 
         if irods_config.is_catalog:
-            server_config['icat_host'] = irods.lib.get_hostname()
+            irods_config.server_config['icat_host'] = irods.lib.get_hostname()
         elif irods_config.is_resource:
-            server_config['icat_host'] = irods.lib.prompt(
+            irods_config.server_config['icat_host'] = irods.lib.prompt(
                 'iRODS catalog (ICAT) host',
                 input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS catalog hostname'))
 
-        server_config['zone_port'] = irods.lib.default_prompt(
+        irods_config.server_config['zone_port'] = irods.lib.default_prompt(
             'iRODS server\'s port',
-            default=[server_config.get('zone_port', 1247)],
+            default=[irods_config.server_config.get('zone_port', 1247)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_port_range_start'] = irods.lib.default_prompt(
+        irods_config.server_config['server_port_range_start'] = irods.lib.default_prompt(
             'iRODS port range (begin)',
-            default=[server_config.get('server_port_range_start', 20000)],
+            default=[irods_config.server_config.get('server_port_range_start', 20000)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_port_range_end'] = irods.lib.default_prompt(
+        irods_config.server_config['server_port_range_end'] = irods.lib.default_prompt(
             'iRODS port range (end)',
-            default=[server_config.get('server_port_range_end', 20199)],
+            default=[irods_config.server_config.get('server_port_range_end', 20199)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_control_plane_port'] = irods.lib.default_prompt(
+        irods_config.server_config['server_control_plane_port'] = irods.lib.default_prompt(
             'Control Plane port',
-            default=[server_config.get('server_control_plane_port', 1248)],
+            default=[irods_config.server_config.get('server_control_plane_port', 1248)],
             input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
+        irods_config.server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
             'Schema Validation Base URI (or off)',
-            default=[server_config.get('schema_validation_base_uri', 'https://schemas.irods.org/configuration')],
+            default=[irods_config.server_config.get('schema_validation_base_uri', 'https://schemas.irods.org/configuration')],
             input_filter=irods.lib.character_count_filter(minimum=1, field='Schema validation base URI'))
 
-        server_config['zone_user'] = irods.lib.default_prompt(
+        irods_config.server_config['zone_user'] = irods.lib.default_prompt(
             'iRODS server\'s administrator username',
-            default=[server_config.get('zone_user', 'rods')],
+            default=[irods_config.server_config.get('zone_user', 'rods')],
             input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS server\'s administrator username'))
 
         confirmation_message = ''.join([
@@ -283,38 +292,38 @@ def setup_server_config(irods_config):
                 'iRODS server administrator: %s\n',
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
-                    server_config['zone_name'],
-                    server_config['icat_host'] if irods_config.is_resource else '',
-                    server_config['zone_port'],
-                    server_config['server_port_range_start'],
-                    server_config['server_port_range_end'],
-                    server_config['server_control_plane_port'],
-                    server_config['schema_validation_base_uri'],
-                    server_config['zone_user']
+                    irods_config.server_config['zone_name'],
+                    irods_config.server_config['icat_host'] if irods_config.is_resource else '',
+                    irods_config.server_config['zone_port'],
+                    irods_config.server_config['server_port_range_start'],
+                    irods_config.server_config['server_port_range_end'],
+                    irods_config.server_config['server_control_plane_port'],
+                    irods_config.server_config['schema_validation_base_uri'],
+                    irods_config.server_config['zone_user']
                     )
 
         if irods.lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
             break
 
-    server_config['zone_key'] = irods.lib.prompt(
+    irods_config.server_config['zone_key'] = irods.lib.prompt(
         'iRODS server\'s zone key',
         input_filter=irods.lib.character_count_filter(minimum=1, field='Zone key'),
         echo=False)
 
-    server_config['negotiation_key'] = irods.lib.prompt(
+    irods_config.server_config['negotiation_key'] = irods.lib.prompt(
         'iRODS server\'s negotiation key (32 characters)',
         input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
         echo=False)
 
-    server_config['server_control_plane_key'] = irods.lib.prompt(
+    irods_config.server_config['server_control_plane_key'] = irods.lib.prompt(
         'Control Plane key (32 characters)',
         input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
         echo=False)
 
     if irods_config.is_resource:
-        server_config['default_resource_name'] = ''.join([irods.lib.get_hostname().split('.')[0], 'Resource'])
+        irods_config.server_config['default_resource_name'] = ''.join([irods.lib.get_hostname().split('.')[0], 'Resource'])
 
-    irods_config.commit(server_config, irods_config.server_config_path)
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 
 def setup_client_environment(irods_config):
     l = logging.getLogger(__name__)
@@ -357,7 +366,7 @@ def setup_client_environment(irods_config):
         }
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
-    irods_config.commit(service_account_dict, irods_config.client_environment_path)
+    irods_config.commit(service_account_dict, irods_config.client_environment_path, clear_cache=False)
 
 def main():
     l = logging.getLogger(__name__)
@@ -384,8 +393,9 @@ def main():
     if options.server_reconnect_flag:
         irods_config.injected_environment['irodsReconnect'] = ''
 
+
     try:
-        setup_server(irods_config)
+        setup_server(irods_config, json_configuration_file=options.json_configuration_file)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')
