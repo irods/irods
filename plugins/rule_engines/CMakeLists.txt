@@ -4,11 +4,6 @@ set(
   )
 
 set(
-  IRODS_RULE_ENGINE_PLUGIN_RE-AUDIT_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-audit/libre-audit.cpp
-  )
-
-set(
   IRODS_RULE_ENGINE_PLUGIN_RE-IRODS_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/arithmetics.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/cache.cpp
@@ -37,7 +32,6 @@ set(
 set(
   IRODS_RULE_ENGINE_PLUGINS
   re
-  re-audit
   re-irods
   )
 
