@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import copy
 import contextlib
 import logging
 import os
@@ -82,3 +83,112 @@ def database_already_in_use_by_irods(irods_config):
                 return True
             else:
                 return False
+
+def setup_database_config(irods_config):
+    l = logging.getLogger(__name__)
+
+    if os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libpostgres.so')):
+        db_type = 'postgres'
+    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libmysql.so')):
+        db_type = 'mysql'
+    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'liboracle.so')):
+        db_type = 'oracle'
+    else:
+        raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
+    l.debug('setup_database_config has been called with database type \'%s\'.', db_type)
+
+    db_config = copy.deepcopy(irods_config.database_config)
+
+    server_config = copy.deepcopy(irods_config.server_config)
+
+    l.info('You are configuring an iRODS database plugin. '
+        'The iRODS server cannot be started until its database '
+        'has been properly configured.\n'
+        )
+
+    db_config['catalog_database_type'] = db_type
+    while True:
+        odbc_drivers = database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
+        if odbc_drivers:
+            db_config['db_odbc_driver'] = lib.default_prompt(
+                'ODBC driver for %s', db_config['catalog_database_type'],
+                default=odbc_drivers)
+        else:
+            db_config['db_odbc_driver'] = lib.default_prompt(
+                'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
+                default=database_connect.get_odbc_driver_paths(db_config['catalog_database_type'],
+                    oracle_home=os.getenv('ORACLE_HOME', None)))
+
+        db_config['db_host'] = lib.default_prompt(
+            'Database server\'s hostname or IP address',
+            default=[db_config.get('db_host', 'localhost')])
+
+        db_config['db_port'] = lib.default_prompt(
+            'Database server\'s port',
+            default=[db_config.get('db_port', database_connect.get_default_port_for_database_type(db_config['catalog_database_type']))],
+            input_filter=lib.int_filter(field='Port'))
+
+        if db_config['catalog_database_type'] == 'oracle':
+            db_config['db_name'] = lib.default_prompt(
+                'Service name',
+                default=[db_config.get('db_name', 'ICAT.example.org')])
+        else:
+            db_config['db_name'] = lib.default_prompt(
+                'Database name',
+                default=[db_config.get('db_name', 'ICAT')])
+
+        db_config['db_username'] = lib.default_prompt(
+                'Database username',
+                default=[db_config.get('db_username', 'irods')])
+
+        confirmation_message = ''.join([
+                '\n',
+                '-------------------------------------------\n',
+                'Database Type: %s\n',
+                'ODBC Driver:   %s\n',
+                'Database Host: %s\n',
+                'Database Port: %d\n',
+                'Database Name: %s\n' if db_config['catalog_database_type'] != 'oracle' else 'Service Name:  %s\n',
+                'Database User: %s\n',
+                '-------------------------------------------\n\n',
+                'Please confirm']) % (
+                    db_config['catalog_database_type'],
+                    db_config['db_odbc_driver'],
+                    db_config['db_host'],
+                    db_config['db_port'],
+                    db_config['db_name'],
+                    db_config['db_username'])
+
+        if lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
+            break
+
+    db_config['db_password'] = lib.prompt(
+            'Database password',
+            echo=False)
+
+    irods_config.commit(db_config, irods_config.database_config_path)
+
+    if database_already_in_use_by_irods(irods_config):
+        l.warning(lib.get_header(
+            'WARNING:\n'
+            'The database specified is an already-configured\n'
+            'iRODS database, so first-time database setup will\n'
+            'not be performed. Providing different inputs from\n'
+            'those provided the first time this script was run\n'
+            'will result in unspecified behavior, and may put\n'
+            'a previously working zone in a broken state. It\'s\n'
+            'recommended that you exit this script now if you\n'
+            'are running it manually. If you wish to wipe out\n'
+            'your current iRODS installation and associated data\n'
+            'catalog, drop the database and recreate it before\n'
+            're-running this script.'))
+
+    db_password_salt = lib.prompt(
+            'Salt for passwords stored in the database',
+            echo=False)
+    if db_password_salt:
+        if 'environment_variables' not in server_config:
+            server_config['environment_variables'] = {}
+        server_config['environment_variables']['IRODS_DATABASE_USER_PASSWORD_SALT'] = db_password_salt
+
+    irods_config.commit(server_config, irods_config.server_config_path)

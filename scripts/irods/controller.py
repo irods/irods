@@ -17,7 +17,6 @@ import psutil
 from . import six
 
 from .configuration import IrodsConfig
-from . import database_interface
 from . import database_connect
 from . import lib
 from . import paths
@@ -88,6 +87,7 @@ class IrodsController(object):
             l.debug('Socket %s bound and released successfully.')
 
             if self.config.is_catalog:
+                from . import database_interface
                 database_interface.server_launch_hook(self.config)
 
             l.info('Starting iRODS server...')

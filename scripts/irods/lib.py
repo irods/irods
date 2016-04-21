@@ -442,6 +442,118 @@ def hostname_resolves_to_local_address(hostname):
         return False
     raise IrodsError('Invalid hostname "%s" in call to hostname_resolves_to_local_address.' % (hostname))
 
+def get_header(message):
+    lines = [l.strip() for l in message.splitlines()]
+    length = 0
+    for line in lines:
+        length = max(length, len(line))
+    edge = '+' + '-' * (length + 2) + '+'
+    format_string = '{0:<' + str(length) + '}'
+    header_lines = ['', edge]
+    for line in lines:
+        header_lines.append('| ' + format_string.format(line) + ' |')
+    header_lines.append(edge)
+    header_lines.append('')
+    return '\n'.join(header_lines)
+
+def prompt(*args, **kwargs):
+    echo = kwargs.get('echo', True)
+    end = kwargs.get('end', ': ')
+    input_filter = kwargs.get('input_filter', lambda x: x)
+
+    l = logging.getLogger(__name__)
+    message = ''.join([args[0] % tuple(args[1:]), end])
+    while True:
+        l.debug(message)
+        if echo:
+            print(message, end='')
+            sys.stdout.flush()
+            user_input = sys.stdin.readline().rstrip('\n')
+            l.debug('User input: %s', user_input)
+        else:
+            if sys.stdin.isatty():
+                user_input = getpass.getpass(message)
+            else:
+                print('Warning: Cannot control echo output on the terminal (stdin is not a tty). Input may be echoed.', file=sys.stderr)
+                user_input = sys.stdin.readline().rstrip('\n')
+        if not sys.stdin.isatty():
+            print('\n', end='')
+        try :
+            return input_filter(user_input)
+        except InputFilterError as e:
+            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
+            l.warning(e.args[0] if len(e.args) else "User input error.")
+
+def default_prompt(*args, **kwargs):
+    l = logging.getLogger(__name__)
+    default = kwargs.pop('default', [])
+    input_filter = kwargs.pop('input_filter', lambda x: x)
+
+    while True:
+        if default:
+            if len(default) == 1:
+                message = ''.join([
+                    args[0] % tuple(args[1:]),
+                    ' [%s]' % (default[0])])
+                user_input = prompt(message, **kwargs)
+                if not user_input:
+                    user_input = default[0]
+            else:
+                message = ''.join([
+                    args[0] % tuple(args[1:]), ':\n',
+                    '\n'.join(['%d. %s' % (i + 1, default[i]) for i in range(0, len(default))]),
+                    '\nPlease select a number or choose 0 to enter a new value'])
+                user_input = default_prompt(message, default=[1], **kwargs)
+                try:
+                    i = int(user_input) - 1
+                except (TypeError, ValueError):
+                    i = -1
+                if i in range(0, len(default)):
+                    user_input = default[i]
+                else:
+                    user_input = prompt('New value', **kwargs)
+        else:
+            user_input = prompt(*args, **kwargs)
+        try :
+            return input_filter(user_input)
+        except InputFilterError as e:
+            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
+            l.warning(e.args[0] if len(e.args) else "User input error.")
+
+def int_filter(field='Input'):
+    def f(x):
+        try:
+            return int(x)
+        except ValueError as e:
+            irods.six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
+    return f
+
+def set_filter(set_, field='Input'):
+    def f(x):
+        if x in set_:
+            return x
+        raise InputFilterError('%s must be chosen from %s' % (field, list(set_)))
+    return f
+
+def character_count_filter(minimum=None, maximum=None, field='Input'):
+    def f(x):
+        if (minimum is None or len(x) >= minimum) and (maximum is None or len(x) <= maximum):
+            return x
+        if minimum is not None and minimum < 0:
+            new_minimum = 0
+        else:
+            new_minimum = minimum
+        if new_minimum is not None and maximum is not None:
+            if new_minimum == maximum:
+                raise InputFilterError('%s must be exactly %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
+            if new_minimum < maximum:
+                raise InputFilterError('%s must be between %s and %s characters in length.' % (field, new_minimum, maximum))
+            raise IrodsError('Minimum character count %s must not be greater than maximum character count %s.' % (new_minimum, maximum))
+        if new_minimum is not None:
+            raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if maximum == 1 else 's'))
+        raise InputFilterError('%s may be at most %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
+    return f
+
 class callback_on_change_dict(dict):
     def __init__(self, *args, **kwargs):
         if args:
