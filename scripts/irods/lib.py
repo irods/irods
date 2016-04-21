@@ -26,6 +26,7 @@ import tempfile
 from . import six
 
 from .exceptions import IrodsError, IrodsWarning
+from . import paths
 
 # get the fully qualified domain name
 #(no, really, getfqdn() is insufficient)
@@ -434,8 +435,8 @@ def version_string_to_tuple(version_string):
     return tuple(map(int, version_string.split('.')))
 
 def hostname_resolves_to_local_address(hostname):
-    ret, _, _ = lib.execute_command_permissive([
-        os.path.join( paths.server_bin_directory, 'hostname_resolves_to_local_address'),
+    _, _, ret = execute_command_permissive([
+        os.path.join( paths.server_bin_directory(), 'hostname_resolves_to_local_address'),
         hostname])
     if ret == 0:
         return True
