@@ -175,7 +175,12 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 char* l = boost::any_cast<char*>(_p);
-                _out["char_ptr"] = l;
+                if(l) {
+                    _out["char_ptr"] = l;
+                }
+                else {
+                    _out["char_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -191,7 +196,12 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 const char* l = boost::any_cast<const char*>(_p);
-                _out["const_char_ptr"] = l;
+                if(l) {
+                    _out["const_char_ptr"] = l;
+                }
+                else {
+                    _out["char_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -787,7 +797,7 @@ namespace irods {
                 _out_param["ERROR"] = err;
                 return SUCCESS();
             }
-
+            
             return the_map[idx](_in_param, _out_param);
 
         } // serialize_parameter
