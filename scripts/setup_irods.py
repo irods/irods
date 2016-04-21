@@ -54,8 +54,6 @@ import tempfile
 
 from irods import six
 
-import irods.database_connect
-import irods.database_interface
 import irods.lib
 from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
@@ -70,7 +68,7 @@ def setup_server(irods_config):
 
     check_hostname()
 
-    l.info(get_header('Stopping iRODS...'))
+    l.info(irods.lib.get_header('Stopping iRODS...'))
     IrodsController(irods_config).stop()
 
     if not os.path.exists(irods_config.version_path):
@@ -86,24 +84,26 @@ def setup_server(irods_config):
 
     catalog_service_roles = set(['provider', 'consumer'])
     default_catalog_service_role = server_config.get('catalog_service_role', 'provider')
-    server_config['catalog_service_role'] = default_prompt(
+    server_config['catalog_service_role'] = irods.lib.default_prompt(
         'iRODS server\'s role',
         default=[default_catalog_service_role] + list(catalog_service_roles - set([default_catalog_service_role])),
-        input_filter=set_filter(catalog_service_roles, field='Server role'))
+        input_filter=irods.lib.set_filter(catalog_service_roles, field='Server role'))
     irods_config.commit(server_config, irods_config.server_config_path)
 
     if irods_config.is_catalog:
-        setup_database_config(irods_config)
+        from irods import database_interface
+        l.info(irods.lib.get_header('Configuring the database communications'))
+        database_interface.setup_database_config(irods_config)
     setup_server_config(irods_config)
     setup_client_environment(irods_config)
 
     default_resource_directory = get_and_create_default_vault(irods_config)
     if irods_config.is_catalog:
-        l.info(get_header('Setting up the database'))
-        irods.database_interface.test_catalog(irods_config)
-        irods.database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
+        l.info(irods.lib.get_header('Setting up the database'))
+        database_interface.test_catalog(irods_config)
+        database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
-    l.info(get_header('Starting iRODS...'))
+    l.info(irods.lib.get_header('Starting iRODS...'))
     IrodsController(irods_config).start()
 
     if irods_config.is_resource:
@@ -111,12 +111,12 @@ def setup_server(irods_config):
 
     test_put(irods_config)
 
-    l.info(get_header('iRODS is installed and running'))
+    l.info(irods.lib.get_header('iRODS is installed and running'))
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
 
-    l.info(get_header('Attempting test put'))
+    l.info(irods.lib.get_header('Attempting test put'))
 
     test_text = 'This is a test file written by the iRODS installation script.'
     with tempfile.NamedTemporaryFile(mode='wt', suffix=irods_config.server_config['default_resource_name']) as f:
@@ -143,9 +143,9 @@ def check_hostname():
 
 def get_and_create_default_vault(irods_config):
     l = logging.getLogger(__name__)
-    l.info(get_header('Setting up default vault'))
+    l.info(irods.lib.get_header('Setting up default vault'))
 
-    default_resource_directory = default_prompt(
+    default_resource_directory = irods.lib.default_prompt(
         'iRODS Vault directory',
         default=[os.path.join(irods_config.irods_directory, 'Vault')])
     if not os.path.exists(default_resource_directory):
@@ -155,17 +155,17 @@ def get_and_create_default_vault(irods_config):
 
 def setup_service_account(irods_config):
     l = logging.getLogger(__name__)
-    l.info(get_header('Setting up the service account'))
+    l.info(irods.lib.get_header('Setting up the service account'))
 
     irods_user = irods_config.irods_user
     irods_group = irods_config.irods_group
     l.info('The iRODS service account name needs to be defined.')
     if pwd.getpwnam(irods_user).pw_uid == 0:
-        irods_user = default_prompt('iRODS user', default=['irods'])
-        irods_group = default_prompt('iRODS group', default=[irods_user])
+        irods_user = irods.lib.default_prompt('iRODS user', default=['irods'])
+        irods_group = irods.lib.default_prompt('iRODS group', default=[irods_user])
     else:
-        irods_user = default_prompt('iRODS user', default=[irods_user])
-        irods_group = default_prompt('iRODS group', default=[irods_group])
+        irods_user = irods.lib.default_prompt('iRODS user', default=[irods_user])
+        irods_group = irods.lib.default_prompt('iRODS group', default=[irods_group])
 
     if irods_group not in [g.gr_name for g in grp.getgrall()]:
         l.info('Creating Service Group: %s', irods_group)
@@ -221,7 +221,7 @@ def setup_service_account(irods_config):
 
 def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
-    l.info(get_header('Configuring the server options'))
+    l.info(irods.lib.get_header('Configuring the server options'))
 
     server_config = copy.deepcopy(irods_config.server_config)
 
@@ -232,47 +232,47 @@ def setup_server_config(irods_config):
         server_config['environment_variables']['LD_LIBRARY_PATH'] = ':'.join(ld_library_path_list)
 
     while True:
-        server_config['zone_name'] = default_prompt(
+        server_config['zone_name'] = irods.lib.default_prompt(
             'iRODS server\'s zone name',
             default=[server_config.get('zone_name', 'tempZone')],
-            input_filter=character_count_filter(minimum=1, field='Zone name'))
+            input_filter=irods.lib.character_count_filter(minimum=1, field='Zone name'))
 
         if irods_config.is_catalog:
             server_config['icat_host'] = irods.lib.get_hostname()
         elif irods_config.is_resource:
-            server_config['icat_host'] = prompt(
+            server_config['icat_host'] = irods.lib.prompt(
                 'iRODS catalog (ICAT) host',
-                input_filter=character_count_filter(minimum=1, field='iRODS catalog hostname'))
+                input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS catalog hostname'))
 
-        server_config['zone_port'] = default_prompt(
+        server_config['zone_port'] = irods.lib.default_prompt(
             'iRODS server\'s port',
             default=[server_config.get('zone_port', 1247)],
-            input_filter=int_filter(field='Port'))
+            input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_port_range_start'] = default_prompt(
+        server_config['server_port_range_start'] = irods.lib.default_prompt(
             'iRODS port range (begin)',
             default=[server_config.get('server_port_range_start', 20000)],
-            input_filter=int_filter(field='Port'))
+            input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_port_range_end'] = default_prompt(
+        server_config['server_port_range_end'] = irods.lib.default_prompt(
             'iRODS port range (end)',
             default=[server_config.get('server_port_range_end', 20199)],
-            input_filter=int_filter(field='Port'))
+            input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['server_control_plane_port'] = default_prompt(
+        server_config['server_control_plane_port'] = irods.lib.default_prompt(
             'Control Plane port',
             default=[server_config.get('server_control_plane_port', 1248)],
-            input_filter=int_filter(field='Port'))
+            input_filter=irods.lib.int_filter(field='Port'))
 
-        server_config['schema_validation_base_uri'] = default_prompt(
+        server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
             'Schema Validation Base URI (or off)',
             default=[server_config.get('schema_validation_base_uri', 'https://schemas.irods.org/configuration')],
-            input_filter=character_count_filter(minimum=1, field='Schema validation base URI'))
+            input_filter=irods.lib.character_count_filter(minimum=1, field='Schema validation base URI'))
 
-        server_config['zone_user'] = default_prompt(
+        server_config['zone_user'] = irods.lib.default_prompt(
             'iRODS server\'s administrator username',
             default=[server_config.get('zone_user', 'rods')],
-            input_filter=character_count_filter(minimum=1, field='iRODS server\'s administrator username'))
+            input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS server\'s administrator username'))
 
         confirmation_message = ''.join([
                 '\n',
@@ -297,22 +297,22 @@ def setup_server_config(irods_config):
                     server_config['zone_user']
                     )
 
-        if default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
+        if irods.lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
             break
 
-    server_config['zone_key'] = prompt(
+    server_config['zone_key'] = irods.lib.prompt(
         'iRODS server\'s zone key',
-        input_filter=character_count_filter(minimum=1, field='Zone key'),
+        input_filter=irods.lib.character_count_filter(minimum=1, field='Zone key'),
         echo=False)
 
-    server_config['negotiation_key'] = prompt(
+    server_config['negotiation_key'] = irods.lib.prompt(
         'iRODS server\'s negotiation key (32 characters)',
-        input_filter=character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
+        input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Negotiation key'),
         echo=False)
 
-    server_config['server_control_plane_key'] = prompt(
+    server_config['server_control_plane_key'] = irods.lib.prompt(
         'Control Plane key (32 characters)',
-        input_filter=character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
+        input_filter=irods.lib.character_count_filter(minimum=32, maximum=32, field='Control Plane key'),
         echo=False)
 
     if irods_config.is_resource:
@@ -320,125 +320,15 @@ def setup_server_config(irods_config):
 
     irods_config.commit(server_config, irods_config.server_config_path)
 
-def setup_database_config(irods_config):
-    l = logging.getLogger(__name__)
-    l.info(get_header('Configuring the database communications'))
-
-    if os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libpostgres.so')):
-        db_type = 'postgres'
-    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libmysql.so')):
-        db_type = 'mysql'
-    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'liboracle.so')):
-        db_type = 'oracle'
-    else:
-        raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
-    l.debug('setup_database_config has been called with database type \'%s\'.', db_type)
-
-    db_config = copy.deepcopy(irods_config.database_config)
-
-    server_config = copy.deepcopy(irods_config.server_config)
-
-    l.info('You are configuring an iRODS database plugin. '
-        'The iRODS server cannot be started until its database '
-        'has been properly configured.\n'
-        )
-
-    db_config['catalog_database_type'] = db_type
-    while True:
-        odbc_drivers = irods.database_connect.get_odbc_drivers_for_db_type(db_config['catalog_database_type'])
-        if odbc_drivers:
-            db_config['db_odbc_driver'] = default_prompt(
-                'ODBC driver for %s', db_config['catalog_database_type'],
-                default=odbc_drivers)
-        else:
-            db_config['db_odbc_driver'] = default_prompt(
-                'No default ODBC drivers configured for %s; falling back to bare library paths', db_config['catalog_database_type'],
-                default=irods.database_connect.get_odbc_driver_paths(db_config['catalog_database_type'],
-                    oracle_home=os.getenv('ORACLE_HOME', None)))
-
-        db_config['db_host'] = default_prompt(
-            'Database server\'s hostname or IP address',
-            default=[db_config.get('db_host', 'localhost')])
-
-        db_config['db_port'] = default_prompt(
-            'Database server\'s port',
-            default=[db_config.get('db_port', irods.database_connect.get_default_port_for_database_type(db_config['catalog_database_type']))],
-            input_filter=int_filter(field='Port'))
-
-        if db_config['catalog_database_type'] == 'oracle':
-            db_config['db_name'] = default_prompt(
-                'Service name',
-                default=[db_config.get('db_name', 'ICAT.example.org')])
-        else:
-            db_config['db_name'] = default_prompt(
-                'Database name',
-                default=[db_config.get('db_name', 'ICAT')])
-
-        db_config['db_username'] = default_prompt(
-                'Database username',
-                default=[db_config.get('db_username', 'irods')])
-
-        confirmation_message = ''.join([
-                '\n',
-                '-------------------------------------------\n',
-                'Database Type: %s\n',
-                'ODBC Driver:   %s\n',
-                'Database Host: %s\n',
-                'Database Port: %d\n',
-                'Database Name: %s\n' if db_config['catalog_database_type'] != 'oracle' else 'Service Name:  %s\n',
-                'Database User: %s\n',
-                '-------------------------------------------\n\n',
-                'Please confirm']) % (
-                    db_config['catalog_database_type'],
-                    db_config['db_odbc_driver'],
-                    db_config['db_host'],
-                    db_config['db_port'],
-                    db_config['db_name'],
-                    db_config['db_username'])
-
-        if default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
-            break
-
-    db_config['db_password'] = prompt(
-            'Database password',
-            echo=False)
-
-    irods_config.commit(db_config, irods_config.database_config_path)
-
-    if irods.database_interface.database_already_in_use_by_irods(irods_config):
-        l.warning(get_header(
-            'WARNING:\n'
-            'The database specified is an already-configured\n'
-            'iRODS database, so first-time database setup will\n'
-            'not be performed. Providing different inputs from\n'
-            'those provided the first time this script was run\n'
-            'will result in unspecified behavior, and may put\n'
-            'a previously working zone in a broken state. It\'s\n'
-            'recommended that you exit this script now if you\n'
-            'are running it manually. If you wish to wipe out\n'
-            'your current iRODS installation and associated data\n'
-            'catalog, drop the database and recreate it before\n'
-            're-running this script.'))
-
-    db_password_salt = prompt(
-            'Salt for passwords stored in the database',
-            echo=False)
-    if db_password_salt:
-        if 'environment_variables' not in server_config:
-            server_config['environment_variables'] = {}
-        server_config['environment_variables']['IRODS_DATABASE_USER_PASSWORD_SALT'] = db_password_salt
-
-    irods_config.commit(server_config, irods_config.server_config_path)
-
 def setup_client_environment(irods_config):
     l = logging.getLogger(__name__)
-    l.info(get_header('Setting up the client environment'))
+    l.info(irods.lib.get_header('Setting up the client environment'))
 
     print('\n', end='')
 
-    irods_config.admin_password = prompt(
+    irods_config.admin_password = irods.lib.prompt(
         'iRODS server\'s administrator password',
-        input_filter=character_count_filter(minimum=1, field='Admin password'),
+        input_filter=irods.lib.character_count_filter(minimum=1, field='Admin password'),
         echo=False)
 
     print('\n', end='')
@@ -472,118 +362,6 @@ def setup_client_environment(irods_config):
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
     irods_config.commit(service_account_dict, irods_config.client_environment_path)
-
-def get_header(message):
-    lines = [l.strip() for l in message.splitlines()]
-    length = 0
-    for line in lines:
-        length = max(length, len(line))
-    edge = '+' + '-' * (length + 2) + '+'
-    format_string = '{0:<' + str(length) + '}'
-    header_lines = ['', edge]
-    for line in lines:
-        header_lines.append('| ' + format_string.format(line) + ' |')
-    header_lines.append(edge)
-    header_lines.append('')
-    return '\n'.join(header_lines)
-
-def default_prompt(*args, **kwargs):
-    l = logging.getLogger(__name__)
-    default = kwargs.pop('default', [])
-    input_filter = kwargs.pop('input_filter', lambda x: x)
-
-    while True:
-        if default:
-            if len(default) == 1:
-                message = ''.join([
-                    args[0] % tuple(args[1:]),
-                    ' [%s]' % (default[0])])
-                user_input = prompt(message, **kwargs)
-                if not user_input:
-                    user_input = default[0]
-            else:
-                message = ''.join([
-                    args[0] % tuple(args[1:]), ':\n',
-                    '\n'.join(['%d. %s' % (i + 1, default[i]) for i in range(0, len(default))]),
-                    '\nPlease select a number or choose 0 to enter a new value'])
-                user_input = default_prompt(message, default=[1], **kwargs)
-                try:
-                    i = int(user_input) - 1
-                except (TypeError, ValueError):
-                    i = -1
-                if i in range(0, len(default)):
-                    user_input = default[i]
-                else:
-                    user_input = prompt('New value', **kwargs)
-        else:
-            user_input = prompt(*args, **kwargs)
-        try :
-            return input_filter(user_input)
-        except InputFilterError as e:
-            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
-            l.warning(e.args[0] if len(e.args) else "User input error.")
-
-def prompt(*args, **kwargs):
-    echo = kwargs.get('echo', True)
-    end = kwargs.get('end', ': ')
-    input_filter = kwargs.get('input_filter', lambda x: x)
-
-    l = logging.getLogger(__name__)
-    message = ''.join([args[0] % tuple(args[1:]), end])
-    while True:
-        l.debug(message)
-        if echo:
-            print(message, end='')
-            sys.stdout.flush()
-            user_input = sys.stdin.readline().rstrip('\n')
-            l.debug('User input: %s', user_input)
-        else:
-            if sys.stdin.isatty():
-                user_input = getpass.getpass(message)
-            else:
-                print('Warning: Cannot control echo output on the terminal (stdin is not a tty). Input may be echoed.', file=sys.stderr)
-                user_input = sys.stdin.readline().rstrip('\n')
-        if not sys.stdin.isatty():
-            print('\n', end='')
-        try :
-            return input_filter(user_input)
-        except InputFilterError as e:
-            l.debug('Error encountered in user input:', exc_info=sys.exc_info())
-            l.warning(e.args[0] if len(e.args) else "User input error.")
-
-def int_filter(field='Input'):
-    def f(x):
-        try:
-            return int(x)
-        except ValueError as e:
-            irods.six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
-    return f
-
-def set_filter(set_, field='Input'):
-    def f(x):
-        if x in set_:
-            return x
-        raise InputFilterError('%s must be chosen from %s' % (field, list(set_)))
-    return f
-
-def character_count_filter(minimum=None, maximum=None, field='Input'):
-    def f(x):
-        if (minimum is None or len(x) >= minimum) and (maximum is None or len(x) <= maximum):
-            return x
-        if minimum is not None and minimum < 0:
-            new_minimum = 0
-        else:
-            new_minimum = minimum
-        if new_minimum is not None and maximum is not None:
-            if new_minimum == maximum:
-                raise InputFilterError('%s must be exactly %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
-            if new_minimum < maximum:
-                raise InputFilterError('%s must be between %s and %s characters in length.' % (field, new_minimum, maximum))
-            raise IrodsError('Minimum character count %s must not be greater than maximum character count %s.' % (new_minimum, maximum))
-        if new_minimum is not None:
-            raise InputFilterError('%s must be at least %s character%s in length.' % (field, new_minimum, '' if maximum == 1 else 's'))
-        raise InputFilterError('%s may be at most %s character%s in length.' % (field, maximum, '' if maximum == 1 else 's'))
-    return f
 
 def main():
     l = logging.getLogger(__name__)
