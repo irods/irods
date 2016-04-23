@@ -1,5 +1,6 @@
 from __future__ import print_function
 import contextlib
+import filecmp
 import itertools
 import json
 import logging
@@ -12,6 +13,7 @@ import time
 
 from . import six
 
+from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
 from . import lib
 from . import json_validation
@@ -66,7 +68,6 @@ class IrodsConfig(object):
                 l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
                 if os.path.exists(self.odbc_ini_path):
                     with open(self.odbc_ini_path) as f:
-                        from . import database_connect
                         odbc_ini_contents = database_connect.load_odbc_ini(f)
                 else:
                     l.debug('No odbc.ini file present')
@@ -264,10 +265,13 @@ class IrodsConfig(object):
     def commit(self, config_dict, path, clear_cache=True, make_backup=False):
         l = logging.getLogger(__name__)
         l.info('Updating %s...', path)
-        if make_backup and os.path.exists(path):
-            shutil.copyfile(path, '.'.join([path, 'prev', str(time.time())]))
         with tempfile.NamedTemporaryFile(mode='wt', delete=False) as f:
             json.dump(config_dict, f, indent=4, sort_keys=True)
+        if os.path.exists(path):
+            if filecmp.cmp(f.name, path):
+                return
+            if make_backup:
+                shutil.copyfile(path, '.'.join([path, 'prev', str(time.time())]))
         shutil.move(f.name, path)
         if clear_cache:
             self.clear_cache()
