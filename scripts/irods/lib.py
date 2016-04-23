@@ -1,5 +1,6 @@
 from __future__ import print_function
 import base64
+import collections
 import contextlib
 import copy
 import errno
@@ -457,6 +458,11 @@ def get_header(message):
     header_lines.append(edge)
     header_lines.append('')
     return '\n'.join(header_lines)
+
+def nested_update(d, u):
+    for k, v in u.items():
+        d[k] = nested_update(d.get(k, {}), v) if isinstance(v, collections.Mapping) else u[k]
+    return d
 
 def prompt(*args, **kwargs):
     echo = kwargs.get('echo', True)

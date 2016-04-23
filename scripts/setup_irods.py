@@ -63,11 +63,11 @@ def setup_server(irods_config, json_configuration_file=None):
 
     check_hostname()
 
-    if json_configuration_file is None:
-        json_configuration_dict = None
-    else:
+    if json_configuration_file is not None:
         with open(json_configuration_file) as f:
             json_configuration_dict = json.load(f)
+    else:
+        json_configuration_dict = None
 
     l.info(irods.lib.get_header('Stopping iRODS...'))
     IrodsController(irods_config).stop()
@@ -75,22 +75,44 @@ def setup_server(irods_config, json_configuration_file=None):
     if not os.path.exists(irods_config.version_path):
         irods_config.commit(irods_config.version, irods_config.version_path)
 
-    setup_service_account(irods_config)
+    if json_configuration_dict is not None:
+        irods_user = json_configuration_dict['host_system_information']['service_account_user']
+        irods_group = json_configuration_dict['host_system_information']['service_account_group']
+    else:
+        irods_user, irods_group = get_irods_user_and_group(irods_config)
+
+    setup_service_account(irods_config, irods_user, irods_group)
 
     #Do the rest of the setup as the irods user
     if os.getuid() == 0:
         irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
-    determine_server_role(irods_config)
+    if json_configuration_dict is not None:
+        irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config())
+        if irods_config.is_catalog:
+            irods_config.commit(json_configuration_dict['database_config'], irods.paths.database_config())
+            from irods import database_interface
+            if database_interface.database_already_in_use_by_irods(irods_config):
+                raise IrodsError('Database specified already in use by iRODS.')
+        irods_config.commit(json_configuration_dict['hosts_config'], irods.paths.hosts_config())
+        irods_config.commit(json_configuration_dict['host_access_control_config'], irods.paths.host_access_control_config())
+        if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
+            os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
+        irods_config.commit(json_configuration_dict['service_account_environment'], irods_config.client_environment_path)
+        irods_config.admin_password = json_configuration_dict['admin_password']
+        default_resource_directory = json_configuration_dict.get('default_resource_directory', os.path.join(irods_config.irods_directory, 'Vault'))
+    else:
+        determine_server_role(irods_config)
 
-    if irods_config.is_catalog:
-        from irods import database_interface
-        l.info(irods.lib.get_header('Configuring the database communications'))
-        database_interface.setup_database_config(irods_config)
-    setup_server_config(irods_config)
-    setup_client_environment(irods_config)
+        if irods_config.is_catalog:
+            from irods import database_interface
+            l.info(irods.lib.get_header('Configuring the database communications'))
+            database_interface.setup_database_config(irods_config)
 
-    default_resource_directory = get_and_create_default_vault(irods_config)
+        setup_server_config(irods_config)
+        setup_client_environment(irods_config)
+        default_resource_directory = get_and_create_default_vault(irods_config)
+
     if irods_config.is_catalog:
         l.info(irods.lib.get_header('Setting up the database'))
         database_interface.test_catalog(irods_config)
@@ -160,19 +182,20 @@ def get_and_create_default_vault(irods_config):
 
     return default_resource_directory
 
-def setup_service_account(irods_config):
+def get_irods_user_and_group(irods_config):
     l = logging.getLogger(__name__)
-    l.info(irods.lib.get_header('Setting up the service account'))
-
-    irods_user = irods_config.irods_user
-    irods_group = irods_config.irods_group
     l.info('The iRODS service account name needs to be defined.')
-    if pwd.getpwnam(irods_user).pw_uid == 0:
+    if pwd.getpwnam(irods_config.irods_user).pw_uid == 0:
         irods_user = irods.lib.default_prompt('iRODS user', default=['irods'])
         irods_group = irods.lib.default_prompt('iRODS group', default=[irods_user])
     else:
-        irods_user = irods.lib.default_prompt('iRODS user', default=[irods_user])
-        irods_group = irods.lib.default_prompt('iRODS group', default=[irods_group])
+        irods_user = irods.lib.default_prompt('iRODS user', default=[irods_config.irods_user])
+        irods_group = irods.lib.default_prompt('iRODS group', default=[irods_config.irods_group])
+    return (irods_user, irods_group)
+
+def setup_service_account(irods_config, irods_user, irods_group):
+    l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Setting up the service account'))
 
     if irods_group not in [g.gr_name for g in grp.getgrall()]:
         l.info('Creating Service Group: %s', irods_group)
