@@ -110,15 +110,6 @@ def main():
         irods_config.injected_environment['irodsReconnect'] = ''
 
     irods_controller = IrodsController(irods_config)
-    try:
-        irods_controller.check_config()
-    except IrodsError as e:
-        l.error('Exception:', exc_info=True)
-        l.error('%s\n'
-                'Configuration files are missing or broken.\n'
-                'Exiting...' % (
-                    str(e)))
-        return 1
 
     try:
         operations_dict[operation]()
