@@ -106,6 +106,17 @@ int call_fileReadInp(
                    _inp);
 }
 
+int call_fileUnlinkInp(
+    irods::api_entry* _api,
+    rsComm_t*         _comm,
+    fileUnlinkInp_t*  _inp ) {
+    return _api->call_handler<
+               rsComm_t*,
+               fileUnlinkInp_t*>(
+                   _comm,
+                   _inp);
+}
+
 int call_fileMkdirInp(
     irods::api_entry* _api,
     rsComm_t*         _comm,
@@ -387,11 +398,11 @@ int call_dataObjCopyInp_transferStatOut(
 int call_dataOprInp_portalOprOut(
     irods::api_entry*   _api,
     rsComm_t*           _comm,
-    dataObjInp_t*       _inp,
+    dataOprInp_t*       _inp,
     portalOprOut_t**    _out ) {
     return _api->call_handler<
                rsComm_t*,
-               dataObjInp_t*,
+               dataOprInp_t*,
                portalOprOut_t**>(
                    _comm,
                    _inp,
@@ -817,6 +828,16 @@ int call_execCmdInp_execCmdOut(
                    _out);
 }
 
+int call_structFileOprInp(
+    irods::api_entry*   _api,
+    rsComm_t*           _comm,
+    structFileOprInp_t* _inp ) {
+    return _api->call_handler<
+               rsComm_t*,
+               structFileOprInp_t*>(
+                   _comm,
+                   _inp);
+}
 int call_subFileInp(
     irods::api_entry* _api,
     rsComm_t*         _comm,

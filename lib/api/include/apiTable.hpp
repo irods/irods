@@ -96,7 +96,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "fileUnlinkInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,fileUnlinkInp_t*)>(RS_FILE_UNLINK)),
         "file_unlink", irods::clearInStruct_noop,
-        (funcPtr)CALL_FILEREADINP
+        (funcPtr)CALL_FILEUNLINKINP
     },
     {
         FILE_MKDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
@@ -777,7 +777,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "StructFileOprInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,structFileOprInp_t*)>(RS_STRUCT_FILE_SYNC)),
 		"struct_file_sync", irods::clearInStruct_noop,
-        (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
+        (funcPtr)CALL_STRUCTFILEOPRINP
     },
     {
         COLL_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
@@ -791,7 +791,7 @@ static irods::apidef_t client_api_table_inp[] = {
         "StructFileOprInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,structFileOprInp_t*)>(RS_STRUCT_FILE_EXTRACT)),
 		"struct_file_extract", irods::clearInStruct_noop,
-        (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
+        (funcPtr)CALL_STRUCTFILEOPRINP
     },
     {
         STRUCT_FILE_EXT_AND_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,

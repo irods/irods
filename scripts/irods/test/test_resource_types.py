@@ -1899,6 +1899,7 @@ OUTPUT ruleExecOut
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = IrodsConfig().core_re_directory + "/core.re"

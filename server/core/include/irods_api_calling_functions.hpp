@@ -85,6 +85,16 @@ int call_fileReadInp_bytesBufOut(
 #endif
 
 #ifdef RODS_SERVER
+int call_fileUnlinkInp(
+    irods::api_entry*,
+    rsComm_t*,
+    fileUnlinkInp_t*);
+#define CALL_FILEUNLINKINP call_fileUnlinkInp
+#else
+#define CALL_FILEUNLINKINP NULL
+#endif
+
+#ifdef RODS_SERVER
 int call_fileReadInp(
     irods::api_entry*,
     rsComm_t*,
@@ -334,7 +344,7 @@ int call_dataObjCopyInp_transferStatOut(
 int call_dataOprInp_portalOprOut(
     irods::api_entry*,
     rsComm_t*,
-    dataObjInp_t*,
+    dataOprInp_t*,
     portalOprOut_t**);
 #define CALL_DATAOPRINP_PORTALOPROUT call_dataOprInp_portalOprOut
 #else
@@ -694,6 +704,16 @@ int call_execCmdInp_execCmdOut(
 #define CALL_EXECCMDINP_EXECCMDOUT call_execCmdInp_execCmdOut
 #else
 #define CALL_EXECCMDINP_EXECCMDOUT NULL
+#endif
+
+#ifdef RODS_SERVER
+int call_structFileOprInp(
+    irods::api_entry*,
+    rsComm_t*,
+    structFileOprInp_t*);
+#define CALL_STRUCTFILEOPRINP call_structFileOprInp
+#else
+#define CALL_STRUCTFILEOPRINP NULL
 #endif
 
 #ifdef RODS_SERVER
