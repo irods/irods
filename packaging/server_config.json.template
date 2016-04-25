@@ -64,7 +64,6 @@
          {
              "instance_name":"re-irods-instance",
              "plugin_name": "re-irods",
-             "shared_memory_instance" : "fuzzy_bunnies",
              "plugin_specific_configuration": {
                     "re_data_variable_mapping_set": [
                         {
@@ -81,7 +80,8 @@
                             "filename": "core"
                         }
                     ]
-             }
+             },
+             "shared_memory_instance" : "legacy_re"
          }
     ],
 
