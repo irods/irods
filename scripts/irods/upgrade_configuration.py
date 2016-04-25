@@ -59,6 +59,11 @@ def upgrade(irods_config):
     l.debug('Upgrading from version %s to version %s.', old_version['irods_version'], new_version['irods_version'])
 
     if old_version_tuple < (4, 2, 0):
+        if not os.path.exists(paths.service_account_file_path()):
+            with open(paths.service_account_file_path()) as f:
+                print('IRODS_SERVICE_ACCOUNT_NAME=%s' % (irods_config.irods_user), file=f)
+                print('IRODS_SERVICE_GROUP_NAME=%s' % (irods_config.irods_group), file=f)
+
         old_dir_to_new_dir_map = {
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'bin', 'cmd'): os.path.join(paths.irods_directory(), 'msiExecCmd_bin'),
                 os.path.join(paths.irods_directory(), 'iRODS', 'server', 'config', 'packedRei'): os.path.join(paths.irods_directory(), 'server', 'config', 'packedRei'),
