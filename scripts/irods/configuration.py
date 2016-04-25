@@ -90,7 +90,7 @@ class IrodsConfig(object):
     @property
     def version(self):
         if self._version is None:
-            self._version = load_json_config(paths.version_path(), template_filepath='.'.join([paths.version_path(), 'dist']))
+            self._version = load_json_config(paths.version_path())
         return self._version
 
     @property
