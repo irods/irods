@@ -46,6 +46,7 @@ import json
 import logging
 import pprint
 import pwd
+import shutil
 import stat
 import time
 import tempfile
@@ -73,7 +74,7 @@ def setup_server(irods_config, json_configuration_file=None):
     IrodsController(irods_config).stop()
 
     if not os.path.exists(irods_config.version_path):
-        irods_config.commit(irods_config.version, irods_config.version_path)
+        shutil.copyfile('.'.join([irods_config.version_path, 'dist']), irods_config.version_path)
 
     if json_configuration_dict is not None:
         irods_user = json_configuration_dict['host_system_information']['service_account_user']
