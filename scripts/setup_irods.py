@@ -89,14 +89,14 @@ def setup_server(irods_config, json_configuration_file=None):
         irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
 
     if json_configuration_dict is not None:
-        irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config())
+        irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config_path())
         if irods_config.is_catalog:
-            irods_config.commit(json_configuration_dict['database_config'], irods.paths.database_config())
+            irods_config.commit(json_configuration_dict['database_config'], irods.paths.database_config_path())
             from irods import database_interface
             if database_interface.database_already_in_use_by_irods(irods_config):
                 raise IrodsError('Database specified already in use by iRODS.')
-        irods_config.commit(json_configuration_dict['hosts_config'], irods.paths.hosts_config())
-        irods_config.commit(json_configuration_dict['host_access_control_config'], irods.paths.host_access_control_config())
+        irods_config.commit(json_configuration_dict['hosts_config'], irods.paths.hosts_config_path())
+        irods_config.commit(json_configuration_dict['host_access_control_config'], irods.paths.host_access_control_config_path())
         if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
             os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
         irods_config.commit(json_configuration_dict['service_account_environment'], irods_config.client_environment_path)
