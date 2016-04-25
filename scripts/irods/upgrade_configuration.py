@@ -19,7 +19,7 @@ def schema_name_from_path(path):
     suffix = '.json'
     if not path.endswith(suffix):
         raise IrodsError('Configuration file %s must end with "%s"' % (path, suffix))
-    return os.path.basename(path)[:len(suffix)]
+    return os.path.basename(path)[:-len(suffix)]
 
 def requires_upgrade(irods_config):
     if not os.path.exists(paths.version_path()):
@@ -87,12 +87,13 @@ def upgrade(irods_config):
     for path in configuration_file_list:
         upgrade_config_file(irods_config, path, new_version)
 
+    irods_config.clear_cache()
     if irods_config.is_catalog:
         upgrade_config_file(irods_config, paths.database_config_path(), new_version)
 
     upgrade_config_file(irods_config, irods_config.client_environment_path, new_version, schema_name='service_account_environment')
 
-    irods_config.commit(new_version, path, make_backup=True)
+    irods_config.commit(new_version, paths.version_path(), make_backup=True)
 
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     l = logging.getLogger(__name__)
@@ -112,13 +113,14 @@ def upgrade_config_file(irods_config, path, new_version, schema_name=None):
                 (schema_version, path, target_schema_version, '.'.join([irods_config.version_path, 'dist'])))
     if schema_version < target_schema_version:
         while schema_version < target_schema_version:
-            config_dict = run_schema_update(irods_config, config_dict, schema_name, schema_version + 1)
+            config_dict = run_schema_update(config_dict, schema_name, schema_version + 1)
             schema_version = schema_version_as_int(config_dict['schema_version'])
         irods_config.commit(config_dict, path, make_backup=True)
 
 
 def run_schema_update(config_dict, schema_name, next_schema_version):
-    l.debug('Upgrading %s to schema_version %d...')
+    l = logging.getLogger(__name__)
+    l.debug('Upgrading %s to schema_version %d...', schema_name, next_schema_version)
     if next_schema_version == 3:
         config_dict['schema_name'] = schema_name
         if schema_name == 'server_config':
@@ -126,19 +128,29 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                 config_dict['catalog_service_role'] = 'provider'
             else:
                 config_dict['catalog_service_role'] = 'consumer'
-            config_dict['re_plugins'] = [
+            config_dict['rule_engines'] = [
                     {
                         'instance_name': 're-instance',
-                        'plugin_name':'re',
-                        'namespaces': [
-                            { 'namespace': '' },
-                            { 'namespace':'audit_' },
-                            { 'namespace':'indexing_' }
+                        'plugin_name': 're',
+                        'plugin_specific_configuration': {
+                            'namespaces': [
+                                { 'namespace': '' },
+                                { 'namespace': 'audit_' },
+                                { 'namespace': 'indexing_' }
                             ]
+                        }
                     },
                     {
-                        'instance_name':'re-irods-instance',
-                        'plugin_name': 're-irods'
+                        'instance_name': 're-irods-instance',
+                        'plugin_name': 're-irods',
+                        'plugin_specific_configuration': dict(
+                            [(k, config_dict[k]) for k in [
+                                're_data_variable_mapping_set',
+                                're_function_name_mapping_set',
+                                're_rulebase_set']
+                            ]
+                        ),
+                        'shared_memory_instance': 'upgraded_legacy_re'
                     }
                 ]
 
