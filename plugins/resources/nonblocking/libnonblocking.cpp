@@ -938,7 +938,7 @@ irods::error non_blocking_file_closedir(
         irods::collection_object_ptr fco = boost::dynamic_pointer_cast< irods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
-        // make the callt to opendir
+        // make the call to opendir
         int status = closedir( fco->directory_pointer() );
 
         // =-=-=-=-=-=-=-
