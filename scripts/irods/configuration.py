@@ -13,7 +13,6 @@ import time
 
 from . import six
 
-from . import database_connect
 from .exceptions import IrodsError, IrodsWarning
 from . import lib
 from . import json_validation
@@ -67,6 +66,7 @@ class IrodsConfig(object):
                 l = logging.getLogger(__name__)
                 l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
                 if os.path.exists(self.odbc_ini_path):
+                    from . import database_connect
                     with open(self.odbc_ini_path) as f:
                         odbc_ini_contents = database_connect.load_odbc_ini(f)
                 else:
