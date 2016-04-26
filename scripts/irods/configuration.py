@@ -219,7 +219,7 @@ class IrodsConfig(object):
                 'host_access_control_config': {
                     'dict': self.host_access_control_config,
                     'path': paths.host_access_control_config_path()},
-                'irods_environment': {
+                'service_account_environment': {
                     'dict': self.client_environment,
                     'path': self.client_environment_path}}
 
