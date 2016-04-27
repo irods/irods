@@ -14,7 +14,7 @@ rsCloseCollection( rsComm_t*, int *handleInxInp ) {
     int status;
     int handleInx = *handleInxInp;
 
-    if ( handleInx < 0 || handleInx >= CollHandle.size() ||
+    if ( handleInx < 0 || static_cast<std::size_t>(handleInx) >= CollHandle.size() ||
             CollHandle[handleInx].inuseFlag != FD_INUSE ) {
         rodsLog( LOG_NOTICE,
                  "rsCloseCollection: handleInx %d out of range",
