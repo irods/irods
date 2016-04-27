@@ -31,7 +31,7 @@ set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-add_compile_options(-nostdinc++ -Wall -Werror)
+add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-parameter)
 link_libraries(c++abi)
 include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
