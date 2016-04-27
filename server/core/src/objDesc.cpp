@@ -576,7 +576,7 @@ int allocCollHandle() {
 }
 
 int freeCollHandle( int handleInx ) {
-    if ( handleInx < 0 || handleInx >= CollHandle.size() ) {
+    if ( handleInx < 0 || static_cast<std::size_t>(handleInx) >= CollHandle.size() ) {
         rodsLog( LOG_NOTICE,
                  "freeCollHandle: handleInx %d out of range", handleInx );
         return SYS_FILE_DESC_OUT_OF_RANGE;
