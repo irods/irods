@@ -29,7 +29,7 @@ namespace irods {
 
     ms_table_entry::ms_table_entry(
         const std::string& _name,
-        int                _num_args,
+        unsigned int                _num_args,
         boost::any         _fcn_ptr ) :
         plugin_base(
             "msvc",
