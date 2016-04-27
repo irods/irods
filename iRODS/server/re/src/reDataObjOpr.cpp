@@ -1772,7 +1772,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
  * \sideeffect none
  *
  * \return integer
- * \retval 0 upon success
+ * \retval 1 if a replica is trimmed, 0 if nothing trimmed
  * \pre none
  * \post none
  * \sa none

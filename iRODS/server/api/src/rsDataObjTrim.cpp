@@ -19,12 +19,12 @@
 #include "irods_hierarchy_parser.hpp"
 
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down
- * the number of replica of a file
+ * the number of replicas of a data object
  * Input -
  *    rsComm_t *rsComm
  *    dataObjInp_t *dataObjInp - The trim input
  *
- *  Returned val - return 1 if a copy is trimed. 0 if nothing trimed.
+ *  Returned val - return 1 if a copy is trimmed. 0 if nothing trimmed.
  */
 
 int
