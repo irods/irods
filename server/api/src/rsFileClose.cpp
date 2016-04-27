@@ -79,7 +79,7 @@ int _rsFileClose(
     rsComm_t*       _comm,
     fileCloseInp_t* _close_inp ) {
     //Bounds-check the input descriptor index
-    if ( _close_inp->fileInx < 0 || _close_inp->fileInx >= sizeof( FileDesc ) ) {
+    if ( _close_inp->fileInx < 0 || static_cast<std::size_t>(_close_inp->fileInx) >= sizeof( FileDesc ) ) {
         std::stringstream msg;
         msg << "L3 descriptor index (into FileDesc) ";
         msg << _close_inp->fileInx;
