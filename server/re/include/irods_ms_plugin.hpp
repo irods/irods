@@ -47,7 +47,7 @@ namespace irods {
             //         with no type checking
             ms_table_entry(
                 const std::string&, // ms name
-                int,                // num ms args
+                unsigned int,                // num ms args
                 boost::any );       // function pointer
 
             // =-=-=-=-=-=-=-
@@ -115,11 +115,11 @@ namespace irods {
                 } // call_handler
 
             int call(ruleExecInfo_t*,std::vector<msParam_t*>&);
-            int num_args() { return num_args_; }
+            unsigned int num_args() { return num_args_; }
 
         private:
             std::string operation_name_;
-            int num_args_;
+            unsigned int num_args_;
 
     }; // class ms_table_entry
 
@@ -136,4 +136,3 @@ namespace irods {
 }; // namespace irods
 
 #endif // __IRODS_MS_PLUGIN_HPP__
-
