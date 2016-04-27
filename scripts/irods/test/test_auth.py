@@ -64,7 +64,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
 class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
     def setUp(self):
         super(Test_Auth, self).setUp()
-        cfg = lib.open_and_load_json(os.path.join(IrodsConfig().irods_directory, 'tests', 'test_framework_configuration.json'))
+        cfg = lib.open_and_load_json(os.path.join(IrodsConfig().irods_directory, 'test', 'test_framework_configuration.json'))
         auth_user = cfg['irods_authuser_name']
         auth_pass = cfg['irods_authuser_password']
         self.auth_session = session.mkuser_and_return_session('rodsuser', auth_user, auth_pass, lib.get_hostname())
