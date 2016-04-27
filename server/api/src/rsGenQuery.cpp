@@ -221,7 +221,7 @@ irods::error add_resc_hier_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
     // craft new result string with the hiers
     sqlResult->len = max_len+1;
     sqlResult->value = (char*)malloc(sqlResult->len*_out->rowCnt);
-    for( int i = 0; i < resc_hiers.size(); ++i ) {
+    for( std::size_t i = 0; i < resc_hiers.size(); ++i ) {
         snprintf(
             &sqlResult->value[i*sqlResult->len],
             sqlResult->len,
