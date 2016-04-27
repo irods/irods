@@ -896,9 +896,8 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
 
     /* convert arguments from Res to msParam_t */
     /* char buf[1024]; */
-    int i = 0;
     int fillInParamLabel = node->degree == 2 && node->subtrees[1]->degree == ( int ) numOfStrArgs;
-    for ( i = 0; i < numOfStrArgs; i++ ) {
+    for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
         myArgv[i] = ( msParam_t * )malloc( sizeof( msParam_t ) );
         Res *res = args[i];
         if ( res != NULL ) {
@@ -953,7 +952,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
 
     if ( ii < 0 ) {
         if ( strcmp( msName, "msiExecCmd" ) == 0 ) {
-            for ( i = 0; i < numOfStrArgs; i++ ) {
+            for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
                 if ( myArgv[i] != NULL ) {
                     res = convertMsParamToRes( myArgv[i], r );
                     args[i] = res;
@@ -983,7 +982,7 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         RETURN;
     }
     /* params */
-    for ( i = 0; i < numOfStrArgs; i++ ) {
+    for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
         if ( myArgv[i] != NULL ) {
             res = convertMsParamToRes( myArgv[i], r );
             if ( res != NULL && getNodeType( res ) == N_ERROR ) {
@@ -1011,7 +1010,7 @@ ret:
         deleteMsParamArray( rei->msParamArray );
     }
     rei->msParamArray = origMsParamArray;
-    for ( i = 0; i < numOfStrArgs; i++ ) {
+    for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
         int freeStruct = TYPE( args[i] ) != T_IRODS  ? 1 : 0;
         clearMsParam( myArgv[i], freeStruct );
         free( myArgv[i] );
