@@ -709,7 +709,7 @@ void
 logBindVars(
     int level,
     std::vector<std::string> &bindVars ) {
-    for ( int i = 0; i < bindVars.size(); i++ ) {
+    for ( std::size_t i = 0; i < bindVars.size(); i++ ) {
         if ( !bindVars[i].empty() ) {
             rodsLog( level, "bindVar%d=%s", i + 1, bindVars[i].c_str() );
         }
@@ -756,13 +756,13 @@ cllExecSqlWithResultBV(
 
     myStatement->stmtPtr = hstmt;
 
-    for ( int i = 0; i < bindVars.size(); i++ ) {
+    for ( std::size_t i = 0; i < bindVars.size(); i++ ) {
         if ( !bindVars[i].empty() ) {
 
             stat = SQLBindParameter( hstmt, i + 1, SQL_PARAM_INPUT, SQL_C_CHAR,
                                      SQL_CHAR, 0, 0, const_cast<char*>( bindVars[i].c_str() ), bindVars[i].size(), const_cast<SQLLEN*>( &GLOBAL_SQL_NTS ) );
             char tmpStr[TMP_STR_LEN];
-            snprintf( tmpStr, sizeof( tmpStr ), "bindVar%d=%s", i + 1, bindVars[i].c_str() );
+            snprintf( tmpStr, sizeof( tmpStr ), "bindVar%ju=%s", static_cast<uintmax_t>(i + 1), bindVars[i].c_str() );
             rodsLogSql( tmpStr );
             if ( stat != SQL_SUCCESS ) {
                 rodsLog( LOG_ERROR,
