@@ -167,9 +167,10 @@ extern irods::resource_manager resc_mgr;
                                 "SetRoundRobinContextInp_PI", 0,
                                 NULL, 0,
                                 0, // null fcn ptr
-								"set_round_robin_context",
-								(funcPtr)CALL_setRoundRobinContext_IN
-                              }; // null fcn ptr, handled in delay_load
+                                "set_round_robin_context",
+                                (funcPtr)CALL_setRoundRobinContext_IN,
+                                nullptr // null fcn ptr, handled in delay_load
+                              };
         // =-=-=-=-=-=-=-
         // create an api object
         irods::api_entry* api = new irods::api_entry( def );
@@ -191,9 +192,3 @@ extern irods::resource_manager resc_mgr;
         return api;
 
     } // plugin_factory
-
-
-
-
-
-
