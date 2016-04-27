@@ -475,6 +475,16 @@ static bool replica_exceeds_high_water_mark(
         return false;
     }
 
+    if (hwm_val < 0) {
+        rodsLog(
+            LOG_ERROR,
+            "negative high water mark [%s]",
+            hwm_str.c_str() );
+        return false;
+    }
+
+    uintmax_t hwm_val_unsigned = static_cast<uintmax_t>(hwm_val);
+
     std::string vault_path;
     ret = _ctx.prop_map().get<std::string>(
                 irods::RESOURCE_PATH,
@@ -500,7 +510,7 @@ static bool replica_exceeds_high_water_mark(
 
     uintmax_t used_space = cap - free;
     uintmax_t new_used_space = _file_size + used_space;
-    if( new_used_space > hwm_val ) {
+    if( new_used_space > hwm_val_unsigned ) {
         return true;
     }
 
