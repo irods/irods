@@ -145,7 +145,7 @@ def test_put(irods_config):
     if irods.lib.execute_command(['iget', test_file_name, '-'])[0] != test_text:
         raise IrodsError('The text retrieved from iRODS did not match the text in the file put into iRODS')
     l.info('Removing the test file from iRODS...')
-    irods.lib.execute_command(['irm', test_file_name])
+    irods.lib.execute_command(['irm', '-f', test_file_name])
 
     l.info('Success.')
 
