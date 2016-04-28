@@ -1160,7 +1160,7 @@ namespace irods {
         if( !resource_name_map_.has_entry(leaf) ) {
             return ERROR(
                        SYS_RESC_DOES_NOT_EXIST,
-                       _hier );
+                       leaf );
         }
 
         resource_ptr resc = resource_name_map_[leaf];

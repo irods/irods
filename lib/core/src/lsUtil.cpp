@@ -178,7 +178,11 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     int i = 0;
     sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0,
                  *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
+#if 0 // XXXX - rescid
     sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescId; // JMC - backport 4636
+#else
+    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescHier; // JMC - backport 4636
+#endif
     char *tmpDataId = 0;
     int queryFlags = 0;
 
@@ -242,6 +246,13 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == NULL ) {
+        // If the index is not found then COL_D_RESC_HIER was most likely stripped
+        // from the query input to talk to an older zone.
+        // use resource name instead
+        rescHier = rescName;
+    }
+
     if ( ( replStatus = getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
@@ -262,14 +273,16 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
                  "printLsLong: getSqlResultByInx for COL_D_OWNER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
-
+#if 0 // XXXX - rescid
     if ( ( rescId = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_RESC_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
+#else
 
+#endif
     queryHandle_t query_handle;
     rclInitQueryHandle( &query_handle, conn );
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -284,7 +297,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
         collEnt.replStatus = atoi( &replStatus->value[replStatus->len * i] );
         collEnt.modifyTime = &dataModify->value[dataModify->len * i];
-
+#if 0 // XXXX - rescid
         rodsLong_t resc_id = strtoll(&rescId->value[rescId->len*i],0,0);
         char resc_hier[MAX_NAME_LEN];
         get_resc_hier_from_leaf_id(
@@ -292,6 +305,9 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
             resc_id,
             resc_hier );
             collEnt.resc_hier = resc_hier;
+#else
+        collEnt.resc_hier = &rescHier->value[rescHier->len * i];
+#endif
         if ( rodsArgs->veryLongOption == True ) {
             collEnt.chksum = &chksumStr->value[chksumStr->len * i];
             collEnt.phyPath = &dataPath->value[dataPath->len * i];
@@ -526,15 +542,29 @@ printCollCollEnt( collEnt_t *collEnt, int flags ) {
         else {
             if ( collEnt->specColl.collClass == MOUNTED_COLL ||
                     collEnt->specColl.collClass == LINKED_COLL ) {
+#if 0 // XXXX - rescid
                 printf( "  C- %s  %6.6s  %s  %s\n",
                         collEnt->collName, typeStr,
                         collEnt->specColl.objPath, collEnt->specColl.phyPath);
+#else 
+                printf( "  C- %s  %6.6s  %s  %s   %s\n",
+                        collEnt->collName, typeStr,
+                        collEnt->specColl.objPath, collEnt->specColl.phyPath,
+                        collEnt->specColl.rescHier );
+#endif
             }
             else {
+#if 0 // XXXX - rescid
                 printf( "  C- %s  %6.6s  %s  %s;;;%d\n",
                         collEnt->collName, typeStr,
                         collEnt->specColl.objPath, collEnt->specColl.cacheDir,
                         collEnt->specColl.cacheDirty );
+#else 
+                printf( "  C- %s  %6.6s  %s  %s;;;%s;;;%d\n",
+                        collEnt->collName, typeStr,
+                        collEnt->specColl.objPath, collEnt->specColl.cacheDir,
+                        collEnt->specColl.rescHier, collEnt->specColl.cacheDirty );
+#endif
             }
         }
     }
