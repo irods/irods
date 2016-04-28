@@ -122,7 +122,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
 
 
         stdout, _, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'shutdown', '--all'])
-        self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','SYS_HEADER_READ_LEN_ERR')
+        self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','USER_SOCK_CONNECT_ERR')
 
         IrodsController().start()
 
