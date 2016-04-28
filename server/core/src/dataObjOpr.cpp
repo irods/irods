@@ -93,7 +93,11 @@ getDataObjInfo(
     dataObjInfo_t *dataObjInfo;
     char *tmpStr;
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
+#if 0 // XXXX - rescid
                 *rescIdString, *filePath, *dataOwnerName, *dataOwnerZone,
+#else
+                *hierString, *filePath, *dataOwnerName, *dataOwnerZone,
+#endif
                 *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId,
                 *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType,
@@ -101,7 +105,11 @@ getDataObjInfo(
          *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString,
          *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments,
          *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName,
+#if 0 // XXXX - rescid
          *tmpIdString;
+#else
+         *tmpHierString;
+#endif
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
     int writeFlag;
@@ -135,8 +143,11 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_D_CREATE_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_MODIFY_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_DATA_MODE, 1 );
+#if 0 // XXXX - rescid
     addInxIval( &genQueryInp.selectInp, COL_D_RESC_ID, 1 );
-
+#else
+    addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
+#endif
     if ( accessPerm != NULL ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );
         addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
@@ -241,13 +252,21 @@ getDataObjInfo(
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+#if 0 // XXXX - rescid
     if ( ( rescIdString = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_RESC_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
-
+#else
+    if ( ( hierString = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
+            NULL ) {
+        rodsLog( LOG_NOTICE,
+                 "getDataObjInfo: getSqlResultByInx for COL_D_RESC_HIER failed" );
+        return UNMATCHED_KEY_OR_INDEX;
+    }
+#endif
     if ( ( filePath = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
@@ -337,7 +356,11 @@ getDataObjInfo(
         tmpVersion = &version->value[version->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
+#if 0 // XXXX - rescid
         tmpIdString = &rescIdString->value[rescIdString->len * i];
+#else
+        tmpHierString = &hierString->value[hierString->len * i];
+#endif
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataOwnerName = &dataOwnerName->value[dataOwnerName->len * i];
         tmpDataOwnerZone = &dataOwnerZone->value[dataOwnerZone->len * i];
@@ -355,6 +378,7 @@ getDataObjInfo(
 
         snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s", tmpCollName, tmpDataName );
 
+#if 0 // XXXX - rescid
         dataObjInfo->rescId = boost::lexical_cast<rodsLong_t>( tmpIdString );
         std::string resc_hier;
         irods::error ret = resc_mgr.leaf_id_to_hier( dataObjInfo->rescId, resc_hier );
@@ -363,9 +387,17 @@ getDataObjInfo(
             return ret.code();
         }
         rstrcpy( dataObjInfo->rescHier, resc_hier.c_str(), MAX_NAME_LEN );
-
+#else
+        rstrcpy( dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN );
+        irods::error ret = resc_mgr.hier_to_leaf_id( tmpHierString, dataObjInfo->rescId );
+        if( !ret.ok() ) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        std::string hier( tmpHierString );
+#endif
         irods::hierarchy_parser parser;
-        parser.set_string( resc_hier );
+        parser.set_string( tmpHierString );
         std::string leaf;
         parser.last_resc( leaf );
         rstrcpy( dataObjInfo->rescName, leaf.c_str(), NAME_LEN );

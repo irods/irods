@@ -145,13 +145,19 @@ getPhyPath(
     // add query to the struct for the collection name
     snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_parent_dir_name );
     addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
-
+#if 0 // XXXX - rescid
     // =-=-=-=-=-=-=-
     // add query to the struct for the resource id
     rodsLong_t resc_id;
     resc_mgr.hier_to_leaf_id( resc_hier, resc_id );
     snprintf( tmp_str, MAX_NAME_LEN, "='%Ld'", resc_id );
     addInxVal( &gen_inp.sqlCondInp, COL_D_RESC_ID, tmp_str );
+#else
+    // =-=-=-=-=-=-=-
+    // add query to the struct for the resource hierarchy
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", resc_hier.c_str() );
+    addInxVal( &gen_inp.sqlCondInp, COL_D_RESC_HIER, tmp_str );
+#endif
 
     // =-=-=-=-=-=-=-
     // include request for data path and resource hierarchy

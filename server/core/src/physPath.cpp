@@ -924,9 +924,9 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
 
     while ( status >= 0 ) {
         sqlResult_t *dataIdRes, *subCollRes, *dataNameRes, *replNumRes,
-                    *rescNameRes, *filePathRes, *rescIDRes;
+                    *rescNameRes, *filePathRes, *rescHierRes;
         char *tmpDataId, *tmpDataName, *tmpSubColl, *tmpReplNum,
-             *tmpRescName, *tmpFilePath, *tmpRescID;
+             *tmpRescName, *tmpFilePath, *tmpRescHier;
         dataObjInfo_t dataObjInfo;
 
         memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
@@ -967,10 +967,11 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
-        if ( ( rescIDRes = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) )
+
+        if ( ( rescHierRes = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
-                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_ID failed" );
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -981,7 +982,6 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             tmpReplNum = &replNumRes->value[replNumRes->len * i];
             tmpRescName = &rescNameRes->value[rescNameRes->len * i];
             tmpFilePath = &filePathRes->value[filePathRes->len * i];
-            tmpRescID = &rescIDRes->value[rescIDRes->len * i];
 
             dataObjInfo.dataId = strtoll( tmpDataId, 0, 0 );
             snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
@@ -989,14 +989,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             dataObjInfo.replNum = atoi( tmpReplNum );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
 
-            dataObjInfo.rescId = strtoll(tmpRescID,0,0);
-            std::string resc_hier;
-            irods::error ret = resc_mgr.leaf_id_to_hier(dataObjInfo.rescId,resc_hier);
-            if( !ret.ok() ) {
-                irods::log(PASS(ret));
-            } else {
-                rstrcpy( dataObjInfo.rescHier, resc_hier.c_str(), MAX_NAME_LEN );
-            }
+            rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
 
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 

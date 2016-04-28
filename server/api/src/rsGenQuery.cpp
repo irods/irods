@@ -126,6 +126,40 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 } // add_resc_grp_name_to_query_out
 
 static
+irods::error get_resc_id_cond_for_hier_cond(
+        const char* _cond,
+       std::string& _new_cond ) {
+    std::string in_cond( _cond );
+    std::string::size_type p0 = in_cond.find_first_of("'");
+    if(p0 == std::string::npos) {
+        return ERROR(
+                   SYS_INVALID_INPUT_PARAM,
+                   _cond );
+    }
+
+    std::string::size_type p1 = in_cond.find_last_of("'");
+    if(p0 == std::string::npos) {
+        return ERROR(
+                   SYS_INVALID_INPUT_PARAM,
+                   _cond );
+    }
+
+    std::string hier = in_cond.substr(p0,p1-1);
+
+    rodsLong_t id = 0;
+    irods::error ret = resc_mgr.hier_to_leaf_id(hier,id);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    std::stringstream idstr; idstr << id;
+    _new_cond = "='"+idstr.str()+"'";
+
+    return SUCCESS();
+
+} // get_resc_id_cond_for_hier_cond
+
+static
 irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos ) {
     // sanity check
     if ( !_inp ) {
@@ -134,10 +168,10 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
 
     // =-=-=-=-=-=-=-
     // cache pointers to the incoming inxIvalPair
-    inxIvalPair_t tmp;
-    tmp.len   = _inp->selectInp.len;
-    tmp.inx   = _inp->selectInp.inx;
-    tmp.value = _inp->selectInp.value;
+    inxIvalPair_t tmpI;
+    tmpI.len   = _inp->selectInp.len;
+    tmpI.inx   = _inp->selectInp.inx;
+    tmpI.value = _inp->selectInp.value;
 
     // =-=-=-=-=-=-=-
     // zero out the selectInp to copy
@@ -146,19 +180,56 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
 
     // =-=-=-=-=-=-=-
     // iterate over tmp and replace resource group with resource name
-    for ( int i = 0; i < tmp.len; ++i ) {
-        if ( tmp.inx[i] == COL_D_RESC_HIER ) {
-            addInxIval( &_inp->selectInp, COL_D_RESC_ID, tmp.value[i] );
+    for ( int i = 0; i < tmpI.len; ++i ) {
+        if ( tmpI.inx[i] == COL_D_RESC_HIER ) {
+            addInxIval( &_inp->selectInp, COL_D_RESC_ID, tmpI.value[i] );
             _pos = i;
         }
         else {
-            addInxIval( &_inp->selectInp, tmp.inx[i], tmp.value[i] );
+            addInxIval( &_inp->selectInp, tmpI.inx[i], tmpI.value[i] );
         }
     } // for i
 
     // cleanup
-    if ( tmp.inx ) { free( tmp.inx ); }
-    if ( tmp.value ) { free( tmp.value ); }
+    if ( tmpI.inx ) { free( tmpI.inx ); }
+    if ( tmpI.value ) { free( tmpI.value ); }
+
+
+    // =-=-=-=-=-=-=-
+    // cache pointers to the incoming inxIvalPair
+    inxValPair_t tmpV;
+    tmpV.len   = _inp->sqlCondInp.len;
+    tmpV.inx   = _inp->sqlCondInp.inx;
+    tmpV.value = _inp->sqlCondInp.value;
+
+    // =-=-=-=-=-=-=-
+    // zero out the selectInp to copy
+    // fresh indices and values
+    bzero( &_inp->sqlCondInp, sizeof( _inp->selectInp ) );
+
+    // =-=-=-=-=-=-=-
+    // iterate over tmp and replace resource group with resource name
+    for ( int i = 0; i < tmpV.len; ++i ) {
+        if ( tmpV.inx[i] == COL_D_RESC_HIER ) {
+            std::string new_cond = "='0'";
+            irods::error ret = get_resc_id_cond_for_hier_cond(
+                                   tmpV.value[i],
+                                   new_cond);
+            if(!ret.ok()) {
+                irods::log(PASS(ret));
+            }
+
+            addInxVal( &_inp->sqlCondInp, COL_D_RESC_ID, new_cond.c_str() );
+            _pos = i;
+        }
+        else {
+            addInxVal( &_inp->sqlCondInp, tmpV.inx[i], tmpV.value[i] );
+        }
+    } // for i
+
+    // cleanup
+    if ( tmpV.inx ) { free( tmpV.inx ); }
+    if ( tmpV.value ) { free( tmpV.value ); }
 
     return SUCCESS();
 

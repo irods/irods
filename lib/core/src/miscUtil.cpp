@@ -325,8 +325,9 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
     char collQCond[MAX_NAME_LEN];
     int status;
     char *rescName = NULL;
+#if 0 // XXXX - rescid
     char *resc_id = NULL;
-
+#endif
     if ( collection == NULL || genQueryOut == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
@@ -341,7 +342,7 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
         snprintf( collQCond, MAX_NAME_LEN, " = '%s'", collection );
         addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond );
     }
-
+#if 0 // XXXX - rescid
     if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
             condInput != NULL &&
             ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL &&
@@ -358,6 +359,14 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
         snprintf( collQCond, MAX_NAME_LEN, " = '%s'", resc_id );
         addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_ID, collQCond );
     }
+#else
+    if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
+            condInput != NULL &&
+            ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL ) {
+        snprintf( collQCond, MAX_NAME_LEN, " = '%s'", rescName );
+        addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond );
+    }
+#endif
 
     setQueryInpForData( flags, genQueryInp );
 
@@ -388,7 +397,11 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
     if ( ( flags & LONG_METADATA_FG ) != 0 ||
             ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_NAME, 1 );
+#if 0 // XXXX - rescid
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_ID, 1 );
+#else
+        addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
+#endif
         addInxIval( &genQueryInp->selectInp, COL_D_OWNER_NAME, 1 );
         addInxIval( &genQueryInp->selectInp, COL_DATA_REPL_NUM, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_REPL_STATUS, 1 );
@@ -912,10 +925,15 @@ int
 genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
                          dataObjSqlResult_t *dataObjSqlResult ) {
     genQueryOut_t *myGenQueryOut;
+#if 0 // XXXX - rescid
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
                 *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_id, *phyPath,
                 *ownerName, *replNum, *dataType; // JMC - backport 4636
-
+#else 
+    sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
+                *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_hier, *phyPath,
+                *ownerName, *replNum, *dataType; // JMC - backport 4636
+#endif
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
             dataObjSqlResult == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -1013,7 +1031,7 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     else {
         dataObjSqlResult->resource = *resource;
     }
-
+#if 0 // XXXX - rescid
     if ( ( resc_id = getSqlResultByInx( myGenQueryOut, COL_D_RESC_ID ) )
             == NULL ) {
         setSqlResultValue( &dataObjSqlResult->resc_id, COL_D_RESC_ID,
@@ -1022,6 +1040,17 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     else {
         dataObjSqlResult->resc_id = *resc_id;
     }
+#else
+    if ( ( resc_hier = getSqlResultByInx( myGenQueryOut, COL_D_RESC_HIER ) )
+            == NULL ) {
+        setSqlResultValue( &dataObjSqlResult->resc_hier, COL_D_RESC_HIER,
+                           "", myGenQueryOut->rowCnt );
+    }
+    else {
+        dataObjSqlResult->resc_hier = *resc_hier;
+    }
+#endif
+
 
     if ( ( dataType = getSqlResultByInx( myGenQueryOut, COL_DATA_TYPE_NAME ) ) // JMC - backport 4636
             == NULL ) {
@@ -1715,7 +1744,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
         outCollEnt->resource = &value[len * selectedInx];
-
+#if 0 // XXXX - rescid
         value = dataObjSqlResult->resc_id.value;
         len = dataObjSqlResult->resc_id.len;
 
@@ -1726,6 +1755,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             dataObjSqlResult->resc_hier.len = MAX_NAME_LEN;
             dataObjSqlResult->resc_hier.value = (char*)malloc( sizeof(char)*MAX_NAME_LEN);
             outCollEnt->resc_hier = dataObjSqlResult->resc_hier.value;
+
             int ret = get_resc_hier_from_leaf_id(
                           &collHandle->queryHandle,
                           resc_id,
@@ -1737,7 +1767,11 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
                     ret );
             }
         }
-
+#else
+        value = dataObjSqlResult->resc_hier.value;
+        len = dataObjSqlResult->resc_hier.len;
+        outCollEnt->resc_hier = &value[len * selectedInx];
+#endif
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
         outCollEnt->ownerName = &value[len * selectedInx];
