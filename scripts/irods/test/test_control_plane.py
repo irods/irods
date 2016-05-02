@@ -46,20 +46,23 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
     def test_shutdown(self):
         assert lib.re_shm_exists()
 
-        assert_command('irods-grid shutdown --all', 'STDOUT_SINGLELINE', 'shutting down')
-        time.sleep(2)
-        assert_command('ils', 'STDERR_SINGLELINE', 'USER_SOCK_CONNECT_ERR')
+        try:
+            assert_command('irods-grid shutdown --all', 'STDOUT_SINGLELINE', 'shutting down')
+            #time.sleep(2)
+            assert_command('ils', 'STDERR_SINGLELINE', 'connectToRhost error')
 
-        assert not lib.re_shm_exists(), lib.re_shm_exists()
-
-        IrodsController().start()
+            assert not lib.re_shm_exists(), lib.re_shm_exists()
+        finally:
+            IrodsController().start()
 
     def test_shutdown_local_server(self):
         initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        assert_command(['irods-grid', 'shutdown', '--hosts', lib.get_hostname()], 'STDOUT_SINGLELINE', 'shutting down')
-        time.sleep(10) # server gives control plane the all-clear before printing done message
-        assert 1 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'iRODS Server is done', initial_size_of_server_log)
-        IrodsController().start()
+        try:
+            assert_command(['irods-grid', 'shutdown', '--hosts', lib.get_hostname()], 'STDOUT_SINGLELINE', 'shutting down')
+            time.sleep(10) # server gives control plane the all-clear before printing done message
+            assert 1 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'iRODS Server is done', initial_size_of_server_log)
+        finally:
+            IrodsController().start()
 
     def test_invalid_client_environment(self):
         env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
@@ -78,89 +81,23 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         self.admin_sessions[0].environment_file_contents = env_backup
 
     def test_status_with_invalid_host(self):
-        assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
-
-        # update user environment to run the control plane
-        env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
-
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = '32_byte_server_control_plane_key'
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
-
-        stdout, _, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'status', '--all'])
-
-        assert_command('iadmin rmresc invalid_resc')
-
-        # validate the json is correct
         try:
-            vals = json.loads(stdout)
-        except ValueError:
-            self.admin_sessions[0].environment_file_contents = env_backup
-            raise
-
-        # validate we have the error clause in JSON
-        found = False
-        for obj in vals['hosts']:
-            if 'failed_to_connect' in obj:
-                found = True
-
-        self.admin_sessions[0].environment_file_contents = env_backup
-
-        assert found
+            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+            _, stdout, _ = assert_command(['irods-grid', 'status', '--all'], 'STDOUT_SINGLELINE')
+            assert {'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts']
+        finally:
+            assert_command('iadmin rmresc invalid_resc')
 
     def test_shutdown_with_invalid_host(self):
-        assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
-
-        # update user environment to run the control plane
-        env_backup = copy.deepcopy(self.admin_sessions[0].environment_file_contents)
-
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_port'] = 1248
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_key'] = '32_byte_server_control_plane_key'
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_num_hash_rounds'] = 16
-        self.admin_sessions[0].environment_file_contents['irods_server_control_plane_encryption_algorithm'] = 'AES-256-CBC'
-
-
-        stdout, _, _ = self.admin_sessions[0].run_icommand(['irods-grid', 'shutdown', '--all'])
-        self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','USER_SOCK_CONNECT_ERR')
-
-        IrodsController().start()
-
-        # validate the json is correct
         try:
-            vals = json.loads(stdout)
-        except ValueError:
+            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+            try:
+                _, stdout, _ = assert_command(['irods-grid', 'shutdown', '--all'], 'STDOUT_SINGLELINE', 'shutting down')
+                assert {'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts']
+
+                self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','connectToRhost error')
+            finally:
+                IrodsController().start()
+        finally:
             assert_command('iadmin rmresc invalid_resc')
-            self.admin_sessions[0].environment_file_contents = env_backup
-            raise
-
-        # validate we have the error clause in JSON
-        found = False
-        for obj in vals['hosts']:
-            if 'failed_to_connect' in obj:
-                found = True
-
-        assert_command('iadmin rmresc invalid_resc')
-        self.admin_sessions[0].environment_file_contents = env_backup
-
-        assert found
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
