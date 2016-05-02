@@ -12,6 +12,9 @@
 #include "genQuery.h"
 
 namespace irods {
+
+    const int MAX_ERROR_MESSAGES = 100;
+
 /// =-=-=-=-=-=-=-
 /// @brief local function to replicate a new copy for
 ///        proc_results_for_rebalance
@@ -507,6 +510,8 @@ namespace irods {
                        "empty results vector" );
         }
 
+        irods::error final_err = SUCCESS();
+
         // =-=-=-=-=-=-=-
         // iterate over the result set and repl the objects
         dist_child_result_t::const_iterator r_itr = _results.begin();
@@ -622,12 +627,19 @@ namespace irods {
                         root_resc,
                         src_mode );
             if ( !r_err.ok() ) {
-                return PASS( r_err );
+                final_err =  PASS( r_err );
+                irods::log(final_err);
+                if( _comm->rError.len < MAX_ERROR_MESSAGES ) {
+                    addRErrorMsg(
+                        &_comm->rError,
+                        final_err.code(),
+                        final_err.result().c_str());
+                }
             }
 
         } // for r_itr
 
-        return SUCCESS();
+        return final_err;
 
     } // proc_results_for_rebalance
 
