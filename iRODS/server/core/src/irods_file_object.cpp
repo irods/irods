@@ -209,8 +209,8 @@ namespace irods {
         keyValPair_t& _kvp ) {
         data_object::get_re_vars( _kvp );
 
-        _kvp[LOGICAL_PATH_KW] = logical_path_.c_str();
-        _kvp[DATA_TYPE_KW]    = data_type_.c_str();
+        addKeyVal( &_kvp, LOGICAL_PATH_KW, logical_path_.c_str() );
+        addKeyVal( &_kvp, DATA_TYPE_KW, data_type_.c_str() );
 
         std::stringstream fd;
         fd << file_descriptor_;
