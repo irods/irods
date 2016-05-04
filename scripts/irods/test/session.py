@@ -267,16 +267,16 @@ class IrodsSession(object):
         entries = [entry.strip() for entry in raw[1:]]
         return entries
 
-    def get_vault_path(self):
+    def get_vault_path(self, resource='demoResc'):
         out, err, rc = self.run_icommand(
-            ['iquest', '%s', "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+            ['iquest', '%s', "select RESC_VAULT_PATH where RESC_NAME = '{0}'".format(resource)])
         if err != '':
             raise OSError(
                 err, 'iquest wrote to stderr when called from get_vault_path()')
         return out.rstrip('\n')
 
-    def get_vault_session_path(self):
-        return os.path.join(self.get_vault_path(),
+    def get_vault_session_path(self, resource='demoResc'):
+        return os.path.join(self.get_vault_path(resource),
                             "home",
                             self.username,
                             self._session_id)
