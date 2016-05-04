@@ -1847,6 +1847,39 @@ OUTPUT ruleExecOut
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_iget_prefer_from_archive_corrupt_archive__ticket_3145(self):
+        # define core.re filepath
+        corefile = lib.get_core_re_dir() + "/core.re"
+        backupcorefile = corefile + "--" + self._testMethodName
+
+        # new file to put and get
+        filename = "archivepolicyfile.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        # manipulate core.re (leave as 'when_necessary' - default)
+
+        # put the file
+        self.admin.assert_icommand("iput " + filename)        # put file
+
+        # manually remove the replica in the archive vault
+        phypath = os.path.join(lib.get_vault_session_path(self.admin, 'archiveResc'), filename)
+        os.remove(phypath)
+
+        # manipulate the core.re to add the new policy
+        shutil.copy(corefile, backupcorefile)
+        with open(corefile, 'a') as f:
+            f.write('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
+
+        self.admin.assert_icommand("irm -f " + filename)
+
+        # restore the original core.re
+        shutil.copy(backupcorefile, corefile)
+        os.remove(backupcorefile)
+
+        # local cleanup
+        os.remove(filepath)
+
     @unittest.skip("TEMPORARY")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath

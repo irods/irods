@@ -157,17 +157,17 @@ def ils_output_to_entries(stdout):
     return entries
 
 
-def get_vault_path(session):
+def get_vault_path(session, resource='demoResc'):
     cmdout = session.run_icommand(
-        ['iquest', '%s', "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+        ['iquest', '%s', "select RESC_VAULT_PATH where RESC_NAME = '{0}'".format(resource)])
     if cmdout[2] != '':
         raise OSError(
             cmdout[2], 'iquest wrote to stderr when called from get_vault_path()')
     return cmdout[1].rstrip('\n')
 
 
-def get_vault_session_path(session):
-    return os.path.join(get_vault_path(session),
+def get_vault_session_path(session, resource='demoResc'):
+    return os.path.join(get_vault_path(session, resource),
                         "home",
                         session.username,
                         session._session_id)

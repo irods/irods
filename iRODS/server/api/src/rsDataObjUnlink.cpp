@@ -75,7 +75,10 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             msg << "failed in irods::resolve_resource_hierarchy for [";
             msg << dataObjUnlinkInp->objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
+
+            if( getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) == NULL ) {
+                return ret.code();
+            }
         }
 
         // =-=-=-=-=-=-=-
