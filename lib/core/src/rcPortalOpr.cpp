@@ -806,7 +806,11 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         // rcDataObjRead may return 0 in an error case, we need
         // to ensure the total written is matching the total size
         // otherwise we are also in an error case
-        if ( totalWritten == dataSize ) {
+
+        // in the instance of streaming a single thread, and a specific
+        // resource is specified, the dataSize will be 0 in the case where
+        // we possibly got a bad copy intentionally
+        if ( 0 == dataSize || totalWritten == dataSize ) {
             return 0;
 
         }
