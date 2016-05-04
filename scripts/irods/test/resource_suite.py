@@ -1,5 +1,6 @@
 from __future__ import print_function
 import base64
+import commands
 import copy
 import datetime
 import filecmp
@@ -167,6 +168,19 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         if os.path.exists(filepath):
             os.unlink(filepath)
+
+    def test_iget_specify_resource_with_single_thread__issue_3140(self):
+        # local setup
+        filename = "test_file_3140.txt"
+        filepath = lib.create_local_testfile(filename)
+        # assertions
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        self.admin.assert_icommand("iput " + filename)  # put file
+        self.admin.assert_icommand("iget -f -R demoResc -N0 " + filename)  # get file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])  # should be listed once
+
+        # local cleanup
+        output = commands.getstatusoutput('rm ' + filepath)
 
     ###################
     # imv
