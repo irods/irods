@@ -723,7 +723,7 @@ rodsSetSockOpt( int sock, int windowSize ) {
     }
 
 #ifdef _WIN32
-    status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
+    /*status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
                          ( char* )&windowSize, sizeof( windowSize ) );
     if ( status < 0 ) {
         savedStatus = status;
@@ -733,7 +733,7 @@ rodsSetSockOpt( int sock, int windowSize ) {
                          ( char* )&windowSize, sizeof( windowSize ) );
     if ( status < 0 ) {
         savedStatus = status;
-    }
+    }*/
 
     temp = 1;
     status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
@@ -742,7 +742,7 @@ rodsSetSockOpt( int sock, int windowSize ) {
         savedStatus = status;
     }
 #else
-    status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
+    /* status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
                          &windowSize, sizeof( windowSize ) );
     if ( status < 0 ) {
         savedStatus = status;
@@ -752,7 +752,7 @@ rodsSetSockOpt( int sock, int windowSize ) {
                          &windowSize, sizeof( windowSize ) );
     if ( status < 0 ) {
         savedStatus = status;
-    }
+    }*/
 
     temp = 1;
     status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
