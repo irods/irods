@@ -64,6 +64,8 @@ using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 #include <iomanip>
 #include <fstream>
 
+#include <boost/filesystem.hpp>
+
 int
 svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
     rErrMsg_t errMsg;
@@ -3276,6 +3278,66 @@ irods::error get_default_rule_plugin_instance(
 
 } // get_default_rule_plugin_instance
 
+static bool data_object_has_metadata(
+    rsComm_t*   _comm,
+    const char* _path,
+    const char* _attribute,
+    const char* _value,
+    const char* _unit ) {
+    namespace bfs = boost::filesystem;
+
+    genQueryInp_t inp;
+    memset( &inp, 0, sizeof( inp ) );
+    inp.maxRows = 1;
+
+    std::string query = "SELECT DATA_ID where DATA_NAME = '";
+
+    bfs::path p(_path);
+    query += p.filename().string();
+    query += "' ";
+
+    if( _attribute ) {
+        query += "AND META_DATA_ATTR_NAME = '";
+        query += _attribute;
+        query += "'";
+    }
+
+    if( _value ) {
+        query += " AND META_DATA_ATTR_VALUE = '";
+        query += _value;
+        query += "'";
+    }
+
+    if( _unit ) {
+        query += " AND META_DATA_ATTR_UNITS = '";
+        query += _unit;
+        query += "'";
+    }
+
+    int err = fillGenQueryInpFromStrCond( (char*)query.c_str(), &inp );
+    if(err < 0) {
+        rodsLog(
+            LOG_ERROR,
+            "fill query failed for [%s]",
+            query.c_str());
+    }
+
+    genQueryOut_t *out = 0;
+    int ret = rsGenQuery(_comm, &inp, &out);
+    if(ret < 0) {
+        freeGenQueryOut(&out);
+        return false;
+    }
+
+    if(out->rowCnt > 0) {
+       freeGenQueryOut(&out);
+       return true;
+    }
+
+    freeGenQueryOut(&out);
+    return false;
+}
+
 void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
     if ( !rsComm ) {
         THROW( SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm passed in" );
@@ -3286,6 +3348,17 @@ void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
     if ( const char* serialized_metadata = getValByKey( &dataObjInp->condInput, METADATA_INCLUDED_KW ) ) {
         std::vector<std::string> deserialized_metadata = irods::deserialize_metadata( serialized_metadata );
         for ( size_t i = 0; i + 2 < deserialized_metadata.size(); i += 3 ) {
+
+            bool avu_exists = data_object_has_metadata(
+                                   rsComm,
+                                   dataObjInp->objPath,
+                                   deserialized_metadata[i].c_str(),
+                                   deserialized_metadata[i + 1].c_str(),
+                                   deserialized_metadata[i + 2].c_str() );
+            if(avu_exists) {
+                continue;
+            }
+
             modAVUMetadataInp_t modAVUMetadataInp;
             memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
 
@@ -3295,10 +3368,9 @@ void applyMetadataFromKVP(rsComm_t *rsComm, dataObjInp_t *dataObjInp) {
             modAVUMetadataInp.arg3 = strdup( deserialized_metadata[i].c_str() );
             modAVUMetadataInp.arg4 = strdup( deserialized_metadata[i + 1].c_str() );
             modAVUMetadataInp.arg5 = strdup( deserialized_metadata[i + 2].c_str() );
-
             int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
             clearModAVUMetadataInp( &modAVUMetadataInp );
-            if ( status < 0 ) {
+            if ( CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME != status && status < 0 ) {
                 THROW( status, "rsModAVUMetadata failed" );
             }
         }
