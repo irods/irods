@@ -1,5 +1,69 @@
 # Release Notes
 
+## 4.1.9
+
+Release Date: 2016-07-27
+
+### Features
+
+ - Support for libs3 multipart, V4 auth, and non-Amazon datestamps [#3168] [#3174]
+
+### Bug Fixes
+
+ - Fix for ACL listings across federation [#2427]
+
+ - Fix for default resource resolution [#2713] [#3212] [#3220] [#3224]
+
+ - Fix for ilsresc [#3054]
+
+ - Fix for high_water_mark threshold handling [#3068] [#3173]
+
+ - Fix for init.d to use service account [#3076]
+
+ - Fix for a unixfilesystem plugin error code [#3080]
+
+ - Fix for iget to stdout [#3097]
+
+ - Fix for iput when both force and metadata flags set [#3114]
+
+ - Fix for iget when both resource and numThreads flags set [#3140]
+
+ - Fix for irodsReServer memory leak [#3146] [#3167] [#3171]
+
+ - Fix to rebalance operation when encountering single bad replica [#3147]
+
+ - Fix for C API freeCollEnt() [#3151]
+
+ - Fix msiDataObjTrim documentation error [#3152]
+
+ - Fix irm orphan catalog entry when using S3 [#3154]
+
+ - Fix buffer size settings on high latency connections [#3156]
+
+ - General support [#3158] [#3165]
+
+ - Fix for older python [#3172]
+
+ - Fix for recursive self icp [#3187]
+
+ - Fix for full resource iput attempts [#3195] [#3226]
+
+ - Fix for max connection regression [#3197]
+
+ - Additional izonereport documentation [#3209]
+
+ - Fix for missing LOG_WARN in rodsLog() [#3214]
+
+ - Fix for connection reuse in federation listing [#3215]
+
+ - Fix for listing the root of a remote zone [#3218]
+
+ - Fix for control plane with newer psutil [#3219]
+
+ - Fix for log level when out of range [#3225]
+
+ [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.9)
+
 ## 4.1.8
 
 Release Date: 2016-02-22
