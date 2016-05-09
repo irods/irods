@@ -37,7 +37,6 @@ include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
 set(
   IRODS_CLIENT_ICOMMANDS_EXECUTABLES
-  genOSAuth
   iadmin
   iapitest
   ibun
