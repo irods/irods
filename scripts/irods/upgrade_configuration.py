@@ -95,6 +95,16 @@ def upgrade(irods_config):
 
     irods_config.commit(new_version, paths.version_path(), make_backup=True)
 
+    os.chmod(paths.genosauth_path(),
+            stat.S_ISUID
+            | stat.S_IRUSR
+            | stat.S_IXUSR
+            | stat.S_IRGRP
+            | stat.S_IXGRP
+            | stat.S_IROTH
+            | stat.S_IXOTH
+            )
+
 def upgrade_config_file(irods_config, path, new_version, schema_name=None):
     l = logging.getLogger(__name__)
     with open(path, 'r') as f:

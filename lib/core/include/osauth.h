@@ -7,7 +7,7 @@
 
 
 #define OS_AUTH_FLAG     "##OS_AUTH"
-#define OS_AUTH_CMD      "genOSAuth"
+#define OS_AUTH_CMD      "../../var/lib/irods/clients/bin/genOSAuth"
 #define OS_AUTH_ENV_USER "OSAUTH_USERNAME"
 
 #ifdef __cplusplus
