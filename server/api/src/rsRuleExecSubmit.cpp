@@ -167,7 +167,7 @@ getReiFilePath( char *reiFilePath, char *userName ) {
     }
 
     std::string rei_dir;
-    irods::error ret = irods::get_full_path_for_config_file(
+    irods::error ret = irods::get_full_path_for_unmoved_configs(
                            PACKED_REI_DIR,
                            rei_dir );
     if ( !ret.ok() ) {

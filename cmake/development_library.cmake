@@ -11,8 +11,6 @@ install(
 
 set(
   IRODS_GENERATED_HEADERS
-  ${CMAKE_BINARY_DIR}/lib/core/include/irods_home_directory.hpp
-  ${CMAKE_BINARY_DIR}/lib/core/include/irods_plugin_home_directory.hpp
   ${CMAKE_BINARY_DIR}/lib/core/include/irods_version.h
   ${CMAKE_BINARY_DIR}/lib/core/include/rodsVersion.h
   ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp
@@ -51,7 +49,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_hash.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_hashtable.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_hierarchy_parser.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_home_directory.hpp.src
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_krb_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_kvp_string_parser.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_lexical_cast.hpp

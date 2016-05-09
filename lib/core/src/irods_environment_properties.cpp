@@ -5,11 +5,12 @@
 
 #include "irods_environment_properties.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_default_paths.hpp"
+#include "irods_exception.hpp"
 
 #include "rods.h"
 #include "irods_log.hpp"
 #include "irods_lookup_table.hpp"
-#include "irods_home_directory.hpp"
 #include "readServerConfig.hpp"
 
 #include <string>
@@ -40,8 +41,14 @@ namespace irods {
 
         // if a json version exists, then attempt to capture
         // that
-        std::string json_file( IRODS_HOME_DIRECTORY );
-        std::string json_session_file( IRODS_HOME_DIRECTORY );
+        std::string json_file;
+        try {
+            json_file = get_irods_home_directory().string();
+        } catch (const irods::exception& e) {
+            rodsLog(LOG_ERROR, e.what());
+            return ERROR(-1, "failed to get irods home directory");
+        }
+        std::string json_session_file = json_file;
         std::string env_var = to_env( CFG_IRODS_ENVIRONMENT_FILE_KW );
         char* irods_env = getenv(env_var.c_str());
         if ( irods_env && strlen( irods_env ) > 0 ) {
@@ -84,8 +91,15 @@ namespace irods {
         // one in the original irodsEnv file.
         std::stringstream ppid_str; ppid_str << getppid();
 
-        std::string legacy_file( IRODS_HOME_DIRECTORY );
-        std::string legacy_session_file( IRODS_HOME_DIRECTORY );
+        std::string legacy_file;
+        try {
+            legacy_file = get_irods_home_directory().string();
+        } catch (const irods::exception& e) {
+            rodsLog(LOG_ERROR, e.what());
+            return ERROR(-1, "failed to get irods home directory");
+        }
+
+        std::string legacy_session_file = legacy_file;
         char* irods_env = getenv(
                               to_env(
                                   CFG_IRODS_ENVIRONMENT_FILE_KW ).c_str() );

@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <limits>
 #include <openssl/md5.h>
+#include "boost/filesystem.hpp"
+#include "irods_default_paths.hpp"
 #ifndef windows_platform
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,7 +28,6 @@ extern "C" {
 
     int
     osauthVerifyResponse( char *challenge, char *username, char *response ) {
-#if defined(OS_AUTH)
         static char fname[] = "osauthVerifyResponse";
         char authenticator[16]; /* MD5 hash */
         char md5buffer[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
@@ -87,15 +88,6 @@ extern "C" {
         }
 
         return 0;
-
-#else /* defined OS_AUTH */
-        if ( ProcessType == CLIENT_PT ) {
-            return OSAUTH_NOT_BUILT_INTO_CLIENT;
-        }
-        else {
-            return OSAUTH_NOT_BUILT_INTO_SERVER;
-        }
-#endif
     }
 
     /*
@@ -109,7 +101,6 @@ extern "C" {
     osauthGenerateAuthenticator( char *username, int uid,
                                  char *challenge, char *key, int key_len,
                                  char *authenticator, int authenticator_len ) {
-#if defined(OS_AUTH)
         static char fname[] = "osauthGenerateAuthenticator";
         char *buffer, *bufp;
         int buflen;
@@ -138,9 +129,6 @@ extern "C" {
             memcpy( bufp, username, strlen( username ) );
             bufp += strlen( username );
         }
-#if defined(OS_AUTH_NO_UID)
-        uid = 0;
-#endif
         memcpy( bufp, &uid, sizeof( uid ) );
         bufp += sizeof( uid );
         if ( challenge ) {
@@ -160,15 +148,6 @@ extern "C" {
 
         free( buffer );
         return 0;
-
-#else /* defined OS_AUTH */
-        if ( ProcessType == CLIENT_PT ) {
-            return OSAUTH_NOT_BUILT_INTO_CLIENT;
-        }
-        else {
-            return OSAUTH_NOT_BUILT_INTO_SERVER;
-        }
-#endif
     }
 
     /*
@@ -180,18 +159,21 @@ extern "C" {
      */
     int
     osauthGetKey( char **key, int *key_len ) {
-#if defined(OS_AUTH)
         static char fname[] = "osauthGetKey";
-        char *keyfile;
+        const char *keyfile;
         int buflen, key_fd, nb;
 
         if ( key == NULL || key_len == NULL ) {
             return USER__NULL_INPUT_ERR;
         }
 
+        boost::filesystem::path default_os_auth_keyfile_path = irods::get_irods_root_directory();
+        default_os_auth_keyfile_path.append(OS_AUTH_KEYFILE);
+        std::string default_os_auth_keyfile_path_string = default_os_auth_keyfile_path.string();
+
         keyfile = getenv( "irodsOsAuthKeyfile" );
         if ( keyfile == NULL || *keyfile == '\0' ) {
-            keyfile = OS_AUTH_KEYFILE;
+            keyfile = default_os_auth_keyfile_path_string.c_str();
         }
 
         key_fd = open( keyfile, O_RDONLY, 0 );
@@ -244,14 +226,6 @@ extern "C" {
         *key = keybuf;
 
         return 0;
-#else /* defined OS_AUTH */
-        if ( ProcessType == CLIENT_PT ) {
-            return OSAUTH_NOT_BUILT_INTO_CLIENT;
-        }
-        else {
-            return OSAUTH_NOT_BUILT_INTO_SERVER;
-        }
-#endif
     }
 
     /*
@@ -263,7 +237,6 @@ extern "C" {
                    char *username,
                    char *authenticator,
                    int authenticator_buflen ) {
-#if defined(OS_AUTH)
         static char fname[] = "osauthGetAuth";
         int pipe1[2], pipe2[2];
         pid_t childPid;
@@ -288,6 +261,9 @@ extern "C" {
             close( pipe1[1] );
             return SYS_PIPE_ERROR - errno;
         }
+
+        boost::filesystem::path os_auth_command_path = irods::get_irods_root_directory();
+        os_auth_command_path.append(OS_AUTH_CMD);
 
         childPid = RODS_FORK();
 
@@ -314,9 +290,9 @@ extern "C" {
             setenv( OS_AUTH_ENV_USER, username, 1 );
 
             /* run the OS_AUTH_CMD */
-            execlp( OS_AUTH_CMD, OS_AUTH_CMD, ( char* )NULL );
+            execl( os_auth_command_path.string().c_str(), os_auth_command_path.string().c_str(), ( char* )NULL );
             rodsLog( LOG_ERROR, "%s: child execl %s failed. errno = %d",
-                     fname, OS_AUTH_CMD, errno );
+                     fname, os_auth_command_path.string().c_str(), errno );
         }
         else {
             /* in the parent process */
@@ -330,7 +306,7 @@ extern "C" {
             if ( nb < 0 ) {
                 rodsLog( LOG_ERROR,
                          "%s: error writing challenge_len to %s. errno = %d",
-                         fname, OS_AUTH_CMD, errno );
+                         fname, os_auth_command_path.string().c_str(), errno );
                 close( child_stdin );
                 close( child_stdout );
                 return SYS_PIPE_ERROR - errno;
@@ -339,7 +315,7 @@ extern "C" {
             if ( nb < 0 ) {
                 rodsLog( LOG_ERROR,
                          "%s: error writing challenge to %s. errno = %d",
-                         fname, OS_AUTH_CMD, errno );
+                         fname, os_auth_command_path.string().c_str(), errno );
                 close( child_stdin );
                 close( child_stdout );
                 return SYS_PIPE_ERROR - errno;
@@ -349,7 +325,7 @@ extern "C" {
             buflen = read( child_stdout, buffer, 128 );
             if ( buflen < 0 ) {
                 rodsLog( LOG_ERROR, "%s: error reading from %s. errno = %d",
-                         fname, OS_AUTH_CMD, errno );
+                         fname, os_auth_command_path.string().c_str(), errno );
                 close( child_stdin );
                 close( child_stdout );
                 return SYS_PIPE_ERROR - errno;
@@ -373,7 +349,7 @@ extern "C" {
             }
             else {
                 rodsLog( LOG_ERROR,
-                         "%s: some error running %s", fname, OS_AUTH_CMD );
+                         "%s: some error running %s", fname, os_auth_command_path.string().c_str() );
             }
 
             /* authenticator is in buffer now */
@@ -386,15 +362,6 @@ extern "C" {
         }
 
         return 0;
-
-#else /* defined OS_AUTH */
-        if ( ProcessType == CLIENT_PT ) {
-            return OSAUTH_NOT_BUILT_INTO_CLIENT;
-        }
-        else {
-            return OSAUTH_NOT_BUILT_INTO_SERVER;
-        }
-#endif
     }
 
     /*

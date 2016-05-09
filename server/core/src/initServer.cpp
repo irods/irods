@@ -1307,7 +1307,7 @@ purgeLockFileDir( int chkLockFlag ) {
     uint purgeTime;
 
     std::string lock_dir;
-    irods::error ret = irods::get_full_path_for_config_file(
+    irods::error ret = irods::get_full_path_for_unmoved_configs(
                            LOCK_FILE_DIR,
                            lock_dir );
     if ( !ret.ok() ) {

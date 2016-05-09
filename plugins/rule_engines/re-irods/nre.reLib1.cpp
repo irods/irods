@@ -335,13 +335,13 @@ initRuleStruct( const char* inst_name, int processType, rsComm_t *svrComm, const
     if ( processType == RULE_ENGINE_INIT_CACHE ) {
         resetMutex( inst_name );
     }
-    
-  
+
+
     i = readRuleStructFromFile( inst_name, processType, irbSet, &coreRuleStrct );
     if ( i < 0 ) {
         return i;
     }
-    
+
     snprintf( r2, sizeof( r2 ), "%s", dvmSet );
     coreRuleVarDef.MaxNumOfDVars = 0;
     appRuleVarDef.MaxNumOfDVars = 0;
@@ -949,7 +949,7 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
     }
     else {
         std::string re_dir;
-        irods::error ret = irods::get_full_path_for_config_file(
+        irods::error ret = irods::get_full_path_for_unmoved_configs(
                                "reConfigs",
                                re_dir );
         if ( !ret.ok() ) {
@@ -1478,7 +1478,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
     }
     else {
         std::string re_dir;
-        irods::error ret = irods::get_full_path_for_config_file(
+        irods::error ret = irods::get_full_path_for_unmoved_configs(
                                "reConfigs",
                                re_dir );
         if ( !ret.ok() ) {

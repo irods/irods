@@ -40,7 +40,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         # setup the irods.key file necessary for OSAuth
         keyfile_path = os.path.join(IrodsConfig().config_directory, 'irods.key')
         with open(keyfile_path, 'wt') as f:
-            print('gibberish\n', file=f, end='')
+            f.write('gibberish\n')
 
         # do the reauth
         self.auth_session.assert_icommand('iexit full')

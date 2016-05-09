@@ -16,9 +16,10 @@ namespace irods {
     error get_full_path_for_config_file(
         const std::string&, // config file name
         std::string& );     // full path for config file
+    error get_full_path_for_unmoved_configs(
+        const std::string&, // config file name
+        std::string& );     // full path for config file
 
 }; // namespace irods
 
 #endif // __IRODS_GET_FULL_PATH_FOR_CONFIG_FILE_HPP__
-
-

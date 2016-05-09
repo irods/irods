@@ -1225,7 +1225,7 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
     }
 
     std::string lock_path;
-    irods::error ret = irods::get_full_path_for_config_file(
+    irods::error ret = irods::get_full_path_for_unmoved_configs(
                            LOCK_FILE_DIR,
                            lock_path );
     if ( !ret.ok() ) {
@@ -1389,13 +1389,13 @@ int
 getLeafRescPathName(
     const std::string& _resc_hier,
     std::string& _ret_string ) {
-    rodsLong_t resc_id=0; 
+    rodsLong_t resc_id=0;
     irods::error ret = resc_mgr.hier_to_leaf_id(_resc_hier,resc_id);
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
     }
-        
+
     ret = irods::get_resource_property<std::string>( resc_id, irods::RESOURCE_PATH, _ret_string );
     if ( !ret.ok() ) {
         std::stringstream msg;
