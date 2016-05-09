@@ -6,8 +6,6 @@
 #include "irods_lookup_table.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
-#include "irods_home_directory.hpp"
-#include "irods_plugin_home_directory.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "server_report.h"
@@ -440,7 +438,14 @@ irods::error convert_service_account(
     json_t*& _svc_acct ) {
     // =-=-=-=-=-=-=-
     // if json file exists, simply load that
-    std::string env_file( irods::IRODS_HOME_DIRECTORY );
+    std::string env_file;
+    try {
+        env_file = irods::get_irods_home_directory().string();
+    } catch (const irods::exception& e) {
+        rodsLog(LOG_ERROR, e.what());
+        return ERROR(-1, "failed to get irods home directory");
+    }
+
     env_file += irods::IRODS_JSON_ENV_FILE;
 
     if ( fs::exists( env_file ) ) {
@@ -973,30 +978,30 @@ irods::error load_version_file(
     json_t*& _version ) {
     // =-=-=-=-=-=-=-
     // if json file exists, simply load that
-    std::string version_file( irods::IRODS_HOME_DIRECTORY );
-    version_file += "/VERSION.json";
+    fs::path version_file;
+    try {
+        version_file = irods::get_irods_home_directory();
+    } catch (const irods::exception& e) {
+        rodsLog(LOG_ERROR, e.what());
+        return ERROR(-1, "failed to get irods home directory");
+    }
+    version_file.append("VERSION.json");
 
     if ( fs::exists( version_file ) ) {
         json_error_t error;
-
         _version = json_load_file(
-                       version_file.c_str(),
+            version_file.string().c_str(),
                        0, &error );
         if ( !_version ) {
             std::string msg( "failed to load file [" );
-            msg += version_file;
+            msg += version_file.string();
             msg += "] json error [";
             msg += error.text;
             msg += "]";
-            return ERROR(
-                       -1,
-                       msg );
-
-
+            return ERROR(-1, msg );
         }
         else {
             return SUCCESS();
-
         }
     }
 

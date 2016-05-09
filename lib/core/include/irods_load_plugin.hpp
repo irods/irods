@@ -5,10 +5,11 @@
 // My Includes
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
-#include "irods_plugin_home_directory.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "getRodsEnv.h"
 #include "rodsErrorTable.h"
+#include "irods_default_paths.hpp"
+#include "irods_exception.hpp"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -26,13 +27,14 @@
 // dlopen, etc
 #include <dlfcn.h>
 
+
 namespace irods {
 
     static error resolve_plugin_path(
         const std::string& _type,
         std::string&       _path ) {
         namespace fs = boost::filesystem;
-        std::string plugin_home = PLUGIN_HOME;
+        fs::path plugin_home;
 
         rodsEnv env;
         int status = getRodsEnv( &env );
@@ -43,12 +45,21 @@ namespace irods {
 
         }
 
-        plugin_home += _type;
+        if (plugin_home.empty()) {
+            try {
+                plugin_home = get_irods_default_plugin_directory();
+            } catch (const irods::exception& e) {
+                rodsLog(LOG_ERROR, e.what());
+                return ERROR(SYS_INVALID_INPUT_PARAM, "failed to get default plugin directory");
+            }
+        }
+
+        plugin_home.append(_type);
 
         try {
             if ( !fs::exists( plugin_home ) ) {
                 std::string msg( "does not exist [" );
-                msg += plugin_home;
+                msg += plugin_home.string();
                 msg += "]";
                 return ERROR(
                            SYS_INVALID_INPUT_PARAM,
@@ -58,24 +69,25 @@ namespace irods {
 
             fs::path p = fs::canonical( plugin_home );
 
-            if ( fs::path::preferred_separator != *plugin_home.rbegin() ) {
-                plugin_home += fs::path::preferred_separator;
-            }
+            _path = plugin_home.string();
 
-            _path = plugin_home;
+            if ( fs::path::preferred_separator != *_path.rbegin() ) {
+                _path += fs::path::preferred_separator;
+            }
 
             rodsLog(
                 LOG_DEBUG,
                 "resolved plugin home [%s]",
-                plugin_home.c_str() );
+                _path.c_str() );
 
             return SUCCESS();
 
         }
         catch ( const fs::filesystem_error& _e ) {
             std::string msg( "does not exist [" );
-            msg += plugin_home;
-            msg += "]";
+            msg += plugin_home.string();
+            msg += "]\n";
+            msg += _e.what();
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );

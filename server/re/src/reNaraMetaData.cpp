@@ -54,7 +54,7 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
     char metafile[MAX_NAME_LEN];
 
     std::string re_dir;
-    irods::error ret = irods::get_full_path_for_config_file(
+    irods::error ret = irods::get_full_path_for_unmoved_configs(
                            "reConfigs",
                            re_dir );
     if ( !ret.ok() ) {
@@ -122,4 +122,3 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
     fclose( fp );
     return 0;
 }
-

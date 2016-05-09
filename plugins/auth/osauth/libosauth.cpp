@@ -29,7 +29,6 @@
 
 // =-=-=-=-=-=-=-
 // local includes
-#define OS_AUTH 1
 #include "osauth.h"
 
 int get64RandomBytes( char *buf );

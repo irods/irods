@@ -196,19 +196,6 @@ configure_file(
 
 # TODO all relative pathing removes the need for this header file
 set(IRODS_HOME_DIRECTORY var/lib/irods)
-configure_file(
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_home_directory.hpp.in
-  ${CMAKE_BINARY_DIR}/lib/core/include/irods_home_directory.hpp
-  @ONLY
-  )
-
-# TODO all relative pathing removes the need for this header file
-set(IRODS_PLUGIN_HOME_DIRECTORY /var/lib/irods/plugins/)
-configure_file(
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_home_directory.hpp.in
-  ${CMAKE_BINARY_DIR}/lib/core/include/irods_plugin_home_directory.hpp
-  @ONLY
-  )
 
 set(
   IRODS_LIBIRODS_CLIENT_CORE_SOURCES
@@ -829,6 +816,7 @@ set(
   IRODS_LIBIRODS_COMMON_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/core/src/reServerLib.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_default_paths.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_error.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_exception.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_stacktrace.cpp
@@ -844,13 +832,13 @@ set(
 add_library(
   irods_common
   SHARED
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${IRODS_LIBIRODS_COMMON_SOURCES}
   )
 target_link_libraries(
   irods_common
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   )
 target_include_directories(
   irods_common
@@ -1082,6 +1070,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_api_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_negotiation.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_parser.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_default_paths.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_environment_properties.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_error.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_exception.cpp
@@ -1575,7 +1564,7 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${CMAKE_SOURCE_DIR}/cmake/IRODSConfig.cmake.in
   ${CMAKE_BINARY_DIR}/IRODSConfig.cmake
-  INSTALL_DESTINATION usr/lib/irods/cmake/IRODSConfig.cmake
+  INSTALL_DESTINATION usr/lib/irods/cmake
   PATH_VARS IRODS_INCLUDE_DIRS
   )
 
@@ -1592,5 +1581,20 @@ install(
   DESTINATION usr/lib/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
+
+foreach(DATABASE_PLUGIN postgres oracle mysql)
+  string(TOUPPER ${DATABASE_PLUGIN} DATABASE_PLUGIN_UPPER)
+  add_custom_target(
+    non-package-install-${DATABASE_PLUGIN}
+    COMMAND
+    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_SERVER_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    DEPENDS
+    irodsAgent irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck test_chl irods_client_core irods_client_api_table irods_client_plugins irods_client_api irods_server irods_common irods_plugin_dependencies RodsAPIs irods_clerver helloworld_server helloworld_client msisync_to_archive msiobjget_http msiobjget_irods msiobjget_slink msiobjput_http msiobjput_irods msiobjput_slink compound deferred load_balanced mockarchive mso nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re re-irods native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
+    ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql test_cll_${DATABASE_PLUGIN} test_genq_${DATABASE_PLUGIN} test_genu_${DATABASE_PLUGIN}
+    )
+endforeach()
 
 include(CPack)

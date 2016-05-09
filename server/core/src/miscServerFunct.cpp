@@ -53,12 +53,12 @@ char *__loc1;
 #include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_home_directory.hpp"
 #include "irods_threads.hpp"
 #include "irods_lexical_cast.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "irods_random.hpp"
 #include "irods_resource_manager.hpp"
+#include "irods_default_paths.hpp"
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 
 #include <iomanip>
@@ -3109,9 +3109,14 @@ irods::error get_script_output_single_line(
     std::string&                    output ) {
     output.clear();
     std::stringstream exec;
+    try {
     exec << script_language
-         << " " << irods::IRODS_HOME_DIRECTORY
+         << " " << irods::get_irods_home_directory().string()
          << "/scripts/" << script_name;
+    } catch (const irods::exception& e) {
+        rodsLog(LOG_ERROR, e.what());
+        return ERROR(-1, "failed to get irods home directory");
+    }
     for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
         exec << " " << args[i];
     }
