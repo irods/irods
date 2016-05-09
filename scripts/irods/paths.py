@@ -134,6 +134,9 @@ def agent_executable():
 def service_account_file_path():
     return os.path.join(config_directory(), 'service_account.config')
 
+def genosauth_path():
+    return os.path.join(irods_directory(), 'clients', 'bin', 'genOSAuth')
+
 def irods_user():
     return pwd.getpwuid(os.stat(irods_directory()).st_uid).pw_name
 

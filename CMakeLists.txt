@@ -1424,6 +1424,44 @@ target_link_libraries(
   PRIVATE
   ${PAM_LIBRARY}
   )
+set_property(TARGET irodsPamAuthCheck PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+
+add_executable(
+  genOSAuth
+  ${CMAKE_SOURCE_DIR}/server/auth/src/genOSAuth.cpp
+  )
+target_include_directories(
+  genOSAuth
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  )
+target_link_libraries(
+  genOSAuth
+  PRIVATE
+  irods_client_core
+  irods_client_plugins
+  irods_client_api_table
+  irods_plugin_dependencies
+  irods_common
+  ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
+  ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
+  )
+set_property(TARGET genOSAuth PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_definitions(
+    genOSAuth
+    PRIVATE
+    ${IRODS_COMPILE_DEFINITIONS}
+    BOOST_SYSTEM_NO_DEPRECATED
+    )
+target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
 
 add_subdirectory(plugins/api)

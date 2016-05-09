@@ -245,10 +245,19 @@ def setup_service_account(irods_config, irods_user, irods_group):
                     pwd.getpwnam(irods_user).pw_uid,
                     grp.getgrnam(irods_group).gr_gid)
 
+    l.debug('Setting uid bit on %s', irods.paths.genosauth_path())
+    os.chmod(irods.paths.genosauth_path(),
+            stat.S_ISUID
+            | stat.S_IRUSR
+            | stat.S_IXUSR
+            | stat.S_IRGRP
+            | stat.S_IXGRP
+            | stat.S_IROTH
+            | stat.S_IXOTH
+            )
+
     #owner of top-level directory changed, clear the cache
     irods_config.clear_cache()
-
-    return (irods_user, irods_group)
 
 def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
