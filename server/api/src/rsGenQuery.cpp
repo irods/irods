@@ -131,20 +131,14 @@ irods::error get_resc_id_cond_for_hier_cond(
        std::string& _new_cond ) {
     std::string in_cond( _cond );
     std::string::size_type p0 = in_cond.find_first_of("'");
-    if(p0 == std::string::npos) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   _cond );
-    }
-
     std::string::size_type p1 = in_cond.find_last_of("'");
-    if(p0 == std::string::npos) {
+    if (p1==p0) {
         return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   _cond );
+            SYS_INVALID_INPUT_PARAM,
+            _cond );
     }
 
-    std::string hier = in_cond.substr(p0,p1-1);
+    std::string hier = in_cond.substr(p0+1, p1-p0-1);
 
     rodsLong_t id = 0;
     irods::error ret = resc_mgr.hier_to_leaf_id(hier,id);
