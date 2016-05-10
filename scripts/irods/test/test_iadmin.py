@@ -5,6 +5,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+import commands
 import contextlib
 import copy
 import getpass
@@ -380,6 +381,150 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     # =-=-=-=-=-=-=-
     # REBALANCE
+    def test_rebalance_for_invalid_data__ticket_3147(self):
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        self.admin.assert_icommand("iadmin mkresc pt passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_b passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_c1 passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc pt_c2 passthru", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+
+        self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
+                                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
+                                   ":/tmp/irods/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
+                                   ":/tmp/irods/pydevtest_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
+
+        self.admin.assert_icommand("iadmin addchildtoresc pt repl")
+        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
+        self.admin.assert_icommand("iadmin addchildtoresc repl pt_b")
+        self.admin.assert_icommand("iadmin addchildtoresc repl pt_c1")
+        self.admin.assert_icommand("iadmin addchildtoresc pt_b leaf_b")
+        self.admin.assert_icommand("iadmin addchildtoresc pt_c1 pt_c2")
+        self.admin.assert_icommand("iadmin addchildtoresc pt_c2 leaf_c")
+
+        # =-=-=-=-=-=-=-
+        # place data into the resource
+        test_file = "iput_test_file"
+        lib.make_file(test_file, 10)
+        num_children = 11
+        for i in range(num_children):
+            self.admin.assert_icommand("iput -R pt %s foo%d" % (test_file, i))
+
+        # =-=-=-=-=-=-=-
+        # surgically trim repls so we can rebalance
+        for i in range(num_children):
+            self.admin.assert_icommand("itrim -N1 -n 0 foo%d" % (i), 'STDOUT_SINGLELINE', 'Total size trimmed')
+
+        # =-=-=-=-=-=-=-
+        # visualize our pruning
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+        # =-=-=-=-=-=-=-
+        # remove physical data in order to test durability of the rebalance
+        path = self.admin.get_vault_session_path('leaf_a')
+        print(path)
+        print(os.listdir(path))
+        if os.path.isfile(os.path.join(path,'foo1')):
+            os.unlink(os.path.join(path,'foo1'))
+        if os.path.isfile(os.path.join(path,'foo3')):
+            os.unlink(os.path.join(path,'foo3'))
+        if os.path.isfile(os.path.join(path,'foo5')):
+            os.unlink(os.path.join(path,'foo5'))
+
+        path = self.admin.get_vault_session_path('leaf_b')
+        print(path)
+        print(os.listdir(path))
+        if os.path.isfile(os.path.join(path,'foo1')):
+            os.unlink(os.path.join(path,'foo1'))
+        if os.path.isfile(os.path.join(path,'foo3')):
+            os.unlink(os.path.join(path,'foo3'))
+        if os.path.isfile(os.path.join(path,'foo5')):
+            os.unlink(os.path.join(path,'foo5'))
+
+        path = self.admin.get_vault_session_path('leaf_c')
+        print(path)
+        print(os.listdir(path))
+        if os.path.isfile(os.path.join(path,'foo1')):
+            os.unlink(os.path.join(path,'foo1'))
+        if os.path.isfile(os.path.join(path,'foo3')):
+            os.unlink(os.path.join(path,'foo3'))
+        if os.path.isfile(os.path.join(path,'foo5')):
+            os.unlink(os.path.join(path,'foo5'))
+
+        # =-=-=-=-=-=-=-
+        # visualize our pruning
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+        # =-=-=-=-=-=-=-
+        # call rebalance function - the thing were actually testing... finally.
+        self.admin.assert_icommand("iadmin modresc pt rebalance", 'STDERR_SINGLELINE', 'UNIX_FILE_OPEN_ERR')
+
+        # =-=-=-=-=-=-=-
+        # visualize our rebalance
+        self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+        # =-=-=-=-=-=-=-
+        # assert that all the appropriate repl numbers exist for all the children
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 1 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 2 ", " foo0"])
+        self.admin.assert_icommand("ils -AL foo0", 'STDOUT_SINGLELINE', [" 3 ", " foo0"])
+
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 1 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 2 ", " foo2"])
+        self.admin.assert_icommand("ils -AL foo2", 'STDOUT_SINGLELINE', [" 3 ", " foo2"])
+
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 1 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 2 ", " foo4"])
+        self.admin.assert_icommand("ils -AL foo4", 'STDOUT_SINGLELINE', [" 3 ", " foo4"])
+
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 1 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 2 ", " foo6"])
+        self.admin.assert_icommand("ils -AL foo6", 'STDOUT_SINGLELINE', [" 3 ", " foo6"])
+
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 1 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 2 ", " foo7"])
+        self.admin.assert_icommand("ils -AL foo7", 'STDOUT_SINGLELINE', [" 3 ", " foo7"])
+
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 1 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 2 ", " foo8"])
+        self.admin.assert_icommand("ils -AL foo8", 'STDOUT_SINGLELINE', [" 3 ", " foo8"])
+
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 1 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 2 ", " foo9"])
+        self.admin.assert_icommand("ils -AL foo9", 'STDOUT_SINGLELINE', [" 3 ", " foo9"])
+
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 1 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 2 ", " foo10"])
+        self.admin.assert_icommand("ils -AL foo10", 'STDOUT_SINGLELINE', [" 3 ", " foo10"])
+
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        for i in range(num_children):
+            self.admin.assert_icommand("irm -f foo%d" % i)
+
+        self.admin.assert_icommand("iadmin rmchildfromresc pt_c2 leaf_c")
+        self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
+        self.admin.assert_icommand("iadmin rmchildfromresc pt_b leaf_b")
+        self.admin.assert_icommand("iadmin rmchildfromresc pt_c1 pt_c2")
+        self.admin.assert_icommand("iadmin rmchildfromresc repl pt_c1")
+        self.admin.assert_icommand("iadmin rmchildfromresc repl pt_b")
+        self.admin.assert_icommand("iadmin rmchildfromresc pt repl")
+
+        self.admin.assert_icommand("iadmin rmresc leaf_c")
+        self.admin.assert_icommand("iadmin rmresc leaf_b")
+        self.admin.assert_icommand("iadmin rmresc leaf_a")
+        self.admin.assert_icommand("iadmin rmresc pt_c2")
+        self.admin.assert_icommand("iadmin rmresc pt_c1")
+        self.admin.assert_icommand("iadmin rmresc pt_b")
+        self.admin.assert_icommand("iadmin rmresc repl")
+        self.admin.assert_icommand("iadmin rmresc pt")
+
     def test_rebalance_for_repl_node(self):
         hostname = lib.get_hostname()
 
