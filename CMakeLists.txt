@@ -194,9 +194,6 @@ configure_file(
   @ONLY
   )
 
-# TODO all relative pathing removes the need for this header file
-set(IRODS_HOME_DIRECTORY var/lib/irods)
-
 set(
   IRODS_LIBIRODS_CLIENT_CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
@@ -1452,6 +1449,7 @@ target_compile_definitions(
     )
 target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
+set(IRODS_HOME_DIRECTORY var/lib/irods)
 
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)

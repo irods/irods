@@ -203,9 +203,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #endif
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
-rodsLog( LOG_NOTICE, "XXXX - %s:%d 1", __FUNCTION__, __LINE__ );
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-rodsLog( LOG_NOTICE, "XXXX - %s:%d 2", __FUNCTION__, __LINE__ );
 
     clearGenQueryInp( &genQueryInp );
 
