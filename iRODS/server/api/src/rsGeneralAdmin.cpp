@@ -605,7 +605,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     ret = resc->call( rsComm, irods::RESOURCE_OP_REBALANCE, obj );
                     if ( !ret.ok() ) {
                         irods::log( PASSMSG( "failed to rebalance resource", ret ) );
-                        status = -1;
+                        status = ret.code();
 
                     }
 

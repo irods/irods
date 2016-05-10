@@ -444,6 +444,10 @@ namespace irods {
                        "empty results vector" );
         }
 
+        rError_t repl_errors;
+        memset(&repl_errors,0,sizeof(repl_errors));
+        replErrorStack(&_comm->rError, &repl_errors);
+
         irods::error final_err = SUCCESS();
 
         // =-=-=-=-=-=-=-
@@ -565,13 +569,15 @@ namespace irods {
                 irods::log(final_err);
                 if( _comm->rError.len < MAX_ERROR_MESSAGES ) {
                     addRErrorMsg(
-                        &_comm->rError,
+                        &repl_errors,
                         final_err.code(),
                         final_err.result().c_str());
                 }
             }
 
         } // for r_itr
+        
+        replErrorStack(&repl_errors, &_comm->rError);
 
         return final_err;
 
