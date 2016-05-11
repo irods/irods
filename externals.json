@@ -1,5 +1,5 @@
 {
-    "cmake": "irods-externals-cmake3.5.0-0",
+    "cmake": "irods-externals-cmake3.5.2-0",
     "others": [
         "irods-externals-avro1.7.7-0",
         "irods-externals-boost1.60.0-0",
