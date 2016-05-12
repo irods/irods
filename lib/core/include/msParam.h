@@ -161,8 +161,10 @@ int
 replMsParam( msParam_t *msParam, msParam_t *outMsParam );
 int
 replInOutStruct( void *inStruct, void **outStruct, const char *type );
+bytesBuf_t*
+replBytesBuf( const bytesBuf_t* in);
 int
-fillMsParam( msParam_t *msParam, char *label,
+fillMsParam( msParam_t *msParam, const char *label,
              const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf );
 msParam_t *
 getMsParamByLabel( msParamArray_t *msParamArray, const char *label );
@@ -178,17 +180,17 @@ int
 writeMsParam( char *buf, int len, msParam_t *msParam );
 int
 clearMsParamArray( msParamArray_t *msParamArray, int freeStruct );
-int
-fillIntInMsParam( msParam_t *msParam, int myInt );
-int
-fillFloatInMsParam( msParam_t *msParam, float myFloat );
-int
-fillCharInMsParam( msParam_t *msParam, char myChar );
-int
-fillDoubleInMsParam( msParam_t *msParam, rodsLong_t myDouble );
-int
+void
+fillIntInMsParam( msParam_t *msParam, const int myInt );
+void
+fillFloatInMsParam( msParam_t *msParam, const float myFloat );
+void
+fillCharInMsParam( msParam_t *msParam, const char myChar );
+void
+fillDoubleInMsParam( msParam_t *msParam, const rodsLong_t myDouble );
+void
 fillStrInMsParam( msParam_t *msParam, const char *myStr );
-int
+void
 fillBufLenInMsParam( msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf );
 int
 parseMspForDataObjInp( msParam_t *inpParam, dataObjInp_t *dataObjInpCache,

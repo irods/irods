@@ -214,8 +214,6 @@ static int carryOverMsParam(
 
     int i;
     msParam_t *mP, *mPt;
-    char *a;
-    char *b;
     if ( sourceMsParamArray == NULL ) {
         return 0;
     }
@@ -223,16 +221,12 @@ static int carryOverMsParam(
     for ( i = 0; i < sourceMsParamArray->len ; i++ ) {
         mPt = sourceMsParamArray->msParam[i];
         if ( ( mP = getMsParamByLabel( targetMsParamArray, mPt->label ) ) != NULL ) {
-            a = mP->label;
-            b = mP->type;
-            mP->label = NULL;
-            mP->type = NULL;
-            /** free(mP->inOutStruct);**/
             free( mP->inpOutBuf );
-            replMsParam( mPt, mP );
-            free( mP->label );
-            mP->label = a;
-            mP->type = b;
+            int status = replInOutStruct(mPt->inOutStruct, &mP->inOutStruct, mPt->type);
+            if ( status < 0 ) {
+                rodsLogError( LOG_ERROR, status, "%s encountered an error when calling replInOutStruct", __PRETTY_FUNCTION__);
+            }
+            mP->inpOutBuf = replBytesBuf(mPt->inpOutBuf);
         }
         else
             addMsParamToArray( targetMsParamArray,
@@ -281,7 +275,6 @@ static int carryOverMsParam(
  * \endcond
 **/
 int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
-    int i = 0;
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;
@@ -303,10 +296,9 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", ( char* )mPB->inOutStruct );
 
     addKeyVal( &execMyRuleInp.condInput, "execCondition", ( char * ) mPA->inOutStruct );
-
     tmpParamArray = ( msParamArray_t * ) malloc( sizeof( msParamArray_t ) );
     memset( tmpParamArray, 0, sizeof( msParamArray_t ) );
-    i = replMsParamArray( rei->msParamArray, tmpParamArray );
+    int i = replMsParamArray( rei->msParamArray, tmpParamArray );
     if ( i < 0 ) {
         free( tmpParamArray );
         return i;
@@ -600,7 +592,6 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
     long hours, minutes, seconds;
     char timeStr[TIME_LEN];
     char *format;
-    int status;
 
 
     /* For testing mode when used with irule --test */
@@ -648,9 +639,9 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
 
 
     /* result goes to outParam */
-    status = fillStrInMsParam( outParam, timeStr );
+    fillStrInMsParam( outParam, timeStr );
 
-    return status;
+    return 0;
 }
 
 
@@ -690,7 +681,6 @@ int
 msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei ) {
     char *format;
     char tStr0[TIME_LEN], tStr[TIME_LEN];
-    int status;
 
     /* For testing mode when used with irule --test */
     RE_TEST_MACRO( "    Calling msiGetSystemTime" )
@@ -712,9 +702,9 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
         getLocalTimeFromRodsTime( tStr0, tStr );
     }
 
-    status = fillStrInMsParam( outParam, tStr );
+    fillStrInMsParam( outParam, tStr );
 
-    return status;
+    return 0;
 }
 
 
@@ -754,7 +744,6 @@ int
 msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei ) {
     //CID26185: prevent buffer overrun
     char sys_time[TIME_LEN + 1], *hr_time;
-    int status;
 
     /* For testing mode when used with irule --test */
     RE_TEST_MACRO( "    Calling msiHumanToSystemTime" )
@@ -780,12 +769,12 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
 
 
     /* conversion */
-    if ( ( status = localToUnixTime( hr_time, &sys_time[1] ) )  == 0 ) {
-        status = fillStrInMsParam( outParam, sys_time );
+    if ( !localToUnixTime( hr_time, &sys_time[1] ) ) {
+        fillStrInMsParam( outParam, sys_time );
     }
 
 
-    return status;
+    return 0;
 }
 
 
@@ -1058,7 +1047,6 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
     char tStr[TIME_LEN];
     time_t myTime;
     struct tm *mytm;
-    int status;
 
     /* For testing mode when used with irule --test */
     RE_TEST_MACRO( "    Calling msiGetFormattedSystemTime" );
@@ -1083,8 +1071,8 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
                   mytm->tm_year + 1900, mytm->tm_mon + 1, mytm->tm_mday,
                   mytm->tm_hour, mytm->tm_min, mytm->tm_sec );
     }
-    status = fillStrInMsParam( outParam, tStr );
-    return status;
+    fillStrInMsParam( outParam, tStr );
+    return 0;
 }
 
 

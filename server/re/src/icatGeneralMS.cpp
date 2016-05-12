@@ -52,7 +52,6 @@ int
 msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t* ) {
     char *type;
     char tStr0[TIME_LEN], tStr[TIME_LEN];
-    int i;
 
     type = ( char* )typeInParam->inOutStruct;
 
@@ -63,8 +62,8 @@ msiGetIcatTime( msParam_t* timeOutParam, msParam_t* typeInParam, ruleExecInfo_t*
         getNowStr( tStr0 );
         getLocalTimeFromRodsTime( tStr0, tStr );
     }
-    i = fillStrInMsParam( timeOutParam, tStr );
-    return i;
+    fillStrInMsParam( timeOutParam, tStr );
+    return 0;
 }
 
 /**
