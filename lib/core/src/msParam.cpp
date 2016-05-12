@@ -109,12 +109,14 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
                      inpOutBuf );
     }
     else {
-        msParam_t inMsParam;
-        inMsParam.label = label;
-        inMsParam.type = type ? strdup( type ) : 0;
-        inMsParam.inOutStruct = inOutStruct;
-        inMsParam.inpOutBuf = inpOutBuf;
-        replMsParam( &inMsParam, msParamArray->msParam[len] );
+        int status = replInOutStruct( inOutStruct, &msParamArray->msParam[len]->inOutStruct, type );
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__ );
+            return status;
+        }
+        msParamArray->msParam[len]->label = label ? strdup(label) : NULL;
+        msParamArray->msParam[len]->type = type ? strdup( type ) : NULL;
+        msParamArray->msParam[len]->inpOutBuf = replBytesBuf(inpOutBuf);
     }
     msParamArray->len++;
 
@@ -122,105 +124,100 @@ addMsParamToArray( msParamArray_t *msParamArray, char *label,
 }
 
 int
-replMsParamArray( msParamArray_t *msParamArray,
-                  msParamArray_t *outMsParamArray ) {
-    int status = 0;
-
-    memset( outMsParamArray, 0, sizeof( msParamArray_t ) );
-
-    int newLen = ( msParamArray->len / PTR_ARRAY_MALLOC_LEN + 1 ) *
-                 PTR_ARRAY_MALLOC_LEN;
-
-    outMsParamArray->msParam =
-        ( msParam_t ** ) malloc( newLen * sizeof( *outMsParamArray->msParam ) );
-    memset( outMsParamArray->msParam, 0,
-            newLen * sizeof( *outMsParamArray->msParam ) );
-
-    outMsParamArray->len = msParamArray->len;
-    for ( int i = 0; i < msParamArray->len; i++ ) {
-        memset( outMsParamArray->msParam[i], 0, sizeof( msParam_t ) );
-        status = replMsParam( msParamArray->msParam[i],
-                              outMsParamArray->msParam[i] );
+replMsParamArray( msParamArray_t *in, msParamArray_t *out) {
+    if ( in == NULL || out == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    return status;
+    memset( out, 0, sizeof( msParamArray_t ) );
+
+    //TODO: this is horrible. check if it is necessary
+    int newLen = ( ( in->len / PTR_ARRAY_MALLOC_LEN ) + 1 ) * PTR_ARRAY_MALLOC_LEN;
+
+    out->msParam =
+        ( msParam_t ** ) malloc( newLen * sizeof( *out->msParam ) );
+    memset( out->msParam, 0,
+            newLen * sizeof( *out->msParam ) );
+
+    out->len = in->len;
+    for ( int i = 0; i < in->len; i++ ) {
+        memset( out->msParam[i], 0, sizeof( msParam_t ) );
+        int status = replMsParam(in->msParam[i], out->msParam[i]);
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status, "Error when calling replMsParam in %s", __PRETTY_FUNCTION__ );
+            return status;
+        }
+    }
+    return 0;
 }
 
 int
-replMsParam( msParam_t *msParam, msParam_t *outMsParam ) {
-    char *label;
-    const char * type;
-    void *inOutStruct;
-    bytesBuf_t *inpOutBuf;
-    int status;
-
-    label = msParam->label;
-    type = msParam->type;
-    inOutStruct = msParam->inOutStruct;
-    inpOutBuf = msParam->inpOutBuf;
-
-    if ( label != NULL ) {
-        outMsParam->label = strdup( label );
+replMsParam( msParam_t *in, msParam_t *out ) {
+    if ( in == NULL  || out == NULL ) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    outMsParam->type = type ? strdup( type ) : NULL;
-
-    status = replInOutStruct( inOutStruct, &outMsParam->inOutStruct, type );
-
+    int status = replInOutStruct(in->inOutStruct, &out->inOutStruct, in->type);
     if ( status < 0 ) {
-        rodsLogError( LOG_ERROR, status,
-                      "replMsParamArray: replInOutStruct error for type %s", type );
+        rodsLogError( LOG_ERROR, status, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__ );
         return status;
     }
-
-    if ( inpOutBuf != NULL && inpOutBuf->len > 0 ) {
-        outMsParam->inpOutBuf = ( bytesBuf_t * ) malloc( sizeof( bytesBuf_t ) );
-        outMsParam->inpOutBuf->len = inpOutBuf->len;
-        outMsParam->inpOutBuf->buf = malloc( inpOutBuf->len + 100 );
-        memcpy( outMsParam->inpOutBuf->buf, inpOutBuf->buf, inpOutBuf->len );
-    }
+    out->label = in->label ? strdup(in->label) : NULL;
+    out->type = in->type ? strdup(in->type) : NULL;
+    out->inpOutBuf = replBytesBuf(in->inpOutBuf);
     return 0;
 }
 
 int
 replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
-    int status;
-
-    if ( outStruct == NULL ) {
+    if (outStruct == NULL) {
+        rodsLogError( LOG_ERROR, SYS_INTERNAL_NULL_INPUT_ERR, "replInOutStruct was called with a null pointer in outStruct");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    else {
+    if (inStruct == NULL) {
         *outStruct = NULL;
+        return 0;
     }
-
-    if ( inStruct != NULL && type != NULL ) {
-        if ( strcmp( type, STR_MS_T ) == 0 ) {
-            *outStruct = ( void * ) strdup( ( char * )inStruct );
-        }
-        else {
-            bytesBuf_t *packedResult;
-            status = packStruct( inStruct, &packedResult, type,
-                                 NULL, 0, NATIVE_PROT );
-            if ( status < 0 ) {
-                rodsLogError( LOG_ERROR, status,
-                              "replInOutStruct: packStruct error for type %s", type );
-                return status;
-            }
-            status = unpackStruct( packedResult->buf,
-                                   ( void ** ) outStruct, type, NULL, NATIVE_PROT );
-            freeBBuf( packedResult );
-            if ( status < 0 ) {
-                rodsLogError( LOG_ERROR, status,
-                              "replInOutStruct: unpackStruct error for type %s",
-                              type );
-                return status;
-            }
-        }
+    if (type == NULL) {
+        rodsLogError( LOG_ERROR, SYS_INTERNAL_NULL_INPUT_ERR, "replInOutStruct was called with a null pointer in type");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    if ( strcmp( type, STR_MS_T ) == 0 ) {
+        *outStruct = strdup( ( char * )inStruct );
+        return 0;
+    }
+    bytesBuf_t *packedResult;
+    int status = packStruct( inStruct, &packedResult, type,
+                            NULL, 0, NATIVE_PROT );
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "replInOutStruct: packStruct error for type %s", type );
+        return status;
+    }
+    status = unpackStruct( packedResult->buf,
+                            outStruct, type, NULL, NATIVE_PROT );
+    freeBBuf( packedResult );
+    if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "replInOutStruct: unpackStruct error for type %s", type );
+        return status;
     }
     return 0;
 }
 
+bytesBuf_t*
+replBytesBuf( const bytesBuf_t* in) {
+    if (in == NULL || in->len == 0) {
+        return NULL;
+    }
+    bytesBuf_t* out = (bytesBuf_t*)malloc(sizeof(bytesBuf_t));
+    out->len = in->len;
+    //TODO: this is horrible. check if it is necessary
+    out->buf = malloc( out->len + 100 );
+    memcpy( out->buf, in->buf, out->len );
+    return out;
+}
+
+
 int
-fillMsParam( msParam_t *msParam, char *label,
+fillMsParam( msParam_t *msParam, const char *label,
              const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
     if ( label != NULL ) {
         msParam->label = strdup( label );
@@ -239,80 +236,59 @@ fillMsParam( msParam_t *msParam, char *label,
     return 0;
 }
 
-int
-fillIntInMsParam( msParam_t *msParam, int myInt ) {
-    int *myInOutStruct;
-
+void
+fillIntInMsParam( msParam_t *msParam, const int val ) {
     if ( msParam != NULL ) {
-        myInOutStruct = ( int* )malloc( sizeof( int ) );
-        *myInOutStruct = myInt;
-        fillMsParam( msParam, NULL, INT_MS_T, myInOutStruct, NULL );
+        msParam->inOutStruct = malloc( sizeof( int ) );
+        *(int*)(msParam->inOutStruct) = val;
+        msParam->type = strdup( INT_MS_T );
     }
-    return 0;
 }
 
-int
-fillFloatInMsParam( msParam_t *msParam, float myFloat ) {
-    float *myInOutStruct;
-
+void
+fillFloatInMsParam( msParam_t *msParam, const float val ) {
     if ( msParam != NULL ) {
-        myInOutStruct = ( float * )malloc( sizeof( float ) );
-        *myInOutStruct = myFloat;
-        fillMsParam( msParam, NULL, FLOAT_MS_T, myInOutStruct, NULL );
+        msParam->inOutStruct = malloc( sizeof( float ) );
+        *(float*)(msParam->inOutStruct) = val;
+        msParam->type = strdup( FLOAT_MS_T );
     }
-    return 0;
 }
 
-int
-fillDoubleInMsParam( msParam_t *msParam, rodsLong_t myDouble ) {
-    rodsLong_t *myInOutStruct;
-
+void
+fillDoubleInMsParam( msParam_t *msParam, const rodsLong_t val ) {
     if ( msParam != NULL ) {
-        myInOutStruct = ( rodsLong_t * )malloc( sizeof( rodsLong_t ) );
-        *myInOutStruct = myDouble;
-        fillMsParam( msParam, NULL, DOUBLE_MS_T, myInOutStruct, NULL );
+        msParam->inOutStruct = malloc( sizeof( rodsLong_t ) );
+        *(rodsLong_t*)(msParam->inOutStruct) = val;
+        msParam->type = strdup( DOUBLE_MS_T );
     }
-    return 0;
 }
 
-int
-fillCharInMsParam( msParam_t *msParam, char myChar ) {
-    char *myInOutStruct;
-
+void
+fillCharInMsParam( msParam_t *msParam, const char val ) {
     if ( msParam != NULL ) {
-        myInOutStruct = ( char * )malloc( sizeof( char ) );
-        *myInOutStruct = myChar;
-        fillMsParam( msParam, NULL, CHAR_MS_T, myInOutStruct, NULL );
+        msParam->inOutStruct = malloc( sizeof( float ) );
+        *(float*)(msParam->inOutStruct) = val;
+        msParam->type = strdup( FLOAT_MS_T );
     }
-    return 0;
 }
 
-int
-fillStrInMsParam( msParam_t *msParam, const char *myStr ) {
-    if ( !msParam ) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
+void
+fillStrInMsParam( msParam_t *msParam, const char *str ) {
+    if ( msParam != NULL ) {
+        msParam->inOutStruct = str ? strdup( str ) : NULL;
+        msParam->type = strdup( STR_MS_T );
     }
-
-    msParam->type = strdup( STR_MS_T );
-
-    if ( myStr ) {
-        msParam->inOutStruct = ( void * ) strdup( myStr );
-    }
-
-    return 0;
 }
 
 
-int
-fillBufLenInMsParam( msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf ) {
-    int *myInOutStruct;
-
+void
+fillBufLenInMsParam( msParam_t *msParam, int len, bytesBuf_t *bytesBuf ) {
     if ( msParam != NULL ) {
-        myInOutStruct = ( int* )malloc( sizeof( int ) );
-        *myInOutStruct = myInt;
-        fillMsParam( msParam, NULL, BUF_LEN_MS_T, myInOutStruct, bytesBuf );
+        msParam->inOutStruct = malloc( sizeof( int ) );
+        *(int*)(msParam->inOutStruct) = len;
+        msParam->inpOutBuf = bytesBuf;
+        msParam->type = strdup( BUF_LEN_MS_T );
     }
-    return 0;
 }
 
 

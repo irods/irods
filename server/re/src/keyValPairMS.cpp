@@ -46,7 +46,6 @@
 int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei ) {
     keyValPair_t *kvp;
     char *s, *k;
-    int i;
 
     RE_TEST_MACRO( "msiGetValByKey" );
 
@@ -60,8 +59,8 @@ int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ru
     if ( s == NULL ) {
         return UNMATCHED_KEY_OR_INDEX;
     }
-    i = fillStrInMsParam( outVal, s );
-    return i;
+    fillStrInMsParam( outVal, s );
+    return 0;
 }
 
 /**
