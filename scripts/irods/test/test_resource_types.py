@@ -417,6 +417,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip('does not deterministically purge repl 0')
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
