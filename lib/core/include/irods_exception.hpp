@@ -6,17 +6,24 @@
 #include <sstream>
 #include <vector>
 #include <inttypes.h>
+#include <boost/format.hpp>
 
 namespace irods {
 
     class exception : public std::exception {
         public:
             exception(
-                const int64_t     _code,
+                const int64_t      _code,
                 const std::string& _message,
                 const std::string& _file_name,
                 const uint32_t     _line_number,
                 const std::string& _function_name );
+            exception(
+                const int64_t        _code,
+                const boost::format& _message,
+                const std::string&   _file_name,
+                const uint32_t       _line_number,
+                const std::string&   _function_name );
             exception( const exception& );
             virtual ~exception() throw();
 
@@ -49,5 +56,7 @@ namespace irods {
 
 #define THROW( _code, _msg ) ( throw irods::exception( _code, _msg, __FILE__, __LINE__, __PRETTY_FUNCTION__ ) )
 #define RE_THROW( _msg, _excp ) _excp.add_message( _msg ); throw _excp;
+#define CATCH_EXC_AND_RETURN( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); return e.code() }
+#define CATCH_EXC_AND_LOG( throwing_expression ) try { throwing_expression; } catch (const irods::exception& e) { rodsLog( LOG_ERROR, e.code(), "%s encountered an exception on line %d in file %s:\n%s", __PRETTY_FUNCTION__, __LINE__, __FILE__, e.what()); }
 
 #endif // IRODS_EXCEPTION_HPP
