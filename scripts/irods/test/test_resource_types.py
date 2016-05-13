@@ -62,6 +62,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -81,6 +82,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -100,6 +102,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -398,6 +401,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -437,6 +441,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -2255,6 +2260,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         shutil.rmtree(irods_config.irods_directory + "/unixB1Vault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -2274,6 +2280,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -2292,6 +2299,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -3508,14 +3516,29 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
     def test_reliable_iput__ticket_2557(self):
         # local setup
         # break the second child resource
-        self.admin.assert_icommand("iadmin modresc unix2Resc path /nopes", "STDOUT_SINGLELINE", "Previous resource path")
-        filename = "reliableputfile.txt"
-        filepath = lib.create_local_testfile(filename)
-        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
-        self.admin.assert_icommand_fail("iput " + filename, 'STDOUT_SINGLELINE', "put error")  # put file
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix1Resc")  # should be listed
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix3Resc")  # should be listed
+        indicies = [1,2,3]
+        success = False
+        test = 0
+        for i in indicies:
+            try:
+                c1 = i % len(indicies)
+                self.admin.assert_icommand("iadmin modresc unix%dResc path /nopes" % (c1), "STDOUT_SINGLELINE", "Previous resource path")
+                filename = "reliableputfile.txt"
+                filepath = lib.create_local_testfile(filename)
+                self.admin.assert_icommand('ilsresc', 'STDOUT_SINGLELINE', "demoResc:replication") 
+                self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+                self.admin.assert_icommand("iput " + filename, 'STDERR_SINGLELINE', "put error")  # put file
+                test = i+1 % len(indicies)
+                self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix%dResc"%(test))  # should be listed
+                test = i+2 % len(indicies)
+                self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', "unix%dResc"%(test))  # should be listed
+                success = True
+            except:
+                success = False
+                continue
 
+            if success == True:
+                break
         # cleanup
         oldvault = IrodsConfig().irods_directory + "/unix2RescVault"
         self.admin.assert_icommand("iadmin modresc unix2Resc path " + oldvault, "STDOUT_SINGLELINE", "Previous resource path")
@@ -3726,6 +3749,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         os.remove(filepath)
         os.remove(doublefile)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -3748,6 +3772,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -3768,6 +3793,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skip("not support for non-compound resoruces")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
