@@ -771,7 +771,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
         return 0;
     }
-
+    
     int create_path = 0;
     err = irods::get_resource_property< int >(
               dataObjInfo->rescId,
@@ -924,9 +924,9 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
 
     while ( status >= 0 ) {
         sqlResult_t *dataIdRes, *subCollRes, *dataNameRes, *replNumRes,
-                    *rescNameRes, *filePathRes, *rescHierRes;
+                    *rescNameRes, *filePathRes, *rescIdRes;
         char *tmpDataId, *tmpDataName, *tmpSubColl, *tmpReplNum,
-             *tmpRescName, *tmpFilePath, *tmpRescHier;
+             *tmpRescName, *tmpFilePath, *tmpRescId;
         dataObjInfo_t dataObjInfo;
 
         memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
@@ -968,10 +968,10 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( rescHierRes = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) )
+        if ( ( rescIdRes = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) )
                 == NULL ) {
             rodsLog( LOG_ERROR,
-                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed" );
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
@@ -982,6 +982,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             tmpReplNum = &replNumRes->value[replNumRes->len * i];
             tmpRescName = &rescNameRes->value[rescNameRes->len * i];
             tmpFilePath = &filePathRes->value[filePathRes->len * i];
+            tmpRescId = &rescIdRes->value[rescIdRes->len * i];
 
             dataObjInfo.dataId = strtoll( tmpDataId, 0, 0 );
             snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
@@ -989,7 +990,11 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             dataObjInfo.replNum = atoi( tmpReplNum );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
 
-            rstrcpy( dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN );
+            dataObjInfo.rescId = strtoll(tmpRescId, 0, 0);
+            std::string resc_hier;
+            resc_mgr.leaf_id_to_hier(dataObjInfo.rescId, resc_hier);
+
+            rstrcpy( dataObjInfo.rescHier, resc_hier.c_str(), MAX_NAME_LEN );
 
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 
