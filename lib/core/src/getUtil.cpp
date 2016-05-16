@@ -493,7 +493,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                 }
             }
             else {
-                status = procAndWrriteRestartFile( rodsRestart, targChildPath );
+                status = procAndWriteRestartFile( rodsRestart, targChildPath );
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
