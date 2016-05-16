@@ -4,7 +4,6 @@
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <string>
-#include <sstream>
 #include <vector>
 #include <cstdarg>
 
@@ -12,16 +11,8 @@
 // irods includes
 #include "rodsType.h"
 
-// =-=-=-=-=-=-=-
-// boost assertion handling macro, needed everywhere
-// see http://stackoverflow.com/questions/1067226/c-multi-line-macro-do-while0-vs-scope-block
-// for the WHY!? regarding the while(0) loop
-#ifndef BOOST_ASSERT_MSG
-#define BOOST_ASSERT_MSG( cond, msg ) do \
-{ if (!(cond)) { std::ostringstream str; str << msg; std::cerr << str.str(); std::abort(); } \
-} while(0)
-#endif
 #include <boost/assert.hpp>
+#include <boost/format.hpp>
 
 namespace irods {
 /// =-=-=-=-=-=-=-
@@ -35,6 +26,13 @@ namespace irods {
                 bool,          // status
                 long long,     // error code
                 std::string,   // message
+                std::string,   // file name
+                int,           // line number
+                std::string ); // function
+            error(
+                bool,          // status
+                long long,     // error code
+                boost::format, // message
                 std::string,   // file name
                 int,           // line number
                 std::string ); // function
