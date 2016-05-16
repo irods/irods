@@ -407,12 +407,6 @@ irods::error exec_rule_text(
         _rt.c_str(),
         _ps.size());
 
-    ruleExecInfo_t* rei = nullptr;
-    irods::error err;
-    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
-        return err;
-    }
-
     auto itr = begin(_ps);
     ++itr; // skip tuple
     ++itr; // skip callback
@@ -420,6 +414,9 @@ irods::error exec_rule_text(
 
     ++itr; // skip msparam
     std::string out_desc = *boost::any_cast<std::string*>(*itr);
+    
+    ++itr; // skip msparam
+    ruleExecInfo_t* rei = boost::any_cast<ruleExecInfo_t*>(*itr);
 
     const int status = execMyRule(
                      (char*)_rt.c_str(),
@@ -453,12 +450,6 @@ irods::error exec_rule_expression(
         _rt.c_str(),
         _ps.size());
 
-    ruleExecInfo_t* rei = nullptr;
-    irods::error err;
-    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
-        return err;
-    }
-
     auto itr = begin(_ps);
     ++itr; // skip tuple
     ++itr; // skip callback
@@ -466,6 +457,9 @@ irods::error exec_rule_expression(
 
     ++itr; // skip msparam
     std::string out_desc = *boost::any_cast<std::string*>(*itr);
+    
+    ++itr; // skip msparam
+    ruleExecInfo_t* rei = boost::any_cast<ruleExecInfo_t*>(*itr);
 
     std::string rule_text = "{" + _rt + "}";
 
