@@ -192,7 +192,7 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
 
-            status = phymvDataObjUtil( conn, srcChildPath,
+            int status = phymvDataObjUtil( conn, srcChildPath,
                                        rodsArgs, dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -200,7 +200,6 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                               srcChildPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -209,7 +208,7 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
                 childDataObjInp.specColl = &collEnt.specColl;
             }
-            status = phymvCollUtil( conn, collEnt.collName, myRodsEnv,
+            int status = phymvCollUtil( conn, collEnt.collName, myRodsEnv,
                                     rodsArgs, &childDataObjInp );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 savedStatus = status;
