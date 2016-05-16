@@ -300,7 +300,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
 
-            status = chkStateForResume( conn, rodsRestart, srcChildPath,
+            int status = chkStateForResume( conn, rodsRestart, srcChildPath,
                                         rodsArgs, DATA_OBJ_T, &dataObjInp->condInput, 0 );
 
             if ( status < 0 ) {
@@ -326,15 +326,19 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 rodsLogError( LOG_ERROR, status,
                               "replCollUtil: replDataObjUtil failed for %s. status = %d",
                               srcChildPath, status );
+                savedStatus = status;
                 if ( rodsRestart->fd > 0 ) {
                     break;
-                }
-                else {
-                    savedStatus = status;
                 }
             }
             else {
                 status = procAndWriteRestartFile( rodsRestart, srcChildPath );
+                if ( status < 0 ) {
+                    rodsLogError( LOG_ERROR, status,
+                                "replCollUtil: procAndWriteRestartFile failed for %s. status = %d",
+                                srcChildPath, status );
+                    savedStatus = status;
+                }
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -346,7 +350,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             else {
                 childDataObjInp.specColl = NULL;
             }
-            status = replCollUtil( conn, collEnt.collName, myRodsEnv,
+            int status = replCollUtil( conn, collEnt.collName, myRodsEnv,
                                    rodsArgs, &childDataObjInp, rodsRestart );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 savedStatus = status;
