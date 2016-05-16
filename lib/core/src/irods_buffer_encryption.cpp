@@ -152,6 +152,7 @@ namespace irods {
                           iv,
                           key_size_ );
         if ( 1 != rnd_err ) {
+            delete [] iv;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in RAND_bytes - " );
@@ -225,6 +226,7 @@ namespace irods {
                   &_in_buf[0],
                   _in_buf.size() );
         if ( 0 == ret ) {
+            delete [] cipher_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_EncryptUpdate - " );
@@ -240,6 +242,7 @@ namespace irods {
                   cipher_text + cipher_len,
                   &final_len );
         if ( 0 == ret ) {
+            delete [] cipher_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_EncryptFinal_ex - " );
@@ -318,6 +321,7 @@ namespace irods {
                   &_in_buf[0],
                   _in_buf.size() );
         if ( 0 == ret ) {
+            delete [] plain_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_DecryptUpdate - " );
@@ -333,6 +337,7 @@ namespace irods {
                   plain_text + plain_len,
                   &final_len );
         if ( 0 == ret ) {
+            delete [] plain_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_DecryptFinal_ex - " );
