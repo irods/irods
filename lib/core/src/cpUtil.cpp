@@ -337,7 +337,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                 }
             }
             else {
-                status = procAndWrriteRestartFile( rodsRestart, targChildPath );
+                status = procAndWriteRestartFile( rodsRestart, targChildPath );
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {

@@ -2746,7 +2746,7 @@ writeRestartFile( rodsRestart_t * rodsRestart, char * lastDonePath ) {
 }
 
 int
-procAndWrriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
+procAndWriteRestartFile( rodsRestart_t * rodsRestart, char * donePath ) {
     int status;
 
     if ( rodsRestart->fd <= 0 ) {

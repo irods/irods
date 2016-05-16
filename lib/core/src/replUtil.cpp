@@ -334,7 +334,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 }
             }
             else {
-                status = procAndWrriteRestartFile( rodsRestart, srcChildPath );
+                status = procAndWriteRestartFile( rodsRestart, srcChildPath );
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
