@@ -180,7 +180,6 @@ initCondForChksum( rodsArguments_t *rodsArgs,
 int
 chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp ) {
-    int status;
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN];
     collHandle_t collHandle;
@@ -203,7 +202,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     else {
         queryFlags = 0;
     }
-    status = rclOpenCollection( conn, srcColl, queryFlags, &collHandle );
+    int status = rclOpenCollection( conn, srcColl, queryFlags, &collHandle );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "chksumCollUtil: rclOpenCollection of %s error. status = %d",
@@ -222,7 +221,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                       collEnt.collName, collEnt.dataName );
             /* screen unnecessary call to chksumDataObjUtil if user input a
              * resource. */
-            status = chksumDataObjUtil( conn, srcChildPath,
+            int status = chksumDataObjUtil( conn, srcChildPath,
                                         rodsArgs, dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -230,7 +229,6 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                               srcChildPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -242,7 +240,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             else {
                 childDataObjInp.specColl = NULL;
             }
-            status = chksumCollUtil( conn, collEnt.collName, myRodsEnv,
+            int status = chksumCollUtil( conn, collEnt.collName, myRodsEnv,
                                      rodsArgs, &childDataObjInp, collInp );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 return status;
