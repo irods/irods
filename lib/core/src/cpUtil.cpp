@@ -310,7 +310,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
                       targColl, collEnt.dataName );
 
-            status = chkStateForResume( conn, rodsRestart, targChildPath,
+            int status = chkStateForResume( conn, rodsRestart, targChildPath,
                                         rodsArgs, DATA_OBJ_T, &dataObjCopyInp->destDataObjInp.condInput,
                                         1 );
 
@@ -329,15 +329,19 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
                 rodsLogError( LOG_ERROR, status,
                               "getCollUtil: getDataObjUtil failed for %s. status = %d",
                               srcChildPath, status );
+                savedStatus = status;
                 if ( rodsRestart->fd > 0 ) {
                     break;
-                }
-                else {
-                    savedStatus = status;
                 }
             }
             else {
                 status = procAndWriteRestartFile( rodsRestart, targChildPath );
+                if ( status < 0 ) {
+                    rodsLogError( LOG_ERROR, status,
+                                "getCollUtil: procAndWriteRestartFile failed for %s. status = %d",
+                                targChildPath, status );
+                    savedStatus = status;
+                }
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -362,7 +366,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
             if ( collEnt.specColl.collClass != NO_SPEC_COLL )
                 childDataObjCopyInp.srcDataObjInp.specColl =
                     &collEnt.specColl;
-            status = cpCollUtil( conn, collEnt.collName,
+            int status = cpCollUtil( conn, collEnt.collName,
                                  targChildPath, myRodsEnv, rodsArgs, &childDataObjCopyInp,
                                  rodsRestart );
 
