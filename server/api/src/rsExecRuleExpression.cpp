@@ -43,6 +43,7 @@ int rsExecRuleExpression(
 
     ruleExecInfo_t* rei = rei_and_arg->rei;
     rei->rsComm = _comm;
+    rei->rsComm->clientUser = *rei->uoic;
 
     // do doi things?
     if ( rei->doi != NULL ) {

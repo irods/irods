@@ -789,7 +789,7 @@ int runRuleExec(
     rstrcpy(
         (char*)exec_rule.rule_text_.buf,
         _re_exec_proc->ruleExecSubmitInp.ruleName,
-        rule_len);
+        rule_len+1);
     exec_rule.params_ = rei_and_arg->rei->msParamArray;
 
     status = rcExecRuleExpression(
