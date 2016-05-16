@@ -470,7 +470,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
 
-            status = chkStateForResume( conn, rodsRestart, targChildPath,
+            int status = chkStateForResume( conn, rodsRestart, targChildPath,
                                         rodsArgs, LOCAL_FILE_T, &dataObjOprInp->condInput, 1 );
 
             if ( status < 0 ) {
@@ -494,6 +494,12 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
             }
             else {
                 status = procAndWriteRestartFile( rodsRestart, targChildPath );
+                if ( status < 0 ) {
+                    rodsLogError( LOG_ERROR, status,
+                                "getCollUtil: procAndWriteRestartFile failed for %s. status = %d",
+                                targChildPath, status );
+                    savedStatus = status;
+                }
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -517,7 +523,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
             else {
                 childDataObjInp.specColl = NULL;
             }
-            status = getCollUtil( myConn, collEnt.collName, targChildPath,
+            int status = getCollUtil( myConn, collEnt.collName, targChildPath,
                                   myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 rodsLogError( LOG_ERROR, status,
