@@ -3,7 +3,6 @@
 #ifndef HASHTABLE_H__
 #define HASHTABLE_H__
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include "region.h"
 #define HASH_BASE 5381

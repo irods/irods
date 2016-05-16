@@ -27,7 +27,7 @@
 
 #include <security/pam_appl.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string.h>
 #include <unistd.h>
 #include <string>

@@ -3,7 +3,7 @@
 
 #include <string.h>
 #include <signal.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 // Define signal handlers for irods
 

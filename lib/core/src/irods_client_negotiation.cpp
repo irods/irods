@@ -1,4 +1,5 @@
 // =-=-=-=-=-=-=-
+#include <cstdlib>
 #include "irods_client_server_negotiation.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_exception.hpp"

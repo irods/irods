@@ -44,7 +44,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "rods.h"
 #include "rodsPath.h"

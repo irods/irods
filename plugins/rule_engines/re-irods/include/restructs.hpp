@@ -6,7 +6,6 @@
 #define RESTRUCTS_HPP
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 //#include "reGlobalsExtern.hpp"
 #include "irods_re_structs.hpp"

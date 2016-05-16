@@ -4,7 +4,6 @@
 #define _REGION_H__
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <setjmp.h>
 
 #define DEFAULT_BLOCK_SIZE 1024

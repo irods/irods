@@ -25,6 +25,7 @@
 #include <limits>
 
 #include <stdarg.h>
+#include <boost/format.hpp>
 
 // If you want to output debug info on terminals when running, put
 //  fprintf(stderr, __VA_ARGS__);
@@ -138,9 +139,7 @@ int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
         FD_SET( rbudpReceiver->rbudpBase.tcpSockfd, &rset );
         const int retval = select( maxfdpl, &rset, NULL, NULL, &timeout );
         if ( retval <= 0 ) {
-            std::stringstream msg;
-            msg << "select failed. retval [" << retval << "]";
-            irods::log( ERROR( retval, msg.str().c_str() ) );
+            irods::log( ERROR( retval, boost::format("select failed. retval [%d]") % retval ) );
         }
         // receiving a packet
         if ( FD_ISSET( rbudpReceiver->rbudpBase.udpSockfd, &rset ) ) {

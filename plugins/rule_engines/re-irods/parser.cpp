@@ -1,7 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "utils.hpp"
 #include "parser.hpp"
 #include "rules.hpp"

@@ -7,7 +7,7 @@
   Returns codes of 0 indicate success, others are iRODS error codes.
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <stdio.h>
 #include <limits>
 #include <openssl/md5.h>

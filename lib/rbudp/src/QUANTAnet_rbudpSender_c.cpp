@@ -24,6 +24,7 @@
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 
+#include <cstdlib>
 #include <stdarg.h>
 #include <string>
 #include <limits>

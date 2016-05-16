@@ -22,7 +22,6 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <signal.h>
 #include <sys/types.h>
