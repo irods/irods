@@ -6,7 +6,6 @@
 #define UTILS_HPP
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #ifndef DEBUG
 #include "objInfo.h"

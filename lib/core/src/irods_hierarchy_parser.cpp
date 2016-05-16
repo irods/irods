@@ -4,6 +4,7 @@
 #include "irods_log.hpp"
 
 #include <iostream>
+#include <sstream>
 
 namespace irods {
 

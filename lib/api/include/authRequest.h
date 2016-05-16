@@ -15,10 +15,6 @@
 #include "authenticate.h"
 #include "icatDefines.h"
 
-#define CHALLENGE_LEN 64 /* 64 bytes of data and terminating null */
-#define RESPONSE_LEN 16  /* 16 bytes of data and terminating null */
-
-
 typedef struct {
     char *challenge;
 } authRequestOut_t;

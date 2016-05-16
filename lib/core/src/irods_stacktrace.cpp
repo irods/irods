@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include <execinfo.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cxxabi.h>
 
 namespace irods {
