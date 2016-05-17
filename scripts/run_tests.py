@@ -52,6 +52,8 @@ def optparse_callback_federation(option, opt_str, value, parser):
     irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION = tuple(map(int, value[0].split('.')))
     irods.test.settings.FEDERATION.REMOTE_ZONE = value[1]
     irods.test.settings.FEDERATION.REMOTE_HOST = value[2]
+    if irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4,2):
+        irods.test.settings.FEDERATION.REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
 
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
