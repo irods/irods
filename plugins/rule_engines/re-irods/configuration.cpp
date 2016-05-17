@@ -67,6 +67,16 @@ Cache ruleEngineConfig = {
     "", /* char ruleBase[RULE_SET_DEF_LENGTH] */
 };
 
+void clearRuleEngineConfig() {
+  int resources = 0xf00;
+  clearRegion (APP, app);
+  clearRegion (CORE, core);
+  clearRegion (SYS, sys);
+  clearRegion (EXT, ext);
+  free(ruleEngineConfig.address);
+  memset (&ruleEngineConfig, 0, sizeof(Cache));
+}
+
 void removeRuleFromExtIndex( char *ruleName, int i ) {
     if ( isComponentInitialized( ruleEngineConfig.extFuncDescIndexStatus ) ) {
         FunctionDesc *fd = ( FunctionDesc * )lookupFromHashTable( ruleEngineConfig.extFuncDescIndex->current, ruleName );
@@ -329,6 +339,7 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
     snprintf( r2, sizeof( r2 ), "%s", irbSet );
     int res = 0;
 
+    clearRuleEngineConfig();
     /* get max timestamp */
     char fn[MAX_NAME_LEN];
     time_type timestamp = time_type_initializer, mtim;
@@ -403,7 +414,7 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
                 if ( cache == NULL ) {
                     rodsLog( LOG_ERROR, "Failed to restore cache." );
                 }
-                
+
                 int diffIrbSet = strcmp( cache->ruleBase, irbSet ) != 0;
                 if ( diffIrbSet ) {
                     rodsLog( LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase );
@@ -417,7 +428,7 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
                 else {
                     cache->cacheStatus = INITIALIZED;
                     ruleEngineConfig = *cache;
-        
+
                     /* generate extRuleSet */
                     generateRegions();
                     generateRuleSets();
@@ -425,9 +436,9 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
                     if ( inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED ) {
                         getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
                     }
-       
+
                     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
-                    
+
                     return res;
                 }
             }
@@ -449,7 +460,7 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
     if ( inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED ) {
         getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
     }
-    
+
     while ( strlen( r2 ) > 0 ) {
         int i = rSplitStr( r2, r1, NAME_LEN, r3, RULE_SET_DEF_LENGTH, ',' );
         if ( i == 0 ) {
@@ -506,7 +517,7 @@ int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleSt
         }
         snprintf( rulesFileName, sizeof( rulesFileName ), "%s", cfg_file.c_str() );
     }
-    
+
     int errloc;
     rError_t errmsgBuf;
     errmsgBuf.errMsg = NULL;
