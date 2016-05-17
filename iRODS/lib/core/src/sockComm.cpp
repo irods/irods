@@ -704,12 +704,41 @@ rodsSetSockOpt( int sock, int windowSize ) {
     int temp;
 #ifndef _WIN32
     struct linger linger;
+
+    temp = 1;
+    status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
+                         &temp, sizeof( temp ) );
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
+
+    /* reuse the socket. Otherwise will be kept for 2-4 minutes */
+    status = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR,
+                         &temp, sizeof( temp ) );
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
+
+    /* keep connection alive */
+    temp = 1;
+    status = setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, &temp, sizeof( temp ) );
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
+
+    linger.l_onoff = 1;
+    linger.l_linger = 5;
+    status = setsockopt( sock, SOL_SOCKET, SO_LINGER, &linger, sizeof( linger ) );
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
 #endif
 
     if ( windowSize <= 0 ) {
-        windowSize = SOCK_WINDOW_SIZE;
+        return 0;
     }
-    else if ( windowSize < MIN_SOCK_WINDOW_SIZE ) {
+
+    if ( windowSize < MIN_SOCK_WINDOW_SIZE ) {
         rodsLog( LOG_NOTICE,
                  "rodsSetSockOpt: the input windowSize %d is too small, default to %d",
                  windowSize, MIN_SOCK_WINDOW_SIZE );
@@ -754,33 +783,6 @@ rodsSetSockOpt( int sock, int windowSize ) {
         savedStatus = status;
     }
 
-    temp = 1;
-    status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
-                         &temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    /* reuse the socket. Otherwise will be kept for 2-4 minutes */
-    status = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR,
-                         &temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    /* keep connection alive */
-    temp = 1;
-    status = setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, &temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    linger.l_onoff = 1;
-    linger.l_linger = 5;
-    status = setsockopt( sock, SOL_SOCKET, SO_LINGER, &linger, sizeof( linger ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
 #endif
 
     return savedStatus;
@@ -826,6 +828,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     int status;
     conn->sock = connectToRhostWithRaddr( &conn->remoteAddr,
                                           conn->windowSize, 1 );
+                                          
     if ( conn->sock < 0 ) {
         rodsLogError( LOG_NOTICE, conn->sock,
                       "connectToRhost: connect to host %s on port %d failed, status = %d",

@@ -1483,6 +1483,8 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 
     rstrcpy( rsComm->proxyUser.rodsZone,  zone_name.c_str(), NAME_LEN );
     rstrcpy( rsComm->clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
+    
+    rsComm->windowSize = rsComm->myEnv.irodsTCPWindowSize;
 
     return 0;
 }

@@ -24,6 +24,7 @@
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "rodsError.h"
+#include "getRodsEnv.h"
 #include <time.h>
 
 rcComm_t *
@@ -120,6 +121,10 @@ rcComm_t* _rcConnect(
         free( conn );
         return NULL;
     }
+
+    rodsEnv myEnv;
+    getRodsEnv( &myEnv );
+    conn->windowSize = myEnv.irodsTCPWindowSize;
     status = connectToRhost( conn, connectCnt, reconnFlag );
 
     if ( status < 0 ) {
