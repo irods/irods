@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <limits>
+#include <string>
+#include <vector>
 #include <openssl/md5.h>
 #include "boost/filesystem.hpp"
 #include "irods_default_paths.hpp"
@@ -18,12 +20,16 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <spawn.h>
 #endif
 
 #include "rods.h"
 #include "osauth.h"
 #include "rcGlobalExtern.h"
 #include "authenticate.h"
+
+extern char **environ;
+
 extern "C" {
 
     int
@@ -239,7 +245,6 @@ extern "C" {
                    int authenticator_buflen ) {
         static char fname[] = "osauthGetAuth";
         int pipe1[2], pipe2[2];
-        pid_t childPid;
         int childStatus = 0;
         int child_stdin, child_stdout, nb;
         int buflen, challenge_len = CHALLENGE_LEN;
@@ -265,10 +270,34 @@ extern "C" {
         boost::filesystem::path os_auth_command_path = irods::get_irods_root_directory();
         os_auth_command_path.append(OS_AUTH_CMD);
 
-        childPid = RODS_FORK();
+        pid_t childPid;
 
-        if ( childPid < 0 ) {
-            rodsLog( LOG_ERROR, "%s: RODS_FORK failed. errno = %d",
+        posix_spawnattr_t attr;
+        posix_spawnattr_init(&attr);
+
+        posix_spawn_file_actions_t file_actions;
+        posix_spawn_file_actions_init(&file_actions);
+        posix_spawn_file_actions_addclose(&file_actions, pipe1[1]);
+        posix_spawn_file_actions_addclose(&file_actions, pipe2[0]);
+        posix_spawn_file_actions_adddup2(&file_actions, pipe1[0], 0);
+        posix_spawn_file_actions_adddup2(&file_actions, pipe2[1], 1);
+
+        std::string os_auth_command_path_string(os_auth_command_path.string());
+        char * argv[] = {&os_auth_command_path_string[0], nullptr};
+
+        char ** environ_end;
+        for (environ_end = environ; *environ_end != nullptr; ++environ_end);
+        std::vector<char *> envp(environ, environ_end);
+        std::string env_var(OS_AUTH_ENV_USER "=");
+        env_var.append(username);
+        envp.back() = &env_var[0];
+        envp.push_back(nullptr);
+
+        int status = posix_spawn(&childPid, os_auth_command_path_string.c_str(), &file_actions, &attr, &argv[0], &envp[0]);
+        posix_spawnattr_destroy(&attr);
+        posix_spawn_file_actions_destroy(&file_actions);
+        if (status != 0) {
+            rodsLog( LOG_ERROR, "%s: posix_spawn failed. errno = %d",
                      fname, errno );
             close( pipe1[0] );
             close( pipe1[1] );
@@ -276,90 +305,70 @@ extern "C" {
             close( pipe2[1] );
             return SYS_FORK_ERROR;
         }
-        else if ( childPid == 0 ) {
-            /* in the child process */
+        /* in the parent process */
+        close( pipe1[0] );
+        child_stdin = pipe1[1];  /* parent writes to child's stdin */
+        close( pipe2[1] );
+        child_stdout = pipe2[0]; /* parent reads from child's stdout */
 
-            /* pipe1 will be for child's stdin */
-            close( pipe1[1] );
-            dup2( pipe1[0], 0 );
-            /* pipe2 will be for child's stdout */
-            close( pipe2[0] );
-            dup2( pipe2[1], 1 );
-
-            /* set the username in an environment variable */
-            setenv( OS_AUTH_ENV_USER, username, 1 );
-
-            /* run the OS_AUTH_CMD */
-            execl( os_auth_command_path.string().c_str(), os_auth_command_path.string().c_str(), ( char* )NULL );
-            rodsLog( LOG_ERROR, "%s: child execl %s failed. errno = %d",
-                     fname, os_auth_command_path.string().c_str(), errno );
-        }
-        else {
-            /* in the parent process */
-            close( pipe1[0] );
-            child_stdin = pipe1[1];  /* parent writes to child's stdin */
-            close( pipe2[1] );
-            child_stdout = pipe2[0]; /* parent reads from child's stdout */
-
-            /* send the challenge to the OS_AUTH_CMD program on its stdin */
-            nb = write( child_stdin, &challenge_len, sizeof( challenge_len ) );
-            if ( nb < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "%s: error writing challenge_len to %s. errno = %d",
-                         fname, os_auth_command_path.string().c_str(), errno );
-                close( child_stdin );
-                close( child_stdout );
-                return SYS_PIPE_ERROR - errno;
-            }
-            nb = write( child_stdin, challenge, challenge_len );
-            if ( nb < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "%s: error writing challenge to %s. errno = %d",
-                         fname, os_auth_command_path.string().c_str(), errno );
-                close( child_stdin );
-                close( child_stdout );
-                return SYS_PIPE_ERROR - errno;
-            }
-
-            /* read the response */
-            buflen = read( child_stdout, buffer, 128 );
-            if ( buflen < 0 ) {
-                rodsLog( LOG_ERROR, "%s: error reading from %s. errno = %d",
-                         fname, os_auth_command_path.string().c_str(), errno );
-                close( child_stdin );
-                close( child_stdout );
-                return SYS_PIPE_ERROR - errno;
-            }
-
+        /* send the challenge to the OS_AUTH_CMD program on its stdin */
+        nb = write( child_stdin, &challenge_len, sizeof( challenge_len ) );
+        if ( nb < 0 ) {
+            rodsLog( LOG_ERROR,
+                        "%s: error writing challenge_len to %s. errno = %d",
+                        fname, os_auth_command_path.string().c_str(), errno );
             close( child_stdin );
             close( child_stdout );
+            return SYS_PIPE_ERROR - errno;
+        }
+        nb = write( child_stdin, challenge, challenge_len );
+        if ( nb < 0 ) {
+            rodsLog( LOG_ERROR,
+                        "%s: error writing challenge to %s. errno = %d",
+                        fname, os_auth_command_path.string().c_str(), errno );
+            close( child_stdin );
+            close( child_stdout );
+            return SYS_PIPE_ERROR - errno;
+        }
 
-            if ( waitpid( childPid, &childStatus, 0 ) < 0 ) {
-                rodsLog( LOG_ERROR, "%s: waitpid error. errno = %d",
-                         fname, errno );
+        /* read the response */
+        buflen = read( child_stdout, buffer, 128 );
+        if ( buflen < 0 ) {
+            rodsLog( LOG_ERROR, "%s: error reading from %s. errno = %d",
+                        fname, os_auth_command_path.string().c_str(), errno );
+            close( child_stdin );
+            close( child_stdout );
+            return SYS_PIPE_ERROR - errno;
+        }
+
+        close( child_stdin );
+        close( child_stdout );
+
+        if ( waitpid( childPid, &childStatus, 0 ) < 0 ) {
+            rodsLog( LOG_ERROR, "%s: waitpid error. errno = %d",
+                        fname, errno );
+            return EXEC_CMD_ERROR;
+        }
+
+        if ( WIFEXITED( childStatus ) ) {
+            if ( WEXITSTATUS( childStatus ) ) {
+                rodsLog( LOG_ERROR,
+                            "%s: command failed: %s", fname, buffer );
                 return EXEC_CMD_ERROR;
             }
-
-            if ( WIFEXITED( childStatus ) ) {
-                if ( WEXITSTATUS( childStatus ) ) {
-                    rodsLog( LOG_ERROR,
-                             "%s: command failed: %s", fname, buffer );
-                    return EXEC_CMD_ERROR;
-                }
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "%s: some error running %s", fname, os_auth_command_path.string().c_str() );
-            }
-
-            /* authenticator is in buffer now */
-            if ( buflen > authenticator_buflen ) {
-                rodsLog( LOG_ERROR,
-                         "%s: not enough space in return buffer for authenticator", fname );
-                return EXEC_CMD_OUTPUT_TOO_LARGE;
-            }
-            memcpy( authenticator, buffer, buflen );
         }
+        else {
+            rodsLog( LOG_ERROR,
+                        "%s: some error running %s", fname, os_auth_command_path.string().c_str() );
+        }
+
+        /* authenticator is in buffer now */
+        if ( buflen > authenticator_buflen ) {
+            rodsLog( LOG_ERROR,
+                        "%s: not enough space in return buffer for authenticator", fname );
+            return EXEC_CMD_OUTPUT_TOO_LARGE;
+        }
+        memcpy( authenticator, buffer, buflen );
 
         return 0;
     }
