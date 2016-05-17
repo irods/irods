@@ -65,6 +65,16 @@ Cache ruleEngineConfig = {
     "", /* char ruleBase[RULE_SET_DEF_LENGTH] */
 };
 
+void clearRuleEngineConfig() {
+  int resources = 0xf00;
+  clearRegion (APP, app);
+  clearRegion (CORE, core);
+  clearRegion (SYS, sys);
+  clearRegion (EXT, ext);    
+  free(ruleEngineConfig.address);
+  memset (&ruleEngineConfig, 0, sizeof(Cache));
+}
+
 void removeRuleFromExtIndex( char *ruleName, int i ) {
     if ( isComponentInitialized( ruleEngineConfig.extFuncDescIndexStatus ) ) {
         FunctionDesc *fd = ( FunctionDesc * )lookupFromHashTable( ruleEngineConfig.extFuncDescIndex->current, ruleName );
@@ -321,6 +331,7 @@ int loadRuleFromCacheOrFile( int processType, char *irbSet, ruleStruct_t *inRule
     snprintf( r2, sizeof( r2 ), "%s", irbSet );
     int res = 0;
 
+    clearRuleEngineConfig();
 #ifdef DEBUG
     /*Cache *cache;*/
 #endif
