@@ -517,25 +517,23 @@ int postForkExecProc( reExecProc_t * reExecProc ) {
 
 int
 execRuleExec( reExecProc_t * reExecProc ) {
-    int status;
-    char *av[NAME_LEN];
-    int avInx = 0;
 
+    std::vector<std::string> string_vec{
+            RE_EXE,
+            "-j",
+            reExecProc->ruleExecSubmitInp.ruleExecId,
+            "-t",
+            (boost::format("%d") % reExecProc->jobType).str()
+        };
 
-    av[avInx] = strdup( RE_EXE );
-    avInx++;
-    av[avInx] = strdup( "-j" );
-    avInx++;
-    av[avInx] = strdup( reExecProc->ruleExecSubmitInp.ruleExecId );
-    avInx++;
-    av[avInx] = strdup( "-t" );
-    avInx++;
-    av[avInx] = ( char* )malloc( sizeof( int ) * 2 );
-    sprintf( av[avInx], "%d", reExecProc->jobType );
-    avInx++;
-    av[avInx] = NULL;
+    std::vector<char *> c_str_vec;
+    c_str_vec.reserve( string_vec.size() + 1 );
+    for (auto&& s : string_vec) {
+        c_str_vec.push_back(&s[0]);
+    }
+    c_str_vec.push_back(nullptr);
 
-    status =  execv( av[0], av );
+    int status =  execv( c_str_vec[0], &c_str_vec[0] );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "execExecProc: execv of ID %s error, errno = %d",
