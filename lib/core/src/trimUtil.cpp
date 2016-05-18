@@ -192,7 +192,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
                       collEnt.collName, collEnt.dataName );
-            status = trimDataObjUtil( conn, srcChildPath, rodsArgs,
+            int status = trimDataObjUtil( conn, srcChildPath, rodsArgs,
                                       dataObjInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -200,7 +200,6 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                               srcChildPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
             }
             else if ( status > 0 ) {
                 /* > 0 means the file got trimed */
@@ -217,7 +216,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
             else {
                 childDataObjInp.specColl = NULL;
             }
-            status = trimCollUtil( conn, collEnt.collName, myRodsEnv,
+            int status = trimCollUtil( conn, collEnt.collName, myRodsEnv,
                                    rodsArgs, &childDataObjInp );
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
                 return status;
