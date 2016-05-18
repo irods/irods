@@ -512,7 +512,7 @@ int postForkExecProc( reExecProc_t * reExecProc ) {
 
     rcDisconnect( rc_comm );
 
-    return reExecProc->status;
+    return status;
 }
 
 int
@@ -1101,5 +1101,5 @@ reServerSingleExec( char * ruleExecId, int jobType ) {
 
     rcDisconnect( rc_comm );
 
-    return reExecProc.status;
+    return status;
 }
