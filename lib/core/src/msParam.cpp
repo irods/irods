@@ -1447,11 +1447,6 @@ int
 parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
         structFileExtAndRegInp_t * structFileExtAndRegInp,
         char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
-    char *msKeyValStr;
-    keyValPair_t *condInput;
-    parsedMsKeyValStr_t parsedMsKeyValStr;
-    int status;
-
 
     if ( inpParam == NULL || structFileExtAndRegInp == NULL ) {
         rodsLog( LOG_ERROR,
@@ -1463,14 +1458,15 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
         return USER_PARAM_TYPE_ERR;
     }
 
-    msKeyValStr = ( char * ) inpParam->inOutStruct;
+    char *msKeyValStr = ( char * ) inpParam->inOutStruct;
+    keyValPair_t *condInput = &structFileExtAndRegInp->condInput;
 
-    condInput = &structFileExtAndRegInp->condInput;
-
-    if ( outBadKeyWd != NULL ) {
+    if ( outBadKeyWd ) {
         *outBadKeyWd = NULL;
     }
 
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
     if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
         return status;
     }
@@ -1500,6 +1496,7 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
             if ( outBadKeyWd != NULL ) {
                 *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
             }
+            clearParsedMsKeyValStr( &parsedMsKeyValStr );
             return status;
         }
         /* check for some of the special keyWd */
