@@ -481,7 +481,7 @@ int postForkExecProc( reExecProc_t * reExecProc ) {
     rodsEnv env;
     getRodsEnv(&env);
     rcComm_t* rc_comm = nullptr;
-    while( !rc_comm ) {  
+    while( !rc_comm ) {
         rc_comm = rcConnect(
                       env.rodsHost,
                       env.rodsPort,
@@ -959,7 +959,7 @@ reServerSingleExec( char * ruleExecId, int jobType ) {
     getRodsEnv(&env);
 
     rcComm_t* rc_comm = nullptr;
-    while( !rc_comm ) {  
+    while( !rc_comm ) {
         rc_comm = rcConnect(
                 env.rodsHost,
                 env.rodsPort,
@@ -982,19 +982,7 @@ reServerSingleExec( char * ruleExecId, int jobType ) {
         return status;
     }
 
-    reExecProc_t reExecProc;
-    sqlResult_t *ruleName, *reiFilePath, *userName, *exeAddress,
-                *exeTime, *exeFrequency, *priority, *lastExecTime, *exeStatus,
-                *estimateExeTime, *notificationAddr;
     genQueryOut_t *genQueryOut = NULL;
-
-    bzero( &reExecProc, sizeof( reExecProc ) );
-    /* init reComm */
-    reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
-        ( bytesBuf_t * ) calloc( 1, sizeof( bytesBuf_t ) );
-    reExecProc.procExecState = RE_PROC_RUNNING;
-    reExecProc.jobType = jobType;
-
     status = getReInfoById( rc_comm, ruleExecId, &genQueryOut );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1004,97 +992,101 @@ reServerSingleExec( char * ruleExecId, int jobType ) {
         return status;
     }
 
-    bzero( &reExecProc, sizeof( reExecProc ) );
-    /* init reComm */
-    reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf =
-        ( bytesBuf_t * ) calloc( 1, sizeof( bytesBuf_t ) );
-    reExecProc.procExecState = RE_PROC_RUNNING;
-    reExecProc.jobType = jobType;
-
-    if ( ( ruleName = getSqlResultByInx( genQueryOut,
-                                         COL_RULE_EXEC_NAME ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> ruleName(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_NAME ));
+    if ( ruleName == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_NAME failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
-                                            COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> reiFilePath(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_REI_FILE_PATH ));
+    if ( reiFilePath == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for REI_FILE_PATH failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( userName = getSqlResultByInx( genQueryOut,
-                                         COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> userName(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_USER_NAME ));
+    if ( userName == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for USER_NAME failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( exeAddress = getSqlResultByInx( genQueryOut,
-                                           COL_RULE_EXEC_ADDRESS ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> exeAddress(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_ADDRESS ));
+    if ( exeAddress == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_ADDRESS failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( exeTime = getSqlResultByInx( genQueryOut,
-                                        COL_RULE_EXEC_TIME ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> exeTime(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_TIME ));
+    if ( exeTime == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_TIME failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( exeFrequency = getSqlResultByInx( genQueryOut,
-                          COL_RULE_EXEC_FREQUENCY ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> exeFrequency(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_FREQUENCY ));
+    if ( exeFrequency == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for RULE_EXEC_FREQUENCY failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( priority = getSqlResultByInx( genQueryOut,
-                                         COL_RULE_EXEC_PRIORITY ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> priority(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_PRIORITY ));
+    if ( priority == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for PRIORITY failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( lastExecTime = getSqlResultByInx( genQueryOut,
-                          COL_RULE_EXEC_LAST_EXE_TIME ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> cTimelastExe(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_LAST_EXE_TIME ));
+    if ( cTimelastExe == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for LAST_EXE_TIME failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( exeStatus = getSqlResultByInx( genQueryOut,
-                                          COL_RULE_EXEC_STATUS ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> exeStatus(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_STATUS ));
+    if ( exeStatus == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getSqlResultByInx for EXEC_STATUS failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( estimateExeTime = getSqlResultByInx( genQueryOut,
-                             COL_RULE_EXEC_ESTIMATED_EXE_TIME ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> estimateExeTime(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_ESTIMATED_EXE_TIME ));
+    if ( estimateExeTime == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec: getResultByInx for ESTIMATED_EXE_TIME failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( notificationAddr = getSqlResultByInx( genQueryOut,
-                              COL_RULE_EXEC_NOTIFICATION_ADDR ) ) == NULL ) {
+    std::unique_ptr<sqlResult_t> notificationAddr(getSqlResultByInx( genQueryOut, COL_RULE_EXEC_NOTIFICATION_ADDR ));
+    if ( notificationAddr == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "reServerSingleExec:getResultByInx for NOTIFICATION_ADDR failed" );
         rcDisconnect( rc_comm );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    reExecProc_t reExecProc;
+    bzero( &reExecProc, sizeof( reExecProc ) );
+    /* init reComm */
+    bytesBuf_t reBuf;
+    memset(&reBuf, 0, sizeof(reBuf));
+    reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf = &reBuf;
+    reExecProc.procExecState = RE_PROC_RUNNING;
+    reExecProc.jobType = jobType;
     status = fillExecSubmitInp( &reExecProc.ruleExecSubmitInp,
                                 exeStatus->value, exeTime->value, ruleExecId, reiFilePath->value,
                                 ruleName->value, userName->value, exeAddress->value, exeFrequency->value,
                                 priority->value, estimateExeTime->value, notificationAddr->value );
 
     if ( status < 0 ) {
+        if ( reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf->buf ) {
+            free(reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf->buf);
+        }
         rcDisconnect( rc_comm );
         return status;
     }
@@ -1102,6 +1094,9 @@ reServerSingleExec( char * ruleExecId, int jobType ) {
     status = runRuleExec( rc_comm, &reExecProc );
     postProcRunRuleExec( rc_comm, &reExecProc );
 
+    if ( reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf->buf ) {
+        free(reExecProc.ruleExecSubmitInp.packedReiAndArgBBuf->buf);
+    }
     freeGenQueryOut( &genQueryOut );
 
     rcDisconnect( rc_comm );
