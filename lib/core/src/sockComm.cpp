@@ -559,18 +559,15 @@ myRead( int sock, void *buf, int len,
 int
 myWrite( int sock, void *buf, int len,
          int *bytesWritten ) {
-    int nbytes;
-    int toWrite;
-    char *tmpPtr;
 
-    toWrite = len;
-    tmpPtr = ( char * ) buf;
-
-    if ( bytesWritten != NULL ) {
+    if ( bytesWritten ) {
         *bytesWritten = 0;
     }
 
+    char *tmpPtr = ( char * ) buf;
+    int toWrite = len;
     while ( toWrite > 0 ) {
+        int nbytes;
 #ifdef _WIN32
         if ( irodsDescType == SOCK_TYPE ) {
             nbytes = send( sock, tmpPtr, toWrite, 0 );
@@ -593,7 +590,7 @@ myWrite( int sock, void *buf, int len,
         }
         toWrite -= nbytes;
         tmpPtr += nbytes;
-        if ( bytesWritten != NULL ) {
+        if ( bytesWritten ) {
             *bytesWritten += nbytes;
         }
     }

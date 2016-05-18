@@ -437,14 +437,12 @@ cliGetCollOprStat( rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
 
 int
 _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
-    int myBuf;
-    int status;
-
-    myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
-    status = myWrite( conn->sock, ( void * ) &myBuf, 4, NULL );
-    status = readAndProcApiReply( conn, conn->apiInx,
+    int myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
+    if (int bytes_left = 4 - myWrite( conn->sock, ( void * ) &myBuf, 4, NULL )) {
+        rodsLogError( LOG_ERROR, SYS_SOCK_WRITE_ERR, "Write exited with %d bytes still left to write in %s.", bytes_left, __PRETTY_FUNCTION__ );
+        return SYS_SOCK_WRITE_ERR;
+    }
+    return readAndProcApiReply( conn, conn->apiInx,
                                   ( void ** ) collOprStat, NULL );
-
-    return status;
 }
 
