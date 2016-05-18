@@ -161,30 +161,21 @@ int clientLoginPam( rcComm_t* Conn,
  TTL is Time-to-live, in hours, typically in the few days range.
  */
 int clientLoginTTL( rcComm_t *Conn, int ttl ) {
-    getLimitedPasswordInp_t getLimitedPasswordInp;
-    getLimitedPasswordOut_t *getLimitedPasswordOut;
-    char hashBuf[101];
-    unsigned char digest[100];
-    char limitedPw[100];
-    int status;
 
-    char userPassword[MAX_PASSWORD_LEN + 10] = "";
-
-    status = obfGetPw( userPassword );
-    if ( status ) {
+    char userPassword[MAX_PASSWORD_LEN + 10];
+    if ( int status = obfGetPw( userPassword ) ) {
         memset( userPassword, 0, sizeof( userPassword ) );
         return status;
     }
 
-    status = obfSavePw( 0, 0, 0,  "   " ); /* clear out the permanent password */
-
+    getLimitedPasswordInp_t getLimitedPasswordInp;
     getLimitedPasswordInp.ttl = ttl;
     getLimitedPasswordInp.unused1 = "";
 
-    status = rcGetLimitedPassword( Conn,
-                                   &getLimitedPasswordInp,
-                                   &getLimitedPasswordOut );
-    if ( status ) {
+    getLimitedPasswordOut_t *getLimitedPasswordOut;
+    if ( int status = rcGetLimitedPassword( Conn,
+                &getLimitedPasswordInp,
+                &getLimitedPasswordOut ) ) {
         printError( Conn, status, "rcGetLimitedPassword" );
         memset( userPassword, 0, sizeof( userPassword ) );
         return status;
@@ -192,24 +183,24 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
 
     /* calcuate the limited password, which is a hash of the user's main pw and
        the returned stringToHashWith. */
+    char hashBuf[101];
     memset( hashBuf, 0, sizeof( hashBuf ) );
     strncpy( hashBuf, getLimitedPasswordOut->stringToHashWith, 100 );
     strncat( hashBuf, userPassword, 100 );
+    memset( userPassword, 0, sizeof( userPassword ) );
 
+    unsigned char digest[100];
     obfMakeOneWayHash(
         HASH_TYPE_DEFAULT,
         ( unsigned char* )hashBuf,
         100,
         digest );
+    memset( hashBuf, 0, sizeof( hashBuf ) );
 
+    char limitedPw[100];
     hashToStr( digest, limitedPw );
 
-    status = obfSavePw( 0, 0, 0,  limitedPw );
-
-    memset( hashBuf, 0, sizeof( hashBuf ) );
-    memset( userPassword, 0, sizeof( userPassword ) );
-
-    return 0;
+    return obfSavePw( 0, 0, 0,  limitedPw );
 }
 
 /// =-=-=-=-=-=-=-
