@@ -40,6 +40,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_client_server_negotiation.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_configuration_keywords.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_configuration_parser.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_default_paths.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_environment_properties.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_error.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_exception.hpp
