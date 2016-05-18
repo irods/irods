@@ -16,10 +16,8 @@
 int
 addMsParam( msParamArray_t *msParamArray, char *label,
             const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
-    int status = addMsParamToArray( msParamArray, label, type,
+    return addMsParamToArray( msParamArray, label, type,
                                     inOutStruct, inpOutBuf, 0 );
-
-    return status;
 }
 
 int
@@ -1386,9 +1384,6 @@ chkCollInpKw( char * keyWd, int validKwFlags ) {
 int
 addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
                    msParam_t * msKeyValStr ) {
-    int keyLen, valLen;
-    char *valPtr, *keyPtr, *oldKeyValPtr, *newKeyValPtr, *tmpPtr;
-    int oldLen, newLen;
 
     if ( ( keyStr == NULL && valStr == NULL ) || msKeyValStr == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1398,7 +1393,8 @@ addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
         fillStrInMsParam( msKeyValStr, NULL );
     }
 
-    keyPtr = parseMspForStr( keyStr );
+    char *keyPtr = parseMspForStr( keyStr );
+    int keyLen;
     if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
         keyLen = 0;
     }
@@ -1406,7 +1402,8 @@ addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
         keyLen = strlen( keyPtr );
     }
 
-    valPtr = parseMspForStr( valStr );
+    char *valPtr = parseMspForStr( valStr );
+    int valLen;
     if ( valPtr == NULL || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
         valLen = 0;
     }
@@ -1417,17 +1414,17 @@ addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
         return 0;
     }
 
-    oldKeyValPtr = parseMspForStr( msKeyValStr );
+    char *oldKeyValPtr = parseMspForStr( msKeyValStr );
+    char *newKeyValPtr, *tmpPtr;
     if ( oldKeyValPtr == NULL ) {
-        oldLen = 0;
-        newLen = valLen + keyLen + 10;
+        int newLen = valLen + keyLen + 10;
         newKeyValPtr = ( char * )malloc( newLen );
         *newKeyValPtr = '\0';
         tmpPtr = newKeyValPtr;
     }
     else {
-        oldLen = strlen( oldKeyValPtr );
-        newLen = oldLen + valLen + keyLen + 10;
+        int oldLen = strlen( oldKeyValPtr );
+        int newLen = oldLen + valLen + keyLen + 10;
         newKeyValPtr = ( char * )malloc( newLen );
         snprintf( newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR );
         tmpPtr = newKeyValPtr + oldLen + 4;
