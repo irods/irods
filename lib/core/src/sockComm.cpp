@@ -611,6 +611,7 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // call interface to read message header
     msgHeader_t myHeader;
+    memset( &myHeader, 0, sizeof( myHeader ) );
     irods::error ret = readMsgHeader( _ptr, &myHeader, &tv );
     if ( !ret.ok() ) {
         return PASS( ret );
@@ -619,7 +620,9 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // call interface to read message body
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-    memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
+    memset( &inputStructBBuf, 0, sizeof( inputStructBBuf ) );
+    memset( &bsBBuf, 0, sizeof( bsBBuf ) );
+    memset( &errorBBuf, 0, sizeof( errorBBuf ) );
     ret = readMsgBody( _ptr, &myHeader, &inputStructBBuf, &bsBBuf,
                        &errorBBuf, XML_PROT, NULL );
     if ( !ret.ok() ) {
@@ -629,15 +632,9 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // basic error checking of message type
     if ( strcmp( myHeader.type, RODS_VERSION_T ) != 0 ) {
-        if ( inputStructBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
-        }
-        if ( bsBBuf.buf != NULL ) {
-            free( bsBBuf.buf );
-        }
-        if ( errorBBuf.buf != NULL ) {
-            free( errorBBuf.buf );
-        }
+        free( inputStructBBuf.buf );
+        free( bsBBuf.buf );
+        free( errorBBuf.buf );
         std::stringstream msg;
         msg << "wrong msg type ["
             << myHeader.type
@@ -650,9 +647,7 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // check length of byte stream buffer, should be 0
     if ( myHeader.bsLen != 0 ) {
-        if ( bsBBuf.buf != NULL ) {
-            free( bsBBuf.buf );
-        }
+        free( bsBBuf.buf );
         rodsLog( LOG_NOTICE, "readVersion: myHeader.bsLen = %d is not 0",
                  myHeader.bsLen );
     }
@@ -660,9 +655,7 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // check length of error buffer, should be 0
     if ( myHeader.errorLen != 0 ) {
-        if ( errorBBuf.buf != NULL ) {
-            free( errorBBuf.buf );
-        }
+        free( errorBBuf.buf );
         rodsLog( LOG_NOTICE, "readVersion: myHeader.errorLen = %d is not 0",
                  myHeader.errorLen );
     }
@@ -670,9 +663,7 @@ irods::error readVersion(
     // =-=-=-=-=-=-=-
     // bounds check message size
     if ( myHeader.msgLen > ( int ) sizeof( version_t ) * 2 || myHeader.msgLen <= 0 ) {
-        if ( inputStructBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
-        }
+        free( inputStructBBuf.buf );
         std::stringstream msg;
         msg << "header length is not within bounds: "
             << myHeader.msgLen;
@@ -1443,15 +1434,16 @@ irods::error readReconMsg(
     reconnMsg_t**       _msg ) {
     int status;
     msgHeader_t myHeader;
-    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-    // =-=-=-=-=-=-=-
-    //
+    memset( &myHeader, 0, sizeof( myHeader ) );
     irods::error ret = readMsgHeader( _ptr, &myHeader, NULL );
     if ( !ret.ok() ) {
         return PASSMSG( "read msg header error", ret );
     }
 
-    memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
+    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
+    memset( &bsBBuf, 0, sizeof( bsBBuf ) );
+    memset( &inputStructBBuf, 0, sizeof( inputStructBBuf ) );
+    memset( &errorBBuf, 0, sizeof( errorBBuf ) );
     ret = readMsgBody(
               _ptr,
               &myHeader,
@@ -1467,15 +1459,9 @@ irods::error readReconMsg(
     /* some sanity check */
 
     if ( strcmp( myHeader.type, RODS_RECONNECT_T ) != 0 ) {
-        if ( inputStructBBuf.buf != NULL ) {
-            free( inputStructBBuf.buf );
-        }
-        if ( bsBBuf.buf != NULL ) {
-            free( bsBBuf.buf );
-        }
-        if ( errorBBuf.buf != NULL ) {
-            free( errorBBuf.buf );
-        }
+        free( inputStructBBuf.buf );
+        free( bsBBuf.buf );
+        free( errorBBuf.buf );
         std::stringstream msg;
         msg << "wrong msg type ["
             << myHeader.type
