@@ -87,7 +87,7 @@ int _rsFileTruncate(
             _trunc_inp->objPath,
             _trunc_inp->fileName,
             _trunc_inp->resc_hier_,
-            0, 0, 0 ) );
+            0, 0, 0, 0 ) );
     file_obj->size( _trunc_inp->dataSize );
 
     // =-=-=-=-=-=-=-

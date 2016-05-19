@@ -89,7 +89,7 @@ int _rsFileChmod(
             _chmod_inp->objPath,
             _chmod_inp->fileName,
             _chmod_inp->rescHier,
-            0, 0, 0 ) );
+            0, 0, 0, 0 ) );
     irods::error chmod_err = fileChmod( _comm, file_obj, _chmod_inp->mode );
 
     // =-=-=-=-=-=-=-

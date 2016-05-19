@@ -83,7 +83,7 @@ int _rsFileRmdir(
         new irods::collection_object(
             _rmdir_inp->dirName,
             _rmdir_inp->rescHier,
-            0, 0 ) );
+            0, 0, 0 ) );
 
     if ( ( _rmdir_inp->flags & RMDIR_RECUR ) != 0 ) {
         // FIXME :: revisit this after moving to First class Objects
@@ -136,7 +136,7 @@ int _rsFileRmdir(
                 new irods::collection_object(
                     myPath,
                     _rmdir_inp->rescHier,
-                    0, 0 ) );
+                    0, 0, 0 ) );
             irods::error stat_err = fileStat( _comm, myPath_obj, &statbuf );
             if ( !stat_err.ok() ) {
                 std::stringstream msg;

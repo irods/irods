@@ -189,7 +189,7 @@ int mkFileDirR(
             new irods::collection_object(
                 physical_directory,
                 hier,
-                0, 0 ) );
+                0, 0, 0 ) );
         struct stat statbuf;
         irods::error stat_err = fileStat(
                                     rsComm,
@@ -239,6 +239,7 @@ int mkFileDirR(
             new irods::collection_object(
                 physical_directory,
                 hier,
+                0,
                 mode, 0 ) );
 
         irods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
@@ -273,7 +274,7 @@ int chkEmptyDir(
         new irods::collection_object(
             cacheDir,
             hier,
-            0, 0 ) );
+            0, 0, 0 ) );
     irods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
@@ -302,7 +303,7 @@ int chkEmptyDir(
             new irods::collection_object(
                 childPath,
                 hier,
-                0, 0 ) );
+                0, 0, 0 ) );
 
         irods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
 
@@ -355,7 +356,7 @@ int chkEmptyDir(
         irods::collection_object_ptr coll_obj(
             new irods::collection_object(
                 cacheDir,
-                hier, 0, 0 ) );
+                hier, 0, 0, 0 ) );
         irods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if ( !rmdir_err.ok() ) {
             std::stringstream msg;

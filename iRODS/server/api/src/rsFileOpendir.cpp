@@ -106,7 +106,7 @@ int _rsFileOpendir(
         new irods::collection_object(
             _opendir_inp->dirName,
             _opendir_inp->resc_hier_,
-            0, 0 ) );
+            0, 0, 0 ) );
     irods::error opendir_err = fileOpendir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-

@@ -88,7 +88,7 @@ int _rsFileReaddir(
         new irods::collection_object(
             FileDesc[ _file_readdir_inp->fileInx].fileName,
             FileDesc[ _file_readdir_inp->fileInx].rescHier,
-            0, 0 ) );
+            0, 0, 0 ) );
     coll_obj->directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) );
 
     // =-=-=-=-=-=-=-

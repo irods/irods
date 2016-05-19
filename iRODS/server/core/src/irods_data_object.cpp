@@ -9,6 +9,7 @@ namespace irods {
     data_object::data_object() :
         physical_path_( "" ),
         resc_hier_( "" ),
+        id_ ( 0 ),
         mode_( 0 ),
         flags_( 0 ) {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
@@ -19,10 +20,12 @@ namespace irods {
     data_object::data_object(
         const std::string& _phy_path,
         const std::string& _resc_hier,
+        long _id,
         int _mode,
         int _flags ) :
         physical_path_( _phy_path ),
         resc_hier_( _resc_hier ),
+        id_( _id ),
         mode_( _mode ),
         flags_( _flags ) {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
@@ -33,11 +36,13 @@ namespace irods {
     data_object::data_object(
         const std::string& _phy_path,
         const std::string& _resc_hier,
+        long               _id,
         int                _mode,
         int                _flags,
         const keyValPair_t& _cond_input ) :
         physical_path_( _phy_path ),
         resc_hier_( _resc_hier ),
+        id_( _id ),
         mode_( _mode ),
         flags_( _flags ) {
         replKeyVal( &_cond_input, &cond_input_ );
@@ -50,6 +55,7 @@ namespace irods {
         first_class_object( _rhs ),
         physical_path_( _rhs.physical_path_ ),
         resc_hier_( _rhs.resc_hier_ ),
+        id_( _rhs.id_ ),
         mode_( _rhs.mode_ ),
         flags_( _rhs.flags_ ) {
         replKeyVal( &_rhs.cond_input_, &cond_input_ );

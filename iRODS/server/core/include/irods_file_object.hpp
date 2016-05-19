@@ -27,6 +27,7 @@ namespace irods {
                          const std::string& _filename,
                          const std::string& _resc_hier,
                          int _fd,
+                         long _id,
                          int _mode,
                          int _flags );
             file_object( rsComm_t* _comm,

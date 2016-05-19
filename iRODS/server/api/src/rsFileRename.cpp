@@ -100,7 +100,7 @@ int _rsFileRename(
             _rename_inp->objPath,
             _rename_inp->oldFileName,
             _rename_inp->rescHier,
-            0, 0, 0 ) );
+            0, 0, 0, 0 ) );
     irods::error rename_err = fileRename( _comm, file_obj, _rename_inp->newFileName );
 
     // =-=-=-=-=-=-=-

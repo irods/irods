@@ -109,6 +109,7 @@ int _rsFileGet(
             _get_inp->fileName,
             _get_inp->resc_hier_,
             fd,
+            0,
             _get_inp->mode,
             _get_inp->flags ) );
 

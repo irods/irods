@@ -55,11 +55,13 @@ namespace irods {
         const std::string& _fn,
         const std::string& _resc_hier,
         int _fd,
+        long _id,
         int _m,
         int _f ) :
         data_object(
             _fn,
             _resc_hier,
+            _id,
             _m,
             _f ),
         comm_( _c ),

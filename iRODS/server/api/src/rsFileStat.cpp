@@ -121,7 +121,7 @@ int _rsFileStat(
             _stat_inp->objPath,
             _stat_inp->fileName,
             _stat_inp->rescHier,
-            0, 0, 0 ) );
+            0, 0, 0, 0 ) );
     irods::error stat_err = fileStat( _comm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-

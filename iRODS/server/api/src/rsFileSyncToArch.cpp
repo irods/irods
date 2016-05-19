@@ -124,13 +124,23 @@ int _rsFileSyncToArch(
         return SYS_INVALID_INPUT_PARAM;
     }
 
+    // set object id if provided
+    long object_id = 0;
+    char *id_str = getValByKey(&_sync_inp->condInput, DATA_ID_KW);
+    if (id_str) {
+        object_id = atol(id_str);
+    }
+
     // =-=-=-=-=-=-=-
     // make call to synctoarch via resource plugin
     irods::file_object_ptr file_obj(
         new irods::file_object(
             _comm,
             _sync_inp->objPath,
-            _sync_inp->filename, "", 0,
+            _sync_inp->filename,
+            "",
+            0,
+            object_id,
             _sync_inp->mode,
             _sync_inp->flags ) );
     file_obj->resc_hier( _sync_inp->rescHier );
@@ -164,7 +174,7 @@ int _rsFileSyncToArch(
                 new irods::collection_object(
                     _sync_inp->filename,
                     _sync_inp->rescHier,
-                    0, 0 ) );
+                    0, 0, 0 ) );
             coll_obj->cond_input( _sync_inp->condInput );
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if ( !rmdir_err.ok() ) {

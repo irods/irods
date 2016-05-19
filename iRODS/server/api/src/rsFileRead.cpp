@@ -104,7 +104,7 @@ int _rsFileRead(
             FileDesc[_read_inp->fileInx].fileName,
             FileDesc[_read_inp->fileInx].rescHier,
             FileDesc[_read_inp->fileInx].fd,
-            0, 0 ) );
+            0, 0, 0 ) );
 
     irods::error ret = fileRead( _comm,
                                  file_obj,
