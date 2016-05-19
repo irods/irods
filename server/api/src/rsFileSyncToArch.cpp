@@ -139,6 +139,12 @@ int _rsFileSyncToArch(
     // pass condInput
     file_obj->cond_input( _sync_inp->condInput );
 
+    // set object id if provided
+    char *id_str = getValByKey(&_sync_inp->condInput, DATA_ID_KW);
+    if (id_str) {
+        file_obj->id(strtol(id_str, NULL, 10));
+    }
+
     irods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
 
     if ( !sync_err.ok() ) {

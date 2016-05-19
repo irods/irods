@@ -38,6 +38,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_random.hpp"
+#include <boost/lexical_cast.hpp>
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -1227,6 +1228,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     dataObjInp_t *dataObjInp;
     int status;
     dataObjInfo_t tmpDataObjInfo;
+    std::string object_id;
 
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
@@ -1270,6 +1272,10 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     rstrcpy( fileSyncToArchInp.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
     rstrcpy( fileSyncToArchInp.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
     rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
+
+    // add object id keyword to pass down to resource plugins
+    object_id = boost::lexical_cast<std::string>(srcDataObjInfo->dataId);
+    addKeyVal(&fileSyncToArchInp.condInput, DATA_ID_KW, object_id.c_str());
 
     fileSyncToArchInp.mode = getFileMode( dataObjInp );
     fileSyncOut_t* sync_out = 0;

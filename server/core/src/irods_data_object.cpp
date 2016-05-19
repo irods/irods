@@ -11,6 +11,7 @@ namespace irods {
     data_object::data_object() :
         physical_path_( "" ),
         resc_hier_( "" ),
+        id_( 0 ),
         mode_( 0 ),
         flags_( 0 ),
         resc_id_(0) {
@@ -25,6 +26,7 @@ namespace irods {
         int                _mode,
         int                _flags ) :
         physical_path_( _phy_path ),
+        id_( 0 ),
         mode_( _mode ),
         flags_( _flags ),
         resc_id_( _resc_id ) {
@@ -44,6 +46,7 @@ namespace irods {
         int                _flags,
         const keyValPair_t& _cond_input ) :
         physical_path_( _phy_path ),
+        id_( 0 ),
         mode_( _mode ),
         flags_( _flags ),
         resc_id_( _resc_id ) {
@@ -63,6 +66,7 @@ namespace irods {
         int                _flags ) :
         physical_path_( _phy_path ),
         resc_hier_( _resc_hier ),
+        id_( 0 ),
         mode_( _mode ),
         flags_( _flags ) {
         memset( &cond_input_, 0, sizeof( keyValPair_t ) );
@@ -82,6 +86,7 @@ namespace irods {
         const keyValPair_t& _cond_input ) :
         physical_path_( _phy_path ),
         resc_hier_( _resc_hier ),
+        id_( 0 ),
         mode_( _mode ),
         flags_( _flags ) {
         replKeyVal( &_cond_input, &cond_input_ );
@@ -99,6 +104,7 @@ namespace irods {
         first_class_object( _rhs ),
         physical_path_( _rhs.physical_path_ ),
         resc_hier_( _rhs.resc_hier_ ),
+        id_( _rhs.id_ ),
         mode_( _rhs.mode_ ),
         flags_( _rhs.flags_ ),
         resc_id_( _rhs.resc_id_ ) {
@@ -118,6 +124,7 @@ namespace irods {
         physical_path_ = _rhs.physical_path_;
         resc_hier_     = _rhs.resc_hier_;
         resc_id_       = _rhs.resc_id_;
+        id_            = _rhs.id_;
         mode_          = _rhs.mode_;
         flags_         = _rhs.flags_;
         replKeyVal( &_rhs.cond_input_, &cond_input_ );
@@ -132,6 +139,10 @@ namespace irods {
 
         _kvp[PHYSICAL_PATH_KW] = physical_path_.c_str();
         _kvp[RESC_HIER_STR_KW] = resc_hier_.c_str();
+
+        std::stringstream id_str;
+        id_str << id_;
+        _kvp[DATA_ID_KW] = id_str.str().c_str();
 
         std::stringstream mode_str;
         mode_str << mode_;
