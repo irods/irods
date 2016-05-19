@@ -2265,93 +2265,62 @@ getNumFilesInDir( const char *mydir ) {
 
 pathnamePatterns_t *
 readPathnamePatterns( char *buf, int buflen ) {
-    pathnamePatterns_t *pp;
-    char **patterns;
-    char *pattern_buf;
-    int num_patterns;
-    char *cp1, *cp2;
-    int c_count, in_comment, i;
-
     if ( buf == NULL || buflen <= 0 ) {
+        return NULL;
+    }
+
+    /* Allocate and initialize the return structure */
+    pathnamePatterns_t *pp = ( pathnamePatterns_t* )malloc( sizeof( pathnamePatterns_t ) );
+    if ( pp == NULL ) {
+        rodsLog( LOG_NOTICE, "readPathnamePatterns: could not allocate pp struct" );
         return NULL;
     }
 
     /* copy the passed in buffer since we'll be
        manipulating it */
-    pattern_buf = ( char* )malloc( buflen );
-    if ( pattern_buf == NULL ) {
+    pp->pattern_buf = ( char* )malloc( buflen + 1 );
+    if ( pp->pattern_buf == NULL ) {
         rodsLog( LOG_NOTICE, "readPathnamePatterns: could not allocate pattern buffer" );
+        free(pp);
         return NULL;
     }
-    memcpy( pattern_buf, buf, buflen );
+    memcpy( pp->pattern_buf, buf, buflen );
+    pp->pattern_buf[buflen] = '\n';
 
-    /* count the number of patterns in the buffer.
+    /* Get the addresses of the patterns in the buffer.
        They'll be delimited by newlines. */
-    num_patterns = 0;
-    cp1 = pattern_buf;
-    c_count = 0;
-    in_comment = 0;
-    while ( cp1 != pattern_buf + buflen ) {
-        if ( *cp1 == '\n' ) {
-            if ( c_count ) {
-                /* don't include empty lines */
-                num_patterns++;
+    std::vector<char *> patterns_vector;
+    bool beginning_of_line = true;
+    for ( int i = 0; i < buflen; i++ ) {
+        if ( pp->pattern_buf[i] == '\n' ) {
+            pp->pattern_buf[i] = '\0';
+            beginning_of_line = true;
+        }
+        else if (beginning_of_line) {
+            beginning_of_line = false;
+            if ( pp->pattern_buf[i] != '#' ) {
+                patterns_vector.push_back(pp->pattern_buf + i);
             }
-            c_count = 0;
-            in_comment = 0;
         }
-        else if ( *cp1 == '#' && c_count == 0 ) {
-            /* hash mark at beginning of line means comment */
-            in_comment = 1;
-        }
-        else if ( in_comment == 0 ) {
-            c_count++;
-        }
-        cp1++;
     }
+    pp->num_patterns = patterns_vector.size();
 
     /* now allocate a string array for the patterns, and
        make each array element point to a pattern string
        in place in the buffer */
-    patterns = ( char** )malloc( sizeof( char* ) * num_patterns );
-    if ( patterns == NULL ) {
-        rodsLog( LOG_NOTICE, "readPathnamePatterns: could not allocate pattern array" );
-        free( pattern_buf );
-        return NULL;
-    }
-    cp1 = cp2 = pattern_buf;
-    i = c_count = in_comment = 0;
-    while ( cp1 != pattern_buf + buflen ) {
-        if ( *cp1 == '\n' ) {
-            *cp1 = '\0';
-            if ( c_count ) {
-                patterns[i++] = cp2;
-            }
-            c_count = 0;
-            in_comment = 0;
-            cp2 = cp1 + 1;
+    if (pp->num_patterns > 0) {
+        pp->patterns = ( char** )malloc( sizeof( char* ) * pp->num_patterns );
+        if ( pp->patterns == NULL ) {
+            rodsLog( LOG_NOTICE, "readPathnamePatterns: could not allocate pattern array" );
+            free(pp->pattern_buf);
+            free(pp);
+            return NULL;
         }
-        else if ( *cp1 == '#' && c_count == 0 ) {
-            in_comment = 1;
-        }
-        else if ( in_comment == 0 ) {
-            c_count++;
-        }
-        cp1++;
+        memcpy(pp->patterns, &patterns_vector[0], pp->num_patterns * sizeof(char*));
     }
-
-    /* Allocate and initialize the return structure */
-    pp = ( pathnamePatterns_t* )malloc( sizeof( pathnamePatterns_t ) );
-    if ( pp == NULL ) {
-        rodsLog( LOG_NOTICE, "readPathnamePatterns: could not allocate pp struct" );
-        free( pattern_buf );
-        free( patterns );
-        return NULL;
+    else {
+        pp->patterns = NULL;
     }
-
-    pp->pattern_buf = pattern_buf;
-    pp->patterns = patterns;
-    pp->num_patterns = num_patterns;
 
     return pp;
 }
