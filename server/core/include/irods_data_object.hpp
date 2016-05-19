@@ -77,6 +77,9 @@ namespace irods {
             virtual std::string resc_hier()       const {
                 return resc_hier_;
             }
+            virtual long        id()              const {
+                return id_;
+            }
             virtual int         mode()            const {
                 return mode_;
             }
@@ -97,6 +100,9 @@ namespace irods {
             }
             virtual void resc_hier( const std::string& _hier )     {
                 resc_hier_       = _hier;
+            }
+            virtual void id( long _id ) {
+                id_ = _id;
             }
             virtual void mode( int _m )                         {
                 mode_            = _m;
@@ -128,6 +134,7 @@ namespace irods {
             //      :: higher in the original design
             std::string  physical_path_; // full physical path in the vault
             std::string  resc_hier_;     // where this lives in the resource hierarchy
+            long        id_;             // object id
             int          mode_;	         // mode when opened or modified
             int          flags_;         // flags for object operations
             keyValPair_t cond_input_;    // input key-value pairs
