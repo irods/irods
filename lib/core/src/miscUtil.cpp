@@ -1633,6 +1633,9 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             else {
                 status = genQueryOutToDataObjRes( &genQueryOut,
                                                   dataObjSqlResult );
+                if ( status < 0 ) {
+                    rodsLogError( LOG_ERROR, status, "genQueryOut failed in %s.", __PRETTY_FUNCTION__ );
+                }
                 collHandle->rowInx = 0;
                 free( genQueryOut );
             }
