@@ -665,7 +665,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
             getFileType( &myTargPath );
 
-            status = rsyncDataToFileUtil( conn, &mySrcPath, &myTargPath,
+            int status = rsyncDataToFileUtil( conn, &mySrcPath, &myTargPath,
                                           rodsArgs, dataObjOprInp );
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -673,7 +673,6 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
                               mySrcPath.outPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -703,7 +702,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
             rstrcpy( myTargPath.outPath, targChildPath, MAX_NAME_LEN );
             rstrcpy( mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN );
 
-            status = rsyncCollToDirUtil( conn, &mySrcPath,
+            int status = rsyncCollToDirUtil( conn, &mySrcPath,
                                          &myTargPath, myRodsEnv, rodsArgs, &childDataObjInp );
 
             if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
@@ -957,7 +956,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
             getRodsObjType( conn, &myTargPath );
 
-            status = rsyncDataToDataUtil( conn, &mySrcPath, &myTargPath,
+            int status = rsyncDataToDataUtil( conn, &mySrcPath, &myTargPath,
                                           rodsArgs, dataObjCopyInp );
             if ( myTargPath.rodsObjStat != NULL ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
@@ -969,7 +968,6 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                               myTargPath.outPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
@@ -994,7 +992,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     &collEnt.specColl;
             rstrcpy( myTargPath.outPath, targChildPath, MAX_NAME_LEN );
             rstrcpy( mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN );
-            status = rsyncCollToCollUtil( conn, &mySrcPath,
+            int status = rsyncCollToCollUtil( conn, &mySrcPath,
                                           &myTargPath, myRodsEnv, rodsArgs, &childDataObjCopyInp );
 
 
