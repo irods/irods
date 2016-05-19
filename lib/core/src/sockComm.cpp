@@ -905,7 +905,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     // =-=-=-=-=-=-=-
     // get rods env to pass to client start for policy decisions
     rodsEnv rods_env;
-    status = getRodsEnv( &rods_env );
+    getRodsEnv( &rods_env );
 
     ret = sockClientStart( new_net_obj, &rods_env );
     if ( !ret.ok() ) {
