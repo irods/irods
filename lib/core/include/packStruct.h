@@ -103,7 +103,7 @@ typedef struct {
 } bytesBufArray_t;
 
 typedef struct {
-    bytesBuf_t *bBuf;
+    bytesBuf_t bBuf;
     int bufSize;
     bytesBufArray_t nopackBufArray;	/* bBuf for non packed buffer */
 } packedOutput_t;
