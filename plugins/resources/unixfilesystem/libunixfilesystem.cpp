@@ -505,10 +505,7 @@ static bool replica_exceeds_high_water_mark(
         return false;
     }
 
-    fsblkcnt_t cap  = sb.f_bsize * sb.f_blocks;
-    fsblkcnt_t free = sb.f_bsize * sb.f_bavail;
-
-    uintmax_t used_space = cap - free;
+    uintmax_t used_space = sb.f_bsize * ( sb.f_blocks - sb.f_bfree);
     uintmax_t new_used_space = _file_size + used_space;
     if( new_used_space > hwm_val_unsigned ) {
         return true;
@@ -1325,9 +1322,8 @@ irods::error unix_resolve_hierarchy_create(
             rodsLong_t file_size = fco->size();
             if( replica_exceeds_high_water_mark( _ctx, file_size ) ) {
                 _out_vote = 0.0;
-                return SUCCESS();
+                return CODE(USER_FILE_TOO_LARGE);
             }
-
 
             // =-=-=-=-=-=-=-
             // get the resource host for comparison to curr host

@@ -1,6 +1,7 @@
 from __future__ import print_function
 import getpass
 import os
+import psutil
 import re
 import shutil
 import subprocess
@@ -683,14 +684,25 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
         shutil.rmtree(IrodsConfig().irods_directory + "/demoRescVault", ignore_errors=True)
 
-    def test_unix_filesystem_highwater_mark__2981(self):
-        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark=100")
-
-        filename = 'test_unix_filesystem_highwater_mark__2981.txt'
-        filesize = 64*1024*1024
+    def test_unix_filesystem_high_water_mark__2981(self):
+        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
+        filesize = 50000
         lib.make_file(filename, filesize)
 
-        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'HIERARCHY_ERROR')
+        # above threshold - should NOT accept new file
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'demoResc')).used - 100
+        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'USER_FILE_TOO_LARGE')
+
+        # crossing threshold - should NOT accept new file
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'demoResc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'USER_FILE_TOO_LARGE')
+
+        # below threshold - should accept new file
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'demoResc')).used + 10000000
+        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file3')
 
     def test_key_value_passthru(self):
         env = os.environ.copy()
@@ -945,22 +957,41 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    def test_unix_filesystem_highwater_mark__2981(self):
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark=100")
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark=100")
-
-        filename = 'test_unix_filesystem_highwater_mark__2981.txt'
-        filesize = 64*1024*1024
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_unix_filesystem_high_water_mark__2981(self):
+        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
+        filesize = 50000
         lib.make_file(filename, filesize)
+        for i in range(1, 12):
+            self.admin.assert_icommand('iput ' + filename + ' testput{0}'.format(i))
 
-        self.admin.assert_icommand('iput ' + filename + ' file1')
-        self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', 'unix3Resc')
+        # above threshold - should NOT accept new file on any child
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix3Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
-        self.admin.assert_icommand('iput ' + filename + ' file2')
-        self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', 'unix3Resc')
+        # crossing threshold - should NOT accept new file on any child
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix3Resc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
+        # below threshold - should accept new file on unix2Resc only
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used + 10000000
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix3Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
         self.admin.assert_icommand('iput ' + filename + ' file3')
-        self.admin.assert_icommand('ils -L file3', 'STDOUT_SINGLELINE', 'unix3Resc')
+        self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
 
 class Test_Resource_NonBlocking(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
@@ -3402,21 +3433,35 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
 
-    def test_unix_filesystem_highwater_mark__2981(self):
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark=100")
-
-        filename = 'test_unix_filesystem_highwater_mark__2981.txt'
-        filesize = 64*1024*1024
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_unix_filesystem_high_water_mark__2981(self):
+        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
+        filesize = 50000
         lib.make_file(filename, filesize)
+        for i in range(1, 12):
+            self.admin.assert_icommand('iput ' + filename + ' testput{0}'.format(i))
 
-        self.admin.assert_icommand('iput ' + filename + ' file1')
-        self.admin.assert_icommand('ils -L file1', 'STDOUT_SINGLELINE', 'unix1Resc')
+        # above threshold - should NOT accept new file on any child
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
-        self.admin.assert_icommand('iput ' + filename + ' file2')
-        self.admin.assert_icommand('ils -L file2', 'STDOUT_SINGLELINE', 'unix1Resc')
+        # crossing threshold - should NOT accept new file on any child
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used + 10000
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
+        # below threshold - should accept new file on unix2Resc only
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100
+        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
+        hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix2Resc')).used + 10000000
+        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
         self.admin.assert_icommand('iput ' + filename + ' file3')
-        self.admin.assert_icommand('ils -L file3', 'STDOUT_SINGLELINE', 'unix1Resc')
+        self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
