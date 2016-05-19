@@ -281,7 +281,7 @@ namespace irods {
                         vote );
         if ( 0.0 == vote ) {
             if ( ret.code() == 0 ) {
-                ret.code( -1 );
+                ret.code( HIERARCHY_ERROR );
             }
             ret.status( false );
         }

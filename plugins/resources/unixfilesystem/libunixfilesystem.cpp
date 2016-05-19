@@ -504,10 +504,7 @@ extern "C" {
             return false;
         }
 
-        fsblkcnt_t cap  = sb.f_bsize * sb.f_blocks;
-        fsblkcnt_t free = sb.f_bsize * sb.f_bavail;
-
-        rodsLong_t used_space = cap - free;
+        rodsLong_t used_space = sb.f_bsize * ( sb.f_blocks - sb.f_bfree);
         rodsLong_t new_used_space = _file_size + used_space;
         if( new_used_space > hwm_val ) {
             return true;
@@ -1311,7 +1308,6 @@ extern "C" {
         int resc_status = 0;
         irods::error get_ret = _ctx.prop_map().get< int >( irods::RESOURCE_STATUS, resc_status );
         if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
             // =-=-=-=-=-=-=-
             // if the status is down, vote no.
             if ( INT_RESC_STATUS_DOWN == resc_status ) {
@@ -1325,7 +1321,7 @@ extern "C" {
                 rodsLong_t file_size = fco->size();
                 if( replica_passes_high_water_mark( _ctx, file_size ) ) {
                     _out_vote = 0.0;
-                    return SUCCESS();
+                    return CODE(USER_FILE_TOO_LARGE);
                 }
 
                 // =-=-=-=-=-=-=-
