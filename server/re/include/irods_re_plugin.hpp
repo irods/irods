@@ -456,7 +456,7 @@ namespace irods {
             auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps)... _ps) {
                 std::function<error(std::string, re_pack_inp<T>&, decltype(_ps)...)> fun =
                 [this](std::string _rn, re_pack_inp<T>& _itr, decltype(_ps)... _ps) {
-                    return _itr.re_->template exec_rule<As...>(_rn, _itr.re_ctx_, std::forward<As >(_ps)..., callback(*this));
+                    return _itr.re_->template exec_rule<As...>(_rn, this->ctx_, std::forward<As >(_ps)..., callback(*this));
                 };
                 return this->rex_mgr_.call(_itr.instance_name_,std::string ("exec_rule"), fun, _rn, _itr, std::forward<As>(_ps)...);
             };
@@ -537,7 +537,7 @@ namespace irods {
         template <typename ...As>
         error exec_rule(std::string _rn, As &&... _ps) {
             auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps)... _ps) {
-                return _itr.re_->template exec_rule<As...>( _rn, _itr.re_ctx_, std::forward<As>(_ps)..., callback(*this));
+                return _itr.re_->template exec_rule<As...>( _rn, this->ctx_, std::forward<As>(_ps)..., callback(*this));
             };
             auto em = [this](std::string _rn, decltype(_ps)... _ps) {
                 return this->re_mgr_.ms_mgr_.exec_microservice(_rn, this->ctx_, std::forward<As>(_ps)...);
@@ -609,10 +609,10 @@ namespace irods {
 	return SUCCESS();
     }
 
-    using unit = std::tuple<>;
-#define UNIT unit()
+    using unit = ruleExecInfo_t *;
+#define UNIT NULL
 
-    using default_re_ctx = unit;
+    using default_re_ctx = ruleExecInfo_t *;
     using default_ms_ctx = ruleExecInfo_t *;
 
     template<>

@@ -40,7 +40,7 @@ namespace irods{
             ret.emplace_back(
                 boost::any_cast< std::string> (itr["instance_name"]),
                 boost::any_cast< std::string> (itr["plugin_name"]),
-                UNIT);
+                (RuleExecInfo *) UNIT);
         }
         return ret;
     }
