@@ -57,7 +57,6 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${OPENSSL_INCLUDE_DIR}
     )
 
@@ -70,8 +69,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
-    dl 
+    dl
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE CACHE_ENABLE RODS_SERVER ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
