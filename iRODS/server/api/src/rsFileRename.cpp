@@ -117,8 +117,8 @@ int _rsFileRename(
     }
     // =-=-=-=-=-=-=-
     // compare fco phy path and old file name
-    // if they differ then repave for next call
-    if ( file_obj->physical_path() == _rename_inp->oldFileName ) {
+    // if they are equal then repave for next call
+    if ( file_obj->physical_path() == _rename_inp->oldFileName && getErrno(file_obj->file_descriptor()) != ENOSYS ) {
         file_obj->physical_path( _rename_inp->newFileName );
     }
 
