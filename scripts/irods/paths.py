@@ -59,7 +59,6 @@ def default_client_environment_path():
         '.irods',
         'irods_environment.json')
 
-
 def log_directory():
     return os.path.join(
         irods_directory(),

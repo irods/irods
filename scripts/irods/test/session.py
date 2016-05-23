@@ -13,6 +13,7 @@ import time
 
 from .. import test
 from .. import lib
+from .. import paths
 from . import settings
 from ..configuration import IrodsConfig
 from .command import assert_command, assert_command_fail
@@ -181,7 +182,15 @@ class IrodsSession(object):
 
         message = ' --- IrodsSession: icommand executed by [{0}] [{1}] --- \n'.format(
             self.username, log_string)
-        lib.write_to_log(IrodsConfig().server_log_path, message)
+        if IrodsConfig().version_tuple < (4, 2, 0):
+            server_log_dir = os.path.join(paths.irods_directory(), 'iRODS', 'server', 'log')
+            server_log_path = sorted([os.path.join(server_log_dir, name)
+                    for name in os.listdir(server_log_dir)
+                    if name.startswith('rodsLog')],
+                key=lambda path: os.path.getctime(path))[-1]
+        else:
+            server_log_path = paths.server_log_path()
+        lib.write_to_log(server_log_path, message)
         print(message, end='')
 
     def _write_environment_file(self):
