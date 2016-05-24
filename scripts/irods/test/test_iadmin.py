@@ -389,6 +389,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser",
                                    'STDERR_SINGLELINE', "Invalid username format")  # should be rejected
 
+        #Invalid user type
+        self.admin.assert_icommand("iadmin mkuser lando invalid_user_type",
+                                   'STDERR_SINGLELINE', "is not valid")  # should be rejected
+
     # =-=-=-=-=-=-=-
     # REBALANCE
     def test_rebalance_for_invalid_data__ticket_3147(self):
@@ -1145,3 +1149,29 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         os.remove(path_of_corrupt_so)
+
+    def test_admin_listings(self):
+        self.admin.assert_icommand(['iadmin', 'lt'], 'STDOUT_SINGLELINE', 'zone_type')
+        self.admin.assert_icommand(['iadmin', 'lt', 'zone_type'], 'STDOUT_SINGLELINE', 'local')
+        self.admin.assert_icommand(['iadmin', 'lt', 'zone_type', 'local'], 'STDOUT_SINGLELINE', 'token_namespace: zone_type')
+        self.admin.assert_icommand(['iadmin', 'lr'], 'STDOUT_SINGLELINE', 'demoResc')
+        self.admin.assert_icommand(['iadmin', 'lr', 'demoResc'], 'STDOUT_SINGLELINE', 'resc_name: demoResc')
+        self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT_SINGLELINE', self.admin.zone_name)
+        self.admin.assert_icommand(['iadmin', 'lz', self.admin.zone_name], 'STDOUT_SINGLELINE', 'zone_type_name: local')
+        self.admin.assert_icommand(['iadmin', 'lg'], 'STDOUT_SINGLELINE', 'rodsadmin')
+        self.admin.assert_icommand(['iadmin', 'lg', 'rodsadmin'], 'STDOUT_SINGLELINE', self.admin.username)
+        self.admin.assert_icommand(['iadmin', 'lgd', 'rodsadmin'], 'STDOUT_SINGLELINE', 'user_name: rodsadmin')
+        self.admin.assert_icommand(['iadmin', 'lrg'], 'STDERR_SINGLELINE', 'Resource groups are deprecated.')
+
+    def test_group_membership(self):
+        self.admin.assert_icommand(["iadmin", "rmgroup", "g1"], 'STDERR_SINGLELINE', 'CAT_INVALID_USER')
+        self.admin.assert_icommand(["iadmin", "mkgroup", "g1"])
+        self.admin.assert_icommand(["iadmin", "atg", "g1", self.user0.username])
+        self.admin.assert_icommand(["iadmin", "atg", "g1a", self.user0.username], 'STDERR_SINGLELINE', 'CAT_INVALID_GROUP')
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "atg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user0.username])
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
+        self.admin.assert_icommand(["iadmin", "rmgroup", "g1"])
+
