@@ -73,6 +73,7 @@ namespace irods {
         const data_object& _rhs ) {
         physical_path_ = _rhs.physical_path_;
         resc_hier_     = _rhs.resc_hier_;
+        id_            = _rhs.id_;
         mode_          = _rhs.mode_;
         flags_         = _rhs.flags_;
         replKeyVal( &_rhs.cond_input_, &cond_input_ );
@@ -87,6 +88,10 @@ namespace irods {
 
         addKeyVal( &_kvp, PHYSICAL_PATH_KW, physical_path_.c_str() );
         addKeyVal( &_kvp, RESC_HIER_STR_KW, resc_hier_.c_str() );
+
+        std::stringstream id_str;
+        id_str << id_;
+        addKeyVal( &_kvp, DATA_ID_KW, id_str.str().c_str() );
 
         std::stringstream mode_str;
         mode_str << mode_;
