@@ -58,14 +58,14 @@ def get_current_schema_version(cfg):
             break
     else:
         raise RuntimeError(
-            'get_current_schema_version: failed to find result line for schema_version\n\n{}'.format(format_cmd_result(result)))
+            'get_current_schema_version: failed to find result line for schema_version\n\n{0}'.format(format_cmd_result(result)))
 
     try:
         current_schema_version = int(sql_output_lines[result_line])
     except ValueError:
         print('Failed to convert [' + sql_output_lines[result_line] + '] to an int')
         raise RuntimeError(
-            'get_current_schema_version: failed to parse schema_version\n\n{}'.format(format_cmd_result(result)))
+            'get_current_schema_version: failed to parse schema_version\n\n{0}'.format(format_cmd_result(result)))
     print_debug('current_schema_version: {0}'.format(current_schema_version))
 
     return current_schema_version

@@ -41,7 +41,7 @@ def get_initial_schema(schema_uri):
     try:
         return scheme_dispatch[url_scheme](schema_uri)
     except KeyError:
-        print('ERROR: Invalid schema url: {}'.format(schema_uri))
+        print('ERROR: Invalid schema url: {0}'.format(schema_uri))
         sys.exit(1)
 
 def get_initial_schema_from_web(schema_uri):
