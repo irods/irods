@@ -62,7 +62,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -82,7 +82,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -102,7 +102,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -401,7 +401,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -441,7 +441,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -2260,7 +2260,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         shutil.rmtree(irods_config.irods_directory + "/unixB1Vault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -2280,7 +2280,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -2299,7 +2299,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
@@ -3749,7 +3749,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         os.remove(filepath)
         os.remove(doublefile)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -3772,7 +3772,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_iget_with_purgec(self):
         # local setup
         filename = "purgecgetfile.txt"
@@ -3793,7 +3793,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    @unittest.skip("not support for non-compound resoruces")
+    @unittest.skip("no support for non-compound resources")
     def test_irepl_with_purgec(self):
         # local setup
         filename = "purgecreplfile.txt"
