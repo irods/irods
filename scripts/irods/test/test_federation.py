@@ -947,6 +947,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         # list remote resources
         test_session.assert_icommand(
             "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_DEF_RESOURCE)
+        test_session.assert_icommand(
+            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
 
 
 class Test_Admin_Commands(unittest.TestCase):
@@ -1171,7 +1173,7 @@ OUTPUT ruleExecOut
 
         # look for AVU set by msiAssociateKeyValuePairsToObj
         test_session.assert_icommand(
-                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters), 
+                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters),
                                      'STDOUT_MULTILINE',
                                      ['attribute: {attribute}$'.format(**parameters),
                                       'value: {value}$'.format(**parameters)],
@@ -1196,7 +1198,7 @@ OUTPUT ruleExecOut
 
         # confirm that AVU is gone
         test_session.assert_icommand(
-                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters), 
+                                     'imeta ls -d {remote_home_collection}/{filename}'.format(**parameters),
                                      'STDOUT_MULTILINE',
                                      ['AVUs defined for dataObj {remote_home_collection}/{filename}:$'.format(**parameters),
                                       'None$'],
@@ -1206,4 +1208,3 @@ OUTPUT ruleExecOut
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
         os.remove(filepath)
-
