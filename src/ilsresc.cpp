@@ -301,33 +301,46 @@ parseGenQueryOut(
         }
     }
 
+    bool all_parent_strings_are_names_not_ids_aka_queried_a_pre_42_zone = true;
+    for (auto& parent : resc_parents) {
+        if (!parent.empty()) {
+            auto itr = resc_map.find(parent);
+            if (itr == resc_map.end()) {
+                all_parent_strings_are_names_not_ids_aka_queried_a_pre_42_zone = false;
+                break;
+            }
+        }
+    }
+
+    if (all_parent_strings_are_names_not_ids_aka_queried_a_pre_42_zone) {
+        for (auto& parent : resc_parents) {
+            auto itr = resc_map.find(parent);
+            if (itr != resc_map.end()) {
+                parent = resc_indices[itr->second];
+            }
+        }
+    }
+
     return 0;
 }
 
 int build_child_list(
     const std::vector<std::string>&   _resc_names,
     const std::vector<std::string>&   _resc_parents,
-    const std::vector<std::string>&   _resc_indicies,
+    const std::vector<std::string>&   _resc_ids,
     std::vector<std::string>&         _resc_children ) {
 
-    for( size_t idx = 0;
-         idx < _resc_names.size();
-         ++idx ) {
-        if(idx >= _resc_parents.size() ||
-           _resc_parents[idx].empty()) {
+    for (size_t idx=0; idx < _resc_names.size(); ++idx ) {
+        if (idx >= _resc_parents.size() || _resc_parents[idx].empty()) {
             continue;
         }
 
-        size_t parent_pos = std::find(
-                                _resc_indicies.begin(),
-                                _resc_indicies.end(),
-                                _resc_parents[idx] ) - _resc_indicies.begin();
-        if( parent_pos > _resc_indicies.size() ) {
-            // parent_idx not found
+        size_t parent_pos = std::find(_resc_ids.begin(), _resc_ids.end(), _resc_parents[idx] ) - _resc_ids.begin();
+        if (parent_pos >= _resc_ids.size()) {
             continue;
         }
 
-        if(!_resc_children[parent_pos].empty()) {
+        if (!_resc_children[parent_pos].empty()) {
             _resc_children[parent_pos] += ";";
         }
         _resc_children[parent_pos] += _resc_names[idx];
