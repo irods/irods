@@ -88,6 +88,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         finally:
             assert_command('iadmin rmresc invalid_resc')
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown_with_invalid_host(self):
         try:
             assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
