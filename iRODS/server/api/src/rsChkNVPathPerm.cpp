@@ -144,7 +144,7 @@ _rsChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp ) {
                 chkNVPathPermInp->objPath,
                 tmpPath,
                 chkNVPathPermInp->resc_hier_,
-                0, 0, 0, 0 ) );
+                0, 0, 0 ) );
         stat_err = fileStat( rsComm, file_obj, &myFileStat );
         if ( stat_err.code() >= 0 ) {
             break;

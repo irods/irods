@@ -141,7 +141,6 @@ int _rsFileStageToCache(
             _comm,
             _stage_inp->objPath,
             _stage_inp->filename, "", 0,
-            0,
             _stage_inp->mode,
             _stage_inp->flags ) );
     file_obj->resc_hier( _stage_inp->rescHier );
@@ -167,7 +166,7 @@ int _rsFileStageToCache(
                 new irods::collection_object(
                     _stage_inp->cacheFilename,
                     _stage_inp->rescHier,
-                    0, 0, 0 ) );
+                    0, 0 ) );
             coll_obj->cond_input( _stage_inp->condInput );
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if ( !rmdir_err.ok() ) {

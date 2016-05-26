@@ -127,7 +127,6 @@ int _rsFileCreate(
                                          _create_inp->fileName,
                                          _create_inp->resc_hier_,
                                          0,
-                                         0,
                                          _create_inp->mode,
                                          _create_inp->flags ) );
     file_obj->in_pdmo( _create_inp->in_pdmo );
@@ -185,7 +184,7 @@ int _rsFileCreate(
                 new irods::collection_object(
                     _create_inp->fileName,
                     _create_inp->resc_hier_,
-                    0, 0, 0 ) );
+                    0, 0 ) );
             coll_obj->cond_input( _create_inp->condInput );
 
             irods::error rmdir_err = fileRmdir( _comm, coll_obj );

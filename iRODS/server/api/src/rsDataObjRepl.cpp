@@ -1213,6 +1213,7 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     dataObjInp_t *dataObjInp;
     int status;
     dataObjInfo_t tmpDataObjInfo;
+    std::string object_id;
 
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
@@ -1255,8 +1256,9 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     rstrcpy( fileSyncToArchInp.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
     rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
 
-    // add object id to pass down to resource plugins
-    addKeyVal(&fileSyncToArchInp.condInput, DATA_ID_KW, boost::lexical_cast<std::string>(srcDataObjInfo->dataId).c_str());
+    // add object id keyword to pass down to resource plugins
+    object_id = boost::lexical_cast<std::string>(srcDataObjInfo->dataId);
+    addKeyVal(&fileSyncToArchInp.condInput, DATA_ID_KW, object_id.c_str());
 
     fileSyncToArchInp.mode = getFileMode( dataObjInp );
     fileSyncOut_t* sync_out = 0;

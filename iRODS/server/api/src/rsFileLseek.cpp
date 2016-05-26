@@ -90,7 +90,7 @@ int _rsFileLseek(
             FileDesc[_lseek_inp->fileInx].fileName,
             FileDesc[_lseek_inp->fileInx].rescHier,
             FileDesc[_lseek_inp->fileInx].fd,
-            0, 0, 0 ) );
+            0, 0 ) );
 
     irods::error lseek_err = fileLseek(
                                  _comm,

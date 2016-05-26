@@ -97,7 +97,7 @@ int _rsFileClose(
             FileDesc[ _close_inp->fileInx ].fileName,
             FileDesc[ _close_inp->fileInx ].rescHier,
             FileDesc[ _close_inp->fileInx ].fd,
-            0, 0, 0 ) );
+            0, 0 ) );
     file_obj->in_pdmo( _close_inp->in_pdmo );
 
     irods::error close_err = fileClose( _comm, file_obj );

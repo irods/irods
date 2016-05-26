@@ -107,7 +107,7 @@ int _rsFileGetFsFreeSpace(
             _freespace_inp->objPath,
             _freespace_inp->fileName,
             _freespace_inp->rescHier,
-            0, 0, 0,
+            0, 0,
             _freespace_inp->flag ) );
 
     irods::error free_err = fileGetFsFreeSpace( _comm, file_obj );

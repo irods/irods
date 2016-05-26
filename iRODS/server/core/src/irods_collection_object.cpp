@@ -29,13 +29,11 @@ namespace irods {
     collection_object::collection_object(
         const std::string& _fn,
         const std::string& _resc_hier,
-        long _id,
         int _m,
         int _f ) :
         data_object(
             _fn,
             _resc_hier,
-            _id,
             _m,
             _f ),
         directory_pointer_( 0 ) {
@@ -48,14 +46,12 @@ namespace irods {
     collection_object::collection_object(
         const std::string& _fn,
         const std::string& _resc_hier,
-        long _id,
         int _m,
         int _f,
         const keyValPair_t& _cond_input ) :
         data_object(
             _fn,
             _resc_hier,
-            _id,
             _m,
             _f,
             _cond_input ),

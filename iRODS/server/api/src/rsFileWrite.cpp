@@ -99,7 +99,7 @@ int _rsFileWrite(
             FileDesc[_write_inp->fileInx].fileName,
             FileDesc[_write_inp->fileInx].rescHier,
             FileDesc[_write_inp->fileInx].fd,
-            0, 0, 0 ) );
+            0, 0 ) );
 
     irods::error write_err = fileWrite( _comm,
                                         file_obj,

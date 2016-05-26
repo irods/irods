@@ -137,7 +137,6 @@ int _rsFileOpen(
             _open_inp->fileName,
             _open_inp->resc_hier_,
             0,
-            0,
             _open_inp->mode,
             _open_inp->flags ) );
     file_obj->in_pdmo( _open_inp->in_pdmo );

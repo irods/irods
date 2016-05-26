@@ -95,7 +95,7 @@ int _rsFileUnlink(
             _unlink_inp->objPath,
             _unlink_inp->fileName,
             _unlink_inp->rescHier,
-            0, 0, 0, 0 ) );
+            0, 0, 0 ) );
     file_obj->in_pdmo( _unlink_inp->in_pdmo );
 
     irods::error unlink_err = fileUnlink( _comm, file_obj );

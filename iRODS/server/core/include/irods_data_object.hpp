@@ -27,13 +27,11 @@ namespace irods {
             data_object(
                 const std::string&,		// phy path
                 const std::string&,		// resc hier
-                long id,                // object id
                 int,                	// mode
                 int );					// flags
             data_object(
                 const std::string&,		// phy path
                 const std::string&,		// resc hier
-                long id,                // object id
                 int,                	// mode
                 int,					// flags
                 const keyValPair_t& );	// cond_input
@@ -66,7 +64,7 @@ namespace irods {
             virtual std::string resc_hier()       const {
                 return resc_hier_;
             }
-            virtual long         id()            const {
+            virtual long        id()              const {
                 return id_;
             }
             virtual int         mode()            const {
@@ -87,8 +85,8 @@ namespace irods {
             virtual void resc_hier( const std::string& _hier )     {
                 resc_hier_       = _hier;
             }
-            virtual void id( long _id )                         {
-                id_            = _id;
+            virtual void id( long _id ) {
+                id_ = _id;
             }
             virtual void mode( int _m )                         {
                 mode_            = _m;

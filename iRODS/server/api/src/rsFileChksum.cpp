@@ -188,7 +188,7 @@ int fileChksum(
             objPath,
             fileName,
             rescHier,
-            -1, 0, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
+            -1, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
     ret = fileOpen( rsComm, file_obj );
     if ( !ret.ok() ) {
         int status = UNIX_FILE_OPEN_ERR - errno;

@@ -100,7 +100,6 @@ extern "C" {
                 physical_path,
                 resource_hierarchy,
                 0,     // fd
-                0,     // object id
                 0,     // mode
                 0 ) ); // flags
 

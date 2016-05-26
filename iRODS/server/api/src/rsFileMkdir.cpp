@@ -81,7 +81,6 @@ int _rsFileMkdir(
         new irods::collection_object(
             _mkdir_inp->dirName,
             _mkdir_inp->rescHier,
-            0,
             _mkdir_inp->mode,
             0 ) );
 

@@ -457,7 +457,6 @@ extern "C" {
             new irods::collection_object(
                 dirname,
                 fco->resc_hier(),
-                0,
                 fco->mode(), 0 ) );
         irods::resource_plugin_context context(
             _ctx.prop_map(),
@@ -607,7 +606,6 @@ extern "C" {
             new irods::collection_object(
                 dirname,
                 fco->resc_hier(),
-                0,
                 fco->mode(), 0 ) );
         irods::resource_plugin_context context(
             _ctx.prop_map(),

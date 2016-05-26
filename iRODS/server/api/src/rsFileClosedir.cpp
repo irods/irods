@@ -83,7 +83,7 @@ int _rsFileClosedir(
         new irods::collection_object(
             FileDesc[_closedir_inp->fileInx].fileName,
             FileDesc[_closedir_inp->fileInx].rescHier,
-            0, 0, 0 ) );
+            0, 0 ) );
     coll_obj->directory_pointer( reinterpret_cast< DIR* >( FileDesc[_closedir_inp->fileInx].driverDep ) );
     irods::error closedir_err = fileClosedir( _comm, coll_obj );
 
