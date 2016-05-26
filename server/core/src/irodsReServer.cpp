@@ -384,7 +384,7 @@ reServerMain( char* logDir ) {
     int runCnt;
     reExec_t reExec;
     int repeatedQueryErrorCount = 0;
-    
+
     initReExec( &reExec );
     LastRescUpdateTime = time( NULL );
 
@@ -400,17 +400,17 @@ reServerMain( char* logDir ) {
         while ( true ) {
             rodsEnv env;
             getRodsEnv(&env);
-            rcComm_t* rc_comm = nullptr;
-              rc_comm = rcConnect(
+            rcComm_t* rc_comm = rcConnect(
                       env.rodsHost,
                       env.rodsPort,
                       env.rodsUserName,
                       env.rodsZone,
-                      NO_RECONN, NULL );
+                      NO_RECONN, nullptr );
               if(!rc_comm) {
                   rodsLog(
                           LOG_ERROR,
                           "rcConnect failed %d");
+                  rodsSleep(1, 0);
                   continue;
               }
 
@@ -420,7 +420,8 @@ reServerMain( char* logDir ) {
                     LOG_ERROR,
                     "clientLogin failed %d",
                     status );
-                continue; 
+                rodsSleep(1, 0);
+                continue;
             }
 
 
@@ -448,7 +449,7 @@ reServerMain( char* logDir ) {
             else {   // JMC - backport 4520
                 repeatedQueryErrorCount = 0;
             }
-            
+
             endTime = time( NULL ) + RE_SERVER_EXEC_TIME;
             runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
 
@@ -483,7 +484,7 @@ reServerMain( char* logDir ) {
                 /* nothing got run */
                 reSvrSleep( );
             }
-        
+
             rcDisconnect( rc_comm );
 
         } // while
@@ -514,4 +515,3 @@ int reSvrSleep( ) {
 
     return 0;
 }
- 
