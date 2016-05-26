@@ -20,6 +20,7 @@
 #include "readServerConfig.hpp"
 #include "objMetaOpr.hpp"
 #include "genQuery.h"
+#include "getRodsEnv.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -399,31 +400,27 @@ reServerMain( char* logDir ) {
     try {
         while ( true ) {
             rodsEnv env;
-            getRodsEnv(&env);
+            _reloadRodsEnv(env);
+            rErrMsg_t rcConnect_error_msg;
+            memset(&rcConnect_error_msg, 0, sizeof(rcConnect_error_msg));
             rcComm_t* rc_comm = rcConnect(
                       env.rodsHost,
                       env.rodsPort,
                       env.rodsUserName,
                       env.rodsZone,
-                      NO_RECONN, nullptr );
-              if(!rc_comm) {
-                  rodsLog(
-                          LOG_ERROR,
-                          "rcConnect failed %d");
+                      NO_RECONN, &rcConnect_error_msg );
+              if (!rc_comm) {
+                  rodsLog(LOG_ERROR, "rcConnect failed %ji, %s", static_cast<intmax_t>(rcConnect_error_msg.status), rcConnect_error_msg.msg);
                   rodsSleep(1, 0);
                   continue;
               }
 
             int status = clientLogin( rc_comm );
-            if( status < 0 ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "clientLogin failed %d",
-                    status );
+            if (status < 0) {
+                rodsLog(LOG_ERROR, "clientLogin failed %d", status);
                 rodsSleep(1, 0);
                 continue;
             }
-
 
 #ifndef windows_platform
 #ifndef SYSLOG
