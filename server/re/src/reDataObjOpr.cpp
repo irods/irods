@@ -2220,7 +2220,6 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
                             myDataObjInp->objPath,
                             rei->status );
     }
-    freeRodsObjStat( rodsObjStatOut );
 
     return rei->status;
 }
