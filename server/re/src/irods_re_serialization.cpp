@@ -692,6 +692,89 @@ namespace irods {
             return SUCCESS();
         } // serialize_rodsObjStat_ptr_ptr
 
+        static error serialize_rodsObjStat_ptr(
+                boost::any               _p,
+                serialized_parameter_t& _out) { 
+            try {
+                rodsObjStat_t* tmp = boost::any_cast<rodsObjStat_t*>(_p);
+                if(tmp) {
+                    rodsObjStat_t* l = tmp;
+
+                    _out["obj_size"] = boost::lexical_cast<std::string>(l->objSize);
+                    _out["obj_type"] = boost::lexical_cast<std::string>((int)l->objType);
+                    _out["data_mode"] = boost::lexical_cast<std::string>(l->dataMode);
+                    
+                    _out["data_id"] = boost::lexical_cast<std::string>(l->dataId);
+                    _out["checksum"] = boost::lexical_cast<std::string>(l->chksum);
+                    _out["ownerName"] = boost::lexical_cast<std::string>(l->ownerName);
+                    _out["owner_zone"] = boost::lexical_cast<std::string>(l->ownerZone);
+                    _out["create_time"] = boost::lexical_cast<std::string>(l->createTime);
+                    _out["modify_time"] = boost::lexical_cast<std::string>(l->modifyTime);
+                    _out["resc_hier"] = boost::lexical_cast<std::string>(l->rescHier);
+
+                    if(l->specColl) {
+                        serialize_spec_coll_info_ptr(
+                            l->specColl,
+                            _out );
+                    }
+                }
+                else {
+                    _out["null_value"] = "null_value";
+                }
+            }
+            catch ( std::exception& ) {
+                return ERROR(
+                         INVALID_ANY_CAST,
+                         "failed to cast rodsObjStat ptr" );
+            }
+
+            return SUCCESS();
+        } // serialize_rodsObjStat_ptr
+
+        static error serialize_genQueryInp_ptr(
+                boost::any               _p,
+                serialized_parameter_t& _out) { 
+            try {
+                genQueryInp_t* tmp = boost::any_cast<genQueryInp_t*>(_p);
+                if(tmp) {
+                    genQueryInp_t* l = tmp;
+
+                    _out["maxRows"] = boost::lexical_cast<std::string>(l->maxRows);
+                    _out["continueInx"] = boost::lexical_cast<std::string>(l->continueInx);
+                    _out["rowOffset"] = boost::lexical_cast<std::string>(l->rowOffset);
+                    _out["options"] = boost::lexical_cast<std::string>(l->options);
+
+                    for(int i = 0; i < l->condInput.len; ++i) {
+                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                    }
+
+                    for (int i = 0; i < l->selectInp.len; ++i) {
+                        std::string index = boost::lexical_cast<std::string>(l->selectInp.inx[i]);
+
+                        std::string value = boost::lexical_cast<std::string>(l->selectInp.value[i]);
+                        _out["select" + index] = value;
+                    }
+
+                    for (int i = 0; i < l->sqlCondInp.len; ++i) {
+                        std::string index = boost::lexical_cast<std::string>(l->sqlCondInp.inx[i]);
+
+                        _out["where" + index] = l->sqlCondInp.value[i];
+                    }
+                }
+                else {
+                    _out["null_value"] = "null_value";
+                }
+            }
+            catch ( std::exception& ) {
+                return ERROR(
+                         INVALID_ANY_CAST,
+                         "failed to cast rodsObjStat ptr" );
+            }
+
+            return SUCCESS();
+        } // serialize_rodsObjStat_ptr
+
+ 
         static error serialize_char_ptr_ptr(
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
@@ -753,6 +836,8 @@ namespace irods {
                 { std::type_index(typeid(ruleExecSubmitInp_t*)), serialize_ruleExecSubmitInp_ptr },
                 { std::type_index(typeid(dataObjCopyInp_t*)), serialize_dataObjCopyInp_ptr },
                 { std::type_index(typeid(rodsObjStat_t**)), serialize_rodsObjStat_ptr_ptr },
+                { std::type_index(typeid(rodsObjStat_t*)), serialize_rodsObjStat_ptr },
+                { std::type_index(typeid(genQueryInp_t*)), serialize_genQueryInp_ptr },
                 { std::type_index(typeid(char**)), serialize_char_ptr_ptr }
             };
             return the_map;
