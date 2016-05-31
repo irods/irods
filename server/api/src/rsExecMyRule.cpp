@@ -61,7 +61,7 @@ int rsExecMyRule(
                                &rei);
     irods::error err = re_ctx_mgr.exec_rule_text(
                            my_rule_text,
-                           "re-irods-instance",
+                           inst_name,
                            _exec_inp->inpParamArray,
                            &out_param_desc,
                            &rei);
