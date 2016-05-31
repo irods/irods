@@ -45,29 +45,39 @@ namespace irods{
         return ret;
     }
 
-
     template class pluggable_rule_engine<default_re_ctx>;
 
     error convertToMsParam(boost::any &itr, msParam_t *t) {
         if(itr.type() == typeid(std::string)) {
             fillStrInMsParam( t, const_cast<char*>( boost::any_cast<std::string>(itr).c_str() ));
-            return SUCCESS();
         } else if(itr.type() == typeid(std::string *)) {
             fillStrInMsParam( t, const_cast<char*>( (*(boost::any_cast<std::string *>(itr))).c_str() ));
-            return SUCCESS();
+        } else if(itr.type() == typeid(msParam_t*)) {
+            memset(t, 0, sizeof(*t));
+            replMsParam(boost::any_cast<msParam_t*>(itr), t);
         } else {
             return ERROR(-1, "cannot convert parameter");
         }
+
+        return SUCCESS();
     }
+
     error convertFromMsParam(boost::any& itr, msParam_t *t) {
         if(std::string(t->type).compare(STR_MS_T) == 0) {
             if(itr.type() == typeid(std::string *)) {
                 *(boost::any_cast<std::string *>(itr)) = std::string(reinterpret_cast<char*>( t->inOutStruct) );
             }
-            return SUCCESS();
+        } else if (std::string(t->type).compare(RodsObjStat_MS_T) == 0) {
+            replMsParam(t, boost::any_cast<msParam_t*>(itr));
+        } else if (std::string(t->type).compare(INT_MS_T) == 0) {
+            replMsParam(t, boost::any_cast<msParam_t*>(itr));
+        } else if (std::string(t->type).compare(GenQueryInp_MS_T) == 0) {
+            replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else {
             return ERROR(-1, "cannot convert parameter");
         }
+
+        return SUCCESS();
     }
 
     error default_microservice_manager<default_ms_ctx>:: exec_microservice_adapter( std::string msName, default_ms_ctx rei, std::list<boost::any> &l ) {
