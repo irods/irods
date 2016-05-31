@@ -19,6 +19,7 @@
 #include "irods_error.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_resource_redirect.hpp"
+#include "irods_lexical_cast.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -673,6 +674,49 @@ irods::error passthru_file_modified(
     return result;
 } // passthru_file_modified
 
+static irods::error capture_weight( 
+    irods::plugin_context& _ctx, 
+    const std::string& _type,
+    double& _weight) {
+    _weight = 1.0;
+    std::string results = _ctx.rule_results();
+    if (!results.empty()) {
+
+        std::vector< std::string > props;
+        irods::kvp_map_t kvp;
+        irods::parse_kvp_string(
+                results,
+                kvp );
+
+        // =-=-=-=-=-=-=-
+        // copy the properties from the context to the prop map
+        irods::kvp_map_t::iterator itr = kvp.begin();
+        for( ; itr != kvp.end(); ++itr ) {
+            if (itr->first == _type) {
+                irods::error ret = irods::lexical_cast<double>(itr->second, _weight);
+                if (!ret.ok()) {
+                    irods::log(PASS(ret));
+                    _weight = 1.0;
+                } else {
+                    // Overriding the resource's context string settings
+                    return SUCCESS();
+                }
+            }
+        } // for itr
+    } 
+
+    if ( _ctx.prop_map().has_entry( _type ) ) {
+        irods::error ret = _ctx.prop_map().get<double>(
+                               _type,
+                               _weight );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+    }
+
+    return SUCCESS();
+}
+
 // =-=-=-=-=-=-=-
 // unixRedirectPlugin - used to allow the resource to determine which host
 //                      should provide the requested operation
@@ -734,37 +778,28 @@ irods::error passthru_file_resolve_hierarchy(
                                  _curr_host,
                                  _out_parser,
                                  _out_vote );
+ 
     double orig_vote = *_out_vote;
-    if ( irods::OPEN_OPERATION == ( *_opr ) &&
-            _ctx.prop_map().has_entry( READ_WEIGHT_KW ) ) {
+    if ( irods::OPEN_OPERATION == ( *_opr ) ) {
         double read_weight = 1.0;
-        ret = _ctx.prop_map().get<double>(
-                  READ_WEIGHT_KW,
-                  read_weight );
+        irods::error ret = capture_weight(_ctx, READ_WEIGHT_KW, read_weight);
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
-
         }
         else {
             ( *_out_vote ) *= read_weight;
-
         }
 
     }
     else if ( ( irods::CREATE_OPERATION == ( *_opr ) ||
-                irods::WRITE_OPERATION == ( *_opr ) ) &&
-              _ctx.prop_map().has_entry( WRITE_WEIGHT_KW ) ) {
+                irods::WRITE_OPERATION == ( *_opr ) ) ) {
         double write_weight = 1.0;
-        ret = _ctx.prop_map().get<double>(
-                  WRITE_WEIGHT_KW,
-                  write_weight );
+        irods::error ret = capture_weight(_ctx, WRITE_WEIGHT_KW, write_weight);
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
-
         }
         else {
             ( *_out_vote ) *= write_weight;
-
         }
     }
 
