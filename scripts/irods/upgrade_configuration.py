@@ -164,6 +164,9 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                         'shared_memory_instance': 'upgraded_legacy_re'
                     }
                 ]
+            config_dict['default_rule_engine_instance'] = 're-irods-instance'
+            config_dict.setdefault('advanced_settings', {})['rule_engine_server_sleep_time_in_seconds'] = 30
+            config_dict['advanced_settings']['rule_engine_server_execution_time_in_seconds'] = 120
 
 
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
