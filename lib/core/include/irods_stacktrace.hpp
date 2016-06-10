@@ -8,25 +8,13 @@
 #include <iostream>
 
 namespace irods {
-
-    /**
-     * @brief Class for generating and manipulating a stack trace
-     */
     class stacktrace {
         public:
-
-            /// @brief constructor
-            stacktrace( void );
-            virtual ~stacktrace( void );
-
-            /// @brief Generates the actual stack trace
-            error trace( void );
-
-            /// @brief Dumps the current stack to stderr
-            error dump( std::ostream& strm_ = std::cerr );
-
+            stacktrace() = default;
+            virtual ~stacktrace(void) = default;
+            error trace(void);
+            error dump(std::ostream& strm_ = std::cerr);
         private:
-            /// @brief function to demangle the c++ function names
             error demangle_symbol( const std::string& _symbol, std::string& _rtn_name, std::string& _rtn_offset );
 
             typedef struct stack_entry_s {

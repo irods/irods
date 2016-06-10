@@ -9,28 +9,18 @@
 #include <cxxabi.h>
 
 namespace irods {
-
-    static const int max_stack_size = 50;
-
-    stacktrace::stacktrace( void ) {
-
-    }
-
-    stacktrace::~stacktrace( void ) {
-        // TODO - stub
-    }
-
+    static const int max_stack_size = 500;
     error stacktrace::trace( void ) {
         error result = SUCCESS();
-        void** buffer = new void*[max_stack_size];
+        std::vector<void*> buffer(max_stack_size);
         stack_.clear();
-        int size = backtrace( buffer, max_stack_size );
-        if ( size ) {
-            char** symbols = backtrace_symbols( buffer, size );
-            if ( symbols ) {
-                for ( int i = 1; i < size; ++i ) {
+        const int size = backtrace(buffer.data(), max_stack_size);
+        if (size) {
+            char** symbols = backtrace_symbols(buffer.data(), size);
+            if (symbols) {
+                for (int i = 1; i < size; ++i) {
                     char* symbol = symbols[i];
-                    if ( symbol ) {
+                    if (symbol) {
                         std::string demangled;
                         std::string offset;
                         demangle_symbol( symbol, demangled, offset );
@@ -39,49 +29,43 @@ namespace irods {
                         entry.offset = offset;
                         entry.address = buffer[i];
                         stack_.push_back( entry );
-                    }
-                    else {
+                    } else {
                         result = ERROR( NULL_VALUE_ERR, "Corrupt stack trace. Symbol is NULL." );
                     }
                 }
                 free( symbols );
-            }
-            else {
+            } else {
                 result = ERROR( NULL_VALUE_ERR, "Cannot generate stack symbols" );
             }
-        }
-        else {
+        } else {
             result = ERROR( NULL_VALUE_ERR, "Stack trace is empty" );
         }
-        delete [] buffer;
         return result;
     }
 
-    error stacktrace::dump( std::ostream& strm_ ) {
+    error stacktrace::dump(std::ostream& out_stream_) {
         error result = SUCCESS();
-        unsigned int max_function_length = 0;
-        for ( stacklist::const_iterator it = stack_.begin(); it != stack_.end(); ++it ) {
-            stack_entry_t entry = *it;
-            if ( entry.function.length() > max_function_length ) {
-                max_function_length = entry.function.length();
+        uint64_t max_offset_length{0};
+        for (const auto& entry : stack_) {
+            if (entry.offset.length() > max_offset_length) {
+                max_offset_length = entry.offset.length();
             }
         }
-        int frame = 0;
-        strm_ << std::endl << "Dumping stack trace" << std::endl;
-        for ( stacklist::const_iterator it = stack_.begin(); it != stack_.end(); ++it ) {
-            stack_entry_t entry = *it;
-            strm_ << "<" << frame << ">";
-            strm_ << "\t" << entry.function;
-            int pad_amount = max_function_length - entry.function.length();
-            for ( int i = 0; i < pad_amount; ++i ) {
-                strm_ << " ";
+        out_stream_ << std::endl << "Dumping stack trace\n";
+        uint64_t frame_index{0};
+        for (auto it = std::begin(stack_); it != std::end(stack_); ++it, ++frame_index) {
+            const auto& entry{*it};
+            out_stream_ << "<" << frame_index << ">";
+            out_stream_ << "\t" << "Offset: " << entry.offset;
+            const uint64_t pad_amount{max_offset_length - entry.offset.length()};
+            for (uint64_t i=0; i<pad_amount; ++i) {
+                out_stream_ << " ";
             }
-            strm_ << "\t" << "Offset: " << entry.offset;
-            strm_ << "\t" << "Address: " << entry.address;
-            strm_ << std::endl;
-            ++frame;
+            out_stream_ << "\t" << "Address: " << entry.address;
+            out_stream_ << "\t" << entry.function;
+            out_stream_ << "\n";
         }
-        strm_ << std::endl;
+        out_stream_ << std::endl;
         return result;
     }
 
