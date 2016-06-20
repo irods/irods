@@ -697,92 +697,84 @@ irods::error readVersion(
 
 } // readVersion
 
+
+
+int set_tcp_buffer_size(const int sock, const int tcp_buffer_size, const int socket_option_number) {
+    int status = setsockopt(sock, SOL_SOCKET, socket_option_number, &tcp_buffer_size, sizeof(tcp_buffer_size));
+    if (status < 0) {
+        rodsLog(LOG_ERROR, "set_tcp_buffer_size: failed to set socket option %d to %d, errno %d", socket_option_number, tcp_buffer_size, errno);
+        return status;
+    }
+
+    int getsockopt_return_value;
+    unsigned int getsockopt_return_value_len = sizeof(getsockopt_return_value);
+    status = getsockopt(sock, SOL_SOCKET, socket_option_number, &getsockopt_return_value, &getsockopt_return_value_len); // getsockopt SO_{SND,RCV}BUF return is doubled, as it includes OS overhead
+    if (status < 0) {
+        rodsLog(LOG_ERROR, "set_tcp_buffer_size: failed to get option %d errno %d", socket_option_number, errno);
+        return status;
+    }
+
+    if (getsockopt_return_value/2 != tcp_buffer_size) {
+        rodsLog(LOG_ERROR, "set_tcp_buffer_size: option %d was set to %d instead of requested %d", socket_option_number, getsockopt_return_value/2, tcp_buffer_size);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    return 0;
+}
+
 int
-rodsSetSockOpt( int sock, int windowSize ) {
-    int status;
-    int savedStatus = 0;
-    int temp;
-#ifndef _WIN32
-    struct linger linger;
+rodsSetSockOpt( int sock, int tcp_buffer_size ) {
+#ifdef _WIN32
+#error socket settings not implemented for windows
 #endif
 
-    if ( windowSize <= 0 ) {
-        windowSize = SOCK_WINDOW_SIZE;
-    }
-    else if ( windowSize < MIN_SOCK_WINDOW_SIZE ) {
-        rodsLog( LOG_NOTICE,
-                 "rodsSetSockOpt: the input windowSize %d is too small, default to %d",
-                 windowSize, MIN_SOCK_WINDOW_SIZE );
-        windowSize = MIN_SOCK_WINDOW_SIZE;
-    }
-    else if ( windowSize > MAX_SOCK_WINDOW_SIZE ) {
-        rodsLog( LOG_NOTICE,
-                 "rodsSetSockOpt: the input windowSize %d is too large, default to %d",
-                 windowSize, MAX_SOCK_WINDOW_SIZE );
-        windowSize = MAX_SOCK_WINDOW_SIZE;
+    if ( tcp_buffer_size < 0 ) {
+        rodsLog(LOG_ERROR, "rodsSetSockOpt: requested tcp buffer size is negative, changing to zero: %d", tcp_buffer_size);
+        tcp_buffer_size = 0;
     }
 
-#ifdef _WIN32
-    status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
-                         ( char* )&windowSize, sizeof( windowSize ) );
+    int savedStatus = 0;
+    int temp = 1;
+    int status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY, &temp, sizeof(temp) );
     if ( status < 0 ) {
+        rodsLog(LOG_ERROR, "rodsSetSockOpt: failed to set TCP_NODELAY, errno %d", errno);
         savedStatus = status;
     }
 
-    status = setsockopt( sock, SOL_SOCKET, SO_RCVBUF,
-                         ( char* )&windowSize, sizeof( windowSize ) );
+    status = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, &temp, sizeof( temp ) );
     if ( status < 0 ) {
+        rodsLog(LOG_ERROR, "rodsSetSockOpt: failed to set SO_REUSEADDR, errno %d", errno);
         savedStatus = status;
     }
 
-    temp = 1;
-    status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
-                         ( char* )&temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-#else
-    status = setsockopt( sock, SOL_SOCKET, SO_SNDBUF,
-                         &windowSize, sizeof( windowSize ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    status = setsockopt( sock, SOL_SOCKET, SO_RCVBUF,
-                         &windowSize, sizeof( windowSize ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    temp = 1;
-    status = setsockopt( sock, IPPROTO_TCP, TCP_NODELAY,
-                         &temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    /* reuse the socket. Otherwise will be kept for 2-4 minutes */
-    status = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR,
-                         &temp, sizeof( temp ) );
-    if ( status < 0 ) {
-        savedStatus = status;
-    }
-
-    /* keep connection alive */
     temp = 1;
     status = setsockopt( sock, SOL_SOCKET, SO_KEEPALIVE, &temp, sizeof( temp ) );
     if ( status < 0 ) {
+        rodsLog(LOG_ERROR, "rodsSetSockOpt: failed to set SO_KEEPALIVE, errno %d", errno);
         savedStatus = status;
     }
 
+    struct linger linger;
     linger.l_onoff = 1;
     linger.l_linger = 5;
     status = setsockopt( sock, SOL_SOCKET, SO_LINGER, &linger, sizeof( linger ) );
     if ( status < 0 ) {
+        rodsLog(LOG_ERROR, "rodsSetSockOpt: failed to set SO_LINGER, errno %d", errno);
         savedStatus = status;
     }
-#endif
 
+    if (tcp_buffer_size == 0) {
+        return savedStatus;
+    }
+
+    status = set_tcp_buffer_size(sock, tcp_buffer_size, SO_RCVBUF);
+    if (status < 0) {
+        savedStatus = status;
+    }
+
+    status = set_tcp_buffer_size(sock, tcp_buffer_size, SO_SNDBUF);
+    if (status < 0) {
+        savedStatus = status;
+    }
     return savedStatus;
 }
 
