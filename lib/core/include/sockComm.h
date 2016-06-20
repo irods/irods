@@ -12,28 +12,25 @@
 #include "rcConnect.h"
 #include "rodsPackInstruct.h"
 
-#define MAX_LISTEN_QUE	50
-#define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */
-#define MIN_SOCK_WINDOW_SIZE	(16*1024)   /* min sock window size = 16 kb */
-#define MAX_SOCK_WINDOW_SIZE	(16*1024*1024) /* max window size = 16 Mb */
-#define DEF_NUMBER_SVR_PORT	200	/* default number of of server ports */
-#define CONNECT_TIMEOUT_TIME    100	/* connection timeout time in sec */
-#define RECONNECT_WAIT_TIME  100	/* re-connection timeout time in sec */
-#define RECONNECT_SLEEP_TIME  300		/* re-connection sleep time in sec */
-#define MAX_RECONN_RETRY_CNT 4		/* max connect retry count */
-#define MAX_CONN_RETRY_CNT 3	/* max connect retry count */
-#define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
+#define MAX_LISTEN_QUE  50
+#define DEF_NUMBER_SVR_PORT     200     /* default number of of server ports */
+#define CONNECT_TIMEOUT_TIME    100     /* connection timeout time in sec */
+#define RECONNECT_WAIT_TIME  100        /* re-connection timeout time in sec */
+#define RECONNECT_SLEEP_TIME  300               /* re-connection sleep time in sec */
+#define MAX_RECONN_RETRY_CNT 4          /* max connect retry count */
+#define MAX_CONN_RETRY_CNT 3    /* max connect retry count */
+#define CONNECT_SLEEP_TIME 200000      /* connect sleep time in uSec */
 
-#define READ_STARTUP_PACK_TOUT_SEC	100	/* 1 sec timeout */
-#define READ_VERSION_TOUT_SEC		100	/* 10 sec timeout */
+#define READ_STARTUP_PACK_TOUT_SEC      100     /* 1 sec timeout */
+#define READ_VERSION_TOUT_SEC           100     /* 10 sec timeout */
 
-#define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
+#define RECONNECT_ENV "irodsReconnect"          /* reconnFlag will be set to
 * RECONN_TIMEOUT if this
 * env is set */
 
 /* definition for socket close function */
-#define READING_FROM_CLI	0
-#define PROCESSING_API		1
+#define READING_FROM_CLI        0
+#define PROCESSING_API          1
 
 #ifdef _WIN32
 #define CLOSE_SOCK       closesocket
@@ -48,7 +45,7 @@ extern "C" {
 // =-=-=-=-=-=-=-
 // other legacy functions
 int sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto );
-int rodsSetSockOpt( int sock, int windowSize );
+int rodsSetSockOpt( int sock, int tcp_buffer_size );
 int myRead( int sock, void *buf, int len, int *bytesRead, struct timeval *tv );
 int myWrite( int sock, void *buf, int len, int *bytesWritten );
 int connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag );
@@ -80,4 +77,4 @@ int mySockClose( int sock ); // server stop fcn <==> rsAccept?
 }
 #endif
 
-#endif	/* SOCK_COMM_H__ */
+#endif  /* SOCK_COMM_H__ */
