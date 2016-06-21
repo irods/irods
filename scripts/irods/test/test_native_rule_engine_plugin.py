@@ -220,7 +220,7 @@ pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
         self.admin.assert_icommand("irule -F rule1_2242.r", 'STDOUT_SINGLELINE', "Update session variable $userNameClient not allowed")
         self.admin.assert_icommand("irule -F rule2_2242.r", "EMPTY")
 
-    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
         corefile = lib.get_core_re_dir() + "/core.re"
         coredvm = lib.get_core_re_dir() + "/core.dvm"
