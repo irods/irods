@@ -111,7 +111,6 @@ namespace irods {
         "irods_maximum_number_of_transfer_threads" );
     const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS(
         "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes" );
-    const std::string CFG_IRODS_TCP_WINDOW_SIZE("tcp_window_size");
 
     // legacy ssl environment variables
     const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH(

@@ -462,12 +462,6 @@ extern "C" {
             props,
             irods::CFG_IRODS_PLUGINS_HOME_KW,
             _env->irodsPluginHome );
-        
-        capture_integer_property(
-            msg_lvl,
-            props,
-            irods::CFG_IRODS_TCP_WINDOW_SIZE,
-            _env->irodsTCPWindowSize );
 
         return 0;
     }
@@ -756,11 +750,6 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->irodsPluginHome );
-
-        env_var = irods::CFG_IRODS_TCP_WINDOW_SIZE;
-        capture_integer_env_var(
-            env_var,
-            _env->irodsTransBufferSizeForParaTrans );
 
         return 0;
     }

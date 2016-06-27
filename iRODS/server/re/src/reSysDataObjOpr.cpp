@@ -760,7 +760,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     if ( rei->rsComm != NULL ) {
         if ( strcmp( windowSizeStr, "null" ) == 0 ||
                 strcmp( windowSizeStr, "default" ) == 0 ) {
-            rei->rsComm->windowSize = SOCK_WINDOW_SIZE;
+            rei->rsComm->windowSize = 0;
         }
         else {
             rei->rsComm->windowSize = atoi( windowSizeStr );

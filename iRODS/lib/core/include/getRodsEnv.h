@@ -56,7 +56,6 @@ typedef struct {
     int irodsMaxSizeForSingleBuffer;
     int irodsDefaultNumberTransferThreads;
     int irodsTransBufferSizeForParaTrans;
-    int irodsTCPWindowSize;
 
     // =-=-=-=-=-=-=-
     // override of plugin installation directory
