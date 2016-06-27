@@ -49,15 +49,9 @@
              
              "plugin_specific_configuration": {
                 "namespaces": [
-                     {
-                         "namespace": ""
-                     }, 
-                     {
-                         "namespace":"audit_"
-                     }, 
-                     {
-                         "namespace":"indexing_"
-                     }
+                    "",
+                    "audit_",
+                    "indexing_"
                  ]
                }
          },

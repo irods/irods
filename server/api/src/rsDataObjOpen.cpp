@@ -352,15 +352,13 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = 0;
     }
     else if ( phyOpenFlag == PHYOPEN_BY_SIZE ) {
-        int single_buff_sz = 0;
-        irods::error ret = irods::get_advanced_setting<int>(
-                               irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                               single_buff_sz );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return ret.code();
+        int single_buff_sz;
+        try {
+            single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+        } catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, e.what() );
+            return e.code();
         }
-        single_buff_sz *= 1024 * 1024;
 
         /* open for put or get. May do "dataInclude" */
         if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL

@@ -468,10 +468,7 @@ def convert_serverconfig_and_irodsconfig(argv):
         print_debug('writing [' + new_server_config_file + '] begin')
         with open(new_server_config_file, 'w') as fh:
             json.dump(server_config, fh, sort_keys=True, indent=4)
-        if (sys.version_info > (3, 0)):
-            os.chmod(new_server_config_file, 0o600)
-        else:
-            os.chmod(new_server_config_file, 0600)
+        os.chmod(new_server_config_file, 0o600)
         print_debug('writing [' + new_server_config_file + '] end')
 
         # new database_config file
@@ -479,13 +476,52 @@ def convert_serverconfig_and_irodsconfig(argv):
             print_debug('writing [' + new_database_config_file + '] begin')
             with open(new_database_config_file, 'w') as fh:
                 json.dump(database_config, fh, sort_keys=True, indent=4)
-            if (sys.version_info > (3, 0)):
-                os.chmod(new_database_config_file, 0o600)
-            else:
-                os.chmod(new_database_config_file, 0600)
+            os.chmod(new_database_config_file, 0o600)
             print_debug('writing [' + new_database_config_file + '] end')
         else:
             print_debug('resource server - skipping database_config.json')
+
+def convert_connectcontrol():
+    connectcontrol_path = get_config_file_path('connectControl.config')
+    if not os.path.exists(connectcontrol_path):
+        return
+    with open(connectcontrol_path) as f:
+        lines = [l.strip() for l in f.readlines() if l.strip()[0] != '#']
+    if len(lines) == 0:
+        return
+
+    if run_in_place():
+        server_config_file = get_install_dir() + '/iRODS/server/config/server_config.json'
+    else:
+        server_config_file = '/etc/irods/server_config.json'
+
+    if lines[0].startswith('maxConnections'):
+        maximum_connections = int(lines[0].split()[1])
+        with open(server_config_file) as f:
+            server_config = json.load(f)
+        server_config['maximum_connections'] = maximum_connections
+        with open(server_config_file, 'w') as f:
+            json.dump(server_config, f)
+        if len(lines) == 1:
+            return
+        else:
+            lines = lines[1:]
+
+    if lines[0] == 'allowUserList':
+        control_type = 'whitelist'
+    elif lines[0] == 'disallowUserList':
+        control_type = 'blacklist'
+    else:
+        return
+
+    with open(server_config_file) as f:
+        server_config = json.load(f)
+    server_config['controlled_user_connection_list'] = {
+            'control_type': control_type,
+            'users': lines[1:]
+        }
+    with open(server_config_file, 'w') as f:
+        json.dump(server_config, f)
 
 def convert_legacy_configuration_to_json(argv):
     print_debug('Converting Legacy iRODS Configuration Files...')
@@ -497,6 +533,8 @@ def convert_legacy_configuration_to_json(argv):
     convert_irodsenv()
     # convert server.config to server_config.json
     convert_serverconfig_and_irodsconfig(argv)
+    # convert connectControl.config to fields in server_config.json
+    convert_connectcontrol()
 
 
 def main(argv):

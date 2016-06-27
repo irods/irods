@@ -47,15 +47,6 @@ main( int, char ** ) {
     char *tmpStr;
     ProcessType = AGENT_PT;
 
-    // capture server properties
-    try {
-        irods::server_properties::instance().capture_if_needed();
-    }
-    catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
-        return e.code();
-    }
-
     irods::error ret2 = setRECacheSaltFromEnv();
     if ( !ret2.ok() ) {
         rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
@@ -191,10 +182,6 @@ main( int, char ** ) {
         cleanupAndExit( status );
     }
 
-    /* move configConnectControl behind initAgent for now. need zoneName if
-     * the user does not specify one in the input */
-    initConnectControl();
-
     if ( rsComm.clientUser.userName[0] != '\0' ) {
         status = chkAllowedUser( rsComm.clientUser.userName,
                                  rsComm.clientUser.rodsZone );
@@ -276,25 +263,12 @@ main( int, char ** ) {
 static void set_rule_engine_globals(
     rsComm_t* _comm ) {
 
-    irods::set_server_property< std::string >(
-        irods::CLIENT_USER_NAME_KW,
-        _comm->clientUser.userName );
-    irods::set_server_property< std::string >(
-        irods::CLIENT_USER_ZONE_KW,
-        _comm->clientUser.rodsZone );
-    irods::set_server_property< int >(
-        irods::CLIENT_USER_PRIV_KW,
-        _comm->clientUser.authInfo.authFlag );
-
-    irods::set_server_property< std::string >(
-        irods::PROXY_USER_NAME_KW,
-        _comm->proxyUser.userName );
-    irods::set_server_property< std::string >(
-        irods::PROXY_USER_ZONE_KW,
-        _comm->proxyUser.rodsZone );
-    irods::set_server_property< int >(
-        irods::PROXY_USER_PRIV_KW,
-        _comm->clientUser.authInfo.authFlag );
+    irods::set_server_property<std::string>(irods::CLIENT_USER_NAME_KW, _comm->clientUser.userName);
+    irods::set_server_property<std::string>(irods::CLIENT_USER_ZONE_KW, _comm->clientUser.rodsZone);
+    irods::set_server_property<int>(irods::CLIENT_USER_PRIV_KW, _comm->clientUser.authInfo.authFlag);
+    irods::set_server_property<std::string>(irods::PROXY_USER_NAME_KW, _comm->proxyUser.userName);
+    irods::set_server_property<std::string>(irods::PROXY_USER_ZONE_KW, _comm->proxyUser.rodsZone);
+    irods::set_server_property<int>(irods::PROXY_USER_PRIV_KW, _comm->clientUser.authInfo.authFlag);
 
 } // set_rule_engine_globals
 
@@ -341,7 +315,11 @@ int agentMain(
             // add the user info to the server properties for
             // reach by the operation wrapper for access by the
             // dynamic policy enforcement points
-            set_rule_engine_globals( rsComm );
+            try {
+                set_rule_engine_globals( rsComm );
+            } catch ( const irods::exception& e ) {
+                rodsLog( LOG_ERROR, "set_rule_engine_globals failed:\n%s", e.what());
+            }
         }
 
         if ( result.ok() ) {

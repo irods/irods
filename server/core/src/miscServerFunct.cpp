@@ -166,21 +166,14 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
         return 0;
     }
     else {
-        int svr_port_range_start = 0;
-        irods::error ret = irods::get_server_property<int>(
-                                irods::CFG_SERVER_PORT_RANGE_START_KW,
-                                svr_port_range_start );
-        if ( ! ret.ok() ) {
-            return ret.code();
+        int port_range_count;
+        try {
+            const auto svr_port_range_start = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_START_KW);
+            const auto svr_port_range_end = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_END_KW);
+            port_range_count = svr_port_range_end - svr_port_range_start + 1;
+        } catch ( irods::exception& e ) {
+            return e.code();
         }
-        int svr_port_range_end = 0;
-        ret = irods::get_server_property<int>(
-                                irods::CFG_SERVER_PORT_RANGE_END_KW,
-                                svr_port_range_end );
-        if ( ! ret.ok() ) {
-            return ret.code();
-        }
-        int port_range_count = svr_port_range_end - svr_port_range_start + 1;
 
         /* setup the portal - try port_range_count times in case of bind collision */
         for ( int i = 0; i < port_range_count; ++i ) {
@@ -435,8 +428,6 @@ svrPortalPutGet( rsComm_t *rsComm ) {
         flags |= STREAMING_FLAG;
     }
 
-    irods::server_properties::instance().capture_if_needed();
-
     numThreads = dataOprInp->numThreads;
 
     if ( numThreads <= 0 || numThreads > MAX_NUM_CONFIG_TRAN_THR ) {
@@ -672,25 +663,21 @@ partialDataPut( portalTransferInp_t *myInput ) {
             &myInput->shared_secret[iv_size] );
     }
 
-    int chunk_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
-                           chunk_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    int chunk_size;
+    try {
+        chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    chunk_size *= 1024 * 1024;
 
     int trans_buff_size = 0;
-    ret = irods::get_advanced_setting<int>(
-              irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-              trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    trans_buff_size *= 1024 * 1024;
 
     buf = ( unsigned char* )malloc( ( 2 * trans_buff_size ) + sizeof( unsigned char ) );
 
@@ -903,30 +890,25 @@ void partialDataGet(
     }
 
     int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    trans_buff_size *= 1024 * 1024;
 
     size_t buf_size = ( 2 * trans_buff_size ) * sizeof( unsigned char ) ;
     unsigned char * buf = ( unsigned char* )malloc( buf_size );
 
     bytesToGet = myInput->size;
 
-    int chunk_size = 0;
-    ret = irods::get_advanced_setting<int>(
-              irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS,
-              chunk_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        free( buf );
+    int chunk_size;
+    try {
+        chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    chunk_size *= 1024 * 1024;
 
     while ( bytesToGet > 0 ) {
         int toread0;
@@ -1135,15 +1117,13 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
             &myInput->shared_secret[iv_size] );
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    trans_buff_size *= 1024 * 1024;
 
     buf = ( unsigned char* )malloc( ( 2 * trans_buff_size ) * sizeof( unsigned char ) );
 
@@ -1699,15 +1679,13 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
         }
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    trans_buff_size *= 1024 * 1024;
 
     buf = malloc( trans_buff_size );
 
@@ -1817,15 +1795,13 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
 
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         return;
     }
-    trans_buff_size *= 1024 * 1024;
 
     buf = ( unsigned char* )malloc( 2 * trans_buff_size * sizeof( unsigned char ) );
 
@@ -2572,15 +2548,13 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    trans_buff_size *= 1024 * 1024;
 
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -2638,15 +2612,13 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    trans_buff_size *= 1024 * 1024;
 
     dataOprInp = &dataCopyInp->dataOprInp;
     l1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -2705,15 +2677,13 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    trans_buff_size *= 1024 * 1024;
 
     dataOprInp = &dataCopyInp->dataOprInp;
     destL1descInx = dataCopyInp->portalOprOut.l1descInx;
@@ -3079,28 +3049,26 @@ checkModArgType( const char *arg ) {
 
 irods::error setRECacheSaltFromEnv() {
     // Should only ever set the cache salt once
-    std::string existing_name;
-    irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, existing_name );
-    if ( ret.ok() ) {
+    try {
+        const auto& existing_name = irods::get_server_property<const std::string>( RE_CACHE_SALT_KW);
         rodsLog( LOG_NOTICE, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
         return SUCCESS();
-        //rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
-        //return ERROR( SYS_ALREADY_INITIALIZED, "setRECacheSaltFromEnv: mutex name already set" );
-    }
+    } catch ( const irods::exception& ) {
+        const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
+        if ( NULL == p_mutex_salt ) {
+            rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
+            return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
+        }
 
-    const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
-    if ( NULL == p_mutex_salt ) {
-        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
-        return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
-    }
+        try {
+            irods::set_server_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
+        } catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
+            return ERROR( e.code(), e.what() );
+        }
 
-    ret = irods::set_server_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
-        return PASS( ret );
+        return SUCCESS();
     }
-
-    return SUCCESS();
 
 } // setRECacheSaltFromEnv
 
@@ -3163,87 +3131,49 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
     irods::error ret = SUCCESS();
 
-    std::string client_name;
-    irods::get_server_property< std::string >(
-        irods::CLIENT_USER_NAME_KW,
-        client_name );
-    addKeyVal(
-        &_kvp,
-        irods::CLIENT_USER_NAME_KW.c_str(),
-        client_name.c_str() );
-
-    std::string client_zone;
-    irods::get_server_property< std::string >(
-        irods::CLIENT_USER_ZONE_KW,
-        client_zone );
-    addKeyVal(
-        &_kvp,
-        irods::CLIENT_USER_ZONE_KW.c_str(),
-        client_zone.c_str() );
-
-    int client_priv = 0;
-    irods::get_server_property< int >(
-        irods::CLIENT_USER_PRIV_KW,
-        client_priv );
-    std::string client_priv_str( "0" );
     try {
-        client_priv_str = boost::lexical_cast< std::string >( client_priv );
-    }
-    catch ( boost::bad_lexical_cast& _e ) {
-        std::stringstream msg;
-        msg << "failed to cast "
-            << client_priv
-            << " to a string";
-        ret = ERROR(
-                  SYS_INVALID_INPUT_PARAM,
-                  msg.str() );
+        addKeyVal(&_kvp, irods::CLIENT_USER_NAME_KW.c_str(), irods::get_server_property<const std::string>(irods::CLIENT_USER_NAME_KW).c_str());
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::CLIENT_USER_NAME_KW.c_str(), "");
     }
 
-    addKeyVal(
-        &_kvp,
-        irods::CLIENT_USER_PRIV_KW.c_str(),
-        client_priv_str.c_str() );
-
-
-    std::string proxy_name;
-    irods::get_server_property< std::string >(
-        irods::PROXY_USER_NAME_KW,
-        proxy_name );
-    addKeyVal(
-        &_kvp,
-        irods::PROXY_USER_NAME_KW.c_str(),
-        proxy_name.c_str() );
-
-    std::string proxy_zone;
-    irods::get_server_property< std::string >(
-        irods::PROXY_USER_ZONE_KW,
-        proxy_zone );
-    addKeyVal(
-        &_kvp,
-        irods::PROXY_USER_ZONE_KW.c_str(),
-        proxy_zone.c_str() );
-
-    int proxy_priv = 0;
-    irods::get_server_property< int >(
-        irods::PROXY_USER_PRIV_KW,
-        proxy_priv );
-    std::string proxy_priv_str( "0" );
     try {
-        proxy_priv_str = boost::lexical_cast< std::string >( proxy_priv );
+        addKeyVal(&_kvp, irods::CLIENT_USER_ZONE_KW.c_str(), irods::get_server_property<const std::string>(irods::CLIENT_USER_ZONE_KW).c_str());
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::CLIENT_USER_ZONE_KW.c_str(), "");
     }
-    catch ( boost::bad_lexical_cast& _e ) {
-        std::stringstream msg;
-        msg << "failed to cast "
-            << proxy_priv
-            << " to a string";
-        ret = ERROR(
-                  SYS_INVALID_INPUT_PARAM,
-                  msg.str() );
+
+    try {
+        addKeyVal(&_kvp, irods::CLIENT_USER_PRIV_KW.c_str(),
+            boost::lexical_cast<std::string>(irods::get_server_property<const int>(irods::CLIENT_USER_PRIV_KW)).c_str());
+    } catch ( boost::bad_lexical_cast& _e ) {
+        // can't actually fail to cast an int to a string
+        addKeyVal(&_kvp, irods::CLIENT_USER_PRIV_KW.c_str(), "0");
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::CLIENT_USER_PRIV_KW.c_str(), "0");
     }
-    addKeyVal(
-        &_kvp,
-        irods::PROXY_USER_PRIV_KW.c_str(),
-        proxy_priv_str.c_str() );
+
+    try {
+        addKeyVal(&_kvp, irods::PROXY_USER_NAME_KW.c_str(), irods::get_server_property<const std::string>(irods::PROXY_USER_NAME_KW).c_str());
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::PROXY_USER_NAME_KW.c_str(), "");
+    }
+
+    try {
+        addKeyVal(&_kvp, irods::PROXY_USER_ZONE_KW.c_str(), irods::get_server_property<const std::string&>(irods::PROXY_USER_ZONE_KW).c_str());
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::PROXY_USER_ZONE_KW.c_str(), "");
+    }
+
+    try {
+        addKeyVal(&_kvp, irods::PROXY_USER_PRIV_KW.c_str(),
+            boost::lexical_cast<std::string>(irods::get_server_property<const int>(irods::PROXY_USER_PRIV_KW)).c_str());
+    } catch ( boost::bad_lexical_cast& _e ) {
+        // can't actually fail to cast an int to a string
+        addKeyVal(&_kvp, irods::PROXY_USER_PRIV_KW.c_str(), "0");
+    } catch ( const irods::exception& e ) {
+        addKeyVal(&_kvp, irods::PROXY_USER_PRIV_KW.c_str(), "0");
+    }
 
     return ret;
 
@@ -3252,28 +3182,22 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 irods::error get_catalog_service_role(
     std::string& _role ) {
 
-    irods::error ret = irods::get_server_property<std::string>(
-              irods::CFG_CATALOG_SERVICE_ROLE,
-              _role);
-
-    if(!ret.ok()) {
-        return PASS(ret);
+    try {
+        _role = irods::get_server_property<const std::string>(irods::CFG_CATALOG_SERVICE_ROLE);
+    } catch ( const irods::exception& e ) {
+        return ERROR( e.code(), e.what() );
     }
-
     return SUCCESS();
 
 } // get_catalog_service_role
 
 irods::error get_default_rule_plugin_instance(
         std::string& _instance_name ) {
-    irods::error ret = irods::get_server_property<
-                           std::string>(
-                               irods::DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW,
-                               _instance_name );
-    if(!ret.ok()) {
-        return PASS(ret);
+    try {
+        _instance_name = irods::get_server_property<const std::string>(irods::DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW);
+    } catch ( const irods::exception& e ) {
+        return ERROR( e.code(), e.what() );
     }
-
     return SUCCESS();
 
 } // get_default_rule_plugin_instance

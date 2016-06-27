@@ -1,20 +1,23 @@
-
-
-
 #ifndef CONFIGURATION_PARSER_HPP
 #define CONFIGURATION_PARSER_HPP
 
-#include "irods_lookup_table.hpp"
+#include "irods_exception.hpp"
+#include "irods_error.hpp"
+#include "rodsErrorTable.h"
+
 #include <vector>
 #include <string>
 #include "jansson.h"
+
+#include <unordered_map>
+#include <boost/format.hpp>
+#include <boost/any.hpp>
+#include <boost/optional.hpp>
 
 namespace irods {
 
     class configuration_parser {
         public:
-            typedef lookup_table< boost::any > object_t;
-            typedef std::vector< object_t >    array_t;
             typedef std::vector< std::string > key_path_t;
 
             configuration_parser();
@@ -26,85 +29,125 @@ namespace irods {
             error load( const std::string& );
             error write( const std::string& );
             error write( );
-            error gather_values_for_key( const std::string&, std::vector<boost::any>& );
 
             bool has_entry(
                 const std::string& ); // key
 
-            size_t erase(
-                const std::string& ); // key
-
             template< typename T >
-            error set(
+            T& set(
                 const std::string& _key,
                 const T&           _val ) {
-                irods::error ret = root_.set< T >(
-                                       _key,
-                                       _val );
-                return ret;
+                root_[_key] = boost::any(_val);
+                return boost::any_cast<T&>(root_[_key]);
 
             } // set
 
             template< typename T >
-            error set(
-                const key_path_t& _key,
+            T& set(
+                const key_path_t& _keys,
                 const T&          _val ) {
 
-                return SUCCESS();
+                if ( _keys.empty() ) {
+                    THROW( -1, "\"set\" requires at least one key");
+                }
+                boost::optional<boost::any&> cur_val;
+                for ( const auto& key : _keys ) {
+                    if ( !cur_val ) {
+                        cur_val.reset(root_[key]);
+                        continue;
+                    }
+
+                    if ( cur_val->empty()) {
+                        *cur_val = std::unordered_map<std::string, boost::any>();
+                    }
+                    try {
+                        cur_val.reset(boost::any_cast<std::unordered_map<std::string, boost::any>&>(*cur_val)[key]);
+                    } catch ( const boost::bad_any_cast& ) {
+                        THROW( INVALID_ANY_CAST, "value was not a map");
+                    }
+                }
+                *cur_val = _val;
+                return boost::any_cast<T&>(*cur_val);
 
             } // set with path
 
             template< typename T >
-            error get(
-                const std::string& _key,
-                T&                 _val ) {
-                irods::error ret = root_.get< T >(
-                                       _key,
-                                       _val );
-                return ret;
+            T& get( const std::string& _key ) {
+                try {
+                    return boost::any_cast<T&>(root_.at(_key));
+                } catch ( const boost::bad_any_cast& ) {
+                    THROW( INVALID_ANY_CAST, (boost::format("value at %s was incorrect type") % _key).str());
+                } catch ( const std::out_of_range& ) {
+                    THROW ( KEY_NOT_FOUND, (boost::format("key \"%s\" not found in map.") % _key).str() );
+                }
 
             } // get
 
             template< typename T >
-            error get(
-                const key_path_t& _key,
-                T&                _val ) {
+            T& get(const key_path_t& _keys) {
 
-                return SUCCESS();
+                if ( _keys.empty() ) {
+                    THROW( -1, "\"get\" requires at least one key");
+                }
+                boost::optional<boost::any&> cur_val;
+                for ( const auto& key : _keys ) {
+                    try {
+                        if ( !cur_val ) {
+                            cur_val.reset(root_.at(key));
+                        } else {
+                            try {
+                                cur_val.reset(boost::any_cast<std::unordered_map<std::string, boost::any>&>(*cur_val).at(key));
+                            } catch ( const boost::bad_any_cast& ) {
+                                THROW( INVALID_ANY_CAST, "value was not a map");
+                            }
+                        }
+                    } catch ( const std::out_of_range& ) {
+                        THROW ( KEY_NOT_FOUND, (boost::format("key \"%s\" not found in map.") % key).str() );
+                    }
+                }
+                try {
+                    return boost::any_cast<T&>(*cur_val);
+                } catch ( const boost::bad_any_cast& ) {
+                    THROW(INVALID_ANY_CAST, "value was incorrect type");
+                }
 
             } // get with path
 
-            object_t::iterator begin() {
-                return root_.begin();
+
+            template< typename T >
+            T remove(const std::string& _key) {
+                auto find_it = root_.find(_key);
+                if ( find_it == root_.end() ) {
+                    THROW ( KEY_NOT_FOUND, (boost::format("key \"%s\" not found in map.") % _key).str() );
+                }
+                T val = find_it->second;
+                root_.erase(find_it);
+                return val;
             }
 
-            object_t::iterator end() {
-                return root_.end();
+            void remove(const std::string& _key);
+
+            std::unordered_map<std::string, boost::any>& map() {
+                return root_;
             }
 
         private:
-            error gather_values_for_key_impl( const std::string&, object_t&, std::vector<boost::any>&);
-            error gather_values_for_key_impl( const std::string&, array_t&, std::vector<boost::any>&);
             error load_json_object(
                 const std::string& ); // file name
 
-            error parse_json_object(
-                json_t*,              // jansson object
-                object_t& );          // parsing object
+            boost::any convert_json(
+                json_t* );            // jansson object
 
             error copy_and_swap(
-                const object_t& );    // object to swap in
+                const std::unordered_map<std::string, boost::any>& );    // object to swap in
 
             std::string file_name_;   // full path to file
-            object_t    root_;        // root config object
+            std::unordered_map<std::string, boost::any> root_;        // root config object
 
-    }; // class configuraiton_parser
+    }; // class configuration_parser
 
     std::string to_env( const std::string& );
 
 }; // namespace irods
 
 #endif // CONFIGURATION_PARSER_HPP
-
-
-

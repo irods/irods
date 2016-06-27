@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <string>
 
 // =-=-=-=-=-=-=-
@@ -27,6 +28,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+#include <boost/format.hpp>
 
 #include "configuration.hpp"
 #include "irods_server_properties.hpp"
@@ -34,84 +36,35 @@
 
 std::vector<std::string> ns;
 
-//irods::configuration_parser::array_t get_re_configs(
-irods::error get_re_configs(
-    const std::string& _instance_name ) {
-
-    typedef irods::configuration_parser::object_t object_t;
-    typedef irods::configuration_parser::array_t  array_t;
-
-    array_t re_plugin_arr;
-    irods::error ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RULE_ENGINES_KW,
-              re_plugin_arr );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    bool found_instance = false;
-    object_t plugin_config;
-    for( auto itr : re_plugin_arr ) {
+void get_re_configs( const std::string& _instance_name ) {
+    for( const auto& el : irods::get_server_property<const std::vector<boost::any>&>(irods::CFG_RULE_ENGINES_KW) ) {
         try {
-            plugin_config = boost::any_cast<object_t>( itr );
-        } catch( const boost::bad_any_cast& ) {
-            std::stringstream msg;
-            msg << "[" << _instance_name << "] failed to any_cast a rule_engines object";
-            return ERROR(
-                       INVALID_ANY_CAST,
-                       msg.str() );
-        }
-
-        try {
-            const std::string inst_name = boost::any_cast<std::string>(plugin_config[irods::CFG_INSTANCE_NAME_KW]);
-            if( inst_name == _instance_name) {
-                found_instance = true;
-                break;
+            const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
+            if( boost::any_cast<const std::string&>(plugin_config.at(irods::CFG_INSTANCE_NAME_KW)) == _instance_name) {
+                for( const auto& el : boost::any_cast<const std::vector<boost::any>&>(
+                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(
+                                plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW)
+                                ).at("namespaces")) ) {
+                    ns.push_back(boost::any_cast<const std::string&>(el));
+                }
+                return;
             }
-        }
-        catch( const boost::bad_any_cast& ) {
-            continue;
-        }
-    }
-
-    if( !found_instance ) {
-        std::stringstream msg;
-        msg << "failed to find configuration for re-irods plugin ["
-            << _instance_name << "]";
-        rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
-        return ERROR(
-                SYS_INVALID_INPUT_PARAM,
-                msg.str() );
-    }
-
-    object_t plugin_spec_cfg;
-    try {
-        plugin_spec_cfg = boost::any_cast<object_t>( plugin_config[irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW] );
-    } catch( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast " << irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW;
-        return ERROR(
-                   INVALID_ANY_CAST,
-                   msg.str() );
-    }
-
-    try {
-        array_t namespaces = boost::any_cast<array_t>( plugin_spec_cfg["namespaces"] );
-        for( auto itr : namespaces ) {
-            std::string n = boost::any_cast<std::string>( itr["namespace"] );
-            ns.push_back( n );
+        } catch( const boost::bad_any_cast& e) {
+            THROW(INVALID_ANY_CAST, boost::format("failed any_cast while searching for rule_engine '%s': %s") % _instance_name % e.what());
+        } catch ( const std::out_of_range& e ) {
+            THROW(KEY_NOT_FOUND, boost::format("missing key while attempting to resolve rule engine '%s': %s") % _instance_name % e.what());
         }
     }
-    catch( boost::bad_any_cast& ) {
-        return ERROR( INVALID_ANY_CAST, "failed." );
-    }
-
-    return SUCCESS();
+    THROW(SYS_INVALID_INPUT_PARAM, boost::format("failed to find configuration for re-irods plugin '%s'") % _instance_name);
 }
 
 irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name) {
-    return get_re_configs( _instance_name );
+    try {
+        get_re_configs( _instance_name );
+    } catch ( const irods::exception& e ) {
+        return ERROR(e.code(), e.what());
+    }
+    return SUCCESS();
 }
 
 irods::error stop(irods::default_re_ctx& _u, const std::string& _instance_name) {

@@ -1060,35 +1060,27 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
 
 int
 getDefFileMode() {
-    int mode_int = DEFAULT_FILE_MODE;
-
-    std::string mode_str;
-    irods::error ret = irods::get_server_property<std::string>(
-                           DEF_FILE_MODE_KW,
-                           mode_str );
-    if ( ret.ok() ) {
-        std::stringstream ss;
-        ss << std::oct << mode_str;
-        ss >> mode_int;
+    std::stringstream ss;
+    try {
+        ss << std::oct << irods::get_server_property<const std::string>(DEF_FILE_MODE_KW);
+    } catch ( const irods::exception& e ) {
+        return DEFAULT_FILE_MODE;
     }
-
+    int mode_int;
+    ss >> mode_int;
     return mode_int;
 }
 
 int
 getDefDirMode() {
-    int mode_int = DEFAULT_DIR_MODE;
-
-    std::string mode_str;
-    irods::error ret = irods::get_server_property<std::string>(
-                           DEF_DIR_MODE_KW,
-                           mode_str );
-    if ( ret.ok() ) {
-        std::stringstream ss;
-        ss << std::oct << mode_str;
-        ss >> mode_int;
+    std::stringstream ss;
+    try {
+        ss << std::oct << irods::get_server_property<const std::string>(DEF_DIR_MODE_KW);
+    } catch ( const irods::exception& e ) {
+        return DEFAULT_DIR_MODE;
     }
-
+    int mode_int;
+    ss >> mode_int;
     return mode_int;
 }
 

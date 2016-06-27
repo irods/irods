@@ -556,13 +556,12 @@ initReExec( reExec_t * reExec ) {
     reExec->maxRunCnt = 4;
     reExec->doFork = 1;
 
-        int max_re_procs = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS,
-                           max_re_procs );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int max_re_procs;
+    try {
+        max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
 
     if ( reExec->maxRunCnt > max_re_procs ) {

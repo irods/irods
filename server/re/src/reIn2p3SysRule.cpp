@@ -320,8 +320,6 @@ int checkHostAccessControl(
     const std::string& _user_name,
     const std::string& _host_client,
     const std::string& _groups_name ) {
-    typedef irods::configuration_parser::object_t object_t;
-    typedef irods::configuration_parser::array_t  array_t;
     namespace ip = boost::asio::ip;
 
     std::string cfg_file;
@@ -347,124 +345,89 @@ int checkHostAccessControl(
         boost::is_any_of( "\t " ),
         boost::token_compress_on );
 
-    array_t access_entries;
-    ret = cfg.get< array_t > (
-              "access_entries",
-              access_entries );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
+    try {
+        for ( const auto& el : cfg.get< const std::vector<boost::any> >("access_entries") ) {
+            try {
+                const auto& access_entry = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
+                const auto& user = boost::any_cast<const std::string&>(access_entry.at("user"));
+                const auto& group = boost::any_cast<const std::string&>(access_entry.at("group"));
+                const auto& addy = boost::any_cast<const std::string&>(access_entry.at("address"));
+                const auto& mask = boost::any_cast<const std::string&>(access_entry.at("mask"));
 
-    for ( size_t ae_idx = 0;
-            ae_idx < access_entries.size();
-            ++ae_idx ) {
-        object_t obj = access_entries[ ae_idx ];
-
-        std::string user;
-        ret = obj.get< std::string >(
-                  "user",
-                  user );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-
-        }
-
-        std::string group;
-        ret = obj.get< std::string >(
-                  "group",
-                  group );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-
-        }
-
-        std::string addy;
-        ret = obj.get< std::string >(
-                  "address",
-                  addy );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-
-        }
-
-        std::string mask;
-        ret = obj.get< std::string >(
-                  "mask",
-                  mask );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-
-        }
-
-        boost::system::error_code error_code;
-        ip::address_v4 address_entry(
-            ip::address_v4::from_string(
-                addy,
-                error_code ) );
-        if ( error_code.value() ) {
-            continue;
-
-        }
-
-        ip::address_v4 mask_entry(
-            ip::address_v4::from_string(
-                mask,
-                error_code ) );
-        if ( error_code.value() ) {
-            continue;
-
-        }
-
-        ip::address_v4 host_client(
-            ip::address_v4::from_string(
-                _host_client,
-                error_code ) );
-        if ( error_code.value() ) {
-            continue;
-
-        }
-
-        bool user_match = false;
-        if ( user == _user_name ||
-                user == "all" ) {
-            user_match = true;
-
-        }
-
-        bool group_match = false;
-        if ( "all" == group ) {
-            group_match = true;
-
-        }
-        else {
-            for ( size_t i = 0;
-                    i < group_list.size();
-                    ++i ) {
-                if ( group == group_list[ i ] ) {
-                    group_match = true;
+                boost::system::error_code error_code;
+                ip::address_v4 address_entry(
+                    ip::address_v4::from_string(
+                        addy,
+                        error_code ) );
+                if ( error_code.value() ) {
+                    continue;
 
                 }
 
-            } // for i
+                ip::address_v4 mask_entry(
+                    ip::address_v4::from_string(
+                        mask,
+                        error_code ) );
+                if ( error_code.value() ) {
+                    continue;
 
-        }
+                }
 
-        if ( group_match || user_match ) {
-            // check if <client, group, clientIP>
-            // match this entry of the control access file.
-            if ( ( ( host_client.to_ulong() ^
-                     address_entry.to_ulong() ) &
-                    ~mask_entry.to_ulong() ) == 0 ) {
-                return 0;
+                ip::address_v4 host_client(
+                    ip::address_v4::from_string(
+                        _host_client,
+                        error_code ) );
+                if ( error_code.value() ) {
+                    continue;
+
+                }
+
+                bool user_match = false;
+                if ( user == _user_name ||
+                        user == "all" ) {
+                    user_match = true;
+
+                }
+
+                bool group_match = false;
+                if ( "all" == group ) {
+                    group_match = true;
+
+                }
+                else {
+                    for ( size_t i = 0;
+                            i < group_list.size();
+                            ++i ) {
+                        if ( group == group_list[ i ] ) {
+                            group_match = true;
+
+                        }
+
+                    } // for i
+
+                }
+
+                if ( group_match || user_match ) {
+                    // check if <client, group, clientIP>
+                    // match this entry of the control access file.
+                    if ( ( ( host_client.to_ulong() ^
+                            address_entry.to_ulong() ) &
+                            ~mask_entry.to_ulong() ) == 0 ) {
+                        return 0;
+                    }
+                }
+            } catch ( const boost::bad_any_cast& e ) {
+                irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
+                continue;
+            } catch ( const std::out_of_range& e ) {
+                irods::log( ERROR( KEY_NOT_FOUND, e.what() ) );
             }
-        }
 
-    } // for ae_idx
+        }
+    } catch ( const irods::exception& e ) {
+        irods::log( ERROR( e.code(), e.what() ) );
+        return e.code();
+    }
 
     return UNMATCHED_KEY_OR_INDEX;
 

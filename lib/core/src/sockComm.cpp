@@ -319,22 +319,21 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
      * server_config.json pick a port in the range.
      */
 
-    int svr_port_range_start = 0;
-    irods::error ret = irods::get_server_property<int>(
-                           irods::CFG_SERVER_PORT_RANGE_START_KW,
-                           svr_port_range_start );
-    if ( *portNum <= 0 && ret.ok() ) {
+    boost::optional<int> svr_port_range_start_wrapper;
+    try {
+        svr_port_range_start_wrapper.reset(irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_START_KW));
+    } catch ( const irods::exception& ) {}
+    if ( *portNum <= 0 && svr_port_range_start_wrapper ) {
+        int svr_port_range_start = *svr_port_range_start_wrapper;
         if ( svr_port_range_start < 1 || svr_port_range_start > 65535 ) {
             rodsLog( LOG_ERROR, "port %d not in between 1 and 65535, inclusive.", svr_port_range_start );
             close( sock );
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        int svr_port_range_end = 0;
-        irods::error ret = irods::get_server_property<int>(
-                               irods::CFG_SERVER_PORT_RANGE_END_KW,
-                               svr_port_range_end );
-        if ( ret.ok() ) {
+        int svr_port_range_end;
+        try {
+            svr_port_range_end = irods::get_server_property<const int>(irods::CFG_SERVER_PORT_RANGE_END_KW);
             if ( svr_port_range_end < svr_port_range_start ) {
                 rodsLog( LOG_ERROR,
                          "sockOpenForInConn: PortRangeStart %d > PortRangeEnd %d",
@@ -347,8 +346,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
                          svr_port_range_start, svr_port_range_end );
                 svr_port_range_end = 65535;
             }
-        }
-        else {
+        } catch (irods::exception& e ) {
             svr_port_range_end = svr_port_range_start + DEF_NUMBER_SVR_PORT - 1;
         }
         svr_port_range_end = svr_port_range_end < 65535 ? svr_port_range_end : 65535;

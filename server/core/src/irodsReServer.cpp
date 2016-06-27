@@ -389,12 +389,12 @@ reServerMain( char* logDir ) {
     initReExec( &reExec );
     LastRescUpdateTime = time( NULL );
 
-    int re_exec_time = RE_SERVER_EXEC_TIME;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_RE_SERVER_EXEC_TIME,
-                           re_exec_time );
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
+    int re_exec_time;
+    try {
+        re_exec_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_EXEC_TIME);
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        re_exec_time = RE_SERVER_EXEC_TIME;
     }
 
     try {
@@ -500,12 +500,12 @@ reServerMain( char* logDir ) {
 } // reServerMain
 
 int reSvrSleep( ) {
-    int re_sleep_time = RE_SERVER_SLEEP_TIME;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_RE_SERVER_SLEEP_TIME,
-                           re_sleep_time );
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
+    int re_sleep_time;
+    try {
+        re_sleep_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        re_sleep_time = RE_SERVER_SLEEP_TIME;
     }
 
     rodsSleep( re_sleep_time, 0 );

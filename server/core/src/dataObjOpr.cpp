@@ -1212,20 +1212,23 @@ chkOrphanFile(
     addKeyVal( &genQueryInp.condInput, DISABLE_STRICT_ACL_KW, "disable" );
 
     std::string svr_sid;
-    irods::error get_err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-    if ( !get_err.ok() ) {
-        std::string tmp( "StrictACLOverride" );
-        irods::set_server_property< std::string >( irods::AGENT_CONN_KW, tmp );
-    }
-
-    // =-=-=-=-=-=-=-
-    // invoke genquery
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-
-    // =-=-=-=-=-=-=-
-    // remove the agent-agent conn flag
-    if ( !get_err.ok() ) {
-        irods::delete_server_property( irods::AGENT_CONN_KW );
+    try {
+        irods::get_server_property<const std::string>(irods::AGENT_CONN_KW);
+        status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    } catch ( const irods::exception& e ) {
+        if ( e.code() == KEY_NOT_FOUND ) {
+            try {
+                irods::set_server_property<std::string>(irods::AGENT_CONN_KW, "StrictACLOverride");
+                status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+                irods::delete_server_property( irods::AGENT_CONN_KW );
+            } catch (const irods::exception& e ) {
+                rodsLog( LOG_ERROR, e.what() );
+                return e.code();
+            }
+        } else {
+            irods::log( ERROR( e.code(), e.what() ) );
+            return e.code();
+        }
     }
 
     clearGenQueryInp( &genQueryInp );

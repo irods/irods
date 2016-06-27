@@ -461,9 +461,9 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         // strip disable strict acl flag if the agent conn flag is missing
         char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
         if ( dis_kw ) {
-            std::string svr_sid;
-            irods::error err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-            if ( !err.ok() ) {
+            try {
+                irods::get_server_property<const std::string>(irods::AGENT_CONN_KW);
+            } catch ( const irods::exception& ) {
                 rmKeyVal( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
 
             }
@@ -560,15 +560,18 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     // =-=-=-=-=-=-=-
     // verify that we are running a query for another agent connection
-    std::string svr_sid;
-    err = irods::get_server_property< std::string >( irods::AGENT_CONN_KW, svr_sid );
-    bool agent_conn_flg = err.ok();
+    bool agent_conn_flag = true;
+    try {
+        irods::get_server_property<const std::string>(irods::AGENT_CONN_KW);
+    } catch ( const irods::exception& ) {
+        agent_conn_flag = false;
+    }
 
     // =-=-=-=-=-=-=-
     // detect if a request for disable of strict acls is made
     int acl_val = -1;
     char* dis_kw = getValByKey( &genQueryInp->condInput, DISABLE_STRICT_ACL_KW );
-    if ( agent_conn_flg && dis_kw ) {
+    if ( agent_conn_flag && dis_kw ) {
         acl_val = 0;
     }
 
@@ -600,7 +603,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     // =-=-=-=-=-=-=-
     // if a disable was requested, repave with old value immediately
-    if ( agent_conn_flg && dis_kw ) {
+    if ( agent_conn_flag && dis_kw ) {
         chlGenQueryAccessControlSetup(
             rsComm->clientUser.userName,
             rsComm->clientUser.rodsZone,

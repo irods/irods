@@ -1,15 +1,12 @@
-/*
- * irods_environment_properties.hpp
- *
- */
-
 #ifndef IRODS_ENVIRONMENT_PROPERTIES_HPP_
 #define IRODS_ENVIRONMENT_PROPERTIES_HPP_
 
 
-#include "irods_lookup_table.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_exception.hpp"
+
+#include <map>
 
 namespace irods {
 
@@ -23,22 +20,16 @@ namespace irods {
 
         public:
             /// @brief  type alias for iterating over configuration properties
-            typedef configuration_parser::object_t::iterator iterator;
 
             /**
              * @brief Access method for the singleton
              */
-            static environment_properties& getInstance();
+            static environment_properties& instance();
 
             /**
-             * @brief Read server configuration and fill environment_properties::properties
+             * @brief Read environment configuration and fill environment_properties::properties
              */
-            error capture( );
-
-            /**
-             * @brief Read server configuration if it has not been read already.
-             **/
-            error capture_if_needed();
+            void capture( );
 
             /**
              * @brief Get a property from the map if it exists.  catch the exception in the case where
@@ -46,37 +37,44 @@ namespace irods {
              */
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
-                error ret = config_props_.get< T >( _key, _val );
-                return PASS( ret );
+                try {
+                    _val = get_property<T>( _key );
+                } catch ( const irods::exception& e ) {
+                    return ERROR(e.code(), e.what());
+                }
+                return SUCCESS();
+            }
+
+
+            template< typename T >
+            T& get_property( const std::string& _key ) {
+                try {
+                    return config_props_.get< T >( _key );
+                } catch ( const irods::exception& e ) {
+                    if ( e.code() == KEY_NOT_FOUND ) {
+                        try {
+                            return config_props_.get< T >( legacy_key_map_.at( _key ) );
+                        } catch ( const std::out_of_range& e ) {}
+                    }
+                    throw e;
+                }
             }
 
             template< typename T >
-            error set_property( const std::string& _key, const T& _val ) {
-                error ret = config_props_.set< T >( _key, _val );
-                return PASS( ret );
+            T& set_property( const std::string& _key, const T& _val ) {
+                return config_props_.set< T >( _key, _val );
             }
 
-            error delete_property( const std::string& _key ) {
-                size_t n = config_props_.erase( _key );
-                if ( n != 1 ) {
-                    std::string msg( "failed to erase key: " );
-                    msg += _key;
-                    return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
-                }
-                else {
-                    return SUCCESS();
-                }
+            template< typename T >
+            T remove( const std::string& _key ) {
+                return config_props_.remove(_key);
             }
 
-            iterator begin() {
-                return config_props_.begin();
+            void remove( const std::string& _key );
+
+            std::unordered_map<std::string, boost::any>& map() {
+                return config_props_.map();
             }
-
-            iterator end() {
-                return config_props_.end();
-            }
-
-
         private:
             // Disable constructors
             environment_properties( environment_properties const& );
@@ -84,15 +82,14 @@ namespace irods {
             void operator=( environment_properties const& );
 
             /**
-             * @brief capture the legacy version: server.config
+             * @brief capture the legacy version: .irodsEnv
              */
-            error capture_legacy( const std::string& );
+            void capture_legacy( const std::string& );
 
             /**
-             * @brief capture the new json version: server_config.json
+             * @brief capture the new json version: irods_environment.json
              */
-            error capture_json( const std::string& );
-
+            void capture_json( const std::string& );
 
             /**
              * @brief properties lookup table
@@ -100,11 +97,19 @@ namespace irods {
             configuration_parser config_props_;
 
             /// @brief map of old keys to new keys
-            lookup_table< std::string > legacy_key_map_;
-            bool captured_;
+            std::map< std::string, std::string > legacy_key_map_;
 
     }; // class environment_properties
 
+    template< typename T >
+    T& get_environment_property( const std::string& _prop ) {
+        return irods::environment_properties::instance().get_property<T>(_prop);
+    }
+
+    template< typename T >
+    T& set_environment_property( const std::string& _prop, const T& _val ) {
+        return irods::environment_properties::instance().set_property<T>(_prop, _val);
+    }
 } // namespace irods
 
 #endif /* IRODS_ENVIRONMENT_PROPERTIES_HPP_ */

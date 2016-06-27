@@ -965,7 +965,7 @@ main( int argc, char **argv ) {
 
         // capture server properties
         try {
-            irods::server_properties::instance().capture_if_needed();
+            irods::server_properties::instance();
         }
         catch ( const irods::exception& e ) {
             rodsLog( LOG_ERROR, e.what() );

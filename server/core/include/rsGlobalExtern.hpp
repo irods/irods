@@ -64,8 +64,6 @@ extern irods::lookup_table <std::pair <std::string, std::string> > remote_SID_ke
 extern rodsLong_t GlobalQuotaLimit; /* quota for all resources for this user */
 extern rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
 extern int RescQuotaPolicy;
-/* connection control config */
-extern int MaxConnections;          /* no control */
 extern time_t LastRescUpdateTime;
 
 /* manage server process permissions */

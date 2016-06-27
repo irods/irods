@@ -82,11 +82,13 @@ irods::error get_strict_acls(
                    "comm is null" );
     }
 
-    irods::error ret = irods::get_server_property<std::string>(
-                           irods::STRICT_ACL_KW,
-                           _acls );
+    try {
+        _acls = irods::get_server_property<const std::string>(irods::STRICT_ACL_KW);
+    } catch ( const irods::exception& e ) {
+        return ERROR(e.code(), e.what());
+    }
 
-    return PASS( ret );
+    return SUCCESS();
 
 } // get_strict_acls
 

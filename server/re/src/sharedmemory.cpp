@@ -95,13 +95,12 @@ unsigned char *prepareNonServerSharedMemory( const std::string& _key ) {
 }
 
 irods::error getSharedMemoryName( const std::string& _key, std::string &shared_memory_name ) {
-    std::string shared_memory_name_salt;
-    irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, shared_memory_name_salt );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "getSharedMemoryName: failed to retrieve re cache salt from server_properties\n%s", ret.result().c_str() );
-        return PASS( ret );
+    try {
+        const auto& shared_memory_name_salt = irods::get_server_property<const std::string>(RE_CACHE_SALT_KW);
+        shared_memory_name = "irods_re_cache_shared_memory_" + _key + "_" + shared_memory_name_salt;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, "getSharedMemoryName: failed to retrieve re cache salt from server_properties\n%s", e.what() );
+        return ERROR( e.code(), e.what() );
     }
-    
-    shared_memory_name = "irods_re_cache_shared_memory_" + _key + "_" + shared_memory_name_salt;
     return SUCCESS();
 }

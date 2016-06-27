@@ -11,11 +11,10 @@
 #define HOST_CONFIG_FILE  "irodsHost.txt"
 #define RE_RULES_FILE   "reRules.txt"
 #endif
-#define CONNECT_CONTROL_FILE	"connectControl.config"
 /* Keywords used in CONNECT_CONTROL_FILE */
 #define MAX_CONNECTIONS_KW		"maxConnections"
-#define ALLOWED_USER_LIST_KW		"allowUserList"
-#define DISALLOWED_USER_LIST_KW	"disallowUserList"
+#define USER_WHITELIST_KW		"whitelist"
+#define USER_BLACKLIST_KW	"blacklist"
 #define NO_MAX_CONNECTION_LIMIT	-1
 #define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT
 

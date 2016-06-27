@@ -63,53 +63,30 @@ int reDebugStackCurrPtr = 0;
 
 static std::string local_instance_name;
 
-
-
-
-
-
-
-
 int initRuleEngine( const char*, int, rsComm_t*, const char*, const char*, const char*);
 
-typedef irods::configuration_parser::object_t object_t;
-typedef irods::configuration_parser::array_t  array_t;
-
-
-static irods::error get_string_array_from_array( 
-    boost::any        _array,
-    const std::string _instance_name,
-    std::string&      _str_array ) {
-    array_t arr;
+static std::string get_string_array_from_array( const boost::any& _array ) {
+    std::string str_array;
     try {
-        arr = boost::any_cast<array_t>( _array );
+        for( const auto& el : boost::any_cast<const std::vector<boost::any>&>( _array ) ) {
+            try {
+                str_array += boost::any_cast< const std::string& >(
+                                boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el).at(irods::CFG_FILENAME_KW));
+            }
+            catch ( const boost::bad_any_cast& ) {
+                rodsLog(LOG_ERROR, "%s - failed to cast rule base file name entry to string", __PRETTY_FUNCTION__);
+                continue;
+            } catch ( const std::out_of_range& ) {
+                rodsLog(LOG_ERROR, "%s - no key '%s'", __PRETTY_FUNCTION__, irods::CFG_FILENAME_KW.c_str());
+            }
+            str_array += ",";
+
+        } // for itr
+        str_array = str_array.substr( 0, str_array.size() - 1 );
+        return str_array;
     } catch( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast an array_t";
-        return ERROR(
-                   INVALID_ANY_CAST,
-                   msg.str() );
+        THROW(INVALID_ANY_CAST, "failed to any_cast to vector");
     }
-
-    for( auto itr : arr ) {
-        try {
-            _str_array += boost::any_cast< std::string >(
-                            itr[ irods::CFG_FILENAME_KW ] );
-        }
-        catch ( boost::bad_any_cast& _e ) {
-            rodsLog(
-                LOG_ERROR,
-                "%s - failed to cast rule base file name entry to string",
-                __FUNCTION__);
-            continue;
-        }
-        _str_array += ",";
-
-    } // for itr
-        
-    _str_array = _str_array.substr( 0, _str_array.size() - 1 );
-
-    return SUCCESS();
 
 } // get_string_array_from_array
 
@@ -137,115 +114,52 @@ extern Cache ruleEngineConfig;
 irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
     local_instance_name = _instance_name;
 
-    array_t re_plugin_arr;
-    irods::error ret = irods::get_server_property<
-          array_t > (
-              irods::CFG_RULE_ENGINES_KW,
-              re_plugin_arr );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    bool found_instance = false;
-    object_t plugin_config;
-    for( auto itr : re_plugin_arr ) {
-        try {
-            plugin_config = boost::any_cast<object_t>( itr );
-        } catch( const boost::bad_any_cast& ) {
-            std::stringstream msg;
-            msg << "[" << _instance_name << "] failed to any_cast a rule_engines object";
-            return ERROR(
-                       INVALID_ANY_CAST,
-                       msg.str() );
-        }
-
-        try {
-            const std::string inst_name = boost::any_cast<std::string>(plugin_config[irods::CFG_INSTANCE_NAME_KW]);
+    try {
+        const auto& re_plugin_arr = irods::get_server_property<const std::vector<boost::any>&>(irods::CFG_RULE_ENGINES_KW);
+        for( const auto& el : re_plugin_arr ) {
+            const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
+            const auto& inst_name = boost::any_cast<const std::string&>(plugin_config.at(irods::CFG_INSTANCE_NAME_KW));
             if( inst_name == _instance_name) {
-                found_instance = true;
-                break;
+                const auto& shmem_value = boost::any_cast<const std::string&>( plugin_config.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW) );
+                const auto& plugin_spec_cfg = boost::any_cast<const std::unordered_map<std::string, boost::any>&>( plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW) );
+                std::string core_re = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_RULEBASE_SET_KW));
+                std::string core_fnm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW));
+                std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
+                int status = initRuleEngine(
+                        shmem_value.c_str(),
+                        RULE_ENGINE_TRY_CACHE,
+                        nullptr,
+                        core_re.c_str(),
+                        core_dvm.c_str(),
+                        core_fnm.c_str() );
+                if( status < 0 ) {
+                    return ERROR(
+                            status,
+                            "failed to initialize native rule engine" );
+                }
+                // index locally defined microservices
+                initialize_microservice_table();
+
+                return SUCCESS();
             }
         }
-        catch( const boost::bad_any_cast& ) {
-            continue;
-        }
+    } catch (const irods::exception& e) {
+        return ERROR(e.code(), e.what());
+    } catch (const boost::bad_any_cast& e) {
+        return ERROR(INVALID_ANY_CAST, e.what());
+    } catch (const std::out_of_range& e) {
+        return ERROR(KEY_NOT_FOUND, e.what());
     }
 
-    if( !found_instance ) {
-        std::stringstream msg;
-        msg << "failed to find configuration for re-irods plugin ["
-            << _instance_name << "]";
-        rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
-        return ERROR(
-                SYS_INVALID_INPUT_PARAM,
-                msg.str() );
-    }
 
-    std::string shmem_value;
-    try {
-        shmem_value = boost::any_cast<std::string>( plugin_config[irods::CFG_SHARED_MEMORY_INSTANCE_KW] );
-    } catch( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast " << irods::CFG_SHARED_MEMORY_INSTANCE_KW;
-        return ERROR(
-                   INVALID_ANY_CAST,
-                   msg.str() );
-    }
+    std::stringstream msg;
+    msg << "failed to find configuration for re-irods plugin ["
+        << _instance_name << "]";
+    rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
+    return ERROR(
+            SYS_INVALID_INPUT_PARAM,
+            msg.str() );
 
-    object_t plugin_spec_cfg;
-    try {
-        plugin_spec_cfg = boost::any_cast<object_t>( plugin_config[irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW] );
-    } catch( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast " << irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW;
-        return ERROR(
-                   INVALID_ANY_CAST,
-                   msg.str() );
-    }
-
-    std::string core_re;
-    ret = get_string_array_from_array(
-              plugin_spec_cfg[irods::CFG_RE_RULEBASE_SET_KW],
-              _instance_name,
-              core_re );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
- 
-    std::string core_fnm;
-    ret = get_string_array_from_array(
-              plugin_spec_cfg[irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW],
-              _instance_name,
-              core_fnm );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-  
-    std::string core_dvm;
-    ret = get_string_array_from_array(
-              plugin_spec_cfg[irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW],
-              _instance_name,
-              core_dvm );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-    int status = initRuleEngine(
-                     shmem_value.c_str(),
-                     RULE_ENGINE_TRY_CACHE,
-                     nullptr,
-                     core_re.c_str(),
-                     core_dvm.c_str(),
-                     core_fnm.c_str() );
-    if( status < 0 ) {
-        return ERROR(
-                   status,
-                   "failed to initialize native rule engine" );
-    }
-
-    // index locally defined microservices
-    initialize_microservice_table();
-
-    return SUCCESS();
 }
 
 int finalizeRuleEngine();

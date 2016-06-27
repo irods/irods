@@ -33,8 +33,6 @@
 #include "irods_environment_properties.hpp"
 #include "irods_configuration_keywords.hpp"
 
-#include "irods_stacktrace.hpp"
-
 #define BUF_LEN 100
 #define LARGE_BUF_LEN MAX_NAME_LEN+20
 
@@ -122,11 +120,10 @@ extern "C" {
     }
 
     void _reloadRodsEnv( rodsEnv &rodsEnvArg ) {
-        irods::environment_properties& props =
-            irods::environment_properties::getInstance();
-        irods::error ret = props.capture();
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+        try {
+            irods::environment_properties::instance().capture();
+        } catch ( const irods::exception& e ) {
+            rodsLog( e.code(), e.what() );
             return;
         }
 
@@ -138,48 +135,37 @@ extern "C" {
 
     static
     int capture_string_property(
-        irods::environment_properties& _props,
         const std::string&             _key,
         char*                          _val ) {
-        std::string prop_str;
-        irods::error ret = _props.get_property <
-                           std::string > (
-                               _key,
-                               prop_str );
-        if ( !ret.ok() ) {
-            rodsLog(
-                LOG_DEBUG,
-                "%s is not defined",
-                _key.c_str() );
-            return ret.code();
-        }
-        else {
-            strncpy(
-                _val,
-                prop_str.c_str(),
-                prop_str.size() + 1 );
+        try {
+            sprintf(_val, "%s", irods::get_environment_property<const std::string>(_key).c_str());
             return 0;
+        } catch ( const irods::exception& e ) {
+            if ( e.code() == KEY_NOT_FOUND ) {
+                rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
+            } else {
+                rodsLog( LOG_ERROR, e.what() );
+            }
+            return e.code();
         }
 
     } // capture_string_property
 
     static
     int capture_integer_property(
-        irods::environment_properties& _props,
         const std::string&             _key,
         int&                           _val ) {
-        irods::error ret = _props.get_property< int >(
-                               _key,
-                               _val );
-        if ( !ret.ok() ) {
-            rodsLog(
-                LOG_DEBUG,
-                "%s is not defined",
-                _key.c_str() );
-            return ret.code();
+        try {
+            _val = irods::get_environment_property<const int>(_key);
+            return 0;
+        } catch ( const irods::exception& e ) {
+            if ( e.code() == KEY_NOT_FOUND ) {
+                rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
+            } else {
+                rodsLog( LOG_ERROR, e.what() );
+            }
+            return e.code();
         }
-
-        return 0;
 
     } // capture_integer_property
 
@@ -194,15 +180,6 @@ extern "C" {
         _env->irodsDefaultNumberTransferThreads = 4;
         _env->irodsTransBufferSizeForParaTrans  = 4;
 
-        irods::environment_properties& props =
-            irods::environment_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
-        if ( !ret.ok() ) {
-            // irods::log( PASS( ret ) );
-            // legacy code doesnt error out
-            // return  ret.code();
-        }
-
         // default auth scheme
         snprintf(
             _env->rodsAuthScheme,
@@ -210,113 +187,91 @@ extern "C" {
             "native" );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
             configFileName );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_USER_NAME_KW,
             _env->rodsUserName );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_HOST_KW,
             _env->rodsHost );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_XMSG_HOST_KW,
             _env->xmsgHost );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_HOME_KW,
             _env->rodsHome );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_CWD_KW,
             _env->rodsCwd );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW,
             _env->rodsAuthScheme );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_PORT_KW,
             _env->rodsPort );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_XMSG_PORT_KW,
             _env->xmsgPort );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
             _env->rodsDefResource );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_ZONE_KW,
             _env->rodsZone );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_CLIENT_SERVER_POLICY_KW,
             _env->rodsClientServerPolicy );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_CLIENT_SERVER_NEGOTIATION_KW,
             _env->rodsClientServerNegotiation );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_ENCRYPTION_KEY_SIZE_KW,
             _env->rodsEncryptionKeySize );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_ENCRYPTION_SALT_SIZE_KW,
             _env->rodsEncryptionSaltSize );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW,
             _env->rodsEncryptionNumHashRounds );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_ENCRYPTION_ALGORITHM_KW,
             _env->rodsEncryptionAlgorithm );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_DEFAULT_HASH_SCHEME_KW,
             _env->rodsDefaultHashScheme );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_MATCH_HASH_POLICY_KW,
             _env->rodsMatchHashPolicy );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_GSI_SERVER_DN_KW,
             _env->rodsServerDn );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_DEBUG_KW,
             _env->rodsDebug );
 
         _env->rodsLogLevel = 0;
         int status = capture_integer_property(
-                         props,
                          irods::CFG_IRODS_LOG_LEVEL_KW,
                          _env->rodsLogLevel );
         if ( status == 0 && _env->rodsLogLevel > 0 ) {
@@ -328,7 +283,6 @@ extern "C" {
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
         status = capture_string_property(
-                     props,
                      irods::CFG_IRODS_AUTHENTICATION_FILE_KW,
                      _env->rodsAuthFile );
         if ( status == 0 ) {
@@ -340,73 +294,59 @@ extern "C" {
 
         // legacy ssl environment variables
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_PATH,
             _env->irodsSSLCACertificatePath );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_CA_CERTIFICATE_FILE,
             _env->irodsSSLCACertificateFile );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_VERIFY_SERVER,
             _env->irodsSSLVerifyServer );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_CERTIFICATE_CHAIN_FILE,
             _env->irodsSSLCertificateChainFile );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_CERTIFICATE_KEY_FILE,
             _env->irodsSSLCertificateKeyFile );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SSL_DH_PARAMS_FILE,
             _env->irodsSSLDHParamsFile );
 
         // control plane variables
         capture_string_property(
-            props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_KEY,
             _env->irodsCtrlPlaneKey );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
             _env->irodsCtrlPlaneEncryptionNumHashRounds );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
             _env->irodsCtrlPlaneEncryptionAlgorithm );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_SERVER_CONTROL_PLANE_PORT,
             _env->irodsCtrlPlanePort );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_MAX_SIZE_FOR_SINGLE_BUFFER,
             _env->irodsMaxSizeForSingleBuffer );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_DEF_NUMBER_TRANSFER_THREADS,
             _env->irodsDefaultNumberTransferThreads );
 
         capture_integer_property(
-            props,
             irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
 
         capture_string_property(
-            props,
             irods::CFG_IRODS_PLUGINS_HOME_KW,
             _env->irodsPluginHome );
 
@@ -714,59 +654,53 @@ extern "C" {
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
-        irods::environment_properties& props =
-            irods::environment_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
-        if ( !ret.ok() ) {
+        try {
+            const auto& prop_map = irods::environment_properties::instance().map();
+
             fprintf(
-                stderr,
+                    _fout,
+                    "irods_version - %d.%d.%d\n",
+                    IRODS_VERSION_MAJOR,
+                    IRODS_VERSION_MINOR,
+                    IRODS_VERSION_PATCHLEVEL);
+
+            for( auto itr = prop_map.cbegin(); itr != prop_map.cend(); ++itr ) {
+
+                try {
+                    int val = boost::any_cast< int >( itr->second );
+                    fprintf(
+                            _fout,
+                            "%s - %d\n",
+                            itr->first.c_str(),
+                            val );
+                    continue;
+                }
+                catch ( const boost::bad_any_cast& ) {
+                }
+
+                try {
+                    const std::string& val = boost::any_cast< const std::string& >( itr->second );
+                    fprintf(
+                            _fout,
+                            "%s - %s\n",
+                            itr->first.c_str(),
+                            val.c_str() );
+                    continue;
+                }
+                catch ( const boost::bad_any_cast& ) {
+                    fprintf(
+                            stderr,
+                            "failed to cast %s",
+                            itr->first.c_str() );
+                }
+
+            } // for itr
+        } catch ( const irods::exception& e ) {
+            fprintf( stderr,
                 "%s",
-                PASS( ret ).result().c_str() );
-            return ret.code();
+                e.what() );
+            return e.code();
         }
-
-        fprintf(
-            _fout,
-            "irods_version - %d.%d.%d\n",
-            IRODS_VERSION_MAJOR,
-            IRODS_VERSION_MINOR,
-            IRODS_VERSION_PATCHLEVEL);
-
-        irods::environment_properties::iterator itr;
-        for(
-            itr  = props.begin();
-            itr != props.end();
-            ++itr ) {
-
-            try {
-                int val = boost::any_cast< int >( itr->second );
-                fprintf(
-                    _fout,
-                    "%s - %d\n",
-                    itr->first.c_str(),
-                    val );
-                continue;
-            }
-            catch ( const boost::bad_any_cast& ) {
-            }
-
-            try {
-                std::string val = boost::any_cast< std::string >( itr->second );
-                fprintf(
-                    _fout,
-                    "%s - %s\n",
-                    itr->first.c_str(),
-                    val.c_str() );
-                continue;
-            }
-            catch ( const boost::bad_any_cast& ) {
-                fprintf(
-                    stderr,
-                    "failed to cast %s",
-                    itr->first.c_str() );
-            }
-
-        } // for itr
 
         return 0;
 
