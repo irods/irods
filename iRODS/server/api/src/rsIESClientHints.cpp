@@ -69,9 +69,7 @@ irods::error get_strict_acls(
                    "comm is null" );
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    props.capture_if_needed();
-    irods::error ret = props.get_property<std::string>(
+    irods::error ret = irods::get_server_property<std::string>(
                            irods::STRICT_ACL_KW,
                            _acls );
 

@@ -26,6 +26,7 @@
 #include "irods_configuration_parser.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_log.hpp"
+#include "irods_exception.hpp"
 #include "irods_threads.hpp"
 #include "irods_server_properties.hpp"
 
@@ -35,30 +36,18 @@
 #include <fstream>
 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <boost/system/error_code.hpp>
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
-namespace {
-
-    static std::set<std::vector<std::string> > allowedUsers;
-    static std::set<std::vector<std::string> > disallowedUsers;
-
-}
 
 int
 initServerInfo( rsComm_t *rsComm ) {
     int status = 0;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -69,7 +58,7 @@ initServerInfo( rsComm_t *rsComm ) {
     }
 
     int zone_port = 0;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           int > (
               irods::CFG_ZONE_PORT,
               zone_port );
@@ -189,50 +178,31 @@ initLocalServerHost() {
 
 int
 initRcatServerHostByFile() {
-    typedef irods::configuration_parser::object_t object_t;
-    typedef irods::configuration_parser::array_t  array_t;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    object_t env_obj;
-    ret = props.get_property <
-          object_t > (
-              irods::CFG_ENVIRONMENT_VARIABLES_KW,
-              env_obj );
+    std::map<std::string, boost::any> env_obj;
+    irods::error ret = irods::get_server_property < std::map<std::string, boost::any> > (
+            irods::CFG_ENVIRONMENT_VARIABLES_KW, env_obj );
 
     if ( ret.ok() ) {
-        object_t::iterator itr;
-        for ( itr = env_obj.begin();
-                itr != env_obj.end();
-                ++itr ) {
-            std::string val;
+        for ( std::map<std::string, boost::any>::iterator itr = env_obj.begin(); itr != env_obj.end(); ++itr ) {
             try {
-                val = boost::any_cast <
-                      std::string > (
-                          itr->second );
-            }
-            catch ( boost::bad_any_cast& _e ) {
+                std::string& val = boost::any_cast < std::string& > ( itr->second );
+
+                setenv(
+                    itr->first.c_str(), // variable
+                    val.c_str(),        // value
+                    1 );                // overwrite
+            } catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
                     LOG_ERROR,
                     "initRcatServerHostByFile - failed to cast env var entry to string" );
                 continue;
             }
-
-            setenv(
-                itr->first.c_str(), // variable
-                val.c_str(),        // value
-                1 );                // overwrite
             rodsLog(
                 LOG_DEBUG,
                 "environment setting [%s]=[%s]",
                 itr->first.c_str(),
                 getenv( itr->first.c_str() ) );
-
         }
 
     }
@@ -243,21 +213,17 @@ initRcatServerHostByFile() {
             irods::CFG_ENVIRONMENT_VARIABLES_KW.c_str() );
     }
 
-    array_t prop_arr;
-    ret = props.get_property <
-          array_t > (
-              irods::CFG_RE_RULEBASE_SET_KW,
-              prop_arr );
+    std::vector<boost::any> prop_arr;
+    ret = irods::get_server_property <std::vector<boost::any> > ( irods::CFG_RE_RULEBASE_SET_KW, prop_arr );
 
-    std::string prop_str;
     if ( ret.ok() ) {
         std::string rule_arr;
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
             try {
-                rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                rule_arr += boost::any_cast< std::string& >(
+                                boost::any_cast<std::map<std::string, boost::any>&>(prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -265,7 +231,7 @@ initRcatServerHostByFile() {
                     "initRcatServerHostByFile - failed to cast rule base file name entry to string" );
                 continue;
             }
-            rule_arr += prop_str + ",";
+            rule_arr += ",";
         }
 
         rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
@@ -277,9 +243,9 @@ initRcatServerHostByFile() {
             rule_arr.c_str() );
 
     }
-    else {
+    else if (ret.code() == KEY_NOT_FOUND ) {
         std::string prop_str;
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   RE_RULESET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -296,9 +262,13 @@ initRcatServerHostByFile() {
         }
 
     }
+    else {
+        irods::log( PASS(ret) );
+        return ret.code();
+    }
 
-    ret = props.get_property <
-          array_t > (
+    ret = irods::get_server_property<
+          std::vector<boost::any> > (
               irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
               prop_arr );
     if ( ret.ok() ) {
@@ -308,7 +278,7 @@ initRcatServerHostByFile() {
                 ++i ) {
             try {
                 rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                                boost::any_cast<std::map< std::string, boost::any>&>(prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -316,7 +286,7 @@ initRcatServerHostByFile() {
                     "initRcatServerHostByFile - failed to cast rule function file name entry to string" );
                 continue;
             }
-            rule_arr += prop_str + ",";
+            rule_arr += ",";
         }
 
         rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
@@ -328,8 +298,9 @@ initRcatServerHostByFile() {
             rule_arr.c_str() );
 
     }
-    else {
-        ret = props.get_property< std::string >(
+    else if (ret.code() == KEY_NOT_FOUND ) {
+        std::string prop_str;
+        ret = irods::get_server_property< std::string >(
                   RE_FUNCMAPSET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -345,9 +316,13 @@ initRcatServerHostByFile() {
             return ret.code();
         }
     }
+    else {
+        irods::log( PASS(ret) );
+        return ret.code();
+    }
 
-    ret = props.get_property <
-          array_t > (
+    ret = irods::get_server_property<
+          std::vector<boost::any> > (
               irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
               prop_arr );
     if ( ret.ok() ) {
@@ -356,8 +331,9 @@ initRcatServerHostByFile() {
                 i < prop_arr.size();
                 ++i ) {
             try {
-                rule_arr += boost::any_cast< std::string >(
-                                prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                rule_arr += boost::any_cast< std::string& >(
+                                boost::any_cast< std::map<std::string, boost::any>& >(
+                                prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -365,7 +341,7 @@ initRcatServerHostByFile() {
                     "initRcatServerHostByFile - failed to cast rule data variable file name entry to string" );
                 continue;
             }
-            rule_arr += prop_str + ",";
+            rule_arr += ",";
         }
 
         rule_arr = rule_arr.substr( 0, rule_arr.size() - 1 );
@@ -377,8 +353,9 @@ initRcatServerHostByFile() {
             rule_arr.c_str() );
 
     }
-    else {
-        ret = props.get_property< std::string >(
+    else if (ret.code() == KEY_NOT_FOUND ) {
+        std::string prop_str;
+        ret = irods::get_server_property< std::string >(
                   RE_VARIABLEMAPSET_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -394,8 +371,13 @@ initRcatServerHostByFile() {
             return ret.code();
         }
     }
+    else {
+        irods::log( PASS(ret) );
+        return ret.code();
+    }
 
-    ret = props.get_property< std::string >(
+    std::string prop_str;
+    ret = irods::get_server_property< std::string >(
               KERBEROS_NAME_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -407,7 +389,7 @@ initRcatServerHostByFile() {
 
     }
 
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               ICAT_HOST_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -439,7 +421,7 @@ initRcatServerHostByFile() {
 
     // re host
     // xmsg host
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               irods::CFG_IRODS_XMSG_HOST_KW,
               prop_str );
     if ( ret.ok() ) {
@@ -466,14 +448,14 @@ initRcatServerHostByFile() {
 
     // slave icat host
 
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               irods::CFG_ZONE_KEY_KW,
               prop_str );
     if ( ret.ok() ) {
         snprintf( localSID, sizeof( localSID ), "%s", prop_str.c_str() );
     }
     else {
-        ret = props.get_property< std::string >(
+        ret = irods::get_server_property< std::string >(
                   LOCAL_ZONE_SID_KW,
                   prop_str );
         if ( ret.ok() ) {
@@ -487,7 +469,7 @@ initRcatServerHostByFile() {
 
     // try for new federation config
     std::string neg_key;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_NEGOTIATION_KEY_KW,
               neg_key );
@@ -495,14 +477,14 @@ initRcatServerHostByFile() {
         irods::log( PASS( ret ) );
         return ret.code();
     }
-    array_t fed_arr;
-    ret = props.get_property <
-          array_t > (
+    std::vector<boost::any> fed_arr;
+    ret = irods::get_server_property<
+          std::vector<boost::any> > (
               irods::CFG_FEDERATION_KW,
               fed_arr );
     if ( ret.ok() ) {
         for ( size_t i = 0; i < fed_arr.size(); ++i ) {
-            object_t& obj = fed_arr[ i ];
+            std::map< std::string, boost::any>& obj = boost::any_cast<std::map< std::string, boost::any>&>(fed_arr[ i ]);
             std::string fed_zone_key, fed_zone_name, fed_zone_negotiation_key;
             try {
                 fed_zone_key = boost::any_cast< std::string >(
@@ -527,7 +509,7 @@ initRcatServerHostByFile() {
     else {
         // try the old remote sid config
         std::vector< std::string > rem_sids;
-        ret = props.get_property <
+        ret = irods::get_server_property<
               std::vector< std::string > > (
                   REMOTE_ZONE_SID_KW,
                   rem_sids );
@@ -564,15 +546,8 @@ initZone( rsComm_t *rsComm ) {
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
     char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -880,8 +855,6 @@ rsPipeSignalHandler( int ) {
 
 /// @brief parse the irodsHost file, creating address
 int initHostConfigByFile() {
-    typedef irods::configuration_parser::object_t object_t;
-    typedef irods::configuration_parser::array_t  array_t;
 
     // =-=-=-=-=-=-=-
     // request fully qualified path to the config file
@@ -904,35 +877,45 @@ int initHostConfigByFile() {
         return ret.code();
     }
 
-    array_t host_entries;
-    ret = cfg.get< array_t > (
-              "host_entries",
-              host_entries );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    std::vector< boost::any > host_entries;
+    try {
+    host_entries = cfg.get< std::vector< boost::any > > (
+              "host_entries" );
+    } catch ( const irods::exception& e ) {
+        irods::log( ERROR( e.code(), e.what() ) );
+        return e.code();
     }
 
     for ( size_t he_idx = 0;
             he_idx < host_entries.size();
             ++he_idx ) {
-        object_t obj = host_entries[ he_idx ];
+        std::map<std::string, boost::any>& obj = boost::any_cast<std::map<std::string, boost::any>&>(host_entries[ he_idx ]);
+        std::map<std::string, boost::any>::iterator find_it;
+
 
         std::string address_type;
-        ret = obj.get< std::string >(
-                  "address_type",
-                  address_type );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+        find_it = obj.find("address_type");
+        if ( find_it == obj.end() ) {
+            rodsLog( LOG_ERROR, "address_type not found in host entry");
+            continue;
+        }
+        try {
+            address_type = boost::any_cast<std::string&>(find_it->second);
+        } catch ( const boost::bad_any_cast& e ) {
+            irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
             continue;
         }
 
-        array_t addresses;
-        ret = obj.get< array_t >(
-                  "addresses",
-                  addresses );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+        std::vector<boost::any> addresses;
+        find_it = obj.find("addresses");
+        if ( find_it == obj.end() ) {
+            rodsLog( LOG_ERROR, "addresses not found in host entry");
+            continue;
+        }
+        try {
+            addresses = boost::any_cast<std::vector<boost::any>&>(find_it->second);
+        } catch ( const boost::bad_any_cast& e ) {
+            irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
             continue;
         }
 
@@ -973,25 +956,23 @@ int initHostConfigByFile() {
                 addr_idx < addresses.size();
                 ++addr_idx ) {
 
-            object_t& obj_ent = addresses[ addr_idx ];
+            try {
+                std::map<std::string, boost::any>& obj_ent = boost::any_cast<std::map<std::string, boost::any>&>(addresses[ addr_idx ]);
+                std::string entry;
+                find_it = obj_ent.find("address");
+                if ( find_it == obj_ent.end() ) {
+                    rodsLog( LOG_ERROR, "address_type not found in host entry");
+                    continue;
+                }
+                entry = boost::any_cast<std::string&>(find_it->second);
 
-            std::string entry;
-            ret = obj_ent.get< std::string >(
-                      "address",
-                      entry );
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
+                if ( queHostName( svr_host, entry.c_str(), 0 ) < 0 ) {
+                    rodsLog( LOG_ERROR, "queHostName failed" );
+                }
+
+            } catch ( const boost::bad_any_cast& e ) {
+                irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
                 continue;
-            }
-
-            if ( queHostName(
-                        svr_host,
-                        entry.c_str(),
-                        0 ) < 0 ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "queHostName failed" );
-
             }
 
         } // for addr_idx
@@ -1011,15 +992,8 @@ initRsComm( rsComm_t *rsComm ) {
         return status;
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -1030,7 +1004,7 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     std::string zone_user;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_USER,
               zone_user );
@@ -1041,7 +1015,7 @@ initRsComm( rsComm_t *rsComm ) {
     }
 
     std::string zone_auth_scheme;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_AUTH_SCHEME,
               zone_auth_scheme );
@@ -1303,120 +1277,23 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     return 0;
 }
 
-int
-initConnectControl() {
-    char buf[LONG_NAME_LEN * 5];
-    char *bufPtr;
-    int status;
-    std::vector<std::string> tmpAllowedUser;
-    int allowUserFlag = 0;
-    int disallowUserFlag = 0;
-
-    std::string ctrl_file;
-    irods::error ret = irods::get_full_path_for_config_file(
-                           CONNECT_CONTROL_FILE,
-                           ctrl_file );
-    if ( !ret.ok() ) {
-        return 0;
+std::set<std::string>
+construct_controlled_user_set(std::map<std::string, boost::any>& controlled_user_connection_list) {
+    std::set<std::string> user_set;
+    std::map<std::string, boost::any>::iterator find_it = controlled_user_connection_list.find("users");
+    if ( find_it == controlled_user_connection_list.end() ) {
+        THROW( -1, "controlled_user_connection_list must contain  a list of string values at key \"users\"" );
     }
-
-    FILE *file = fopen( ctrl_file.c_str(), "r" );
-    if ( file == NULL ) {
-        rodsLog(
-            LOG_ERROR,
-            "initConnectControl - failed to open [%s]",
-            ctrl_file.c_str() );
-        return 0;
-    }
-
-    MaxConnections = DEF_MAX_CONNECTION;        /* no limit */
-    allowedUsers.clear();
-    disallowedUsers.clear();
-    while ( fgets( buf, LONG_NAME_LEN * 5, file ) != NULL ) {
-        char myuser[NAME_LEN];
-        char myZone[NAME_LEN];
-        char myInput[NAME_LEN * 2];
-
-        if ( *buf == '#' ) {    /* a comment */
-            continue;
+    try {
+        std::vector<boost::any>& user_vector = boost::any_cast<std::vector<boost::any>&>(find_it->second);
+        for ( std::vector<boost::any>::iterator user = user_vector.begin(); user != user_vector.end(); ++user ) {
+            user_set.insert(boost::any_cast<std::string>(*user));
         }
-
-        bufPtr = buf;
-
-        while ( copyStrFromBuf( &bufPtr, myInput, NAME_LEN * 2 ) > 0 ) {
-            if ( strcmp( myInput, MAX_CONNECTIONS_KW ) == 0 ) {
-                if ( copyStrFromBuf( &bufPtr, myInput, NAME_LEN ) > 0 ) {
-                    /* sanity check */
-                    if ( isdigit( *myInput ) ) {
-                        MaxConnections = atoi( myInput );
-                    }
-                    else {
-                        rodsLog( LOG_ERROR,
-                                 "initConnectControl: inp maxConnections %d is not an int",
-                                 myInput );
-                    }
-                    break;
-                }
-            }
-            else if ( strcmp( myInput, ALLOWED_USER_LIST_KW ) == 0 ) {
-                if ( disallowUserFlag == 0 ) {
-                    allowUserFlag = 1;
-                    break;
-                }
-                else {
-                    rodsLog( LOG_ERROR,
-                             "initConnectControl: both allowUserList and disallowUserList are set" );
-                    fclose( file );
-                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
-                }
-            }
-            else if ( strcmp( myInput, DISALLOWED_USER_LIST_KW ) == 0 ) {
-                if ( allowUserFlag == 0 ) {
-                    disallowUserFlag = 1;
-                    break;
-                }
-                else {
-                    rodsLog( LOG_ERROR,
-                             "initConnectControl: both allowUserList and disallowUserList are set" );
-                    fclose( file );
-                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
-                }
-            }
-            status = parseUserName( myInput, myuser, myZone );
-            if ( status >= 0 ) {
-                if ( strlen( myZone ) == 0 ) {
-                    zoneInfo_t *tmpZoneInfo;
-                    if ( getLocalZoneInfo( &tmpZoneInfo ) >= 0 ) {
-                        rstrcpy( myZone, tmpZoneInfo->zoneName, NAME_LEN );
-                    }
-                }
-                tmpAllowedUser.push_back( myuser );
-                tmpAllowedUser.push_back( myZone );
-                /* queue it */
-
-                if ( allowUserFlag != 0 ) {
-                    allowedUsers.insert( tmpAllowedUser );
-                }
-                else if ( disallowUserFlag != 0 ) {
-                    disallowedUsers.insert( tmpAllowedUser );
-                }
-                else {
-                    rodsLog( LOG_ERROR,
-                             "initConnectControl: neither allowUserList nor disallowUserList has been set" );
-                    fclose( file );
-                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
-                }
-            }
-            else {
-                rodsLog( LOG_NOTICE,
-                         "initConnectControl: cannot parse input %s. status = %d",
-                         myInput, status );
-            }
-        }
+    } catch ( const boost::bad_any_cast& e ) {
+        THROW( INVALID_ANY_CAST, "controlled_user_connection_list must contain  a list of string values at key \"users\"" );
     }
 
-    fclose( file );
-    return 0;
+    return user_set;
 }
 
 int
@@ -1430,34 +1307,57 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
         /* XXXXXXXXXX userName not yet defined. allow it for now */
         return 0;
     }
+    std::map<std::string, boost::any> controlled_user_connection_list;
+    irods::error ret = irods::get_server_property<std::map<std::string, boost::any> >(
+            "controlled_user_connection_list", controlled_user_connection_list);
+    if ( ret.code() == KEY_NOT_FOUND ) {
+        return 0;
+    }
+    else if ( !ret.ok() ) {
+        return ret.code();
+    }
 
-    std::vector<std::string> user;
-    user.push_back( userName );
-    user.push_back( rodsZone );
-    if ( !allowedUsers.empty() ) {
-        if ( allowedUsers.count( user ) == 0 ) {
-            return SYS_USER_NOT_ALLOWED_TO_CONN;
-        }
+    std::string user_and_zone = (boost::format("%s#%s") % userName % rodsZone).str();
+    std::map<std::string, boost::any>::iterator find_it = controlled_user_connection_list.find("control_type");
+    if ( find_it == controlled_user_connection_list.end() ) {
+        rodsLog( LOG_ERROR, "controlled_user_connection_list must contain string value at key \"control_type\"" );
+        return -1;
     }
-    else if ( !disallowedUsers.empty() ) {
-        if ( disallowedUsers.count( user ) != 0 ) {
-            return SYS_USER_NOT_ALLOWED_TO_CONN;
-        }
+    std::string control_type;
+    try {
+        control_type = boost::any_cast<std::string&>(find_it->second);
+    } catch ( const boost::bad_any_cast& e ) {
+        rodsLog( LOG_ERROR, "controlled_user_connection_list must contain string value at key \"control_type\"" );
+        return INVALID_ANY_CAST;
     }
-    return 0;
+    try {
+        static const std::set<std::string> controlled_user_set = construct_controlled_user_set(controlled_user_connection_list);
+        if ( control_type == "whitelist" ) {
+            if ( controlled_user_set.count( user_and_zone ) == 0 ) {
+                return SYS_USER_NOT_ALLOWED_TO_CONN;
+            }
+        }
+        else if ( control_type == "blacklist" ) {
+            if ( controlled_user_set.count( user_and_zone ) != 0 ) {
+                return SYS_USER_NOT_ALLOWED_TO_CONN;
+            }
+        }
+        else {
+            rodsLog(LOG_ERROR, "controlled_user_connection_list must specify \"whitelist\" or \"blacklist\"");
+            return -1;
+        }
+        return 0;
+    } catch ( const irods::exception& e ) {
+        rodsLog(LOG_ERROR, e.what());
+        return e.code();
+    }
+
 }
 
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm ) {
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
@@ -1468,7 +1368,7 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
     }
 
     std::string zone_user;
-    ret = props.get_property <
+    ret = irods::get_server_property<
           std::string > (
               irods::CFG_ZONE_USER,
               zone_user );

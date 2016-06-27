@@ -262,16 +262,9 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 int
 reSvrSleep( rsComm_t *rsComm ) {
     rodsServerHost_t *rodsServerHost = NULL;
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
 
     std::string zone_name;
-    ret = props.get_property <
-          std::string > (
+    irods::error ret = irods::get_server_property < std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );
     if ( !ret.ok() ) {
@@ -309,25 +302,20 @@ irods::error capture_rulesets(
     std::string& _res,
     std::string& _fnm,
     std::string& _dvm ) {
-    typedef irods::configuration_parser::array_t  array_t;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture();
-
-    array_t prop_arr;
-    ret = props.get_property <
-          array_t > (
+    std::vector< boost::any > prop_arr;
+    irods::error ret = irods::get_server_property< std::vector< boost::any > > (
               irods::CFG_RE_RULEBASE_SET_KW,
               prop_arr );
 
-    std::string prop_str;
     if ( ret.ok() ) {
+        std::string acc_str;
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
             try {
-                _res += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                acc_str += boost::any_cast< std::string& >(
+                        boost::any_cast<std::map<std::string, boost::any>&>(prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -335,24 +323,24 @@ irods::error capture_rulesets(
                     "failed to cast rule base file name entry to string" );
                 continue;
             }
-            _res += ",";
+            acc_str += ",";
         }
 
-        _res = _res.substr( 0, _res.size() - 1 );
+        _res = acc_str.substr( 0, acc_str.size() - 1 );
 
     }
 
-    ret = props.get_property <
-          array_t > (
+    ret = irods::get_server_property< std::vector< boost::any > > (
               irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW,
               prop_arr );
     if ( ret.ok() ) {
+        std::string acc_str;
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
             try {
-                _fnm += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                acc_str += boost::any_cast< std::string& >(
+                        boost::any_cast<std::map<std::string, boost::any>&>(prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -360,24 +348,24 @@ irods::error capture_rulesets(
                     "failed to cast rule function file name entry to string" );
                 continue;
             }
-            _fnm += ",";
+            acc_str += ",";
         }
 
-        _fnm = _fnm.substr( 0, _fnm.size() - 1 );
+        _fnm = acc_str.substr( 0, acc_str.size() - 1 );
 
     }
 
-    ret = props.get_property <
-          array_t > (
+    ret = irods::get_server_property< std::vector< boost::any > > (
               irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW,
               prop_arr );
     if ( ret.ok() ) {
+        std::string acc_str;
         for ( size_t i = 0;
                 i < prop_arr.size();
                 ++i ) {
             try {
-                _dvm += boost::any_cast< std::string >(
-                            prop_arr[i][ irods::CFG_FILENAME_KW ] );
+                acc_str += boost::any_cast< std::string& >(
+                        boost::any_cast<std::map<std::string, boost::any>&>(prop_arr[i])[ irods::CFG_FILENAME_KW ] );
             }
             catch ( boost::bad_any_cast& _e ) {
                 rodsLog(
@@ -385,10 +373,10 @@ irods::error capture_rulesets(
                     "failed to cast rule data variable file name entry to string" );
                 continue;
             }
-            _dvm += ",";
+            acc_str += ",";
         }
 
-        _dvm = _dvm.substr( 0, _dvm.size() - 1 );
+        _dvm = acc_str.substr( 0, acc_str.size() - 1 );
 
     }
 

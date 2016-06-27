@@ -32,16 +32,7 @@ namespace irods {
         return instance;
     }
 
-
-    error server_properties::capture_if_needed() {
-        error result = SUCCESS();
-        if ( !captured_ ) {
-            result = capture();
-        }
-        return result;
-    }
-
-    server_properties::server_properties() : captured_( false ) {
+    server_properties::server_properties() {
         key_map_[ DB_PASSWORD_KW ] = CFG_DB_PASSWORD_KW;
         key_map_[ ICAT_HOST_KW ]   = CFG_ICAT_HOST_KW;
         key_map_[ RE_RULESET_KW ]  = CFG_RE_RULEBASE_SET_KW;
@@ -67,56 +58,45 @@ namespace irods {
         key_map_[ CFG_XMSG_PORT ]             = CFG_XMSG_PORT;
         key_map_[ CFG_ZONE_AUTH_SCHEME ]      = CFG_ZONE_AUTH_SCHEME;
 
+        capture();
+
     } // ctor
 
-    error server_properties::capture() {
-        // if a json version exists, then attempt to capture
-        // that
+    void server_properties::capture() {
+        // if a json version exists, then attempt to capture that
         std::string svr_cfg;
         irods::error ret = irods::get_full_path_for_config_file(
                                "server_config.json",
                                svr_cfg );
         if ( ret.ok() ) {
-            ret = capture_json( svr_cfg );
-            if ( !ret.ok() ) {
-                return PASS( ret );
-            }
+            capture_json( svr_cfg );
 
             std::string db_cfg;
             ret = irods::get_full_path_for_config_file(
                       "database_config.json",
                       db_cfg );
             if ( ret.ok() ) {
-                ret = capture_json( db_cfg );
-                if ( !ret.ok() ) {
-                    return PASS( ret );
-                }
+                capture_json( db_cfg );
             }
 
         }
         else {
-            return capture_legacy();
-
+            capture_legacy();
         }
-
-        // set the captured flag so we no its already been captured
-        captured_ = true;
-
-        return SUCCESS();
 
     } // capture
 
-    error server_properties::capture_json(
+    void server_properties::capture_json(
         const std::string& _fn ) {
         error ret = config_props_.load( _fn );
-
-        return ret;
+        if ( !ret.ok() ) {
+            THROW(ret.code(), ret.result());
+        }
 
     } // capture_json
 
 // Read LEGACY_SERVER_CONFIG_FILE and fill server_properties::properties
-    error server_properties::capture_legacy() {
-        error result = SUCCESS();
+    void server_properties::capture_legacy() {
         std::string prop_name, prop_setting; // property name and setting
 
         FILE *fptr;
@@ -134,11 +114,11 @@ namespace irods {
                         LEGACY_SERVER_CONFIG_FILE,
                         cfg_file );
         if ( !ret.ok() ) {
-            return PASS( ret );
+            THROW( ret.code(), ret.result() );
         }
 
         if ( !fs::exists( cfg_file ) ) {
-            return SUCCESS();
+            return;
         }
 
         rodsLog(
@@ -153,7 +133,7 @@ namespace irods {
                      cfg_file.c_str(), errno );
             std::stringstream msg;
             msg << LEGACY_SERVER_CONFIG_FILE << " file error";
-            return ERROR( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
+            THROW( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
         }
 
         buf[BUF_LEN - 1] = '\0';
@@ -186,8 +166,8 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // PAM configuration - init PAM values
-            result = config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
-            result = config_props_.set<size_t>( PAM_PW_LEN_KW, 20 );
+            config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
+            config_props_.set<size_t>( PAM_PW_LEN_KW, 20 );
 
             key = strstr( buf, ICAT_HOST_KW );
             if ( key != NULL ) {
@@ -198,7 +178,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // ICAT_HOST_KW
@@ -212,7 +192,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // RE_RULESET_KW
@@ -226,7 +206,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // RE_FUNCMAPSET_KW
@@ -240,7 +220,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // RE_VARIABLEMAPSET_KW
@@ -254,21 +234,21 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DB_USERNAME_KW
 
             // =-=-=-=-=-=-=-
             // PAM configuration - init PAM values
-            result = config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
-            result = config_props_.set<size_t>( PAM_PW_LEN_KW, 20 );
+            config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
+            config_props_.set<size_t>( PAM_PW_LEN_KW, 20 );
 
             prop_setting.assign( "121" );
-            result = config_props_.set<std::string>( PAM_PW_MIN_TIME_KW, prop_setting );
+            config_props_.set<std::string>( PAM_PW_MIN_TIME_KW, prop_setting );
 
             prop_setting.assign( "1209600" );
-            result = config_props_.set<std::string>( PAM_PW_MAX_TIME_KW, prop_setting );
+            config_props_.set<std::string>( PAM_PW_MAX_TIME_KW, prop_setting );
             // init PAM values
 
             key = strstr( buf, PAM_PW_LEN_KW );
@@ -280,7 +260,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<size_t>( prop_name, atoi( prop_setting.c_str() ) );
+                config_props_.set<size_t>( prop_name, atoi( prop_setting.c_str() ) );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_LEN_KW
@@ -295,10 +275,10 @@ namespace irods {
 
                 std::transform( prop_setting.begin(), prop_setting.end(), prop_setting.begin(), ::tolower );
                 if ( prop_setting == "true" ) {
-                    result = config_props_.set<bool>( PAM_NO_EXTEND_KW, true );
+                    config_props_.set<bool>( PAM_NO_EXTEND_KW, true );
                 }
                 else {
-                    result = config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
+                    config_props_.set<bool>( PAM_NO_EXTEND_KW, false );
                 }
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
@@ -313,7 +293,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_MIN_TIME_KW
@@ -327,7 +307,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // PAM_PW_MAX_TIME_KW
@@ -341,7 +321,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
+                config_props_.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEF_DIR_MODE_KW
@@ -356,7 +336,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
+                config_props_.set<int>( prop_name, strtol( prop_setting.c_str(), 0, 0 ) );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEF_FILE_MODE_KW
@@ -371,7 +351,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // CATALOG_DATABASE_TYPE_KW
@@ -383,7 +363,7 @@ namespace irods {
                 prop_name.assign( KERBEROS_NAME_KW );
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // KERBEROS_NAME_KW
 
@@ -394,7 +374,7 @@ namespace irods {
                 prop_name.assign( KERBEROS_KEYTAB_KW );
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
                 // Now set the appropriate kerberos environment variable
@@ -416,7 +396,7 @@ namespace irods {
                     ::tolower );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // DEFAULT_HASH_SCHEME_KW
@@ -435,7 +415,7 @@ namespace irods {
                     ::tolower );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // MATCH_HASH_POLICY_KW
@@ -449,7 +429,7 @@ namespace irods {
                 prop_setting.assign( findNextTokenAndTerm( key + len ) );
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
             } // LOCAL_ZONE_SID_KW
@@ -466,7 +446,11 @@ namespace irods {
                 std::vector<std::string>           rem_sids;
                 std::vector<std::string>::iterator sid_itr;
                 if ( config_props_.has_entry( prop_name ) ) {
-                    result = config_props_.get< std::vector< std::string > >( prop_name, rem_sids );
+                    try {
+                        rem_sids = config_props_.get< std::vector< std::string > >( prop_name );
+                    } catch ( const irods::exception& e ) {
+                        rodsLog( LOG_ERROR, e.what() );
+                    }
 
                     // do not want duplicate entries
                     sid_itr = std::find(
@@ -478,7 +462,7 @@ namespace irods {
 
                 if ( sid_itr == rem_sids.end() ) {
                     rem_sids.push_back( prop_setting );
-                    result = config_props_.set< std::vector< std::string > >( prop_name, rem_sids );
+                    config_props_.set< std::vector< std::string > >( prop_name, rem_sids );
                 }
 
                 rodsLog( LOG_DEBUG, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
@@ -499,11 +483,11 @@ namespace irods {
                     fclose( fptr );
                     std::stringstream msg;
                     msg << LEGACY_SERVER_CONFIG_FILE << " file error";
-                    return ERROR( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
+                    THROW( SYS_CONFIG_FILE_ERR, msg.str().c_str() );
                 }
 
                 // Update properties table
-                result = config_props_.set<std::string>( prop_name, prop_setting );
+                config_props_.set<std::string>( prop_name, prop_setting );
 
             } // AGENT_KEY_KW
 
@@ -524,12 +508,12 @@ namespace irods {
         // store password and key in server properties
         prop_name.assign( DB_PASSWORD_KW );
         prop_setting.assign( DBPassword );
-        result = config_props_.set<std::string>( prop_name, prop_setting );
+        config_props_.set<std::string>( prop_name, prop_setting );
         rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
         prop_name.assign( DB_KEY_KW );
         prop_setting.assign( DBKey );
-        result = config_props_.set<std::string>( prop_name, prop_setting );
+        config_props_.set<std::string>( prop_name, prop_setting );
         rodsLog( LOG_DEBUG1, "%s=%s", prop_name.c_str(), prop_setting.c_str() );
 
         // add expected zone_name, zone_user, zone_port, zone_auth_scheme
@@ -537,54 +521,48 @@ namespace irods {
         rodsEnv env;
         int status = getRodsEnv( &env );
         if ( status < 0 ) {
-            return ERROR( status, "failure in getRodsEnv" );
+            THROW( status, "failure in getRodsEnv" );
         }
-        result = config_props_.set<std::string>(
-                     irods::CFG_ZONE_NAME_KW,
-                     env.rodsZone );
-        if ( !result.ok() ) {
-            irods::log( PASS( result ) );
+        config_props_.set<std::string>( irods::CFG_ZONE_NAME_KW, env.rodsZone );
 
-        }
+        config_props_.set<std::string>( irods::CFG_ZONE_USER, env.rodsUserName );
 
-        result = config_props_.set<std::string>(
-                     irods::CFG_ZONE_USER,
-                     env.rodsUserName );
-        if ( !result.ok() ) {
-            irods::log( PASS( result ) );
+        config_props_.set<std::string>( irods::CFG_ZONE_AUTH_SCHEME, env.rodsAuthScheme );
 
-        }
-
-        result = config_props_.set<std::string>(
-                     irods::CFG_ZONE_AUTH_SCHEME,
-                     env.rodsAuthScheme );
-        if ( !result.ok() ) {
-            irods::log( PASS( result ) );
-
-        }
-
-        result = config_props_.set<int>(
-                     irods::CFG_ZONE_PORT,
-                     env.rodsPort );
-        if ( !result.ok() ) {
-            irods::log( PASS( result ) );
-
-        }
+        config_props_.set<int>( irods::CFG_ZONE_PORT, env.rodsPort );
 
         if ( 0 != env.xmsgPort ) {
-            result = config_props_.set<int>(
-                         irods::CFG_XMSG_PORT,
-                         env.xmsgPort );
-            if ( !result.ok() ) {
-                irods::log( PASS( result ) );
-
-            }
+            config_props_.set<int>( irods::CFG_XMSG_PORT, env.xmsgPort );
         }
 
-        return result;
+    } // server_properties::capture_legacy()
 
-    } // server_properties::capture()
 
+    error server_properties::delete_property( const std::string& _key ) {
+        size_t n = config_props_.erase( _key );
+        if ( n != 1 ) {
+            std::string msg( "failed to erase key: " );
+            msg += _key;
+            return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
+        }
+        else {
+            return SUCCESS();
+        }
+    }
+
+    error delete_server_property( const std::string& _prop ) {
+        try {
+            irods::error ret = irods::server_properties::getInstance().delete_property ( _prop );
+            if ( !ret.ok() ) {
+                return PASS( ret );
+            }
+        } catch ( const irods::exception& e ) {
+            return ERROR( e.code(), e.what() );
+        }
+
+        return SUCCESS();
+
+    } // set_server_property
 
 } // namespace irods
 

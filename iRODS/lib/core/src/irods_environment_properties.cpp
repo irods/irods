@@ -8,7 +8,6 @@
 
 #include "rods.h"
 #include "irods_log.hpp"
-#include "irods_lookup_table.hpp"
 #include "irods_home_directory.hpp"
 #include "readServerConfig.hpp"
 
@@ -119,9 +118,7 @@ namespace irods {
         _session_file = legacy_session_file;
 
         if ( fs::exists( legacy_file ) ) {
-            std::cout << "Warning: use of legacy configuration ["
-                      << legacy_file
-                      << "] is deprecated." << std::endl;
+            rodsLog( LOG_ERROR, "Warning: use of legacy configuration [%s] is deprecated.", legacy_file.c_str() );
         }
 
         return SUCCESS();
@@ -188,16 +185,12 @@ namespace irods {
                     do_parse_legacy = true;
                 }
                 else {
-                    config_props_.set< std::string >(
-                        CFG_IRODS_ENVIRONMENT_FILE_KW,
-                        json_file );
+                    config_props_.set< std::string >( CFG_IRODS_ENVIRONMENT_FILE_KW, json_file );
                     ret = capture_json( json_session_file );
                     if ( !ret.ok() ) {
                         // debug - irods::log( PASS( ret ) );
                     }
-                    config_props_.set< std::string >(
-                        CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
-                        json_session_file );
+                    config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, json_session_file );
                 }
             }
             else {
@@ -219,9 +212,7 @@ namespace irods {
                     // debug - irods::log( PASS( ret ) );
                 }
                 else {
-                    config_props_.set< std::string >(
-                        CFG_IRODS_ENVIRONMENT_FILE_KW,
-                        legacy_file );
+                    config_props_.set< std::string >( CFG_IRODS_ENVIRONMENT_FILE_KW, legacy_file );
                 }
 
                 // session file ( written by icd ) already moved
@@ -231,9 +222,7 @@ namespace irods {
                     // debug - irods::log( PASS( ret ) );
                 }
 
-                config_props_.set< std::string >(
-                    CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW,
-                    legacy_session_file );
+                config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, legacy_session_file );
 
             }
             else {
@@ -310,8 +299,9 @@ namespace irods {
             }
 
             std::string& key = toks[0];
-            if ( legacy_key_map_.has_entry( key ) ) {
-                key = legacy_key_map_[ key ];
+            std::map<std::string, std::string>::iterator find_it = legacy_key_map_.find( key );
+            if ( find_it != legacy_key_map_.end() ) {
+                key = find_it->second;
 
             } //if has entry
 
@@ -329,7 +319,6 @@ namespace irods {
                 val.erase( val.size() - 1 );
             }
 
-            error ret;
             if ( CFG_IRODS_PORT_KW                        == key ||
                     CFG_IRODS_XMSG_PORT_KW                   == key ||
                     CFG_IRODS_LOG_LEVEL_KW                   == key ||
@@ -338,7 +327,7 @@ namespace irods {
                     CFG_IRODS_ENCRYPTION_NUM_HASH_ROUNDS_KW  == key ) {
                 try {
                     int i_val = boost::lexical_cast< int >( val );
-                    ret = config_props_.set< int >( key, i_val );
+                    config_props_.set< int >( key, i_val );
                 }
                 catch ( ... ) {
                     rodsLog(
@@ -349,13 +338,7 @@ namespace irods {
                 }
             }
             else {
-                ret = config_props_.set <
-                      std::string > (
-                          key,
-                          val );
-            }
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
+                config_props_.set < std::string > ( key, val );
             }
 
         } // while

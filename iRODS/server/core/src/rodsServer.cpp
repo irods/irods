@@ -83,9 +83,8 @@ namespace {
 // UID. The new iRODS user account is then unable to unlock or remove the existing mutex, blocking the server.
     irods::error createAndSetRECacheSalt() {
         // Should only ever set the cache salt once
-        irods::server_properties &server_properties = irods::server_properties::getInstance();
         std::string existing_salt;
-        irods::error ret = server_properties.get_property<std::string>( RE_CACHE_SALT_KW, existing_salt );
+        irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, existing_salt );
         if ( ret.ok() ) {
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str() );
             return ERROR( SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set" );
@@ -111,7 +110,7 @@ namespace {
                    << "_"
                    << cache_salt_random;
 
-        ret = server_properties.set_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
+        ret = irods::set_server_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
         if ( !ret.ok() ) {
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
             return PASS( ret );
@@ -144,10 +143,6 @@ int irodsWinMain( int argc, char **argv )
     ProcessType = SERVER_PT;    /* I am a server */
 
     // capture server properties
-    irods::error result = irods::server_properties::getInstance().capture();
-    if ( !result.ok() ) {
-        irods::log( PASSMSG( "failed to read server configuration", result ) );
-    }
 
     tmpStr = getenv( SP_LOG_LEVEL );
     if ( tmpStr != NULL ) {
@@ -767,16 +762,23 @@ int getAgentProcPIDs(
 
 int
 chkAgentProcCnt() {
-    int count;
+    int maximum_connections;
+    irods::error ret = irods::get_server_property<int>("maximum_connections", maximum_connections);
+    if ( ret.code() == KEY_NOT_FOUND ) {
+        maximum_connections = NO_MAX_CONNECTION_LIMIT;
+    }
+    else if ( !ret.ok() ) {
+        return ret.code();
+    }
 
-    if ( MaxConnections == NO_MAX_CONNECTION_LIMIT ) {
+    if ( maximum_connections == NO_MAX_CONNECTION_LIMIT ) {
         return 0;
     }
-    count = getAgentProcCnt();
-    if ( count >= MaxConnections ) {
+    int count = getAgentProcCnt();
+    if ( count >= maximum_connections ) {
         chkConnectedAgentProcQue();
         count = getAgentProcCnt();
-        if ( count >= MaxConnections ) {
+        if ( count >= maximum_connections ) {
             return SYS_MAX_CONNECT_COUNT_EXCEEDED;
         }
         else {
@@ -869,7 +871,6 @@ initServer( rsComm_t *svrComm ) {
             rodsServerHost->conn = NULL;
         }
     }
-    initConnectControl();
 
 #if RODS_CAT // JMC - backport 4612
     purgeLockFileDir( 0 );
@@ -953,15 +954,8 @@ initServerMain( rsComm_t *svrComm ) {
         exit( 1 );
     }
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     int zone_port = 0;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property <
           int > (
               irods::CFG_ZONE_PORT,
               zone_port );
@@ -1019,9 +1013,7 @@ initServerMain( rsComm_t *svrComm ) {
             exit( 1 );
         }
         else {
-            irods::server_properties &props =
-                irods::server_properties::getInstance();
-            props.set_property<int>( irods::RE_PID_KW, re_pid );
+            irods::set_server_property<int>( irods::RE_PID_KW, re_pid );
         }
     }
     else if ( unsigned char *shared = prepareServerSharedMemory() ) {

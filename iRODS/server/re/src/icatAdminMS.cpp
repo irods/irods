@@ -507,9 +507,7 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     }
 
     // capture the server properties and set a strict acl prop
-    irods::server_properties& props = irods::server_properties::getInstance();
-    props.capture_if_needed();
-    irods::error ret = props.set_property<std::string>(
+    irods::error ret = irods::set_server_property<std::string>(
                            irods::STRICT_ACL_KW,
                            strict );
 

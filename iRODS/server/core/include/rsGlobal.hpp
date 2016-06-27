@@ -74,8 +74,6 @@ rodsLong_t GlobalQuotaLimit;    /* quota for all resources for this user */
 rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
 int RescQuotaPolicy;            /* can be RESC_QUOTA_UNINIT, RESC_QUOTA_OFF or
                                  * RESC_QUOTA_ON */
-/* connection control config */
-int MaxConnections = DEF_MAX_CONNECTION;                /* no control */
 
 time_t LastRescUpdateTime;
 

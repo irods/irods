@@ -225,9 +225,6 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    // capture server properties
-    irods::server_properties::getInstance().capture();
-
     if ( ( status = chlOpen() ) != 0 ) {
 
         rodsLog( LOG_SYS_FATAL,

@@ -3,7 +3,7 @@
 
 /**
  * The server configuration settings are now stored in a singleton irods::server_properties
- * and server_config.json is read by irods::server_properties::getInstance().capture()
+ * and server_config.json is read by irods::server_properties::capture()
  *
  */
 

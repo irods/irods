@@ -2211,23 +2211,22 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cache db creds
-        irods::server_properties& props = irods::server_properties::getInstance();
-        ret = props.get_property<std::string>( DB_USERNAME_KW, prop );
+        ret = irods::get_server_property<std::string>( DB_USERNAME_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
 
         }
         snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
 
-        ret = props.get_property<std::string>( DB_PASSWORD_KW, prop );
+        ret = irods::get_server_property<std::string>( DB_PASSWORD_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
         }
         snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
 
-        ret = props.get_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
+        ret = irods::get_server_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
         if ( !ret.ok() ) {
-            ret = props.get_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
+            ret = irods::get_server_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
         }
         snprintf( icss.database_plugin_type, NAME_LEN, "%s", prop.c_str() );
 
@@ -2251,23 +2250,23 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // set pam properties
         bool no_ex = false;
-        ret = irods::server_properties::getInstance().get_property<bool>( PAM_NO_EXTEND_KW, no_ex );
+        ret = irods::get_server_property<bool>( PAM_NO_EXTEND_KW, no_ex );
         if ( ret.ok() ) {
             irods_pam_auth_no_extend = no_ex;
         }
 
         size_t pw_len = 0;
-        ret = irods::server_properties::getInstance().get_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
+        ret = irods::get_server_property<size_t>( PAM_PW_LEN_KW, irods_pam_password_len );
         if ( ret.ok() ) {
             irods_pam_password_len = pw_len;
         }
 
-        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
+        ret = irods::get_server_property<std::string>( PAM_PW_MIN_TIME_KW, prop );
         if ( ret.ok() ) {
             snprintf( irods_pam_password_min_time, NAME_LEN, "%s", prop.c_str() );
         }
 
-        ret = irods::server_properties::getInstance().get_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
+        ret = irods::get_server_property<std::string>( PAM_PW_MAX_TIME_KW, prop );
         if ( ret.ok() ) {
             snprintf( irods_pam_password_max_time, NAME_LEN, "%s", prop.c_str() );
         }

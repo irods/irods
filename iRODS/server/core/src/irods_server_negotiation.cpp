@@ -14,7 +14,6 @@ namespace irods {
 /// =-=-=-=-=-=-=-
 /// @brief check the incoming signed SID against all locals SIDs
     error check_sent_sid(
-        server_properties& _props,
         const std::string  _in_sid ) {
         // =-=-=-=-=-=-=-
         // check incoming params
@@ -27,7 +26,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get the agent key
         std::string encr_key;
-        irods::error err = _props.get_property< std::string >(
+        irods::error err = irods::get_server_property< std::string >(
                                CFG_NEGOTIATION_KEY_KW,
                                encr_key );
         if ( !err.ok() ) {
@@ -37,8 +36,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // start with local SID
         std::string svr_sid;
-        err = _props.get_property <
-              std::string > (
+        err = irods::get_server_property < std::string > (
                   LOCAL_ZONE_SID_KW,
                   svr_sid );
         if ( !err.ok() ) {
@@ -195,17 +193,8 @@ namespace irods {
                     std::string svr_sid = kvp[ CS_NEG_SID_KW ];
                     if ( !svr_sid.empty() ) {
                         // =-=-=-=-=-=-=-
-                        // get our SID to compare
-                        server_properties& props = server_properties::getInstance();
-                        err = props.capture_if_needed();
-                        if ( !err.ok() ) {
-                            return PASS( err );
-                        }
-
-                        // =-=-=-=-=-=-=-
                         // check SID against our SIDs
                         err = check_sent_sid(
-                                  props,
                                   svr_sid );
                         if ( !err.ok() ) {
                             rodsLog(
@@ -217,8 +206,7 @@ namespace irods {
                             // =-=-=-=-=-=-=-
                             // store property that states this is an
                             // Agent-Agent connection
-                            props.set_property <
-                            std::string > (
+                            irods::set_server_property < std::string > (
                                 AGENT_CONN_KW,
                                 svr_sid );
                         }

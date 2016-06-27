@@ -410,16 +410,9 @@ runQueuedRuleExec( rsComm_t *rsComm, reExec_t *reExec,
 #ifdef RE_EXEC_PROC
             if ( ( reExec->reExecProc[thrInx].pid = fork() ) == 0 ) {
                 /* child. need to disconnect Rcat */
-                irods::server_properties& props = irods::server_properties::getInstance();
-                irods::error ret = props.capture_if_needed();
-                if ( !ret.ok() ) {
-                    irods::log( PASS( ret ) );
-                    return ret.code();
-                }
 
                 std::string zone_name;
-                ret = props.get_property <
-                      std::string > (
+                ret = irods::get_server_property < std::string > (
                           irods::CFG_ZONE_NAME,
                           zone_name );
                 if ( !ret.ok() ) {
@@ -475,15 +468,8 @@ postForkExecProc( rsComm_t * rsComm, reExecProc_t * reExecProc ) {
     /* child. need to disconnect Rcat */
     rodsServerHost_t *rodsServerHost = NULL;
 
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.capture_if_needed();
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
     std::string zone_name;
-    ret = props.get_property <
+    irods::error ret = irods::get_server_property <
           std::string > (
               irods::CFG_ZONE_NAME,
               zone_name );

@@ -40,8 +40,6 @@ logFileOpen( int runMode, const char *logDir, const char *logFileName );
 int
 initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack );
 int
-initConnectControl();
-int
 chkAllowedUser( const char *userName, const char *rodsZone );
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm );

@@ -120,8 +120,7 @@ int fileChksum(
     // =-=-=-=-=-=-=-
     // capture server hashing settings
     std::string svr_hash_scheme;
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error ret = props.get_property< std::string >(
+    irods::error ret = irods::get_server_property< std::string >(
                            DEFAULT_HASH_SCHEME_KW,
                            svr_hash_scheme );
     std::string hash_scheme( irods::MD5_NAME );
@@ -137,7 +136,7 @@ int fileChksum(
         ::tolower );
 
     std::string svr_hash_policy;
-    ret = props.get_property< std::string >(
+    ret = irods::get_server_property< std::string >(
               MATCH_HASH_POLICY_KW,
               svr_hash_policy );
     std::string hash_policy;

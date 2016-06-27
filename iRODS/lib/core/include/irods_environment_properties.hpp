@@ -1,15 +1,12 @@
-/*
- * irods_environment_properties.hpp
- *
- */
-
 #ifndef IRODS_ENVIRONMENT_PROPERTIES_HPP_
 #define IRODS_ENVIRONMENT_PROPERTIES_HPP_
 
 
-#include "irods_lookup_table.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_exception.hpp"
+
+#include <map>
 
 namespace irods {
 
@@ -44,14 +41,23 @@ namespace irods {
              */
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
-                error ret = config_props_.get< T >( _key, _val );
-                return PASS( ret );
+                try {
+                    _val = config_props_.get< T >( _key );
+                } catch ( const irods::exception& e ) {
+                    return ERROR( e.code(), e.what() );
+                }
+
+                return SUCCESS();
             }
 
             template< typename T >
             error set_property( const std::string& _key, const T& _val ) {
-                error ret = config_props_.set< T >( _key, _val );
-                return PASS( ret );
+                try {
+                    config_props_.set< T >( _key, _val );
+                } catch ( const irods::exception& e ) {
+                    return ERROR( e.code(), e.what() );
+                }
+                return SUCCESS();
             }
 
             error delete_property( const std::string& _key ) {
@@ -89,7 +95,7 @@ namespace irods {
             configuration_parser config_props_;
 
             /// @brief map of old keys to new keys
-            lookup_table< std::string > legacy_key_map_;
+            std::map< std::string, std::string > legacy_key_map_;
             bool captured_;
 
     }; // class environment_properties

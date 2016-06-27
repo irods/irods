@@ -9,9 +9,14 @@
 #define IRODS_SERVER_PROPERTIES_HPP_
 
 
-#include "irods_lookup_table.hpp"
+#include "irods_exception.hpp"
+#include "irods_error.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+
+#include <boost/format.hpp>
+#include <boost/any.hpp>
+#include <map>
 
 namespace irods {
 
@@ -56,22 +61,17 @@ namespace irods {
             /**
              * @brief Read server configuration and fill server_properties::properties
              */
-            error capture( );
+            void capture( );
 
             /**
              * @brief capture the legacy version: server.config
              */
-            error capture_legacy();
+            void capture_legacy();
 
             /**
              * @brief capture the new json version: server_config.json
              */
-            error capture_json( const std::string& );
-
-            /**
-             * @brief Read server configuration if it has not been read already.
-             **/
-            error capture_if_needed();
+            void capture_json( const std::string& );
 
             /**
              * @brief Get a property from the map if it exists.  catch the exception in the case where
@@ -79,36 +79,35 @@ namespace irods {
              */
             template< typename T >
             error get_property( const std::string& _key, T& _val ) {
-                error ret = config_props_.get< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    if ( key_map_.has_entry( _key ) ) {
-                        ret = config_props_.get< T >( key_map_[ _key ], _val );
-
+                try {
+                    _val = config_props_.get< T >( _key );
+                } catch ( const irods::exception& e ) {
+                    std::map<std::string, std::string>::iterator find_it = key_map_.find( _key );
+                    if ( find_it != key_map_.end() ) {
+                        try {
+                            _val = config_props_.get< T >( find_it->second );
+                        } catch ( const irods::exception& e ) {
+                            return ERROR(e.code(), e.what());
+                        }
+                    }
+                    else {
+                        return ERROR(e.code(), e.what());
                     }
                 }
-                return PASS( ret );
+                return SUCCESS();
             }
 
             template< typename T >
             error set_property( const std::string& _key, const T& _val ) {
-                error ret = config_props_.set< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    ret = config_props_.set< T >( key_map_[ _key ], _val );
+                try {
+                    config_props_.set< T >( _key, _val );
+                } catch ( const irods::exception& e ) {
+                    return ERROR(e.code(), e.what());
                 }
-                return PASS( ret );
+                return SUCCESS();
             }
 
-            error delete_property( const std::string& _key ) {
-                size_t n = config_props_.erase( _key );
-                if ( n != 1 ) {
-                    std::string msg( "failed to erase key: " );
-                    msg += _key;
-                    return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
-                }
-                else {
-                    return SUCCESS();
-                }
-            }
+            error delete_property( const std::string& _key );
 
         private:
             // Disable constructors
@@ -122,27 +121,21 @@ namespace irods {
             configuration_parser config_props_;
 
             /// @brief map of old keys to new keys
-            lookup_table< std::string > key_map_;
-            bool captured_;
+            std::map< std::string, std::string > key_map_;
 
     }; // class server_properties
 
     template< typename T >
-    error get_server_property(
-        const std::string& _prop,
-        T&                 _val ) {
-        irods::server_properties& props =
-            irods::server_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-        ret = props.get_property< T > (
-                  _prop,
-                  _val );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
+    error get_server_property( const std::string& _prop, T& _val ) {
+        try {
+            irods::error ret = irods::server_properties::getInstance().get_property< T > (
+                    _prop,
+                    _val );
+            if ( !ret.ok() ) {
+                return PASS( ret );
+            }
+        } catch ( const irods::exception& e ) {
+            return ERROR(e.code(), e.what());
         }
 
         return SUCCESS();
@@ -150,19 +143,30 @@ namespace irods {
     } // get_server_property
 
     template< typename T >
+    error set_server_property( const std::string& _prop, const T& _val ) {
+        try {
+            irods::error ret = irods::server_properties::getInstance().set_property< T > (
+                    _prop,
+                    _val );
+            if ( !ret.ok() ) {
+                return PASS( ret );
+            }
+        } catch ( const irods::exception& e ) {
+            return ERROR(e.code(), e.what());
+        }
+
+        return SUCCESS();
+
+    } // set_server_property
+
+    error delete_server_property( const std::string& _prop );
+
+    template< typename T >
     error get_advanced_setting(
         const std::string& _prop,
         T&                 _val ) {
-        typedef irods::configuration_parser::object_t object_t;
-        irods::server_properties& props =
-            irods::server_properties::getInstance();
-        irods::error ret = props.capture_if_needed();
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        object_t adv_set;
-        ret = props.get_property< object_t > (
+        std::map<std::string, boost::any> adv_set;
+        irods::error ret = irods::get_server_property< std::map<std::string, boost::any> > (
                   CFG_ADVANCED_SETTINGS_KW,
                   adv_set );
         if ( !ret.ok() ) {
@@ -170,7 +174,8 @@ namespace irods {
 
         }
 
-        if ( !adv_set.has_entry( _prop ) ) {
+        std::map<std::string, boost::any>::iterator find_it = adv_set.find( _prop );
+        if ( find_it == adv_set.end() ) {
             std::string msg( "missing [" );
             msg += _prop;
             msg += "]";
@@ -180,9 +185,12 @@ namespace irods {
 
         }
 
-        return adv_set.get<T>(
-                   _prop,
-                   _val );
+        try {
+            _val = boost::any_cast<T>( find_it->second );
+        } catch ( const boost::bad_any_cast& ) {
+            return ERROR(INVALID_ANY_CAST, "bad any cast in get_advanced_setting");
+        }
+        return SUCCESS();
 
     } // get_advanced_setting
 

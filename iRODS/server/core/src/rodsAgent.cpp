@@ -61,13 +61,6 @@ main( int, char ** ) {
 
     ProcessType = AGENT_PT;
 
-    // capture server properties
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error result = props.capture_if_needed();
-    if ( !result.ok() ) {
-        irods::log( PASSMSG( "failed to read server configuration", result ) );
-    }
-
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );
 #endif
@@ -194,10 +187,6 @@ main( int, char ** ) {
         cleanupAndExit( status );
     }
 
-    /* move configConnectControl behind initAgent for now. need zoneName if
-     * the user does not specify one in the input */
-    initConnectControl();
-
     if ( rsComm.clientUser.userName[0] != '\0' ) {
         status = chkAllowedUser( rsComm.clientUser.userName,
                                  rsComm.clientUser.rodsZone );
@@ -277,26 +266,25 @@ main( int, char ** ) {
 }
 
 static void set_rule_engine_globals(
-    rsComm_t*                 _comm,
-    irods::server_properties& _props ) {
+    rsComm_t*                 _comm ) {
 
-    _props.set_property< std::string >(
+    irods::set_server_property< std::string >(
         irods::CLIENT_USER_NAME_KW,
         _comm->clientUser.userName );
-    _props.set_property< std::string >(
+    irods::set_server_property< std::string >(
         irods::CLIENT_USER_ZONE_KW,
         _comm->clientUser.rodsZone );
-    _props.set_property< int >(
+    irods::set_server_property< int >(
         irods::CLIENT_USER_PRIV_KW,
         _comm->clientUser.authInfo.authFlag );
 
-    _props.set_property< std::string >(
+    irods::set_server_property< std::string >(
         irods::PROXY_USER_NAME_KW,
         _comm->proxyUser.userName );
-    _props.set_property< std::string >(
+    irods::set_server_property< std::string >(
         irods::PROXY_USER_ZONE_KW,
         _comm->proxyUser.rodsZone );
-    _props.set_property< int >(
+    irods::set_server_property< int >(
         irods::PROXY_USER_PRIV_KW,
         _comm->clientUser.authInfo.authFlag );
 
@@ -312,18 +300,11 @@ int agentMain(
     int status = 0;
 
     // =-=-=-=-=-=-=-
-    // capture server properties
-    irods::server_properties& props = irods::server_properties::getInstance();
-    irods::error result = props.capture_if_needed();
-    if ( !result.ok() ) {
-        irods::log( PASSMSG( "failed to read server configuration", result ) );
-    }
-
-    // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
     // see header file for more details
     irods::dynamic_cast_hack();
 
+    irods::error result = SUCCESS();
     while ( result.ok() && status >= 0 ) {
 
         // set default to the native auth scheme here.
@@ -352,7 +333,7 @@ int agentMain(
             // add the user info to the server properties for
             // reach by the operation wrapper for access by the
             // dynamic policy enforcement points
-            set_rule_engine_globals( rsComm, props );
+            set_rule_engine_globals( rsComm );
         }
 
         if ( result.ok() ) {
