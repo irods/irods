@@ -96,16 +96,14 @@ int msiobjput_slink(
         return status;
     }
 
-    int single_buff_sz_in_mb = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                           single_buff_sz_in_mb );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    size_t single_buff_sz;
+    try {
+        single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         close( srcFd );
-        return ret.code();
+        return e.code();
     }
-    size_t single_buff_sz = single_buff_sz_in_mb * 1024 * 1024;
 
     size_t dataSize  = atol( ( char * ) inFileSize->inOutStruct );
     if ( dataSize > single_buff_sz ) {

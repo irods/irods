@@ -23,42 +23,33 @@ namespace irods {
                        "incoming SID is empty" );
         }
 
-        // =-=-=-=-=-=-=-
-        // get the agent key
-        std::string encr_key;
-        irods::error err = irods::get_server_property< std::string >(
-                               CFG_NEGOTIATION_KEY_KW,
-                               encr_key );
-        if ( !err.ok() ) {
-            return PASS( err );
-        }
+        try {
+            // =-=-=-=-=-=-=-
+            // get the agent key
+            const auto& encr_key = irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
 
-        // =-=-=-=-=-=-=-
-        // start with local SID
-        std::string svr_sid;
-        err = irods::get_server_property<
-              std::string > (
-                  LOCAL_ZONE_SID_KW,
-                  svr_sid );
-        if ( !err.ok() ) {
-            return PASS( err );
-        }
+            // =-=-=-=-=-=-=-
+            // start with local SID
+            const auto& svr_sid = irods::get_server_property<const std::string>(LOCAL_ZONE_SID_KW);
 
-        // =-=-=-=-=-=-=-
-        // sign SID
-        std::string signed_sid;
-        err = sign_server_sid(
-                  svr_sid,
-                  encr_key,
-                  signed_sid );
-        if ( !err.ok() ) {
-            return PASS( err );
-        }
+            // =-=-=-=-=-=-=-
+            // sign SID
+            std::string signed_sid;
+            irods::error err = sign_server_sid(
+                    svr_sid,
+                    encr_key,
+                    signed_sid );
+            if ( !err.ok() ) {
+                return PASS( err );
+            }
 
-        // =-=-=-=-=-=-=-
-        // if it is a match, were good
-        if ( _in_sid == signed_sid ) {
-            return SUCCESS();
+            // =-=-=-=-=-=-=-
+            // if it is a match, were good
+            if ( _in_sid == signed_sid ) {
+                return SUCCESS();
+            }
+        } catch ( const irods::exception& e ) {
+            return ERROR ( e.code(), e.what() );
         }
 
         // =-=-=-=-=-=-=-
@@ -73,7 +64,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // sign SID
             std::string signed_sid;
-            err = sign_server_sid(
+            irods::error err = sign_server_sid(
                       entry.first,
                       entry.second,
                       signed_sid );
@@ -187,10 +178,11 @@ namespace irods {
                             // =-=-=-=-=-=-=-
                             // store property that states this is an
                             // Agent-Agent connection
-                            irods::set_server_property <
-                            std::string > (
-                                AGENT_CONN_KW,
-                                svr_sid );
+                            try {
+                                irods::set_server_property<std::string>(AGENT_CONN_KW, svr_sid);
+                            } catch ( const irods::exception& e ) {
+                                return ERROR( e.code(), e.what() );
+                            }
                         }
 
                     } // if sid is not empty

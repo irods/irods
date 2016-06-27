@@ -604,16 +604,13 @@ _rsDataObjReplS(
         return l1descInx;
     }
 
-    int single_buff_sz = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                           single_buff_sz );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int single_buff_sz;
+    try {
+        single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    single_buff_sz *= 1024 * 1024;
-
 
     if ( L1desc[l1descInx].stageFlag != NO_STAGING ) {
         status = l3DataStageSync( rsComm, l1descInx );
@@ -847,16 +844,14 @@ dataObjOpenForRepl(
                                    getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads,
                                            &dataObjInp->condInput, dst_hier_str, srcDataObjInfo->rescHier, dataObjInp->oprType );
 
-    int single_buff_sz = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                           single_buff_sz );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    int single_buff_sz;
+    try {
+        single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         freeDataObjInfo( srcDataObjInfo );
-        return ret.code();
+        return e.code();
     }
-    single_buff_sz *= 1024 * 1024;
 
     if ( ( l1DataObjInp->numThreads > 0 ||
             l1DataObjInp->dataSize > single_buff_sz ) &&
@@ -909,7 +904,7 @@ dataObjOpenForRepl(
         new irods::file_object(
             rsComm,
             myDestDataObjInfo ) );
-    ret = fileNotify(
+    irods::error ret = fileNotify(
               rsComm,
               file_obj,
               irods::WRITE_OPERATION );

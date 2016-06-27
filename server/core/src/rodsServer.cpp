@@ -36,8 +36,10 @@
 #include "locks.hpp"
 #include "sharedmemory.hpp"
 
+#include <boost/filesystem.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+#include <boost/range/iterator_range.hpp>
 using namespace boost::filesystem;
 
 #include "sockCommNetworkInterface.hpp"
@@ -78,46 +80,46 @@ namespace {
 // UID. The new iRODS user account is then unable to unlock or remove the existing mutex, blocking the server.
     irods::error createAndSetRECacheSalt() {
         // Should only ever set the cache salt once
-        std::string existing_salt;
-        irods::error ret = irods::get_server_property<std::string>( RE_CACHE_SALT_KW, existing_salt );
-        if ( ret.ok() ) {
+        try {
+            const auto& existing_salt = irods::get_server_property<const std::string>(RE_CACHE_SALT_KW);
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str() );
             return ERROR( SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set" );
+        } catch ( const irods::exception& ) {
+            irods::buffer_crypt::array_t buf;
+            irods::error ret = irods::buffer_crypt::generate_key( buf, RE_CACHE_SALT_NUM_RANDOM_BYTES );
+            if ( !ret.ok() ) {
+                rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to generate random bytes" );
+                return PASS( ret );
+            }
+
+            std::string cache_salt_random;
+            ret = irods::buffer_crypt::hex_encode( buf, cache_salt_random );
+            if ( !ret.ok() ) {
+                rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to hex encode random bytes" );
+                return PASS( ret );
+            }
+
+            std::stringstream cache_salt;
+            cache_salt << "pid"
+                    << static_cast<intmax_t>( getpid() )
+                    << "_"
+                    << cache_salt_random;
+
+            try {
+                irods::set_server_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
+            } catch ( const irods::exception& e ) {
+                rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
+                return ERROR( e.code(), e.what() );
+            }
+
+            int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
+            if ( 0 != ret_int ) {
+                rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable" );
+                return ERROR( SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable" );
+            }
+
+            return SUCCESS();
         }
-
-        irods::buffer_crypt::array_t buf;
-        ret = irods::buffer_crypt::generate_key( buf, RE_CACHE_SALT_NUM_RANDOM_BYTES );
-        if ( !ret.ok() ) {
-            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to generate random bytes" );
-            return PASS( ret );
-        }
-
-        std::string cache_salt_random;
-        ret = irods::buffer_crypt::hex_encode( buf, cache_salt_random );
-        if ( !ret.ok() ) {
-            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to hex encode random bytes" );
-            return PASS( ret );
-        }
-
-        std::stringstream cache_salt;
-        cache_salt << "pid"
-                   << static_cast<intmax_t>( getpid() )
-                   << "_"
-                   << cache_salt_random;
-
-        ret = irods::set_server_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
-        if ( !ret.ok() ) {
-            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
-            return PASS( ret );
-        }
-
-        int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
-        if ( 0 != ret_int ) {
-            rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set environment variable" );
-            return ERROR( SYS_SETENV_ERR, "createAndSetRECacheSalt: failed to set environment variable" );
-        }
-
-        return SUCCESS();
     }
 }
 
@@ -135,15 +137,6 @@ int irodsWinMain( int argc, char **argv )
     char *logDir = NULL;
 
     ProcessType = SERVER_PT;    /* I am a server */
-
-    // capture server properties
-    try {
-        irods::server_properties::instance().capture_if_needed();
-    }
-    catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
-        return e.code();
-    }
 
     if ( const char* log_level = getenv( SP_LOG_LEVEL ) ) {
         rodsLogLevel( atoi( log_level ) );
@@ -286,44 +279,65 @@ serverize( char *logDir ) {
 }
 
 static irods::error instantiate_shared_memory( ) {
-    irods::server_properties& props = irods::server_properties::instance();
-
-    std::vector<boost::any> values;
-    irods::error ret = props.gather_values_for_key( 
-                           irods::CFG_SHARED_MEMORY_INSTANCE_KW,
-                           values );
-    if(!ret.ok()) {
-        return PASS(ret);
+    const path plugin_home(irods::get_irods_default_plugin_directory());
+    if ( !is_directory(plugin_home) ) {
+        return ERROR( SYS_INVALID_FILE_PATH, boost::format("The result of get_irods_default_plugin_directory: \"%s\", was not a directory.") % plugin_home.string() );
     }
 
-    for( auto v : values ) {
-        std::string k = boost::any_cast<std::string>(v);
-
-        prepareServerSharedMemory( k );
-        detachSharedMemory( k );
+    for ( const auto& plugin_directory : boost::make_iterator_range(directory_iterator(plugin_home), {})) {
+        try {
+            const auto& plugins = irods::get_server_property<const std::vector<boost::any>>(plugin_directory.path().filename().string());
+            for( const auto& plugin : plugins ) {
+                try {
+                    const auto& mem_name = boost::any_cast<const std::string&>(
+                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin
+                                ).at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+                    prepareServerSharedMemory(mem_name);
+                    detachSharedMemory(mem_name);
+                } catch ( const std::out_of_range& ) {
+                } catch ( const boost::bad_any_cast& e ) {
+                    return ERROR(INVALID_ANY_CAST, e.what());
+                }
+            }
+        } catch ( const irods::exception& e ) {
+            if ( e.code() != KEY_NOT_FOUND ) {
+                return ERROR(e.code(), e.what());
+            }
+        }
     }
-
     return SUCCESS();
+
 } // instantiate_shared_memory
 
 static irods::error uninstantiate_shared_memory( ) {
-     irods::server_properties& props = irods::server_properties::instance();
-
-    std::vector<boost::any> values;
-    irods::error ret = props.gather_values_for_key( 
-                           irods::CFG_SHARED_MEMORY_INSTANCE_KW,
-                           values );
-    if(!ret.ok()) {
-        return PASS(ret);
-    }   
-
-    for( auto v : values ) {
-        std::string k = boost::any_cast<std::string>(v);
-        removeSharedMemory(k);
-        resetMutex(k.c_str());
+    const path plugin_home(irods::get_irods_default_plugin_directory());
+    if ( !is_directory(plugin_home) ) {
+        return ERROR( SYS_INVALID_FILE_PATH, boost::format("The result of get_irods_default_plugin_directory: \"%s\", was not a directory.") % plugin_home.string() );
     }
 
+    for ( const auto& plugin_directory : boost::make_iterator_range(directory_iterator(plugin_home), {})) {
+        try {
+            const auto& plugins = irods::get_server_property<const std::vector<boost::any>>(plugin_directory.path().filename().string());
+            for( const auto& plugin : plugins ) {
+                try {
+                    const auto& mem_name = boost::any_cast<const std::string&>(
+                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin
+                                ).at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+                    removeSharedMemory(mem_name);
+                    resetMutex(mem_name.c_str());
+                } catch ( const std::out_of_range& ) {
+                } catch ( const boost::bad_any_cast& e ) {
+                    return ERROR(INVALID_ANY_CAST, e.what());
+                }
+            }
+        } catch ( const irods::exception& e ) {
+            if ( e.code() != KEY_NOT_FOUND ) {
+                return ERROR(e.code(), e.what());
+            }
+        }
+    }
     return SUCCESS();
+
 } // uninstantiate_shared_memory
 
 int
@@ -796,25 +810,28 @@ int getAgentProcPIDs(
 
 int
 chkAgentProcCnt() {
-    int count;
-
-    if ( MaxConnections == NO_MAX_CONNECTION_LIMIT ) {
-        return 0;
-    }
-    count = getAgentProcCnt();
-    if ( count >= MaxConnections ) {
-        chkConnectedAgentProcQue();
-        count = getAgentProcCnt();
-        if ( count >= MaxConnections ) {
-            return SYS_MAX_CONNECT_COUNT_EXCEEDED;
-        }
-        else {
-            return 0;
+    int maximum_connections;
+    try {
+        maximum_connections = irods::get_server_property<const int>("maximum_connections");
+    } catch ( const irods::exception& e ) {
+        if ( e.code() == KEY_NOT_FOUND ) {
+            maximum_connections = NO_MAX_CONNECTION_LIMIT;
+        } else {
+            irods::log( ERROR( e.code(), e.what() ) );
+            return e.code();
         }
     }
-    else {
-        return 0;
+    if ( maximum_connections != NO_MAX_CONNECTION_LIMIT ) {
+        int count = getAgentProcCnt();
+        if ( count >= maximum_connections ) {
+            chkConnectedAgentProcQue();
+            count = getAgentProcCnt();
+            if ( count >= maximum_connections ) {
+                return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+            }
+        }
     }
+    return 0;
 }
 
 int
@@ -906,7 +923,6 @@ initServer( rsComm_t *svrComm ) {
             rodsServerHost->conn = NULL;
         }
     }
-    initConnectControl();
 
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         purgeLockFileDir( 0 );
@@ -990,26 +1006,23 @@ initServerMain( rsComm_t *svrComm ) {
         exit( 1 );
     }
 
-    int zone_port = 0;
-    irods::error ret = irods::get_server_property<
-          int > (
-              irods::CFG_ZONE_PORT,
-              zone_port );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
 
+    int zone_port;
+    try {
+        zone_port = irods::get_server_property<const int>(irods::CFG_ZONE_PORT);
+    } catch ( irods::exception& e ) {
+        irods::log( e.code(), e.what() );
+        return e.code();
     }
-
     svrComm->sock = sockOpenForInConn(
-                        svrComm,
-                        &zone_port,
-                        NULL,
-                        SOCK_STREAM );
+            svrComm,
+            &zone_port,
+            NULL,
+            SOCK_STREAM );
     if ( svrComm->sock < 0 ) {
         rodsLog( LOG_ERROR,
-                 "initServerMain: sockOpenForInConn error. status = %d",
-                 svrComm->sock );
+                "initServerMain: sockOpenForInConn error. status = %d",
+                svrComm->sock );
         return svrComm->sock;
     }
 

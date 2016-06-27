@@ -29,15 +29,6 @@ main( int argc, char **argv ) {
 
     ProcessType = XMSG_SERVER_PT;
 
-    // capture server properties
-    try {
-        irods::server_properties::instance().capture_if_needed();
-    }
-    catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
-        return e.code();
-    }
-
     irods::error ret = setRECacheSaltFromEnv();
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "irodsXmsgServer::main: Failed to set RE cache mutex name\n%s", ret.result().c_str() );
@@ -188,23 +179,18 @@ xmsgServerMain() {
 
     }
 
-    int xmsg_port = 0;
-    ret = irods::get_server_property<
-          int > (
-              irods::CFG_XMSG_PORT,
-              xmsg_port );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-
-    }
-
     /* open  a socket and listen for connection */
-    svrComm.sock = sockOpenForInConn(
-                       &svrComm,
-                       &xmsg_port,
-                       NULL,
-                       SOCK_STREAM );
+    try {
+        int xmsgPort = irods::get_server_property<const int>(irods::CFG_XMSG_PORT);
+        svrComm.sock = sockOpenForInConn(
+                        &svrComm,
+                        &xmsgPort,
+                        NULL,
+                        SOCK_STREAM );
+    } catch ( const irods::exception& e ) {
+        irods::log( ERROR( e.code(), e.what() ) );
+        return e.code();
+    }
 
     if ( svrComm.sock < 0 ) {
         rodsLog( LOG_NOTICE, "xmsgServerMain: sockOpenForInConn error. status = %d",
@@ -250,7 +236,6 @@ xmsgServerMain() {
                 return 0;
             }
         }
-
 
     }
     return 0;

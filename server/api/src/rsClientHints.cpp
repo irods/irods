@@ -5,7 +5,6 @@
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
 
-#include "irods_lookup_table.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
@@ -66,17 +65,15 @@ irods::error get_hash_and_policy(
                    "comm is null" );
     }
 
-    irods::error ret = irods::get_server_property<std::string>(
-                           DEFAULT_HASH_SCHEME_KW,
-                           _hash );
-    if ( _hash.empty() ) {
+    try {
+        _hash = irods::get_server_property<const std::string>(DEFAULT_HASH_SCHEME_KW);
+    } catch ( const irods::exception& ) {
         _hash = "SHA256";
     }
 
-    ret = irods::get_server_property<std::string>(
-              MATCH_HASH_POLICY_KW,
-              _policy );
-    if ( _policy.empty() ) {
+    try {
+        _policy = irods::get_server_property<const std::string>(MATCH_HASH_POLICY_KW);
+    } catch ( const irods::exception& ) {
         _policy = "compatible";
     }
 

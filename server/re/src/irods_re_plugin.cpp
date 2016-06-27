@@ -2,7 +2,12 @@
 #include "region.h"
 #include "irods_hashtable.h"
 #include "irods_server_properties.hpp"
+#include "irods_exception.hpp"
 #include "irods_ms_plugin.hpp"
+
+#include <vector>
+
+#include <boost/any.hpp>
 int actionTableLookUp( irods::ms_table_entry& _entry, char* _action );
 
 namespace irods{
@@ -24,22 +29,14 @@ namespace irods{
 
     unpack::unpack(std::list<boost::any> &_l) : l_(_l) {};
 
-    configuration_parser::array_t get_re_configs() {
-        configuration_parser::array_t re_plugin_configs;
-        error err;
-        if(!(err = irods::get_server_property<configuration_parser::array_t> (std::string("rule_engines"), re_plugin_configs)).ok()) {
-            rodsLog(LOG_ERROR, "cannot load re_plugins from server_config.json");
-        }
-        return re_plugin_configs;
-    }
-
     std::vector<re_pack_inp<default_re_ctx> > init_global_re_packs() {
         std::vector<re_pack_inp<default_re_ctx> > ret;
-        configuration_parser::array_t re_plugin_configs = get_re_configs();
-        for(auto&& itr : re_plugin_configs ) {
+        const auto& re_plugin_configs = irods::get_server_property<const std::vector<boost::any>>(CFG_RULE_ENGINES_KW);
+        for(const auto& el : re_plugin_configs ) {
+            const auto& map = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
             ret.emplace_back(
-                boost::any_cast< std::string> (itr["instance_name"]),
-                boost::any_cast< std::string> (itr["plugin_name"]),
+                boost::any_cast<const std::string&> (map.find("instance_name")->second),
+                boost::any_cast<const std::string&> (map.find("plugin_name")->second),
                 UNIT);
         }
         return ret;

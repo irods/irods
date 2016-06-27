@@ -14,7 +14,7 @@
 #include "icatStructs.hpp"
 #include "irods_lookup_table.hpp"
 #include "rodsErrorTable.h"
-#include <map>
+#include <unordered_map>
 #include <sstream>
 
 
@@ -53,7 +53,7 @@ namespace irods {
                 if ( !captured_ ) {
                     return ERROR( SYS_INTERNAL_ERR, "'capture' must be called on the catalog_properties instance before properties may be accessed." );
                 }
-                std::map<std::string, boost::any>::iterator it = properties.find( _key );
+                std::unordered_map<std::string, boost::any>::iterator it = properties.find( _key );
                 if ( it == properties.end() ) {
                     std::stringstream msg;
                     msg << "Catalog properties map does not contain the key \"" << _key << "\".";
@@ -71,7 +71,7 @@ namespace irods {
             } // get_property
 
 
-            std::map<std::string, boost::any> properties;
+            std::unordered_map<std::string, boost::any> properties;
         private:
             // =-=-=-=-=-=-=-
             // Disable constructors

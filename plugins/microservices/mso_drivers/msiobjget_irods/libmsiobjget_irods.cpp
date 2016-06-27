@@ -206,17 +206,13 @@ int msiobjget_irods(
     dataObjReadInp.l1descInx = objFD;
     dataObjCloseInp.l1descInx = objFD;
 
-    int single_buff_sz = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-            irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-            single_buff_sz );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
+    try {
+        readBuf.len = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
         close( destFd );
-        return ret.code();
+        return e.code();
     }
-    single_buff_sz *= 1024 * 1024;
-    readBuf.len = single_buff_sz;
     readBuf.buf = ( char * )malloc( readBuf.len );
     dataObjReadInp.len = readBuf.len;
 

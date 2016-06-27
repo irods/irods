@@ -878,29 +878,25 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
 **/
 int
 msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
-    char *outStr;
-    bytesBuf_t *inBuf;
-    int single_buff_sz = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                           single_buff_sz );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    int single_buff_sz;
+    try {
+        single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    single_buff_sz *= 1024 * 1024;
 
     /*check buf_msp */
     if ( buf_msp == NULL || buf_msp->inOutStruct == NULL ) {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
         return USER__NULL_INPUT_ERR;
     }
-    inBuf = buf_msp->inpOutBuf;
+    bytesBuf_t * inBuf = buf_msp->inpOutBuf;
     if ( inBuf->len < 0 || inBuf->len > ( single_buff_sz - 10 ) )  {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
         return USER_INPUT_FORMAT_ERR;
     }
-    outStr = ( char * ) malloc( ( inBuf->len + 1 ) );
+    char *outStr = ( char * ) malloc( ( inBuf->len + 1 ) );
     outStr[inBuf->len] = '\0';
     strncpy( outStr, ( char * ) inBuf->buf, inBuf->len );
     fillStrInMsParam( str_msp, outStr );

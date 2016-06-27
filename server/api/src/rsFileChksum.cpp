@@ -119,14 +119,10 @@ int fileChksum(
     char*     chksumStr ) {
     // =-=-=-=-=-=-=-
     // capture server hashing settings
-    std::string svr_hash_scheme;
-    irods::error ret = irods::get_server_property< std::string >(
-                           DEFAULT_HASH_SCHEME_KW,
-                           svr_hash_scheme );
     std::string hash_scheme( irods::MD5_NAME );
-    if ( ret.ok() ) {
-        hash_scheme = svr_hash_scheme;
-    }
+    try {
+        hash_scheme = irods::get_server_property<const std::string>(DEFAULT_HASH_SCHEME_KW);
+    } catch ( const irods::exception& ) {}
 
     // make sure the read parameter is lowercased
     std::transform(
@@ -135,20 +131,16 @@ int fileChksum(
         hash_scheme.begin(),
         ::tolower );
 
-    std::string svr_hash_policy;
-    ret = irods::get_server_property< std::string >(
-              MATCH_HASH_POLICY_KW,
-              svr_hash_policy );
     std::string hash_policy;
-    if ( ret.ok() ) {
-        hash_policy = svr_hash_policy;
-    }
+    try {
+        hash_policy = irods::get_server_property<const std::string>(MATCH_HASH_POLICY_KW);
+    } catch ( const irods::exception& ) {}
 
     // =-=-=-=-=-=-=-
     // extract scheme from checksum string
     std::string chkstr_scheme;
     if ( orig_chksum ) {
-        ret = irods::get_hash_scheme_from_checksum(
+        irods::error ret = irods::get_hash_scheme_from_checksum(
                   orig_chksum,
                   chkstr_scheme );
         if ( !ret.ok() ) {
@@ -176,7 +168,6 @@ int fileChksum(
         "fileChksum :: final_scheme [%s]  chkstr_scheme [%s]  svr_hash_policy [%s]  hash_policy [%s]",
         final_scheme.c_str(),
         chkstr_scheme.c_str(),
-        svr_hash_policy.c_str(),
         hash_policy.c_str() );
 
     // =-=-=-=-=-=-=-
@@ -188,7 +179,7 @@ int fileChksum(
             fileName,
             rescHier,
             -1, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
-    ret = fileOpen( rsComm, file_obj );
+    irods::error ret = fileOpen( rsComm, file_obj );
     if ( !ret.ok() ) {
         int status = UNIX_FILE_OPEN_ERR - errno;
         if ( ret.code() != DIRECT_ARCHIVE_ACCESS ) {

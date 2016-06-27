@@ -1,9 +1,11 @@
 #include "irods_configuration_parser.hpp"
 #include "irods_log.hpp"
+#include "irods_exception.hpp"
 
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/any.hpp>
 namespace fs = boost::filesystem;
 
 namespace irods {
@@ -49,7 +51,7 @@ namespace irods {
     } // clear
 
     error configuration_parser::copy_and_swap(
-        const configuration_parser::object_t& _rhs ) {
+        const std::unordered_map<std::string, boost::any>& _rhs ) {
         // more could possibly be done here
         root_.clear();
         root_ = _rhs;
@@ -58,22 +60,12 @@ namespace irods {
 
     } // copy_and_swap
 
-    bool configuration_parser::has_entry(
-        const std::string& _key ) {
-        bool ret = root_.has_entry( _key );
-        return ret;
+    bool configuration_parser::has_entry( const std::string& _key ) {
+        return root_.count( _key ) != 0;
 
     } // has_entry
 
-    size_t configuration_parser::erase(
-        const std::string& _key ) {
-        size_t ret = root_.erase( _key );
-        return ret;
-
-    } // erase
-
-    error configuration_parser::load(
-        const std::string& _file ) {
+    error configuration_parser::load( const std::string& _file ) {
         if ( _file.empty() ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
@@ -100,90 +92,78 @@ namespace irods {
             return ERROR( -1, msg );
         }
 
-        irods::error ret = parse_json_object( json, root_ );
+
+        irods::error ret = SUCCESS();
+        try {
+            if ( root_.empty() ) {
+                root_ = boost::any_cast<std::unordered_map<std::string, boost::any> >(convert_json(json));
+            } else {
+                const auto json_object_any = convert_json(json);
+                const auto& json_object = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(json_object_any);
+                for ( auto it = json_object.cbegin(); it != json_object.cend(); ++it ) {
+                    root_[it->first] = it->second;
+                }
+            }
+        } catch ( const irods::exception& e ) {
+            ret = ERROR( e.code(), e.what());
+        } catch ( const boost::bad_any_cast& ) {
+            ret = ERROR(INVALID_ANY_CAST, "configuration file did not contain a json object.");
+        }
         json_decref( json );
 
         return ret;
 
     } // load_json_object
 
-    error configuration_parser::parse_json_object(
-        json_t*                         _obj,
-        configuration_parser::object_t& _obj_out ) {
+    boost::any configuration_parser::convert_json(json_t* _val) {
+        switch( json_typeof( _val )) {
+            case JSON_INTEGER:
+            return boost::any((int)json_integer_value(_val));
 
-        const char* key = 0;
-        json_t*     val = 0;
-        json_object_foreach( _obj, key, val ) {
-            int type = json_typeof( val );
-            if ( JSON_INTEGER == type ) {
-                _obj_out.set< int >( key, json_integer_value( val ) );
+            case JSON_STRING:
+            return boost::any(std::string(json_string_value(_val)));
 
-            }
-            else if ( JSON_STRING == type ) {
-                _obj_out.set< std::string >( key, json_string_value( val ) );
+            case JSON_REAL:
+            return boost::any(json_real_value(_val));
 
-            }
-            else if ( JSON_REAL == type ) {
-                _obj_out.set< double >( key, json_real_value( val ) );
+            case JSON_TRUE:
+            case JSON_FALSE:
+            return boost::any(json_boolean( _val ));
 
-            }
-            else if ( JSON_TRUE == type ||
-                      JSON_FALSE == type )  {
-                _obj_out.set< bool >( key, json_boolean( val ) );
+            case JSON_NULL:
+            return boost::any(std::string("NULL"));
 
-            }
-            else if ( JSON_NULL == type ) {
-                _obj_out.set< std::string >( key, "NULL" );
-
-            }
-            else if ( JSON_ARRAY  == type ) {
-                array_t arr;
+            case JSON_ARRAY:
+            {
+                std::vector<boost::any> vector;
                 size_t  idx = 0;
-                json_t* obj = 0;
-                json_array_foreach( val, idx, obj ) {
-                    object_t lt;
-                    irods::error err = parse_json_object(
-                                           obj,
-                                           lt );
-                    if ( err.ok() ) {
-                        arr.push_back( lt );
-
+                json_t* element = NULL;
+                json_array_foreach(_val, idx, element) {
+                    try {
+                        vector.push_back(convert_json(element));
+                    } catch (const irods::exception& e) {
+                        rodsLog( LOG_ERROR, e.what() );
                     }
-                    else {
-                        irods::log( PASS( err ) );
+                }
+                return boost::any(vector);
+            }
 
+            case JSON_OBJECT:
+            {
+                std::unordered_map<std::string, boost::any> map;
+                const char* key = NULL;
+                json_t*     subval = NULL;
+                json_object_foreach( _val, key, subval ) {
+                    try {
+                        map.insert(std::pair<std::string, boost::any>(std::string(key), convert_json(subval)));
+                    } catch (const irods::exception& e) {
+                        rodsLog( LOG_ERROR, e.what() );
                     }
-
-                } // array foreach
-
-                _obj_out.set< array_t >( key, arr );
-
-            }
-            else if ( JSON_OBJECT == type ) {
-                object_t lt;
-                irods::error err = parse_json_object(
-                                       val,
-                                       lt );
-                if ( err.ok() ) {
-                    _obj_out.set< object_t >( key, lt );
-
                 }
-                else {
-                    irods::log( PASS( err ) );
-
-                }
-
+                return boost::any(map);
             }
-            else {
-                rodsLog(
-                    LOG_NOTICE,
-                    "parse_json_object :: unhandled type %d",
-                    type );
-            }
-
-        } // foreach
-
-        return SUCCESS();
+        }
+        THROW( -1, (boost::format("unhandled type in json_typeof: %d") % json_typeof(_val) ).str());
 
     } // parse_json_object
 
@@ -193,61 +173,10 @@ namespace irods {
                std::string > ( _v );
     }
 
-    error configuration_parser::gather_values_for_key_impl(
-        const std::string&       _key,
-        array_t&           _arr,
-        std::vector<boost::any>& _values ) {
-        for( auto itr : _arr ) {
-            error ret = gather_values_for_key_impl(
-                            _key,
-                            itr,
-                            _values);
-            if(!ret.ok()) {
-                irods::log(PASS(ret));
-            }
+    void configuration_parser::remove(const std::string& _key) {
+        if ( !root_.erase(_key) ) {
+            THROW ( KEY_NOT_FOUND, (boost::format("key \"%s\" not found in map.") % _key).str() );
         }
-
-        return SUCCESS();
-    }
-
-    error configuration_parser::gather_values_for_key_impl(
-        const std::string&       _key,
-        object_t&          _obj,
-        std::vector<boost::any>& _values ) {
-
-        for( auto itr : _obj ) {
-            if( _key == itr.first ) {
-                _values.push_back(itr.second);
-            }/*
-            else if(itr.second.type() == typeid(object_t)) {
-                error ret = gather_values_for_key_impl(
-                                _key,
-                                boost::any_cast<object_t>(itr.second),
-                                _values);
-                if(!ret.ok()) {
-                    irods::log(PASS(ret));
-                }
-            }*/
-            else if(itr.second.type() == typeid(array_t)) {
-                array_t arr = boost::any_cast<array_t>(itr.second);
-                error ret = gather_values_for_key_impl(
-                                _key,
-                                arr, 
-                                _values);
-                if(!ret.ok()) {
-                    irods::log(PASS(ret));
-                }
-            }
-
-        }
-        return SUCCESS();
-
-    }
-
-    error configuration_parser::gather_values_for_key(
-        const std::string&       _key,
-        std::vector<boost::any>& _values ) {
-        return gather_values_for_key_impl( _key, root_, _values ); 
     }
 
 }; // namespace irods

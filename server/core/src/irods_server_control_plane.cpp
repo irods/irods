@@ -37,59 +37,6 @@ namespace irods {
         usleep( us );
     }
 
-    static error get_server_properties(
-        const std::string&     _port_keyword,
-        int&                   _port,
-        int&                   _num_rounds,
-        buffer_crypt::array_t& _key,
-        std::string&           _algorithm ) {
-
-        error ret = get_server_property< int > (
-                        _port_keyword,
-                        _port );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
-        std::string key;
-        ret = get_server_property <
-              std::string > (
-                  CFG_SERVER_CONTROL_PLANE_KEY,
-                  key );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
-        ret = get_server_property <
-              int > (
-                  CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW,
-                  _num_rounds );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
-        std::string encryption_algorithm;
-        ret = get_server_property <
-              std::string > (
-                  CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW,
-                  _algorithm );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
-        // convert string to array_t
-        _key.assign(
-            key.begin(),
-            key.end() );
-
-        return SUCCESS();
-
-    } // get_server_properties
-
     static error forward_server_control_command(
         const std::string& _name,
         const std::string& _host,
@@ -100,29 +47,18 @@ namespace irods {
 
         }
 
-        int time_out = 0;
-        error ret = get_server_property <
-                    int > (
-                        CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                        time_out );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
-        }
-
-        int port = 0, num_hash_rounds = 0;
-        std::string encryption_algorithm;
+        int time_out, port, num_hash_rounds;
+        boost::optional<const std::string&> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
-
-        ret = get_server_properties(
-                  _port_keyword,
-                  port,
-                  num_hash_rounds,
-                  shared_secret,
-                  encryption_algorithm );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
+        try {
+            time_out = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_TIMEOUT);
+            port = get_server_property<const int>(_port_keyword);
+            num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
+            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
+            shared_secret.assign(key.begin(), key.end());
+        } catch ( const irods::exception& e ) {
+            return ERROR( e.code(), e.what() );
         }
 
         // stringify the port
@@ -169,14 +105,14 @@ namespace irods {
             shared_secret.size(),  // key size
             0,                     // salt size ( we dont send a salt )
             num_hash_rounds,       // num hash rounds
-            encryption_algorithm.c_str() );
+            encryption_algorithm->c_str() );
 
         buffer_crypt::array_t iv;
         buffer_crypt::array_t data_to_send;
         buffer_crypt::array_t data_to_encrypt(
             data->data(),
             data->data() + data->size() );
-        ret = crypt.encrypt(
+        irods::error ret = crypt.encrypt(
                   shared_secret,
                   iv,
                   data_to_encrypt,
@@ -249,15 +185,17 @@ namespace irods {
 
     static error kill_server(
         const std::string& _pid_prop ) {
-        int svr_pid = 0;
+        int svr_pid;
         // no error case, resource servers have no re server
-        error ret = get_server_property< int > (
-                        _pid_prop,
-                        svr_pid );
-        if ( !ret.ok() ) {
-            // if the property does not exist then the server
-            // in question is not running
-            return SUCCESS();
+        try {
+            svr_pid = get_server_property<const int>(_pid_prop);
+        } catch ( const irods::exception& e ) {
+            if ( e.code() == KEY_NOT_FOUND ) {
+                // if the property does not exist then the server
+                // in question is not running
+                return SUCCESS();
+            }
+            return ERROR( e.code(), e.what() );
         }
 
         std::stringstream pid_str; pid_str << svr_pid;
@@ -265,7 +203,7 @@ namespace irods {
         args.push_back( pid_str.str() );
 
         std::string output;
-        ret = get_script_output_single_line(
+        irods::error ret = get_script_output_single_line(
                   "python",
                   "kill_pid.py",
                   args,
@@ -290,12 +228,10 @@ namespace irods {
 
         error ret;
         int sleep_time_out_milli_sec = 0;
-        ret = get_server_property < int > (
-                  CFG_SERVER_CONTROL_PLANE_TIMEOUT,
-                  sleep_time_out_milli_sec );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-
+        try {
+            sleep_time_out_milli_sec = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_TIMEOUT);
+        } catch ( const irods::exception& e ) {
+            return ERROR( e.code(), e.what() );
         }
 
         if ( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
@@ -457,14 +393,14 @@ namespace irods {
 
         int re_pid = 0;
         // no error case, resource servers have no re server
-        error ret = get_server_property< int > (
-                        irods::RE_PID_KW,
-                        re_pid );
+        try {
+            re_pid = get_server_property<const int>(irods::RE_PID_KW);
+        } catch ( const irods::exception& ) {}
 
         int xmsg_pid = 0;
-        ret = get_server_property< int > (
-                  irods::XMSG_PID_KW,
-                  xmsg_pid );
+        try {
+            xmsg_pid = get_server_property<const int>(irods::XMSG_PID_KW);
+        } catch ( const irods::exception& ) {}
 
         int my_pid = getpid();
 
@@ -613,16 +549,7 @@ namespace irods {
         my_host_name_ = my_env.rodsHost;
 
         // get the IES host for ordereing
-        error ret = get_server_property <
-                    std::string > (
-                        CFG_ICAT_HOST_KW,
-                        icat_host_name_ );
-        if ( !ret.ok() ) {
-            THROW(
-                ret.code(),
-                ret.result() );
-
-        }
+        icat_host_name_ = get_server_property<const std::string&>(CFG_ICAT_HOST_KW);
 
         // repave icat_host_name_ as we do not want to process 'localhost'
         if ( "localhost" == icat_host_name_ ) {
@@ -765,23 +692,22 @@ namespace irods {
 
     void server_control_executor::operator()() {
 
-        int port = 0, num_hash_rounds = 0;
+        int port, num_hash_rounds;
+        boost::optional<const std::string&> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
-        std::string encryption_algorithm;
-        error ret = get_server_properties(
-                        port_prop_,
-                        port,
-                        num_hash_rounds,
-                        shared_secret,
-                        encryption_algorithm );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+        try {
+            port = get_server_property<const int>(port_prop_);
+            num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
+            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
+            shared_secret.assign(key.begin(), key.end());
+        } catch ( const irods::exception& e ) {
+            rodsLog( LOG_ERROR, e.what() );
             return;
-
         }
 
         if ( shared_secret.empty() ||
-                encryption_algorithm.empty() ||
+                encryption_algorithm->empty() ||
                 0 == port ||
                 0 == num_hash_rounds ) {
             rodsLog(
@@ -839,7 +765,7 @@ namespace irods {
                 shared_secret.size(), // key size
                 0,                    // salt size ( we dont send a salt )
                 num_hash_rounds,      // num hash rounds
-                encryption_algorithm.c_str() );
+                encryption_algorithm->c_str() );
 
             buffer_crypt::array_t iv;
             buffer_crypt::array_t data_to_send;
@@ -1171,19 +1097,17 @@ namespace irods {
 
         error final_ret = SUCCESS();
 
-        int port = 0, num_hash_rounds = 0;
+        int port, num_hash_rounds;
+        boost::optional<const std::string&> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
-        std::string encryption_algorithm;
-        error ret = get_server_properties(
-                        port_prop_,
-                        port,
-                        num_hash_rounds,
-                        shared_secret,
-                        encryption_algorithm );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return PASS( ret );
-
+        try {
+            port = get_server_property<const int>(port_prop_);
+            num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
+            encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
+            const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
+            shared_secret.assign(key.begin(), key.end());
+        } catch ( const irods::exception& e ) {
+            return ERROR( e.code(), e.what() );
         }
 
         // decrypt the message before passing to avro
@@ -1191,7 +1115,7 @@ namespace irods {
             shared_secret.size(), // key size
             0,                    // salt size ( we dont send a salt )
             num_hash_rounds,      // num hash rounds
-            encryption_algorithm.c_str() );
+            encryption_algorithm->c_str() );
 
         buffer_crypt::array_t iv;
         buffer_crypt::array_t data_to_process;
@@ -1200,7 +1124,7 @@ namespace irods {
         buffer_crypt::array_t data_to_decrypt(
             data_ptr,
             data_ptr + _msg.size() );
-        ret = crypt.decrypt(
+        irods::error ret = crypt.decrypt(
                   shared_secret,
                   iv,
                   data_to_decrypt,

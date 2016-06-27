@@ -46,11 +46,7 @@ rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {
     rstrcpy( myOutSvrInfo->relVersion, RODS_REL_VERSION, NAME_LEN );
     rstrcpy( myOutSvrInfo->apiVersion, RODS_API_VERSION, NAME_LEN );
 
-    std::string zone_name;
-    ret = irods::get_server_property<
-          std::string > (
-              irods::CFG_ZONE_NAME,
-              zone_name );
+    const auto& zone_name = irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME);
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();

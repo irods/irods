@@ -9,10 +9,15 @@
 #define IRODS_SERVER_PROPERTIES_HPP_
 
 
-#include "irods_lookup_table.hpp"
+#include "irods_exception.hpp"
+#include "irods_error.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_exception.hpp"
+
+#include <boost/format.hpp>
+#include <boost/any.hpp>
+#include <map>
 
 namespace irods {
 
@@ -67,72 +72,46 @@ namespace irods {
              */
             void capture_legacy();
 
-
-            /**
-             * @brief Read server configuration if it has not been read already.
-             */
-            void capture_if_needed();
-
             /**
              * @brief capture the new json version: server_config.json
              */
             void capture_json( const std::string& );
 
-            error gather_values_for_key( const std::string&, std::vector<boost::any>& );
-
-            /**
-             * @brief Get a property from the map if it exists.  catch the exception in the case where
-             * the template types may not match and return success/fail
-             */
             template< typename T >
-            error get_property( const std::string& _key, T& _val ) {
+            T& get_property( const std::string& _key ) {
                 try {
-                    capture_if_needed();
-                } catch ( const exception& e ) {
-                    return ERROR( e.code(), e.what() );
-                }
-
-                error ret = config_props_.get< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    if ( key_map_.has_entry( _key ) ) {
-                        ret = config_props_.get< T >( key_map_[ _key ], _val );
+                    return config_props_.get< T >( _key );
+                } catch ( const irods::exception& e ) {
+                    if ( e.code() == KEY_NOT_FOUND ) {
+                        try {
+                            return config_props_.get< T >( key_map_.at( _key ) );
+                        } catch ( const std::out_of_range& ) {}
                     }
+                    throw e;
                 }
-                return PASS( ret );
+            }
+
+            template< typename T>
+            T& get_property( const configuration_parser::key_path_t& _keys ) {
+                return config_props_.get<T>( _keys );
             }
 
             template< typename T >
-            error set_property( const std::string& _key, const T& _val ) {
-                try {
-                    capture_if_needed();
-                } catch ( const exception& e ) {
-                    return ERROR( e.code(), e.what() );
-                }
-
-                error ret = config_props_.set< T >( _key, _val );
-                if ( !ret.ok() ) {
-                    ret = config_props_.set< T >( key_map_[ _key ], _val );
-                }
-                return PASS( ret );
+            T& set_property( const std::string& _key, const T& _val ) {
+                return config_props_.set< T >( _key, _val );
             }
 
-            error delete_property( const std::string& _key ) {
-                try {
-                    capture_if_needed();
-                } catch ( const exception& e ) {
-                    return ERROR( e.code(), e.what() );
-                }
-
-                size_t n = config_props_.erase( _key );
-                if ( n != 1 ) {
-                    std::string msg( "failed to erase key: " );
-                    msg += _key;
-                    return ERROR( UNMATCHED_KEY_OR_INDEX, _key );
-                }
-                else {
-                    return SUCCESS();
-                }
+            template< typename T>
+            T& set_property( const configuration_parser::key_path_t& _keys, const T& _val ) {
+                return config_props_.set<T>( _keys, _val );
             }
+
+            template<typename T>
+            T remove( const std::string& _key ) {
+                return config_props_.remove<T>( _key );
+            }
+
+            void remove( const std::string& _key );
 
         private:
             // Disable constructors
@@ -146,76 +125,40 @@ namespace irods {
             configuration_parser config_props_;
 
             /// @brief map of old keys to new keys
-            lookup_table< std::string > key_map_;
-            bool captured_;
+            std::map< std::string, std::string > key_map_;
 
     }; // class server_properties
 
     template< typename T >
-    error get_server_property(
-        const std::string& _prop,
-        T&                 _val ) {
-        error ret = server_properties::instance().get_property< T > (
-                  _prop,
-                  _val );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        return SUCCESS();
-
-    } // get_server_property
+    T& get_server_property( const std::string& _prop ) {
+        return irods::server_properties::instance().get_property<T>(_prop);
+    }
 
     template< typename T >
-    error set_server_property(
-        const std::string& _prop,
-        const T&           _val ) {
-        error ret = server_properties::instance().set_property< T > (
-                  _prop,
-                  _val );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        return SUCCESS();
-
-    } // set_server_property
-
-    static error delete_server_property(
-        const std::string& _prop ) {
-        error ret = server_properties::instance().delete_property(
-                  _prop );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        return SUCCESS();
-
-    } // delete_server_property
+    T& set_server_property( const std::string& _prop, const T& _val ) {
+        return irods::server_properties::instance().set_property<T>(_prop, _val);
+    }
 
     template< typename T >
-    error get_advanced_setting(
-        const std::string& _prop,
-        T&                 _val ) {
+    T& get_server_property( const configuration_parser::key_path_t& _keys ) {
+        return irods::server_properties::instance().get_property<T>(_keys);
+    }
 
-        lookup_table<boost::any> adv_set;
-        error ret = get_server_property< lookup_table<boost::any> > (
-                  CFG_ADVANCED_SETTINGS_KW,
-                  adv_set );
-        if ( !ret.ok() ) {
-            return PASS( ret );
+    template< typename T >
+    T& set_server_property( const configuration_parser::key_path_t& _prop, const T& _val ) {
+        return server_properties::instance().set_property<T>(_prop, _val);
+    }
 
-        }
+    template< typename T >
+    T delete_server_property( const std::string& _prop ) {
+        return server_properties::instance().remove(_prop);
+    }
 
-        ret = adv_set.get<T>(
-                   _prop,
-                   _val );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
+    void delete_server_property( const std::string& _prop );
 
-        return SUCCESS();
-
+    template< typename T >
+    T& get_advanced_setting( const std::string& _prop ) {
+        return irods::get_server_property<T>(configuration_parser::key_path_t{CFG_ADVANCED_SETTINGS_KW, _prop});
     } // get_advanced_setting
 
 } // namespace irods

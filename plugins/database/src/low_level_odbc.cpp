@@ -1003,7 +1003,7 @@ extern "C" int cllTest() {
 
     // capture server properties
     try {
-        irods::server_properties::instance().capture_if_needed();
+        irods::server_properties::instance();
     }
     catch ( const irods::exception& e ) {
         rodsLog( LOG_ERROR, e.what() );
@@ -1012,28 +1012,17 @@ extern "C" int cllTest() {
 
     // =-=-=-=-=-=-=-
     // cache db creds
-    std::string prop;
-
-    irods::error ret = irods::get_server_property<std::string>( DB_USERNAME_KW, prop );
-    if ( !ret.ok() ) {
-        ret = irods::get_server_property<std::string>( irods::CFG_DB_USERNAME_KW, prop );
-
+    try {
+        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_DB_USERNAME_KW ).c_str());
+        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_DB_PASSWORD_KW).c_str());
+        snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_CATALOG_DATABASE_TYPE_KW).c_str());
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    snprintf( icss.databaseUsername, DB_USERNAME_LEN, "%s", prop.c_str() );
-    printf( "Username: \"%s\"\n", icss.databaseUsername );
 
-    ret = irods::get_server_property<std::string>( DB_PASSWORD_KW, prop );
-    if ( !ret.ok() ) {
-        ret = irods::get_server_property<std::string>( irods::CFG_DB_PASSWORD_KW, prop );
-    }
-    snprintf( icss.databasePassword, DB_PASSWORD_LEN, "%s", prop.c_str() );
-
-    ret = irods::get_server_property<std::string>( CATALOG_DATABASE_TYPE_KW, prop );
-    if ( !ret.ok() ) {
-        ret = irods::get_server_property<std::string>( irods::CFG_CATALOG_DATABASE_TYPE_KW, prop );
-    }
-    snprintf( icss.database_plugin_type, DB_TYPENAME_LEN, "%s", prop.c_str() );
-    printf( "Type: \"%s\"\n", icss.database_plugin_type );
+    printf("Username: \"%s\"\n", icss.databaseUsername);
+    printf("Type: \"%s\"\n", icss.database_plugin_type);
 
     if ( strcmp( icss.database_plugin_type, "postgres" ) == 0 ) {
         icss.databaseType = DB_TYPE_POSTGRES;

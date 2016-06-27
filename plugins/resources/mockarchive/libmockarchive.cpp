@@ -395,14 +395,13 @@ mockArchiveCopyPlugin(
     const char* srcFileName,
     const char* destFileName ) {
 
-    int trans_buff_size = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                           trans_buff_size );
-    if ( !ret.ok() ) {
-        return ret.code();
+    size_t trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        return e.code();
     }
-    trans_buff_size *= 1024 * 1024;
 
     int inFd, outFd;
     std::vector<char> myBuf( trans_buff_size );

@@ -2,8 +2,6 @@
 #include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"
 #include "reIn2p3SysRule.hpp"
-
-#include "irods_lookup_table.hpp"
 #include "irods_log.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_resource_manager.hpp"
@@ -53,85 +51,57 @@ int rsServerReport(
 
 
 
-irods::error make_file_set(
-    const std::string& _files,
-    json_t*&           _object ) {
+json_t* make_file_set(
+    const std::string& _files ) {
 
     if ( _files.empty() ) {
-        return SUCCESS();
+        return nullptr;
     }
 
-    if ( _object ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "json object is not null" );
+    json_t* _object = json_array();
+    if ( !_object ) {
+        THROW(SYS_MALLOC_ERR, "allocation of json object failed");
     }
 
     std::vector<std::string> file_set;
-    boost::split( file_set, _files, boost::is_any_of( "," ) );
-
-
-    _object = json_array();
-    if ( !_object ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "allocation of json object failed" );
-    }
-
-    for ( size_t i = 0;
-            i < file_set.size();
-            ++i ) {
+    boost::split(file_set, _files, boost::is_any_of(","));
+    for ( const auto& filename : file_set ) {
         json_t* obj = json_object();
         if ( !obj ) {
-            return ERROR(
-                       SYS_MALLOC_ERR,
-                       "failed to allocate object" );
+            THROW(SYS_MALLOC_ERR, "failed to allocate object");
         }
-
-        json_object_set( obj, "filename", json_string( file_set[ i ].c_str() ) );
-        json_array_append( _object, obj );
+        json_object_set(obj, "filename", json_string(filename.c_str()));
+        json_array_append(_object, obj);
 
     } // for i
 
 
-    return SUCCESS();
+    return _object;
 
 } // make_file_set
 
 
 
-irods::error make_federation_set(
-    const std::vector< std::string >& _feds,
-    json_t*&                          _object ) {
+json_t* make_federation_set(
+    const std::vector< std::string >& _feds ) {
     if ( _feds.empty() ) {
-        return SUCCESS();
+        return nullptr;
     }
 
-    if ( _object ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "json object is not null" );
-    }
-
-    _object = json_array();
+    json_t * _object = json_array();
     if ( !_object ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "allocation of json object failed" );
+        THROW(SYS_MALLOC_ERR, "allocation of json object failed");
     }
 
-    for ( size_t i = 0;
-            i < _feds.size();
-            ++i ) {
-
+    for ( const auto& federation : _feds ) {
         std::vector<std::string> zone_sid_vals;
-        boost::split( zone_sid_vals, _feds[ i ], boost::is_any_of( "-" ) );
+        boost::split( zone_sid_vals, federation, boost::is_any_of( "-" ) );
 
         if ( zone_sid_vals.size() > 2 ) {
             rodsLog(
                 LOG_ERROR,
                 "multiple hyphens found in RemoteZoneSID [%s]",
-                _feds[ i ].c_str() );
+                federation.c_str() );
             continue;
         }
 
@@ -144,7 +114,7 @@ irods::error make_federation_set(
 
     } // for i
 
-    return SUCCESS();
+    return _object;
 
 } // make_federation_set
 
@@ -234,7 +204,6 @@ irods::error convert_server_config(
 
     // =-=-=-=-=-=-=-
     // otherwise, convert the old properties
-
     _svr_cfg = json_object();
     if ( !_svr_cfg ) {
         return ERROR(
@@ -242,126 +211,80 @@ irods::error convert_server_config(
                    "json_object() failed" );
     }
 
-    std::string s_val;
-    ret = irods::get_server_property< std::string >( "icatHost", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "icat_host", json_string( s_val.c_str() ) );
+    try {
+        json_object_set(_svr_cfg, "icat_host", json_string(irods::get_server_property<const std::string>("icatHost").c_str()));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "kerberos_name", json_string(irods::get_server_property<const std::string>("KerberosName").c_str()));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "pam_no_extend", json_boolean(irods::get_server_property<const bool>("pam_no_extend")));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "pam_password_min_time",
+                json_integer(boost::lexical_cast<int>(irods::get_server_property<const std::string>("pam_password_min_time"))));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "pam_password_max_time",
+                json_integer(boost::lexical_cast<int>(irods::get_server_property<const std::string>("pam_password_max_time"))));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "pam_password_length", json_integer(irods::get_server_property<const size_t>("pam_password_length")));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "default_dir_mode",
+                json_string(boost::lexical_cast<std::string>(irods::get_server_property<const int>("default_dir_mode")).c_str()));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "default_file_mode",
+                json_string(boost::lexical_cast<std::string>(irods::get_server_property<const int>("default_file_mode")).c_str()));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set( _svr_cfg, "default_hash_scheme",
+                json_string(irods::get_server_property<const std::string>("default_hash_scheme").c_str()));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        irods::get_server_property<const std::string>("LocalZoneSID");
+        json_object_set(_svr_cfg, "zone_key", json_string("XXXXXXXXXXXXXXXXXXXXX"));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        irods::get_server_property<const std::string>("agent_key");
+        json_object_set(_svr_cfg, "negotiation_key", json_string("XXXXXXXXXXXXXXXXXXXXX"));
+    } catch ( const irods::exception& ) {}
+
+    try {
+        json_object_set(_svr_cfg, "match_hash_policy", json_string(irods::get_server_property<const std::string>("match_hash_policy").c_str()));
+    } catch ( const irods::exception& ) {
+        json_object_set(_svr_cfg, "match_hash_policy", json_string( "" ));
     }
 
-    ret = irods::get_server_property< std::string >( "KerberosName", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "kerberos_name", json_string( s_val.c_str() ) );
-    }
+    try {
+        json_object_set(_svr_cfg, "re_rulebase_set", make_file_set(irods::get_server_property<const std::string>("reRuleSet")));
+    } catch ( const irods::exception& ) {}
 
-    bool b_val = false;
-    ret = irods::get_server_property< bool >( "pam_no_extend", b_val );
-    if ( ret.ok() ) {
-        if ( b_val ) {
-            json_object_set( _svr_cfg, "pam_no_extend", json_string( "true" ) );
-        }
-        else {
-            json_object_set( _svr_cfg, "pam_no_extend", json_string( "false" ) );
-        }
-    }
+    try {
+        json_object_set(_svr_cfg, "re_function_name_mapping_set", make_file_set(irods::get_server_property<const std::string>("reFuncMapSet")));
+    } catch ( const irods::exception& ) {}
 
-    ret = irods::get_server_property< std::string >( "pam_password_min_time", s_val );
-    if ( ret.ok() ) {
-        int min_time = boost::lexical_cast< int >( s_val );
-        json_object_set( _svr_cfg, "pam_password_min_time", json_integer( min_time ) );
-    }
+    try {
+        json_object_set(_svr_cfg, "re_data_variable_mapping_set", make_file_set(irods::get_server_property<const std::string>("reVariableMapSet")));
+    } catch ( const irods::exception& ) {}
 
-    ret = irods::get_server_property< std::string >( "pam_password_max_time", s_val );
-    if ( ret.ok() ) {
-        int max_time = boost::lexical_cast< int >( s_val );
-        json_object_set( _svr_cfg, "pam_password_max_time", json_integer( max_time ) );
-    }
-
-    size_t st_val = 0;
-    ret = irods::get_server_property< size_t>( "pam_password_length", st_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "pam_password_length", json_integer( st_val ) );
-    }
-
-
-    int i_val = 0;
-    ret = irods::get_server_property< int >( "default_dir_mode", i_val );
-    if ( ret.ok() ) {
-        std::string mode = boost::lexical_cast< std::string >( i_val );
-        json_object_set( _svr_cfg, "default_dir_mode", json_string( mode.c_str() ) );
-    }
-
-    ret = irods::get_server_property< int >( "default_file_mode", i_val );
-    if ( ret.ok() ) {
-        std::string mode = boost::lexical_cast< std::string >( i_val );
-        json_object_set( _svr_cfg, "default_file_mode", json_string( mode.c_str() ) );
-    }
-
-    ret = irods::get_server_property< std::string >( "default_hash_scheme", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "default_hash_scheme", json_string( s_val.c_str() ) );
-    }
-
-    ret = irods::get_server_property< std::string >( "LocalZoneSID", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "zone_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-    }
-
-    ret = irods::get_server_property< std::string >( "agent_key", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-    }
-
-    ret = irods::get_server_property< std::string >( "match_hash_policy", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _svr_cfg, "match_hash_policy", json_string( s_val.c_str() ) );
-    }
-    else {
-        json_object_set( _svr_cfg, "match_hash_policy", json_string( "" ) );
-    }
-
-    ret = irods::get_server_property< std::string >( "reRuleSet", s_val );
-    if ( ret.ok() ) {
-        json_t* arr = 0;
-        ret = make_file_set( s_val, arr );
-        if ( ret.ok() ) {
-            json_object_set( _svr_cfg, "re_rulebase_set", arr );
-        }
-    }
-
-    ret = irods::get_server_property< std::string >( "reFuncMapSet", s_val );
-    if ( ret.ok() ) {
-        json_t* arr = 0;
-        ret = make_file_set( s_val, arr );
-        if ( ret.ok() ) {
-            json_object_set( _svr_cfg, "re_function_name_mapping_set", arr );
-        }
-    }
-
-    ret = irods::get_server_property< std::string >( "reVariableMapSet", s_val );
-    if ( ret.ok() ) {
-        json_t* arr = 0;
-        ret = make_file_set( s_val, arr );
-        if ( ret.ok() ) {
-            json_object_set( _svr_cfg, "re_data_variable_mapping_set", arr );
-        }
-    }
-
-    std::vector< std::string > rem_sids;
-    ret = irods::get_server_property< std::vector< std::string > >( "RemoteZoneSID", rem_sids );
-    if ( ret.ok() ) {
-        json_t* arr = 0;
-        ret = make_federation_set( rem_sids, arr );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-        }
-
-        json_object_set( _svr_cfg, "federation", arr );
-
-    }
-    else {
+    try {
+        json_object_set( _svr_cfg, "federation", make_federation_set(irods::get_server_property<const std::vector<std::string>>("RemoteZoneSID")));
+    } catch ( const irods::exception& ) {
         // may not be federated, but it is required by the spec
-        json_t* arr = json_array();
-        json_object_set( _svr_cfg, "federation", arr );
+        json_object_set(_svr_cfg, "federation", json_array());
     }
 
     return SUCCESS();
@@ -547,7 +470,7 @@ irods::error convert_service_account(
 
 
 irods::error add_plugin_type_to_json_array(
-    const std::string& _plugin_type,
+    const std::string _plugin_type,
     const char*        _type_name,
     json_t*&           _json_array ) {
 
@@ -634,7 +557,7 @@ irods::error get_plugin_array(
 } // get_plugin_array
 
 irods::error get_uname_string(
-    std::string& _str ) {
+    std::string _str ) {
 
     struct utsname os_name;
     memset( &os_name, 0, sizeof( os_name ) );
@@ -856,8 +779,8 @@ irods::error get_resource_array(
 
 
 irods::error get_file_contents(
-    const std::string& _fn,
-    std::string&       _cont ) {
+    const std::string _fn,
+    std::string       _cont ) {
 
     std::ifstream f( _fn.c_str() );
     std::stringstream ss;
@@ -932,7 +855,7 @@ irods::error get_config_dir(
             ++itr ) {
         if ( fs::is_regular_file( itr->path() ) ) {
             const fs::path& p = itr->path();
-            const std::string& name = p.string();
+            const std::string name = p.string();
 
             if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
                     std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
@@ -1051,21 +974,13 @@ irods::error get_database_config(
                    "allocation of json_object failed" );
     }
 
-    std::string s_val;
-    ret = irods::get_server_property< std::string >(
-              "catalog_database_type",
-              s_val );
-    if ( ret.ok() ) {
-        json_object_set(
-            _db_cfg,
-            "catalog_database_type",
-            json_string( s_val.c_str() ) );
-    }
+    try {
+        json_object_set( _db_cfg, "catalog_database_type", json_string(irods::get_server_property<const std::string>("catalog_database_type").c_str()));
+    } catch ( const irods::exception& ) {}
 
-    ret = irods::get_server_property< std::string >( "DBUsername", s_val );
-    if ( ret.ok() ) {
-        json_object_set( _db_cfg, "db_username", json_string( s_val.c_str() ) );
-    }
+    try {
+        json_object_set( _db_cfg, "db_username", json_string(irods::get_server_property<const std::string>("DBUsername").c_str()));
+    } catch ( const irods::exception& ) {}
 
     json_object_set( _db_cfg, "db_password", json_string( "XXXXX" ) );
 

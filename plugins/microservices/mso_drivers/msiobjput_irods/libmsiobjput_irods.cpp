@@ -195,20 +195,15 @@ int msiobjput_irods(
     dataObjWriteInp.l1descInx = outDesc;
     dataObjCloseInp.l1descInx = outDesc;
 
-    int single_buff_sz = 0;
-    irods::error ret = irods::get_advanced_setting<int>(
-                           irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER,
-                           single_buff_sz );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    try {
+        writeBufLen = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
+    } catch ( const irods::exception& e ) {
+        rodsLog( LOG_ERROR, e.what() );
+        close( srcFd );
+        return e.code();
     }
-    single_buff_sz *= 1024 * 1024;
 
-    if ( dataSize > single_buff_sz ) {
-        writeBufLen = single_buff_sz;
-    }
-    else {
+    if ( dataSize <= writeBufLen ) {
         writeBufLen = dataSize;
     }
 

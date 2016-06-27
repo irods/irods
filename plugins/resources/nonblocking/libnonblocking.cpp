@@ -1163,16 +1163,15 @@ non_blockingFileCopyPlugin( int         mode,
             result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
         }
         else {
-            int trans_buff_size = 0;
-            irods::error ret = irods::get_advanced_setting<int>(
-                                   irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
-                                   trans_buff_size );
-            if ( !ret.ok() ) {
+            size_t trans_buff_size;
+            try {
+                trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+            } catch ( const irods::exception& e ) {
                 close( outFd );
                 close( inFd );
-                return PASS( ret );
+                return ERROR( e.code(), e.what() );
             }
-            trans_buff_size *= 1024 * 1024;
+
             std::vector<char> myBuf( trans_buff_size );
 
             int bytesRead;

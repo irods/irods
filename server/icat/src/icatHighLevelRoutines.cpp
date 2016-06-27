@@ -96,21 +96,19 @@ int chlOpen() {
 
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
-
-    irods::error ret = irods::get_server_property< std::string >(
-                           "catalog_database_type",
-                           database_plugin_type );
-    if ( !ret.ok() ) {
+    try {
+        database_plugin_type = irods::get_server_property<const std::string>("catalog_database_type");
+    } catch ( const irods::exception& e ) {
         rodsLog(
             LOG_ERROR,
             "catalog_database_type not defined" );
-        return ret.code();
+        return e.code();
     }
 
     // =-=-=-=-=-=-=-
     // call factory for database object
     irods::database_object_ptr db_obj_ptr;
-    ret = irods::database_factory(
+    irods::error ret = irods::database_factory(
               database_plugin_type,
               db_obj_ptr );
     if ( !ret.ok() ) {
