@@ -1738,6 +1738,9 @@ clearCollEnt( collEnt_t *collEnt ) {
     if ( collEnt->resource != NULL ) {
         free( collEnt->resource );
     }
+    if ( collEnt->resc_hier != NULL ) {
+        free( collEnt->resc_hier );
+    }
     if ( collEnt->phyPath != NULL ) {
         free( collEnt->phyPath );
     }
