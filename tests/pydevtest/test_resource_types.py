@@ -668,6 +668,9 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         filesize = 50000
         lib.make_file(filename, filesize)
 
+        # make sure the physical path exists
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'demoResc'))
+
         # above threshold - should NOT accept new file
         hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'demoResc')).used - 100
         self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
@@ -932,8 +935,11 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         filename = 'test_unix_filesystem_high_water_mark__2981.txt'
         filesize = 50000
         lib.make_file(filename, filesize)
-        for i in range(1, 12):
-            self.admin.assert_icommand('iput ' + filename + ' testput{0}'.format(i))
+
+        # make sure the physical paths exist
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'unix1Resc'))
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'unix2Resc'))
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'unix3Resc'))
 
         # above threshold - should NOT accept new file on any child
         hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100
@@ -3392,8 +3398,10 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         filename = 'test_unix_filesystem_high_water_mark__2981.txt'
         filesize = 50000
         lib.make_file(filename, filesize)
-        for i in range(1, 12):
-            self.admin.assert_icommand('iput ' + filename + ' testput{0}'.format(i))
+
+        # make sure the physical paths exist
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'unix1Resc'))
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'unix2Resc'))
 
         # above threshold - should NOT accept new file on any child
         hwm = psutil.disk_usage(lib.get_vault_path(self.admin, 'unix1Resc')).used - 100

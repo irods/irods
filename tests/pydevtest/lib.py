@@ -55,6 +55,15 @@ def get_irods_version_from_bash():
             raise
         return None
 
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
 def md5_hex_file(filename):
     block_size = pow(2, 20)
     md5 = hashlib.md5()
