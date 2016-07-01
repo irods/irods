@@ -19,6 +19,12 @@ void usage() {
         "izonereport queries the entire iRODS Zone for configuration information.",
         "This configuration information will be generated in the form of a JSON",
         "document which will validate using schemas found at https://schemas.irods.org.",
+        " ",
+        "Configuration files that are included in the zone report are base64 encoded.",
+        "They can be decoded from the command line by piping into 'base64 --decode'.",
+        " ",
+        "Only rodsadmin accounts can run izonereport.",
+        " ",
         " -h  this help",
         ""
     };
