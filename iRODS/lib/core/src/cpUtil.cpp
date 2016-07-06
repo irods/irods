@@ -296,6 +296,11 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         return USER_INPUT_OPTION_ERR;
     }
 
+    if (strstr(targColl, srcColl) == targColl) {
+        rodsLog(LOG_ERROR, "cpCollUtil: cannot copy collection %s into itself", srcColl);
+        return SAME_SRC_DEST_PATHS_ERR;
+    }
+
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,

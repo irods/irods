@@ -155,6 +155,11 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                         msg="Files missing from vault:\n" + str(file_names - vault_files_post_icp_target) + "\n\n" +
                             "Extra files in vault:\n" + str(vault_files_post_icp_target - file_names))
 
+    def test_icp_collection_into_itself(self):
+        base_name_source = "test_icp_collection_into_itself"
+        file_names = set(self.iput_r_large_collection(self.user0, base_name_source, file_count=1, file_size=100)[1])
+        self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_source + "/", 'STDERR_SINGLELINE', 'SAME_SRC_DEST_PATHS_ERR')
+
     def test_irsync_r_dir_to_coll(self):
         base_name = "test_irsync_r_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
