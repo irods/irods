@@ -85,7 +85,7 @@ l 777 root root ${LIBDIR}/libirods_server.so libirods_server.so.1
 
 d 755 root root ${LIBDIR}/irods -
 d 755 root root ${LIBDIR}/irods/externals -
-f 755 root root ${LIBDIR}/irods/externals/libs3.so.2 ./external/libs3-7fe742e4/build/lib/libs3.so.2
+f 755 root root ${LIBDIR}/irods/externals/libs3.so.2 ./external/libs3-c1982dbb/build/lib/libs3.so.2
 l 777 root root ${LIBDIR}/irods/externals/libs3.so libs3.so.2
 
 f 755 root root ${LIBDIR}/irods/externals/libarchive.so.14 ./external/libarchive-3.1.2/libarchive/libarchive.so.14
