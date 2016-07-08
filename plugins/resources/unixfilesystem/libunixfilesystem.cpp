@@ -80,6 +80,7 @@
 // 1. Define utility functions that the operations might need
 const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
 const std::string HIGH_WATER_MARK( "high_water_mark" );
+const std::string REQUIRED_FREE_INODES_FOR_CREATE("required_free_inodes_for_create");
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
@@ -514,6 +515,80 @@ static bool replica_exceeds_high_water_mark(
     return false;
 
 } // replica_exceeds_high_water_mark
+
+static bool replica_exceeds_vault_free_inodes(irods::plugin_context& _ctx) {
+    std::string required_free_inodes_str;
+    irods::error ret = _ctx.prop_map().get<std::string>(REQUIRED_FREE_INODES_FOR_CREATE, required_free_inodes_str);
+    if (ret.code()==-1800000) { // if no key, don't perform inode check
+        return false;
+    } else if (!ret.ok()) {
+        rodsLog(LOG_ERROR, "error [%ji] when getting key [%s]", static_cast<intmax_t>(ret.code()), REQUIRED_FREE_INODES_FOR_CREATE.c_str());
+        return true;
+    }
+
+    intmax_t required_free_inodes_val = 0;
+    try {
+        required_free_inodes_val = boost::lexical_cast<intmax_t>(required_free_inodes_str);
+    } catch (const boost::bad_lexical_cast&) {
+        rodsLog(LOG_ERROR, "malformed required_free_inodes_for_create [%s]", required_free_inodes_str.c_str());
+        return true;
+    }
+
+    if (required_free_inodes_val < 0) {
+        rodsLog(LOG_ERROR, "negative required_free_inodes_for_create [%s]", required_free_inodes_str.c_str());
+        return true;
+    }
+
+    std::string vault_path;
+    irods::error get_ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, vault_path);
+    if (!get_ret.ok()) {
+        rodsLog(LOG_ERROR, "resource has no vault path");
+        return true;
+    }
+
+    struct statfs sb;
+    get_ret = stat_vault_path(vault_path, sb);
+    if (!get_ret.ok()) {
+        irods::log(PASS(get_ret));
+        return true;
+    }
+
+    uintmax_t required_free_inodes_val_unsigned = static_cast<uintmax_t>(required_free_inodes_val);
+    if (sb.f_ffree < required_free_inodes_val_unsigned) {
+        return true;
+    }
+    return false;
+}
+
+static bool replica_exceeds_vault_freespace(
+    irods::plugin_context& _ctx,
+    rodsLong_t _file_size ) {
+
+    if (_file_size < 0) {
+        rodsLog(LOG_ERROR, "file_size <0, %ji", static_cast<intmax_t>(_file_size));
+        return true;
+    }
+
+    std::string vault_path;
+    irods::error get_ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, vault_path);
+    if (!get_ret.ok()) {
+        rodsLog(LOG_ERROR, "resource has no vault path");
+        return true;
+    }
+
+    struct statfs sb;
+    get_ret = stat_vault_path(vault_path, sb);
+    if (!get_ret.ok()) {
+        irods::log(PASS(get_ret));
+        return true;
+    }
+
+    const uintmax_t free_space = sb.f_bavail * sb.f_frsize;
+    if (static_cast<uintmax_t>(_file_size) > free_space) {
+        return true;
+    }
+    return false;
+}
 
 // =-=-=-=-=-=-=-
 // interface for POSIX create
@@ -1323,6 +1398,16 @@ irods::error unix_resolve_hierarchy_create(
             if( replica_exceeds_high_water_mark( _ctx, file_size ) ) {
                 _out_vote = 0.0;
                 return CODE(USER_FILE_TOO_LARGE);
+            }
+
+            if (replica_exceeds_vault_freespace(_ctx, file_size)) {
+                _out_vote = 0.0;
+                return CODE(USER_FILE_TOO_LARGE);
+            }
+
+            if (replica_exceeds_vault_free_inodes(_ctx)) {
+                _out_vote = 0.0;
+                return CODE(USER_INSUFFICIENT_FREE_INODES);
             }
 
             // =-=-=-=-=-=-=-
