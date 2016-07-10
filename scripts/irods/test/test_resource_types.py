@@ -22,6 +22,11 @@ from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
 
+def statvfs_path_or_parent(path):
+    while not os.path.exists(path):
+        path = os.path.dirname(path)
+    return os.statvfs(path)
+
 class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unittest.TestCase):
 
     def setUp(self):
@@ -707,6 +712,21 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         hwm = psutil.disk_usage(self.admin.get_vault_session_path('demoResc')).used + 10000000
         self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
         self.admin.assert_icommand('iput ' + filename + ' file3')
+
+    def test_unix_filesystem_free_inodes_for_create__3195(self):
+        if statvfs_path_or_parent(self.admin.get_vault_path('demoResc')).f_files == 0:
+            return # file system doesn't report inodes
+        filename = 'test_unix_filesystem_free_inodes_for_create__3195.txt'
+        filesize = 50000
+        lib.make_file(filename, filesize)
+
+        # below threshold - should NOT accept new file
+        self.admin.assert_icommand("iadmin modresc demoResc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
+        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'USER_INSUFFICIENT_FREE_INODES')
+
+        # above threshold - should accept new file
+        self.admin.assert_icommand("iadmin modresc demoResc context required_free_inodes_for_create=1")
+        self.admin.assert_icommand(['iput', filename, 'file3'])
 
     def test_key_value_passthru(self):
         env = os.environ.copy()
@@ -3495,6 +3515,28 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
         self.admin.assert_icommand('iput ' + filename + ' file3')
         self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_unix_filesystem_free_inodes_for_create__3195(self):
+        if statvfs_path_or_parent(self.admin.get_vault_path('unix1Resc')).f_files == 0:
+            return # file system doesn't report inodes
+        if statvfs_path_or_parent(self.admin.get_vault_path('unix2Resc')).f_files == 0:
+            return # file system doesn't report inodes
+
+        filename = 'test_unix_filesystem_free_inodes_for_create__3195.txt'
+        filesize = 50000
+        lib.make_file(filename, filesize)
+
+        # below threshold - should NOT accept new file on any child
+        self.admin.assert_icommand("iadmin modresc unix1Resc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
+        self.admin.assert_icommand("iadmin modresc unix2Resc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
+        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
+
+        # above threshold - should accept new file on unix2Resc only
+        self.admin.assert_icommand("iadmin modresc unix2Resc context required_free_inodes_for_create=1")
+        for i in range(5):
+            self.admin.assert_icommand(['iput', filename, 'file{0}'.format(i)])
+            self.admin.assert_icommand('ils -l file{0}'.format(i), 'STDOUT_SINGLELINE', 'unix2Resc')
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
