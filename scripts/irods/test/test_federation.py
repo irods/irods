@@ -192,6 +192,43 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
         os.remove(filepath)
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 1, 9), 'Fixed in 4.1.9')
+    def test_slow_ils_over_federation__ticket_3215(self):
+        # pick session(s) for the test
+        test_session = self.user_sessions[0]
+
+        # make test dir
+        dir_name = 'iput_test_dir'
+        dir_path = os.path.join(self.local_test_dir_path, dir_name)
+        local_files = lib.make_large_local_tmp_dir(
+            dir_path, 500, 30)
+
+        # test specific parameters
+        parameters = self.config.copy()
+        parameters['dir_path'] = dir_path
+        parameters['dir_name'] = dir_name
+        parameters['user_name'] = test_session.username
+        parameters['remote_home_collection'] = "/{remote_zone}/home/{user_name}#{local_zone}".format(
+            **parameters)
+
+        # put dir in remote collection
+        test_session.assert_icommand(
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+
+        # time listing of collection
+        t0 = time.time()
+        test_session.assert_icommand(
+            "ils -AL {remote_home_collection}/{dir_name}".format(**parameters), 'STDOUT_SINGLELINE', dir_name)
+        t1 = time.time()
+
+        diff = t1 - t0
+        self.assertTrue(diff<20)
+
+        # cleanup
+        test_session.assert_icommand(
+            "irm -rf {remote_home_collection}/{dir_name}".format(**parameters))
+        shutil.rmtree(dir_path)
+
     def test_iput_r(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
