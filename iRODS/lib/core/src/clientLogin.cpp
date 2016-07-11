@@ -225,6 +225,10 @@ int clientLogin(
         return SYS_INVALID_INPUT_PARAM;
     }
 
+    if ( 1 == _comm->loggedIn ) {
+        return 0;
+    }
+
     // =-=-=-=-=-=-=-
     // get the rods environment so we can determine the
     // flavor of authentication desired by the user -
