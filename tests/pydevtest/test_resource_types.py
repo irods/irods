@@ -665,7 +665,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
 
     def test_unix_filesystem_high_water_mark__2981(self):
         filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 50000
+        filesize = 3000000 # bigger than normal cache buffers
         lib.make_file(filename, filesize)
 
         # make sure the physical path exists
@@ -933,7 +933,7 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_unix_filesystem_high_water_mark__2981(self):
         filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 50000
+        filesize = 3000000 # bigger than normal cache buffers
         lib.make_file(filename, filesize)
 
         # make sure the physical paths exist
@@ -3396,7 +3396,7 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "local filesystem check")
     def test_unix_filesystem_high_water_mark__2981(self):
         filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 50000
+        filesize = 3000000 # bigger than normal cache buffers
         lib.make_file(filename, filesize)
 
         # make sure the physical paths exist
