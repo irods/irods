@@ -1593,7 +1593,7 @@ void usageMain() {
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " rmdir Name (remove directory) ",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, host, path, status, comment, info, freespace, rebalance] Value (mod Resc)",
+        " modresc Name [name, type, host, path, status, comment, info, freespace, context, rebalance] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
@@ -1839,7 +1839,7 @@ usage( char *subOpt ) {
     };
 
     char *modrescMsgs[] = {
-        " modresc Name [name, type, host, path, status, comment, info, freespace, rebalance] Value",
+        " modresc Name [name, type, host, path, status, comment, info, freespace, context, rebalance] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
