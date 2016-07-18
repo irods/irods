@@ -87,11 +87,11 @@ namespace irods {
                         try {
                             _val = config_props_.get< T >( find_it->second );
                         } catch ( const irods::exception& e ) {
-                            return ERROR(e.code(), e.what());
+                            return irods::error(e);
                         }
                     }
                     else {
-                        return ERROR(e.code(), e.what());
+                        return irods::error(e);
                     }
                 }
                 return SUCCESS();
@@ -102,7 +102,7 @@ namespace irods {
                 try {
                     config_props_.set< T >( _key, _val );
                 } catch ( const irods::exception& e ) {
-                    return ERROR(e.code(), e.what());
+                    return irods::error(e);
                 }
                 return SUCCESS();
             }
@@ -135,7 +135,7 @@ namespace irods {
                 return PASS( ret );
             }
         } catch ( const irods::exception& e ) {
-            return ERROR(e.code(), e.what());
+            return irods::error(e);
         }
 
         return SUCCESS();
@@ -152,7 +152,7 @@ namespace irods {
                 return PASS( ret );
             }
         } catch ( const irods::exception& e ) {
-            return ERROR(e.code(), e.what());
+            return irods::error(e);
         }
 
         return SUCCESS();

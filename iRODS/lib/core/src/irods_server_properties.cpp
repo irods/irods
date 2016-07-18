@@ -557,7 +557,7 @@ namespace irods {
                 return PASS( ret );
             }
         } catch ( const irods::exception& e ) {
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         return SUCCESS();

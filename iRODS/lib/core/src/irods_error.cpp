@@ -140,6 +140,14 @@ namespace irods {
     } // cctor
 
 // =-=-=-=-=-=-=-
+// public - constructor from exception
+    error::error( const exception& _exc ) :
+        status_(false),
+        code_(_exc.code()),
+        exception_(_exc) {
+        } // cctor
+
+// =-=-=-=-=-=-=-
 // public - Destructor
     error::~error() {
     } // dtor
@@ -171,6 +179,9 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - return the composite result for logging, etc.
     std::string error::result() const {
+        if ( exception_ ) {
+            return exception_->what();
+        }
 
         // compose single string of the result stack for print out
         std::string result;

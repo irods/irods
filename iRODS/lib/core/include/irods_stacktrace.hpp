@@ -1,8 +1,6 @@
 #ifndef _IRODS_STACKTRACE_HPP_
 #define _IRODS_STACKTRACE_HPP_
 
-#include "irods_error.hpp"
-
 #include <vector>
 #include <string>
 #include <iostream>

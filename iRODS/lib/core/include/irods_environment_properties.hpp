@@ -44,7 +44,7 @@ namespace irods {
                 try {
                     _val = config_props_.get< T >( _key );
                 } catch ( const irods::exception& e ) {
-                    return ERROR( e.code(), e.what() );
+                    return irods::error(e);
                 }
 
                 return SUCCESS();
@@ -55,7 +55,7 @@ namespace irods {
                 try {
                     config_props_.set< T >( _key, _val );
                 } catch ( const irods::exception& e ) {
-                    return ERROR( e.code(), e.what() );
+                    return irods::error(e);
                 }
                 return SUCCESS();
             }

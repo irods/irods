@@ -251,8 +251,7 @@ reServerMain( rsComm_t *rsComm, char* logDir ) {
 
     }
     catch ( irods::exception& e_ ) {
-        const char* what = e_.what();
-        std::cerr << what << std::endl;
+        std::cerr << e_.what() << std::endl;
         return;
 
     }

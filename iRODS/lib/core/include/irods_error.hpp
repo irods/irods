@@ -8,9 +8,12 @@
 #include <vector>
 #include <cstdarg>
 
+#include <boost/optional.hpp>
+
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsType.h"
+#include "irods_exception.hpp"
 
 // =-=-=-=-=-=-=-
 // boost assertion handling macro, needed everywhere
@@ -53,6 +56,7 @@ namespace irods {
                 std::string,    // function
                 const error& ); // previous error
             error( const error& );
+            error( const exception& );
 
             // =-=-=-=-=-=-=-
             // Destructor
@@ -89,6 +93,7 @@ namespace irods {
             long long   code_;
             std::string message_;
             std::vector< std::string > result_stack_;
+            boost::optional< exception > exception_;
 
             // =-=-=-=-=-=-=-
             // Members

@@ -882,7 +882,7 @@ int initHostConfigByFile() {
     host_entries = cfg.get< std::vector< boost::any > > (
               "host_entries" );
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
