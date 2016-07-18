@@ -183,6 +183,7 @@ OUTPUT ruleExecOut
             with open(server_config_filename, 'w') as f:
                 f.write(new_server_config)
 
+            IrodsController().restart()
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
             self.admin.assert_icommand('irule -F ' + rule_file)
@@ -201,6 +202,7 @@ OUTPUT ruleExecOut
             assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size)
 
         # cleanup
+        IrodsController().restart()
         os.unlink(test_re)
         os.unlink(rule_file)
 
