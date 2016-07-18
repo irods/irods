@@ -3,9 +3,11 @@
 
 #include "irods_error.hpp"
 
-#include <list>
+#include <vector>
 #include <string>
 #include <iostream>
+
+#include <boost/optional.hpp>
 
 namespace irods {
 
@@ -19,15 +21,14 @@ namespace irods {
             stacktrace( void );
             virtual ~stacktrace( void );
 
-            /// @brief Generates the actual stack trace
-            error trace( void );
-
-            /// @brief Dumps the current stack to stderr
-            error dump( std::ostream& strm_ = std::cerr );
+            /// @brief The dump of the stacktrace
+            const std::string& dump() const;
 
         private:
+            static const int max_stack_size = 50;
+
             /// @brief function to demangle the c++ function names
-            error demangle_symbol( const std::string& _symbol, std::string& _rtn_name, std::string& _rtn_offset );
+            void demangle_symbol( const std::string& _symbol, std::string& _rtn_name, std::string& _rtn_offset ) const;
 
             typedef struct stack_entry_s {
                 std::string function;
@@ -35,9 +36,14 @@ namespace irods {
                 void* address;
             } stack_entry_t;
 
-            typedef std::list<stack_entry_t> stacklist;
+            typedef std::vector<stack_entry_t> stacklist;
 
-            stacklist stack_;
+            /// @brief resolve the symbols and retrieve the stack
+            stacklist resolve_stack() const;
+
+            void* backtrace_ [max_stack_size];
+            int size_;
+            mutable boost::optional<std::string> dump_;
     };
 }; // namespace irods
 

@@ -7,6 +7,8 @@
 #include <vector>
 #include <inttypes.h>
 
+#include <irods_stacktrace.hpp>
+
 namespace irods {
 
     class exception : public std::exception {
@@ -28,7 +30,7 @@ namespace irods {
             std::string file_name() const { return file_name_; }
             uint32_t    line_number() const { return line_number_; }
             std::string function_name() const { return function_name_; }
-            std::string stack_trace() const { return stack_trace_; }
+            irods::stacktrace stacktrace() const { return stacktrace_; }
 
             // mutators
             void add_message( const std::string& _m ) { message_stack_.push_back( _m ); }
@@ -39,7 +41,7 @@ namespace irods {
             uint32_t                   line_number_;
             std::string                function_name_;
             std::string                file_name_;
-            std::string                stack_trace_;
+            irods::stacktrace          stacktrace_;
             mutable std::string        what_;
 
     }; // class exception

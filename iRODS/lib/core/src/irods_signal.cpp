@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#include <iostream>
+
 // Define signal handlers for irods
 
 extern "C" {
@@ -12,9 +14,7 @@ extern "C" {
     /// @brief Signal handler for seg faults
     static void segv_handler(
         int signal ) {
-        irods::stacktrace st;
-        st.trace();
-        st.dump();
+        std::cerr << irods::stacktrace().dump();
         exit( signal );
     }
 
