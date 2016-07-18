@@ -169,7 +169,7 @@ OUTPUT ruleExecOut
                 "re_rulebase_set": [{"filename": "test"}, {"filename": "core"}]
             }
             lib.update_json_file_from_dict(server_config_filename, server_config_update)
-            time.sleep(35)  # wait for delay rule engine to wake
+            lib.restart_irods_server()
 
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_log_size('re')
@@ -193,6 +193,7 @@ OUTPUT ruleExecOut
         # cleanup
         os.unlink(test_re)
         os.unlink(rule_file)
+        lib.restart_irods_server()
 
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
