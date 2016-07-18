@@ -274,18 +274,13 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 int
 _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
-    int status;
-    int l1descInx;
-    std::string resc_name;
+    int status = 0;
+    int l1descInx = 0;
 
-    /* query rcat for resource info and sort it */
-    status = getRescForCreate( rsComm, dataObjInp, resc_name );
-    if ( status < 0 || resc_name.empty() ) {
-        rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescForCreate. status = %d", status );
-        return status;
-    }
-
-    status = l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, resc_name );
+    status = l1descInx = _rsDataObjCreateWithResc(
+                             rsComm,
+                             dataObjInp,
+                             "INVALID_RESOURCE_NAME");
 
     // JMC - legacy resource - if (status < 0) {
     if ( status >= 0 ) {
@@ -397,15 +392,8 @@ _rsDataObjCreateWithResc(
         std::string leaf;
         parse.last_resc( leaf );
 
-        if ( root == _resc_name ) {
-            // backwards compatibility
-            rstrcpy( dataObjInfo->rescName, leaf.c_str(), NAME_LEN );
-            rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
-        }
-        else {
-            rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );// backwards compatibility
-            rstrcpy( dataObjInfo->rescHier, _resc_name.c_str(), MAX_NAME_LEN );// backwards compatibility
-        }
+        rstrcpy( dataObjInfo->rescName, root.c_str(), NAME_LEN );
+        rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
     }
     else {
         rstrcpy( dataObjInfo->rescName, _resc_name.c_str(), NAME_LEN );// backwards compatibility
