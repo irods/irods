@@ -1772,7 +1772,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         table = setTable( genQueryInp.selectInp.inx[i], 1,
                           genQueryInp.selectInp.value[i] & 0xf, 0 );
         if ( table < 0 ) {
-            irods::stacktrace st; st.trace(); st.dump(); // XXXX - JMC
+            std::cerr << irods::stacktrace().dump(); // XXXX - JMC
             rodsLog( LOG_ERROR, "Table for column %d not found\n",
                      genQueryInp.selectInp.inx[i] );
             return CAT_UNKNOWN_TABLE;
@@ -1831,7 +1831,7 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
         table = setTable( genQueryInp.sqlCondInp.inx[i], 0, 0,
                           castOption );
         if ( table < 0 ) {
-            irods::stacktrace st; st.trace(); st.dump(); // XXXX - JMC
+            std::cerr << irods::stacktrace().dump(); // XXXX - JMC
             rodsLog( LOG_ERROR, "Table for column %d not found\n",
                      genQueryInp.sqlCondInp.inx[i] );
             return CAT_UNKNOWN_TABLE;

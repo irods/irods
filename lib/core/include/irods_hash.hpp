@@ -22,7 +22,7 @@ namespace irods {
 
         size_t operator()( const std::string& s1 ) const {
             if ( s1.empty() ) {
-stacktrace st; st.trace(); st.dump();
+                std::cerr << irods::stacktrace().dump();
                 rodsLog(
                     LOG_NOTICE,
                     "irods_string_hash - empty string value" );

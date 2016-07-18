@@ -350,7 +350,7 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
         rodsLog(
             LOG_ERROR,
             "RESC_NAME_KW no longer used for INCLUDE_CONDINPUT_IN_QUERY, use RESC_ID_KW");
-        irods::stacktrace st; st.trace(); st.dump(); 
+        std::cerr << irods::stacktrace().dump();
     }
 
     if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
