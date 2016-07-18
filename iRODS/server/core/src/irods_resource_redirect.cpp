@@ -5,6 +5,8 @@
 #include "dataObjCreate.h"
 #include "specColl.hpp"
 #include "collection.hpp"
+#include "reFuncDefs.hpp"
+#include "getRescQuota.h"
 
 // =-=-=-=-=-=-=
 #include "irods_resource_redirect.hpp"
@@ -417,6 +419,66 @@ namespace irods {
 
     } // determine_force_write_to_new_resource
 
+    int apply_policy_for_create_operation(
+	rsComm_t*     _comm,
+	dataObjInp_t* _obj_inp,
+	std::string&  _resc_name ) {
+
+	/* query rcat for resource info and sort it */
+	ruleExecInfo_t rei;
+	initReiWithDataObjInp( &rei, _comm, _obj_inp );
+
+	int status = 0;
+	if ( _obj_inp->oprType == REPLICATE_OPR ) {
+	    status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
+	}
+	else {
+	    status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
+	}
+
+	    if ( status < 0 ) {
+		    if ( rei.status < 0 ) {
+			    status = rei.status;
+		    }
+
+		    rodsLog(
+				    LOG_NOTICE,
+				    "getRescForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+				    _obj_inp->objPath,
+				    status );
+
+		    return status;
+	    }
+
+	    // get resource name
+	    if ( !strlen( rei.rescName ) ) {
+		 irods::error set_err = irods::set_default_resource(
+				    _comm,
+				    "", "",
+				    &_obj_inp->condInput,
+				    _resc_name );
+		    if ( !set_err.ok() ) {
+			    irods::log( PASS( set_err ) );
+			    return SYS_INVALID_RESC_INPUT;
+		    }
+	    }
+	    else {
+		    _resc_name = rei.rescName;
+	    }
+
+	    status = setRescQuota(
+			    _comm,
+			    _obj_inp->objPath,
+			    _resc_name.c_str(),
+			    _obj_inp->dataSize );
+	    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
+		    return SYS_RESC_QUOTA_EXCEEDED;
+	    }
+
+
+	    return 0;
+    }
+
 /// =-=-=-=-=-=-=-
 /// @brief function to query resource for chosen server to which to redirect
 ///       for a given operation
@@ -473,7 +535,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // assign the keyword in an order, if it applies
-        char* key_word    = 0;
+        char* key_word = 0;
         if ( resc_name ) {
             key_word = resc_name;
         }
@@ -484,16 +546,6 @@ namespace irods {
             key_word = back_up_resc_name;
         }
 
-        // =-=-=-=-=-=-=-
-        // reality check: if the key_word is set, verify that the resource
-        // actually exists before moving forward.
-        if ( key_word ) {
-            resource_ptr resc;
-            error ret = resc_mgr.resolve( key_word, resc );
-            if ( !ret.ok() ) {
-                return PASS( ret );
-            }
-        }
 
         // =-=-=-=-=-=-=-
         // call factory for given obj inp, get a file_object
@@ -513,7 +565,18 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specified ( thats all we have for now )
         if ( OPEN_OPERATION  == oper ||
-                WRITE_OPERATION == oper ) {
+             WRITE_OPERATION == oper ) {
+            // =-=-=-=-=-=-=-
+            // reality check: if the key_word is set, verify that the resource
+            // actually exists before moving forward.
+            if ( key_word ) {
+                resource_ptr resc;
+                error ret = resc_mgr.resolve( key_word, resc );
+                if ( !ret.ok() ) {
+                    return PASS( ret );
+                }
+            }
+
             // =-=-=-=-=-=-=-
             // factory has already been called, test for
             // success before proceeding
@@ -545,11 +608,24 @@ namespace irods {
 
         }
         else if ( CREATE_OPERATION == oper ) {
+            std::string create_resc_name;
             // =-=-=-=-=-=-=-
             // include the default resc name if it applies
             if ( !key_word && default_resc_name ) {
-                key_word = default_resc_name;
+                create_resc_name = default_resc_name;
 
+            }
+            else if( key_word ) {
+                create_resc_name = key_word;
+            }
+            int status = apply_policy_for_create_operation(
+                             _comm,
+                             _data_obj_inp,
+                             create_resc_name );
+            if( status < 0 ) {
+                return ERROR(
+                           status,
+                           "apply_policy_for_create_operation failed");
             }
 
             // =-=-=-=-=-=-=-
@@ -560,7 +636,7 @@ namespace irods {
                 ret = resolve_hier_for_create_or_open(
                           _comm,
                           file_obj,
-                          key_word,
+                          create_resc_name.c_str(),
                           _data_obj_inp,
                           _out_hier );
 
@@ -571,7 +647,7 @@ namespace irods {
                 ret = resolve_hier_for_create(
                           _comm,
                           file_obj,
-                          key_word,
+                          create_resc_name.c_str(),
                           _data_obj_inp,
                           _out_hier );
             }

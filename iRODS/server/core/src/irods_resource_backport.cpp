@@ -4,7 +4,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
 #include <boost/lexical_cast.hpp>
-
+#include <boost/algorithm/string.hpp>
 
 namespace irods {
 
@@ -324,9 +324,11 @@ namespace irods {
 // that information in the rescGrpInfo structure
 // NOTE :: this is a reimplementation of setDefaultResc in resource.c but
 //      :: with the composite resource spin
-    error set_default_resource( rsComm_t*      _comm,   std::string   _resc_list,
-                                std::string    _option, keyValPair_t* _cond_input,
-                                std::string& _resc_name ) {
+    error set_default_resource( rsComm_t*          _comm,
+                                const std::string& _resc_list,
+                                const std::string& _option,
+                                keyValPair_t*      _cond_input,
+                                std::string&       _resc_name ) {
         // =-=-=-=-=-=-=
         // quick error check
         if ( _resc_list.empty() && NULL == _cond_input ) {
@@ -356,7 +358,7 @@ namespace irods {
             }
             else {
                 cond_input_resc = name;
-
+                boost::trim(cond_input_resc);
             }
 
         } // else if
@@ -386,7 +388,6 @@ namespace irods {
             }
 
         } // for itr
-
 
         // =-=-=-=-=-=-=-
         // determine that we might need a 'preferred' resource
@@ -458,7 +459,10 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // function which determines resource name based on
 // keyval pair and a given string
-    error resolve_resource_name( std::string _resc_name, keyValPair_t* _cond_input, std::string& _out ) {
+    error resolve_resource_name(
+        const std::string& _resc_name,
+        keyValPair_t* _cond_input,
+        std::string& _out ) {
         if ( _resc_name.empty() ) {
             char* name = 0;
             name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW );
