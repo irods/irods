@@ -336,12 +336,61 @@ irods::error proc_query_terms_for_community_server(
 
 } // proc_query_terms_for_community_server
 
+#if 0 // debug code
+int
+print_gen_query_input(
+    genQueryInp_t *genQueryInp ) {
+    if(!genQueryInp) return 0;
+
+    int i = 0, len = 0;
+    int *ip1 = 0, *ip2 = 0;
+    char *cp = 0;
+    char **cpp = 0;
+
+    printf( "maxRows=%d\n", genQueryInp->maxRows );
+
+    len = genQueryInp->selectInp.len;
+    printf( "sel len=%d\n", len );
+
+    ip1 = genQueryInp->selectInp.inx;
+    ip2 = genQueryInp->selectInp.value;
+    if( ip1 && ip2 ) {
+            for ( i = 0; i < len; i++ ) {
+                printf( "sel inx [%d]=%d\n", i, *ip1 );
+                printf( "sel val [%d]=%d\n", i, *ip2 );
+                ip1++;
+                ip2++;
+            }
+    }
+
+    len = genQueryInp->sqlCondInp.len;
+    printf( "sqlCond len=%d\n", len );
+    ip1 = genQueryInp->sqlCondInp.inx;
+    cpp = genQueryInp->sqlCondInp.value;
+    if(cpp) {
+        cp = *cpp;
+    }
+    if( ip1 && cp ) {
+            for ( i = 0; i < len; i++ ) {
+                printf( "sel inx [%d]=%d\n", i, *ip1 );
+                printf( "sel val [%d]=:%s:\n", i, cp );
+                ip1++;
+                cpp++;
+                cp = *cpp;
+            }
+    }
+
+    return 0;
+}
+#endif
+
 /* can be used for debug: */
 /* extern int printGenQI( genQueryInp_t *genQueryInp); */
-;
+
 int
 rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             genQueryOut_t **genQueryOut ) {
+
     rodsServerHost_t *rodsServerHost;
     int status;
     char *zoneHint;
@@ -350,10 +399,27 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     std::string zone_hint_str;
     if ( zoneHint ) {
         zone_hint_str = zoneHint;
+
+        // clean up path separator(s) and trailing '
+        if('/' == zone_hint_str[0]) {
+            zone_hint_str = zone_hint_str.substr(1);
+
+            std::string::size_type pos = zone_hint_str.find_first_of("/");
+            if(std::string::npos != pos ) {
+                zone_hint_str = zone_hint_str.substr(0,pos);
+            }
+        }
+        if('\'' == zone_hint_str[zone_hint_str.size()-1]) {
+            zone_hint_str = zone_hint_str.substr(0,zone_hint_str.size()-1);
+        }
+
     }
 
-    status = getAndConnRcatHost( rsComm, SLAVE_RCAT, ( const char* )zoneHint,
-                                 &rodsServerHost );
+    status = getAndConnRcatHost(
+                 rsComm,
+                 SLAVE_RCAT,
+                 zone_hint_str.c_str(),
+                 &rodsServerHost );
 
     if ( status < 0 ) {
         return status;
