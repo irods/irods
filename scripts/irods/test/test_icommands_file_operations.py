@@ -617,3 +617,121 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
             assert 'errno = {0}'.format(errno.ECONNREFUSED) in out, 'missing ECONNREFUSED errno in\n' + out
             assert 'errno = {0}'.format(errno.ECONNABORTED) not in out, 'found ECONNABORTED errno in\n' + out
             assert 'errno = {0}'.format(errno.EINVAL) not in out, 'found EINVAL errno in\n' + out
+
+    def test_iput_resc_scheme_forced(self):
+        filename = 'test_iput_resc_scheme_forced_test_file.txt'
+        filepath = lib.create_local_testfile(filename)
+        
+        # manipulate core.re and check the server log
+        corefile = IrodsConfig().core_re_directory + "/core.re"
+        with lib.file_backed_up(corefile):
+            rules_to_prepend = '''
+acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","forced"); }
+            '''
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+
+            # test as rodsuser
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.user0.assert_icommand(['iput', '-f', filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            # test as rodsadmin
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.admin.assert_icommand(['iput', '-f', filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            os.unlink(filepath) 
+
+    def test_iput_resc_scheme_preferred(self):
+        filename = 'test_iput_resc_scheme_preferred_test_file.txt'
+        filepath = lib.create_local_testfile(filename)
+        
+        # manipulate core.re and check the server log
+        corefile = IrodsConfig().core_re_directory + "/core.re"
+        with lib.file_backed_up(corefile):
+            rules_to_prepend = '''
+acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","preferred"); }
+            '''
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+
+            # test as rodsuser
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.user0.assert_icommand(['iput', '-f', filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            # test as rodsadmin
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.admin.assert_icommand(['iput', '-f', filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            os.unlink(filepath) 
+
+    def test_iput_resc_scheme_null(self):
+        filename = 'test_iput_resc_scheme_null_test_file.txt'
+        filepath = lib.create_local_testfile(filename)
+        
+        # manipulate core.re and check the server log
+        corefile = IrodsConfig().core_re_directory + "/core.re"
+        with lib.file_backed_up(corefile):
+            rules_to_prepend = '''
+acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
+            '''
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+
+            # test as rodsuser
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.user0.assert_icommand(['iput', '-f', filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+            self.user0.assert_icommand(['irm', '-f', filename]) 
+
+            # test as rodsadmin
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
+
+            self.admin.assert_icommand(['iput', '-f', filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
+            self.admin.assert_icommand(['irm', '-f', filename]) 
+
+            os.unlink(filepath) 
+
+
+
+

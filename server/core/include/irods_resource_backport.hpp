@@ -17,8 +17,8 @@ namespace irods {
     error get_resc_properties_as_kvp(const std::string&, keyValPair_t*);
     error is_resc_live( rodsLong_t );
     error is_hier_live( const std::string& );
-    error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, std::string& );
-    error resolve_resource_name( std::string, keyValPair_t*, std::string& );
+    error set_default_resource( rsComm_t*, const std::string&, const std::string&, keyValPair_t*, std::string& );
+    error resolve_resource_name( const std::string&, keyValPair_t*, std::string& );
     error get_host_status_by_host_info( rodsServerHost_t* );
     error get_host_for_hier_string(
         const std::string&,   // hier string
