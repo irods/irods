@@ -207,6 +207,48 @@ If the sender and receiver have inconsistent hash schemes defined, and the recei
 
 If the sender and receiver have inconsistent hash schemes defined, and the receiver's policy is set to 'strict', a USER_HASH_TYPE_MISMATCH error occurs.
 
+# Default Resource Configuration
+
+The placement of new Data Objects (and replicas) into a Zone is determined by the 'resolve_resource_hierarchy' function on the server to
+which the client is connected.  It takes into consideration the conditional input from the client request and the default resource as
+defined on the server (usually in core.re) and, along with the configuration of msiSetDefaultResc(), selects an appropriate target resource.
+
+When the client is an **administrator (rodsadmin)**, the following results can be expected:
+
+|  Client               |  Server                                |  Result   |  If does_not_exist       |
+| --------------------- | -------------------------------------- | --------- | ------------------------ |
+|  iput foo             |  msiSetDefaultResc('svr', 'preferred') |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'preferred') |  'myResc' |  SYS_RESC_DOES_NOT_EXIST |
+|  iput foo             |  msiSetDefaultResc('svr', 'forced')    |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'forced')    |  'myResc' |  SYS_RESC_DOES_NOT_EXIST |
+|  iput foo             |  msiSetDefaultResc('svr', 'null')      |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'null')      |  'myResc' |  'svr'                   |
+
+When the client is a **regular user (rodsuser)**, the following results can be expected:
+
+|  Client               |  Server                                |  Result   |  If does_not_exist       |
+| --------------------- | -------------------------------------- | --------- | ------------------------ |
+|  iput foo             |  msiSetDefaultResc('svr', 'preferred') |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'preferred') |  'myResc' |  SYS_RESC_DOES_NOT_EXIST |
+|  iput foo             |  msiSetDefaultResc('svr', 'forced')    |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'forced')    |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput foo             |  msiSetDefaultResc('svr', 'null')      |  'svr'    |  SYS_RESC_DOES_NOT_EXIST |
+|  iput -R 'myResc' foo |  msiSetDefaultResc('svr', 'null')      |  'myResc' |  'svr'                   |
+
+In general, a client preference will be honored by the server.
+
+The only difference between the administrator and regular user behavior is when the client
+requests a resource and the server is set to 'forced'.  In this case, an administrator can override the server
+setting and a regular user cannot.
+
+When the determined target resource does not exist, the server will return the 'SYS_RESC_DOES_NOT_EXIST' error,
+except in the case where the client sends a preference and the server is set to 'null'.  In this case, if the
+client's resource preference does not exist, the server's default resource will be used.
+
+The data placement policy is evaluated and enforced by the server to which the client is connected.  Any other
+servers involved in the data transfer will honor the evaluation by the initially connected server.
+
+
 # Special Characters
 
 The default setting for 'standard_conforming_strings' in PostgreSQL 9.1+ was changed to 'on'.  Non-standard characters in iRODS Object names will require this setting to be changed to 'off'.  Without the correct setting, this may generate a USER_INPUT_PATH_ERROR error.
