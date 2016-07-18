@@ -321,16 +321,16 @@ namespace irods {
 
                 // Update properties table
                 try {
-                    std::vector<std::string>& rem_sids = config_props_.get< std::vector< std::string > >( REMOTE_ZONE_SID_KW );
-
+                    auto& rem_sids = config_props_.get<std::vector<std::string>>(REMOTE_ZONE_SID_KW);
                     // do not want duplicate entries
-                    if ( std::find( rem_sids.begin(), rem_sids.end(), property ) == rem_sids.end() ) {
-                        rem_sids.push_back( property );
+                    if ( std::find(rem_sids.begin(), rem_sids.end(), property) == rem_sids.end() ) {
+                        rem_sids.push_back(property);
                     }
-
                 } catch ( const irods::exception& e ) {
-                    if ( e.code() != KEY_NOT_FOUND ) {
-                        rodsLog( LOG_ERROR, e.what() );
+                    if ( e.code() == KEY_NOT_FOUND ) {
+                        config_props_.set<std::vector<std::string>>(REMOTE_ZONE_SID_KW, std::vector<std::string>{property});
+                    } else {
+                        rodsLog(LOG_ERROR, e.what());
                     }
                 }
                 rodsLog( LOG_DEBUG, "%s=%s", REMOTE_ZONE_SID_KW, property.c_str() );

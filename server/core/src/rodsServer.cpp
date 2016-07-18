@@ -109,7 +109,7 @@ namespace {
                 irods::set_server_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
             } catch ( const irods::exception& e ) {
                 rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
-                return ERROR( e.code(), e.what() );
+                return irods::error(e);
             }
 
             int ret_int = setenv( SP_RE_CACHE_SALT, cache_salt.str().c_str(), 1 );
@@ -301,7 +301,7 @@ static irods::error instantiate_shared_memory( ) {
             }
         } catch ( const irods::exception& e ) {
             if ( e.code() != KEY_NOT_FOUND ) {
-                return ERROR(e.code(), e.what());
+                return irods::error(e);
             }
         }
     }
@@ -332,7 +332,7 @@ static irods::error uninstantiate_shared_memory( ) {
             }
         } catch ( const irods::exception& e ) {
             if ( e.code() != KEY_NOT_FOUND ) {
-                return ERROR(e.code(), e.what());
+                return irods::error(e);
             }
         }
     }
@@ -817,7 +817,7 @@ chkAgentProcCnt() {
         if ( e.code() == KEY_NOT_FOUND ) {
             maximum_connections = NO_MAX_CONNECTION_LIMIT;
         } else {
-            irods::log( ERROR( e.code(), e.what() ) );
+            irods::log( irods::error(e) );
             return e.code();
         }
     }
@@ -1011,7 +1011,7 @@ initServerMain( rsComm_t *svrComm ) {
     try {
         zone_port = irods::get_server_property<const int>(irods::CFG_ZONE_PORT);
     } catch ( irods::exception& e ) {
-        irods::log( e.code(), e.what() );
+        irods::log( irods::error(e) );
         return e.code();
     }
     svrComm->sock = sockOpenForInConn(

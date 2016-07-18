@@ -1169,7 +1169,7 @@ non_blockingFileCopyPlugin( int         mode,
             } catch ( const irods::exception& e ) {
                 close( outFd );
                 close( inFd );
-                return ERROR( e.code(), e.what() );
+                return irods::error(e);
             }
 
             std::vector<char> myBuf( trans_buff_size );

@@ -62,7 +62,7 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     try {
         get_re_configs( _instance_name );
     } catch ( const irods::exception& e ) {
-        return ERROR(e.code(), e.what());
+        return irods::error(e);
     }
     return SUCCESS();
 }

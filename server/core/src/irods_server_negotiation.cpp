@@ -49,7 +49,7 @@ namespace irods {
                 return SUCCESS();
             }
         } catch ( const irods::exception& e ) {
-            return ERROR ( e.code(), e.what() );
+            return irods::error(e);
         }
 
         // =-=-=-=-=-=-=-
@@ -181,7 +181,7 @@ namespace irods {
                             try {
                                 irods::set_server_property<std::string>(AGENT_CONN_KW, svr_sid);
                             } catch ( const irods::exception& e ) {
-                                return ERROR( e.code(), e.what() );
+                                return irods::error(e);
                             }
                         }
 

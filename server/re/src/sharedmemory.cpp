@@ -100,7 +100,7 @@ irods::error getSharedMemoryName( const std::string& _key, std::string &shared_m
         shared_memory_name = "irods_re_cache_shared_memory_" + _key + "_" + shared_memory_name_salt;
     } catch ( const irods::exception& e ) {
         rodsLog( LOG_ERROR, "getSharedMemoryName: failed to retrieve re cache salt from server_properties\n%s", e.what() );
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
     return SUCCESS();
 }

@@ -144,7 +144,7 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
             }
         }
     } catch (const irods::exception& e) {
-        return ERROR(e.code(), e.what());
+        return irods::error(e);
     } catch (const boost::bad_any_cast& e) {
         return ERROR(INVALID_ANY_CAST, e.what());
     } catch (const std::out_of_range& e) {

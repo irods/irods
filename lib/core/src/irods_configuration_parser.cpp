@@ -105,7 +105,7 @@ namespace irods {
                 }
             }
         } catch ( const irods::exception& e ) {
-            ret = ERROR( e.code(), e.what());
+            ret = irods::error(e);
         } catch ( const boost::bad_any_cast& ) {
             ret = ERROR(INVALID_ANY_CAST, "configuration file did not contain a json object.");
         }

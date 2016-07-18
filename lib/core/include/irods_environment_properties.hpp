@@ -40,7 +40,7 @@ namespace irods {
                 try {
                     _val = get_property<T>( _key );
                 } catch ( const irods::exception& e ) {
-                    return ERROR(e.code(), e.what());
+                    return irods::error(e);
                 }
                 return SUCCESS();
             }

@@ -188,7 +188,7 @@ xmsgServerMain() {
                         NULL,
                         SOCK_STREAM );
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 

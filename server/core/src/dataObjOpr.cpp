@@ -1226,7 +1226,7 @@ chkOrphanFile(
                 return e.code();
             }
         } else {
-            irods::log( ERROR( e.code(), e.what() ) );
+            irods::log( irods::error(e) );
             return e.code();
         }
     }
