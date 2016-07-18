@@ -11,16 +11,11 @@ namespace irods {
         const std::string& _function_name ) :
         std::exception(),
         code_( _code ),
-        line_number_( _line_number ) {
+        line_number_( _line_number ),
+        stacktrace_() {
         message_stack_.push_back( _message );
         file_name_     = _file_name;
         function_name_ = _function_name;
-
-        std::stringstream ss;
-        stacktrace st;
-        st.trace();
-        st.dump( ss );
-        stack_trace_ = ss.str();
 
     } // exception
 
@@ -39,7 +34,7 @@ namespace irods {
         line_number_( _rhs.line_number_ ),
         function_name_( _rhs.function_name_ ),
         file_name_( _rhs.file_name_ ),
-        stack_trace_( _rhs.stack_trace_ ) {
+        stacktrace_( _rhs.stacktrace_ ) {
     }
 
     exception::~exception() throw() {
@@ -67,7 +62,7 @@ namespace irods {
                 << message
                 << "stack trace:" << std::endl
                 << "--------------" << std::endl
-                << stack_trace_ << std::endl;
+                << stacktrace_.dump() << std::endl;
 
         what_ = what_ss.str();
 

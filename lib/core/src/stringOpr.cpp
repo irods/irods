@@ -60,7 +60,7 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
         return dest;
     }
     else if ( status >= 0 ) {
-        irods::stacktrace st; st.trace(); st.dump();
+        std::cerr << irods::stacktrace().dump();
         rodsLog( LOG_ERROR,
                  "rstrcpy not enough space in dest, slen:%d, maxLen:%d src [%s]",
                  status, maxLen, src );
