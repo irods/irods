@@ -1912,7 +1912,7 @@ irods::error db_open_op(
         snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_DB_PASSWORD_KW).c_str());
         snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_CATALOG_DATABASE_TYPE_KW).c_str());
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
 
     // =-=-=-=-=-=-=-
@@ -1944,7 +1944,7 @@ irods::error db_open_op(
         snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(PAM_PW_MIN_TIME_KW).c_str());
         snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(PAM_PW_MAX_TIME_KW).c_str());
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
 
     if ( irods_pam_auth_no_extend ) {
@@ -6777,7 +6777,7 @@ irods::error db_check_auth_op(
     try {
         temp_password_max_time = irods::get_advanced_setting<const int>(irods::CFG_MAX_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
 
     if ( expireTime < temp_password_max_time ) {
@@ -6785,7 +6785,7 @@ irods::error db_check_auth_op(
         try {
             temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
         } catch ( const irods::exception& e ) {
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         /* in the form used by temporary, one-time passwords */
@@ -6980,7 +6980,7 @@ irods::error db_make_temp_pw_op(
     try {
         temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
 
     // =-=-=-=-=-=-=-
@@ -7149,7 +7149,7 @@ irods::error db_make_limited_pw_op(
     try {
         temp_password_time = irods::get_advanced_setting<const int>(irods::CFG_DEF_TEMP_PASSWORD_LIFETIME);
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
 
     // =-=-=-=-=-=-=-

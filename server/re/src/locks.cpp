@@ -63,7 +63,7 @@ irods::error getMutexName( const char* _inst_name, std::string &mutex_name ) {
         mutex_name += mutex_name_salt;
     } catch ( const irods::exception& e ) {
         rodsLog( LOG_ERROR, "getMutexName: failed to retrieve re cache salt from server_properties\n%s", e.what() );
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
     return SUCCESS();
 }

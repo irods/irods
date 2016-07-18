@@ -58,7 +58,7 @@ namespace irods {
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         // stringify the port
@@ -195,7 +195,7 @@ namespace irods {
                 // in question is not running
                 return SUCCESS();
             }
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         std::stringstream pid_str; pid_str << svr_pid;
@@ -231,7 +231,7 @@ namespace irods {
         try {
             sleep_time_out_milli_sec = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_TIMEOUT);
         } catch ( const irods::exception& e ) {
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         if ( SERVER_CONTROL_FORCE_AFTER_KW == _wait_option ) {
@@ -1107,7 +1107,7 @@ namespace irods {
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         // decrypt the message before passing to avro

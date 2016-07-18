@@ -129,7 +129,7 @@ static irods::error unix_file_copy(
                 } catch ( const irods::exception& e ) {
                     close( inFd );
                     close( outFd );
-                    return ERROR( e.code(), e.what() );
+                    return irods::error(e);
                 }
 
                 std::vector<char> myBuf( trans_buff_size );

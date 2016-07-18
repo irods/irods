@@ -67,7 +67,7 @@ initServerInfo( rsComm_t *rsComm ) {
             // do not error out
         }
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
@@ -200,7 +200,7 @@ initRcatServerHostByFile() {
         tmp_host->rcatEnabled = LOCAL_ICAT;
 
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
@@ -232,7 +232,7 @@ initRcatServerHostByFile() {
         try {
             snprintf( localSID, sizeof( localSID ), "%s", irods::get_server_property<const std::string>(LOCAL_ZONE_SID_KW).c_str() );
         } catch ( const irods::exception& e ) {
-            irods::log( ERROR( e.code(), e.what() ) );
+            irods::log( irods::error(e) );
             return e.code();
         }
     }
@@ -288,7 +288,7 @@ initRcatServerHostByFile() {
                         const auto& neg_key = irods::get_server_property<const std::string>(irods::CFG_NEGOTIATION_KEY_KW);
                         remote_SID_key_map[fed_zone_name] = std::make_pair( fed_zone_key, neg_key );
                     } catch ( const irods::exception& e ) {
-                        irods::log( ERROR( e.code(), e.what() ) );
+                        irods::log( irods::error(e) );
                         return e.code();
                     }
                 }
@@ -315,7 +315,7 @@ initZone( rsComm_t *rsComm ) {
     try {
         zone_name.reset(irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME));
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
@@ -700,7 +700,7 @@ int initHostConfigByFile() {
 
         } // for i
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
@@ -737,7 +737,7 @@ initRsComm( rsComm_t *rsComm ) {
         rsComm->clientUser.authInfo.authFlag =
             rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 
@@ -1058,7 +1058,7 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
         rstrcpy( rsComm->proxyUser.rodsZone,  zone_name.c_str(), NAME_LEN );
         rstrcpy( rsComm->clientUser.rodsZone, zone_name.c_str(), NAME_LEN );
     } catch ( const irods::exception& e ) {
-        irods::log( ERROR( e.code(), e.what() ) );
+        irods::log( irods::error(e) );
         return e.code();
     }
 

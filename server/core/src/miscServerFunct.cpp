@@ -3064,7 +3064,7 @@ irods::error setRECacheSaltFromEnv() {
             irods::set_server_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
         } catch ( const irods::exception& e ) {
             rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
-            return ERROR( e.code(), e.what() );
+            return irods::error(e);
         }
 
         return SUCCESS();
@@ -3185,7 +3185,7 @@ irods::error get_catalog_service_role(
     try {
         _role = irods::get_server_property<const std::string>(irods::CFG_CATALOG_SERVICE_ROLE);
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
     return SUCCESS();
 
@@ -3196,7 +3196,7 @@ irods::error get_default_rule_plugin_instance(
     try {
         _instance_name = irods::get_server_property<const std::string>(irods::DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW);
     } catch ( const irods::exception& e ) {
-        return ERROR( e.code(), e.what() );
+        return irods::error(e);
     }
     return SUCCESS();
 
