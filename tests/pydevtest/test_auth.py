@@ -176,3 +176,48 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         print initial_contents
         print final_contents
         assert initial_contents == final_contents
+
+    def test_blacklist(self):
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+        with lib.file_backed_up(server_config_filename):
+            server_config_update = {
+                'controlled_user_connection_list' : {
+                    'control_type' : 'blacklist',
+                    'users' : [
+                        'user1#tempZone',
+                        'user2#otherZone',
+                        '#'.join([self.user_sessions[0].username, self.user_sessions[0].zone_name]),
+                        'user4#otherZone'
+                    ]
+                }
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            lib.restart_irods_server()
+            self.user_sessions[0].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
+            self.user_sessions[1].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
+        lib.restart_irods_server()
+
+    def test_whitelist(self):
+        server_config_filename = lib.get_irods_config_dir() + '/server_config.json'
+        with lib.file_backed_up(server_config_filename):
+            service_account = lib.get_service_account_environment_file_contents()
+            server_config_update = {
+                'controlled_user_connection_list' : {
+                    'control_type' : 'whitelist',
+                    'users' : [
+                        'user1#tempZone',
+                        'user2#otherZone',
+                        '#'.join([self.user_sessions[0].username, self.user_sessions[0].zone_name]),
+                        '#'.join([service_account['irods_user_name'], service_account['irods_zone_name']]),
+                        'user4#otherZone'
+                    ]
+                }
+            }
+            lib.update_json_file_from_dict(server_config_filename, server_config_update)
+
+            lib.restart_irods_server()
+            self.user_sessions[0].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
+            self.user_sessions[1].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
+        lib.restart_irods_server()
+
