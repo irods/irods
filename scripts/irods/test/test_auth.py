@@ -16,6 +16,7 @@ from . import settings
 from .. import lib
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from .. import paths
 from . import resource_suite
 from . import session
 
@@ -200,3 +201,46 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         l.debug("initial contents:\n%s", initial_contents)
         l.debug("final contents:\n%s", final_contents)
         assert initial_contents == final_contents
+
+    def test_blacklist(self):
+        with lib.file_backed_up(paths.server_config_path()):
+            server_config_update = {
+                'controlled_user_connection_list' : {
+                    'control_type' : 'blacklist',
+                    'users' : [
+                        'user1#tempZone',
+                        'user2#otherZone',
+                        '#'.join([self.user_sessions[0].username, self.user_sessions[0].zone_name]),
+                        'user4#otherZone'
+                    ]
+                }
+            }
+            lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
+
+            IrodsController().restart()
+            self.user_sessions[0].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
+            self.user_sessions[1].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
+        IrodsController().restart()
+
+    def test_whitelist(self):
+        with lib.file_backed_up(paths.server_config_path()):
+            service_account = IrodsConfig().client_environment
+            server_config_update = {
+                'controlled_user_connection_list' : {
+                    'control_type' : 'whitelist',
+                    'users' : [
+                        'user1#tempZone',
+                        'user2#otherZone',
+                        '#'.join([self.user_sessions[0].username, self.user_sessions[0].zone_name]),
+                        '#'.join([service_account['irods_user_name'], service_account['irods_zone_name']]),
+                        'user4#otherZone'
+                    ]
+                }
+            }
+            lib.update_json_file_from_dict(paths.server_config_path(), server_config_update)
+
+            IrodsController().restart()
+            self.user_sessions[0].assert_icommand( 'ils', 'STDOUT_SINGLELINE', '/home' )
+            self.user_sessions[1].assert_icommand( 'ils', 'STDERR_SINGLELINE', 'SYS_USER_NOT_ALLOWED_TO_CONN' )
+        IrodsController().restart()
+
