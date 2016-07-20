@@ -359,9 +359,11 @@ extern "C" {
                          props,
                          irods::CFG_IRODS_LOG_LEVEL_KW,
                          _env->rodsLogLevel );
-        if ( status == 0 ) {
+        if ( status == 0 && _env->rodsLogLevel > 0 ) {
+            if( _env->rodsLogLevel < LOG_SYS_FATAL ) {
+                _env->rodsLogLevel = LOG_SYS_FATAL;
+            }
             rodsLogLevel( _env->rodsLogLevel );
-
         }
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
@@ -682,8 +684,12 @@ extern "C" {
         capture_integer_env_var(
             env_var,
             _env->rodsLogLevel );
-        if ( _env->rodsLogLevel ) {
-            rodsLogLevel( _env->rodsLogLevel ); /* go ahead and process it */
+        if( _env->rodsLogLevel ) {
+            if( _env->rodsLogLevel < LOG_SYS_FATAL ) {
+                _env->rodsLogLevel = LOG_SYS_FATAL;
+            }
+
+            rodsLogLevel( _env->rodsLogLevel );
         }
 
         memset( _env->rodsAuthFile, 0, sizeof( _env->rodsAuthFile ) );
