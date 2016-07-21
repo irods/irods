@@ -386,7 +386,7 @@ print_gen_query_input(
 
 /* can be used for debug: */
 /* extern int printGenQI( genQueryInp_t *genQueryInp); */
-;
+
 int
 rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
             genQueryOut_t **genQueryOut ) {
@@ -400,9 +400,14 @@ rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     if ( zoneHint ) {
         zone_hint_str = zoneHint;
 
-        // clean up leading / and trailing '
+        // clean up path separator(s) and trailing '
         if('/' == zone_hint_str[0]) {
             zone_hint_str = zone_hint_str.substr(1);
+
+            std::string::size_type pos = zone_hint_str.find_first_of("/");
+            if(std::string::npos != pos ) {
+                zone_hint_str = zone_hint_str.substr(0,pos);
+            }
         }
         if('\'' == zone_hint_str[zone_hint_str.size()-1]) {
             zone_hint_str = zone_hint_str.substr(0,zone_hint_str.size()-1);
