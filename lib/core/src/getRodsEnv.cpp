@@ -319,7 +319,7 @@ extern "C" {
                          props,
                          irods::CFG_IRODS_LOG_LEVEL_KW,
                          _env->rodsLogLevel );
-        if ( status == 0 ) {
+        if ( status == 0 && _env->rodsLogLevel > 0 ) {
             if( _env->rodsLogLevel < LOG_SYS_FATAL ) {
                 _env->rodsLogLevel = LOG_SYS_FATAL;
             }
