@@ -277,8 +277,9 @@ target_link_libraries(
   irods_client_core
   PRIVATE
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   ${OPENSSL_SSL_LIBRARY}
@@ -845,6 +846,7 @@ add_library(
 target_link_libraries(
   irods_common
   PRIVATE
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   )
@@ -894,6 +896,7 @@ add_library(
 target_link_libraries(
   irods_plugin_dependencies
   PRIVATE
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   )
 target_include_directories(
