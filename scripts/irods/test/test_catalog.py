@@ -23,6 +23,17 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Catalog, self).tearDown()
 
+    def test_case_sensitivity(self):
+        self.user0.assert_icommand(['iput', self.testfile, 'a'])
+        self.user0.assert_icommand(['iput', self.testfile, 'A'])
+        self.user0.assert_icommand(['irm', 'a'])
+        self.user0.assert_icommand(['irm', 'A'])
+
+    def test_no_distinct(self):
+        assert_icommand(['iquest', 'no-distinct', 'select RESC_ID'], STDOUT_SINGLELINE, 'RESC_ID = ');
+
+
+
     ###################
     # izonereport
     ###################

@@ -76,6 +76,43 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     # iadmin
     ###################
 
+    def test_tokens(self):
+        self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username])
+        self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], STDOUT_SINGLELINE, 'rodstest')
+        self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], STDOUT_SINGLELINE, 'token_name: rodstest')
+        self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'])
+
+    def test_moduser(self):
+        username = 'moduser_user'
+        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+        try :
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'invalid_user_type'], STDERR_SINGLELINE, 'CAT_INVALID_USER_TYPE')
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsadmin'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsuser'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'zone', 'tempZone'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'comment', 'this is a comment'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'comment', ''])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'info', 'this is the info field'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'info', ''])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'password', 'abc'])
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'password', '1234'])
+        finally :
+            self.admin.assert_icommand(['iadmin', 'rmuser', username])
+
+    def test_authentication_name(self):
+        username = 'moduser_user'
+        authentication_name = 'asdfsadfsadf/dfadsf/dadf/d/'
+        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+        try :
+            self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+            self.admin.assert_icommand(['iadmin', 'lua', username], STDOUT_SINGLELINE, authentication_name)
+            self.admin.assert_icommand(['iadmin', 'lua', '#'.join([username, 'tempZone'])], STDOUT_SINGLELINE, authentication_name)
+            self.admin.assert_icommand(['iadmin', 'lua'], STDOUT_SINGLELINE, username)
+            self.admin.assert_icommand(['iadmin', 'luan', authentication_name], STDOUT_SINGLELINE, username)
+            self.admin.assert_icommand(['iadmin', 'rua', username, authentication_name])
+        finally :
+            self.admin.assert_icommand(['iadmin', 'rmuser', username])
+
     # PASSWORDS
 
     def test_iadmin_scrambling_and_descrambling(self):
@@ -1159,7 +1196,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'lz'], 'STDOUT_SINGLELINE', self.admin.zone_name)
         self.admin.assert_icommand(['iadmin', 'lz', self.admin.zone_name], 'STDOUT_SINGLELINE', 'zone_type_name: local')
         self.admin.assert_icommand(['iadmin', 'lg'], 'STDOUT_SINGLELINE', 'rodsadmin')
-        self.admin.assert_icommand(['iadmin', 'lg', 'rodsadmin'], 'STDOUT_SINGLELINE', self.admin.username)
+        self.admin.assert_icommand(['iadmin', 'lg', 'rodsadmin'], 'STDOUT_SINGLELINE')
         self.admin.assert_icommand(['iadmin', 'lgd', 'rodsadmin'], 'STDOUT_SINGLELINE', 'user_name: rodsadmin')
         self.admin.assert_icommand(['iadmin', 'lrg'], 'STDERR_SINGLELINE', 'Resource groups are deprecated.')
 
