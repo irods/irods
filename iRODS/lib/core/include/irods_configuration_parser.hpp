@@ -52,7 +52,7 @@ namespace irods {
                 if ( _key.empty() ) {
                     THROW( -1, "\"set\" requires at least one key");
                 }
-                key_path_t::const_iterator it = _key.cbegin();
+                key_path_t::const_iterator it = _key.begin();
                 std::map<std::string, boost::any> * cur_map = &root_;
                 while ( true ) {
                     const std::string& cur_key = *it;
@@ -97,7 +97,7 @@ namespace irods {
                 if ( _key.empty() ) {
                     THROW( -1, "\"get\" requires at least one key");
                 }
-                key_path_t::const_iterator it = _key.cbegin();
+                key_path_t::const_iterator it = _key.begin();
                 std::map<std::string, boost::any> * cur_map = &root_;
                 while ( true ) {
                     const std::string& cur_key = *it;
