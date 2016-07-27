@@ -2,11 +2,11 @@
 
 ## 4.1.9
 
-Release Date: 2016-07-27
+Release Date: 2016-07-28
 
 ### Features
 
- - Support for libs3 multipart, V4 auth, and non-Amazon datestamps [#3168] [#3174]
+ - Support for libs3 multipart, V4 auth, and non-Amazon datestamps [#3168] [#3174] [#3233]
 
 ### Bug Fixes
 
