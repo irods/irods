@@ -923,12 +923,6 @@ msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *opr, msParam_t *valu
 **/
 int
 msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei ) {
-    genQueryOut_t *genQueryOut;
-    char *format_str;
-    bytesBuf_t *bytesBuf;
-    FILE *stream;
-    char readbuffer[MAX_NAME_LEN];
-
     /*************************************  INIT **********************************/
 
     /* For testing mode when used with irule --test */
@@ -940,7 +934,6 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-
     /********************************** PARAM PARSING  *********************************/
 
     /* Check for proper param type */
@@ -948,30 +941,22 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: Invalid input for queryOut." );
         return USER_PARAM_TYPE_ERR;
     }
-    genQueryOut = ( genQueryOut_t * )queryOut->inOutStruct;
-
+    genQueryOut_t *genQueryOut = (genQueryOut_t*)queryOut->inOutStruct;
 
     /* Parse format */
-    format_str = parseMspForStr( format );
-
+    char *format_str = parseMspForStr( format );
 
     /********************************** EXTRACT SQL RESULTS  *********************************/
 
     /* Let's use printGenQueryOut() here for the sake of consistency over efficiency (somewhat). It needs a stream. */
-    char filename[MAX_NAME_LEN];
-    
-    struct passwd *pw = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
-
-    sprintf(filename,"%s/scripts/irods/test/msiPrintGenQueryOutToBufferXXXXXXXXXXXXXX", homedir);
-    filename[sizeof( filename ) - 1] = '\0';
+    char filename[] = "/tmp/msiPrintGenQueryOutToBufferXXXXXX";
     umask( S_IRUSR | S_IWUSR );
     int fd = mkstemp( filename );
     if ( fd < 0 ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: mkstemp() failed. [%s] %d - %d", filename, fd, errno );
         return ( FILE_OPEN_ERR ); /* accurate enough */
     }
-    stream = fdopen( fd, "w" );
+    FILE *stream = fdopen( fd, "w" );
     if ( !stream ) { /* Since it won't be caught by printGenQueryOut */
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: fdopen() failed." );
         return ( FILE_OPEN_ERR ); /* accurate enough */
@@ -986,12 +971,13 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     }
 
     /* bytesBuf init */
-    bytesBuf = ( bytesBuf_t * )malloc( sizeof( bytesBuf_t ) );
-    memset( bytesBuf, 0, sizeof( bytesBuf_t ) );
+    bytesBuf_t *bytesBuf = (bytesBuf_t*)malloc(sizeof(*bytesBuf));
+    memset( bytesBuf, 0, sizeof( *bytesBuf ) );
 
     /* Read from temp file and write to bytesBuf */
     rewind( stream );
-    while ( fgets( readbuffer, MAX_NAME_LEN, stream ) != NULL ) {
+    char readbuffer[MAX_NAME_LEN];
+    while ( fgets( readbuffer, sizeof(readbuffer), stream ) != NULL ) {
         appendToByteBuf( bytesBuf, readbuffer );
     }
 
@@ -1008,6 +994,3 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     return 0;
 
 }
-
-
-
