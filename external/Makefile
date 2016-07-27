@@ -60,6 +60,7 @@ FAKETARGETFORMAKE=FakeTargetForMake
 
 LIBARCHIVESEDCMD="/^\#ifdef HAVE_LINUX_FIEMAP_H/i \#ifdef HAVE_LINUX_TYPES_H\x0a\#include \<linux/types.h\>\x0a\#endif"
 
+OSXSSL+=/usr/local/opt/openssl
 
 PG_VERSION=9.3.4
 UNIXODBC_VERSION=2.2.12
@@ -136,7 +137,7 @@ $(LIBS3VERSIONMAKE) : $(LIBS3VERSIONARCHIVE)
 
 libs3 : $(LIBS3VERSIONMAKE)
 	$(V_at)if [ $(OSNAME) = "MacOSX" ] ; then \
-		CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION) -f GNUmakefile.osx; \
+		CFLAGS="-fPIC -I$(OSXSSL)/include" LDFLAGS="-L$(OSXSSL)/lib -lssl -lcrypto" $(MAKE) -C $(LIBS3VERSION) -f GNUmakefile.osx; \
 		else \
 		CFLAGS=-fPIC $(MAKE) -C $(LIBS3VERSION); \
 		fi
