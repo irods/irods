@@ -514,8 +514,8 @@ f 644 root root ${LIBDIR}/irods/externals/  ./external/netcdf-4.3.2/libsrc/.libs
 
 
 
-f 644 root root /usr/include/irods/libs3.h ./external/libs3-c1982dbb/inc/libs3.h
-f 644 root root ${LIBDIR}/irods/externals/libs3.a ./external/libs3-c1982dbb/build/lib/libs3.a
+f 644 root root /usr/include/irods/libs3.h ./external/libs3-a30e55e8/inc/libs3.h
+f 644 root root ${LIBDIR}/irods/externals/libs3.a ./external/libs3-a30e55e8/build/lib/libs3.a
 
 
 f 644 root root ${LIBDIR}/irods/externals/libepm.a ./external/epm/libepm.a
