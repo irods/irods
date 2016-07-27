@@ -65,29 +65,31 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
         return status;
     }
 
-    struct passwd *pw = getpwuid(getuid());
-    const char *homedir = pw->pw_dir;
+    char fName[] = "/tmp/irods_mailFileXXXXXXXXXX";
+    int fd = mkstemp( fName );
+    if (fd < 0) {
+        rodsLog(LOG_ERROR, "msiSendMail: mkstemp() failed [%s] %d - %d", fName, fd, errno);
+        return FILE_OPEN_ERR;
+    }
 
-    char fName[MAX_NAME_LEN];
-    sprintf( fName, "%s/scripts/irods/test/mailFile%d.ml", homedir, getpid() );
-    FILE* fd = fopen( fName, "w" );
-    if ( fd == NULL ) {
+    FILE* file = fdopen(fd, "w");
+    if ( file == NULL ) {
         rodsLog( LOG_ERROR, "failed to create file [%s] errno %d", fName, errno );
         return FILE_CREATE_ERROR;
     }
 #ifdef solaris_platform
     if ( strlen( subjectLine ) > 0 ) {
-        fprintf( fd, "Subject:%s\n\n", subjectLine );
+        fprintf( file, "Subject:%s\n\n", subjectLine );
     }
 #endif
     const char * t1 = body;
     while ( const char * t2 = strstr( t1, "\\n" ) ) {
-        fwrite( t1, sizeof( *t1 ), t2 - t1, fd );
-        fprintf( fd, "\n" );
+        fwrite( t1, sizeof( *t1 ), t2 - t1, file );
+        fprintf( file, "\n" );
         t1 = t2 + 2;
     }
-    fprintf( fd, "%s\n", t1 );
-    fclose( fd );
+    fprintf( file, "%s\n", t1 );
+    fclose( file );
     char * mailStr = ( char* )malloc( strlen( toAddr ) + strlen( subjectLine ) + 100 );
     if ( mailStr == NULL ) {
         return SYS_MALLOC_ERR;
@@ -116,4 +118,3 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     free( mailStr );
     return 0;
 }
-
