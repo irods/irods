@@ -836,7 +836,8 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
                 irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE>(irods::re_plugin_globals->global_re_mgr, rei);
 
             irods::error err;
-            std::list<std::string> args_storage;
+            std::vector<std::string> args_storage;
+            args_storage.reserve(nargs);
             std::list<boost::any> args2;
             for(unsigned int i = 0; i < nargs; i++) {
                 args_storage.emplace_back(args[i]->text);
@@ -844,7 +845,7 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
             }
             err = re_ctx_mgr.exec_rule(action, irods::unpack(args2));
             for(unsigned int i = 0; i < nargs; i++) {
-                args[i] = newStringRes(r, args_storage.back().c_str());
+                args[i] = newStringRes(r, args_storage[i].c_str());
             }
             if(err.ok()) {
                 return newIntRes(r, err.code() );
