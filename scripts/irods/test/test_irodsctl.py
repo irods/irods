@@ -44,13 +44,13 @@ class Test_Irodsctl(unittest.TestCase):
                     irodsctl_fullpath = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
 
                     if lib.is_jsonschema_installed():
-                        expected_lines = ['Validating [/var/lib/irods/.irods/irods_environment.json]... Success',
-                                          'Validating [/etc/irods/server_config.json]... Success',
-                                          'Validating [/var/lib/irods/VERSION.json]... Success',
-                                          'Validating [/etc/irods/hosts_config.json]... Success',
-                                          'Validating [/etc/irods/host_access_control_config.json]... Success']
+                        expected_lines = ['Validating [{0}/.irods/irods_environment.json]... Success'.format(IrodsConfig().home_directory),
+                                          'Validating [{0}/server_config.json]... Success'.format(IrodsConfig().config_directory),
+                                          'Validating [{0}/VERSION.json]... Success'.format(IrodsConfig().irods_directory),
+                                          'Validating [{0}/hosts_config.json]... Success'.format(IrodsConfig().config_directory),
+                                          'Validating [{0}/host_access_control_config.json]... Success'.format(IrodsConfig().config_directory)]
                         if not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER:
-                            expected_lines.append('Validating [/etc/irods/database_config.json]... Success')
+                            expected_lines.append('Validating [{0}/database_config.json]... Success'.format(IrodsConfig().config_directory))
                         assert_command([irodsctl_fullpath, 'restart'], 'STDOUT_MULTILINE', expected_lines)
                     else:
                         assert_command([irodsctl_fullpath, 'restart'], 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=0)
