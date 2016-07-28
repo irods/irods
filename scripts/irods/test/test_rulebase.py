@@ -73,6 +73,25 @@ OUTPUT ruleExecOut
 
         assert( not file_contents.endswith('\0') )
 
+    def test_irods_re_infinite_recursion_3169(self):
+        rules_to_prepend = """
+call_with_wrong_number_of_string_arguments(*A, *B, *C) {
+}
+
+acPostProcForPut {
+  call_with_wrong_number_of_string_arguments("a", "b");
+}
+"""
+        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        with lib.file_backed_up(corefile):
+            time.sleep(2) # remove once file hash fix is commited #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(2) # remove once file hash fix is commited #2279
+
+            test_file = 'rulebasetestfile'
+            lib.touch(test_file)
+            self.admin.assert_icommand(['iput', test_file])
+
     def test_acPostProcForPut_replicate_to_multiple_resources(self):
         # create new resources
         hostname = socket.gethostname()
