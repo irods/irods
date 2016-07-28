@@ -804,19 +804,34 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
     snprintf( action, sizeof( action ), "%s", actionName );
     mapExternalFuncToInternalProc2( action );
 
-    /* no action (microservice) found, try to lookup a rule */
+    // this rule engine prioritizes its own rules before using the pluggable rule engine framework
     Res *actionRet = execRule( actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r );
     if ( getNodeType( actionRet ) == N_ERROR && (
                 RES_ERR_CODE( actionRet ) == NO_RULE_FOUND_ERR ) ) {
 
-        bool supported = true;
-        for(unsigned int i = 0; i < nargs; i++) {
-            if(TYPE(args[i]) != T_STRING) {
-                supported = false;
+        bool safe_to_redirect_to_re_framework = true;
+        // found rule and execution failed
+        if ( getNodeType( actionRet ) == N_ERROR ) {
+            safe_to_redirect_to_re_framework = false;
+        }
+
+        // actionName aka rule name was found, so must have failed because had the wrong number of arguments.
+        // pluggable rule engine framework does not check type signature of rules when matching (rule_exists
+        //  operation only checks the rule name) so don't forward to framework to prevent infinite recursion
+        if ( lookupFromEnv(ruleEngineConfig.extFuncDescIndex, actionName) != NULL ) {
+            safe_to_redirect_to_re_framework = false;
+        }
+
+        // currently, pluggable rule engine framework only supports strings as arguments
+        //  once avro serialization is added, this needs to be removed
+        for (unsigned int i = 0; i < nargs; i++) {
+            if (TYPE(args[i]) != T_STRING) {
+                safe_to_redirect_to_re_framework = false;
                 break;
             }
         }
-        if(supported) {
+
+        if (safe_to_redirect_to_re_framework) {
             irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE> re_ctx_mgr =
                 irods::rule_engine_context_manager<irods::unit, ruleExecInfo_t*, irods::AUDIT_RULE>(irods::re_plugin_globals->global_re_mgr, rei);
 
