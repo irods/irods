@@ -6,6 +6,7 @@ else:
     import unittest2 as unittest
 import os
 import socket
+import tempfile
 import time  # remove once file hash fix is commited #2279
 import copy
 import inspect
@@ -282,6 +283,23 @@ OUTPUT ruleExecOut
         os.unlink(test_re)
         os.unlink(rule_file)
 
+    def test_argument_preservation__3236(self):
+        with tempfile.NamedTemporaryFile(suffix='.r') as f:
+
+            rule_string = """
+test_msiDataObjWrite__3236 {
+   msiTakeThreeArgumentsAndDoNothing(*arg1, *arg2, *arg3);
+   writeLine("stdout", "AFTER arg1=*arg1 arg2=*arg2 arg3=*arg3");
+}
+INPUT *arg1="abc", *arg2="def", *arg3="ghi"
+OUTPUT ruleExecOut
+"""
+            f.write(rule_string)
+            f.flush()
+
+            self.admin.assert_icommand('irule -F ' + f.name, 'STDOUT_SINGLELINE', 'AFTER arg1=abc arg2=def arg3=ghi')
+
+
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
@@ -504,3 +522,4 @@ OUTPUT ruleExecOut
         # cleanup
         user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
         os.unlink(test_re)
+

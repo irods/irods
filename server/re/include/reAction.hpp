@@ -147,6 +147,8 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei );
 int msiDoSomething( msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei );
 int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecInfo_t *rei );
 
+int msiTakeThreeArgumentsAndDoNothing(msParam_t *arg1, msParam_t *arg2, msParam_t *arg3, ruleExecInfo_t *rei);
+
 
 #include "irods_ms_plugin.hpp"
 
@@ -288,6 +290,7 @@ namespace irods {
         table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiCutBufferInHalf ) );
         table_[ "msiDoSomething" ] = new irods::ms_table_entry( "msiDoSomething", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDoSomething ) );
         table_[ "msiSysMetaModify" ] = new irods::ms_table_entry( "msiSysMetaModify", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSysMetaModify ) );
+        table_[ "msiTakeThreeArgumentsAndDoNothing" ] = new irods::ms_table_entry( "msiTakeThreeArgumentsAndDoNothing", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTakeThreeArgumentsAndDoNothing ) );
 
     }; // ms_table::ms_table
 

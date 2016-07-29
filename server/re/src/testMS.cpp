@@ -140,3 +140,14 @@ msiDoSomething( msParam_t *, msParam_t *outParam, ruleExecInfo_t * rei ) {
 
     return 0;
 }
+
+int
+msiTakeThreeArgumentsAndDoNothing(
+    msParam_t* arg1,
+    msParam_t* arg2,
+    msParam_t* arg3,
+    ruleExecInfo_t* rei) {
+
+    return 0;
+}
+
