@@ -158,6 +158,8 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
       irods_common
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
       ${ODBC_LIBRARY}
+      ${OPENSSL_SSL_LIBRARY}
+      ${OPENSSL_CRYPTO_LIBRARY}
       )
     target_compile_definitions(test_${TEST_BINARY}_${PLUGIN} PRIVATE ${IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
     target_compile_options(test_${TEST_BINARY}_${PLUGIN} PRIVATE -Wno-write-strings)
