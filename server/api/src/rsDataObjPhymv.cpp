@@ -2,16 +2,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "dataObjPhymv.h"
-//#include "reFuncDefs.hpp"
 #include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
 #include "icatDefines.h"
-//#include "reSysDataObjOpr.hpp"
 #include "dataObjCreate.h"
 #include "getRemoteZoneResc.h"
 #include "physPath.hpp"
@@ -20,6 +16,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
 #include "irods_resource_backport.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 irods::error test_source_replica_for_write_permissions(
@@ -131,7 +128,6 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int remoteFlag = 0;
     rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
-    std::string resc_name;
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
@@ -167,13 +163,13 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // determine hierarchy string
 	char* dest_hier_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+    std::string dest_hier;
     if ( NULL == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
-        std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy(
 			irods::CREATE_OPERATION,
 			rsComm,
 			dataObjInp,
-			hier );
+			dest_hier );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -184,13 +180,16 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
 
         // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
+        // we resolved the redirect and have a host, set the dest_hier str for subsequent
         // api calls, etc.
         addKeyVal(
 		    &dataObjInp->condInput,
 			DEST_RESC_HIER_STR_KW,
-			hier.c_str() );
+			dest_hier.c_str() );
     } // if keyword
+    else {
+        dest_hier = dest_hier_kw;
+    }
 
     char* src_resc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW );
     if ( src_resc ) {
@@ -212,13 +211,13 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // determine hierarchy string
 	char* resc_hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    std::string src_hier;
     if ( NULL == resc_hier_kw || 0 == strlen(resc_hier_kw) ) {
-        std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy(
 		                       irods::OPEN_OPERATION,
 							   rsComm,
                                dataObjInp,
-							   hier );
+							   src_hier );
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -229,13 +228,16 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
 
         // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
+        // we resolved the redirect and have a host, set the src_hier str for subsequent
         // api calls, etc.
         addKeyVal(
 		    &dataObjInp->condInput,
 			RESC_HIER_STR_KW,
-			hier.c_str() );
+			src_hier.c_str() );
     } // if keyword
+    else {
+        src_hier = resc_hier_kw;
+    }
 
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
     memset( *transStat, 0, sizeof( transferStat_t ) );
@@ -250,14 +252,17 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         accessPerm = ACCESS_DELETE_OBJECT;
     }
 
-    // query rcat for resource info and sort it
-    status = getRescForCreate(
-	             rsComm,
-				 dataObjInp,
-				 resc_name );
+    // get root of the destination hierarchy as the 'resc for create'
+    irods::hierarchy_parser h_parse;
+    h_parse.set_string( dest_hier );
+    
+    std::string dest_root;
+    h_parse.first_resc( dest_root );
     if( status < 0 ) {
         return status;
     }
+    
+    
     initReiWithDataObjInp(
 	    &rei,
 		rsComm,
@@ -300,7 +305,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = resolveInfoForPhymv(
 	             &dataObjInfoHead,
 				 &oldDataObjInfoHead,
-				 resc_name,
+				 dest_root.c_str(),
 				 &dataObjInp->condInput,
 				 multiCopyFlag );
     if ( status < 0 ) {
@@ -317,7 +322,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 	             rsComm,
 				 dataObjInp,
 				 dataObjInfoHead,
-				 resc_name.c_str(),
+				 dest_root.c_str(),
                  *transStat,
 				 multiCopyFlag );
 

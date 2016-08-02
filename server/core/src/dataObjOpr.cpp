@@ -926,7 +926,9 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
     while ( tmpDataObjInfo != NULL ) {
         nextDataObjInfo = tmpDataObjInfo->next;
 
-        if ( strstr( _resc_name.c_str(), tmpDataObjInfo->rescHier  ) != 0 ) {
+        irods::hierarchy_parser h_parse;
+        h_parse.set_string(tmpDataObjInfo->rescHier);
+        if(h_parse.resc_in_hier(_resc_name)) {
 
             if ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) {
                 if ( tmpDataObjInfo == *dataObjInfoHead ) {
@@ -954,38 +956,6 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
             }
 
         }
-        else {
-            /* no match */
-            if ( ( trimjFlag & TRIM_UNMATCHED_OBJ_INFO ) ||
-                    ( ( trimjFlag & TRIM_MATCHED_OBJ_INFO ) &&
-                      !_resc_name.empty() &&
-                      strstr( _resc_name.c_str(), tmpDataObjInfo->rescName ) != 0 ) ) {
-                /* take it out */
-                if ( tmpDataObjInfo == *dataObjInfoHead ) {
-                    *dataObjInfoHead = tmpDataObjInfo->next;
-
-                }
-                else if ( prevDataObjInfo != NULL ) {
-                    prevDataObjInfo->next = tmpDataObjInfo->next;
-
-                }
-
-                if ( trimmedDataObjInfo != NULL ) {
-                    queDataObjInfo( trimmedDataObjInfo, tmpDataObjInfo, 1, 0 );
-
-                }
-                else {
-                    free( tmpDataObjInfo );
-
-                }
-
-            }
-            else {
-                prevDataObjInfo = tmpDataObjInfo;
-
-            }
-
-        } // else
 
         tmpDataObjInfo = nextDataObjInfo;
 
@@ -1429,10 +1399,8 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
     dataObjInfo_t *matchedDataObjInfo = NULL;
     dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
-
     status = matchDataObjInfoByCondInput( dataObjInfoHead, oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
-
     if ( status < 0 ) {
         return status;
     }
@@ -1451,10 +1419,7 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                              REQUE_MATCHED_RESC_INFO, NULL );
     }
     else {
-        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
-                             TRIM_MATCHED_RESC_INFO | TRIM_MATCHED_OBJ_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                             TRIM_MATCHED_RESC_INFO, NULL );
+        matchAndTrimRescGrp( dataObjInfoHead, _resc_name, TRIM_MATCHED_OBJ_INFO, NULL );
     }
 
     if ( _resc_name.empty() ) {
