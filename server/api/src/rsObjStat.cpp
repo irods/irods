@@ -165,11 +165,8 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     sqlResult_t *ownerZone;
     sqlResult_t *createTime;
     sqlResult_t *modifyTime;
-#if 0 // XXXX - rescid
-    sqlResult_t *rescID;
-#else
     sqlResult_t *rescHier;
-#endif
+
     /* see if objPath is a dataObj */
 
     memset( myColl, 0, MAX_NAME_LEN );
@@ -196,11 +193,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     addInxIval( &genQueryInp.selectInp, COL_D_OWNER_ZONE, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_CREATE_TIME, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_MODIFY_TIME, 1 );
-#if 0 // XXXX - rescid
-    addInxIval( &genQueryInp.selectInp, COL_D_RESC_ID, 1 );
-#else
     addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
-#endif
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
@@ -262,21 +255,12 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      "_rsObjStat:getSqlResultByInx for COL_D_MODIFY_TIME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
-#if 0 // XXXX - rescid
-        else if ( ( rescID = getSqlResultByInx( genQueryOut,
-                               COL_D_RESC_ID ) ) == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "_rsObjStat:getSqlResultByInx for COL_D_RESC_ID failed" );
-            return UNMATCHED_KEY_OR_INDEX;
-        }
-#else
         else if ( ( rescHier = getSqlResultByInx( genQueryOut,
                                                 COL_D_RESC_HIER ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_RESC_HIER failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
-#endif
         else {
             int i;
 
@@ -305,15 +289,8 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                              &createTime->value[createTime->len * i], TIME_LEN );
                     rstrcpy( ( *rodsObjStatOut )->modifyTime,
                              &modifyTime->value[modifyTime->len * i], TIME_LEN );
-#if 0 // XXXX - rescid
-                    rodsLong_t resc_id = strtoll( &rescID->value[rescID->len * i], 0, 0 );
-                    std::string resc_hier;
-                    resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
-                    rstrcpy( ( *rodsObjStatOut )->rescHier, resc_hier.c_str(), MAX_NAME_LEN );
-#else
                     rstrcpy( ( *rodsObjStatOut )->rescHier,
                              &rescHier->value[rescHier->len * i], MAX_NAME_LEN );
-#endif
                     break;
                 }
             }
@@ -331,15 +308,8 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          TIME_LEN );
                 rstrcpy( ( *rodsObjStatOut )->modifyTime, modifyTime->value,
                          TIME_LEN );
-#if 0 // XXXX - rescid
-                rodsLong_t resc_id = strtoll( rescID->value, 0, 0 );
-                std::string resc_hier;
-                resc_mgr.leaf_id_to_hier( resc_id, resc_hier );
-                rstrcpy( ( *rodsObjStatOut )->rescHier, resc_hier.c_str(), MAX_NAME_LEN );
-#else
                 rstrcpy( ( *rodsObjStatOut )->rescHier, rescHier->value,
                          MAX_NAME_LEN );
-#endif
             }
         }
     }

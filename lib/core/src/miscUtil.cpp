@@ -325,9 +325,6 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
     char collQCond[MAX_NAME_LEN];
     int status;
     char *rescName = NULL;
-#if 0 // XXXX - rescid
-    char *resc_id = NULL;
-#endif
     if ( collection == NULL || genQueryOut == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
@@ -342,31 +339,12 @@ queryDataObjInColl( queryHandle_t *queryHandle, char *collection,
         snprintf( collQCond, MAX_NAME_LEN, " = '%s'", collection );
         addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond );
     }
-#if 0 // XXXX - rescid
-    if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
-            condInput != NULL &&
-            ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL &&
-            ( resc_id = getValByKey( condInput, RESC_ID_KW ) ) == NULL ) {
-        rodsLog(
-            LOG_ERROR,
-            "RESC_NAME_KW no longer used for INCLUDE_CONDINPUT_IN_QUERY, use RESC_ID_KW");
-        std::cerr << irods::stacktrace().dump();
-    }
-
-    if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
-            condInput != NULL &&
-            ( resc_id = getValByKey( condInput, RESC_ID_KW ) ) != NULL ) {
-        snprintf( collQCond, MAX_NAME_LEN, " = '%s'", resc_id );
-        addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_ID, collQCond );
-    }
-#else
     if ( ( flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 &&
             condInput != NULL &&
             ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL ) {
         snprintf( collQCond, MAX_NAME_LEN, " = '%s'", rescName );
         addInxVal( &genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond );
     }
-#endif
 
     setQueryInpForData( flags, genQueryInp );
 
@@ -397,11 +375,7 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
     if ( ( flags & LONG_METADATA_FG ) != 0 ||
             ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_NAME, 1 );
-#if 0 // XXXX - rescid
-        addInxIval( &genQueryInp->selectInp, COL_D_RESC_ID, 1 );
-#else
         addInxIval( &genQueryInp->selectInp, COL_D_RESC_HIER, 1 );
-#endif
         addInxIval( &genQueryInp->selectInp, COL_D_OWNER_NAME, 1 );
         addInxIval( &genQueryInp->selectInp, COL_DATA_REPL_NUM, 1 );
         addInxIval( &genQueryInp->selectInp, COL_D_REPL_STATUS, 1 );
@@ -409,7 +383,7 @@ setQueryInpForData( int flags, genQueryInp_t *genQueryInp ) {
         if ( ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
             addInxIval( &genQueryInp->selectInp, COL_D_DATA_PATH, 1 );
             addInxIval( &genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1 );
-            addInxIval( &genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1 ); // JMC - backport 4636
+            addInxIval( &genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1 );
         }
     }
 
@@ -925,15 +899,9 @@ int
 genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
                          dataObjSqlResult_t *dataObjSqlResult ) {
     genQueryOut_t *myGenQueryOut;
-#if 0 // XXXX - rescid
-    sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
-                *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_id, *phyPath,
-                *ownerName, *replNum, *dataType; // JMC - backport 4636
-#else 
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime,
                 *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_hier, *phyPath,
-                *ownerName, *replNum, *dataType; // JMC - backport 4636
-#endif
+                *ownerName, *replNum, *dataType;
     if ( genQueryOut == NULL || ( myGenQueryOut = *genQueryOut ) == NULL ||
             dataObjSqlResult == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -1031,16 +999,6 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     else {
         dataObjSqlResult->resource = *resource;
     }
-#if 0 // XXXX - rescid
-    if ( ( resc_id = getSqlResultByInx( myGenQueryOut, COL_D_RESC_ID ) )
-            == NULL ) {
-        setSqlResultValue( &dataObjSqlResult->resc_id, COL_D_RESC_ID,
-                           "", myGenQueryOut->rowCnt );
-    }
-    else {
-        dataObjSqlResult->resc_id = *resc_id;
-    }
-#else
     if ( ( resc_hier = getSqlResultByInx( myGenQueryOut, COL_D_RESC_HIER ) )
             == NULL ) {
         setSqlResultValue( &dataObjSqlResult->resc_hier, COL_D_RESC_HIER,
@@ -1049,10 +1007,9 @@ genQueryOutToDataObjRes( genQueryOut_t **genQueryOut,
     else {
         dataObjSqlResult->resc_hier = *resc_hier;
     }
-#endif
 
 
-    if ( ( dataType = getSqlResultByInx( myGenQueryOut, COL_DATA_TYPE_NAME ) ) // JMC - backport 4636
+    if ( ( dataType = getSqlResultByInx( myGenQueryOut, COL_DATA_TYPE_NAME ) )
             == NULL ) {
         setSqlResultValue( &dataObjSqlResult->dataType, COL_DATA_TYPE_NAME,
                            "", myGenQueryOut->rowCnt );
@@ -1362,7 +1319,7 @@ genDataResInColl( queryHandle_t *queryHandle, collHandle_t *collHandle ) {
             }
             addKeyVal( &collHandle->dataObjInp.condInput,
                        SEL_OBJ_TYPE_KW, "dataObj" );
-            collHandle->dataObjInp.openFlags = 0;    /* start over */ // JMC - backport 4577
+            collHandle->dataObjInp.openFlags = 0;    /* start over */ 
             status = ( *queryHandle->querySpecColl )
                      ( ( rcComm_t * ) queryHandle->conn,
                        &collHandle->dataObjInp, &genQueryOut );
@@ -1729,9 +1686,9 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
     len = dataObjSqlResult->chksum.len;
     outCollEnt->chksum = &value[len * selectedInx];
 
-    value = dataObjSqlResult->dataType.value; // JMC - backport 4636
-    len = dataObjSqlResult->dataType.len; // JMC - backport 4636
-    outCollEnt->dataType = &value[len * selectedInx]; // JMC - backport 4636
+    value = dataObjSqlResult->dataType.value;
+    len = dataObjSqlResult->dataType.len;
+    outCollEnt->dataType = &value[len * selectedInx];
 
     if ( rodsObjStat->specColl != NULL ) {
         outCollEnt->specColl = *rodsObjStat->specColl;
@@ -1747,34 +1704,11 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
         outCollEnt->resource = &value[len * selectedInx];
-#if 0 // XXXX - rescid
-        value = dataObjSqlResult->resc_id.value;
-        len = dataObjSqlResult->resc_id.len;
 
-        rodsLong_t resc_id = strtoll(&value[len * selectedInx], 0, 0);
-        if( resc_id > 0 ) {
-            // no longer allocated by query, allocate here to give collEnt
-            // something to point at for the resource hierarchy
-            dataObjSqlResult->resc_hier.len = MAX_NAME_LEN;
-            dataObjSqlResult->resc_hier.value = (char*)malloc( sizeof(char)*MAX_NAME_LEN);
-            outCollEnt->resc_hier = dataObjSqlResult->resc_hier.value;
-
-            int ret = get_resc_hier_from_leaf_id(
-                          &collHandle->queryHandle,
-                          resc_id,
-                          outCollEnt->resc_hier );
-            if( ret < 0 ) {
-                rodsLog(
-                    LOG_ERROR,
-                    "get_resc_hier_from_leaf_id failed %d",
-                    ret );
-            }
-        }
-#else
         value = dataObjSqlResult->resc_hier.value;
         len = dataObjSqlResult->resc_hier.len;
         outCollEnt->resc_hier = &value[len * selectedInx];
-#endif
+
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
         outCollEnt->ownerName = &value[len * selectedInx];
@@ -1869,7 +1803,7 @@ clearCollEnt( collEnt_t *collEnt ) {
         free( collEnt->ownerName );
     }
     if ( collEnt->dataType != NULL ) {
-        free( collEnt->dataType );    // JMC - backport 4636
+        free( collEnt->dataType );
     }
     return 0;
 }

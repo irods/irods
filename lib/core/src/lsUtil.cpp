@@ -5,7 +5,7 @@
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
 
-char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
+char zoneHint[MAX_NAME_LEN];
 
 int
 lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -32,7 +32,7 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     int savedStatus = 0;
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         int status = 0;
-        rstrcpy( zoneHint, rodsPathInp->srcPath[i].outPath, MAX_NAME_LEN ); // // JMC - backport 4416
+        rstrcpy( zoneHint, rodsPathInp->srcPath[i].outPath, MAX_NAME_LEN );
         if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ||
                 rodsPathInp->srcPath[i].objState == UNKNOWN_ST ) {
             status = getRodsObjType( conn, &rodsPathInp->srcPath[i] );
@@ -95,7 +95,7 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
             lsDataObjUtilLong( conn, srcPath->outPath, rodsArgs, genQueryInp );
         }
     }
-    else if ( rodsArgs->bundle == True ) { // JMC - backport 4536
+    else if ( rodsArgs->bundle == True ) {
         lsSubfilesInBundle( conn, srcPath->outPath );
     }
     else {
@@ -178,11 +178,8 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     int i = 0;
     sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0,
                  *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
-#if 0 // XXXX - rescid
-    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescId; // JMC - backport 4636
-#else
-    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescHier; // JMC - backport 4636
-#endif
+    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescHier;
+
     char *tmpDataId = 0;
     int queryFlags = 0;
 
@@ -207,7 +204,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) == NULL ) { // JMC - backport 4636
+        if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) == NULL ) {
 
             rodsLog( LOG_ERROR,
                      "printLsLong: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
@@ -273,16 +270,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
                  "printLsLong: getSqlResultByInx for COL_D_OWNER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
-#if 0 // XXXX - rescid
-    if ( ( rescId = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) ) ==
-            NULL ) {
-        rodsLog( LOG_ERROR,
-                 "printLsLong: getSqlResultByInx for COL_D_RESC_ID failed" );
-        return UNMATCHED_KEY_OR_INDEX;
-    }
-#else
 
-#endif
     queryHandle_t query_handle;
     rclInitQueryHandle( &query_handle, conn );
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
@@ -297,21 +285,12 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
         collEnt.replStatus = atoi( &replStatus->value[replStatus->len * i] );
         collEnt.modifyTime = &dataModify->value[dataModify->len * i];
-#if 0 // XXXX - rescid
-        rodsLong_t resc_id = strtoll(&rescId->value[rescId->len*i],0,0);
-        char resc_hier[MAX_NAME_LEN];
-        get_resc_hier_from_leaf_id(
-            &query_handle,
-            resc_id,
-            resc_hier );
-            collEnt.resc_hier = resc_hier;
-#else
         collEnt.resc_hier = &rescHier->value[rescHier->len * i];
-#endif
+
         if ( rodsArgs->veryLongOption == True ) {
             collEnt.chksum = &chksumStr->value[chksumStr->len * i];
             collEnt.phyPath = &dataPath->value[dataPath->len * i];
-            collEnt.dataType = &dataType->value[dataType->len * i];  // JMC - backport 4636
+            collEnt.dataType = &dataType->value[dataType->len * i];
         }
 
         printDataCollEntLong( &collEnt, queryFlags );
@@ -354,13 +333,13 @@ printLsShort( rcComm_t *conn,  rodsArguments_t *rodsArgs,
 
     if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_ERROR,
-                 "printLsShort: getSqlResultByInx for COL_D_DATA_ID failed" ); // JMC - backport 4516
+                 "printLsShort: getSqlResultByInx for COL_D_DATA_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
-                 "printLsShort: getSqlResultByInx for COL_DATA_NAME failed" ); // JMC - backport 4516
+                 "printLsShort: getSqlResultByInx for COL_DATA_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -437,8 +416,6 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
     }
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4536
             if ( rodsArgs->bundle == True ) {
                 char myPath[MAX_NAME_LEN];
                 snprintf( myPath, MAX_NAME_LEN, "%s/%s", collEnt.collName,
@@ -450,7 +427,6 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
                 if ( rodsArgs->accessControl == True ) {
                     printDataAcl( conn, collEnt.dataId );
                 }
-                // =-=-=-=-=-=-=-
             }
         }
         else {
@@ -518,7 +494,7 @@ printDataCollEntLong( collEnt_t *collEnt, int flags ) {
 
 
     if ( ( flags & VERY_LONG_METADATA_FG ) != 0 ) {
-        printf( "    %s    %s    %s\n", collEnt->chksum, collEnt->dataType, collEnt->phyPath ); // JMC - backport 4636
+        printf( "    %s    %s    %s\n", collEnt->chksum, collEnt->dataType, collEnt->phyPath );
 
     }
     return 0;
@@ -542,29 +518,16 @@ printCollCollEnt( collEnt_t *collEnt, int flags ) {
         else {
             if ( collEnt->specColl.collClass == MOUNTED_COLL ||
                     collEnt->specColl.collClass == LINKED_COLL ) {
-#if 0 // XXXX - rescid
-                printf( "  C- %s  %6.6s  %s  %s\n",
-                        collEnt->collName, typeStr,
-                        collEnt->specColl.objPath, collEnt->specColl.phyPath);
-#else 
                 printf( "  C- %s  %6.6s  %s  %s   %s\n",
                         collEnt->collName, typeStr,
                         collEnt->specColl.objPath, collEnt->specColl.phyPath,
                         collEnt->specColl.rescHier );
-#endif
             }
             else {
-#if 0 // XXXX - rescid
-                printf( "  C- %s  %6.6s  %s  %s;;;%d\n",
-                        collEnt->collName, typeStr,
-                        collEnt->specColl.objPath, collEnt->specColl.cacheDir,
-                        collEnt->specColl.cacheDirty );
-#else 
                 printf( "  C- %s  %6.6s  %s  %s;;;%s;;;%d\n",
                         collEnt->collName, typeStr,
                         collEnt->specColl.objPath, collEnt->specColl.cacheDir,
                         collEnt->specColl.rescHier, collEnt->specColl.cacheDirty );
-#endif
             }
         }
     }
@@ -607,7 +570,7 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
     sqlResult_t *userName, *userZone, *dataAccess;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryDataObjAcl( conn, dataId, zoneHint, &genQueryOut ); // JMC - backport 4516
+    status = queryDataObjAcl( conn, dataId, zoneHint, &genQueryOut );
 
     printf( "        ACL - " );
 
@@ -691,7 +654,7 @@ printCollAcl( rcComm_t *conn, char *collName ) {
         return status;
     }
 
-    status = queryCollAcl( conn, collName, zoneHint, &genQueryOut ); // JMC - backport 4516
+    status = queryCollAcl( conn, collName, zoneHint, &genQueryOut );
 
     if ( status < 0 ) {
         printf( "\n" );
