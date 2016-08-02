@@ -297,8 +297,16 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
         }
     }
 
-    return ret == 0 ? SUCCESS() : ERROR(ret,"applyRuleUpdateParams failed");
+    if (ret < 0) {
+        std::stringstream msg;
+        msg << "applyRuleUpdateParams failed for rule " << _rn;
+        rodsLog(
+            LOG_DEBUG,
+            msg.str().c_str() );
+        return ERROR(ret, msg.str());
+    }
 
+    return SUCCESS();
 }
 
 irods::error exec_rule_text(
@@ -338,9 +346,15 @@ irods::error exec_rule_text(
                      const_cast<char*>(out_desc.data()),
                      rei );
 
-    if (status != 0) {
-        return ERROR(status, "execMyRule failed");
+     if (status < 0) {
+        std::stringstream msg;
+        msg << "execMyRule failed for rule " << _rt;
+        rodsLog(
+            LOG_DEBUG,
+            msg.str().c_str() );
+        return ERROR(status, msg.str());
     }
+
     return SUCCESS();
 }
 
@@ -384,14 +398,17 @@ irods::error exec_rule_expression(
                      rei,
                      NO_SAVE_REI,
                      res );
-    if( status < 0 ) {
-        return ERROR(
-                 status,
-                 rule_text );
+
+    if (status < 0) {
+        std::stringstream msg;
+        msg << "computeExpression failed for input " << _rt;
+        rodsLog(
+            LOG_DEBUG,
+            msg.str().c_str() );
+        return ERROR(status, msg.str());
     }
-    else {
-        return SUCCESS();
-    }
+
+    return SUCCESS();
 }
 
 
