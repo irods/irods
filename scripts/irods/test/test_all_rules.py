@@ -105,7 +105,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
             # only works for package install, rule file hardcodes source directory
             if rulefile == 'rulemsiPhyPathReg.r':
-                if os.path.dirname(os.path.abspath(__file__)) == '/var/lib/irods/scripts/irods/test':
+                if os.path.dirname(os.path.abspath(__file__)) != '/var/lib/irods/scripts/irods/test':
                     return False
 
             # skip rules that handle .irb files
