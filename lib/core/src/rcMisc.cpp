@@ -3663,7 +3663,7 @@ freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
 
 int
 parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
-    char port[SHORT_STR_LEN];
+    char port[LONG_NAME_LEN];
     char buffer[LONG_NAME_LEN];
 
     if ( hostAddr == NULL || addr == NULL ) {
