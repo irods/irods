@@ -111,6 +111,16 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand_fail('iadmin lg ' + group_name, 'STDOUT_SINGLELINE', 'notauser')
         self.admin.assert_icommand(['iadmin', 'rmgroup', group_name])
 
+    # USERS
+
+    def test_modify_user_info__ticket_3245(self):
+        user_info_string = 'USER_INFO_STRING'
+        self.admin.assert_icommand("iadmin moduser %s info %s" % ( self.user0.username, user_info_string))
+        self.admin.assert_icommand('iadmin lu %s' % self.user0.username, 'STDOUT_SINGLELINE', user_info_string)
+
+        self.admin.assert_icommand("iadmin moduser %s info ''" % (self.user0.username))
+        self.admin.assert_icommand_fail('iadmin lu %s' % self.user0.username, 'STDOUT_SINGLELINE', user_info_string)
+
     # RESOURCES
 
     def test_resource_name_restrictions(self):

@@ -7589,8 +7589,16 @@ irods::error db_mod_user_op(
         rodsLog( LOG_SQL, "chlModUser" );
     }
 
-    if ( *_user_name == '\0' || *_option == '\0' || *_new_value == '\0' ) {
+    if ( *_user_name == '\0' || *_option == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "parameter is empty" );
+    }
+
+    if( *_new_value == '\0' && (
+        strcmp( _option, "type"   ) == 0 ||
+        strcmp( _option, "zone"   ) == 0 ||
+        strcmp( _option, "addAuth") == 0 ||
+        strcmp( _option, "rmAuth" ) == 0 ) ) {
+        return ERROR( CAT_INVALID_ARGUMENT, "new value is empty" );
     }
 
     userSettingOwnPassword = 0;
