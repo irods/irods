@@ -107,7 +107,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     FILES
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatDropSysTables.sql
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysInserts.sql
-    ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSetupValues.sql.template
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatPurgeRecycleBin.sql
     ${CMAKE_SOURCE_DIR}/plugins/database/src/convertSql.pl
     DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
