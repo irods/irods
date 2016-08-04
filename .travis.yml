@@ -1,5 +1,5 @@
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq wget curl libfuse-dev libcurl4-gnutls-dev libpam0g-dev libxml2-dev libbz2-dev libssl-dev libkrb5-dev libjson-perl zlib1g-dev python-dev help2man unixodbc unixodbc-dev python-psutil
+ - sudo apt-get install -qq wget curl libfuse-dev libcurl4-gnutls-dev libpam0g-dev libxml2-dev libbz2-dev libssl-dev libkrb5-dev zlib1g-dev python-dev help2man unixodbc unixodbc-dev python-psutil
 
 script: hostname; cat /etc/hosts; ifconfig; sudo ./packaging/build.sh -r -j6 icat postgres

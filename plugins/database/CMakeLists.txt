@@ -31,9 +31,8 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
 
   add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
-    COMMAND perl ${CMAKE_SOURCE_DIR}/plugins/database/src/convertSql.pl ${PLUGIN} ${CMAKE_SOURCE_DIR}/plugins/database/src ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
+    COMMAND cpp -E -P -D${PLUGIN} ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp
-    DEPENDS ${CMAKE_SOURCE_DIR}/plugins/database/src/convertSql.pl
     )
   add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${PLUGIN}.sql ALL DEPENDS ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql) # Forces execution of custom_command
 
@@ -108,7 +107,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatDropSysTables.sql
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysInserts.sql
     ${CMAKE_SOURCE_DIR}/plugins/database/src/icatPurgeRecycleBin.sql
-    ${CMAKE_SOURCE_DIR}/plugins/database/src/convertSql.pl
     DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
     COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
     )
