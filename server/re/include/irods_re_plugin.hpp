@@ -270,18 +270,13 @@ namespace irods {
             std::string _operation_name,
             OP _operation,
             As&& ... _ps) {
-            std::string rule_name = "pep";
             // =-=-=-=-=-=-=-
             // debug message for creating dynPEP rules
             rodsLog(
                 LOG_DEBUG,
                 "exec_op [%s]",
                 _operation_name.c_str() );
-            // general pep rule
-            // pep(<inst name>, <op name>, <go op>, <go with different params op>, <params>, <callback>)
-            // rule must call op explicitly if it is defined
-            // inputs are passed as some lists of some non-pointers
-            // outputs are passed as some lists of some pointers
+
             bool execOnce = false;
             std::function<error()> op = [&execOnce, &_ps..., &_operation] () {
                 if(execOnce) {
@@ -291,14 +286,14 @@ namespace irods {
                     return _operation(std::forward<As>(_ps)...);
                 }
             };
-            bool ret;
-            error err;
-            if(!(err = re_mgr_->rule_exists(rule_name, ret)).ok() || !ret) { // run op only if rule is not defined
-                err = op();
-            } else {
-                err = re_mgr_->exec_rule(rule_name, _instance_name, _operation_name, op, serialize(_operation, _operation_name), clone(_ps)...);
+
+            error err = op();
+
+            if (!err.ok()) {
+                return PASS(err);
             }
-            return err;
+
+            return SUCCESS();
         }
     protected:
 

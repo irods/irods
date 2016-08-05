@@ -242,6 +242,8 @@ int queZone(
     rodsServerHost_t* masterServerHost,
     rodsServerHost_t* slaveServerHost ) {
 
+    bool zoneAlreadyInList = false;
+
     zoneInfo_t *tmpZoneInfo, *lastZoneInfo;
     zoneInfo_t *myZoneInfo;
 
@@ -278,14 +280,16 @@ int queZone(
 
     lastZoneInfo = tmpZoneInfo = ZoneInfoHead;
     while ( tmpZoneInfo != NULL ) {
+        if (strcmp(tmpZoneInfo->zoneName, myZoneInfo->zoneName) == 0 ) {
+            zoneAlreadyInList = true;
+        }
         lastZoneInfo = tmpZoneInfo;
         tmpZoneInfo = tmpZoneInfo->next;
     }
 
     if ( lastZoneInfo == NULL ) {
         ZoneInfoHead = myZoneInfo;
-    }
-    else {
+    } else if (!zoneAlreadyInList) {
         lastZoneInfo->next = myZoneInfo;
     }
     myZoneInfo->next = NULL;

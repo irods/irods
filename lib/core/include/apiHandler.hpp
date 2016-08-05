@@ -16,6 +16,7 @@
 #include "packStruct.h"
 #include "irods_lookup_table.hpp"
 #include "irods_plugin_base.hpp"
+#include "irods_re_ruleexistshelper.hpp"
 #include "irods_stacktrace.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/any.hpp"
@@ -119,37 +120,42 @@ namespace irods {
                         typedef std::function<int(types_t...)> fcn_t;
                         fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
                         #ifdef ENABLE_RE
-                        ruleExecInfo_t rei;
-                        memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
-                        dynamic_operation_execution_manager<
-                            default_re_ctx,
-                            default_ms_ctx,
-                            DONT_AUDIT_RULE > rex_mgr(
-                                shared_ptr<
-                                    rule_engine_context_manager<
+                        irods::error op_err;
+                        if (RuleExistsHelper::Instance()->checkOperation(operation_name)) {
+                            ruleExecInfo_t rei;
+                            memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
+                            dynamic_operation_execution_manager<
+                                default_re_ctx,
+                                default_ms_ctx,
+                                DONT_AUDIT_RULE > rex_mgr(
+                                        shared_ptr<
+                                        rule_engine_context_manager<
                                         default_re_ctx,
                                         default_ms_ctx,
                                         DONT_AUDIT_RULE> >(
                                             new rule_engine_context_manager<
-                                                default_re_ctx,
-                                                default_ms_ctx,
-                                                DONT_AUDIT_RULE >(
-                                                    re_plugin_globals->global_re_mgr, &rei)));
+                                            default_re_ctx,
+                                            default_ms_ctx,
+                                            DONT_AUDIT_RULE >(
+                                                re_plugin_globals->global_re_mgr, &rei)));
 
-                        std::function<error(irods::plugin_context&,types_t...)> adapted_fcn(
-                                ( api_call_adaptor<types_t...>(fcn) ) );
+                            std::function<error(irods::plugin_context&,types_t...)> adapted_fcn(
+                                    ( api_call_adaptor<types_t...>(fcn) ) );
 
-                        irods::plugin_property_map prop_map;
-                        irods::plugin_context ctx(NULL,prop_map);
-                        irods::error op_err = rex_mgr.call(
-                                                  "api_instance",
-                                                  operation_name,
-                                                  adapted_fcn,
-                                                  ctx,
-                                                  _t...);
-                        return op_err.code();
+                            irods::plugin_property_map prop_map;
+                            irods::plugin_context ctx(NULL,prop_map);
+                            op_err = rex_mgr.call(
+                                    "api_instance",
+                                    operation_name,
+                                    adapted_fcn,
+                                    ctx,
+                                    _t...);
+                            return op_err.code();
+                        } else {
+                            return fcn(_t...);
+                        }
                         #else
-                        return fcn(_t...);
+                            return fcn(_t...);
                         #endif
                     }
                     catch( const boost::bad_any_cast& ) {

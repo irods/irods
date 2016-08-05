@@ -10,7 +10,9 @@
 
 
 #ifdef ENABLE_RE
+#include "irods_re_namespaceshelper.hpp"
 #include "irods_re_plugin.hpp"
+#include "irods_re_ruleexistshelper.hpp"
 #endif
 #include "irods_error.hpp"
 #include "irods_lookup_table.hpp"
@@ -166,30 +168,42 @@ namespace irods {
 
                     std::string out_param;
                     #ifdef ENABLE_RE
+                    bool ret;
+                    error op_err;
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
 
-                    dynamic_operation_execution_manager<
-                        default_re_ctx,
-                        default_ms_ctx,
-                        DONT_AUDIT_RULE > rex_mgr(
-                            shared_ptr<
-                                rule_engine_context_manager<
-                                    default_re_ctx,
-                                    default_ms_ctx,
-                                    DONT_AUDIT_RULE> >(
-                                        new rule_engine_context_manager<
-                                            default_re_ctx,
-                                            default_ms_ctx,
-                                            DONT_AUDIT_RULE >(
-                                                re_plugin_globals->global_re_mgr, &rei)));
-                    error op_err = rex_mgr.call(
-                                       instance_name_,
-                                       _operation_name,
-                                       adapted_fcn,
-                                       ctx,
-                                       &out_param);
+                    rule_engine_context_manager<
+                        unit,
+                        ruleExecInfo_t*,
+                        AUDIT_RULE > re_ctx_mgr(
+                                        re_plugin_globals->global_re_mgr,
+                                        &rei );
+
+                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                        std::string rule_name = ns + "pep_" + _operation_name + "_pre";
+                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
+                            } else {
+                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                            }
+                        }
+                    }
+
+                    op_err = adapted_fcn( ctx, &out_param );
+
+                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                        std::string rule_name = ns + "pep_" + _operation_name + "_post";
+                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
+                            } else {
+                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                            }
+                        }
+                    }
                     #else
                     error op_err = adapted_fcn( ctx, &out_param );
                     #endif
@@ -228,31 +242,42 @@ namespace irods {
 
                     std::string out_param;
                     #ifdef ENABLE_RE
+                    bool ret;
+                    error op_err;
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
 
-                    dynamic_operation_execution_manager<
-                        default_re_ctx,
-                        default_ms_ctx,
-                        DONT_AUDIT_RULE > rex_mgr(
-                            shared_ptr<
-                                rule_engine_context_manager<
-                                    default_re_ctx,
-                                    default_ms_ctx,
-                                    DONT_AUDIT_RULE> >(
-                                        new rule_engine_context_manager<
-                                            default_re_ctx,
-                                            default_ms_ctx,
-                                            DONT_AUDIT_RULE >(
-                                                re_plugin_globals->global_re_mgr, &rei)));
-                    error op_err = rex_mgr.call(
-                                       instance_name_,
-                                       _operation_name,
-                                       adapted_fcn,
-                                       ctx,
-                                       &out_param,
-                                       _t... );
+                    rule_engine_context_manager<
+                        unit,
+                        ruleExecInfo_t*,
+                        AUDIT_RULE > re_ctx_mgr(
+                                        re_plugin_globals->global_re_mgr,
+                                        &rei );
+
+                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                        std::string rule_name = ns + "pep_" + _operation_name + "_pre";
+                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param, forward<types_t>(_t)... );
+                            } else {
+                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                            }
+                        }
+                    }
+
+                    op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
+
+                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                        std::string rule_name = ns + "pep_" + _operation_name + "_post";
+                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param, forward<types_t>(_t)... );
+                            } else {
+                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                            }
+                        }
+                    }
                     #else
                     error op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
                     #endif

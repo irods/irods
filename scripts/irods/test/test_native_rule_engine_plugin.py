@@ -72,10 +72,10 @@ writeLine( 'serverLog', '*OUT')
 
     def test_auth_pep(self):
         rules_to_prepend = """
-pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){
+pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
 *OUT = "THIS IS AN OUT VARIABLE"
 }
-pep_resource_resolve_hierarchy_post(*A,*B,*OUT,*E,*F,*G,*H){
+pep_resource_resolve_hierarchy_post(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
 writeLine( 'serverLog', '*OUT')
 }
 """
@@ -105,10 +105,10 @@ writeLine( 'serverLog', '*OUT')
 
     def test_out_variable(self):
         rules_to_prepend = """
-pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){
+pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
 *OUT = "THIS IS AN OUT VARIABLE"
 }
-pep_resource_resolve_hierarchy_post(*A,*B,*OUT,*E,*F,*G,*H){
+pep_resource_resolve_hierarchy_post(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
 writeLine( 'serverLog', '*OUT')
 }
 """
@@ -138,8 +138,8 @@ writeLine( 'serverLog', '*OUT')
 
     def test_re_serialization(self):
         rules_to_prepend = """
-pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){
-writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*A] [*B] [*OUT] [*E] [*F] [*G] [*H]");
+pep_resource_resolve_hierarchy_pre(*INSTANCE,*CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){
+writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*INSTANCE] [*CONTEXT] [*OUT] [*OPERATION] [*HOST] [*PARSER] [*VOTE]");
 }
 """
         corefile = lib.get_core_re_dir() + "/core.re"

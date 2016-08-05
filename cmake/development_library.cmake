@@ -362,7 +362,9 @@ set(
   IRODS_SERVER_RE_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_ms_plugin.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_plugin.hpp
+  ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_namespaceshelper.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_structs.hpp
+  ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_ruleexistshelper.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/irods_re_serialization.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/locks.hpp
   ${CMAKE_SOURCE_DIR}/server/re/include/msiHelper.hpp

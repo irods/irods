@@ -1,5 +1,6 @@
 #include "irods_re_structs.hpp"
 #include "irods_re_plugin.hpp"
+#include "irods_re_ruleexistshelper.hpp"
 #include "rcMisc.h"
 #include "packStruct.h"
 #include "dataObjOpen.h"
@@ -59,6 +60,10 @@ applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, 
     //if(strchr(inAction, '(') != NULL) {
     //    return applyRule331(inAction, inMsParamArray, rei, reiSaveFlag);
     //}
+    if (!RuleExistsHelper::Instance()->checkOperation(inAction)) {
+        return SUCCESS().code();
+    }
+
     (void) reiSaveFlag;
     (void) inMsParamArray;
     irods::rule_engine_context_manager<
@@ -82,6 +87,10 @@ applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, 
 int
 applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
               ruleExecInfo_t *rei, int reiSaveFlag ) {
+    if (!RuleExistsHelper::Instance()->checkOperation(action)) {
+        return SUCCESS().code();
+    }
+
     (void) reiSaveFlag;
     irods::rule_engine_context_manager<
         irods::unit,
@@ -109,6 +118,10 @@ int applyRuleWithInOutVars(
     const char*            _action,
     std::list<boost::any>& _params,
     ruleExecInfo_t*        _rei ) {
+    if (!RuleExistsHelper::Instance()->checkOperation(_action)) {
+        return SUCCESS().code();
+    }
+
     irods::rule_engine_context_manager<
         irods::unit,
         ruleExecInfo_t*,

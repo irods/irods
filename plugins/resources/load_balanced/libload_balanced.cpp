@@ -1013,7 +1013,7 @@ class load_balanced_resource : public irods::resource {
             if(!ret.ok()) {
                 rodsLog(
                     LOG_ERROR,
-                    "invalid context [%s]",
+                    "libload_balanced: invalid context [%s]",
                     _context.c_str() );
                 return;
             }

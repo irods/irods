@@ -1,9 +1,4 @@
 set(
-  IRODS_RULE_ENGINE_PLUGIN_RE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re/libre.cpp
-  )
-
-set(
   IRODS_RULE_ENGINE_PLUGIN_RE-IRODS_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/arithmetics.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/cache.cpp
@@ -36,7 +31,6 @@ set(
 
 set(
   IRODS_RULE_ENGINE_PLUGINS
-  re
   re-irods
   re-default
   )

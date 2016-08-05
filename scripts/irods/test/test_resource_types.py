@@ -1983,7 +1983,7 @@ OUTPUT ruleExecOut
         corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n', corefile)
+            lib.prepend_string_to_file('pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){*OUT="compound_resource_cache_refresh_policy=always";}\n', corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             self.admin.assert_icommand("irm -f " + filename)
@@ -2021,7 +2021,7 @@ OUTPUT ruleExecOut
         corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file('pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){*OUT="compound_resource_cache_refresh_policy=always";}\n', corefile)
+            lib.prepend_string_to_file('pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){*OUT="compound_resource_cache_refresh_policy=always";}\n', corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             # restart the server to reread the new core.re
@@ -2731,7 +2731,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
         with open(corefile, 'at') as f:
-            print('pep_resource_resolve_hierarchy_pre(*A,*B,*OUT,*E,*F,*G,*H){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
+            print('pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT,*OUT,*OPERATION,*HOST,*PARSER,*VOTE){*OUT="compound_resource_cache_refresh_policy=always";}\n', file=f, end='')
 
         # restart the server to reread the new core.re
         IrodsController().restart()
@@ -3085,7 +3085,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
         # manipulate the core.re to add the new policy
         with open(corefile, 'at') as f:
-            f.write('pep_resource_resolve_hierarchy_pre(*A, *B, *OUT, *E, *F, *G, *H){*OUT="compound_resource_cache_refresh_policy=always";}\n')
+            f.write('pep_resource_resolve_hierarchy_pre(*INSTANCE, *CONTEXT, *OUT, *OPERATION, *HOST, *PARSER, *VOTE){*OUT="compound_resource_cache_refresh_policy=always";}\n')
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')

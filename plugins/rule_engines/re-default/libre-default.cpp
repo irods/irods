@@ -15,6 +15,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_re_plugin.hpp"
+#include "irods_re_ruleexistshelper.hpp"
 #include "irods_re_structs.hpp"
 
 // =-=-=-=-=-=-=-
@@ -38,6 +39,8 @@
 typedef std::function< irods::error (irods::callback, std::list<boost::any>&) > pep_opr_t;
 
 static std::map< std::string, pep_opr_t > static_policy_enforcement_points;
+
+const std::string DEFAULT_RULE_REGEX = "ac[^ ]*";
 
 ruleExecInfo_t& get_rei(irods::callback& _cb) {
     ruleExecInfo_t* rei{nullptr};
@@ -804,126 +807,10 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     STATIC_PEP(acPostProcForServerPortal);
     STATIC_PEP(acPreProcForWriteSessionVariable);
 
+    // Can just do it, since this rule engine is pre-compiled
+    RuleExistsHelper::Instance()->registerRuleRegex( DEFAULT_RULE_REGEX );
+
     return SUCCESS();
-/*
-    try {
-        const auto& re_plugin_arr = irods::get_server_property<const std::vector<boost::any>&>( irods::CFG_RULE_ENGINES_KW );
-
-        for ( const auto& elem : re_plugin_arr ) {
-            const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>( elem );
-            const auto& inst_name = boost::any_cast<const std::string&>( plugin_config.at( irods::CFG_INSTANCE_NAME_KW ) );
-
-            if ( inst_name == _instance_name ) {
-                const auto& shmem_value = boost::any_cast<const std::string&>( plugin_config.at( irods::CFG_SHARED_MEMORY_INSTANCE_KW ) );
-                const auto& plugin_spec_cfg = boost::any_cast<const std::unordered_map<std::string, boost::any>&>( plugin_config.at( irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW ) );
-
-                std::string core_re = get_string_array_from_array( plugin_spec_cfg.at( irods::CFG_RE_RULEBASE_SET_KW ) );
-                std::string core_fnm = get_string_array_from_array( plugin_spec_cfg.at( irods::CFG_RE_FUNCTION_NAME_MAPPING_SET_KW ) );
-                std::string core_dvm = get_string_array_from_array( plugin_spec_cfg.at( irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW ) );
-
-                int status = initRuleEngine(
-                        shmem_value.c_str(),
-                        RULE_ENGINE_TRY_CACHE,
-                        nullptr,
-                        core_re.c_str(),
-                        core_dvm.c_str(),
-                        core_fnm.c_str() );
-
-                if ( status < 0 ) {
-                    return ERROR(
-                            status,
-                            "failed to initialize default C++ rule engine" );
-
-                }
-
-                return SUCCESS();
-            }
-        }
-    } catch ( const irods::exception& e ) {
-        return irods::error(e);
-    } catch ( const boost::bad_any_cast& e ) {
-        return ERROR( INVALID_ANY_CAST, e.what() );
-    } catch ( const std::out_of_range& e ) {
-        return ERROR( KEY_NOT_FOUND, e.what() );
-    }
-
-    std::stringstream msg;
-    msg << "failed to find configuration for re-default plugin ["
-        << _instance_name << "]";
-    rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
-    return ERROR(
-            SYS_INVALID_INPUT_PARAM,
-            msg.str() );
-*/
-
-/*    
-    irods::configuration_parser::array_t re_plugin_arr;
-    irods::error ret = irods::get_server_property<irods::configuration_parser::array_t> (
-                        irods::CFG_RULE_ENGINES_KW,
-                        re_plugin_arr);
-    if (!ret.ok()) {
-        return PASS(ret);
-    }
-
-    bool found_instance = false;
-    irods::configuration_parser::object_t plugin_config;
-    for ( auto& itr : re_plugin_arr ) {
-        try {
-            plugin_config = boost::any_cast<irods::configuration_parser::object_t>( itr );
-        } catch ( const boost::bad_any_cast& ) {
-            std::stringstream msg;
-            msg << "[" << _instance_name << "] failed to any_cast a rule_engines object";
-            return ERROR(
-                    INVALID_ANY_CAST,
-                    msg.str() );
-        }
-
-        try {
-            const std::string inst_name = boost::any_cast<std::string>( plugin_config[irods::CFG_INSTANCE_NAME_KW] );
-            if (inst_name == _instance_name) {
-                found_instance = true;
-                break;
-            }
-        } catch ( const boost::bad_any_cast& ) {
-            continue;
-        }
-    }
-
-    if ( !found_instance ) {
-        std::stringstream msg;
-        msg << "failed to find configuration for re-default plugin ["
-            << _instance_name << "]";
-        rodsLog( LOG_ERROR, "%s", msg.str().c_str() );
-        return ERROR(
-                SYS_INVALID_INPUT_PARAM,
-                msg.str() );
-    }
-    irods::configuration_parser::object_t plugin_spec_cfg;
-    try {
-        plugin_spec_cfg = boost::any_cast<irods::configuration_parser::object_t>( plugin_config[irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW] );
-    } catch ( const boost::bad_any_cast& ) {
-        std::stringstream msg;
-        msg << "[" << _instance_name << "] failed to any_cast " << irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW;
-        return ERROR(
-                INVALID_ANY_CAST,
-                msg.str() );
-    }
-    if ( plugin_spec_cfg.has_entry( irods::CFG_RE_PEP_REGEX_SET_KW ) ) {
-        ret = register_regexes_from_array(
-                plugin_spec_cfg[irods::CFG_RE_PEP_REGEX_SET_KW],
-                _instance_name );
-        if (!ret.ok()) {
-            return PASS(ret);
-        }
-    } else {
-        RuleExistsHelper::Instance()->registerRuleRegex( DEFAULT_RULE_REGEX );
-        rodsLog(
-            LOG_DEBUG,
-            "No regexes found in server config - using default regex: %s",
-            DEFAULT_RULE_REGEX.c_str() );
-    }
-    return SUCCESS();
-*/
 }
 
 irods::error stop(irods::default_re_ctx& _u, const std::string&) {

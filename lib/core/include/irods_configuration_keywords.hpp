@@ -17,11 +17,15 @@ namespace irods {
     const std::string CFG_ZONE_NAME_KW( "zone_name" );
     const std::string CFG_ZONE_KEY_KW( "zone_key" );
     const std::string CFG_NEGOTIATION_KEY_KW( "negotiation_key" );
+    const std::string CFG_REGEX_KW( "pep_regex_to_match" );
     const std::string CFG_RE_RULEBASE_SET_KW( "re_rulebase_set" );
+    const std::string CFG_RE_NAMESPACE_SET_KW( "re_namespace_set" );
+    const std::string CFG_NAMESPACE_KW( "namespace" );
     const std::string CFG_RE_FUNCTION_NAME_MAPPING_SET_KW(
         "re_function_name_mapping_set" );
     const std::string CFG_RE_DATA_VARIABLE_MAPPING_SET_KW(
         "re_data_variable_mapping_set" );
+    const std::string CFG_RE_PEP_REGEX_SET_KW( "re_pep_regex_set" );
     const std::string CFG_DEFAULT_DIR_MODE_KW( "default_dir_mode" );
     const std::string CFG_DEFAULT_FILE_MODE_KW( "default_file_mode" );
     const std::string CFG_DEFAULT_HASH_SCHEME_KW( "default_hash_scheme" );

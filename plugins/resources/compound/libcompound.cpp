@@ -1767,7 +1767,7 @@ class compound_resource : public irods::resource {
             if(!ret.ok()) {
                 rodsLog(
                     LOG_ERROR,
-                    "invalid context [%s]",
+                    "libcompound: invalid context [%s]",
                     _context.c_str() );
             }
 

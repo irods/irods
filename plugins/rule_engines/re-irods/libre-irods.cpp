@@ -16,6 +16,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_re_plugin.hpp"
+#include "irods_re_ruleexistshelper.hpp"
 #include "irods_re_serialization.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_server_properties.hpp"
@@ -61,6 +62,9 @@ struct reDebugStack reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
 int reDebugStackFullPtr = 0;
 int reDebugStackCurrPtr = 0;
 
+const std::string STATIC_PEP_RULE_REGEX = "ac[^ ]*";
+const std::string DYNAMIC_PEP_RULE_REGEX = "[^ ]*pep_[^ ]*_(pre|post)";
+const std::string MICROSERVICE_RULE_REGEX = "msi[^ ]*";
 static std::string local_instance_name;
 
 int initRuleEngine( const char*, int, rsComm_t*, const char*, const char*, const char*);
@@ -86,6 +90,30 @@ static std::string get_string_array_from_array( const boost::any& _array ) {
     }
 
 } // get_string_array_from_array
+
+void register_regexes_from_array(
+    const boost::any& _array,
+    const std::string& _instance_name ) {
+    try {
+        const auto& arr = boost::any_cast<const std::vector<boost::any>&>( _array );
+        for ( const auto& elem : arr ) {
+            try {   
+                const auto& tmp = boost::any_cast<const std::string&>( boost::any_cast<const std::unordered_map<std::string, boost::any>&>(elem).at(irods::CFG_REGEX_KW) );
+                RuleExistsHelper::Instance()->registerRuleRegex( tmp ); 
+            } catch ( boost::bad_any_cast& ) {
+                rodsLog(
+                        LOG_ERROR,
+                        "%s - failed to cast pep_regex_to_match to string",
+                        __FUNCTION__);
+                continue;
+            }
+        }
+    } catch ( const boost::bad_any_cast& ) {
+        std::stringstream msg;
+        msg << "[" << _instance_name << "] failed to any_cast a std::vector<boost::any>&";
+        THROW(INVALID_ANY_CAST, msg.str());
+    }
+} // register_regexes_from_array
 
 irods::ms_table& get_microservice_table();
 void initialize_microservice_table() {
@@ -137,6 +165,22 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
                 // index locally defined microservices
                 initialize_microservice_table();
 
+                if (plugin_spec_cfg.count(irods::CFG_RE_PEP_REGEX_SET_KW) > 0) {
+                    register_regexes_from_array(
+                            plugin_spec_cfg.at(irods::CFG_RE_PEP_REGEX_SET_KW),
+                            _instance_name );
+                } else {
+                    RuleExistsHelper::Instance()->registerRuleRegex( STATIC_PEP_RULE_REGEX );
+                    RuleExistsHelper::Instance()->registerRuleRegex( DYNAMIC_PEP_RULE_REGEX );
+                    RuleExistsHelper::Instance()->registerRuleRegex( MICROSERVICE_RULE_REGEX );
+                    rodsLog(
+                            LOG_DEBUG,
+                            "No regexes found in server config - using default regexes: [%s], [%s], [%s]",
+                            STATIC_PEP_RULE_REGEX.c_str(), 
+                            DYNAMIC_PEP_RULE_REGEX.c_str(),
+                            MICROSERVICE_RULE_REGEX.c_str() );
+                }
+
                 return SUCCESS();
             }
         }
@@ -147,7 +191,6 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
     } catch (const std::out_of_range& e) {
         return ERROR(KEY_NOT_FOUND, e.what());
     }
-
 
     std::stringstream msg;
     msg << "failed to find configuration for re-irods plugin ["
