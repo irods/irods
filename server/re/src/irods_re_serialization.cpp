@@ -768,11 +768,45 @@ namespace irods {
             catch ( std::exception& ) {
                 return ERROR(
                          INVALID_ANY_CAST,
-                         "failed to cast rodsObjStat ptr" );
+                         "failed to cast genQueryInp ptr" );
             }
 
             return SUCCESS();
-        } // serialize_rodsObjStat_ptr
+        } // serialize_genQueryInp_ptr
+
+        static error serialize_genQueryOut_ptr(
+               boost::any                  _p,
+               serialized_parameter_t&  _out) {
+            try {
+                genQueryOut_t* tmp = boost::any_cast<genQueryOut_t*>(_p);
+                if (tmp) {
+                    genQueryOut_t* l = tmp;
+
+                    _out["rowCnt"] = boost::lexical_cast<std::string>(l->rowCnt);
+                    _out["attriCnt"] = boost::lexical_cast<std::string>(l->attriCnt);
+                    _out["continueInx"] = boost::lexical_cast<std::string>(l->continueInx);
+                    _out["totalRowCount"] = boost::lexical_cast<std::string>(l->totalRowCount);
+
+                    for (int i = 0; i < l->attriCnt; ++i) {
+                        for (int j = 0; j < l->rowCnt; ++j) {
+                            std::string i_str = boost::lexical_cast<std::string>(i);
+                            std::string j_str = boost::lexical_cast<std::string>(j);
+                            _out["attriInx_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].attriInx);
+                            _out["len_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].len);
+                            _out["value_" + j_str + "_" + i_str] = boost::lexical_cast<std::string>(l->sqlResult[i].value+j*l->sqlResult[i].len);
+                        }
+                    }
+                } else {
+                    _out["null_value"] = "null_value";
+                }
+            } catch ( std::exception& ) {
+                return ERROR(
+                        INVALID_ANY_CAST,
+                        "failed to cast genQueryOut ptr" );
+            }
+
+            return SUCCESS();
+        } //serialize_genQueryOut_ptr
 
  
         static error serialize_char_ptr_ptr(
@@ -838,6 +872,7 @@ namespace irods {
                 { std::type_index(typeid(rodsObjStat_t**)), serialize_rodsObjStat_ptr_ptr },
                 { std::type_index(typeid(rodsObjStat_t*)), serialize_rodsObjStat_ptr },
                 { std::type_index(typeid(genQueryInp_t*)), serialize_genQueryInp_ptr },
+                { std::type_index(typeid(genQueryInp_t*)), serialize_genQueryOut_ptr },
                 { std::type_index(typeid(char**)), serialize_char_ptr_ptr }
             };
             return the_map;
