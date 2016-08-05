@@ -68,6 +68,8 @@ namespace irods{
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else if (std::string(t->type).compare(INT_MS_T) == 0) {
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
+        } else if (std::string(t->type).compare(DOUBLE_MS_T) == 0) {
+            replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else if (std::string(t->type).compare(GenQueryInp_MS_T) == 0) {
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else {

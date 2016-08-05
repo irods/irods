@@ -752,13 +752,13 @@ namespace irods {
                         std::string index = boost::lexical_cast<std::string>(l->selectInp.inx[i]);
 
                         std::string value = boost::lexical_cast<std::string>(l->selectInp.value[i]);
-                        _out["select" + index] = value;
+                        _out["select_" + index] = value;
                     }
 
                     for (int i = 0; i < l->sqlCondInp.len; ++i) {
                         std::string index = boost::lexical_cast<std::string>(l->sqlCondInp.inx[i]);
 
-                        _out["where" + index] = l->sqlCondInp.value[i];
+                        _out["where_" + index] = l->sqlCondInp.value[i];
                     }
                 }
                 else {
