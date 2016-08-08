@@ -810,11 +810,6 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
                 RES_ERR_CODE( actionRet ) == NO_RULE_FOUND_ERR ) ) {
 
         bool safe_to_redirect_to_re_framework = true;
-        // found rule and execution failed
-        if ( getNodeType( actionRet ) == N_ERROR ) {
-            safe_to_redirect_to_re_framework = false;
-        }
-
         // actionName aka rule name was found, so must have failed because had the wrong number of arguments.
         // pluggable rule engine framework does not check type signature of rules when matching (rule_exists
         //  operation only checks the rule name) so don't forward to framework to prevent infinite recursion
@@ -822,8 +817,8 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
             safe_to_redirect_to_re_framework = false;
         }
 
-        // currently, pluggable rule engine framework only supports strings as arguments
-        //  once avro serialization is added, this needs to be removed
+        // if redirecting to framework with something besides strings and expecting the call to eventually be handled by a microservice,
+        // the code that converts REPF arguments back to msParams will need to be updated to handle the new types
         for (unsigned int i = 0; i < nargs; i++) {
             if (TYPE(args[i]) != T_STRING) {
                 safe_to_redirect_to_re_framework = false;
