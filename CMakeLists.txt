@@ -1574,10 +1574,18 @@ set(IRODS_INCLUDE_DIRS usr/include/irods)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-  ${CMAKE_SOURCE_DIR}/cmake/IRODSConfig.cmake.in
-  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/IRODSConfig.cmake.not_yet_installed.in
+  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed # suffix prevents cmake's find_package() from using this copy of the file
   INSTALL_DESTINATION usr/lib/irods/cmake
   PATH_VARS IRODS_INCLUDE_DIRS
+  )
+
+install(
+  FILES
+  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed
+  DESTINATION usr/lib/irods/cmake
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  RENAME IRODSConfig.cmake
   )
 
 write_basic_package_version_file(
@@ -1588,7 +1596,6 @@ write_basic_package_version_file(
 
 install(
   FILES
-  ${CMAKE_BINARY_DIR}/IRODSConfig.cmake
   ${CMAKE_BINARY_DIR}/IRODSConfigVersion.cmake
   DESTINATION usr/lib/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
