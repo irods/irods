@@ -32,7 +32,7 @@ class Test_Irodsctl(unittest.TestCase):
         with lib.directory_deleter(schemas_git_dir):
             schemas_repo = 'https://github.com/irods/irods_schema_configuration'
             lib.execute_command(['git', 'clone', schemas_repo, schemas_git_dir])
-            schemas_branch = 'v3'
+            schemas_branch = '422cc6abf035e7d726da473ca4ed6c992d2cac77'
             lib.execute_command(['git', 'checkout', schemas_branch], cwd=schemas_git_dir)
             schemas_deploy_dir = tempfile.mkdtemp(prefix='irods-test_configuration_schema_validation_from_file-schemas')
             with lib.directory_deleter(schemas_deploy_dir):
