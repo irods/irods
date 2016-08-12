@@ -30,9 +30,15 @@ set(
   )
 
 set(
+  IRODS_RULE_ENGINE_PLUGIN_RE-DEFAULT_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-default/libre-default.cpp
+  )
+
+set(
   IRODS_RULE_ENGINE_PLUGINS
   re
   re-irods
+  re-default
   )
 
 foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
