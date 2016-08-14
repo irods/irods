@@ -147,6 +147,11 @@ static int checkMountPoint(char *mountPoint, bool nonempty) {
     char cwd[MAX_NAME_LEN];
     char mpath[MAX_NAME_LEN];
     char mpathabs[MAX_NAME_LEN];
+
+    if(mountPoint == NULL || strlen(mountPoint) == 0) {
+        fprintf(stderr, "Mount point is not given\n");
+        return -1;
+    }
     
     if(getcwd(cwd, sizeof(cwd)) != NULL) {
         if(mountPoint[0] == '/') {
