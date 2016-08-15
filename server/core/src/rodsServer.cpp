@@ -27,6 +27,7 @@
 #include "irods_server_state.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
+#include "irods_re_plugin.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_control_plane.hpp"
 #include "initServer.hpp"

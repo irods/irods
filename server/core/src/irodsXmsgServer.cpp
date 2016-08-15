@@ -9,6 +9,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_client_server_negotiation.hpp"
 #include "irods_network_factory.hpp"
+#include "irods_re_plugin.hpp"
 #include "irods_signal.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "initServer.hpp"

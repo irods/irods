@@ -30,6 +30,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 #include "irods_threads.hpp"
+#include "irods_re_plugin.hpp"
 #include "irods_re_serialization.hpp"
 #include "procLog.h"
 #include "initServer.hpp"
