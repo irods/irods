@@ -692,6 +692,10 @@ acPreProcForWriteSessionVariable(*var) {
 	}
 }
 
+getSessionVar(*name, *output) {
+    *output = eval("str($"++*name++")");
+}
+
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate {acSetCreateConditions; acDOC; }
