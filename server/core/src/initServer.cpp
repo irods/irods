@@ -47,7 +47,8 @@ static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
 
 int
-initServerInfo( rsComm_t *rsComm ) {
+//initServerInfo( rsComm_t *rsComm ) {
+initServerInfo( int processType, rsComm_t * rsComm) {
     int status = 0;
 
     try {
@@ -121,11 +122,13 @@ initServerInfo( rsComm_t *rsComm ) {
         return status;
     }
 
-    ret = resc_mgr.init_from_catalog( rsComm );
-    if ( !ret.ok() ) {
-        irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
-        irods::log( log_err );
-        return ret.code();
+    if (processType) {
+        ret = resc_mgr.init_from_catalog( rsComm );
+        if ( !ret.ok() ) {
+            irods::error log_err = PASSMSG( "init_from_catalog failed", ret );
+            irods::log( log_err );
+            return ret.code();
+        }
     }
 
     return status;
@@ -301,6 +304,11 @@ initRcatServerHostByFile() {
 
 int
 initZone( rsComm_t *rsComm ) {
+    if (ZoneInfoHead && (strlen(ZoneInfoHead->zoneName) > 0)
+                     && ZoneInfoHead->masterServerHost) {
+        return 0;
+    }
+
     rodsServerHost_t *tmpRodsServerHost;
     rodsServerHost_t *masterServerHost = NULL;
     rodsServerHost_t *slaveServerHost = NULL;
@@ -453,7 +461,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
 
     initProcLog();
 
-    status = initServerInfo( rsComm );
+    status = initServerInfo( 1, rsComm );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initServerInfo error, status = %d",

@@ -44,7 +44,17 @@ using namespace boost::filesystem;
 
 #include "sockCommNetworkInterface.hpp"
 
+#define HAVE_MSGHDR_MSG_CONTROL
 
+#include "sys/un.h"
+
+#include "irods_random.hpp"
+
+struct sockaddr_un local_addr;
+int agent_conn_socket;
+bool connected_to_agent = false;
+
+pid_t agent_spawning_pid;
 
 uint ServerBootTime;
 int SvrSock;
@@ -53,7 +63,6 @@ agentProc_t *ConnectedAgentHead = NULL;
 agentProc_t *ConnReqHead = NULL;
 agentProc_t *SpawnReqHead = NULL;
 agentProc_t *BadReqHead = NULL;
-
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -71,6 +80,8 @@ boost::condition_variable ReadReqCond;
 boost::condition_variable SpawnReqCond;
 
 std::vector<std::string> setExecArg( const char *commandArgv );
+
+int runIrodsAgent( sockaddr_un agent_addr );
 
 namespace {
 // We incorporate the cache salt into the rule engine's named_mutex and shared memory object.
@@ -121,8 +132,22 @@ namespace {
             return SUCCESS();
         }
     }
-}
 
+    int get64RandomBytes( char *buf ) {
+        const int num_random_bytes = 32;
+        const int num_hex_bytes = 2 * num_random_bytes;
+        unsigned char random_bytes[num_random_bytes];
+        irods::getRandomBytes( random_bytes, sizeof(random_bytes) );
+
+        std::stringstream ss;
+        for ( size_t i = 0; i < sizeof(random_bytes); ++i ) {
+            ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_bytes[i] );
+        }
+
+        snprintf( buf, num_hex_bytes + 1, "%s", ss.str().c_str() );
+        return 0;
+    }
+}
 
 #ifndef windows_platform   /* all UNIX */
 int
@@ -156,7 +181,7 @@ int irodsWinMain( int argc, char **argv )
         case 'u':               /* user command level. without serverized */
             uFlag = 1;
             break;
-        case 'D':   /* user specified a log directory */
+        case 'D':               /* user specified a log directory */
             logDir = strdup( optarg );
             break;
         case 'v':               /* verbose Logging */
@@ -201,7 +226,7 @@ int irodsWinMain( int argc, char **argv )
     signal( SIGPIPE, SIG_IGN );
 #ifdef osx_platform
     signal( SIGINT, ( sig_t ) serverExit );
-    signal( SIGHUP, ( sig_t )serverExit );
+    signal( SIGHUP, ( sig_t ) serverExit );
     signal( SIGTERM, ( sig_t ) serverExit );
 #else
     signal( SIGINT, serverExit );
@@ -209,6 +234,33 @@ int irodsWinMain( int argc, char **argv )
     signal( SIGTERM, serverExit );
 #endif
 #endif
+
+    // Set up local_addr for socket communication
+    memset( &local_addr, 0, sizeof(local_addr) );
+    local_addr.sun_family = AF_UNIX;
+    char tmp_socket_file[128];
+    char random_suffix[65];
+    get64RandomBytes( random_suffix );
+    strcpy(tmp_socket_file, "/tmp/irods_agent_socket_");
+    strcat(tmp_socket_file, random_suffix);
+    strcpy( local_addr.sun_path, tmp_socket_file );
+
+    agent_spawning_pid = fork();
+
+    if ( agent_spawning_pid == 0 ) {
+        // Child process
+        ProcessType = AGENT_PT;
+        
+        exit( runIrodsAgent( local_addr ) );
+    } else if ( agent_spawning_pid > 0 ) {
+        // Parent process
+        rodsLog(LOG_NOTICE, "Agent spawning process pid = [%d]", agent_spawning_pid);
+        agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+    } else {
+        // Error, fork failed
+        rodsLog( LOG_ERROR, "fork() failed when attempting to create agent spawning process" );
+        exit( 1 );
+    }
 
     serverMain( logDir );
     exit( 0 );
@@ -378,6 +430,7 @@ serverMain( char *logDir ) {
         return ret.code();
     }
 
+
     uint64_t return_code = 0;
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
@@ -536,7 +589,13 @@ serverMain( char *logDir ) {
 
     uninstantiate_shared_memory();
 
+    close( agent_conn_socket );
+
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
+
+    // Wake and kill agent spawning process
+    kill( agent_spawning_pid, SIGTERM );
+    kill( agent_spawning_pid, SIGCONT );
 
     return return_code;
 
@@ -555,6 +614,11 @@ serverExit()
     rodsLog( LOG_NOTICE, "rodsServer is exiting." );
 #endif
     recordServerProcess( NULL ); /* unlink the process id file */
+
+    // Wake and terminate agent spawning process
+    kill( agent_spawning_pid, SIGTERM );
+    kill( agent_spawning_pid, SIGCONT );
+
     exit( 1 );
 }
 
@@ -596,12 +660,10 @@ procChildren( agentProc_t **agentProcHead ) {
     return 0;
 }
 
-
 agentProc_t *
 getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
     agentProc_t *tmpAgentProc, *prevAgentProc;
     prevAgentProc = NULL;
-
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
@@ -626,7 +688,6 @@ getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
     return tmpAgentProc;
 }
 
-
 int
 spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     int childPid;
@@ -640,74 +701,177 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     newSock = connReq->sock;
     startupPack = &connReq->startupPack;
 
-#ifndef windows_platform
-    childPid = fork();  /* use fork instead of vfork because of multi-thread
-                         * env */
+    // Wake up the agent spawning process
+    kill( agent_spawning_pid, SIGCONT );
 
-    if ( childPid < 0 ) {
-        return SYS_FORK_ERROR - errno;
-    }
-    else if ( childPid == 0 ) { /* child */
-        agentProc_t *tmpAgentProc;
-        close( SvrSock );
-
-        /* close any socket still in the queue */
-
-        /* These queues may be inconsistent because of the multi-threading
-             * of the parent. set sock to -1 if it has been closed */
-        tmpAgentProc = ConnReqHead;
-        while ( tmpAgentProc != NULL ) {
-            if ( tmpAgentProc->sock == -1 ) {
-                break;
-            }
-            close( tmpAgentProc->sock );
-            tmpAgentProc->sock = -1;
-            tmpAgentProc = tmpAgentProc->next;
-        }
-        tmpAgentProc = SpawnReqHead;
-        while ( tmpAgentProc != NULL ) {
-            if ( tmpAgentProc->sock == -1 ) {
-                break;
-            }
-            close( tmpAgentProc->sock );
-            tmpAgentProc->sock = -1;
-            tmpAgentProc = tmpAgentProc->next;
-        }
-
-        execAgent( newSock, startupPack );
-    }
-    else {                      /* parent */
-        queConnectedAgentProc( childPid, connReq, agentProcHead );
-    }
-#else
     childPid = execAgent( newSock, startupPack );
     queConnectedAgentProc( childPid, connReq, agentProcHead );
-#endif
 
     return childPid;
 }
 
+int sendEnvironmentVarIntToSocket ( const char* var, int val, int socket ) {
+    char buf[256];
+    int len;
+    len = snprintf( buf, 256, "%s=%d;", var, val );
+    
+    if (len > 256) {
+        rodsLog(LOG_ERROR, "\"%s=%d\" too large for send buffer", var, val);
+        return -1;
+    }
+
+    return send( socket, buf, len, 0 );
+}
+
+int sendEnvironmentVarStrToSocket ( const char* var, const char* val, int socket ) {
+    char buf[256];
+    int len;
+    len = snprintf( buf, 256, "%s=%s;", var, val );
+
+    if (len > 256) {
+        rodsLog(LOG_ERROR, "\"%s=%s\" too large for send buffer", var, val);
+        return -1;
+    }
+
+    return send( socket, buf, len, 0 );
+}
+
+ssize_t sendSocketOverSocket( int writeFd, int socket ) {
+    struct msghdr msg;
+    struct iovec iov[1];
+
+#ifdef HAVE_MSGHDR_MSG_CONTROL
+    union {
+        struct cmsghdr cm;
+        char control[CMSG_SPACE(sizeof(int))];
+    } control_un;
+    struct cmsghdr *cmptr;
+
+    memset( control_un.control, 0, sizeof(control_un.control) );
+    msg.msg_control = control_un.control;
+    msg.msg_controllen = sizeof(control_un.control);
+
+    cmptr = CMSG_FIRSTHDR(&msg);
+    cmptr->cmsg_len = CMSG_LEN(sizeof(int));
+    cmptr->cmsg_level = SOL_SOCKET;
+    cmptr->cmsg_type = SCM_RIGHTS;
+    *((int *) CMSG_DATA(cmptr)) = socket;
+#else
+    msg.msg_accrights = (caddr_t) &sendfd;
+    msg.msg_accrightslen = sizeof(int);
+#endif
+
+    msg.msg_name = NULL;
+    msg.msg_namelen = 0;
+
+    iov[0].iov_base = (void*) "i";
+    iov[0].iov_len = 1;
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+
+    return sendmsg( writeFd, &msg, 0);
+}
+
 int
 execAgent( int newSock, startupPack_t *startupPack ) {
-#if windows_platform
-    char *myArgv[3];
-    char console_buf[20];
-#else
-    char *myArgv[2];
-#endif
     int status;
-    char buf[NAME_LEN];
+    unsigned int len = sizeof(local_addr);
+    char in_buf[1024];
+    memset( in_buf, 0, 1024 );
 
-    mySetenvInt( SP_NEW_SOCK, newSock );
-    mySetenvInt( SP_PROTOCOL, startupPack->irodsProt );
-    mySetenvInt( SP_RECONN_FLAG, startupPack->reconnFlag );
-    mySetenvInt( SP_CONNECT_CNT, startupPack->connectCnt );
-    mySetenvStr( SP_PROXY_USER, startupPack->proxyUser );
-    mySetenvStr( SP_PROXY_RODS_ZONE, startupPack->proxyRodsZone );
-    mySetenvStr( SP_CLIENT_USER, startupPack->clientUser );
-    mySetenvStr( SP_CLIENT_RODS_ZONE, startupPack->clientRodsZone );
-    mySetenvStr( SP_REL_VERSION, startupPack->relVersion );
-    mySetenvStr( SP_API_VERSION, startupPack->apiVersion );
+    if (!connected_to_agent) {
+        status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
+        if (status == -1) {
+            rodsLog(LOG_ERROR, "[%s:%d] Error connecting to agent socket", __FUNCTION__, __LINE__);
+            return -1;
+        }
+
+        connected_to_agent = true;
+    }
+
+    // Create unique socket for each call to exec agent
+    sockaddr_un tmp_socket_addr;
+    char tmp_socket_file[108];
+    char random_suffix[65];
+    int tmp_socket;
+    memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
+    tmp_socket_addr.sun_family = AF_UNIX;
+    get64RandomBytes( random_suffix );
+
+    strcpy(tmp_socket_file, "/tmp/irods_agent_socket_");
+    strcat(tmp_socket_file, random_suffix);
+
+    status = send( agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0 );
+    if ( status <= 0 ) {
+        rodsLog( LOG_ERROR, "Failed to send tmp_socket_file string to agent" );
+    }
+
+    strcpy( tmp_socket_addr.sun_path, tmp_socket_file );
+        
+    tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+    // Wait until receiving acknowledgement that socket has been created
+    status = recv( agent_conn_socket, &in_buf, 1024, 0 );
+    if ( status == -1 || strcmp(in_buf, "OK") != 0 ) {
+        rodsLog( LOG_DEBUG, "Sending socket to agent spawning process failed" );
+        return status;
+    }
+
+    status = connect( tmp_socket, (const struct sockaddr*) &tmp_socket_addr, len );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to connect tmp_socket to agent" );
+    }
+
+    status = sendEnvironmentVarStrToSocket( SP_RE_CACHE_SALT,irods::get_server_property<const std::string>( RE_CACHE_SALT_KW).c_str(),  tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent" );
+    }
+
+    status = sendEnvironmentVarStrToSocket( SP_RE_CACHE_SALT,irods::get_server_property<const std::string>( RE_CACHE_SALT_KW).c_str(),  tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent" );
+    }
+
+    status = sendEnvironmentVarIntToSocket( SP_CONNECT_CNT, startupPack->connectCnt, tmp_socket);
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_CONNECT_CNT to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_PROXY_RODS_ZONE, startupPack->proxyRodsZone, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_PROXY_RODS_ZONE to agent" );
+    }
+    status = sendEnvironmentVarIntToSocket( SP_NEW_SOCK, newSock, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_NEW_SOCK to agent" );
+    }
+    status = sendEnvironmentVarIntToSocket( SP_PROTOCOL, startupPack->irodsProt, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_PROTOCOL to agent" );
+    }
+    status = sendEnvironmentVarIntToSocket( SP_RECONN_FLAG, startupPack->reconnFlag, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_RECONN_FLAG to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_PROXY_USER, startupPack->proxyUser, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_PROXY_USER to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_CLIENT_USER, startupPack->clientUser, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_CLIENT_USER to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_CLIENT_RODS_ZONE, startupPack->clientRodsZone, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_CLIENT_RODS_ZONE to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_REL_VERSION, startupPack->relVersion, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_REL_VERSION to agent" );
+    }
+    status = sendEnvironmentVarStrToSocket( SP_API_VERSION, startupPack->apiVersion, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SP_API_VERSION to agent" );
+    }
 
     // =-=-=-=-=-=-=-
     // if the client-server negotiation request is in the
@@ -716,47 +880,44 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     size_t pos = opt_str.find( REQ_SVR_NEG );
     if ( std::string::npos != pos ) {
         std::string trunc_str = opt_str.substr( 0, pos );
-        mySetenvStr( SP_OPTION,           trunc_str.c_str() );
-        mySetenvStr( irods::RODS_CS_NEG, REQ_SVR_NEG );
+        status = sendEnvironmentVarStrToSocket( SP_OPTION, trunc_str.c_str(), tmp_socket );
+        if (status < 0) {
+            rodsLog( LOG_ERROR, "Failed to send SP_OPTION to agent" );
+        }
+        status = sendEnvironmentVarStrToSocket( irods::RODS_CS_NEG, REQ_SVR_NEG, tmp_socket );
+        if (status < 0) {
+            rodsLog( LOG_ERROR, "Failed to send irods::RODS_CS_NEG to agent" );
+        }
 
     }
     else {
-        mySetenvStr( SP_OPTION, startupPack->option );
-
+        status = sendEnvironmentVarStrToSocket( SP_OPTION, startupPack->option, tmp_socket );
+        if (status < 0) {
+            rodsLog( LOG_ERROR, "Failed to send SP_OPTION to agent" );
+        }
     }
 
-    mySetenvInt( SERVER_BOOT_TIME, ServerBootTime );
-
-
-#ifdef windows_platform  /* windows */
-    iRODSNtGetAgentExecutableWithPath( buf, AGENT_EXE );
-    myArgv[0] = buf;
-    if ( iRODSNtServerRunningConsoleMode() ) {
-        strcpy( console_buf, "console" );
-        myArgv[1] = console_buf;
-        myArgv[2] = NULL;
+    status = sendEnvironmentVarIntToSocket( SERVER_BOOT_TIME, ServerBootTime, tmp_socket );
+    if (status < 0) {
+        rodsLog( LOG_ERROR, "Failed to send SERVER_BOOT_TIME to agent" );
     }
-    else {
-        myArgv[1] = NULL;
-        myArgv[2] = NULL;
-    }
-#else
-    rstrcpy( buf, AGENT_EXE, NAME_LEN );
-    myArgv[0] = buf;
-    myArgv[1] = NULL;
-#endif
 
-#if windows_platform  /* windows */
-    return ( int )_spawnv( _P_NOWAIT, myArgv[0], myArgv );
-#else
-    status = execv( myArgv[0], myArgv );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "execAgent: execv error errno=%d", errno );
-        exit( 1 );
+    status = send( tmp_socket, "end_of_vars", 12, 0 );
+    if ( status <= 0 ) {
+        rodsLog( LOG_ERROR, "Failed to send \"end_of_vars;\" to agent" );
     }
-    return 0;
-#endif
-}
+
+    status = recv( tmp_socket, &in_buf, 1024, 0 );
+    if ( status == -1 || strcmp(in_buf, "OK") != 0 ) {
+        rodsLog( LOG_DEBUG, "Sending environment variables to agent spawning process failed" );
+        return status;
+    }
+
+    sendSocketOverSocket( tmp_socket, newSock );
+
+    close( tmp_socket );
+
+    return status;
 
 int
 queConnectedAgentProc( int childPid, agentProc_t *connReq,
@@ -778,15 +939,15 @@ queConnectedAgentProc( int childPid, agentProc_t *connReq,
 
 int
 getAgentProcCnt() {
-    agentProc_t *tmpAagentProc;
+    agentProc_t *tmpAgentProc;
     int count = 0;
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
-    tmpAagentProc = ConnectedAgentHead;
-    while ( tmpAagentProc != NULL ) {
+    tmpAgentProc = ConnectedAgentHead;
+    while ( tmpAgentProc != NULL ) {
         count++;
-        tmpAagentProc = tmpAagentProc->next;
+        tmpAgentProc = tmpAgentProc->next;
     }
     con_agent_lock.unlock();
 
@@ -889,7 +1050,7 @@ initServer( rsComm_t *svrComm ) {
     }
 #endif
 
-    status = initServerInfo( svrComm );
+    status = initServerInfo( 0, svrComm );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "initServer: initServerInfo error, status = %d",
@@ -1295,7 +1456,6 @@ spawnManagerTask() {
             SpawnReqHead = mySpawnReq->next;
 
             spwn_req_lock.unlock();
-
             status = spawnAgent( mySpawnReq, &ConnectedAgentHead );
             close( mySpawnReq->sock );
 
@@ -1372,6 +1532,7 @@ procSingleConnReq( agentProc_t *connReq ) {
 
     connReq->startupPack = *startupPack;
     free( startupPack );
+    
     int status = spawnAgent( connReq, &ConnectedAgentHead );
 
 #ifndef windows_platform

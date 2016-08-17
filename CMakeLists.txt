@@ -595,12 +595,14 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_globals.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_negotiation.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_state.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_signal.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_structured_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/miscServerFunct.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objDesc.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objMetaOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/physPath.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/procLog.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/rodsAgent.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsConnect.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsApiHandler.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
@@ -1113,12 +1115,6 @@ target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
 
 set(
-  IRODS_MAIN_EXECUTABLE_IRODSAGENT_SOURCES
-  ${CMAKE_SOURCE_DIR}/server/core/src/rodsAgent.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/irods_signal.cpp
-  )
-
-set(
   IRODS_MAIN_EXECUTABLE_IRODSSERVER_SOURCES
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_control_plane.cpp
@@ -1136,7 +1132,7 @@ set(
 
 set(
   IRODS_MAIN_EXECUTABLES
-  irodsAgent
+#  irodsAgent
   irodsServer
   irodsXmsgServer
   hostname_resolves_to_local_address
@@ -1491,7 +1487,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
-    irodsAgent irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re-irods re-default native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
+    irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re-irods re-default native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()

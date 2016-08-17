@@ -14,7 +14,8 @@
 /* server host configuration */
 
 int
-initServerInfo( rsComm_t *rsComm );
+//initServerInfo( rsComm_t *rsComm );
+initServerInfo( int processType, rsComm_t *rsComm );
 int
 initLocalServerHost();
 int

@@ -2,7 +2,7 @@
 
 install(
   TARGETS
-  irodsAgent
+#  irodsAgent
   irodsServer
   irodsReServer
   irodsXmsgServer

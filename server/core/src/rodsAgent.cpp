@@ -25,6 +25,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_auth_manager.hpp"
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_constants.hpp"
+#include "irods_environment_properties.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_table.hpp"
 #include "irods_client_api_table.hpp"
@@ -39,20 +40,250 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "sslSockComm.h"
 
 /* #define SERVER_DEBUG 1   */
-int
-main( int, char ** ) {
 
+#define HAVE_MSGHDR_MSG_CONTROL
+
+#include "sys/socket.h"
+#include "sys/un.h"
+#include "sys/wait.h"
+
+ssize_t receiveSocketFromSocket( int readFd, int *socket) {
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    ssize_t n;
+
+    char message_buf[1024];
+    struct iovec io = { .iov_base = message_buf, .iov_len = sizeof(message_buf) };
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
+
+    char control_buf[1024];
+    msg.msg_control = control_buf;
+    msg.msg_controllen = sizeof(control_buf);
+
+#ifdef HAVE_MSGHDR_MSG_CONTROL
+    struct cmsghdr *cmptr;
+#else
+    msg.msg_accrights = (caddr_t) &newFd;
+    msg.msg_accrightslen = sizeof(int);
+#endif
+    if ( ( n = recvmsg( readFd, &msg, MSG_WAITALL ) ) <= 0) {
+        return n;
+    }
+#ifdef HAVE_MSGHDR_MSG_CONTROL
+    cmptr = CMSG_FIRSTHDR( &msg );
+    unsigned char* data = CMSG_DATA(cmptr);
+    int theSocket = *((int*) data);
+    *socket = theSocket;
+#else
+    if ( msg.msg_accrightslen == sizeof(int) ) {
+        *socket = newFd;
+    } else {
+        *socket = -1;
+    }
+#endif
+    return n;
+}
+
+int receiveDataFromServer( int inSocket ) {
     int status;
-    rsComm_t rsComm;
-    char *tmpStr;
-    ProcessType = AGENT_PT;
+    char in_buf[1024];
+    memset( in_buf, 0, 1024 );
+    bool data_complete = false;
 
-    irods::error ret2 = setRECacheSaltFromEnv();
-    if ( !ret2.ok() ) {
-        rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
-        exit( 1 );
+    recv( inSocket, &in_buf, 1024, 0 );
+
+    sockaddr_un tmp_socket_addr;
+    memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
+    tmp_socket_addr.sun_family = AF_UNIX;
+    strcpy( tmp_socket_addr.sun_path, in_buf );
+    unsigned int len = sizeof(tmp_socket_addr);
+
+    int tmp_socket, conn_tmp_socket;
+    tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+    // Delete socket if it already exists
+    unlink( tmp_socket_addr.sun_path );
+
+    if ( bind( tmp_socket, (struct sockaddr*) &tmp_socket_addr, len ) == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in receiveDataFromServer", __FUNCTION__, __LINE__);
+        return -1;
     }
 
+    if ( listen( tmp_socket, 5) == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in receiveDataFromServer", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    // Send acknowledgement that socket has been created
+    char ack_buffer[256];
+    len = snprintf( ack_buffer, 256, "OK" );
+    send ( inSocket, ack_buffer, len, 0 );
+
+    conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
+    if ( conn_tmp_socket == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in receiveDataFromServer", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    while (!data_complete) {
+        memset( in_buf, 0, 1024 );
+        recv( conn_tmp_socket, &in_buf, 1024, 0 );
+
+        if (strlen(in_buf) == 0) {
+            return -1;
+        }
+
+        char* tokenized_strings = strtok(in_buf, ";");
+
+        while (tokenized_strings != NULL) {
+            std::string tmpStr = tokenized_strings;
+
+            if ( tmpStr == "end_of_vars" ) {
+                data_complete = true;
+
+                // Send acknowledgement that all data has been received
+                send ( conn_tmp_socket, ack_buffer, strlen(ack_buffer) + 1, 0 );
+
+                break;
+            }
+
+            unsigned long i = 0;
+            for ( auto& a : tmpStr) {
+                if (a == '=') {
+                    break;
+                }
+                ++i;
+            }
+
+            if (i == tmpStr.size()) {
+                // No equal sign was found
+                continue;
+            }
+
+            std::string lhs = tmpStr.substr(0, i);
+            std::string rhs = tmpStr.substr(i+1, tmpStr.size());
+
+            status = setenv( lhs.c_str(), rhs.c_str(), 1 );
+
+            tokenized_strings = strtok(NULL, ";");
+        }
+    }
+
+    int newSocket; 
+    receiveSocketFromSocket( conn_tmp_socket, &newSocket );
+
+    char socket_buf[16];
+    snprintf(socket_buf, 16, "%d", newSocket);
+
+    status = setenv( "spNewSock", socket_buf, 1 );
+
+    close( conn_tmp_socket );
+    close( tmp_socket );
+
+    return status;
+}
+
+int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
+    char in_buf[1024];
+    bool data_complete = false;
+    
+    while (!data_complete) {
+        memset( in_buf, 0, 1024 );
+        recv( socket, &in_buf, 1024, 0 );
+
+        if (strlen(in_buf) == 0) {
+            return -1;
+        }
+
+        char* tokenized_strings = strtok(in_buf, ";");
+
+        while (tokenized_strings != NULL) {
+            std::string tmpStr = tokenized_strings;
+
+            if ( tmpStr == "end_of_vars" ) {
+                data_complete = true;
+                break;
+            }
+
+            unsigned long i = 0;
+            for ( auto& a : tmpStr) {
+                if (a == '=') {
+                    break;
+                }
+                ++i;
+            }
+
+            if (i == tmpStr.size()) {
+                // No equal sign was found
+                continue;
+            }
+
+            std::string lhs = tmpStr.substr(0, i);
+            std::string rhs = tmpStr.substr(i+1, tmpStr.size());
+
+
+            if ( lhs == SP_CONNECT_CNT ) {
+                rsComm->connectCnt = std::stoi( rhs );
+            } else if ( lhs == SP_PROTOCOL ) {
+                rsComm->irodsProt = (irodsProt_t) std::stoi( rhs );
+            } else if ( lhs == SP_RECONN_FLAG ) {
+                rsComm->reconnFlag = std::stoi( rhs );
+            } else if ( lhs == SP_PROXY_USER ) {
+                rstrcpy ( rsComm->proxyUser.userName, rhs.c_str(), NAME_LEN );
+
+                if ( rhs == PUBLIC_USER_NAME ) {
+                    rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+                }
+            } else if ( lhs == SP_PROXY_RODS_ZONE ) { 
+                rstrcpy( rsComm->proxyUser.rodsZone, rhs.c_str(), NAME_LEN );
+            } else if ( lhs == SP_CLIENT_USER ) {
+                rstrcpy( rsComm->clientUser.userName, rhs.c_str(), NAME_LEN );
+
+                if ( rhs == PUBLIC_USER_NAME ) {
+                    rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+                }
+            } else if ( lhs == SP_CLIENT_RODS_ZONE ) {
+                rstrcpy( rsComm->clientUser.rodsZone, rhs.c_str(), NAME_LEN );
+            } else if ( lhs == SP_REL_VERSION ) {
+                rstrcpy( rsComm->cliVersion.relVersion, rhs.c_str(), NAME_LEN );
+            } else if ( lhs == SP_API_VERSION ) {
+                rstrcpy( rsComm->cliVersion.apiVersion, rhs.c_str(), NAME_LEN );
+            } else if ( lhs == SP_OPTION ) {
+                rstrcpy( rsComm->option, rhs.c_str(), LONG_NAME_LEN );
+            } else if ( lhs == SP_RE_CACHE_SALT ) {
+                // SP_RE_CACHE_SALT gets saved in an environment variable
+                setenv(lhs.c_str(), rhs.c_str(), 1);
+            }
+
+            tokenized_strings = strtok(NULL, ";");
+        }
+    }
+
+    int newSocket; 
+    receiveSocketFromSocket( socket, &newSocket );
+    rsComm->sock = newSocket;
+
+    if ( rsComm->sock != 0 ) {
+
+        /* remove error messages from xmsLog */
+        setLocalAddr( rsComm->sock, &rsComm->localAddr );
+        setRemoteAddr( rsComm->sock, &rsComm->remoteAddr );
+    }
+
+    char* tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
+    if ( tmpStr == NULL || *tmpStr == '\0' ) {
+        tmpStr = "UNKNOWN";
+    }
+    rstrcpy( rsComm->clientAddr, tmpStr, NAME_LEN );
+
+    return 0;
+}
+
+int
+runIrodsAgent( sockaddr_un agent_addr ) {
+    int status;
+    rsComm_t rsComm;
 
 #ifdef windows_platform
     iRODSNtAgentInit( argc, argv );
@@ -75,10 +306,76 @@ main( int, char ** ) {
 #ifndef windows_platform
 #ifdef SERVER_DEBUG
     if ( isPath( "/tmp/rodsdebug" ) ) {
-        sleep( 20 );
+rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20 );
     }
 #endif
 #endif
+
+    int listen_socket, conn_socket;
+    struct sockaddr_un client_addr;
+    unsigned int len = sizeof(agent_addr);
+
+    listen_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+    if ( listen_socket == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Unable to create socket in agent process factory", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    // Delete socket if it already exists
+    unlink( agent_addr.sun_path );
+
+    if ( bind( listen_socket, (struct sockaddr*) &agent_addr, len ) == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in agent process factory", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    if ( listen( listen_socket, 5) == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in agent process factory", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    raise(SIGSTOP);
+
+    conn_socket = accept( listen_socket, (struct sockaddr*) &client_addr, &len);
+    if ( conn_socket == -1 ) {
+        rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in agent process factory", __FUNCTION__, __LINE__);
+        return -1;
+    }
+
+    while ( true ) {
+        pid_t child_pid = fork();
+
+        if (child_pid == 0) {
+            // Child process - reload properties and receive data from server process
+            irods::environment_properties::instance().capture();
+            irods::server_properties::instance().capture();
+
+            // Child process - Need to init the rsComm object  and break loop
+            status = receiveDataFromServer( conn_socket );
+
+            irods::error ret2 = setRECacheSaltFromEnv();
+            if ( !ret2.ok() ) {
+                rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
+                exit( 1 );
+            }
+
+            break;
+        } else if (child_pid > 0) {
+            // Parent process - want to go right back to paused state
+            raise(SIGSTOP);
+
+            int reaped_pid;
+            int child_status;
+            while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
+                rodsLog( LOG_NOTICE, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
+            }
+        } else {
+            rodsLog( LOG_ERROR, "fork() failed in rodsAgent process factory" );
+            close( conn_socket );
+            close( listen_socket );
+            return -1;
+        }
+    }
 
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
@@ -98,36 +395,8 @@ main( int, char ** ) {
         cleanupAndExit( status );
     }
 
-    /* Handle option to log sql commands */
-    tmpStr = getenv( SP_LOG_SQL );
-    if ( tmpStr != NULL ) {
-#ifdef SYSLOG
-        int j = atoi( tmpStr );
-        rodsLogSqlReq( j );
-#else
-        rodsLogSqlReq( 1 );
-#endif
-    }
-
-    /* Set the logging level */
-    tmpStr = getenv( SP_LOG_LEVEL );
-    if ( tmpStr != NULL ) {
-        int i;
-        i = atoi( tmpStr );
-        rodsLogLevel( i );
-    }
-    else {
-        rodsLogLevel( LOG_NOTICE ); /* default */
-    }
-
-#ifdef SYSLOG
-    /* Open a connection to syslog */
-    openlog( "rodsAgent", LOG_ODELAY | LOG_PID, LOG_DAEMON );
-#endif
-
     irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
-
 
     status = getRodsEnv( &rsComm.myEnv );
 
@@ -256,7 +525,7 @@ main( int, char ** ) {
     cleanup();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );
-    rodsLog( LOG_NOTICE, "Agent exiting with status = %d", status );
+    rodsLog( LOG_NOTICE, "Agent [%d] exiting with status = %d", getpid(), status );
     return status;
 }
 
