@@ -194,6 +194,13 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
+        // log the exact plugin we're about to attempt to call into
+        rodsLog(
+            LOG_DEBUG,
+            "load_plugin - calling plugin_factory() in [%s]",
+            so_name.c_str() );
+
+        // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
         _plugin = factory( _instance_name, _context );
         if ( !_plugin ) {
