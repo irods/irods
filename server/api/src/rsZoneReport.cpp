@@ -69,6 +69,37 @@ int rsZoneReport(
 
 } // rsZoneReport
 
+void report_server_connect_error(
+    int                _error,
+    const std::string& _host_name,
+    const std::string& _resc_name,
+    json_t*&           _resc_arr ) {
+
+    std::stringstream msg;
+    msg << "failed in svrToSvrConnect for resource ["
+        << _resc_name
+        << "], at hostname ["
+        << _host_name
+        << "], error code "
+        << _error;
+
+    irods::error err = ERROR(_error, msg.str());
+    irods::log( err );
+
+    json_t* obj = json_object();
+    if(!obj) {
+        rodsLog(
+            LOG_ERROR,
+            "%s:%d - failed to create json object",
+            __FUNCTION__, __LINE__);
+    }
+
+    json_object_set(obj, "ERROR", json_string(msg.str().c_str()));
+    json_array_append( _resc_arr, obj );
+
+}
+
+
 irods::error get_server_reports(
     rsComm_t* _comm,
     json_t*&  _resc_arr ) {
@@ -121,13 +152,25 @@ irods::error get_server_reports(
 
         }
 
+        std::string resc_name;
+        ret = resc->get_property< std::string >(
+                  irods::RESOURCE_NAME,
+                  resc_name );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+        }
+
         svr_reported[ tmp_host ] = 1;
 
         int status = svrToSvrConnect( _comm, tmp_host );
         if ( status < 0 ) {
-            return ERROR(
-                       status,
-                       "failed in svrToSvrConnect" );
+            report_server_connect_error(
+                status,
+                tmp_host->hostName->name,
+                resc_name,
+                _resc_arr);
+            continue;
         }
 
         bytesBuf_t* bbuf = NULL;
