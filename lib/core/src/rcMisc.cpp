@@ -222,15 +222,11 @@ parseUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
 
 int
 apiTableLookup( int apiNumber ) {
-#ifndef RODS_SERVER
-    return apiNumber;
-#else
     irods::api_entry_table& RcApiTable = irods::get_client_api_table();
     if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
         return apiNumber;
     }
     return SYS_UNMATCHED_API_NUM;
-#endif
 }
 
 int
