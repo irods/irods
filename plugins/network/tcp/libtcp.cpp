@@ -506,7 +506,6 @@ irods::error read_bytes_buf(
                            bytes_read,
                            _time_val );
     _buffer->len = bytes_read;
-    ( ( char* )_buffer->buf )[_buffer->len] = '\0';
 
     // =-=-=-=-=-=-=-
     // log transaction if requested
