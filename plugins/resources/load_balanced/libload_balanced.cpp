@@ -816,6 +816,9 @@ irods::error load_balanced_redirect_for_open_operation(
     const std::string*              _curr_host,
     irods::hierarchy_parser*        _out_parser,
     float*                          _out_vote ) {
+
+    *_out_vote = 0.0;
+
     // =-=-=-=-=-=-=-
     // data struct to hold parser and vote from the search
     std::map< float, irods::hierarchy_parser > result_map;
@@ -824,6 +827,10 @@ irods::error load_balanced_redirect_for_open_operation(
     _ctx.prop_map().get< irods::resource_child_map* >(
             irods::RESC_CHILD_MAP_PROP,
             cmap_ref );
+
+    if(cmap_ref->empty()) {
+        return SUCCESS();
+    }
 
     // =-=-=-=-=-=-=-
     // iterate over all the children and pick the highest vote
@@ -866,12 +873,19 @@ irods::error load_balanced_redirect_for_open_operation(
 
     } // for
 
+    if( result_map.empty() ) {
+        return SUCCESS();
+    }
+
     // =-=-=-=-=-=-=-
     // now that we have collected all of the results the map
     // will have put the largest one at the end of the map
     // so grab that one and return the result if it is non zero
     float high_vote = result_map.rbegin()->first;
-    if ( high_vote > 0.0 ) {
+    if(0.0 == high_vote) {
+        return SUCCESS();
+    }
+    else if ( high_vote > 0.0 ) {
         ( *_out_parser ) = result_map.rbegin()->second;
         ( *_out_vote )   = high_vote;
         return SUCCESS();
