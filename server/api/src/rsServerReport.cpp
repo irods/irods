@@ -11,6 +11,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_environment_properties.hpp"
 #include "irods_load_plugin.hpp"
+#include "irods_report_plugins_in_json.hpp"
 
 #include "jansson.h"
 
@@ -468,93 +469,6 @@ irods::error convert_service_account(
 
 } // convert_service_account
 
-
-irods::error add_plugin_type_to_json_array(
-    const std::string _plugin_type,
-    const char*        _type_name,
-    json_t*&           _json_array ) {
-
-    std::string plugin_home;
-    irods::error ret = irods::resolve_plugin_path( _plugin_type, plugin_home );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    irods::plugin_name_generator name_gen;
-    irods::plugin_name_generator::plugin_list_t plugin_list;
-    ret = name_gen.list_plugins( plugin_home, plugin_list );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    for ( irods::plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-            itr != plugin_list.end();
-            ++itr ) {
-
-        json_t* plug = json_object();
-        json_object_set( plug, "name",     json_string( itr->c_str() ) );
-        json_object_set( plug, "type",     json_string( _type_name ) );
-        json_object_set( plug, "version",  json_string( "" ) );
-        json_object_set( plug, "checksum_sha256", json_string( "" ) );
-
-        json_array_append( _json_array, plug );
-    }
-
-    return SUCCESS();
-}
-
-irods::error get_plugin_array(
-    json_t*& _plugins ) {
-
-    _plugins = json_array();
-    if ( !_plugins ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
-    }
-
-    irods::error ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_RESOURCE, "resource", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    std::string svc_role;
-    ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
-        return PASS( ret );
-    }
-
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_DATABASE, "database", _plugins );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-    }
-
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_AUTHENTICATION, "authentication", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_NETWORK, "network", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_API, "api", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    ret = add_plugin_type_to_json_array( irods::PLUGIN_TYPE_MICROSERVICE, "microservice", _plugins );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    return SUCCESS();
-
-} // get_plugin_array
 
 irods::error get_uname_string(
     std::string _str ) {
@@ -1061,7 +975,7 @@ int _rsServerReport(
     json_object_set( resc_svr, "service_account_environment", svc_acct );
 
     json_t* plugins = 0;
-    ret = get_plugin_array( plugins );
+    ret = irods::get_plugin_array( plugins );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }

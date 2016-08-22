@@ -721,6 +721,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_database_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_file_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_get_l1desc.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_report_plugins_in_json.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_mysql_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_oracle_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_physical_object.cpp

@@ -10,6 +10,8 @@
 #include "irods_plugin_name_generator.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "irods_report_plugins_in_json.hpp"
+
 #include "client_hints.h"
 #include "ies_client_hints.h"
 #include "readServerConfig.hpp"
@@ -53,8 +55,6 @@ int rsClientHints(
 
 } // rsClientHints
 
-
-
 irods::error get_hash_and_policy(
     rsComm_t* _comm,
     std::string& _hash,
@@ -80,8 +80,6 @@ irods::error get_hash_and_policy(
     return SUCCESS();
 
 } // get_hash_and_policy
-
-
 
 int _rsClientHints(
     rsComm_t*    _comm,
@@ -143,6 +141,12 @@ int _rsClientHints(
         "match_hash_policy",
         json_string( hash_policy.c_str() ) );
 
+    json_t* plugins = 0;
+    ret = irods::get_plugin_array(plugins);
+    if(!ret.ok()) {
+        irods::log(PASS(ret));
+    }
+    json_object_set(client_hints, "plugins", plugins);
 
     char* tmp_buf = json_dumps(
                         client_hints,
