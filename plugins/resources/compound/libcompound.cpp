@@ -1312,8 +1312,13 @@ irods::error open_for_prefer_archive_policy(
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
             &irods::OPEN_OPERATION, _curr_host,
             &cache_check_parser, &cache_check_vote );
-        if ( !ret.ok() || 0.0 == cache_check_vote ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
+        }
+
+        if( 0.0 == cache_check_vote ) {
+            *_out_vote = 0.0;
+            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
@@ -1501,8 +1506,13 @@ irods::error open_for_prefer_cache_policy(
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
             &irods::OPEN_OPERATION, _curr_host,
             &arch_check_parser, &arch_check_vote );
-        if ( !ret.ok() || 0.0 == arch_check_vote ) {
+        if ( !ret.ok() ) {
             return PASS( ret );
+        }
+
+        if( 0.0 == arch_check_vote ) {
+            *_out_vote = 0.0;
+            return SUCCESS();
         }
 
         if( irods::UNLINK_OPERATION == ( *_opr ) ) {
