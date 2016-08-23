@@ -3594,6 +3594,103 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
 
+    def test_num_repl_policy__ticket_2851(self):
+        self.admin.assert_icommand('iadmin modresc demoResc context "num_repl=2"')
+        self.admin.assert_icommand('iadmin lr demoResc', 'STDOUT_SINGLELINE', 'demoResc')
+        filename = "test_num_repl_policy__ticket_2851.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        for i in range(0,10):
+            self.admin.assert_icommand("iput " + filename + ' ' + filename+str(i))
+
+        hier_ctr = {}
+        for i in range(0,10):
+            stdout,_,_ = self.admin.run_icommand(['ils', '-l', filename+str(i)])
+            res = stdout.split()
+            hier_ctr[res[2]] = 'found_it' # first resc_hier
+            hier_ctr[res[9]] = 'found_it' # second resc_hier
+
+        print('hier_ctr size: '+str(len(hier_ctr)))
+
+        self.admin.assert_icommand('iadmin modresc demoResc context "NO_CONTEXT"')
+
+        # 10 iputs should hit all the child resources
+        assert len(hier_ctr) == 3
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
+    def test_random_read_policy__ticket_2851(self):
+
+        self.admin.assert_icommand('iadmin modresc demoResc context "read=random"')
+        self.admin.assert_icommand('iadmin lr demoResc', 'STDOUT_SINGLELINE', 'demoResc')
+        filename = "test_random_read_policy__ticket_2851.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        self.admin.assert_icommand("iput " + filename + ' ' + filename)
+
+        u1_path = os.path.join(self.admin.get_vault_session_path('unix1Resc'), filename)
+        u2_path = os.path.join(self.admin.get_vault_session_path('unix2Resc'), filename)
+        u3_path = os.path.join(self.admin.get_vault_session_path('unix3Resc'), filename)
+
+        print( "u1_path ["+u1_path+"]")
+        print( "u2_path ["+u2_path+"]")
+        print( "u3_path ["+u3_path+"]")
+
+        # modify files in the vaults to signify which resources
+        with open(u1_path, 'wt') as f:
+            f.write("UNIX_1")
+        with open(u2_path, 'wt') as f:
+            f.write("UNIX_2")
+        with open(u3_path, 'wt') as f:
+            f.write("UNIX_3")
+
+        res_ctr = {}
+        for i in range(0,10):
+            stdout,_,_ = self.admin.run_icommand(['iget', filename, '-'])
+            res_ctr[stdout] = 'found_it'
+
+        self.admin.assert_icommand('iadmin modresc demoResc context "NO_CONTEXT"')
+
+        # given random behavior we expect there to be more than one but
+        # there are no guarantees
+        assert len(res_ctr) <= 3
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
+    def test_random_read_policy_with_num_repl__ticket_2851(self):
+
+        self.admin.assert_icommand('iadmin modresc demoResc context "num_repl=2;read=random"')
+        self.admin.assert_icommand('iadmin lr demoResc', 'STDOUT_SINGLELINE', 'demoResc')
+        filename = "test_random_read_policy__ticket_2851.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        self.admin.assert_icommand("iput " + filename + ' ' + filename)
+
+        u1_path = os.path.join(self.admin.get_vault_session_path('unix1Resc'), filename)
+        u2_path = os.path.join(self.admin.get_vault_session_path('unix2Resc'), filename)
+        u3_path = os.path.join(self.admin.get_vault_session_path('unix3Resc'), filename)
+
+        print( "u1_path ["+u1_path+"]")
+        print( "u2_path ["+u2_path+"]")
+        print( "u3_path ["+u3_path+"]")
+
+        # modify files in the vaults to signify which resources
+        with open(u1_path, 'wt') as f:
+            f.write("UNIX_1")
+        with open(u2_path, 'wt') as f:
+            f.write("UNIX_2")
+        with open(u3_path, 'wt') as f:
+            f.write("UNIX_3")
+
+        res_ctr = {}
+        for i in range(0,10):
+            stdout,_,_ = self.admin.run_icommand(['iget', filename, '-'])
+            res_ctr[stdout] = 'found_it'
+
+        self.admin.assert_icommand('iadmin modresc demoResc context "NO_CONTEXT"')
+
+        # given random behavior we expect there to be more than one but
+        # there are no guarantees
+        assert len(res_ctr) <= 2
+
     def test_irm_specific_replica(self):
         # not allowed here - this is a managed replication resource
         # should be listed 3x
