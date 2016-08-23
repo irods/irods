@@ -28,6 +28,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_repl_rebalance.hpp"
 #include "irods_kvp_string_parser.hpp"
+#include "irods_random.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -73,6 +74,11 @@
 #include <sys/stat.h>
 
 #include <string.h>
+
+
+const std::string NUM_REPL_KW( "num_repl" );
+const std::string READ_KW( "read" );
+const std::string READ_RANDOM_POLICY( "random" );
 
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
@@ -1361,14 +1367,38 @@ irods::error replCreateChildReplList(
     return result;
 }
 
+/// @brief honor the read context string keyword if present
+irods::error process_redirect_map_for_random_open(
+    const redirect_map_t&    _redirect_map,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote ) {
+
+    std::vector<std::pair<float, irods::hierarchy_parser>> items;
+    redirect_map_t::const_iterator itr = _redirect_map.cbegin();
+    for( ; itr != _redirect_map.cend(); ++itr ) {
+        if(itr->first > 0) {
+            items.push_back(std::make_pair(itr->first, itr->second));
+        }
+    }
+
+    size_t rand_index = irods::getRandom<size_t>() % items.size();
+    std::vector<std::pair<float, irods::hierarchy_parser>>::iterator a_itr = items.begin();
+    std::advance(a_itr, rand_index);
+    *_out_vote   = a_itr->first;
+    *_out_parser = a_itr->second;
+
+    return SUCCESS();
+} // process_redirect_map_for_random_open
+
 /// @brief Selects a child from the vector of parsers based on host access
 irods::error replSelectChild(
-    irods::plugin_context& _ctx,
-    const redirect_map_t&           _redirect_map,
-    const std::string&              _child_list_prop,
-    const std::string&              _hierarchy_prop,
-    irods::hierarchy_parser*        _out_parser,
-    float*                          _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string&       _operation,
+    const redirect_map_t&    _redirect_map,
+    const std::string&       _child_list_prop,
+    const std::string&       _hierarchy_prop,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote ) {
 
     (*_out_vote) = 0.0;
     if( _redirect_map.empty() ) {
@@ -1376,8 +1406,23 @@ irods::error replSelectChild(
         return SUCCESS();
     }
 
-    irods::error result = SUCCESS();
     irods::error ret;
+    if( irods::OPEN_OPERATION == _operation) {
+        std::string read_policy;
+        ret = _ctx.prop_map().get<std::string>(READ_KW, read_policy);
+        if(ret.ok() && READ_RANDOM_POLICY == read_policy) {
+            ret = process_redirect_map_for_random_open(
+                      _redirect_map,
+                      _out_parser,
+                      _out_vote);
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
+            return SUCCESS();
+        }
+    }
+
+    irods::error result = SUCCESS();
 
     redirect_map_t::const_iterator it;
     it = _redirect_map.begin();
@@ -1485,7 +1530,7 @@ irods::error repl_redirect_impl(
     }
 
     // foreach child parser determine the best to access based on host
-    else if ( !( ret = replSelectChild( _ctx, redirect_map, _child_list_prop, _hierarchy_prop, _inout_parser, _out_vote ) ).ok() ) {
+    else if ( !( ret = replSelectChild( _ctx, *_operation, redirect_map, _child_list_prop, _hierarchy_prop, _inout_parser, _out_vote ) ).ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Failed to select an appropriate child.";
@@ -1501,12 +1546,70 @@ irods::error repl_redirect_impl(
 
 } // repl_redirect_impl
 
+irods::error proc_child_list_for_create_policy(
+        irods::plugin_context& _ctx ) {
+    size_t num_repl = 0;
+    irods::error ret = _ctx.prop_map().get<size_t>(NUM_REPL_KW, num_repl);
+    if( !ret.ok() ) {
+        return SUCCESS();
+    }
+
+    child_list_t new_list;
+    if(num_repl <= 1) {
+        ret = _ctx.prop_map().set<child_list_t>(write_child_list_prop, new_list);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+        return SUCCESS();
+    }
+
+    child_list_t child_list;
+    ret = _ctx.prop_map().get<child_list_t>(write_child_list_prop, child_list);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // decrement num_repl by 1 to count first replica
+    num_repl--;
+
+    if( num_repl < child_list.size() ) {
+        bool pick_done = false;
+        std::vector<size_t> picked_indicies;
+        while( !pick_done ) {
+             size_t rand_index = irods::getRandom<size_t>() % child_list.size();
+             if(std::find(
+                 picked_indicies.begin(),
+                 picked_indicies.end(),
+                 rand_index) == picked_indicies.end()) {
+                 new_list.push_back(child_list[rand_index]);
+                 picked_indicies.push_back(rand_index);
+                 if(picked_indicies.size() >= num_repl) {
+                     pick_done = true;
+                 }
+             }
+        }
+
+        // if we have an empty new_list, simply keep the old one
+        if(new_list.size() == 0) {
+            return SUCCESS();
+        }
+
+        ret = _ctx.prop_map().set<child_list_t>(write_child_list_prop, new_list);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+    }
+
+    return SUCCESS();
+
+} // proc_child_list_for_create_policy
+
 irods::error repl_file_resolve_hierarchy(
-    irods::plugin_context& _ctx,
-    const std::string*             _operation,
-    const std::string*             _curr_host,
-    irods::hierarchy_parser*       _inout_parser,
-    float*                         _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string*       _operation,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _inout_parser,
+    float*                   _out_vote ) {
     irods::error ret;
     if (*_operation != irods::UNLINK_OPERATION) {
         // recreate the child list for a write operation as the
@@ -1544,6 +1647,14 @@ irods::error repl_file_resolve_hierarchy(
                 LOG_ERROR,
                 "repl_file_resolve_hierarchy - vote of 0 on create operation for [%s]", hier.c_str() );
         }
+
+        if(irods::CREATE_OPERATION == *_operation) {
+            ret = proc_child_list_for_create_policy(_ctx);
+            if(!ret.ok()) {
+                return PASS(ret);
+            }
+        }
+
     } // if (*_operation != irods::UNLINK_OPERATION)
 
     ret = repl_redirect_impl(
@@ -1790,8 +1901,53 @@ class repl_resource : public irods::resource {
         repl_resource(
             const std::string& _inst_name,
             const std::string& _context ) :
-            irods::resource( _inst_name, _context ) {
-        } // ctor
+            irods::resource(
+                    _inst_name,
+                    _context ) {
+                irods::kvp_map_t kvp_map;
+                if ( !_context.empty() ) {
+                    irods::error ret = irods::parse_kvp_string(
+                            _context,
+                            kvp_map );
+                    if ( !ret.ok() ) {
+                        irods::log( PASS( ret ) );
+
+                    }
+
+                    if ( kvp_map.find( NUM_REPL_KW ) != kvp_map.end() ) {
+                        try {
+                            // need to capture as int to test for <0 first
+                            int num_repl = boost::lexical_cast< int >( kvp_map[ NUM_REPL_KW ] );
+                            if(num_repl <= 0) {
+                                rodsLog(
+                                    LOG_ERROR,
+                                    "%s:%d - %s is <= 0",
+                                    __FUNCTION__,
+                                    __LINE__,
+                                    NUM_REPL_KW.c_str());
+                            }
+
+                            properties_.set< size_t >( NUM_REPL_KW, static_cast<size_t>(num_repl) );
+                        }
+                        catch ( const boost::bad_lexical_cast& ) {
+                            std::stringstream msg;
+                            msg << "failed to cast num_repl ["
+                                << kvp_map[ NUM_REPL_KW ]
+                                << "]";
+                            irods::log(
+                                    ERROR(
+                                        SYS_INVALID_INPUT_PARAM,
+                                        msg.str() ) );
+                        }
+                    }
+
+                    if ( kvp_map.find( READ_KW ) != kvp_map.end() ) {
+                        properties_.set< std::string >( READ_KW, kvp_map[ READ_KW ] );
+                    }
+
+                } // if !empty
+
+            } // ctor
 
         irods::error post_disconnect_maintenance_operation(
             irods::pdmo_type& ) {
