@@ -4,6 +4,7 @@
 #include "genQuery.h"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"
@@ -664,7 +665,7 @@ irods::error get_load_lists(
                 switch ( i ) {
                 case 0:
                     _resc_names[j] = tResult;
-                    
+
                 case 1:
                     _resc_loads[j] = atoi( tResult );
                     break;
@@ -1201,4 +1202,3 @@ irods::resource* plugin_factory( const std::string& _inst_name,
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-

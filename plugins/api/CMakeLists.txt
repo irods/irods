@@ -23,14 +23,11 @@ set(
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_helloworld_server
   irods_server
-  irods_clerver
   )
 
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_helloworld_client
-  irods_client_api_table
-  irods_client_core
-  irods_client_plugins
+  irods_client
   )
 
 set(

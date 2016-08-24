@@ -7,10 +7,9 @@
 // irods includes
 #include "generalAdmin.h"
 #include "rodsConnect.h"
-//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
-//#include "reFuncDefs.hpp"
 #include "miscServerFunct.hpp"
+#include "rsGeneralAdmin.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -49,7 +48,7 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsGeneralAdmin( rsComm, generalAdminInp );
         } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
@@ -855,4 +854,3 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
 
     return CAT_INVALID_ARGUMENT;
 }
-

@@ -1,5 +1,6 @@
 #include "irods_create_write_replicator.hpp"
 
+#include "rsDataObjRepl.hpp"
 #include "dataObjRepl.h"
 #include "irods_stacktrace.hpp"
 

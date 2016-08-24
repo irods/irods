@@ -27,8 +27,15 @@
 #include "rcConnect.h"
 #include "rodsConnect.h"
 #include "sockComm.h"
-//#include "reFuncDefs.hpp"
 #include "modAccessControl.h"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjLseek.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsGenQuery.hpp"
+#include "rsModAVUMetadata.hpp"
+#include "rsModAccessControl.hpp"
 
 #include <string>
 #include <vector>

@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* #define RE_LOG_RULES_TMP */
 #define HAS_MICROSDEF_T
 #include "rodsConnect.h"
 #include "reGlobals.hpp"
@@ -14,10 +13,12 @@
 #include "locks.hpp"
 #include "functions.hpp"
 #include "configuration.hpp"
-
+#include "rsGenQuery.hpp"
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_re_plugin.hpp"
+#include "rsGeneralRowInsert.hpp"
+#include "rsEndTransaction.hpp"
 
 
 #ifdef MYMALLOC

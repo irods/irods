@@ -3,6 +3,7 @@
 #include "subStructFileClosedir.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileClosedir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -92,4 +93,3 @@ int _rsSubStructFileClosedir( rsComm_t*                _comm,
     }
 
 }
-

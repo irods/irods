@@ -6,7 +6,6 @@
 
 #include "dataObjClose.h"
 #include "rodsLog.h"
-//#include "reFuncDefs.hpp"
 #include "regReplica.h"
 #include "modDataObjMeta.h"
 #include "modAVUMetadata.h"
@@ -17,21 +16,30 @@
 #include "dataObjUnlink.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
 #include "ruleExecSubmit.h"
 #include "subStructFileRead.h"
 #include "subStructFileStat.h"
 #include "subStructFileClose.h"
 #include "regDataObj.h"
 #include "dataObjRepl.h"
-#include "dataObjTrim.h" // JMC - backport 4537
-#include "dataObjLock.h" // JMC - backport 4604
+#include "dataObjTrim.h"
+#include "dataObjLock.h"
 #include "fileClose.h"
 #include "fileStat.h"
 #include "getRescQuota.h"
 #include "miscServerFunct.hpp"
-
+#include "rsDataObjClose.hpp"
+#include "apiNumber.h"
+#include "rsModDataObjMeta.hpp"
+#include "rsDataObjTrim.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsRegReplica.hpp"
+#include "rsGetRescQuota.hpp"
+#include "rsSubStructFileClose.hpp"
+#include "rsFileClose.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsSubStructFileStat.hpp"
+#include "rsFileStat.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

@@ -4,7 +4,7 @@
 /* See generalUpdate.h for a description of this API call.*/
 
 #include "generalUpdate.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsGeneralUpdate.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"

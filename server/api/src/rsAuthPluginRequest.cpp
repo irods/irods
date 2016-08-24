@@ -7,6 +7,7 @@
 #include "irods_auth_manager.hpp"
 #include "irods_auth_constants.hpp"
 #include "irods_pluggable_auth_scheme.hpp"
+#include "rsAuthPluginRequest.hpp"
 
 void _rsSetAuthRequestGetChallenge( const char* );
 
@@ -95,6 +96,3 @@ int rsAuthPluginRequest(
     return 0;
 
 } // rsAuthPluginRequest
-
-
-

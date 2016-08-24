@@ -8,6 +8,7 @@
 #include "fileOpendir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileOpendir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -125,4 +126,3 @@ int _rsFileOpendir(
     return opendir_err.code();
 
 } // _rsFileOpendir
-

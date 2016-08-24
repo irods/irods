@@ -1,16 +1,5 @@
-/**
- * @file	genQueryMS.cpp
- *
- */
-
-
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
 #include "genQuery.h"
-//#include "reHelpers1.hpp"
+#include "rsGenQuery.hpp"
 #include "rcMisc.h"
 #include "irods_re_structs.hpp"
 

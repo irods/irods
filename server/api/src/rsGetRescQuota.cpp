@@ -9,8 +9,9 @@
 
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
-//#include "reFuncDefs.hpp"
+#include "rsGetRescQuota.hpp"
 #include "genQuery.h"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

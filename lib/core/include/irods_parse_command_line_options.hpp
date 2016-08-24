@@ -1,10 +1,8 @@
-
-
-
 #ifndef PARSE_COMMAND_LINE_OPTIONS
 #define PARSE_COMMAND_LINE_OPTIONS
 
 #include "parseCommandLine.h"
+#include "rodsPath.h"
 
 extern "C"
 int parse_opts_and_paths(
@@ -18,6 +16,3 @@ int parse_opts_and_paths(
     rodsPathInp_t*    _rods_paths );
 
 #endif // PARSE_COMMAND_LINE_OPTIONS
-
-
-

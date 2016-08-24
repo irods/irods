@@ -10,8 +10,7 @@
 #include "physPath.hpp"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
+#include "rsGetRemoteZoneResc.hpp"
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
 
@@ -118,4 +117,3 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return 0;
 
 }
-

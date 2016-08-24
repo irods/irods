@@ -5,6 +5,7 @@
 
 #include "fileChmod.h"
 #include "miscServerFunct.hpp"
+#include "rsFileChmod.hpp"
 
 
 // =-=-=-=-=-=-=-

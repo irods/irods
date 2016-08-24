@@ -4,10 +4,10 @@
 /* See endTransaction.h for a description of this API call.*/
 
 #include "endTransaction.h"
-//#include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsEndTransaction.hpp"
 
 int
 rsEndTransaction( rsComm_t *rsComm, endTransactionInp_t *endTransactionInp ) {

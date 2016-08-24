@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 namespace irods {
 
-    void clearInStruct_noop( void* ) {};
+
 
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -91,41 +91,9 @@ namespace irods {
     } // dtor
 
 
-// =-=-=-=-=-=-=-
-// public - cctor for pack entry
-    pack_entry::pack_entry( const pack_entry& _rhs ) {
-        packInstruct = _rhs.packInstruct;
-        //clearInStruct = _rhs.clearInStruct;
-    }
 
-// =-=-=-=-=-=-=-
-// public - assignment operator for pack entry
-    pack_entry& pack_entry::operator=( const pack_entry& _rhs ) {
-        packInstruct = _rhs.packInstruct;
-        //clearInStruct = _rhs.clearInStruct;
 
-        return *this;
-    }
 
-// =-=-=-=-=-=-=-
-// public - ctor for api entry table
-    pack_entry_table::pack_entry_table(
-        packInstructArray_t _defs[] ) {
-        // =-=-=-=-=-=-=-
-        // initialize table from input array
-        int i = 0;
-        std::string end_str( PACK_TABLE_END_PI );
-        while ( end_str != _defs[ i ].name ) {
-            table_[ _defs[ i ].name ].packInstruct = _defs[i].packInstruct;
-            ++i;
-        } // for i
-
-    } // ctor
-
-// =-=-=-=-=-=-=-
-// public - dtor for api entry table
-    pack_entry_table::~pack_entry_table() {
-    } // dtor
 
 // =-=-=-=-=-=-=-
 // public - load api plugins
@@ -243,18 +211,3 @@ namespace irods {
     } // init_api_table
 
 }; // namespace irods
-
-#ifdef __cplusplus
-extern "C" {
-    void* operation_rule_execution_manager_factory( const char*, const char* );
-#endif
-void init_client_api_table() {
-    // =-=-=-=-=-=-=-
-    // initialize pluggable api table
-    irods::api_entry_table&  api_tbl = irods::get_client_api_table();
-    irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
-    init_api_table( api_tbl, pk_tbl );
-}
-#ifdef __cplusplus
-}
-#endif

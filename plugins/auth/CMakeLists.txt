@@ -29,21 +29,17 @@ set(
 set(
   IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_server
   RODS_SERVER
-  RODS_CLERVER
   ENABLE_RE
   )
 
 set(
   IRODS_AUTH_PLUGIN_LINK_LIBRARIES_client
-  irods_client_core
-  irods_client_plugins
-  irods_client_api_table
+  irods_client
   )
 
 set(
   IRODS_AUTH_PLUGIN_LINK_LIBRARIES_server
   irods_server
-  irods_clerver
   )
 
 set(
@@ -65,10 +61,11 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         ${IRODS_CURRENT_PLUGIN_TARGET}
         PRIVATE
         ${CMAKE_BINARY_DIR}/lib/core/include
-        ${CMAKE_SOURCE_DIR}/lib/core/include
         ${CMAKE_SOURCE_DIR}/lib/api/include
-        ${CMAKE_SOURCE_DIR}/server/drivers/include
+        ${CMAKE_SOURCE_DIR}/lib/core/include
+        ${CMAKE_SOURCE_DIR}/server/api/include
         ${CMAKE_SOURCE_DIR}/server/core/include
+        ${CMAKE_SOURCE_DIR}/server/drivers/include
         ${CMAKE_SOURCE_DIR}/server/icat/include
         ${CMAKE_SOURCE_DIR}/server/re/include
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/include

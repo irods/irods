@@ -1,36 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* collCreate.h
- */
-
 #ifndef COLL_CREATE_H__
 #define COLL_CREATE_H__
-
-/* This is a high level type API call */
 
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "rcConnect.h"
-
-#if defined(RODS_SERVER)
-#define RS_COLL_CREATE rsCollCreate
-/* prototype for the server handler */
-int
-rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp );
-int
-remoteCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp );
-int
-l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-#else
-#define RS_COLL_CREATE NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* prototype for the client call */
-int
-rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
 
 /* rcCollCreate - Create a iRODS collection.
  * Input -
@@ -42,7 +15,10 @@ rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
  * OutPut -
  *   int status - status of the operation.
  */
+
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// COLL_CREATE_H__
+int rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp );
+
+#endif

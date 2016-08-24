@@ -5,6 +5,7 @@
 
 #include "rcvXmsg.h"
 #include "xmsgLib.hpp"
+#include "rsRcvXmsg.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];
 extern xmsgQue_t XmsgQue;
@@ -32,4 +33,3 @@ rsRcvXmsg( rsComm_t*, rcvXmsgInp_t *rcvXmsgInp,
 
     return status;
 }
-

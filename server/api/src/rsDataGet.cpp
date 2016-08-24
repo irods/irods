@@ -8,6 +8,7 @@
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "rsDataGet.hpp"
 
 /* rsDataGet - this routine setup portalOprOut with the resource server
  * for parallel get operation.
@@ -80,4 +81,3 @@ remoteDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     return status;
 }
-

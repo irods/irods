@@ -2,6 +2,9 @@
 #include "miscServerFunct.hpp"
 #include "rcMisc.h"
 #include "irods_re_plugin.hpp"
+#include "rsExecMyRule.hpp"
+
+extern std::unique_ptr<struct irods::global_re_plugin_mgr> irods::re_plugin_globals;
 
 int rsExecMyRule(
     rsComm_t*        _comm,

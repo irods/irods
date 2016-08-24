@@ -8,6 +8,7 @@
 #include "objMetaOpr.hpp"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
+#include "rsCloseCollection.hpp"
 
 int
 rsCloseCollection( rsComm_t*, int *handleInxInp ) {

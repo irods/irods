@@ -6,6 +6,11 @@
 #include "datetime.hpp"
 #include "cache.hpp"
 #include "configuration.hpp"
+#include "rsExecMyRule.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjLseek.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsDataObjClose.hpp"
 #ifndef DEBUG
 #include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"

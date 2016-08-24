@@ -10,8 +10,7 @@
 #include "irods_log.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
-
-/* can be used for debug: */
+#include "rsSpecificQuery.hpp"
 
 int
 rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,

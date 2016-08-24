@@ -4,7 +4,6 @@
 /* See collCreate.h for a description of this API call.*/
 
 #include "rcMisc.h"
-//#include "reFuncDefs.hpp"
 #include "collCreate.h"
 #include "rodsConnect.h"
 #include "rodsLog.h"
@@ -20,6 +19,10 @@
 #include "physPath.hpp"
 #include "dataObjOpr.hpp"
 #include "miscServerFunct.hpp"
+#include "rsCollCreate.hpp"
+#include "rsRegColl.hpp"
+#include "rsSubStructFileMkdir.hpp"
+#include "rsFileMkdir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

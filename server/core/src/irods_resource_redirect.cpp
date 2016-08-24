@@ -7,6 +7,8 @@
 #include "collection.hpp"
 #include "dataObjOpr.hpp"
 #include "getRescQuota.h"
+#include "rsDataObjCreate.hpp"
+#include "rsGetRescQuota.hpp"
 
 // =-=-=-=-=-=-=
 #include "irods_resource_redirect.hpp"
@@ -895,6 +897,3 @@ namespace irods {
     } // resource_redirect
 
 }; // namespace irods
-
-
-

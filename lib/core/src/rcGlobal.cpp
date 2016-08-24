@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rcGlobal.h - global definition for client API */
+/* global definition for client API */
 
 #ifndef RC_GLOBAL_H__
 #define RC_GLOBAL_H__
@@ -197,8 +197,7 @@ validKeyWd_t StructFileExtAndRegInpKeyWd[] = {
     {COLL_NAME_FLAG,         COLL_NAME_KW},
 };
 
-int NumStructFileExtAndRegInpKeyWd = sizeof
-                                     ( StructFileExtAndRegInpKeyWd ) / sizeof( validKeyWd_t );
+int NumStructFileExtAndRegInpKeyWd = sizeof( StructFileExtAndRegInpKeyWd ) / sizeof( validKeyWd_t );
 
 struct timeval SysTimingVal;
 

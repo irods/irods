@@ -12,12 +12,10 @@
 #include "specColl.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
-//#include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsDataObjLock.hpp"
 
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {

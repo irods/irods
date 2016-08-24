@@ -8,11 +8,10 @@
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
+#include "rsDataObjTrim.hpp"
 #include "icatDefines.h"
-//#include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
+#include "rsDataObjUnlink.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -176,6 +175,3 @@ int trimDataObjInfo(
     }
     return status;
 }
-
-
-

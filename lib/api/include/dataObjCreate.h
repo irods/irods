@@ -1,51 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* dataObjCreate.h
- */
-
 #ifndef DATA_OBJ_CREATE_H__
 #define DATA_OBJ_CREATE_H__
-
-/* This is a high level type API call */
 
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "rcConnect.h"
-
-#ifdef __cplusplus
-#include <string>
-
-int
-_rsDataObjCreateWithResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                          const std::string& _resc_name );
-int
-getRescForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                  std::string& _resc_name );
-#endif
-
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_CREATE rsDataObjCreate
-/* prototype for the server handler */
-
-int
-rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int
-_rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int
-specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int
-dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx );
-int
-dataCreate( rsComm_t *rsComm, int l1descInx );
-int
-l3Create( rsComm_t *rsComm, int l1descInx );
-int
-l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                   dataObjInfo_t *dataObjInfo );
-
-#else
-#define RS_DATA_OBJ_CREATE NULL
-#endif
 
 /* prototype for the client call */
 /* rcDataObjCreate - Create a iRODS data object.
@@ -73,15 +31,9 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * OutPut -
  *   int l1descInx - an integer descriptor.
  */
-
 #ifdef __cplusplus
-extern "C" {
+extern "C"
 #endif
-int
-rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp );
+int rcDataObjCreate( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
-#ifdef __cplusplus
-}
 #endif
-
-#endif  // DATA_OBJ_CREATE_H__

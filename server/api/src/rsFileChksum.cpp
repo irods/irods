@@ -5,6 +5,7 @@
 
 #include "fileChksum.h"
 #include "miscServerFunct.hpp"
+#include "rsFileChksum.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

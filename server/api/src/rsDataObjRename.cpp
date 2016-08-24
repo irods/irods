@@ -3,7 +3,6 @@
 /* rsDataObjRename.c - rename a data object.
  */
 #include "dataObjRename.h"
-//#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "collection.hpp"
@@ -21,6 +20,15 @@
 #include "fileClosedir.h"
 #include "rmColl.h"
 #include "miscServerFunct.hpp"
+#include "rsDataObjRename.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsSubStructFileRename.hpp"
+#include "rsFileRename.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsQuerySpecColl.hpp"
+#include "rsFileReaddir.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsRmColl.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

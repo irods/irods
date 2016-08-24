@@ -6,55 +6,15 @@
 #ifndef DATA_OBJ_OPEN_H__
 #define DATA_OBJ_OPEN_H__
 
-/* This is a high level type API call */
-
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
 #include "objInfo.h"
 
 /* definition for phyOpenFlag */
-#define DO_PHYOPEN	0
-#define DO_NOT_PHYOPEN	1
-#define PHYOPEN_BY_SIZE	2
+#define DO_PHYOPEN      0
+#define DO_NOT_PHYOPEN  1
+#define PHYOPEN_BY_SIZE 2
 
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_OPEN rsDataObjOpen
-/* prototype for the server handler */
-int
-rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int
-_rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                           int phyOpenFlag, dataObjInfo_t *dataObjInfo ); // JMC - backport 4537
-int
-_rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead );
-int
-dataOpen( rsComm_t *rsComm, int l1descInx );
-int
-l3Open( rsComm_t *rsComm, int l1descInx );
-int
-_l3Open( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags );
-int
-l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags );
-int
-applyPreprocRuleForOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t **dataObjInfoHead );
-int
-createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t **dataObjInfoHead );
-// =-=-=-=-=-=-=-
-// JMC - backport 4590
-int
-procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                         dataObjInfo_t **dataObjInfoHead,
-                         dataObjInfo_t **compDataObjInfo );
-
-#else
-#define RS_DATA_OBJ_OPEN NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 /* prototype for the client call */
 /* rcDataObjOpen - Open a iRODS data object.
  * Input -
@@ -80,10 +40,10 @@ extern "C" {
  *   int l1descInx - an integer descriptor.
  */
 
-int
-rcDataObjOpen( rcComm_t *conn, dataObjInp_t *dataObjInp );
 
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	/* DATA_OBJ_OPEN_H */
+int rcDataObjOpen( rcComm_t *conn, dataObjInp_t *dataObjInp );
+
+#endif

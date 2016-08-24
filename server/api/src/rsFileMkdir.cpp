@@ -5,6 +5,7 @@
 
 #include "fileMkdir.h"
 #include "miscServerFunct.hpp"
+#include "rsFileMkdir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -106,6 +107,3 @@ int _rsFileMkdir(
     return mkdir_err.code();
 
 } // _rsFileMkdir
-
-
-

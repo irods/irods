@@ -6,6 +6,7 @@
 #include "fileClosedir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileClosedir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

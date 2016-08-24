@@ -263,7 +263,7 @@ namespace irods {
                            clone(_ps)...);
 
         }
-        
+
         template<typename OP, typename... As >
         error call(
             std::string _instance_name,
@@ -584,7 +584,7 @@ namespace irods {
                     return ret;
                 }
             }
- 
+
             std::string msg( "instance not found [" );
             msg += instance_name_;
             msg += "]";
@@ -714,8 +714,7 @@ namespace irods {
         rule_engine_manager<default_re_ctx, default_ms_ctx> global_re_mgr = rule_engine_manager<default_re_ctx, default_ms_ctx>(global_re_plugin_mgr, global_re_packs, global_ms_mgr);
     };
 
-    extern std::unique_ptr<struct global_re_plugin_mgr> re_plugin_globals;
-
+    extern std::unique_ptr<struct irods::global_re_plugin_mgr> re_plugin_globals;
 }
 #define DEFINE_FACTORY \
     irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory(const std::string& _inst_name, const std::string& _context) { \

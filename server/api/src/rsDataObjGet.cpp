@@ -3,7 +3,6 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjGet.h for a description of this API call.*/
 
-//#include "reFuncDefs.hpp"
 #include "dataObjGet.h"
 #include "rodsLog.h"
 #include "dataGet.h"
@@ -18,6 +17,13 @@
 #include "specColl.hpp"
 #include "subStructFileGet.h"
 #include "getRemoteZoneResc.h"
+#include "rsDataObjGet.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataGet.hpp"
+#include "rsFileLseek.hpp"
+#include "rsSubStructFileGet.hpp"
+#include "rsFileGet.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -365,4 +371,3 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
 
     return bytesRead;
 }
-

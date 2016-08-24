@@ -1,9 +1,8 @@
-
-#include "exec_rule_expression.h"
 #include "irods_re_plugin.hpp"
 #include "miscServerFunct.hpp"
 #include "rcMisc.h"
 #include "packStruct.h"
+#include "rsExecRuleExpression.hpp"
 
 #include <string>
 
@@ -79,4 +78,3 @@ int rsExecRuleExpression(
     return err.code();
 
 } // rsExecRuleExpression
-

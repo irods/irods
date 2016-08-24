@@ -12,6 +12,7 @@
 #include "irods_auth_constants.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_pluggable_auth_scheme.hpp"
+#include "rsAuthResponse.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -105,4 +106,3 @@ chkProxyUserPriv( rsComm_t *rsComm, int proxyUserPriv ) {
         return SYS_PROXYUSER_NO_PRIV;
     }
 }
-

@@ -1,17 +1,12 @@
-/**
- * @file  reIn2p3SysRule.cpp
- *
- */
-
-/*** Copyright (c) 2007 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
- *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
-/* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
-
 #include "rcMisc.h"
 #include "reIn2p3SysRule.hpp"
 #include "genQuery.h"
 #include "phyBundleColl.h"
 #include "reDataObjOpr.hpp"
+#include "rsGenQuery.hpp"
+#include "rsGeneralRowInsert.hpp"
+#include "rsGeneralAdmin.hpp"
+#include "rsGeneralRowPurge.hpp"
 
 #ifndef windows_platform
 #include <sys/socket.h>

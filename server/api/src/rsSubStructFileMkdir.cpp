@@ -3,8 +3,8 @@
 #include "subStructFileMkdir.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileMkdir.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 
@@ -92,4 +92,3 @@ int _rsSubStructFileMkdir( rsComm_t*  _comm,
     }
 
 }
-

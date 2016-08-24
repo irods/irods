@@ -19,6 +19,7 @@
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "dataObjOpr.hpp"
+#include "rsGetHostForGet.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -207,4 +208,3 @@ getRescForGetInDataObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return 0;
 }
 #endif
-

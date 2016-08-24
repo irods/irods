@@ -8,7 +8,7 @@
 #include "fileWrite.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
-
+#include "rsFileWrite.hpp"
 #include <sstream>
 
 // =-=-=-=-=-=-=-
@@ -119,4 +119,3 @@ int _rsFileWrite(
     return write_err.code();
 
 } // _rsFileWrite
-

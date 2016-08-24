@@ -12,24 +12,9 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
+#include <memory>
 
 namespace irods {
-
-    class evp_lifetime_mgr {
-        public:
-            evp_lifetime_mgr() {
-                OpenSSL_add_all_algorithms();
-
-            }
-
-            ~evp_lifetime_mgr() {
-                EVP_cleanup();
-            }
-
-    }; // class evp_lifetime_mgr
-    static evp_lifetime_mgr global_evp_lifetime_mgr_;
-
     std::string buffer_crypt::gen_hash(
         unsigned char* _buf,
         int            _sz ) {
@@ -310,18 +295,17 @@ namespace irods {
         // allocate a plain text buffer
         // because we have padding ON, we must allocate an extra cipher block size of memory
         int            plain_len  = 0;
-        unsigned char* plain_text = new unsigned char[ _in_buf.size() + AES_BLOCK_SIZE ];
+        auto plain_text = std::make_unique<unsigned char[]>(_in_buf.size() + AES_BLOCK_SIZE);
 
         // =-=-=-=-=-=-=-
         // update the plain text, plain_len is filled with the length of the plain text
         ret = EVP_DecryptUpdate(
                   &context,
-                  plain_text,
+                  plain_text.get(),
                   &plain_len,
                   &_in_buf[0],
                   _in_buf.size() );
         if ( 0 == ret ) {
-            delete [] plain_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_DecryptUpdate - " );
@@ -334,10 +318,9 @@ namespace irods {
         int final_len = 0;
         ret = EVP_DecryptFinal_ex(
                   &context,
-                  plain_text + plain_len,
+                  plain_text.get() + plain_len,
                   &final_len );
         if ( 0 == ret ) {
-            delete [] plain_text;
             char err[ 256 ];
             ERR_error_string_n( ERR_get_error(), err, 256 );
             std::string msg( "failed in EVP_DecryptFinal_ex - " );
@@ -352,10 +335,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // copy the iv to the out variable
         _out_buf.assign(
-            &plain_text[0],
-            &plain_text[ plain_len + final_len ] );
-
-        delete [] plain_text;
+            plain_text.get(),
+            plain_text.get() + plain_len + final_len );
 
         if ( 0 == EVP_CIPHER_CTX_cleanup( &context ) ) {
             return ERROR( ERR_get_error(), "EVP_CIPHER_CTX_cleanup failed" );
@@ -366,6 +347,3 @@ namespace irods {
     } // decrypt
 
 }; // namespace irods
-
-
-

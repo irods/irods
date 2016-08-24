@@ -10,6 +10,7 @@
 #include "fileOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
+#include "rsFileRename.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -132,4 +133,3 @@ int _rsFileRename(
     return rename_err.code();
 
 } // _rsFileRename
-

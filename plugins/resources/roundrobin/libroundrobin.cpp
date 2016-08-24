@@ -1,10 +1,7 @@
-// =-=-=-=-=-=-=-
-// legacy irods includes
 #include "msParam.h"
 #include "miscServerFunct.hpp"
+#include "rsSetRoundRobinContext.hpp"
 
-// =-=-=-=-=-=-=-
-//
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_physical_object.hpp"
@@ -16,15 +13,11 @@
 #include "irods_server_api_call.hpp"
 #include "set_round_robin_context.h"
 
-// =-=-=-=-=-=-=-
-// stl includes
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <string>
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>

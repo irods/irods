@@ -3,6 +3,7 @@
 #include "subStructFileClose.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileClose.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -92,5 +93,3 @@ int _rsSubStructFileClose(
     }
 
 }
-
-

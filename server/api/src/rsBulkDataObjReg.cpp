@@ -8,6 +8,9 @@
 #include "objMetaOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "rsBulkDataObjReg.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsModDataObjMeta.hpp"
 
 #include "irods_stacktrace.hpp"
 #include "irods_file_object.hpp"

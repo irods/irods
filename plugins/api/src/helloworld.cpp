@@ -97,9 +97,9 @@ static irods::error serialize_helloOut_ptr_ptr(
 
 
 #ifdef RODS_SERVER
-    #define CALL_HELLOINP_HELLO_OUT call_helloInp_helloOut 
+    #define CALL_HELLOINP_HELLO_OUT call_helloInp_helloOut
 #else
-    #define CALL_HELLOINP_HELLO_OUT NULL 
+    #define CALL_HELLOINP_HELLO_OUT NULL
 #endif
 
 // =-=-=-=-=-=-=-
@@ -151,7 +151,7 @@ extern "C" {
         irods::re_serialization::add_operation(
                 typeid(helloOut_t**),
                 serialize_helloOut_ptr_ptr );
-#endif // RODS_SERVER
+#endif
 
         // =-=-=-=-=-=-=-
         // assign the pack struct key and value

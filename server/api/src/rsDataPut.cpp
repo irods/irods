@@ -9,6 +9,7 @@
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "rsDataPut.hpp"
 
 /* rsDataPut - this routine setup portalOprOut with the resource server
  * for parallel put operation.
@@ -83,4 +84,3 @@ remoteDataPut( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     return status;
 }
-

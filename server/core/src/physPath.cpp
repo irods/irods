@@ -20,19 +20,20 @@
 #include "resource.hpp"
 #include "dataObjClose.h"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
-//#include "reSysDataObjOpr.hpp"
+#include "rsDataObjClose.hpp"
 #include "genQuery.h"
 #include "readServerConfig.hpp"
-//#include "reFuncDefs.hpp"
 #include "phyBundleColl.h"
 #include "collCreate.h"
+#include "rsFileChksum.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsFileRename.hpp"
+#include "rsGenQuery.hpp"
+#include "rsCollCreate.hpp"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
@@ -771,7 +772,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
         return 0;
     }
-    
+
     int create_path = 0;
     err = irods::get_resource_property< int >(
               dataObjInfo->rescId,

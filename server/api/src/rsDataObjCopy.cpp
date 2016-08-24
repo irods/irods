@@ -16,6 +16,12 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "getRemoteZoneResc.h"
+#include "rsDataObjCopy.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsDataObjClose.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -232,4 +238,3 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
     }
     return status2;
 }
-

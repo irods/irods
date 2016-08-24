@@ -7,6 +7,7 @@
 #include "irods_resource_plugin_impostor.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_lexical_cast.hpp"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -394,7 +395,7 @@ namespace irods {
         resource_ptr _resc,
         std::string& _name ) {
 
-        std::string my_name; 
+        std::string my_name;
         error ret = _resc->get_property<std::string>(
                         RESOURCE_NAME,
                         my_name);
@@ -402,7 +403,7 @@ namespace irods {
             return PASS(ret);
         }
 
-        std::string parent_id_str; 
+        std::string parent_id_str;
         ret = _resc->get_property<std::string>(
                         RESOURCE_PARENT,
                         parent_id_str);
@@ -416,7 +417,7 @@ namespace irods {
                     HIERARCHY_ERROR,
                     "empty parent string");
         }
- 
+
         rodsLong_t parent_id;
         ret = lexical_cast<rodsLong_t>(
                   parent_id_str,
@@ -444,7 +445,7 @@ namespace irods {
 
         _hierarchy = _resc_name;
         std::string parent_name = _resc_name;
-        
+
         resource_ptr resc;
         while( !parent_name.empty() ) {
             error ret = resolve(
@@ -466,7 +467,7 @@ namespace irods {
             }
 
             if(!parent_name.empty()) {
-                _hierarchy = parent_name + 
+                _hierarchy = parent_name +
                              irods::hierarchy_parser::delimiter() +
                              _hierarchy;
             }
@@ -504,7 +505,7 @@ namespace irods {
                 }
 
             } // for idx
-        } 
+        }
         else {
             // we have found a leaf
             rodsLong_t resc_id;
@@ -1212,7 +1213,7 @@ namespace irods {
 
             hier.insert( 0, ";" );
             hier.insert( 0, name);
-         
+
             resc->get_parent(resc);
         }
 
@@ -1290,6 +1291,3 @@ namespace irods {
     } // resc_id_to_name
 
 }; // namespace irods
-
-
-

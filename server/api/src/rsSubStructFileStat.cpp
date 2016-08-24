@@ -3,8 +3,8 @@
 #include "subStructFileStat.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileStat.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 #include "irods_stacktrace.hpp"
 
@@ -105,4 +105,3 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     }
 
 }
-

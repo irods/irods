@@ -1,7 +1,8 @@
-
 #include "rcMisc.h"
 #include "get_hier_from_leaf_id.h"
 #include "irods_resource_manager.hpp"
+#include "rsGetHierFromLeafId.hpp"
+
 extern irods::resource_manager resc_mgr;
 
 int rsGetHierFromLeafId(
@@ -13,7 +14,7 @@ int rsGetHierFromLeafId(
            &_comm->rError,
            STDOUT_STATUS,
            "null input param(s)");
-       return SYS_INTERNAL_NULL_INPUT_ERR; 
+       return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     ( *_out ) = ( get_hier_out_t* )malloc( sizeof( get_hier_out_t ) );
@@ -34,6 +35,3 @@ int rsGetHierFromLeafId(
 
     return 0;
 }
-
-
-

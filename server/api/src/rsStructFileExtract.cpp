@@ -3,6 +3,7 @@
 #include "structFileExtract.h"
 #include "miscServerFunct.hpp"
 #include "syncMountedColl.h"
+#include "rsStructFileExtract.hpp"
 
 #include "dataObjOpr.hpp"
 #include "rsGlobalExtern.hpp"
@@ -193,4 +194,3 @@ procCacheDir( rsComm_t *rsComm, char *cacheDir, char *resource, int oprType, cha
     }
     return status;
 }
-

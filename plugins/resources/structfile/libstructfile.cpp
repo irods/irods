@@ -8,6 +8,22 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
 #include "apiHeaderAll.h"
+#include "rsFileOpen.hpp"
+#include "rsFileStat.hpp"
+#include "rsFileRead.hpp"
+#include "rsFileClose.hpp"
+#include "rsFileWrite.hpp"
+#include "rsFileMkdir.hpp"
+#include "rsFileRmdir.hpp"
+#include "rsFileCreate.hpp"
+#include "rsFileOpen.hpp"
+#include "rsFileUnlink.hpp"
+#include "rsFileLseek.hpp"
+#include "rsFileOpendir.hpp"
+#include "rsFileClosedir.hpp"
+#include "rsFileReaddir.hpp"
+#include "rsFileRename.hpp"
+#include "rsFileTruncate.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -2804,6 +2820,3 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
-
-

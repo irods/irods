@@ -9,6 +9,7 @@
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.hpp"
 #include "irods_stacktrace.hpp"
+#include "rsReadCollection.hpp"
 
 int
 rsReadCollection( rsComm_t*, int *handleInxInp,

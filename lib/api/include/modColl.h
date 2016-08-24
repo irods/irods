@@ -1,33 +1,8 @@
-/*** Copyright (c), The Modents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* modColl.h
- */
-
 #ifndef MOD_COLL_H__
 #define MOD_COLL_H__
 
-/* This is Object File I/O type API call */
-
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
-
-#if defined(RODS_SERVER)
-#define RS_MOD_COLL rsModColl
-/* prototype for the server handler */
-int
-rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
-int
-_rsModColl( rsComm_t *rsComm, collInp_t *modCollInp );
-#else
-#define RS_MOD_COLL NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* prototype for the client call */
-int
-rcModColl( rcComm_t *conn, collInp_t *modCollInp );
 
 /* rcModColl - Modify the collType, collInfo1 and collInfo2 of a
  * iRODS collection.
@@ -40,8 +15,9 @@ rcModColl( rcComm_t *conn, collInp_t *modCollInp );
  * OutPut -
  *   int status - status of the operation.
  */
-
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// MOD_COLL_H__
+int rcModColl( rcComm_t *conn, collInp_t *modCollInp );
+
+#endif

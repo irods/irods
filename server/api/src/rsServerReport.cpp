@@ -12,6 +12,7 @@
 #include "irods_environment_properties.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_report_plugins_in_json.hpp"
+#include "rsServerReport.hpp"
 
 #include "jansson.h"
 

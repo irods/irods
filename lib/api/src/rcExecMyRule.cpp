@@ -3,7 +3,7 @@
 #include "dataObjPut.h"
 #include "dataObjGet.h"
 #include "rcMisc.h"
-
+#include "apiNumber.h"
 
 /**
  * \fn rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp, msParamArray_t **outParamArray )
@@ -88,4 +88,3 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
 
     return status;
 }
-

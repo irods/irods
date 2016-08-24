@@ -12,6 +12,9 @@
 #include "icatDefines.h"
 #include "dataObjClose.h"
 #include "objMetaOpr.hpp"
+#include "rsGenQuery.hpp"
+#include "rsModColl.hpp"
+#include "rsDataObjClose.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

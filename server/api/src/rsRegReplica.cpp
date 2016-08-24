@@ -4,9 +4,10 @@
  */
 
 #include "regReplica.h"
-#include "objMetaOpr.hpp" // JMC - backport 4497
+#include "objMetaOpr.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "rsRegReplica.hpp"
 
 #include "irods_file_object.hpp"
 #include "irods_configuration_keywords.hpp"

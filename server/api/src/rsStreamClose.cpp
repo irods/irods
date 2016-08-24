@@ -4,10 +4,11 @@
  * API
  */
 
-/* script generated code */
 #include "streamClose.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsStreamClose.hpp"
+#include "rsFileClose.hpp"
 
 int
 rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {
@@ -36,4 +37,3 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {
 
     return status;
 }
-

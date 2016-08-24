@@ -3,6 +3,8 @@
 #ifndef GET_RODS_ENV_H__
 #define GET_RODS_ENV_H__
 
+#include "rodsDef.h"
+
 typedef struct {
     char rodsUserName[NAME_LEN];
     char rodsHost[NAME_LEN];

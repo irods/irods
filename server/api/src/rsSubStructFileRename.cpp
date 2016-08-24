@@ -3,8 +3,8 @@
 #include "subStructFileRename.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileRename.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 
@@ -92,4 +92,3 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
     }
 
 }
-

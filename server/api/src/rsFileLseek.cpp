@@ -6,6 +6,7 @@
 #include "fileLseek.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileLseek.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -120,6 +121,3 @@ int _rsFileLseek(
     }
 
 } // _rsFileLseek
-
-
-

@@ -5,6 +5,7 @@
 
 #include "fileUnlink.h"
 #include "miscServerFunct.hpp"
+#include "rsFileUnlink.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -115,12 +116,3 @@ int _rsFileUnlink(
     return unlink_err.code();
 
 } // _rsFileUnlink
-
-
-
-
-
-
-
-
-

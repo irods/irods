@@ -7,6 +7,8 @@
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "genQuery.h"
+#include "rsRuleExecDel.hpp"
+#include "rsGenQuery.hpp"
 
 int
 getReInfoById( rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut ) {

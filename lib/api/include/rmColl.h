@@ -1,53 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rmColl.h
- */
-
 #ifndef RM_COLL_H__
 #define RM_COLL_H__
-
-/* This is a Object File I/O type API call */
 
 #include "rcConnect.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-
-#if defined(RODS_SERVER)
-#define RS_RM_COLL rsRmColl
-/* prototype for the server handler */
-int
-rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
-          collOprStat_t **collOprStat );
-int
-_rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
-           collOprStat_t **collOprStat );
-int
-svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp );
-int
-_rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
-                collOprStat_t **collOprStat );
-int
-_rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
-              dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat );
-int
-rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp );
-int
-rsMkTrashPath( rsComm_t *rsComm, char *objPath, char *trashPath );
-int
-l3Rmdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo );
-#else
-#define RS_RM_COLL NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* prototype for the client call */
-int
-rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag );
-int
-_rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
-           collOprStat_t **collOprStat );
 
 /* rcRmColl - Recursively Remove a iRODS collection.
  * Input -
@@ -61,6 +17,9 @@ _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp,
  */
 
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// RM_COLL_H__
+int rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, int vFlag );
+int _rcRmColl( rcComm_t *conn, collInp_t *rmCollInp, collOprStat_t **collOprStat );
+
+#endif

@@ -1,32 +1,12 @@
 #ifndef SERVER_REPORT_H__
 #define SERVER_REPORT_H__
 
-// =-=-=-=-=-=-=-
-// irods includes
 #include "rcConnect.h"
 #include "objInfo.h"
 
-#define SERVER_REPORT_AN 10204
-
-#ifdef RODS_SERVER
-#define RS_SERVER_REPORT rsServerReport
-int rsServerReport(
-    rsComm_t*,      // server comm ptr
-    bytesBuf_t** ); // json response
-#else
-#define RS_SERVER_REPORT NULL
-#endif
-
 #ifdef __cplusplus
-extern "C" {
+extern "C"
 #endif
-// =-=-=-=-=-=-=-
-// prototype for client
-int rcServerReport(
-    rcComm_t*,      // server comm ptr
-    bytesBuf_t** ); // json response
-#ifdef __cplusplus
-}
-#endif
+int rcServerReport(rcComm_t* server_comm_ptr, bytesBuf_t** json_response);
 
-#endif // SERVER_REPORT_H__
+#endif

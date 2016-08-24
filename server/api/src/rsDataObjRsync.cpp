@@ -1,4 +1,3 @@
-//#include "reGlobalsExtern.hpp"
 #include "dataObjChksum.h"
 #include "dataObjRsync.h"
 #include "objMetaOpr.hpp"
@@ -7,6 +6,9 @@
 #include "rsApiHandler.hpp"
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"
+#include "rsDataObjRsync.hpp"
+#include "rsDataObjChksum.hpp"
+#include "rsDataObjCopy.hpp"
 
 #include "irods_resource_redirect.hpp"
 
@@ -175,7 +177,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                  "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing" );
         return CHKSUM_EMPTY_IN_STRUCT_ERR;
     }
-    
+
     addKeyVal( &dataObjInp->condInput, ORIG_CHKSUM_KW, fileChksumStr );
 
     // =-=-=-=-=-=-=-
@@ -311,4 +313,3 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 }
-

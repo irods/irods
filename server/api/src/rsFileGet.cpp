@@ -5,8 +5,9 @@
 
 #include "fileGet.h"
 #include "miscServerFunct.hpp"
+#include "rsFileGet.hpp"
+#include "rsFileOpen.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"
 #include "irods_resource_backport.hpp"
@@ -152,10 +153,3 @@ int _rsFileGet(
     return bytes_read;
 
 } // _rsFileGet
-
-
-
-
-
-
-

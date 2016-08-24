@@ -3,6 +3,7 @@
 #include "structFileSync.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsStructFileSync.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -129,4 +130,3 @@ int _rsStructFileSync( rsComm_t*           _comm,
     }
 
 } // _rsStructFileSync
-

@@ -446,3 +446,11 @@ _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
                                   ( void ** ) collOprStat, NULL );
 }
 
+int
+apiTableLookup( int apiNumber ) {
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
+    if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
+        return apiNumber;
+    }
+    return SYS_UNMATCHED_API_NUM;
+}

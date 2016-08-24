@@ -1,9 +1,7 @@
-
-
-
 #include "rcMisc.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
+#include "rsClientHints.hpp"
 
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
@@ -15,6 +13,7 @@
 #include "client_hints.h"
 #include "ies_client_hints.h"
 #include "readServerConfig.hpp"
+#include "rsIESClientHints.hpp"
 
 #include "jansson.h"
 

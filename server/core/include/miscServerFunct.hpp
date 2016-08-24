@@ -22,6 +22,7 @@
 #include "fileOpen.h"
 #include "dataObjInpOut.h"
 #include "dataCopy.h"
+#include "rodsConnect.h"
 
 #include "structFileSync.h" /* JMC */
 

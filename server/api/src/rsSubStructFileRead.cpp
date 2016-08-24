@@ -3,8 +3,8 @@
 #include "subStructFileRead.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileRead.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 int
@@ -112,4 +112,3 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
     }
 
 } // _rsSubStructFileRead
-

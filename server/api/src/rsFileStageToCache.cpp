@@ -10,6 +10,7 @@
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
+#include "rsFileStageToCache.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -205,10 +206,3 @@ int _rsFileStageToCache(
     return stage_err.code();
 
 } // _rsFileStageToCache
-
-
-
-
-
-
-

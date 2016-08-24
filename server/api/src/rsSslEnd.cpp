@@ -4,6 +4,7 @@
 /* See sslEnd.h for a description of this API call.*/
 
 #include "sslEnd.h"
+#include "rsSslEnd.hpp"
 
 int
 rsSslEnd( rsComm_t *rsComm, sslEndInp_t* ) {
@@ -19,4 +20,3 @@ rsSslEnd( rsComm_t *rsComm, sslEndInp_t* ) {
 
     return 0;
 }
-

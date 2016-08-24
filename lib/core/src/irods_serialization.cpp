@@ -8,9 +8,9 @@
 #include "rodsErrorTable.h"
 
 namespace irods {
-    const char default_escape_char = '\\';
-    const char default_delimiter_char = ';';
-    const std::string default_special_characters = std::string( 1, default_escape_char ) + default_delimiter_char;
+    static const char default_escape_char = '\\';
+    static const char default_delimiter_char = ';';
+    static const std::string default_special_characters = std::string( 1, default_escape_char ) + default_delimiter_char;
 
     std::string get_format_string_for_escape(
         const char escape_char ) {

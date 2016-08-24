@@ -10,22 +10,21 @@ namespace irods {
         const std::string&          _str,
         const std::string&          _delim,
         std::vector< std::string >& _tok ) {
-        using namespace std;
 
         // =-=-=-=-=-=-=-
         // Skip delimiters at beginning.
-        string::size_type last_pos = _str.find_first_not_of( _delim, 0 );
+        std::string::size_type last_pos = _str.find_first_not_of( _delim, 0 );
 
         // =-=-=-=-=-=-=-
         // Find first "non-delimiter".
-        string::size_type pos = _str.find_first_of( _delim, last_pos );
+        std::string::size_type pos = _str.find_first_of( _delim, last_pos );
 
         // =-=-=-=-=-=-=-
         // iterate over string
-        while ( string::npos != pos || string::npos != last_pos ) {
+        while ( std::string::npos != pos || std::string::npos != last_pos ) {
             // =-=-=-=-=-=-=-
             // Found a token, add it to the vector.
-            string tt = _str.substr( last_pos, pos - last_pos );
+            std::string tt = _str.substr( last_pos, pos - last_pos );
 
             if ( tt[0] == ' ' ) {
                 tt = tt.substr( 1 );
@@ -45,14 +44,4 @@ namespace irods {
 
     } // string_tokenize
 
-}; // namespace irods
-
-
-
-
-
-
-
-
-
-
+} // namespace irods

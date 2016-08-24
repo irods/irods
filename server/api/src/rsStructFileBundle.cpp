@@ -11,7 +11,16 @@
 #include "miscServerFunct.hpp"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsStructFileBundle.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsChkObjPermAndStat.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsUnbunAndRegPhyBunfile.hpp"
+#include "rsPhyBundleColl.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

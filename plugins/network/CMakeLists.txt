@@ -22,22 +22,17 @@ set(
 
 set(
   IRODS_NETWORK_COMPILE_DEFINITIONS_server
-  RODS_SERVER
-  RODS_CLERVER
   ENABLE_RE
   )
 
 set(
   IRODS_NETWORK_LINK_LIBRARIES_client
-  irods_client_core
-  irods_client_plugins
-  irods_client_api_table
+  irods_client
   )
 
 set(
   IRODS_NETWORK_LINK_LIBRARIES_server
   irods_server
-  irods_clerver
   )
 
 set(

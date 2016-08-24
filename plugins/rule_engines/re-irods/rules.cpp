@@ -1,12 +1,8 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "debug.hpp"
-#ifdef DEBUG
-#include "re.hpp"
-#else
 #include "reGlobalsExtern.hpp"
 #include "reHelpers1.hpp"
-#endif
 #include "rules.hpp"
 #include "index.hpp"
 #include "functions.hpp"
@@ -152,9 +148,9 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
 
     orig = rei->msParamArray;
     rei->msParamArray = NULL;
-    
+
     rei->msParamArray = msParamArray;
-    
+
     rescode = parseAndComputeRule( rule, env, rei, reiSaveFlag, &errmsgBuf, r );
 
     if ( orig == NULL ) {
@@ -705,4 +701,3 @@ int overflow( const char* expr, int len ) {
     }
     return 1;
 }
-

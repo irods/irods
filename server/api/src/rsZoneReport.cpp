@@ -2,6 +2,8 @@
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"
+#include "rsZoneReport.hpp"
+#include "rsServerReport.hpp"
 
 #include "irods_log.hpp"
 #include "zone_report.h"

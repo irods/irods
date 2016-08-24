@@ -13,15 +13,16 @@
 #include "dataObjOpr.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
+#include "rsDataObjTruncate.hpp"
 #include "rmColl.h"
 #include "modDataObjMeta.h"
 #include "subStructFileTruncate.h"
 #include "getRemoteZoneResc.h"
 #include "phyBundleColl.h"
+#include "rsModDataObjMeta.hpp"
+#include "rsSubStructFileTruncate.hpp"
+#include "rsFileTruncate.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
 
@@ -171,4 +172,3 @@ l3Truncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
     }
     return status;
 }
-

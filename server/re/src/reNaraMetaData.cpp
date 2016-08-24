@@ -7,6 +7,7 @@
 #include "apiHeaderAll.h"
 #include "irods_stacktrace.hpp"
 #include "rodsConnect.h"
+#include "rsModAVUMetadata.hpp"
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"

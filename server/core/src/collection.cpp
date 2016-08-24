@@ -12,6 +12,14 @@
 #include "closeCollection.h"
 #include "collCreate.h"
 #include "objMetaOpr.hpp"
+#include "rsGenQuery.hpp"
+#include "rsSpecificQuery.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsObjStat.hpp"
+#include "rsCollCreate.hpp"
+#include "rsDataObjRename.hpp"
 
 #include "irods_virtual_path.hpp"
 

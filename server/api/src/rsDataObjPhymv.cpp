@@ -12,6 +12,11 @@
 #include "getRemoteZoneResc.h"
 #include "physPath.hpp"
 #include "fileClose.h"
+#include "rsDataObjPhymv.hpp"
+#include "rsFileOpen.hpp"
+#include "rsFileClose.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjPhymv.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -90,7 +95,7 @@ irods::error test_source_replica_for_write_permissions(
 				   msg );
 	}
 
-	
+
     fileCloseInp_t close_inp;
 	memset( &close_inp, 0, sizeof( close_inp ) );
 	close_inp.fileInx = l3_idx;
@@ -145,7 +150,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     char* dest_resc = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
     if ( dest_resc ) {
-        std::string dest_hier; 
+        std::string dest_hier;
         irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
                                rsComm,
                                dest_resc,
@@ -193,7 +198,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     char* src_resc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW );
     if ( src_resc ) {
-        std::string src_hier; 
+        std::string src_hier;
         irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
                                rsComm,
                                src_resc,
@@ -255,14 +260,14 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // get root of the destination hierarchy as the 'resc for create'
     irods::hierarchy_parser h_parse;
     h_parse.set_string( dest_hier );
-    
+
     std::string dest_root;
     h_parse.first_resc( dest_root );
     if( status < 0 ) {
         return status;
     }
-    
-    
+
+
     initReiWithDataObjInp(
 	    &rei,
 		rsComm,
@@ -385,4 +390,3 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     return savedStatus;
 }
-

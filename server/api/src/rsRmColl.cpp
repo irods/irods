@@ -4,7 +4,6 @@
  */
 
 #include "rmColl.h"
-//#include "reFuncDefs.hpp"
 #include "objMetaOpr.hpp"
 #include "specColl.hpp"
 #include "icatHighLevelRoutines.hpp"
@@ -19,6 +18,15 @@
 #include "dataObjRename.h"
 #include "genQuery.h"
 #include "miscServerFunct.hpp"
+#include "rsRmColl.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsSubStructFileRmdir.hpp"
+#include "rsFileRmdir.hpp"
+#include "rsDataObjRename.hpp"
+#include "rsGenQuery.hpp"
 
 #include "irods_resource_backport.hpp"
 #include "irods_configuration_keywords.hpp"

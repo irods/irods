@@ -16,6 +16,8 @@
 #include "miscUtil.h"
 #include "modAVUMetadata.h"
 #include "rsIcatOpr.hpp"
+#include "rsGenQuery.hpp"
+#include "rsModAVUMetadata.hpp"
 
 // =-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
@@ -654,11 +656,11 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
     irods::error ret = resc_mgr.hier_to_leaf_id(rescName,resc_id);
     if(!ret.ok()) {
         irods::log(PASS(ret));
-        return ret.code();    
+        return ret.code();
     }
 
     std::string resc_id_str = boost::lexical_cast<std::string>(resc_id);
-    
+
     snprintf( tmpStr, MAX_NAME_LEN, "='%s'", resc_id_str.c_str() );
     addInxVal( &genQueryInp.sqlCondInp, COL_D_RESC_ID, tmpStr );
     snprintf( tmpStr, MAX_NAME_LEN, "='%s'", filePath );
@@ -734,5 +736,3 @@ getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     return totalRowCount;
 }
 // =-=-=-=-=-=-=-
-
-

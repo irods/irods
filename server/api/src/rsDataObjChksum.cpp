@@ -1,4 +1,3 @@
-//#include "reGlobalsExtern.hpp"
 #include "dataObjChksum.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
@@ -8,6 +7,8 @@
 #include "rsApiHandler.hpp"
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"
+#include "rsDataObjChksum.hpp"
+#include "rsModDataObjMeta.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -274,5 +275,3 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return status;
     }
 }
-
-

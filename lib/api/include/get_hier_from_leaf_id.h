@@ -1,5 +1,3 @@
-
-
 #ifndef GET_HIER_FROM_LEAF_ID_HPP
 #define GET_HIER_FROM_LEAF_ID_HPP
 
@@ -18,16 +16,6 @@ typedef struct {
 #define GetHierInp_PI "double resc_id_;"
 #define GetHierOut_PI "str hier_[MAX_NAME_LEN];"
 
-#ifdef RODS_SERVER
-    #define RS_GET_HIER_FROM_LEAF_ID rsGetHierFromLeafId
-    int rsGetHierFromLeafId(rsComm_t*,get_hier_inp_t*,get_hier_out_t**);
-#else
-    #define RS_GET_HIER_FROM_LEAF_ID NULL
-#endif
-    
 int rcGetHierFromLeafId(rcComm_t*,get_hier_inp_t*,get_hier_out_t**);
 
-#endif // GET_HIER_FROM_LEAF_ID_HPP
-
-
-
+#endif

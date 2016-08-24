@@ -68,7 +68,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${PLUGIN}
     PRIVATE
     irods_server
-    irods_clerver
     irods_plugin_dependencies
     irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
@@ -150,7 +149,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
       test_${TEST_BINARY}_${PLUGIN}
       PRIVATE
       irods_server
-      irods_clerver
       irods_plugin_dependencies
       irods_common
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so

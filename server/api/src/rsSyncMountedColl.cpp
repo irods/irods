@@ -11,9 +11,10 @@
 #include "resource.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsSyncMountedColl.hpp"
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
+#include "rsStructFileSync.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -106,4 +107,3 @@ _rsSyncMountedColl( rsComm_t *rsComm, specColl_t *specColl, int oprType ) {
 
     return status;
 }
-

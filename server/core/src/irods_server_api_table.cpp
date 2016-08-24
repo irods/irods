@@ -1,4 +1,6 @@
+#define CREATE_API_TABLE_FOR_SERVER
 #include "apiTable.hpp"
+#undef CREATE_API_TABLE_FOR_SERVER
 #include "irods_server_api_table.hpp"
 
 namespace irods {
@@ -13,5 +15,3 @@ namespace irods {
     } // server_api_table
 
 }; // namespace irods
-
-

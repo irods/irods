@@ -14,6 +14,7 @@
 #include "collection.hpp"
 #include "specColl.hpp"
 #include "miscServerFunct.hpp"
+#include "rsGetHostForPut.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -62,4 +63,3 @@ int rsGetHostForPut(
     return 0;
 
 }
-

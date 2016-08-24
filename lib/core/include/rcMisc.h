@@ -47,8 +47,6 @@ freeRErrorContent( rError_t *myError );
 int
 parseUserName( const char *fullUserNameIn, char *userName, char *userZone );
 int
-apiTableLookup( int apiNumber );
-int
 myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong );
 int
 myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong );
@@ -151,8 +149,6 @@ int
 localToUnixTime( char *localTime, char *unixTime );
 int
 printErrorStack( rError_t *rError );
-int
-closeQueryOut( rcComm_t *conn, genQueryOut_t *genQueryOut );
 int
 getDataObjInfoCnt( dataObjInfo_t *dataObjInfoHead );
 int
@@ -307,6 +303,9 @@ int
 hasSymlinkInPath( const char *myPath );
 int
 hasSymlinkInPartialPath( const char *myPath, int pos );
+
+int myWrite( int sock, void *buf, int len, int *bytesWritten );
+int myRead( int sock, void *buf, int len, int *bytesRead, struct timeval *tv );
 
 // Special status that supresses reError header printing
 static const int STDOUT_STATUS = 1000000;

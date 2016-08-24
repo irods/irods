@@ -1,10 +1,6 @@
 install(
   TARGETS
-  irods_clerver
-  irods_client_api
-  irods_client_api_table
-  irods_client_core
-  irods_client_plugins
+  irods_client
   irods_common
   irods_plugin_dependencies
   irods_server

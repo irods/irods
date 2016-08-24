@@ -4,11 +4,10 @@
 /* See genQuery.h for a description of this API call.*/
 
 #include "rcMisc.h"
-//#include "reFuncDefs.hpp"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
 #include "miscUtil.h"
-//#include "cache.hpp"
+#include "rsGenQuery.hpp"
 #include "rsGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"

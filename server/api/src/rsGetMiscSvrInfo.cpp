@@ -10,6 +10,7 @@
 #include "irods_log.hpp"
 #include "rodsVersion.h"
 #include "miscServerFunct.hpp"
+#include "rsGetMiscSvrInfo.hpp"
 
 int
 rsGetMiscSvrInfo( rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo ) {

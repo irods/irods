@@ -10,6 +10,7 @@
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
+#include "rsFileSyncToArch.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -216,4 +217,3 @@ int _rsFileSyncToArch(
     return sync_err.code();
 
 } // _rsFileSyncToArch
-

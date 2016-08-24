@@ -7,14 +7,17 @@
 #include "dataObjOpr.hpp"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
+#include "rsCollRepl.hpp"
 #include "openCollection.h"
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "dataObjRepl.h"
 #include "rsApiHandler.hpp"
 #include "getRemoteZoneResc.h"
+#include "rsOpenCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsDataObjRepl.hpp"
 
 /* rsCollRepl - The Api handler of the rcCollRepl call - Replicate
  * a data object.

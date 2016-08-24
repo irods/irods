@@ -1,15 +1,13 @@
-// =-=-=-=-=-=-=-
 #include "irods_repl_rebalance.hpp"
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_virtual_path.hpp"
-
-// =-=-=-=-=-=-=-
-// irods includes
+#include "rsDataObjRepl.hpp"
 #include "dataObjRepl.h"
 #include "genQuery.h"
+#include "rsGenQuery.hpp"
 
 namespace irods {
 
@@ -642,7 +640,7 @@ namespace irods {
             }
 
         } // for r_itr
-        
+
         replErrorStack(&repl_errors, &_comm->rError);
 
         return final_err;

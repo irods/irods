@@ -10,6 +10,7 @@
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_manager.hpp"
 #include "irods_auth_constants.hpp"
+#include "rsAuthRequest.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -86,5 +87,3 @@ int rsAuthRequest(
     return 0;
 
 } // rsAuthRequest
-
-

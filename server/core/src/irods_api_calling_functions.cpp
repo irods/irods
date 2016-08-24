@@ -1,7 +1,6 @@
-
-
-#include "irods_api_calling_functions.hpp"
-
+#include "rcConnect.h"
+#include "apiHeaderAll.h"
+#include "apiHandler.hpp"
 #include "boost/any.hpp"
 #include <functional>
 
@@ -14,7 +13,7 @@ int call_miscSvrInfo_out(
                rsComm_t*,
                miscSvrInfo_t**>(
                    _comm,
-                   _out ); 
+                   _out );
 }
 
 int call_fileCreateInp_fileCreateOut(
@@ -28,7 +27,7 @@ int call_fileCreateInp_fileCreateOut(
                fileCreateOut_t**>(
                    _comm,
                    _inp,
-                   _out ); 
+                   _out );
 }
 
 int call_fileOpenInp(
@@ -78,7 +77,7 @@ int call_fileLseekInp_fileLseekOut(
                fileLseekOut_t**>(
                    _comm,
                    _inp,
-                   _out ); 
+                   _out );
 }
 
 int call_fileReadInp_bytesBufOut(
@@ -1261,74 +1260,3 @@ int call_execRuleExpressionInp(
                    _inp);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

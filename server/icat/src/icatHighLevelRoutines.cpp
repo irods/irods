@@ -426,8 +426,7 @@ int chlUpdateRescObjCount(
 //         dataObjInfo_t *dataObjInfo - contains info about this copy of
 //         a data object.
 //         keyValPair_t *regParam - the keyword/value pair of items to be
-//         modified. Valid keywords are given in char *dataObjCond[] in
-//         rcGlobal.h.
+//         modified. Valid keywords are given in char *dataObjCond[] in rcGlobal.h.
 //         If the keyword ALL_REPL_STATUS_KW is used
 //         the replStatus of the copy specified by dataObjInfo
 //         is marked NEWLY_CREATED_COPY and all other copies are
@@ -4790,5 +4789,3 @@ int chlGetReplListForLeafBundles(
     return ret.code();
 
 } // chlGetReplListForLeafBundles
-
-

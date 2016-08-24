@@ -3,9 +3,8 @@
 /* This is script-generated code (for the most part).  */
 /* See userAdmin.h for a description of this API call.*/
 
-//#include "reFuncDefs.hpp"
 #include "userAdmin.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsUserAdmin.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"

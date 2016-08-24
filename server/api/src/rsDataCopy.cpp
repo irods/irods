@@ -9,6 +9,8 @@
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "rsDataCopy.hpp"
+#include "rodsConnect.h"
 
 /* rsDataCopy - Do the copy data transfer.
  * Input -
@@ -119,4 +121,3 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     return retVal;
 }
-

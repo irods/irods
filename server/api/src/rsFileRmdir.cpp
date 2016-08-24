@@ -9,6 +9,7 @@
 #include "fileClosedir.h"
 #include "miscServerFunct.hpp"
 #include "fileDriver.hpp"
+#include "rsFileRmdir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -244,25 +245,3 @@ int _rsFileRmdir(
     return rmdir_err.code();
 
 } // _rsFileRmdir
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

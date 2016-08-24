@@ -6,6 +6,7 @@
 #include "fileReaddir.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileReaddir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -119,17 +120,3 @@ int _rsFileReaddir(
     return readdir_err.code();
 
 } // _rsFileReaddir
-
-
-
-
-
-
-
-
-
-
-
-
-
-

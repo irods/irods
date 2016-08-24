@@ -8,6 +8,7 @@
 #include "fileRead.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileRead.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -128,4 +129,3 @@ int _rsFileRead(
     return ret.code();
 
 } // _rsFileRead
-

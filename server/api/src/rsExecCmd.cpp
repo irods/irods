@@ -18,6 +18,7 @@
 #include "icatDefines.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "rsExecCmd.hpp"
 
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
@@ -467,4 +468,3 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
 
     return 0;
 }
-

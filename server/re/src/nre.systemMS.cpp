@@ -1,24 +1,16 @@
-/**
- * @file nre.systemMS.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <string.h>
 #include <time.h>
-//#include "reGlobalsExtern.hpp"
+#include "rsRuleExecSubmit.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "execMyRule.h"
 #include "region.h"
-//#include "rules.hpp"
-//#include "conversion.hpp"
 #include "irods_plugin_name_generator.hpp"
 #include "irods_load_plugin.hpp"
-//#include "reFuncDefs.hpp"
 #include "sockComm.h"
+#include "rsRuleExecDel.hpp"
 #include "ruleExecDel.h"
+#include "rsExecMyRule.hpp"
 
 #include "irods_server_properties.hpp"
 #include "irods_log.hpp"
@@ -199,7 +191,7 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
           LOG_ERROR,
           "%s - GlobalDelayExecStack is empty",
           __FUNCTION__ );
-       return SYS_INTERNAL_NULL_INPUT_ERR; 
+       return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     i = rsRuleExecDel( rei->rsComm, &ruleExecDelInp );
@@ -217,7 +209,7 @@ static int carryOverMsParam(
     if ( sourceMsParamArray == NULL ) {
         return 0;
     }
-    
+
     for ( i = 0; i < sourceMsParamArray->len ; i++ ) {
         mPt = sourceMsParamArray->msParam[i];
         if ( ( mP = getMsParamByLabel( targetMsParamArray, mPt->label ) ) != NULL ) {
@@ -279,7 +271,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     msParamArray_t *tmpParamArray, *aParamArray;
     msParamArray_t *outParamArray = NULL;
     char tmpStr[LONG_NAME_LEN];
-    
+
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
     execMyRuleInp.condInput.len = 0;
     rstrcpy( execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN );
@@ -292,7 +284,7 @@ int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, 
     //parseHostAddrStr( tmpStr1, &execMyRuleInp.addr );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
 
-    
+
     snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", ( char* )mPB->inOutStruct );
 
     addKeyVal( &execMyRuleInp.condInput, "execCondition", ( char * ) mPA->inOutStruct );
@@ -331,7 +323,7 @@ int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
           LOG_ERROR,
           "%s - GlobalDelayExecStack is empty",
           __FUNCTION__ );
-       return SYS_INTERNAL_NULL_INPUT_ERR; 
+       return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     return 0;
@@ -1070,7 +1062,3 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
     fillStrInMsParam( outParam, tStr );
     return 0;
 }
-
-
-
-

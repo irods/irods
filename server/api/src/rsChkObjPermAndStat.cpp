@@ -8,6 +8,11 @@
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsChkObjPermAndStat.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsPhyBundleColl.hpp"
 
 int
 saveCollEntForChkColl( collEnt_t *collEnt );

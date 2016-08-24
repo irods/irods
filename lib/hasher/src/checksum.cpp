@@ -12,7 +12,6 @@
 #include "checksum.hpp"
 
 #include <fstream>
-#include "irods_stacktrace.hpp"
 
 #define HASH_BUF_SZ (1024*1024)
 
@@ -253,4 +252,3 @@ rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, cons
 
     return 0;
 }
-

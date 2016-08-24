@@ -1,21 +1,14 @@
 #ifndef IRODS_PLUGIN_BASE_HPP
 #define IRODS_PLUGIN_BASE_HPP
 
-// =-=-=-=-=-=-=-
-// stl includes
 #include <string>
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/function.hpp>
 
-// =-=-=-=-=-=-=-
-// irods includes
-//#include "reGlobalsExtern.hpp"
 #include "irods_re_structs.hpp"
 #include "rcConnect.h"
 
-// =-=-=-=-=-=-=-
+
 #ifdef ENABLE_RE
 #include "irods_re_plugin.hpp"
 #endif

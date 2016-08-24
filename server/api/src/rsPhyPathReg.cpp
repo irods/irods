@@ -3,7 +3,6 @@
 /* This is script-generated code (for the most part).  */
 /* See phyPathReg.h for a description of this API call.*/
 
-//#include "reFuncDefs.hpp"
 #include "fileStat.h"
 #include "phyPathReg.h"
 #include "rodsLog.h"
@@ -16,9 +15,28 @@
 #include "physPath.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsPhyPathReg.hpp"
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
+#include "rsRegReplica.hpp"
+#include "rsCollCreate.hpp"
+#include "rsFileOpendir.hpp"
+#include "rsFileReaddir.hpp"
+#include "rsFileStat.hpp"
+#include "rsFileMkdir.hpp"
+#include "rsFileClosedir.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsModColl.hpp"
+#include "rsRegColl.hpp"
+#include "rsModAccessControl.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsRegColl.hpp"
+#include "rsSubStructFileStat.hpp"
+#include "rsSyncMountedColl.hpp"
+#include "rsFileOpen.hpp"
+#include "rsFileRead.hpp"
+#include "rsFileClose.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
@@ -1307,5 +1325,3 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
 
     return pp;
 }
-
-

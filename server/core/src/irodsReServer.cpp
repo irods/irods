@@ -308,27 +308,6 @@ int usage( char *prog ) {
 }
 
 int
-closeQueryOut( rcComm_t* _comm, genQueryOut_t *genQueryOut ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *junk = NULL;
-    int status;
-
-    if ( genQueryOut->continueInx <= 0 ) {
-        return 0;
-    }
-
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-
-    /* maxRows = 0 specifies that the genQueryOut should be closed */
-    genQueryInp.maxRows = 0;;
-    genQueryInp.continueInx = genQueryOut->continueInx;
-
-    status = rcGenQuery( _comm, &genQueryInp, &junk );
-
-    return status;
-}
-
-int
 chkLogfileName( const char *logDir, const char *logFileName ) {
     time_t myTime;
     char *logFile = NULL;

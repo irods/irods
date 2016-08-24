@@ -7,6 +7,9 @@
 #include "miscServerFunct.hpp"
 #include "fileCreate.h"
 #include "dataObjOpr.hpp"
+#include "rsFilePut.hpp"
+#include "rsFileOpen.hpp"
+#include "rsFileCreate.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -218,7 +221,3 @@ int _rsFilePut(
     return write_code;
 
 } // _rsFilePut
-
-
-
-

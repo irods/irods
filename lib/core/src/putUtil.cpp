@@ -16,10 +16,128 @@
 #include "irods_server_properties.hpp"
 #include "readServerConfig.hpp"
 #include "irods_random.hpp"
+#include "irods_log.hpp"
 
 #include "sockComm.h"
 #include <boost/filesystem/operations.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+
+/* checkStateForResume - check the state for resume operation
+ * return 0 - skip
+ * return 1 - resume
+ */
+
+int
+chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                   char * targPath, rodsArguments_t * rodsArgs, objType_t objType,
+                   keyValPair_t * condInput, int deleteFlag ) {
+    int status;
+
+    if ( rodsRestart->restartState & MATCHED_RESTART_COLL ) {
+        if ( rodsRestart->curCnt > rodsRestart->doneCnt ) {
+            rodsLog( LOG_ERROR,
+                     "chkStateForResume:Restart failed.curCnt %d>doneCnt %d,path %s",
+                     rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
+            return RESTART_OPR_FAILED;
+        }
+
+        if ( rodsRestart->restartState & LAST_PATH_MATCHED ) {
+            if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
+                /* a file */
+                if ( rodsArgs->verbose == True ) {
+                    printf( "***** RESUMING OPERATION ****\n" );
+                }
+                setStateForResume( conn, rodsRestart, targPath,
+                                   objType, condInput, deleteFlag );
+            }
+            status = 1;
+        }
+        else if ( strcmp( targPath, rodsRestart->lastDonePath ) == 0 ) {
+            /* will handle this with the next file */
+            rodsRestart->curCnt ++;
+            if ( rodsRestart->curCnt != rodsRestart->doneCnt ) {
+                rodsLog( LOG_ERROR,
+                         "chkStateForResume:Restart failed.curCnt %d!=doneCnt %d,path %s",
+                         rodsRestart->curCnt, rodsRestart->doneCnt, targPath );
+                return RESTART_OPR_FAILED;
+            }
+            rodsRestart->restartState |= LAST_PATH_MATCHED;
+            status = 0;
+        }
+        else if ( objType == DATA_OBJ_T || objType == LOCAL_FILE_T ) {
+            /* A file. no match - skip this */
+            if ( rodsArgs->verbose == True ) {
+                printf( "    ---- Skip file %s ----\n", targPath );
+            }
+            rodsRestart->curCnt ++;
+            status = 0;
+        }
+        else {
+            /* collection - drill down and see */
+            status = 1;
+        }
+    }
+    else if ( rodsRestart->restartState & PATH_MATCHING ) {
+        /* the path does not match. skip */
+        status = 0;
+    }
+    else {
+        status = 1;
+    }
+
+    return status;
+}
+
+int
+setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                   char * restartPath, objType_t objType, keyValPair_t * condInput,
+                   int deleteFlag ) {
+    if ( restartPath != NULL && deleteFlag > 0 ) {
+        if ( objType == DATA_OBJ_T ) {
+            if ( ( condInput == NULL ||
+                    getValByKey( condInput, FORCE_FLAG_KW ) == NULL ) &&
+                    ( conn->fileRestart.info.status != FILE_RESTARTED ||
+                      strcmp( conn->fileRestart.info.objPath, restartPath ) != 0 ) ) {
+                dataObjInp_t dataObjInp;
+                /* need to remove any partially completed file */
+                /* XXXXX may not be enough for bulk put */
+                memset( &dataObjInp, 0, sizeof( dataObjInp ) );
+                addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
+                rstrcpy( dataObjInp.objPath, restartPath, MAX_NAME_LEN );
+                int status = rcDataObjUnlink( conn, & dataObjInp );
+                if ( status < 0 ) {
+                    std::string notice = std::string( "rcDataObjUnlink returned with code: " );
+                    notice.append( boost::lexical_cast<std::string>( status ) );
+                    irods::log( LOG_NOTICE, notice );
+                }
+                clearKeyVal( &dataObjInp.condInput );
+            }
+        }
+        else if ( objType == LOCAL_FILE_T ) {
+            if ( conn->fileRestart.info.status != FILE_RESTARTED ||
+                    strcmp( conn->fileRestart.info.fileName, restartPath ) != 0 ) {
+                boost::filesystem::path path( restartPath );
+                if ( boost::filesystem::exists( path ) ) {
+                    int status = boost::filesystem::remove( path );
+                    if ( status < 0 ) {
+                        irods::log( ERROR( status, "boost:filesystem::remove() failed." ) );
+                    }
+                }
+            }
+        }
+        else {
+            rodsLog( LOG_ERROR,
+                     "setStateForResume: illegal objType %d for %s",
+                     objType, restartPath );
+        }
+    }
+    rodsRestart->restartState = OPR_RESUMED;    /* resumed opr */
+
+    return 0;
+}
+
 
 int
 setSessionTicket( rcComm_t *myConn, char *ticket ) {

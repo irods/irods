@@ -3,7 +3,7 @@
 /* This is script-generated code (for the most part).  */
 /* See dataObjRepl.h for a description of this API call.*/
 
-//#include "reFuncDefs.hpp"
+
 #include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
 #include "dataObjCreate.h"
@@ -16,21 +16,30 @@
 #include "physPath.hpp"
 #include "specColl.hpp"
 #include "resource.hpp"
-//#include "reGlobalsExtern.hpp"
-//#include "reDefines.h"
 #include "icatDefines.h"
-//#include "reSysDataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
 #include "l3FileGetSingleBuf.h"
 #include "l3FilePutSingleBuf.h"
 #include "fileSyncToArch.h"
 #include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.h"
-#include "dataObjTrim.h" // JMC - backport 4550
-#include "dataObjLock.h" // JMC - backport 4609
+#include "dataObjTrim.h"
+#include "dataObjLock.h"
 #include "miscServerFunct.hpp"
+#include "rsDataObjRepl.hpp"
+#include "apiNumber.h"
+#include "rsDataCopy.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsL3FileGetSingleBuf.hpp"
+#include "rsDataObjGet.hpp"
+#include "rsDataObjPut.hpp"
+#include "rsL3FilePutSingleBuf.hpp"
+#include "rsFileStageToCache.hpp"
+#include "rsFileSyncToArch.hpp"
+#include "rsUnbunAndRegPhyBunfile.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_log.hpp"

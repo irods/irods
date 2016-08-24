@@ -734,23 +734,12 @@ matchPackInstruct( char *name, const packInstructArray_t *myPackTable ) {
     }
 
     /* Try the API table */
-#if 1
     irods::pack_entry_table& pk_tbl =  irods::get_pack_table();
     irods::pack_entry_table::iterator itr = pk_tbl.find( name );
     if ( itr != pk_tbl.end() ) {
-        //return ( void* )itr->second.c_str();
         return ( void* )itr->second.packInstruct.c_str();
     }
-#else
-    i = 0;
-    while ( strcmp( ApiPackTable[i].name, PACK_TABLE_END_PI ) != 0 ) {
-        /* not the end */
-        if ( strcmp( ApiPackTable[i].name, name ) == 0 ) {
-            return ApiPackTable[i].packInstruct;
-        }
-        i++;
-    }
-#endif
+
     rodsLog( LOG_ERROR,
              "matchPackInstruct: Cannot resolve %s",
              name );

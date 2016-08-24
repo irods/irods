@@ -3,7 +3,6 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of
  * this API call.*/
 
-//#include "reFuncDefs.hpp"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -15,8 +14,14 @@
 #include "miscServerFunct.hpp"
 #include "fileOpr.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
+#include "rsStructFileExtAndReg.hpp"
 #include "structFileExtAndReg.h"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsPhyBundleColl.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsUnbunAndRegPhyBunfile.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"

@@ -33,7 +33,6 @@
 #include "configuration.hpp"
 #include "irods_server_properties.hpp"
 
-
 std::vector<std::string> ns;
 
 void get_re_configs( const std::string& _instance_name ) {

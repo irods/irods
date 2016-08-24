@@ -3,6 +3,7 @@
 /* rsObjStat.c
  */
 
+#include "rsObjStat.hpp"
 #include "objStat.h"
 #include "rcMisc.h"
 #include "genQuery.h"
@@ -16,6 +17,7 @@
 #include "dataObjClose.h"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsGenQuery.hpp"
 
 int
 rsObjStat(

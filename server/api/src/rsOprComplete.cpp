@@ -1,7 +1,8 @@
-/* rsOprComplete.c */
 #include "oprComplete.h"
 #include "dataObjClose.h"
 #include "rsGlobalExtern.hpp"
+#include "rsOprComplete.hpp"
+#include "rsDataObjClose.hpp"
 
 int rsOprComplete( rsComm_t *rsComm, int *retval ) {
     openedDataObjInp_t dataObjCloseInp;
@@ -31,4 +32,3 @@ int rsOprComplete( rsComm_t *rsComm, int *retval ) {
         return *retval;
     }
 }
-

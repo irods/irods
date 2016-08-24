@@ -8,6 +8,10 @@
 #include "dataObjLseek.h"
 #include "fileLseek.h"
 #include "ruleExecSubmit.h"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjLseek.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsDataObjClose.hpp"
 
 #include "irods_ms_plugin.hpp"
 #include "irods_stacktrace.hpp"

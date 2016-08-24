@@ -267,10 +267,9 @@ void
 freePathnamePatterns( pathnamePatterns_t *pp );
 int
 matchPathname( pathnamePatterns_t *pp, char *name, char *dirname );
-int get_resc_hier_from_leaf_id(
-    queryHandle_t* _query_handle,
-    rodsLong_t     _resc_id,
-    char*          _resc_hier );
+int get_resc_hier_from_leaf_id(queryHandle_t* _query_handle, rodsLong_t _resc_id, char* _resc_hier );
+int resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType );
+
 #ifdef __cplusplus
 }
 #endif

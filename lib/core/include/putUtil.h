@@ -69,6 +69,14 @@ int
 clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo );
 int
 setForceFlagForRestart( bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo );
+int
+chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
+                   char * targPath, rodsArguments_t * rodsArgs, objType_t objType,
+                   keyValPair_t * condInput, int deleteFlag );
+int
+setStateForResume( rcComm_t *conn, rodsRestart_t *rodsRestart,
+                   char *restartPath, objType_t objType, keyValPair_t *condInput,
+                   int deleteFlag );
 #ifdef __cplusplus
 }
 #endif

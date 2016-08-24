@@ -14,6 +14,8 @@
 #include "rsApiHandler.hpp"
 #include "objMetaOpr.hpp"
 #include "getRemoteZoneResc.h"
+#include "rsL3FileGetSingleBuf.hpp"
+#include "rsDataObjGet.hpp"
 
 int
 rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
@@ -36,4 +38,3 @@ rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
     }
     return bytesRead;
 }
-

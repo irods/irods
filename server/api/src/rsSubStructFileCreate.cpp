@@ -3,6 +3,7 @@
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "subStructFileCreate.h"
+#include "rsSubStructFileCreate.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -91,4 +92,3 @@ int _rsSubStructFileCreate(
     }
 
 } // _rsSubStructFileCreate
-

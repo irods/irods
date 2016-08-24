@@ -1,10 +1,11 @@
-
 #include "rcMisc.h"
 #include "rsGlobalExtern.hpp"
 #include "rodsErrorTable.h"
 #include "miscServerFunct.hpp"
 #include "specificQuery.h"
 #include "miscServerFunct.hpp"
+#include "rsIESClientHints.hpp"
+#include "rsSpecificQuery.hpp"
 
 #include "irods_log.hpp"
 #include "zone_report.h"
@@ -41,7 +42,7 @@ int rsIESClientHints(
             irods::log(PASS(ret));
             return ret.code();
         }
-        
+
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             status = _rsIESClientHints(
                          _comm,
@@ -206,4 +207,3 @@ int _rsIESClientHints(
     return 0;
 
 } // _rsIESClientHints
-

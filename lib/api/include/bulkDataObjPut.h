@@ -29,19 +29,7 @@ typedef struct RenamedPhyFiles {
 
 #define BulkOprInp_PI "str objPath[MAX_NAME_LEN]; struct GenQueryOut_PI; struct KeyValPair_PI;"
 
-#if defined(RODS_SERVER)
-#define RS_BULK_DATA_OBJ_PUT rsBulkDataObjPut
-/* prototype for the server handler */
-int
-rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
-                  bytesBuf_t *bulkOprInpBBuf );
-#else
-#define RS_BULK_DATA_OBJ_PUT NULL
-#endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /* prototype for the client call */
 /* rcBulkDataObjPut - Bulk Put (upload) a number of local files to iRODS.
  * bulkOprInpBBuf contains the bundled local files in tar format.
@@ -56,10 +44,10 @@ extern "C" {
  *   return value - The status of the operation.
  */
 
-int
-rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-                  bytesBuf_t *bulkOprInpBBuf );
+
 #ifdef __cplusplus
-}
+extern "C"
 #endif
+int rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkOprInpBBuf );
+
 #endif  // BULK_DATA_OBJ_PUT_H__

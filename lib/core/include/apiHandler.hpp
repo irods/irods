@@ -11,6 +11,7 @@
 
 // =-=-=-=-=-=-=-
 // boost includes
+
 #include "rods.h"
 #include "packStruct.h"
 #include "irods_lookup_table.hpp"
@@ -18,8 +19,10 @@
 #include "irods_stacktrace.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/any.hpp"
+#include "irods_pack_table.hpp"
 
 #include <functional>
+
 
 namespace irods {
 
@@ -48,12 +51,12 @@ namespace irods {
                                         */
         boost::any     svrHandler;     /* the server handler. should be defined NULL for
                                         * client */
-		
+
         const char *   operation_name;
 
         std::function<void( void* )> clearInStruct;	// free input struct function
 
-        int(*call_wrapper)(...);        // wraps the api call for type casting 
+        int(*call_wrapper)(...);        // wraps the api call for type casting
 
     }; // struct apidef_t
 
@@ -193,7 +196,7 @@ namespace irods {
             int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
                                         * stream. 1 ==> we have an output byte stream
                                         */
-            funcPtr        call_wrapper; // wraps the api call for type casting 
+            funcPtr        call_wrapper; // wraps the api call for type casting
             std::string    in_pack_key;
             std::string    out_pack_key;
             std::string    in_pack_value;
@@ -219,33 +222,7 @@ namespace irods {
     }; // class api_entry_table
 
 
-/// =-=-=-=-=-=-=-
-/// @brief class to hold packing instruction and free function
-    class pack_entry {
-        public:
-            std::string packInstruct;
 
-            // ctor
-            pack_entry() {};
-            pack_entry( const pack_entry& );
-
-
-            // dtor
-            ~pack_entry() {};
-
-            // assignment operator
-            pack_entry& operator=( const pack_entry& );
-    };
-
-
-/// =-=-=-=-=-=-=-
-/// @brief class which will hold the map of pack struct entries
-    class pack_entry_table : public lookup_table< pack_entry > {
-        public:
-            pack_entry_table( packInstructArray_t[] );
-            ~pack_entry_table();
-
-    }; // class api_entry_table
 
 
 /// =-=-=-=-=-=-=-

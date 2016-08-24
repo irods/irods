@@ -5,6 +5,7 @@
 
 #include "fileTruncate.h"
 #include "miscServerFunct.hpp"
+#include "rsFileTruncate.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -111,9 +112,3 @@ int _rsFileTruncate(
     return trunc_err.code();
 
 } // _rsFileTruncate
-
-
-
-
-
-

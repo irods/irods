@@ -6,6 +6,7 @@
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"
 #include "dataObjRepl.h"
+#include "rsDataObjRepl.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

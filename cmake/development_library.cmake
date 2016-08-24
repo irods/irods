@@ -75,7 +75,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_random.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_serialization.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_server_properties.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_signal.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_ssl_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_stacktrace.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_string_tokenize.hpp
@@ -99,7 +98,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/procApiRequest.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/putUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcConnect.h
-  ${CMAKE_SOURCE_DIR}/lib/core/include/rcGlobal.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcGlobalExtern.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcMisc.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcPortalOpr.h

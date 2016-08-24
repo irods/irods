@@ -14,6 +14,8 @@
 #include "rsApiHandler.hpp"
 #include "objMetaOpr.hpp"
 #include "getRemoteZoneResc.h"
+#include "rsL3FilePutSingleBuf.hpp"
+#include "rsDataObjPut.hpp"
 
 int
 rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
@@ -36,4 +38,3 @@ rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
 
     return bytesWritten;
 }
-

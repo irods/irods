@@ -9,6 +9,8 @@
 /* See objStat.h for a description of this API call.*/
 
 #include "objStat.h"
+#include "apiNumber.h"
+#include "procApiRequest.h"
 
 /**
  * \fn rcObjStat (rcComm_t *conn, dataObjInp_t *dataObjInp,
@@ -69,4 +71,3 @@ rcObjStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
 
     return status;
 }
-

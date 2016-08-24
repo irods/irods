@@ -14,11 +14,11 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "procLog.h"
+#include "rsProcStat.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
-//#include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
@@ -393,4 +393,3 @@ addProcToProcStatOut( procLog_t *procLog, genQueryOut_t *procStatOut ) {
 
     return 0;
 }
-

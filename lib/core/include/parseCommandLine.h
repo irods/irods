@@ -6,6 +6,8 @@
 #ifndef RODS_PARSE_COMMAND_LINE_H__
 #define RODS_PARSE_COMMAND_LINE_H__
 
+#include "rodsType.h"
+
 #define True 1
 #define False 0
 

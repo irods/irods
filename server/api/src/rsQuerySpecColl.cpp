@@ -18,8 +18,15 @@
 #include "genQuery.h"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "rsQuerySpecColl.hpp"
+#include "rsSubStructFileReaddir.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsFileReaddir.hpp"
+#include "rsSubStructFileClosedir.hpp"
+#include "rsFileClosedir.hpp"
+#include "rsSubStructFileOpendir.hpp"
+#include "rsFileOpendir.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
@@ -524,4 +531,3 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     }
     return status;
 }
-

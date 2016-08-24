@@ -1,39 +1,317 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* apiTable.h - header file for The global API table
- */
-
-
-
 #ifndef API_TABLE_HPP
 #define API_TABLE_HPP
 
-#include "rcMisc.h"
-#include "rods.h"
-#include "apiHandler.hpp"
-#include "apiNumber.h"
-#include "rodsUser.h"
-
-
-
-/* need to include a header for for each API */
-#include "apiHeaderAll.h"
-
-
-#include "server_report.h"
-#include "zone_report.h"
-#include "client_hints.h"
-#include "ies_client_hints.h"
-#include "irods_api_calling_functions.hpp"
-
 #include <functional>
 #include <boost/any.hpp>
+#include "apiHandler.hpp"
+#include "apiHeaderAll.h"
+#include "apiNumber.h"
+#include "client_hints.h"
+#include "dataObjInpOut.h"
+#include "ies_client_hints.h"
+#include "irods_api_calling_functions.hpp"
+#include "rods.h"
+#include "rodsUser.h"
+#include "server_report.h"
+#include "zone_report.h"
 
-#if defined(RODS_SERVER)
+
+
+#if defined(CREATE_API_TABLE_FOR_SERVER) && !defined(CREATE_API_TABLE_FOR_CLIENT)
+#include "rsAuthCheck.hpp"
+#include "rsAuthPluginRequest.hpp"
+#include "rsAuthRequest.hpp"
+#include "rsAuthResponse.hpp"
+#include "rsAuthenticate.hpp"
+#include "rsBulkDataObjPut.hpp"
+#include "rsBulkDataObjReg.hpp"
+#include "rsChkNVPathPerm.hpp"
+#include "rsChkObjPermAndStat.hpp"
+#include "rsClientHints.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsCollCreate.hpp"
+#include "rsCollRepl.hpp"
+#include "rsDataCopy.hpp"
+#include "rsDataGet.hpp"
+#include "rsDataObjChksum.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjCopy.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjCreateAndStat.hpp"
+#include "rsDataObjGet.hpp"
+#include "rsDataObjLock.hpp"
+#include "rsDataObjLseek.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjOpenAndStat.hpp"
+#include "rsDataObjPhymv.hpp"
+#include "rsDataObjPut.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjRename.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjRsync.hpp"
+#include "rsDataObjTrim.hpp"
+#include "rsDataObjTruncate.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsDataPut.hpp"
+#include "rsEndTransaction.hpp"
+#include "rsExecCmd.hpp"
+#include "rsExecMyRule.hpp"
+#include "rsExecRuleExpression.hpp"
+#include "rsFileChksum.hpp"
+#include "rsFileChmod.hpp"
+#include "rsFileClose.hpp"
+#include "rsFileClosedir.hpp"
+#include "rsFileCreate.hpp"
+#include "rsFileGet.hpp"
+#include "rsFileGetFsFreeSpace.hpp"
+#include "rsFileLseek.hpp"
+#include "rsFileMkdir.hpp"
+#include "rsFileOpen.hpp"
+#include "rsFileOpendir.hpp"
+#include "rsFilePut.hpp"
+#include "rsFileRead.hpp"
+#include "rsFileReaddir.hpp"
+#include "rsFileRename.hpp"
+#include "rsFileRmdir.hpp"
+#include "rsFileStageToCache.hpp"
+#include "rsFileStat.hpp"
+#include "rsFileSyncToArch.hpp"
+#include "rsFileTruncate.hpp"
+#include "rsFileUnlink.hpp"
+#include "rsFileWrite.hpp"
+#include "rsGenQuery.hpp"
+#include "rsGeneralAdmin.hpp"
+#include "rsGeneralRowInsert.hpp"
+#include "rsGeneralRowPurge.hpp"
+#include "rsGeneralUpdate.hpp"
+#include "rsGetHierFromLeafId.hpp"
+#include "rsGetHierarchyForResc.hpp"
+#include "rsGetHostForGet.hpp"
+#include "rsGetHostForPut.hpp"
+#include "rsGetLimitedPassword.hpp"
+#include "rsGetMiscSvrInfo.hpp"
+#include "rsGetRemoteZoneResc.hpp"
+#include "rsGetRescQuota.hpp"
+#include "rsGetTempPassword.hpp"
+#include "rsGetTempPasswordForOther.hpp"
+#include "rsGetXmsgTicket.hpp"
+#include "rsIESClientHints.hpp"
+#include "rsL3FileGetSingleBuf.hpp"
+#include "rsL3FilePutSingleBuf.hpp"
+#include "rsModAVUMetadata.hpp"
+#include "rsModAccessControl.hpp"
+#include "rsModColl.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsObjStat.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsOprComplete.hpp"
+#include "rsPamAuthRequest.hpp"
+#include "rsPhyBundleColl.hpp"
+#include "rsPhyPathReg.hpp"
+#include "rsProcStat.hpp"
+#include "rsQuerySpecColl.hpp"
+#include "rsRcvXmsg.hpp"
+#include "rsReadCollection.hpp"
+#include "rsRegColl.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsRegReplica.hpp"
+#include "rsRmColl.hpp"
+#include "rsRuleExecDel.hpp"
+#include "rsRuleExecMod.hpp"
+#include "rsRuleExecSubmit.hpp"
+#include "rsSendXmsg.hpp"
+#include "rsServerReport.hpp"
+#include "rsSetRoundRobinContext.hpp"
+#include "rsSimpleQuery.hpp"
+#include "rsSpecificQuery.hpp"
+#include "rsSslEnd.hpp"
+#include "rsSslStart.hpp"
+#include "rsStreamClose.hpp"
+#include "rsStreamRead.hpp"
+#include "rsStructFileBundle.hpp"
+#include "rsStructFileExtAndReg.hpp"
+#include "rsStructFileExtract.hpp"
+#include "rsStructFileSync.hpp"
+#include "rsSubStructFileClose.hpp"
+#include "rsSubStructFileClosedir.hpp"
+#include "rsSubStructFileCreate.hpp"
+#include "rsSubStructFileGet.hpp"
+#include "rsSubStructFileLseek.hpp"
+#include "rsSubStructFileMkdir.hpp"
+#include "rsSubStructFileOpen.hpp"
+#include "rsSubStructFileOpendir.hpp"
+#include "rsSubStructFilePut.hpp"
+#include "rsSubStructFileRead.hpp"
+#include "rsSubStructFileReaddir.hpp"
+#include "rsSubStructFileRename.hpp"
+#include "rsSubStructFileRmdir.hpp"
+#include "rsSubStructFileStat.hpp"
+#include "rsSubStructFileTruncate.hpp"
+#include "rsSubStructFileUnlink.hpp"
+#include "rsSubStructFileWrite.hpp"
+#include "rsSyncMountedColl.hpp"
+#include "rsTicketAdmin.hpp"
+#include "rsUnbunAndRegPhyBunfile.hpp"
+#include "rsUnregDataObj.hpp"
+#include "rsUserAdmin.hpp"
+#include "rsZoneReport.hpp"
+#define NULLPTR_FOR_CLIENT_TABLE(x) x
+#elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
+#define NULLPTR_FOR_CLIENT_TABLE(x) nullptr
+#else
+#error "exactly one of {CREATE_API_TABLE_FOR_SERVER, CREATE_API_TABLE_FOR_CLIENT} must be defined"
+#endif
+
+
+
+#define RS_AUTHENTICATE NULLPTR_FOR_CLIENT_TABLE(rsAuthenticate)
+#define RS_AUTH_CHECK NULLPTR_FOR_CLIENT_TABLE(rsAuthCheck)
+#define RS_AUTH_PLUG_REQ NULLPTR_FOR_CLIENT_TABLE(rsAuthPluginRequest)
+#define RS_AUTH_REQUEST NULLPTR_FOR_CLIENT_TABLE(rsAuthRequest)
+#define RS_AUTH_RESPONSE NULLPTR_FOR_CLIENT_TABLE(rsAuthResponse)
+#define RS_BULK_DATA_OBJ_PUT NULLPTR_FOR_CLIENT_TABLE(rsBulkDataObjPut)
+#define RS_BULK_DATA_OBJ_REG NULLPTR_FOR_CLIENT_TABLE(rsBulkDataObjReg)
+#define RS_CHK_NV_PATH_PERM NULLPTR_FOR_CLIENT_TABLE(rsChkNVPathPerm)
+#define RS_CHK_OBJ_PERM_AND_STAT NULLPTR_FOR_CLIENT_TABLE(rsChkObjPermAndStat)
+#define RS_CLIENT_HINTS NULLPTR_FOR_CLIENT_TABLE(rsClientHints)
+#define RS_CLOSE_COLLECTION NULLPTR_FOR_CLIENT_TABLE(rsCloseCollection)
+#define RS_COLL_CREATE NULLPTR_FOR_CLIENT_TABLE(rsCollCreate)
+#define RS_COLL_REPL NULLPTR_FOR_CLIENT_TABLE(rsCollRepl)
+#define RS_DATA_COPY NULLPTR_FOR_CLIENT_TABLE(rsDataCopy)
+#define RS_DATA_GET NULLPTR_FOR_CLIENT_TABLE(rsDataGet)
+#define RS_DATA_OBJ_CHKSUM NULLPTR_FOR_CLIENT_TABLE(rsDataObjChksum)
+#define RS_DATA_OBJ_CLOSE NULLPTR_FOR_CLIENT_TABLE(rsDataObjClose)
+#define RS_DATA_OBJ_COPY NULLPTR_FOR_CLIENT_TABLE(rsDataObjCopy)
+#define RS_DATA_OBJ_CREATE NULLPTR_FOR_CLIENT_TABLE(rsDataObjCreate)
+#define RS_DATA_OBJ_CREATE_AND_STAT NULLPTR_FOR_CLIENT_TABLE(rsDataObjCreateAndStat)
+#define RS_DATA_OBJ_GET NULLPTR_FOR_CLIENT_TABLE(rsDataObjGet)
+#define RS_DATA_OBJ_LOCK NULLPTR_FOR_CLIENT_TABLE(rsDataObjLock)
+#define RS_DATA_OBJ_LSEEK NULLPTR_FOR_CLIENT_TABLE(rsDataObjLseek)
+#define RS_DATA_OBJ_OPEN NULLPTR_FOR_CLIENT_TABLE(rsDataObjOpen)
+#define RS_DATA_OBJ_OPEN_AND_STAT NULLPTR_FOR_CLIENT_TABLE(rsDataObjOpenAndStat)
+#define RS_DATA_OBJ_PHYMV NULLPTR_FOR_CLIENT_TABLE(rsDataObjPhymv)
+#define RS_DATA_OBJ_PUT NULLPTR_FOR_CLIENT_TABLE(rsDataObjPut)
+#define RS_DATA_OBJ_READ NULLPTR_FOR_CLIENT_TABLE(rsDataObjRead)
+#define RS_DATA_OBJ_RENAME NULLPTR_FOR_CLIENT_TABLE(rsDataObjRename)
+#define RS_DATA_OBJ_REPL NULLPTR_FOR_CLIENT_TABLE(rsDataObjRepl)
+#define RS_DATA_OBJ_RSYNC NULLPTR_FOR_CLIENT_TABLE(rsDataObjRsync)
+#define RS_DATA_OBJ_TRIM NULLPTR_FOR_CLIENT_TABLE(rsDataObjTrim)
+#define RS_DATA_OBJ_TRUNCATE NULLPTR_FOR_CLIENT_TABLE(rsDataObjTruncate)
+#define RS_DATA_OBJ_UNLINK NULLPTR_FOR_CLIENT_TABLE(rsDataObjUnlink)
+#define RS_DATA_OBJ_UNLOCK NULLPTR_FOR_CLIENT_TABLE(rsDataObjUnlock)
+#define RS_DATA_OBJ_WRITE NULLPTR_FOR_CLIENT_TABLE(rsDataObjWrite)
+#define RS_DATA_PUT NULLPTR_FOR_CLIENT_TABLE(rsDataPut)
+#define RS_END_TRANSACTION NULLPTR_FOR_CLIENT_TABLE(rsEndTransaction)
+#define RS_EXEC_CMD NULLPTR_FOR_CLIENT_TABLE(rsExecCmd)
+#define RS_EXEC_MY_RULE NULLPTR_FOR_CLIENT_TABLE(rsExecMyRule)
+#define RS_EXEC_RULE_EXPRESSION NULLPTR_FOR_CLIENT_TABLE(rsExecRuleExpression)
+#define RS_FILE_CHKSUM NULLPTR_FOR_CLIENT_TABLE(rsFileChksum)
+#define RS_FILE_CHMOD NULLPTR_FOR_CLIENT_TABLE(rsFileChmod)
+#define RS_FILE_CLOSE NULLPTR_FOR_CLIENT_TABLE(rsFileClose)
+#define RS_FILE_CLOSEDIR NULLPTR_FOR_CLIENT_TABLE(rsFileClosedir)
+#define RS_FILE_CREATE NULLPTR_FOR_CLIENT_TABLE(rsFileCreate)
+#define RS_FILE_GET NULLPTR_FOR_CLIENT_TABLE(rsFileGet)
+#define RS_FILE_GET_FS_FREE_SPACE NULLPTR_FOR_CLIENT_TABLE(rsFileGetFsFreeSpace)
+#define RS_FILE_LSEEK NULLPTR_FOR_CLIENT_TABLE(rsFileLseek)
+#define RS_FILE_MKDIR NULLPTR_FOR_CLIENT_TABLE(rsFileMkdir)
+#define RS_FILE_OPEN NULLPTR_FOR_CLIENT_TABLE(rsFileOpen)
+#define RS_FILE_OPENDIR NULLPTR_FOR_CLIENT_TABLE(rsFileOpendir)
+#define RS_FILE_PUT NULLPTR_FOR_CLIENT_TABLE(rsFilePut)
+#define RS_FILE_READ NULLPTR_FOR_CLIENT_TABLE(rsFileRead)
+#define RS_FILE_READDIR NULLPTR_FOR_CLIENT_TABLE(rsFileReaddir)
+#define RS_FILE_RENAME NULLPTR_FOR_CLIENT_TABLE(rsFileRename)
+#define RS_FILE_RMDIR NULLPTR_FOR_CLIENT_TABLE(rsFileRmdir)
+#define RS_FILE_STAGE_TO_CACHE NULLPTR_FOR_CLIENT_TABLE(rsFileStageToCache)
+#define RS_FILE_STAT NULLPTR_FOR_CLIENT_TABLE(rsFileStat)
+#define RS_FILE_SYNC_TO_ARCH NULLPTR_FOR_CLIENT_TABLE(rsFileSyncToArch)
+#define RS_FILE_TRUNCATE NULLPTR_FOR_CLIENT_TABLE(rsFileTruncate)
+#define RS_FILE_UNLINK NULLPTR_FOR_CLIENT_TABLE(rsFileUnlink)
+#define RS_FILE_WRITE NULLPTR_FOR_CLIENT_TABLE(rsFileWrite)
+#define RS_GENERAL_ADMIN NULLPTR_FOR_CLIENT_TABLE(rsGeneralAdmin)
+#define RS_GENERAL_ROW_INSERT NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowInsert)
+#define RS_GENERAL_ROW_PURGE NULLPTR_FOR_CLIENT_TABLE(rsGeneralRowPurge)
+#define RS_GENERAL_UPDATE NULLPTR_FOR_CLIENT_TABLE(rsGeneralUpdate)
+#define RS_GEN_QUERY NULLPTR_FOR_CLIENT_TABLE(rsGenQuery)
+#define RS_GET_HIER_FOR_RESC NULLPTR_FOR_CLIENT_TABLE(rsGetHierarchyForResc)
+#define RS_GET_HIER_FROM_LEAF_ID NULLPTR_FOR_CLIENT_TABLE(rsGetHierFromLeafId)
+#define RS_GET_HOST_FOR_GET NULLPTR_FOR_CLIENT_TABLE(rsGetHostForGet)
+#define RS_GET_HOST_FOR_PUT NULLPTR_FOR_CLIENT_TABLE(rsGetHostForPut)
+#define RS_GET_LIMITED_PASSWORD NULLPTR_FOR_CLIENT_TABLE(rsGetLimitedPassword)
+#define RS_GET_MISC_SVR_INFO NULLPTR_FOR_CLIENT_TABLE(rsGetMiscSvrInfo)
+#define RS_GET_REMOTE_ZONE_RESC NULLPTR_FOR_CLIENT_TABLE(rsGetRemoteZoneResc)
+#define RS_GET_RESC_QUOTA NULLPTR_FOR_CLIENT_TABLE(rsGetRescQuota)
+#define RS_GET_TEMP_PASSWORD NULLPTR_FOR_CLIENT_TABLE(rsGetTempPassword)
+#define RS_GET_TEMP_PASSWORD_FOR_OTHER NULLPTR_FOR_CLIENT_TABLE(rsGetTempPasswordForOther)
+#define RS_GET_XMSG_TICKET NULLPTR_FOR_CLIENT_TABLE(rsGetXmsgTicket)
+#define RS_IES_CLIENT_HINTS NULLPTR_FOR_CLIENT_TABLE(rsClientHints)
+#define RS_L3_FILE_GET_SINGLE_BUF NULLPTR_FOR_CLIENT_TABLE(rsL3FileGetSingleBuf)
+#define RS_L3_FILE_PUT_SINGLE_BUF NULLPTR_FOR_CLIENT_TABLE(rsL3FilePutSingleBuf)
+#define RS_MOD_ACCESS_CONTROL NULLPTR_FOR_CLIENT_TABLE(rsModAccessControl)
+#define RS_MOD_AVU_METADATA NULLPTR_FOR_CLIENT_TABLE(rsModAVUMetadata)
+#define RS_MOD_COLL NULLPTR_FOR_CLIENT_TABLE(rsModColl)
+#define RS_MOD_DATA_OBJ_META NULLPTR_FOR_CLIENT_TABLE(rsModDataObjMeta)
+#define RS_OBJ_STAT NULLPTR_FOR_CLIENT_TABLE(rsObjStat)
+#define RS_OPEN_COLLECTION NULLPTR_FOR_CLIENT_TABLE(rsOpenCollection)
+#define RS_OPR_COMPLETE NULLPTR_FOR_CLIENT_TABLE(rsOprComplete)
+#define RS_PAM_AUTH_REQUEST NULLPTR_FOR_CLIENT_TABLE(rsPamAuthRequest)
+#define RS_PHY_BUNDLE_COLL NULLPTR_FOR_CLIENT_TABLE(rsPhyBundleColl)
+#define RS_PHY_PATH_REG NULLPTR_FOR_CLIENT_TABLE(rsPhyPathReg)
+#define RS_PROC_STAT NULLPTR_FOR_CLIENT_TABLE(rsProcStat)
+#define RS_QUERY_SPEC_COLL NULLPTR_FOR_CLIENT_TABLE(rsQuerySpecColl)
+#define RS_RCV_XMSG NULLPTR_FOR_CLIENT_TABLE(rsRcvXmsg)
+#define RS_READ_COLLECTION NULLPTR_FOR_CLIENT_TABLE(rsReadCollection)
+#define RS_REG_COLL NULLPTR_FOR_CLIENT_TABLE(rsRegColl)
+#define RS_REG_DATA_OBJ NULLPTR_FOR_CLIENT_TABLE(rsRegDataObj)
+#define RS_REG_REPLICA NULLPTR_FOR_CLIENT_TABLE(rsRegReplica)
+#define RS_RM_COLL NULLPTR_FOR_CLIENT_TABLE(rsRmColl)
+#define RS_RULE_EXEC_DEL NULLPTR_FOR_CLIENT_TABLE(rsRuleExecDel)
+#define RS_RULE_EXEC_MOD NULLPTR_FOR_CLIENT_TABLE(rsRuleExecMod)
+#define RS_RULE_EXEC_SUBMIT NULLPTR_FOR_CLIENT_TABLE(rsRuleExecSubmit)
+#define RS_SEND_XMSG NULLPTR_FOR_CLIENT_TABLE(rsSendXmsg)
+#define RS_SERVER_REPORT NULLPTR_FOR_CLIENT_TABLE(rsServerReport)
+#define RS_SET_ROUNDROBIN_CONTEXT NULLPTR_FOR_CLIENT_TABLE(rsSetRoundRobinContext)
+#define RS_SIMPLE_QUERY NULLPTR_FOR_CLIENT_TABLE(rsSimpleQuery)
+#define RS_SPECIFIC_QUERY NULLPTR_FOR_CLIENT_TABLE(rsSpecificQuery)
+#define RS_SSL_END NULLPTR_FOR_CLIENT_TABLE(rsSslEnd)
+#define RS_SSL_START NULLPTR_FOR_CLIENT_TABLE(rsSslStart)
+#define RS_STREAM_CLOSE NULLPTR_FOR_CLIENT_TABLE(rsStreamClose)
+#define RS_STREAM_READ NULLPTR_FOR_CLIENT_TABLE(rsStreamRead)
+#define RS_STRUCT_FILE_BUNDLE NULLPTR_FOR_CLIENT_TABLE(rsStructFileBundle)
+#define RS_STRUCT_FILE_EXTRACT NULLPTR_FOR_CLIENT_TABLE(rsStructFileExtract)
+#define RS_STRUCT_FILE_EXT_AND_REG NULLPTR_FOR_CLIENT_TABLE(rsStructFileExtAndReg)
+#define RS_STRUCT_FILE_SYNC NULLPTR_FOR_CLIENT_TABLE(rsStructFileSync)
+#define RS_SUB_STRUCT_FILE_CLOSE NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileClose)
+#define RS_SUB_STRUCT_FILE_CLOSEDIR NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileClosedir)
+#define RS_SUB_STRUCT_FILE_CREATE NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileCreate)
+#define RS_SUB_STRUCT_FILE_GET NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileGet)
+#define RS_SUB_STRUCT_FILE_LSEEK NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileLseek)
+#define RS_SUB_STRUCT_FILE_MKDIR NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileMkdir)
+#define RS_SUB_STRUCT_FILE_OPEN NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileOpen)
+#define RS_SUB_STRUCT_FILE_OPENDIR NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileOpendir)
+#define RS_SUB_STRUCT_FILE_PUT NULLPTR_FOR_CLIENT_TABLE(rsSubStructFilePut)
+#define RS_SUB_STRUCT_FILE_READ NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileRead)
+#define RS_SUB_STRUCT_FILE_READDIR NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileReaddir)
+#define RS_SUB_STRUCT_FILE_RENAME NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileRename)
+#define RS_SUB_STRUCT_FILE_RMDIR NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileRmdir)
+#define RS_SUB_STRUCT_FILE_STAT NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileStat)
+#define RS_SUB_STRUCT_FILE_TRUNCATE NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileTruncate)
+#define RS_SUB_STRUCT_FILE_UNLINK NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileUnlink)
+#define RS_SUB_STRUCT_FILE_WRITE NULLPTR_FOR_CLIENT_TABLE(rsSubStructFileWrite)
+#define RS_SYNC_MOUNTED_COLL NULLPTR_FOR_CLIENT_TABLE(rsSyncMountedColl)
+#define RS_TICKET_ADMIN NULLPTR_FOR_CLIENT_TABLE(rsTicketAdmin)
+#define RS_UNBUN_AND_REG_PHY_BUNFILE NULLPTR_FOR_CLIENT_TABLE(rsUnbunAndRegPhyBunfile)
+#define RS_UNREG_DATA_OBJ NULLPTR_FOR_CLIENT_TABLE(rsUnregDataObj)
+#define RS_USER_ADMIN NULLPTR_FOR_CLIENT_TABLE(rsUserAdmin)
+#define RS_ZONE_REPORT NULLPTR_FOR_CLIENT_TABLE(rsZoneReport)
+
+
+#if defined(CREATE_API_TABLE_FOR_SERVER) && !defined(CREATE_API_TABLE_FOR_CLIENT)
 static irods::apidef_t server_api_table_inp[] = {
-#else	/* client */
+#elif !defined(CREATE_API_TABLE_FOR_SERVER) && defined(CREATE_API_TABLE_FOR_CLIENT)
 static irods::apidef_t client_api_table_inp[] = {
+#else
+#error "exactly one of {CREATE_API_TABLE_FOR_SERVER, CREATE_API_TABLE_FOR_CLIENT} must be defined"
 #endif
     {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
@@ -44,7 +322,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, "fileCreateOut_PI", 0, 
+        "fileOpenInp_PI", 0, "fileCreateOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,fileCreateInp_t*,fileCreateOut_t**)>(RS_FILE_CREATE)),
         "file_create", clearFileOpenInp,
         (funcPtr)CALL_FILECREATEINP_FILECREATEOUT
@@ -79,7 +357,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_LSEEK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileLseekInp_PI", 0, "fileLseekOut_PI", 0, 
+        "fileLseekInp_PI", 0, "fileLseekOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,fileLseekInp_t*,fileLseekOut_t**)>(RS_FILE_LSEEK)),
         "file_lseek", irods::clearInStruct_noop,
         (funcPtr)CALL_FILELSEEKINP_FILELSEEKOUT
@@ -125,12 +403,12 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,fileStatInp_t*,rodsStat_t**)>(RS_FILE_STAT)),
         "file_stat", irods::clearInStruct_noop,
         (funcPtr)CALL_FILESTATINP_RODSSTATOUT
-        
+
     },
     {
         FILE_GET_FS_FREE_SPACE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "fileGetFsFreeSpaceInp_PI", 0, "fileGetFsFreeSpaceOut_PI", 0,
-        boost::any(std::function<int(rsComm_t*,fileGetFsFreeSpaceInp_t*,fileGetFsFreeSpaceOut_t**)>(RS_FILE_GET_FS_FREE_SPACE)), 
+        boost::any(std::function<int(rsComm_t*,fileGetFsFreeSpaceInp_t*,fileGetFsFreeSpaceOut_t**)>(RS_FILE_GET_FS_FREE_SPACE)),
 		"file_get_fs_freespace", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEGETFREESPACEINP_FILEGETFREESPACEOUT
     },
@@ -151,14 +429,14 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         FILE_READDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "fileReaddirInp_PI", 0, "RODS_DIRENT_T_PI", 0,
-        boost::any(std::function<int(rsComm_t*,fileReaddirInp_t*,rodsDirent_t**)>(RS_FILE_READDIR)), 
+        boost::any(std::function<int(rsComm_t*,fileReaddirInp_t*,rodsDirent_t**)>(RS_FILE_READDIR)),
 		"file_readdir", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEREADDIRINP_RODSDIRENTOUT
     },
     {
         FILE_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "fileRenameInp_PI", 0, "fileRenameOut_PI", 0,
-        boost::any(std::function<int(rsComm_t*,fileRenameInp_t*,fileRenameOut_t**)>(RS_FILE_RENAME)), 
+        boost::any(std::function<int(rsComm_t*,fileRenameInp_t*,fileRenameOut_t**)>(RS_FILE_RENAME)),
 		"file_rename", irods::clearInStruct_noop,
         (funcPtr)CALL_FILERENAMEINP_FILERENAMEOUT
     },
@@ -186,7 +464,7 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         FILE_STAGE_TO_CACHE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "fileStageSyncInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,fileStageSyncInp_t*)>(RS_FILE_STAGE_TO_CACHE)), 
+        boost::any(std::function<int(rsComm_t*,fileStageSyncInp_t*)>(RS_FILE_STAGE_TO_CACHE)),
 		"file_stage_to_cache", irods::clearInStruct_noop,
         (funcPtr)CALL_FILESTAGESYNCINP
     },
@@ -323,7 +601,7 @@ static irods::apidef_t client_api_table_inp[] = {
 		boost::any(std::function<int(rsComm_t*,authRequestOut_t**)>(RS_AUTH_REQUEST)),
         "auth_request", irods::clearInStruct_noop,
         (funcPtr)CALL_AUTHREQUESTOUT
-        
+
     },
     {
         AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
@@ -501,7 +779,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         RULE_EXEC_DEL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, LOCAL_USER_AUTH,
-        "RULE_EXEC_DEL_INP_PI", 0, NULL, 0, 
+        "RULE_EXEC_DEL_INP_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,ruleExecDelInp_t*)>(RS_RULE_EXEC_DEL)),
 		"rule_exec_del", irods::clearInStruct_noop,
         (funcPtr)CALL_RULEEXECDELINP
@@ -1020,12 +1298,5 @@ static irods::apidef_t client_api_table_inp[] = {
         (funcPtr)CALL_EXECRULEEXPRESSIONINP
     },
 }; // _api_table_inp
-
-
-#ifdef RODS_SERVER	/* depends on client lib for NumOfApi */
-#else
-//int NumOfApi = sizeof( RcApiTable ) / sizeof( apidef_t );
-#endif
-
 
 #endif	/* API_TABLE_H */

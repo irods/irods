@@ -3,6 +3,7 @@
 #include "subStructFileLseek.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileLseek.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -107,4 +108,3 @@ int _rsSubStructFileLseek( rsComm_t*                _comm,
     }
 
 }
-

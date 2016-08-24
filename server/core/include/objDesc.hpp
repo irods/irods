@@ -17,6 +17,7 @@
 #include "structFileSync.h"
 #include "structFileExtAndReg.h"
 #include "dataObjOpenAndStat.h"
+#include "rodsConnect.h"
 
 #include "boost/any.hpp"
 

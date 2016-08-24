@@ -1,13 +1,3 @@
-/**
- * @file  miscMS.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
 #include "rsGlobalExtern.hpp"
 #include "dataObjCreate.h"
 #include "objMetaOpr.hpp"
@@ -15,8 +5,9 @@
 #include "miscServerFunct.hpp"
 #include "apiHeaderAll.h"
 #include "miscUtil.h"
-
+#include "rsRegDataObj.hpp"
 #include "irods_re_structs.hpp"
+#include "rsModAVUMetadata.hpp"
 
 /**
  * \fn msiRegisterData(ruleExecInfo_t *rei)
@@ -272,4 +263,3 @@ msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecIn
 
     return status;
 }
-

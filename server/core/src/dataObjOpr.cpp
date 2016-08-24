@@ -19,11 +19,13 @@
 #include "ruleExecDel.h"
 #include "genQuery.h"
 #include "icatHighLevelRoutines.hpp"
-//#include "reSysDataObjOpr.hpp"
 #include "miscUtil.h"
 #include "rsIcatOpr.hpp"
 #include "getHierarchyForResc.h"
 #include "dataObjTrim.h"
+#include "rsGenQuery.hpp"
+#include "rsDataObjTrim.hpp"
+#include "rsModDataObjMeta.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

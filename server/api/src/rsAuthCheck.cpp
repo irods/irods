@@ -8,6 +8,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsAuthCheck.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes

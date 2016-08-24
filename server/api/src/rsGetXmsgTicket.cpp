@@ -7,6 +7,7 @@
 #include "getXmsgTicket.h"
 #include "xmsgLib.hpp"
 #include "irods_random.hpp"
+#include "rsGetXmsgTicket.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];
 

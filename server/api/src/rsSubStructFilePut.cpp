@@ -3,8 +3,8 @@
 #include "subStructFilePut.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFilePut.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
@@ -179,5 +179,3 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     return status;
 
 } // _rsSubStructFilePut
-
-

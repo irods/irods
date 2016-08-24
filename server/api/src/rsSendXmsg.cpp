@@ -6,7 +6,7 @@
 #include "rcMisc.h"
 #include "sendXmsg.h"
 #include "xmsgLib.hpp"
-
+#include "rsSendXmsg.hpp"
 
 extern ticketHashQue_t XmsgHashQue[];
 extern xmsgQue_t XmsgQue;
@@ -71,5 +71,3 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     status = addXmsgToQues( irodsXmsg,  ticketMsgStruct );
     return status;
 }
-
-

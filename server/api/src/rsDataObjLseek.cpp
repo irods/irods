@@ -10,6 +10,9 @@
 #include "subStructFileLseek.h"
 #include "objMetaOpr.hpp"
 #include "subStructFileUnlink.h"
+#include "rsDataObjLseek.hpp"
+#include "rsSubStructFileLseek.hpp"
+#include "rsFileLseek.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

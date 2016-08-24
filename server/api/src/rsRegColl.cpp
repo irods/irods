@@ -9,6 +9,8 @@
 #include "collection.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "rsRegColl.hpp"
+#include "rsObjStat.hpp"
 
 int
 rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {

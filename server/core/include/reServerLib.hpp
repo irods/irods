@@ -84,4 +84,7 @@ fillExecSubmitInp( ruleExecSubmitInp_t *ruleExecSubmitInp,  char *exeStatus,
                    char *estimateExeTime, char *notificationAddr );
 int
 reServerSingleExec( char *ruleExecId, int jobType );
+int
+closeQueryOut( rcComm_t *conn, genQueryOut_t *genQueryOut );
+
 #endif	/* RE_SERVER_LIB_H */

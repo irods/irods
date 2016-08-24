@@ -3,6 +3,7 @@
 #include "subStructFileOpendir.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileOpendir.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -90,4 +91,3 @@ int _rsSubStructFileOpendir( rsComm_t*  _comm,
 
     }
 }
-

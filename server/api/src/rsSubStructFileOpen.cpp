@@ -3,8 +3,8 @@
 #include "subStructFileOpen.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileOpen.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 
@@ -95,5 +95,3 @@ _rsSubStructFileOpen(
     }
 
 } // _rsSubStructFileOpen
-
-

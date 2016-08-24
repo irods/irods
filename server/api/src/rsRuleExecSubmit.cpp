@@ -3,6 +3,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "miscServerFunct.hpp"
+#include "rsRuleExecSubmit.hpp"
 
 #include "irods_log.hpp"
 #include "irods_get_full_path_for_config_file.hpp"

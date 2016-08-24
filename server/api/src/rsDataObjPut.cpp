@@ -6,7 +6,6 @@
 #include "dataObjPut.h"
 #include "rodsLog.h"
 #include "dataPut.h"
-//#include "reFuncDefs.hpp"
 #include "filePut.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
@@ -24,8 +23,16 @@
 #include "getRemoteZoneResc.h"
 #include "icatHighLevelRoutines.hpp"
 #include "modDataObjMeta.h"
+#include "rsDataObjPut.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataPut.hpp"
+#include "rsRegDataObj.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsSubStructFilePut.hpp"
+#include "rsFilePut.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -501,4 +508,3 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     return bytesWritten;
 
 } // l3FilePutSingleBuf
-

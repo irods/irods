@@ -4,7 +4,6 @@
  * API
  */
 
-/* script generated code */
 #include "fileCreate.h"
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
@@ -12,6 +11,7 @@
 #include "physPath.hpp"
 #include "rsGlobalExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "rsFileCreate.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

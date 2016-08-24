@@ -11,14 +11,15 @@
 #include "dataObjOpr.hpp"
 #include "physPath.hpp"
 #include "rcGlobalExtern.h"
-//#include "reGlobalsExtern.hpp"
-
+#include "rsUnbunAndRegPhyBunfile.hpp"
 #include "irods_stacktrace.hpp"
+#include "rsPhyBundleColl.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsRegReplica.hpp"
+#include "rsStructFileExtract.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 
-//#include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;

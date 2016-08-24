@@ -4,12 +4,13 @@
  * API
  */
 
-/* script generated code */
 #include "fileRead.h"
 #include "fileClose.h"
 #include "streamRead.h"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsStreamRead.hpp"
+#include "rsFileRead.hpp"
 
 int
 rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,
@@ -39,4 +40,3 @@ rsStreamRead( rsComm_t *rsComm, fileReadInp_t *streamReadInp,
 
     return status;
 }
-

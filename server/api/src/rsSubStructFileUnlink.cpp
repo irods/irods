@@ -3,8 +3,8 @@
 #include "subStructFileUnlink.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileUnlink.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 
@@ -91,4 +91,3 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
     }
 
 }
-

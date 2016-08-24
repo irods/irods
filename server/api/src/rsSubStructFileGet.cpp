@@ -3,6 +3,7 @@
 #include "subStructFileGet.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileGet.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
@@ -151,5 +152,3 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     return status;
 
 }
-
-

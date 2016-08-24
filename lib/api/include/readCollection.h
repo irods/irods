@@ -1,34 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* readCollection.h
- */
-
 #ifndef READ_COLLECTION_H__
 #define READ_COLLECTION_H__
-
-/* This is a high level type API call */
 
 #include "rcConnect.h"
 #include "miscUtil.h"
 
-#if defined(RODS_SERVER)
-#define RS_READ_COLLECTION rsReadCollection
-/* prototype for the server handler */
-int
-rsReadCollection( rsComm_t *rsComm, int *handleInxInp,
-                  collEnt_t **collEnt );
-#else
-#define RS_READ_COLLECTION NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* prototype for the client call */
-
-int
-rcReadCollection( rcComm_t *conn, int handleInxInp,
-                  collEnt_t **collEnt );
 
 /* rcReadCollection - Read a iRODS collection. rcOpenCollection must be
  *    called first.
@@ -42,6 +17,8 @@ rcReadCollection( rcComm_t *conn, int handleInxInp,
  *   int status - status of the operation. -1 means no more collEnt
  */
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// READ_COLLECTION_H__
+int rcReadCollection( rcComm_t *conn, int handleInxInp, collEnt_t **collEnt );
+
+#endif

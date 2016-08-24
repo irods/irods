@@ -38,6 +38,9 @@ cliGetCollOprStat( rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
                    int retval );
 int
 _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat );
+
+int
+apiTableLookup( int apiNumber );
 #ifdef __cplusplus
 }
 #endif

@@ -5,6 +5,7 @@
 #include "physPath.hpp"
 #include "reIn2p3SysRule.hpp"
 #include "miscServerFunct.hpp"
+#include "rsExecCmd.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_plugin.hpp"

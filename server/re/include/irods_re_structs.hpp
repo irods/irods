@@ -1,6 +1,3 @@
-
-
-
 #ifndef IRODS_RE_STRUCTS_HPP
 #define IRODS_RE_STRUCTS_HPP
 
@@ -63,7 +60,7 @@ int applyRuleWithInOutVars(
     ruleExecInfo_t*        _rei );
 
 void freeCmdExecOut( execCmdOut_t *ruleExecOut );
-               
+
 int applyRule( char *inAction, msParamArray_t *inMsParamArray,
                ruleExecInfo_t *rei, int reiSaveFlag );
 int applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath );
@@ -90,13 +87,3 @@ int
 unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
                  bytesBuf_t *packedReiAndArgBBuf );
 #endif // IRODS_RE_STRUCTS_HPP
-
-
-
-
-
-
-
-
-
-

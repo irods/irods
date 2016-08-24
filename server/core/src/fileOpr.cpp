@@ -9,6 +9,8 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "collection.hpp"
+#include "rsChkNVPathPerm.hpp"
+#include "rsFileStat.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -579,4 +581,3 @@ bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd ) {
 
     return fileInx;
 }
-

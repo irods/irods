@@ -7,6 +7,7 @@
 #include "fileStat.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsChkNVPathPerm.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

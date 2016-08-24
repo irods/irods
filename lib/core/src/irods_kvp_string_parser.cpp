@@ -73,9 +73,7 @@ namespace irods {
         const std::string& _delim ) {
         std::string::size_type pos = _string.find( _assoc );
         if( std::string::npos == pos || _string.empty() ) {
-            return ERROR(
-			           INVALID_KVP_STRING,
-					   _string );
+            return ERROR(INVALID_KVP_STRING, _string );
         }
 
         // =-=-=-=-=-=-=-
@@ -89,9 +87,7 @@ namespace irods {
             if ( std::string::npos == pos ) {
                 // =-=-=-=-=-=-=-
                 // no association, just add to the map
-                return ERROR(
-				           INVALID_KVP_STRING,
-						   _string );
+                return ERROR(INVALID_KVP_STRING, _string );
             }
             else {
                 // =-=-=-=-=-=-=-
@@ -101,9 +97,9 @@ namespace irods {
                                  _string,
                                  _kvp,
                                  _assoc );
-				if( !ret.ok() ) {
-					return PASS( ret );
-				}
+                                if( !ret.ok() ) {
+                                        return PASS( ret );
+                                }
             }
 
         } // if no delim found
@@ -119,17 +115,17 @@ namespace irods {
             token_list.clear();
         }
         BOOST_FOREACH( std::string & token, token_list ) {
-			if( token.empty() ) {
-				continue;
-			}
+                        if( token.empty() ) {
+                                continue;
+                        }
 
             // =-=-=-=-=-=-=-
             // now that the string is broken into tokens we need to
             // extract the key and value to put them into the map
             error ret = parse_token_into_kvp( token, _kvp, _assoc );
-			if( !ret.ok() ) {
-				return PASS( ret );
-			}
+                        if( !ret.ok() ) {
+                                return PASS( ret );
+                        }
         }
 
         return SUCCESS();
@@ -267,4 +263,4 @@ namespace irods {
         }
         return str.str();
     }
-}; // namespace irods
+} // namespace irods

@@ -1,32 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* dataObjCreateAndStat.h
- */
-
 #ifndef DATA_OBJ_CREATE_AND_STAT_H__
 #define DATA_OBJ_CREATE_AND_STAT_H__
-
-/* This is a high level type API call */
 
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
 #include "dataObjOpenAndStat.h"
-
-/* This is a Object File I/O call */
-
-#if defined(RODS_SERVER)
-#define RS_DATA_OBJ_CREATE_AND_STAT rsDataObjCreateAndStat
-/* prototype for the server handler */
-int
-rsDataObjCreateAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        openStat_t **openStat );
-#else
-#define RS_DATA_OBJ_CREATE_AND_STAT NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* prototype for the client call */
 /* rcDataObjCreateAndStat - Create And Stat a iRODS data object. This is the same
@@ -55,12 +32,9 @@ extern "C" {
  * OutPut -
  *   int l1descInx - an integer descriptor.
  */
-
-int
-rcDataObjCreateAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
-                        openStat_t **openStat );
-
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// DATA_OBJ_CREATE_AND_STAT_H__
+int rcDataObjCreateAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp, openStat_t **openStat );
+
+#endif

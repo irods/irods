@@ -5,6 +5,7 @@
 
 #include "fileStat.h"
 #include "miscServerFunct.hpp"
+#include "rsFileStat.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"

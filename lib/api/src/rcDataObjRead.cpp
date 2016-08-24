@@ -10,6 +10,7 @@
 
 #include "dataObjRead.h"
 #include "procApiRequest.h"
+#include "apiNumber.h"
 /**
  * \fn rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
  * bytesBuf_t *dataObjReadOutBBuf)

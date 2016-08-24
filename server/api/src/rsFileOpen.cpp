@@ -9,6 +9,7 @@
 #include "fileOpr.hpp"
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
+#include "rsFileOpen.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -169,13 +170,3 @@ int _rsFileOpen(
     return file_obj->file_descriptor();
 
 } // _rsFileOpen
-
-
-
-
-
-
-
-
-
-

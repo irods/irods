@@ -5,9 +5,6 @@
 
 namespace irods {
     api_entry_table& get_client_api_table();
+}
 
-}; // namespace irods
-
-#endif // __IRODS_CLIENT_API_TABLE_HPP__
-
-
+#endif

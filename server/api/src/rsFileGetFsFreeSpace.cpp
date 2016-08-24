@@ -5,6 +5,7 @@
 
 #include "fileGetFsFreeSpace.h"
 #include "miscServerFunct.hpp"
+#include "rsFileGetFsFreeSpace.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
@@ -131,10 +132,3 @@ int _rsFileGetFsFreeSpace(
     return 0;
 
 } // _rsFileGetFsFreeSpace
-
-
-
-
-
-
-

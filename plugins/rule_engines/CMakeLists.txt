@@ -47,12 +47,13 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/include
     ${CMAKE_BINARY_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
-    ${CMAKE_SOURCE_DIR}/server/drivers/include
+    ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/include
+    ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/drivers/include
     ${CMAKE_SOURCE_DIR}/server/icat/include
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
@@ -64,7 +65,6 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${PLUGIN}
     PRIVATE
     irods_server
-    irods_clerver
     irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
@@ -72,7 +72,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     dl
     )
 
-  target_compile_definitions(${PLUGIN} PRIVATE CACHE_ENABLE RODS_SERVER ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()

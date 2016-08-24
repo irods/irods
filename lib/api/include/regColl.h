@@ -1,33 +1,8 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* regColl.h
- */
-
 #ifndef REG_COLL_H__
 #define REG_COLL_H__
 
-/* This is Object File I/O type API call */
-
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
-
-#if defined(RODS_SERVER)
-#define RS_REG_COLL rsRegColl
-/* prototype for the server handler */
-int
-rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp );
-int
-_rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp );
-#else
-#define RS_REG_COLL NULL
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-/* prototype for the client call */
-int
-rcRegColl( rcComm_t *conn, collInp_t *regCollInp );
 
 /* rcRegColl - Register a iRODS collection.
  * Input -
@@ -41,6 +16,8 @@ rcRegColl( rcComm_t *conn, collInp_t *regCollInp );
  */
 
 #ifdef __cplusplus
-}
+extern "C"
 #endif
-#endif	// REG_COLL_H__
+int rcRegColl( rcComm_t *conn, collInp_t *regCollInp );
+
+#endif

@@ -3,8 +3,8 @@
 #include "subStructFileTruncate.h"
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
+#include "rsSubStructFileTruncate.hpp"
 
-// =-=-=-=-=-=-=-
 #include "irods_structured_object.hpp"
 
 
@@ -90,5 +90,3 @@ int _rsSubStructFileTruncate( rsComm_t*   _comm,
     }
 
 }
-
-

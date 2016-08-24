@@ -9,6 +9,8 @@
 #include "miscServerFunct.hpp"
 #include "authPluginRequest.h"
 #include "authenticate.h"
+#include "rsAuthCheck.hpp"
+#include "rsAuthRequest.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_auth_plugin.hpp"

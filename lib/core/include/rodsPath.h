@@ -59,8 +59,6 @@ int
 getLastPathElement( char *inPath, char *lastElement );
 
 int
-resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType );
-int
 getFileType( rodsPath_t *rodsPath );
 void
 clearRodsPath( rodsPath_t *rodsPath );

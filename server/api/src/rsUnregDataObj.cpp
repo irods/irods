@@ -7,6 +7,7 @@
 #include "icatHighLevelRoutines.hpp"
 #include "fileDriver.hpp"
 #include "miscServerFunct.hpp"
+#include "rsUnregDataObj.hpp"
 
 #include "irods_file_object.hpp"
 #include "irods_stacktrace.hpp"

@@ -6,7 +6,7 @@
  */
 
 #include "rcConnect.h"
-#include "rcGlobal.h"
+#include "rcGlobalExtern.h"
 #include "rcMisc.h"
 
 #ifdef windows_platform

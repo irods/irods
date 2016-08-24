@@ -16,6 +16,10 @@
 #include "dataObjOpr.hpp"
 #include "resource.hpp"
 #include "physPath.hpp"
+#include "rsGenQuery.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsDataObjRepl.hpp"
+#include "apiNumber.h"
 
 // =-=-=-=-=-=-=-
 //

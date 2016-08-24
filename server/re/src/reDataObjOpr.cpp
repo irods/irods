@@ -1,16 +1,35 @@
-/**
- * @file  reDataObjOpr.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #include "reDataObjOpr.hpp"
 #include "apiHeaderAll.h"
 #include "rsApiHandler.hpp"
 #include "collection.hpp"
-
+#include "rsDataObjCreate.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjCopy.hpp"
+#include "rsDataObjChksum.hpp"
+#include "rsDataObjLseek.hpp"
+#include "rsDataObjPhymv.hpp"
+#include "rsDataObjRename.hpp"
+#include "rsDataObjTrim.hpp"
+#include "rsCollCreate.hpp"
+#include "rsRmColl.hpp"
+#include "rsPhyPathReg.hpp"
+#include "rsObjStat.hpp"
+#include "rsDataObjRsync.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsReadCollection.hpp"
+#include "rsCloseCollection.hpp"
+#include "rsExecCmd.hpp"
+#include "rsCollRepl.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsStructFileExtAndReg.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsStructFileBundle.hpp"
+#include "rsPhyBundleColl.hpp"
 #include <string>
 #include <vector>
 #include <boost/regex.hpp>
@@ -3235,4 +3254,3 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     return rei->status;
 
 }
-

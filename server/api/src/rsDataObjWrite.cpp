@@ -11,8 +11,9 @@
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
+#include "rsDataObjWrite.hpp"
+#include "rsSubStructFileWrite.hpp"
+#include "rsFileWrite.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

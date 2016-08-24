@@ -1,18 +1,9 @@
-/**
- * @file        icatAdminMS.cpp
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-//#include "reGlobalsExtern.hpp"
-//#include "reFuncDefs.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
-
+#include "rsGeneralAdmin.hpp"
 #include "irods_re_structs.hpp"
 
 /**
