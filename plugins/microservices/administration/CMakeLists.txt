@@ -13,7 +13,6 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
   target_include_directories(
     ${PLUGIN}
     PRIVATE
-    ${CMAKE_SOURCE_DIR}/plugins/microservices/mso_drivers
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include

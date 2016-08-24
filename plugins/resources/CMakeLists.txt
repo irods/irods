@@ -17,10 +17,6 @@ set(
   ${CMAKE_SOURCE_DIR}/plugins/resources/mockarchive/libmockarchive.cpp
   )
 set(
-  IRODS_RESOURCE_PLUGIN_MSO_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/mso/libmso.cpp
-  )
-set(
   IRODS_RESOURCE_PLUGIN_NONBLOCKING_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/resources/nonblocking/libnonblocking.cpp
   )
@@ -63,7 +59,6 @@ set(
   deferred
   load_balanced
   mockarchive
-  mso
   nonblocking
   passthru
   random
