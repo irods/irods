@@ -3686,8 +3686,8 @@ printReleaseInfo( char * cmdName ) {
     strncpy( tmp, RODS_REL_VERSION, 40 );   /* to skip over the 'rods' part
                                                              of the string */
     tmp[39] = '\0';
-    printf( "\niRODS Version %s                %s                      %s\n",
-            ( char* )&tmp[4], RODS_RELEASE_DATE, cmdName );
+    printf( "\niRODS Version %s                %s\n",
+            ( char* )&tmp[4], cmdName );
     return;
 }
 
