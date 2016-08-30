@@ -36,25 +36,13 @@
 std::vector<std::string> ns;
 
 void get_re_configs( const std::string& _instance_name ) {
-    for( const auto& el : irods::get_server_property<const std::vector<boost::any>&>(irods::CFG_RULE_ENGINES_KW) ) {
+    for( const auto& el : irods::get_server_property<const std::vector<boost::any>>("rule_engine_namespaces") ) {
         try {
-            const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
-            if( boost::any_cast<const std::string&>(plugin_config.at(irods::CFG_INSTANCE_NAME_KW)) == _instance_name) {
-                for( const auto& el : boost::any_cast<const std::vector<boost::any>&>(
-                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(
-                                plugin_config.at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW)
-                                ).at("namespaces")) ) {
-                    ns.push_back(boost::any_cast<const std::string&>(el));
-                }
-                return;
-            }
+            ns.push_back(boost::any_cast<const std::string&>(el));
         } catch( const boost::bad_any_cast& e) {
-            THROW(INVALID_ANY_CAST, boost::format("failed any_cast while searching for rule_engine '%s': %s") % _instance_name % e.what());
-        } catch ( const std::out_of_range& e ) {
-            THROW(KEY_NOT_FOUND, boost::format("missing key while attempting to resolve rule engine '%s': %s") % _instance_name % e.what());
+            THROW(INVALID_ANY_CAST, boost::format("failed any_cast while converting element of rule_engine_namespaces : %s") % e.what());
         }
     }
-    THROW(SYS_INVALID_INPUT_PARAM, boost::format("failed to find configuration for re-irods plugin '%s'") % _instance_name);
 }
 
 irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name) {

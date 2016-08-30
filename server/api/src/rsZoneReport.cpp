@@ -10,9 +10,11 @@
 #include "server_report.h"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
+#include "irods_server_properties.hpp"
 #include "irods_configuration_keywords.hpp"
 
 #include "jansson.h"
+#include <boost/format.hpp>
 
 
 
@@ -236,6 +238,16 @@ int _rsZoneReport(
         return status;
     }
 
+    json_t* svr_arr = 0;
+    irods::error ret = get_server_reports( _comm, svr_arr );
+    if ( !ret.ok() ) {
+        rodsLog(
+            LOG_ERROR,
+            "_rsZoneReport - get_server_reports failed, status = %d",
+            ret.code() );
+        return ret.code();
+    }
+
     json_error_t j_err;
     json_t* cat_svr = json_loads( ( char* )bbuf->buf, JSON_REJECT_DUPLICATES, &j_err );
     freeBBuf( bbuf );
@@ -247,16 +259,7 @@ int _rsZoneReport(
         return ACTION_FAILED_ERR;
     }
 
-
-    json_t* svr_arr = 0;
-    irods::error ret = get_server_reports( _comm, svr_arr );
-    if ( !ret.ok() ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsZoneReport - get_server_reports failed, status = %d",
-            ret.code() );
-        return ret.code();
-    }
+    json_array_append( svr_arr, cat_svr );
 
     json_t* zone_obj = json_object();
     if ( !zone_obj ) {
@@ -266,8 +269,7 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set( zone_obj, "icat_server", cat_svr );
-    json_object_set( zone_obj, "resource_servers", svr_arr );
+    json_object_set( zone_obj, "servers", svr_arr );
 
     json_t* zone_arr = json_array();
     if ( !zone_arr ) {
@@ -290,8 +292,11 @@ int _rsZoneReport(
     json_object_set(
         zone,
         "schema_version",
-        json_string(
-            "https://schemas.irods.org/configuration/v2/zone_bundle.json" ) );
+        json_string((boost::format("%s/%s/zone_bundle.json") %
+             irods::get_server_property<const std::string>("schema_validation_base_uri") %
+             irods::get_server_property<const std::string>("schema_validation_base_uri")).str().c_str()
+            )
+        );
     json_object_set( zone, "zones", zone_arr );
 
     char* tmp_buf = json_dumps( zone, JSON_INDENT( 4 ) );

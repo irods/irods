@@ -338,7 +338,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/objMetaOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/physPath.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/procLog.h
-  ${CMAKE_SOURCE_DIR}/server/core/include/readServerConfig.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/resource.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rodsAgent.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rodsConnect.h

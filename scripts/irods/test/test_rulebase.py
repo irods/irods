@@ -188,7 +188,7 @@ OUTPUT ruleExecOut
             svr_cfg = json.load(f)
 
         # inject a new rule base into the native rule engine
-        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
 
         # dump to a string to repave the existing server_config.json
         new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
@@ -246,7 +246,7 @@ OUTPUT ruleExecOut
             svr_cfg = json.load(f)
 
         # inject a new rule base into the native rule engine
-        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
 
         # dump to a string to repave the existing server_config.json
         new_server_config=json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
@@ -441,7 +441,7 @@ OUTPUT ruleExecOut
             svr_cfg = json.load(f)
 
         # inject a new rule base into the native rule engine
-        svr_cfg['rule_engines'][1]['plugin_specific_configuration']['re_rulebase_set'] = [{"filename": "test"}, {"filename": "core"}]
+        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
 
         # dump to a string to repave the existing server_config.json
         return json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))

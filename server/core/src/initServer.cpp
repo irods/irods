@@ -178,14 +178,14 @@ int
 initRcatServerHostByFile() {
     std::string prop_str;
     try {
-        snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(KERBEROS_NAME_KW).c_str());
+        snprintf( KerberosName, sizeof( KerberosName ), "%s", irods::get_server_property<const std::string>(irods::CFG_KERBEROS_NAME_KW).c_str());
     } catch ( const irods::exception& e ) {}
 
     try {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
         rodsServerHost_t* tmp_host = 0;
-        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<const std::string>(ICAT_HOST_KW).c_str() );
+        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", boost::any_cast<const std::string&>(irods::get_server_property<const std::vector<boost::any>>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0]).c_str() );
         int rem_flg = resolveHost(
                           &addr,
                           &tmp_host );

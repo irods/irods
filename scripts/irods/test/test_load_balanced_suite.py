@@ -58,7 +58,7 @@ class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase)
         # read server_config.json and .odbc.ini
         cfg = IrodsConfig()
 
-        if cfg.database_config['catalog_database_type'] == "postgres":
+        if cfg.catalog_database_type == "postgres":
             # =-=-=-=-=-=-=-
             # seed load table with fake values - rescA should win
             from .. import database_connect

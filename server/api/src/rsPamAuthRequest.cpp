@@ -11,7 +11,6 @@
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 #include "irods_log.hpp"
 #include "sslSockComm.h"
 #include "miscServerFunct.hpp"

@@ -1,9 +1,0 @@
-{
-    "id": "https://schemas.irods.org/configuration/v3/filename.json#",
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-        "filename": {"type": "string"}
-    },
-    "required": ["filename"]
-}

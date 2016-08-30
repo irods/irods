@@ -54,6 +54,8 @@ namespace irods {
 /// @brief kw for storing proxy user priv
     const std::string PROXY_USER_PRIV_KW( "proxy_user_priv" );
 
+    const std::string SERVER_CONFIG_FILE( "server_config.json" );
+
     class server_properties {
         public:
 
@@ -68,27 +70,13 @@ namespace irods {
             void capture();
 
             /**
-             * @brief capture the legacy version: server.config
-             */
-            void capture_legacy();
-
-            /**
-             * @brief capture the new json version: server_config.json
+             * @brief capture server_config.json
              */
             void capture_json( const std::string& );
 
             template< typename T >
             T& get_property( const std::string& _key ) {
-                try {
-                    return config_props_.get< T >( _key );
-                } catch ( const irods::exception& e ) {
-                    if ( e.code() == KEY_NOT_FOUND ) {
-                        try {
-                            return config_props_.get< T >( key_map_.at( _key ) );
-                        } catch ( const std::out_of_range& ) {}
-                    }
-                    throw e;
-                }
+                return config_props_.get< T >( _key );
             }
 
             template< typename T>
@@ -123,9 +111,6 @@ namespace irods {
              * @brief properties lookup table
              */
             configuration_parser config_props_;
-
-            /// @brief map of old keys to new keys
-            std::map< std::string, std::string > key_map_;
 
     }; // class server_properties
 

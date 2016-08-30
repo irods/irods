@@ -1410,7 +1410,6 @@ set(
   client_hints.json
   configuration_directory.json
   database_config.json
-  filename.json
   grid_status.json
   host_access_control_config.json
   hosts_config.json

@@ -10,7 +10,6 @@
 
 #include "rods.h"
 #include "irods_log.hpp"
-#include "readServerConfig.hpp"
 
 #include <string>
 #include <algorithm>

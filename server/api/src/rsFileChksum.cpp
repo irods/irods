@@ -13,7 +13,6 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_hasher_factory.hpp"
-#include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 #include "MD5Strategy.hpp"
 
@@ -122,7 +121,7 @@ int fileChksum(
     // capture server hashing settings
     std::string hash_scheme( irods::MD5_NAME );
     try {
-        hash_scheme = irods::get_server_property<const std::string>(DEFAULT_HASH_SCHEME_KW);
+        hash_scheme = irods::get_server_property<const std::string>(irods::CFG_DEFAULT_HASH_SCHEME_KW);
     } catch ( const irods::exception& ) {}
 
     // make sure the read parameter is lowercased
@@ -134,7 +133,7 @@ int fileChksum(
 
     std::string hash_policy;
     try {
-        hash_policy = irods::get_server_property<const std::string>(MATCH_HASH_POLICY_KW);
+        hash_policy = irods::get_server_property<const std::string>(irods::CFG_MATCH_HASH_POLICY_KW);
     } catch ( const irods::exception& ) {}
 
     // =-=-=-=-=-=-=-

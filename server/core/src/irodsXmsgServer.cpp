@@ -13,7 +13,6 @@
 #include "sockCommNetworkInterface.hpp"
 #include "initServer.hpp"
 #include "miscServerFunct.hpp"
-#include "readServerConfig.hpp"
 
 int loopCnt = -1; /* make it -1 to run infinitely */
 

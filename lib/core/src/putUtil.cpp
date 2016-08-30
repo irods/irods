@@ -14,7 +14,6 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 #include "irods_random.hpp"
 #include "irods_log.hpp"
 

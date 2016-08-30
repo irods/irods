@@ -1,5 +1,5 @@
 {
-    "id": "https://schemas.irods.org/configuration/v3/host_access_control_config.json#",
+    "id": "file:///var/lib/irods/configuration_schemas/v3/host_access_control_config.json",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "properties": {

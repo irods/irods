@@ -70,14 +70,11 @@ static std::string get_string_array_from_array( const boost::any& _array ) {
     try {
         for( const auto& el : boost::any_cast<const std::vector<boost::any>&>( _array ) ) {
             try {
-                str_array += boost::any_cast< const std::string& >(
-                                boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el).at(irods::CFG_FILENAME_KW));
+                str_array += boost::any_cast< const std::string& >(el);
             }
             catch ( const boost::bad_any_cast& ) {
                 rodsLog(LOG_ERROR, "%s - failed to cast rule base file name entry to string", __PRETTY_FUNCTION__);
                 continue;
-            } catch ( const std::out_of_range& ) {
-                rodsLog(LOG_ERROR, "%s - no key '%s'", __PRETTY_FUNCTION__, irods::CFG_FILENAME_KW.c_str());
             }
             str_array += ",";
 
@@ -115,7 +112,7 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
     local_instance_name = _instance_name;
 
     try {
-        const auto& re_plugin_arr = irods::get_server_property<const std::vector<boost::any>&>(irods::CFG_RULE_ENGINES_KW);
+        const auto& re_plugin_arr = boost::any_cast<const std::vector<boost::any>&>(irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_RULE_ENGINE));
         for( const auto& el : re_plugin_arr ) {
             const auto& plugin_config = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
             const auto& inst_name = boost::any_cast<const std::string&>(plugin_config.at(irods::CFG_INSTANCE_NAME_KW));

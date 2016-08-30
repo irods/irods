@@ -55,7 +55,7 @@ def server_launch_hook(irods_config):
 
     database_connect.sync_odbc_ini(irods_config)
 
-    if irods_config.database_config['catalog_database_type'] == 'oracle':
+    if irods_config.catalog_database_type == 'oracle':
         two_task = database_connect.get_two_task_for_oracle(irods_config.database_config)
         l.debug('Setting TWO_TASK for oracle...')
         irods_config.execution_environment['TWO_TASK'] = two_task
@@ -91,17 +91,20 @@ def setup_database_config(irods_config):
         'has been properly configured.\n'
         )
 
-    irods_config.database_config['catalog_database_type'] = db_type
+    for k in irods_config.server_config.setdefault('plugin_configuration', {}).setdefault('database', {}):
+        if k != db_type:
+            del irods_config.server_config['plugin_configuration']['database'][k]
+    irods_config.server_config['plugin_configuration']['database'].setdefault(db_type, {})
     while True:
-        odbc_drivers = database_connect.get_odbc_drivers_for_db_type(irods_config.database_config['catalog_database_type'])
+        odbc_drivers = database_connect.get_odbc_drivers_for_db_type(irods_config.catalog_database_type)
         if odbc_drivers:
             irods_config.database_config['db_odbc_driver'] = lib.default_prompt(
-                'ODBC driver for %s', irods_config.database_config['catalog_database_type'],
+                'ODBC driver for %s', irods_config.catalog_database_type,
                 default=odbc_drivers)
         else:
             irods_config.database_config['db_odbc_driver'] = lib.default_prompt(
-                'No default ODBC drivers configured for %s; falling back to bare library paths', irods_config.database_config['catalog_database_type'],
-                default=database_connect.get_odbc_driver_paths(irods_config.database_config['catalog_database_type'],
+                'No default ODBC drivers configured for %s; falling back to bare library paths', irods_config.catalog_database_type,
+                default=database_connect.get_odbc_driver_paths(irods_config.catalog_database_type,
                     oracle_home=os.getenv('ORACLE_HOME', None)))
 
         irods_config.database_config['db_host'] = lib.default_prompt(
@@ -110,10 +113,10 @@ def setup_database_config(irods_config):
 
         irods_config.database_config['db_port'] = lib.default_prompt(
             'Database server\'s port',
-            default=[irods_config.database_config.get('db_port', database_connect.get_default_port_for_database_type(irods_config.database_config['catalog_database_type']))],
+            default=[irods_config.database_config.get('db_port', database_connect.get_default_port_for_database_type(irods_config.catalog_database_type))],
             input_filter=lib.int_filter(field='Port'))
 
-        if irods_config.database_config['catalog_database_type'] == 'oracle':
+        if irods_config.catalog_database_type == 'oracle':
             irods_config.database_config['db_name'] = lib.default_prompt(
                 'Service name',
                 default=[irods_config.database_config.get('db_name', 'ICAT.example.org')])
@@ -133,11 +136,11 @@ def setup_database_config(irods_config):
                 'ODBC Driver:   %s\n',
                 'Database Host: %s\n',
                 'Database Port: %d\n',
-                'Database Name: %s\n' if irods_config.database_config['catalog_database_type'] != 'oracle' else 'Service Name:  %s\n',
+                'Database Name: %s\n' if irods_config.catalog_database_type != 'oracle' else 'Service Name:  %s\n',
                 'Database User: %s\n',
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
-                    irods_config.database_config['catalog_database_type'],
+                    irods_config.catalog_database_type,
                     irods_config.database_config['db_odbc_driver'],
                     irods_config.database_config['db_host'],
                     irods_config.database_config['db_port'],
@@ -151,7 +154,7 @@ def setup_database_config(irods_config):
             'Database password',
             echo=False)
 
-    irods_config.commit(irods_config.database_config, irods_config.database_config_path)
+    irods_config.commit(irods_config.server_config, irods_config.server_config_path)
 
     if database_already_in_use_by_irods(irods_config):
         l.warning(lib.get_header(

@@ -2,7 +2,6 @@
 // irods includes
 #include "msParam.h"
 #include "rcConnect.h"
-#include "readServerConfig.hpp"
 #include "miscServerFunct.hpp"
 #include "generalAdmin.h"
 

@@ -31,12 +31,12 @@ namespace irods{
 
     std::vector<re_pack_inp<default_re_ctx> > init_global_re_packs() {
         std::vector<re_pack_inp<default_re_ctx> > ret;
-        const auto& re_plugin_configs = irods::get_server_property<const std::vector<boost::any>>(CFG_RULE_ENGINES_KW);
+        const auto& re_plugin_configs = irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
         for(const auto& el : re_plugin_configs ) {
             const auto& map = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
             ret.emplace_back(
-                boost::any_cast<const std::string&> (map.find("instance_name")->second),
-                boost::any_cast<const std::string&> (map.find("plugin_name")->second),
+                boost::any_cast<const std::string&> (map.at("instance_name")),
+                boost::any_cast<const std::string&> (map.at("plugin_name")),
                 UNIT);
         }
         return ret;
@@ -87,7 +87,7 @@ namespace irods{
             *p = rei;
             return SUCCESS();
         }
-        
+
         unsigned int nargs = l.size();
 
         error err;

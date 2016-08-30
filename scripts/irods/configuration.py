@@ -59,27 +59,35 @@ class IrodsConfig(object):
 
     @property
     def database_config(self):
-        if self._database_config is None:
-            self._database_config = load_json_config(paths.database_config_path(),
-                    template_filepath=paths.get_template_filepath(paths.database_config_path()))
-            if not 'db_odbc_driver' in self._database_config.keys():
-                l = logging.getLogger(__name__)
-                l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
-                if os.path.exists(self.odbc_ini_path):
-                    from . import database_connect
-                    with open(self.odbc_ini_path) as f:
-                        odbc_ini_contents = database_connect.load_odbc_ini(f)
-                else:
-                    l.debug('No odbc.ini file present')
-                    odbc_ini_contents = {}
-                if self._database_config['catalog_database_type'] in odbc_ini_contents.keys() and 'Driver' in odbc_ini_contents[self._database_config['catalog_database_type']].keys():
-                    self._database_config['db_odbc_driver'] = odbc_ini_contents[self._database_config['catalog_database_type']]['Driver']
-                    l.debug('Adding driver "%s" to database_config', self._database_config['db_odbc_driver'])
-                    self.commit(self._database_config, paths.database_config_path(), clear_cache=False)
-                else:
-                    l.debug('Unable to retrieve "Driver" field from odbc ini file')
+        try:
+            database_config = [e for e in self.server_config['plugin_configuration']['database'].values()][0]
+        except (KeyError, IndexError):
+            return None
+        if not 'db_odbc_driver' in database_config.keys():
+            l = logging.getLogger(__name__)
+            l.debug('No driver found in the database config, attempting to retrieve the one in the odbc ini file at "%s"...', self.odbc_ini_path)
+            if os.path.exists(self.odbc_ini_path):
+                from . import database_connect
+                with open(self.odbc_ini_path) as f:
+                    odbc_ini_contents = database_connect.load_odbc_ini(f)
+            else:
+                l.debug('No odbc.ini file present')
+                odbc_ini_contents = {}
+            if self.catalog_database_type in odbc_ini_contents.keys() and 'Driver' in odbc_ini_contents[self.catalog_database_type].keys():
+                database_config['db_odbc_driver'] = odbc_ini_contents[self.catalog_database_type]['Driver']
+                l.debug('Adding driver "%s" to database_config', database_config['db_odbc_driver'])
+                self.commit(self._server_config, paths.server_config_path(), clear_cache=False)
+            else:
+                l.debug('Unable to retrieve "Driver" field from odbc ini file')
 
-        return self._database_config
+        return database_config
+
+    @property
+    def catalog_database_type(self):
+        try:
+            return [e for e in self.server_config['plugin_configuration']['database'].keys()][0]
+        except (KeyError, IndexError):
+            return None
 
     @property
     def odbc_ini_path(self):
@@ -223,11 +231,6 @@ class IrodsConfig(object):
                     'dict': self.client_environment,
                     'path': self.client_environment_path}}
 
-        if self.is_catalog:
-            configuration_schema_mapping['database_config'] = {
-                    'dict': self.database_config,
-                    'path': paths.database_config_path()}
-
         skipped = []
 
         if self.server_config['schema_validation_base_uri'] == 'off':
@@ -277,7 +280,6 @@ class IrodsConfig(object):
             self.clear_cache()
 
     def clear_cache(self):
-        self._database_config = None
         self._server_config = None
         self._version = None
         self._hosts_config = None

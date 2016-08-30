@@ -17,7 +17,6 @@
 #include "irods_server_state.hpp"
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 #include "objMetaOpr.hpp"
 #include "genQuery.h"
 #include "getRodsEnv.h"

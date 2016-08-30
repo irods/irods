@@ -12,7 +12,6 @@
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h"
 #include "phyBundleColl.h"
-#include "readServerConfig.hpp"
 #include "irods_resource_manager.hpp"
 using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 

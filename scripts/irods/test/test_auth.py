@@ -165,11 +165,15 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
             with lib.file_backed_up(irods_config.server_config_path):
                 server_config_update = {
-                    'pam_password_length': 20,
-                    'pam_no_extend': False,
-                    'pam_password_min_time': 121,
-                    'pam_password_max_time': 1209600,
-                }
+                    'authentication' : {
+                        'pam' : {
+                            'password_length': 20,
+                            'no_extend': False,
+                            'password_min_time': 121,
+                            'password_max_time': 1209600,
+                            }
+                        }
+                    }
                 lib.update_json_file_from_dict(irods_config.server_config_path, server_config_update)
 
                 IrodsController().restart()

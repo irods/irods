@@ -1,7 +1,7 @@
 # Configuration Files
 
 
-The following configuration files control nearly all aspects of how an iRODS deployment functions.  All JSON files validate against the configuration schema defined at [https://schemas.irods.org/configuration](https://schemas.irods.org/configuration).
+The following configuration files control nearly all aspects of how an iRODS deployment functions.  All JSON files validate against the configuration schema defined in /var/lib/irods/configuration_schemas.
 
 ## ~/.odbc.ini
 
@@ -73,7 +73,7 @@ This file contains the following top level entries:
 
   - `re_rulebase_set` (required) - this is an array of file names comprising the list of rule files used by the rule engine, for example: { "filename": "core" } which references 'core.re'.  This array is ordered as the order of the rule files affects which (multiply) matching rule would fire first.
 
-  - `schema_validation_base_uri` (required) - The URI against which the iRODS server configuration is validated.  By default, this will be the schemas.irods.org domain.  It can be set to any http(s) endpoint as long as that endpoint has a copy of the irods_schema_configuration repository.  This variable allows a clone of the git repository to live behind an organizational firewall, but still perform its duty as a preflight check on the configuration settings for the entire server.
+  - `schema_validation_base_uri` (required) - The URI against which the iRODS server configuration is validated.  By default, this will be the local configuration schemas directory.  It can be set to any http(s) endpoint as long as that endpoint has a copy of the irods_schema_configuration repository.  This variable allows a clone of the git repository to live behind an organizational firewall, but still perform its duty as a preflight check on the configuration settings for the entire server.
 
   - `server_control_plane_encryption_algorithm` (required) - The algorithm used to encrypt the control plane communications. This must be the same across all iRODS servers in a Zone. (default "AES-256-CBC")
 

@@ -78,15 +78,16 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_tokens(self):
         self.admin.assert_icommand(['iadmin', 'at', 'user_type', 'rodstest', self.admin.username])
-        self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], STDOUT_SINGLELINE, 'rodstest')
-        self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], STDOUT_SINGLELINE, 'token_name: rodstest')
+        self.admin.assert_icommand(['iadmin', 'lt', 'user_type'], 'STDOUT_SINGLELINE', 'rodstest')
+        self.admin.assert_icommand(['iadmin', 'lt', 'user_type', 'rodstest'], 'STDOUT_SINGLELINE', 'token_name: rodstest')
         self.admin.assert_icommand(['iadmin', 'rt', 'user_type', 'rodstest'])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_moduser(self):
         username = 'moduser_user'
         self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
         try :
-            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'invalid_user_type'], STDERR_SINGLELINE, 'CAT_INVALID_USER_TYPE')
+            self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'invalid_user_type'], 'STDERR_SINGLELINE', 'CAT_INVALID_USER_TYPE')
             self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsadmin'])
             self.admin.assert_icommand(['iadmin', 'moduser', username, 'type', 'rodsuser'])
             self.admin.assert_icommand(['iadmin', 'moduser', username, 'zone', 'tempZone'])
@@ -105,10 +106,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
         try :
             self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
-            self.admin.assert_icommand(['iadmin', 'lua', username], STDOUT_SINGLELINE, authentication_name)
-            self.admin.assert_icommand(['iadmin', 'lua', '#'.join([username, 'tempZone'])], STDOUT_SINGLELINE, authentication_name)
-            self.admin.assert_icommand(['iadmin', 'lua'], STDOUT_SINGLELINE, username)
-            self.admin.assert_icommand(['iadmin', 'luan', authentication_name], STDOUT_SINGLELINE, username)
+            self.admin.assert_icommand(['iadmin', 'lua', username], 'STDOUT_SINGLELINE', authentication_name)
+            self.admin.assert_icommand(['iadmin', 'lua', '#'.join([username, 'tempZone'])], 'STDOUT_SINGLELINE', authentication_name)
+            self.admin.assert_icommand(['iadmin', 'lua'], 'STDOUT_SINGLELINE', username)
+            self.admin.assert_icommand(['iadmin', 'luan', authentication_name], 'STDOUT_SINGLELINE', username)
             self.admin.assert_icommand(['iadmin', 'rua', username, authentication_name])
         finally :
             self.admin.assert_icommand(['iadmin', 'rmuser', username])
@@ -428,7 +429,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
         #Invalid user type
         self.admin.assert_icommand("iadmin mkuser lando invalid_user_type",
-                                   'STDERR_SINGLELINE', "is not valid")  # should be rejected
+                                   'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")  # should be rejected
 
     # =-=-=-=-=-=-=-
     # REBALANCE

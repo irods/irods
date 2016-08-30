@@ -1,10 +1,10 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rodsDef.h"
+#include "authenticate.h"
 #include "rodsQuota.h"
 #include "msParam.h"
 #include "rcConnect.h"
-#include "readServerConfig.hpp"
 #include "icatStructs.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
@@ -21,6 +21,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_children_parser.hpp"
 #include "irods_auth_object.hpp"
+#include "irods_pam_auth_object.hpp"
 #include "irods_auth_factory.hpp"
 #include "irods_auth_plugin.hpp"
 #include "irods_auth_manager.hpp"
@@ -1908,11 +1909,16 @@ irods::error db_open_op(
     // =-=-=-=-=-=-=-
     // cache db creds
     try {
-        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_DB_USERNAME_KW ).c_str());
-        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_DB_PASSWORD_KW).c_str());
-        snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", irods::get_server_property<const std::string>(irods::CFG_CATALOG_DATABASE_TYPE_KW).c_str());
+        const auto& db_plugin_map = irods::get_server_property<const std::unordered_map<std::string, boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_DATABASE});
+        const auto& db_type = db_plugin_map.begin()->first;
+        const auto& db_plugin = db_plugin_map.begin()->second;
+        snprintf(icss.databaseUsername, DB_USERNAME_LEN, "%s", boost::any_cast<const std::string&>(boost::any_cast<const std::unordered_map<std::string, boost::any>>(db_plugin).at(irods::CFG_DB_USERNAME_KW)).c_str());
+        snprintf(icss.databasePassword, DB_PASSWORD_LEN, "%s", boost::any_cast<const std::string&>(boost::any_cast<const std::unordered_map<std::string, boost::any>>(db_plugin).at(irods::CFG_DB_PASSWORD_KW)).c_str());
+        snprintf(icss.database_plugin_type, DB_TYPENAME_LEN, "%s", db_type.c_str());
     } catch ( const irods::exception& e ) {
         return irods::error(e);
+    } catch ( const boost::exception& e ) {
+        return ERROR(INVALID_ANY_CAST, "Failed any_cast in the database configuration");
     }
 
     // =-=-=-=-=-=-=-
@@ -1939,10 +1945,10 @@ irods::error db_open_op(
     // =-=-=-=-=-=-=-
     // set pam properties
     try {
-        irods_pam_auth_no_extend = irods::get_server_property<const bool>(PAM_NO_EXTEND_KW);
-        irods_pam_password_len = irods::get_server_property<const size_t>(PAM_PW_LEN_KW);
-        snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(PAM_PW_MIN_TIME_KW).c_str());
-        snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(PAM_PW_MAX_TIME_KW).c_str());
+        irods_pam_auth_no_extend = irods::get_server_property<const bool>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_NO_EXTEND_KW});
+        irods_pam_password_len = irods::get_server_property<const size_t>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_LENGTH_KW});
+        snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MIN_TIME_KW}).c_str());
+        snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MAX_TIME_KW}).c_str());
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }

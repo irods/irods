@@ -3057,7 +3057,7 @@ checkModArgType( const char *arg ) {
 irods::error setRECacheSaltFromEnv() {
     // Should only ever set the cache salt once
     try {
-        const auto& existing_name = irods::get_server_property<const std::string>( RE_CACHE_SALT_KW);
+        const auto& existing_name = irods::get_server_property<const std::string>( irods::CFG_RE_CACHE_SALT_KW);
         rodsLog( LOG_NOTICE, "setRECacheSaltFromEnv: mutex name already set [%s]", existing_name.c_str() );
         return SUCCESS();
     } catch ( const irods::exception& ) {
@@ -3068,7 +3068,7 @@ irods::error setRECacheSaltFromEnv() {
         }
 
         try {
-            irods::set_server_property<std::string>( RE_CACHE_SALT_KW, p_mutex_salt );
+            irods::set_server_property<std::string>( irods::CFG_RE_CACHE_SALT_KW, p_mutex_salt );
         } catch ( const irods::exception& e ) {
             rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: failed to set server_properties" );
             return irods::error(e);
@@ -3201,7 +3201,7 @@ irods::error get_catalog_service_role(
 irods::error get_default_rule_plugin_instance(
         std::string& _instance_name ) {
     try {
-        _instance_name = irods::get_server_property<const std::string>(irods::DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW);
+        _instance_name = boost::any_cast<const std::string&>(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0]).at(irods::CFG_INSTANCE_NAME_KW));
     } catch ( const irods::exception& e ) {
         return irods::error(e);
     }

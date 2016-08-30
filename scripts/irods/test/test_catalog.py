@@ -11,6 +11,7 @@ else:
 
 from .resource_suite import ResourceBase
 from .. import lib
+from .. import paths
 from ..test.command import assert_command
 from ..configuration import IrodsConfig
 
@@ -30,7 +31,7 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand(['irm', 'A'])
 
     def test_no_distinct(self):
-        assert_icommand(['iquest', 'no-distinct', 'select RESC_ID'], STDOUT_SINGLELINE, 'RESC_ID = ');
+        self.admin.assert_icommand(['iquest', 'no-distinct', 'select RESC_ID'], 'STDOUT_SINGLELINE', 'RESC_ID = ');
 
 
 
@@ -49,19 +50,19 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("izonereport > %s" % (zone_report), use_unsafe_shell=True)
         if jsonschema_installed:
             assert_command('python %s %s https://example.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
-                               ['WARNING: Validation Failed', 'ValueError'], desired_rc=2)
+                               ['WARNING: Validation Failed'], desired_rc=2)
         else:
             assert_command('python %s %s https://example.org/badurl' % (validate_json_path, zone_report),
                                'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
 
         # good URL
         self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
+        irods_config = IrodsConfig()
+        command = [sys.executable, validate_json_path, zone_report, '{0}/{1}/zone_bundle.json'.format(irods_config.server_config['schema_validation_base_uri'], irods_config.server_config['schema_version'])]
         if jsonschema_installed:
-            assert_command('python %s %s https://schemas.irods.org/configuration/v3/zone_bundle.json' % (validate_json_path, zone_report),
-                               'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
+            assert_command(command, 'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
         else:
-            assert_command('python %s %s https://schemas.irods.org/configuration/v3/zone_bundle.json' % (validate_json_path, zone_report),
-                               'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
+            assert_command(command, 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
 
 
     ###################

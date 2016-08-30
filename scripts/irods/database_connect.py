@@ -57,8 +57,8 @@ def dump_odbc_ini(odbc_dict, f):
             print('%s=%s' % (key, odbc_dict[section][key]), file=f)
         print('', file=f)
 
-def get_odbc_entry(db_config):
-    if db_config['catalog_database_type'] == 'postgres':
+def get_odbc_entry(db_config, catalog_database_type):
+    if catalog_database_type == 'postgres':
         return {
             'Description': 'iRODS Catalog',
             'Driver': db_config['db_odbc_driver'],
@@ -77,7 +77,7 @@ def get_odbc_entry(db_config):
             'FakeOidIndex': 'No',
             'ConnSettings': ''
         }
-    elif db_config['catalog_database_type'] == 'mysql':
+    elif catalog_database_type == 'mysql':
         return {
             'Description': 'iRODS catalog',
             'Option': '2',
@@ -86,13 +86,13 @@ def get_odbc_entry(db_config):
             'Port': str(db_config['db_port']),
             'Database': db_config['db_name']
         }
-    elif db_config['catalog_database_type'] == 'oracle':
+    elif catalog_database_type == 'oracle':
         return {
             'Description': 'iRODS catalog',
             'Driver': db_config['db_odbc_driver']
         }
     else:
-        raise IrodsError('No odbc template exists for %s' % (db_config['catalog_database_type']))
+        raise IrodsError('No odbc template exists for %s' % (catalog_database_type))
 
 def get_installed_odbc_drivers():
     out, _, code = lib.execute_command_permissive(['odbcinst', '-q', '-d'])
@@ -176,7 +176,7 @@ def get_connection_string(db_config):
 
 def get_database_connection(irods_config):
     l = logging.getLogger(__name__)
-    if irods_config.database_config['catalog_database_type'] == 'oracle':
+    if irods_config.catalog_database_type == 'oracle':
         os.environ['TWO_TASK'] = get_two_task_for_oracle(irods_config.database_config)
         l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
 
@@ -284,7 +284,7 @@ def get_schema_version_in_database(cursor):
     return schema_version
 
 def sync_odbc_ini(irods_config):
-    odbc_dict = get_odbc_entry(irods_config.database_config)
+    odbc_dict = get_odbc_entry(irods_config.database_config, irods_config.catalog_database_type)
 
     #The 'Driver' keyword must be first
     keys = [k for k in odbc_dict.keys()]
@@ -302,7 +302,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
     if irods_table_names:
         l.info('The following tables already exist in the database, table creation will be skipped:\n%s', pprint.pformat(irods_table_names))
     else:
-        if irods_config.database_config['catalog_database_type'] == 'mysql':
+        if irods_config.catalog_database_type == 'mysql':
             l.info('Defining mysql functions...')
             with tempfile.NamedTemporaryFile() as f:
                 f.write('\n'.join([
@@ -335,14 +335,14 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     timestamp = '{0:011d}'.format(int(time.time()))
 
     def get_next_object_id():
-        if irods_config.database_config['catalog_database_type'] == 'postgres':
+        if irods_config.catalog_database_type == 'postgres':
             return execute_sql_statement(cursor, "select nextval('R_OBJECTID');").fetchone()[0]
-        elif irods_config.database_config['catalog_database_type'] == 'mysql':
+        elif irods_config.catalog_database_type == 'mysql':
             return execute_sql_statement(cursor, "select R_OBJECTID_nextval();").fetchone()[0]
-        elif irods_config.database_config['catalog_database_type'] == 'oracle':
+        elif irods_config.catalog_database_type == 'oracle':
             return execute_sql_statement(cursor, "select R_OBJECTID.nextval from DUAL;").fetchone()[0]
         else:
-            raise IrodsError('no next object id function defined for %s' % irods_config.database_config['catalog_database_type'])
+            raise IrodsError('no next object id function defined for %s' % irods_config.catalog_database_type)
 
     #zone
     zone_id = get_next_object_id()

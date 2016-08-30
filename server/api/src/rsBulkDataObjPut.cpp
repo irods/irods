@@ -22,7 +22,6 @@
 #include "rsDataObjCreate.hpp"
 
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

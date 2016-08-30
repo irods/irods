@@ -1,95 +1,59 @@
 {
     "schema_name": "server_config",
     "schema_version": "v3",
-    "catalog_service_role" : "provider",
     "advanced_settings": {
-        "default_number_of_transfer_threads": 4, 
-        "default_temporary_password_lifetime_in_seconds": 120, 
-        "maximum_number_of_concurrent_rule_engine_server_processes": 4, 
+        "default_number_of_transfer_threads": 4,
+        "default_temporary_password_lifetime_in_seconds": 120,
+        "maximum_number_of_concurrent_rule_engine_server_processes": 4,
         "rule_engine_server_sleep_time_in_seconds" : 30,
         "rule_engine_server_execution_time_in_seconds" : 120,
-        "maximum_size_for_single_buffer_in_megabytes": 32, 
-        "maximum_temporary_password_lifetime_in_seconds": 1000, 
-        "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4, 
+        "maximum_size_for_single_buffer_in_megabytes": 32,
+        "maximum_temporary_password_lifetime_in_seconds": 1000,
+        "transfer_buffer_size_for_parallel_transfer_in_megabytes": 4,
         "transfer_chunk_size_for_parallel_transfer_in_megabytes": 40
-    }, 
-    "default_dir_mode": "0750", 
-    "default_file_mode": "0600", 
-    "default_hash_scheme": "SHA256", 
-    "default_resource_directory": "/var/lib/irods/Vault", 
-    "default_resource_name": "demoResc", 
-    "environment_variables": {}, 
-    "federation": [], 
-    "icat_host": null, 
-    "match_hash_policy": "compatible", 
-    "negotiation_key": "TEMPORARY_32byte_negotiation_key", 
-    "schema_validation_base_uri": "https://schemas.irods.org/configuration",
-    "re_data_variable_mapping_set": [
-        {
-            "filename": "core"
-        }
-    ], 
-    "re_function_name_mapping_set": [
-        {
-            "filename": "core"
-        }
-    ], 
-    "re_rulebase_set": [
-        {
-            "filename": "core"
-        }
-    ], 
-
-    "default_rule_engine_instance" : "re-irods-instance",
-
-    "rule_engines": [
-        {
-             "instance_name": "re-instance",
-             "plugin_name": "re",
-             
-             "plugin_specific_configuration": {
-                "namespaces": [
-                    "",
-                    "audit_",
-                    "indexing_"
-                 ]
-               }
-         },
-         {
-             "instance_name":"re-irods-instance",
-             "plugin_name": "re-irods",
-             "plugin_specific_configuration": {
-                    "re_data_variable_mapping_set": [
-                        {
-                            "filename": "core"
-                        }
-                    ], 
-                    "re_function_name_mapping_set": [
-                        {
-                            "filename": "core"
-                        }
-                    ], 
-                    "re_rulebase_set": [
-                        {
-                            "filename": "core"
-                        }
-                    ]
-             },
-             "shared_memory_instance" : "legacy_re"
-         }
+    },
+    "default_dir_mode": "0750",
+    "default_file_mode": "0600",
+    "default_hash_scheme": "SHA256",
+    "environment_variables": {},
+    "federation": [],
+    "match_hash_policy": "compatible",
+    "plugin_configuration": {
+        "authentication" : {},
+        "network": {},
+        "resource" : {},
+        "rule_engines": [
+            {
+                "instance_name":"re-irods-instance",
+                "plugin_name": "re-irods",
+                "plugin_specific_configuration": {
+                        "re_data_variable_mapping_set": [
+                            "core"
+                        ],
+                        "re_function_name_mapping_set": [
+                            "core"
+                        ],
+                        "re_rulebase_set": [
+                            "core"
+                        ]
+                },
+                "shared_memory_instance" : "legacy_re"
+            },
+            {
+                "instance_name": "re-instance",
+                "plugin_name": "re",
+                "plugin_specific_configuration": {}
+            }
+        ]
+    },
+    "rule_engine_namespaces": [
+        "",
+        "audit_",
+        "indexing_"
     ],
-
-    "server_control_plane_encryption_algorithm": "AES-256-CBC", 
-    "server_control_plane_encryption_num_hash_rounds": 16, 
-    "server_control_plane_key": "TEMPORARY__32byte_ctrl_plane_key", 
-    "server_control_plane_port": 1248, 
-    "server_control_plane_timeout_milliseconds": 10000, 
-    "server_port_range_end": 20199, 
-    "server_port_range_start": 20000, 
-    "xmsg_port": 1279, 
-    "zone_auth_scheme": "native", 
-    "zone_key": "TEMPORARY_zone_key", 
-    "zone_name": "tempZone", 
-    "zone_port": 1247, 
-    "zone_user": "rods"
+    "server_control_plane_encryption_algorithm": "AES-256-CBC",
+    "server_control_plane_encryption_num_hash_rounds": 16,
+    "server_control_plane_timeout_milliseconds": 10000,
+    "xmsg_port": 1279,
+    "zone_auth_scheme": "native"
 }

@@ -280,7 +280,7 @@ Control Plane port [1248]:
 
 Control Plane key [TEMPORARY__32byte_ctrl_plane_key]:
 
-Schema Validation Base URI (or 'off') [https://schemas.irods.org/configuration]:
+Schema Validation Base URI (or 'off') [file:///var/lib/irods/configuration_schemas]:
 
 iRODS server's administrator username [rods]:
 
@@ -296,7 +296,7 @@ zone_key:                   TEMPORARY_zone_key
 negotiation_key:            TEMPORARY_32byte_negotiation_key
 Control Plane Port:         1248
 Control Plane Key:          TEMPORARY__32byte_ctrl_plane_key
-Schema Validation Base URI: https://schemas.irods.org/configuration
+Schema Validation Base URI: /var/lib/irods/configuration_schemas
 Administrator Username:     rods
 Administrator Password:     Not Shown
 -------------------------------------------

@@ -12,28 +12,10 @@
 #define RE_RULES_FILE   "reRules.txt"
 #endif
 /* Keywords used in CONNECT_CONTROL_FILE */
-#define MAX_CONNECTIONS_KW		"maxConnections"
 #define USER_WHITELIST_KW		"whitelist"
 #define USER_BLACKLIST_KW	"blacklist"
 #define NO_MAX_CONNECTION_LIMIT	-1
 #define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT
-
-/* keywords for the server config */
-#define ICAT_HOST_KW		"icatHost"
-#define SLAVE_ICAT_HOST_KW	"slaveIcatHost"
-
-#define RE_HOST_KW		"reHost"
-#define XMSG_HOST_KW		"xmsgHost"
-
-/* Keywords for the RULE ENGINE initialization */
-#define RE_RULESET_KW           "reRuleSet"
-#define RE_FUNCMAPSET_KW        "reFuncMapSet"
-#define RE_VARIABLEMAPSET_KW    "reVariableMapSet"
-#define RE_CACHE_SALT_KW    "reCacheSalt"
-
-/* Keywords for Kerberos initialization */
-#define KERBEROS_NAME_KW "KerberosServicePrincipal"
-#define KERBEROS_KEYTAB_KW "KerberosKeytab"
 
 /* definition for initialization state InitialState and IcatConnState */
 

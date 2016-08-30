@@ -549,7 +549,7 @@ namespace irods {
         my_host_name_ = my_env.rodsHost;
 
         // get the IES host for ordereing
-        icat_host_name_ = get_server_property<const std::string&>(CFG_ICAT_HOST_KW);
+        icat_host_name_ = boost::any_cast<const std::string&>(get_server_property<const std::vector<boost::any>>(CFG_CATALOG_PROVIDER_HOSTS_KW)[0]);
 
         // repave icat_host_name_ as we do not want to process 'localhost'
         if ( "localhost" == icat_host_name_ ) {

@@ -91,7 +91,6 @@ def setup_server(irods_config, json_configuration_file=None):
     if json_configuration_dict is not None:
         irods_config.commit(json_configuration_dict['server_config'], irods.paths.server_config_path())
         if irods_config.is_catalog:
-            irods_config.commit(json_configuration_dict['database_config'], irods.paths.database_config_path())
             from irods import database_interface
             if database_interface.database_already_in_use_by_irods(irods_config):
                 raise IrodsError('Database specified already in use by iRODS.')
@@ -275,11 +274,11 @@ def setup_server_config(irods_config):
             input_filter=irods.lib.character_count_filter(minimum=1, field='Zone name'))
 
         if irods_config.is_catalog:
-            irods_config.server_config['icat_host'] = irods.lib.get_hostname()
+            irods_config.server_config['catalog_provider_hosts'] = [irods.lib.get_hostname()]
         elif irods_config.is_resource:
-            irods_config.server_config['icat_host'] = irods.lib.prompt(
+            irods_config.server_config['catalog_provider_hosts'] = [irods.lib.prompt(
                 'iRODS catalog (ICAT) host',
-                input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS catalog hostname'))
+                input_filter=irods.lib.character_count_filter(minimum=1, field='iRODS catalog hostname'))]
 
         irods_config.server_config['zone_port'] = irods.lib.default_prompt(
             'iRODS server\'s port',
@@ -303,7 +302,7 @@ def setup_server_config(irods_config):
 
         irods_config.server_config['schema_validation_base_uri'] = irods.lib.default_prompt(
             'Schema Validation Base URI (or off)',
-            default=[irods_config.server_config.get('schema_validation_base_uri', 'https://schemas.irods.org/configuration')],
+            default=[irods_config.server_config.get('schema_validation_base_uri', 'file://{0}/configuration_schemas'.format(irods.paths.irods_directory()))],
             input_filter=irods.lib.character_count_filter(minimum=1, field='Schema validation base URI'))
 
         irods_config.server_config['zone_user'] = irods.lib.default_prompt(
@@ -325,7 +324,7 @@ def setup_server_config(irods_config):
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
                     irods_config.server_config['zone_name'],
-                    irods_config.server_config['icat_host'] if irods_config.is_resource else '',
+                    irods_config.server_config['catalog_provider_hosts'][0] if irods_config.is_resource else '',
                     irods_config.server_config['zone_port'],
                     irods_config.server_config['server_port_range_start'],
                     irods_config.server_config['server_port_range_end'],
@@ -354,6 +353,8 @@ def setup_server_config(irods_config):
 
     if irods_config.is_resource:
         irods_config.server_config['default_resource_name'] = ''.join([irods.lib.get_hostname().split('.')[0], 'Resource'])
+    else:
+        irods_config.server_config['default_resource_name'] = 'demoResc'
 
     irods_config.commit(irods_config.server_config, irods_config.server_config_path, clear_cache=False)
 

@@ -17,7 +17,6 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "icatHighLevelRoutines.hpp"
-#include "readServerConfig.hpp"
 #include "icatStructs.hpp"
 #include "irods_error.hpp"
 #include "irods_database_object.hpp"
@@ -97,11 +96,14 @@ int chlOpen() {
     // =-=-=-=-=-=-=-
     // cache the database type for subsequent calls
     try {
-        database_plugin_type = irods::get_server_property<const std::string>("catalog_database_type");
+        const auto database_plugin_map = irods::get_server_property<const std::unordered_map<std::string, boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_DATABASE});
+        if ( database_plugin_map.size() != 1 ) {
+            rodsLog( LOG_ERROR, "Database plugin map must contain exactly one plugin object" );
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        database_plugin_type = database_plugin_map.begin()->first;
     } catch ( const irods::exception& e ) {
-        rodsLog(
-            LOG_ERROR,
-            "catalog_database_type not defined" );
+        rodsLog( LOG_ERROR, e.what() );
         return e.code();
     }
 

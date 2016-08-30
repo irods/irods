@@ -26,11 +26,11 @@ def run_update(irods_config, cursor):
         database_connect.execute_sql_statement(cursor, "delete from R_TOKN_MAIN where token_name = 'domainadmin';")
         database_connect.execute_sql_statement(cursor, "delete from R_TOKN_MAIN where token_name = 'rodscurators';")
         database_connect.execute_sql_statement(cursor, "delete from R_TOKN_MAIN where token_name = 'storageadmin';")
-        if irods_config.database_config['catalog_database_type'] == 'mysql':
+        if irods_config.catalog_database_type == 'mysql':
             database_connect.execute_sql_statement(cursor, "delete from R_SPECIFIC_QUERY where alias = 'DataObjInCollReCur';")
 
     elif new_schema_version == 5:
-        if irods_config.database_config['catalog_database_type'] == 'oracle':
+        if irods_config.catalog_database_type == 'oracle':
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID integer;")
             database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT varchar2(4000);") # max oracle varchar2 for sql is 4000, 32767 pl/sql
         else:
@@ -44,9 +44,9 @@ def run_update(irods_config, cursor):
             resc_id = row[0]
             resc_name = row[1]
             database_connect.execute_sql_statement(cursor, "update R_DATA_MAIN set resc_id=? where resc_hier=? or resc_hier like ?", resc_id, resc_name, ''.join(['%;', resc_name]))
-        if irods_config.database_config['catalog_database_type'] == 'postgres':
+        if irods_config.catalog_database_type == 'postgres':
             database_connect.execute_sql_statement(cursor, "update r_resc_main as rdm set resc_parent = am.resc_id from ( select resc_name, resc_id from r_resc_main ) as am where am.resc_name = rdm.resc_parent;")
-        elif irods_config.database_config['catalog_database_type'] == 'mysql':
+        elif irods_config.catalog_database_type == 'mysql':
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN as rdm, ( select resc_name, resc_id from R_RESC_MAIN ) as am set rdm.resc_parent = am.resc_id where am.resc_name = rdm.resc_parent;")
         else:
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN rdm set resc_parent = ( select resc_id from ( select resc_name, resc_id from R_RESC_MAIN ) am where am.resc_name = rdm.resc_parent );")

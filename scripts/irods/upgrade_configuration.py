@@ -7,6 +7,7 @@ import shutil
 import stat
 
 from . import six
+from . import pyparsing
 from . import lib
 from . import paths
 from .exceptions import IrodsError, IrodsWarning
@@ -89,8 +90,6 @@ def upgrade(irods_config):
         upgrade_config_file(irods_config, path, new_version)
 
     irods_config.clear_cache()
-    if irods_config.is_catalog:
-        upgrade_config_file(irods_config, paths.database_config_path(), new_version)
 
     upgrade_config_file(irods_config, irods_config.client_environment_path, new_version, schema_name='service_account_environment')
 
@@ -139,34 +138,51 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                 config_dict['catalog_service_role'] = 'provider'
             else:
                 config_dict['catalog_service_role'] = 'consumer'
-            config_dict['rule_engines'] = [
-                    {
-                        'instance_name': 're-instance',
-                        'plugin_name': 're',
-                        'plugin_specific_configuration': {
-                            'namespaces': [
-                                { 'namespace': '' },
-                                { 'namespace': 'audit_' },
-                                { 'namespace': 'indexing_' }
-                            ]
-                        }
-                    },
+            config_dict['catalog_provider_hosts'] = [config_dict.pop('icat_host')]
+            if 'federation' in config_dict:
+                for f in config_dict['federation']:
+                    f['catalog_provider_hosts'] = [f.pop('icat_host')]
+            config_dict['rule_engine_namespaces'] = [
+                    '',
+                    'audit_',
+                    'indexing_'
+                ]
+            config_dict.setdefault('plugin_configuration', {})['rule_engine'] = [
                     {
                         'instance_name': 're-irods-instance',
                         'plugin_name': 're-irods',
                         'plugin_specific_configuration': dict(
-                            [(k, config_dict[k]) for k in [
+                            [(k, config_dict.pop(k['filename'])) for k in [
                                 're_data_variable_mapping_set',
                                 're_function_name_mapping_set',
                                 're_rulebase_set']
                             ]
                         ),
                         'shared_memory_instance': 'upgraded_legacy_re'
+                    },
+                    {
+                        'instance_name': 're-instance',
+                        'plugin_name': 're',
+                        'plugin_specific_configuration': {}
                     }
                 ]
-            config_dict['default_rule_engine_instance'] = 're-irods-instance'
+            #put pam options in their plugin configuration
+            for k, k_prime in [
+                    ('pam_no_extend', 'no_extend'),
+                    ('pam_password_length', 'password_length'),
+                    ('pam_password_max_time', 'password_max_time'),
+                    ('pam_password_min_time', 'password_min_time')]:
+                if k in config_dict:
+                    config_dict['plugin_configuration']['authentication'].setdefault('pam', {})[k_prime] = config_dict.pop(k)
+            if 'kerberos_name' in config_dict:
+                config_dict['plugin_configuration']['authentication']['krb']['name'] = config_dict.pop('kerberos_name')
             config_dict.setdefault('advanced_settings', {})['rule_engine_server_sleep_time_in_seconds'] = 30
             config_dict['advanced_settings']['rule_engine_server_execution_time_in_seconds'] = 120
+            if config_dict['catalog_service_role'] == 'provider':
+                with open(paths.database_config_path()) as f:
+                    database_config = json.load(f)
+                config_dict['plugin_configuration'].setdefault('database', {})[database_config.pop('catalog_database_type')] = database_config
+
 
 
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
@@ -233,7 +249,7 @@ def convert_legacy_configuration_to_json(irods_config):
             "re_data_variable_mapping_set": [{"filename": f} for f in legacy_server_config.get('reVariableMapSet', "core").split()],
             "re_function_name_mapping_set": [{"filename": f} for f in legacy_server_config.get('reFuncMapSet', "core").split()],
             "re_rulebase_set": [{"filename": f} for f in legacy_server_config.get('reRuleSet', "core").split()],
-            "schema_validation_base_uri": "https://schemas.irods.org/configuration",
+            "schema_validation_base_uri": "file://{0}/configuration_schemas".format(paths.irods_directory()),
             "server_control_plane_encryption_algorithm": "AES-256-CBC",
             "server_control_plane_encryption_num_hash_rounds": 16,
             "server_control_plane_key": "TEMPORARY__32byte_ctrl_plane_key",

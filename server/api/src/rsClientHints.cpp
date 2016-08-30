@@ -12,7 +12,6 @@
 
 #include "client_hints.h"
 #include "ies_client_hints.h"
-#include "readServerConfig.hpp"
 #include "rsIESClientHints.hpp"
 
 #include "jansson.h"
@@ -65,13 +64,13 @@ irods::error get_hash_and_policy(
     }
 
     try {
-        _hash = irods::get_server_property<const std::string>(DEFAULT_HASH_SCHEME_KW);
+        _hash = irods::get_server_property<const std::string>(irods::CFG_DEFAULT_HASH_SCHEME_KW);
     } catch ( const irods::exception& ) {
         _hash = "SHA256";
     }
 
     try {
-        _policy = irods::get_server_property<const std::string>(MATCH_HASH_POLICY_KW);
+        _policy = irods::get_server_property<const std::string>(irods::CFG_MATCH_HASH_POLICY_KW);
     } catch ( const irods::exception& ) {
         _policy = "compatible";
     }

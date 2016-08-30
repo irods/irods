@@ -34,7 +34,6 @@
 #include "irods_error.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
-#include "readServerConfig.hpp"
 
 #include <cctype>
 #include <string>

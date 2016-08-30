@@ -22,7 +22,6 @@
 #include "rcGlobalExtern.h"
 #include "rsDataObjClose.hpp"
 #include "genQuery.h"
-#include "readServerConfig.hpp"
 #include "phyBundleColl.h"
 #include "collCreate.h"
 #include "rsFileChksum.hpp"
@@ -1063,7 +1062,7 @@ int
 getDefFileMode() {
     std::stringstream ss;
     try {
-        ss << std::oct << irods::get_server_property<const std::string>(DEF_FILE_MODE_KW);
+        ss << std::oct << irods::get_server_property<const std::string>(irods::CFG_DEFAULT_FILE_MODE_KW);
     } catch ( const irods::exception& e ) {
         return DEFAULT_FILE_MODE;
     }
@@ -1076,7 +1075,7 @@ int
 getDefDirMode() {
     std::stringstream ss;
     try {
-        ss << std::oct << irods::get_server_property<const std::string>(DEF_DIR_MODE_KW);
+        ss << std::oct << irods::get_server_property<const std::string>(irods::CFG_DEFAULT_DIR_MODE_KW);
     } catch ( const irods::exception& e ) {
         return DEFAULT_DIR_MODE;
     }

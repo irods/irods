@@ -7,7 +7,6 @@
 #include "irods_resource_manager.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "server_report.h"
-#include "readServerConfig.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_environment_properties.hpp"
 #include "irods_load_plugin.hpp"
@@ -50,39 +49,6 @@ int rsServerReport(
     return status;
 
 } // rsServerReport
-
-
-
-json_t* make_file_set(
-    const std::string& _files ) {
-
-    if ( _files.empty() ) {
-        return nullptr;
-    }
-
-    json_t* _object = json_array();
-    if ( !_object ) {
-        THROW(SYS_MALLOC_ERR, "allocation of json object failed");
-    }
-
-    std::vector<std::string> file_set;
-    boost::split(file_set, _files, boost::is_any_of(","));
-    for ( const auto& filename : file_set ) {
-        json_t* obj = json_object();
-        if ( !obj ) {
-            THROW(SYS_MALLOC_ERR, "failed to allocate object");
-        }
-        json_object_set(obj, "filename", json_string(filename.c_str()));
-        json_array_append(_object, obj);
-
-    } // for i
-
-
-    return _object;
-
-} // make_file_set
-
-
 
 json_t* make_federation_set(
     const std::vector< std::string >& _feds ) {
@@ -180,116 +146,29 @@ irods::error convert_server_config(
     irods::error ret = irods::get_full_path_for_config_file(
                            "server_config.json",
                            svr_cfg );
-    if ( ret.ok() && fs::exists( svr_cfg ) ) {
-        json_error_t error;
-
-        _svr_cfg = json_load_file(
-                       svr_cfg.c_str(),
-                       0, &error );
-        if ( !_svr_cfg ) {
-            std::string msg( "failed to load file [" );
-            msg += svr_cfg;
-            msg += "] json error [";
-            msg += error.text;
-            msg += "]";
-            return ERROR(
-                       -1,
-                       msg );
-
-
-        }
-        else {
-            return sanitize_server_config_keys( _svr_cfg );
-
-        }
+    if ( !ret.ok() || !fs::exists( svr_cfg ) ) {
+        return ERROR(SYS_CONFIG_FILE_ERR, boost::format("Could not find server config file at [%s]") % svr_cfg);
     }
 
-    // =-=-=-=-=-=-=-
-    // otherwise, convert the old properties
-    _svr_cfg = json_object();
+    json_error_t error;
+    _svr_cfg = json_load_file(
+            svr_cfg.c_str(),
+            0, &error );
     if ( !_svr_cfg ) {
+        std::string msg( "failed to load file [" );
+        msg += svr_cfg;
+        msg += "] json error [";
+        msg += error.text;
+        msg += "]";
         return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
+                -1,
+                msg );
+
     }
+    else {
+        return sanitize_server_config_keys( _svr_cfg );
 
-    try {
-        json_object_set(_svr_cfg, "icat_host", json_string(irods::get_server_property<const std::string>("icatHost").c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "kerberos_name", json_string(irods::get_server_property<const std::string>("KerberosName").c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "pam_no_extend", json_boolean(irods::get_server_property<const bool>("pam_no_extend")));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "pam_password_min_time",
-                json_integer(boost::lexical_cast<int>(irods::get_server_property<const std::string>("pam_password_min_time"))));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "pam_password_max_time",
-                json_integer(boost::lexical_cast<int>(irods::get_server_property<const std::string>("pam_password_max_time"))));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "pam_password_length", json_integer(irods::get_server_property<const size_t>("pam_password_length")));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "default_dir_mode",
-                json_string(boost::lexical_cast<std::string>(irods::get_server_property<const int>("default_dir_mode")).c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "default_file_mode",
-                json_string(boost::lexical_cast<std::string>(irods::get_server_property<const int>("default_file_mode")).c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set( _svr_cfg, "default_hash_scheme",
-                json_string(irods::get_server_property<const std::string>("default_hash_scheme").c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        irods::get_server_property<const std::string>("LocalZoneSID");
-        json_object_set(_svr_cfg, "zone_key", json_string("XXXXXXXXXXXXXXXXXXXXX"));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        irods::get_server_property<const std::string>("agent_key");
-        json_object_set(_svr_cfg, "negotiation_key", json_string("XXXXXXXXXXXXXXXXXXXXX"));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "match_hash_policy", json_string(irods::get_server_property<const std::string>("match_hash_policy").c_str()));
-    } catch ( const irods::exception& ) {
-        json_object_set(_svr_cfg, "match_hash_policy", json_string( "" ));
     }
-
-    try {
-        json_object_set(_svr_cfg, "re_rulebase_set", make_file_set(irods::get_server_property<const std::string>("reRuleSet")));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "re_function_name_mapping_set", make_file_set(irods::get_server_property<const std::string>("reFuncMapSet")));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set(_svr_cfg, "re_data_variable_mapping_set", make_file_set(irods::get_server_property<const std::string>("reVariableMapSet")));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set( _svr_cfg, "federation", make_federation_set(irods::get_server_property<const std::vector<std::string>>("RemoteZoneSID")));
-    } catch ( const irods::exception& ) {
-        // may not be federated, but it is required by the spec
-        json_object_set(_svr_cfg, "federation", json_array());
-    }
-
-    return SUCCESS();
 
 } // convert_server_config
 
@@ -325,8 +204,6 @@ irods::error convert_host_access_control(
     return SUCCESS();
 
 } // convert_host_access_control
-
-
 
 irods::error convert_irods_host(
     json_t*& _irods_host ) {
@@ -373,93 +250,34 @@ irods::error convert_service_account(
 
     env_file += irods::IRODS_JSON_ENV_FILE;
 
-    if ( fs::exists( env_file ) ) {
-        json_error_t error;
+    if ( !fs::exists( env_file ) ) {
+        return ERROR(SYS_CONFIG_FILE_ERR, boost::format("Could not find environment file at [%s]") % env_file);
+    }
+    json_error_t error;
 
-        _svc_acct = json_load_file(
-                        env_file.c_str(),
-                        0, &error );
-        if ( !_svc_acct ) {
-            std::string msg( "failed to load file [" );
-            msg += env_file;
-            msg += "] json error [";
-            msg += error.text;
-            msg += "]";
-            return ERROR(
-                       -1,
-                       msg );
-
-
-        }
-        else {
-            // sanitize the keys
-            json_object_set(
+    _svc_acct = json_load_file(
+            env_file.c_str(),
+            0, &error );
+    if ( !_svc_acct ) {
+        std::string msg( "failed to load file [" );
+        msg += env_file;
+        msg += "] json error [";
+        msg += error.text;
+        msg += "]";
+        return ERROR(
+                -1,
+                msg );
+    }
+    else {
+        // sanitize the keys
+        json_object_set(
                 _svc_acct,
                 "irods_server_control_plane_key",
                 json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-            return SUCCESS();
+        return SUCCESS();
 
-        }
     }
-
-    // =-=-=-=-=-=-=-
-    // otherwise, convert the old properties
-
-    _svc_acct = json_object();
-    if ( !_svc_acct ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
-    }
-
-    rodsEnv my_env;
-    int status = getRodsEnv( &my_env );
-    if ( status < 0 ) {
-        return ERROR(
-                   status,
-                   "failed in getRodsEnv" );
-    }
-
-    json_object_set( _svc_acct, "irods_host", json_string( my_env.rodsHost ) );
-
-    json_object_set( _svc_acct, "irods_port", json_integer( my_env.rodsPort ) );
-
-    json_object_set( _svc_acct, "irods_default_resource", json_string( my_env.rodsDefResource ) );
-
-    json_object_set( _svc_acct, "irods_log_level", json_integer( my_env.rodsPort ) );
-
-    json_object_set( _svc_acct, "irods_authentication_file", json_string( my_env.rodsAuthFile ) );
-
-    json_object_set( _svc_acct, "irods_debug", json_string( my_env.rodsDebug ) );
-
-    json_object_set( _svc_acct, "irods_home", json_string( my_env.rodsHome ) );
-
-    json_object_set( _svc_acct, "irods_cwd", json_string( my_env.rodsCwd ) );
-
-    json_object_set( _svc_acct, "irods_authentication_scheme", json_string( my_env.rodsAuthScheme ) );
-
-    json_object_set( _svc_acct, "irods_user_name", json_string( my_env.rodsUserName ) );
-
-    json_object_set( _svc_acct, "irods_zone_name", json_string( my_env.rodsZone ) );
-
-    json_object_set( _svc_acct, "irods_client_server_negotiation", json_string( my_env.rodsClientServerNegotiation ) );
-
-    json_object_set( _svc_acct, "irods_client_server_policy", json_string( my_env.rodsClientServerPolicy ) );
-
-    json_object_set( _svc_acct, "irods_encryption_key_size", json_integer( my_env.rodsEncryptionKeySize ) );
-
-    json_object_set( _svc_acct, "irods_encryption_salt_size", json_integer( my_env.rodsEncryptionSaltSize ) );
-
-    json_object_set( _svc_acct, "irods_encryption_num_hash_rounds", json_integer( my_env.rodsEncryptionNumHashRounds ) );
-
-    json_object_set( _svc_acct, "irods_encryption_algorithm", json_string( my_env.rodsEncryptionAlgorithm ) );
-
-    json_object_set( _svc_acct, "irods_default_hash_scheme", json_string( my_env.rodsDefaultHashScheme ) );
-
-    json_object_set( _svc_acct, "irods_match_hash_policy", json_string( my_env.rodsMatchHashPolicy ) );
-
-    return SUCCESS();
 
 } // convert_service_account
 
@@ -737,21 +555,15 @@ irods::error get_config_dir(
                    "json_object() failed" );
     }
 
-    json_t* file_arr = json_array();
-    if ( !file_arr ) {
+    json_t* files = json_object();
+    if ( !files ) {
         return ERROR(
                    SYS_MALLOC_ERR,
-                   "json_array() failed" );
+                   "json_object() failed" );
     }
 
     std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file( SERVER_CONFIG_FILE, cfg_file );
-    if ( !ret.ok() ) {
-        irods::error ret = irods::get_full_path_for_config_file( LEGACY_SERVER_CONFIG_FILE, cfg_file );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-    }
+    irods::error ret = irods::get_full_path_for_config_file( irods::SERVER_CONFIG_FILE, cfg_file );
 
     fs::path p( cfg_file );
     std::string config_dir = p.parent_path().string();
@@ -765,23 +577,12 @@ irods::error get_config_dir(
             const fs::path& p = itr->path();
             const std::string name = p.string();
 
-            if ( std::string::npos != name.find( SERVER_CONFIG_FILE ) ||
-                    std::string::npos != name.find( LEGACY_SERVER_CONFIG_FILE ) ||
+            if ( std::string::npos != name.find( irods::SERVER_CONFIG_FILE ) ||
                     std::string::npos != name.find( HOST_CONFIG_FILE ) ||
-                    std::string::npos != name.find( HOST_ACCESS_CONTROL_FILE ) ||
-                    std::string::npos != name.find( "irods.config" )
+                    std::string::npos != name.find( HOST_ACCESS_CONTROL_FILE )
                ) {
                 continue;
             }
-
-            json_t* f_obj = json_object();
-            if ( !f_obj ) {
-                return ERROR(
-                           SYS_MALLOC_ERR,
-                           "failed to allocate f_obj" );
-            }
-
-            json_object_set( f_obj, "name", json_string( name.c_str() ) );
 
             std::string contents;
             ret = get_file_contents( name, contents );
@@ -790,16 +591,14 @@ irods::error get_config_dir(
                 continue;
             }
             json_object_set(
-                f_obj,
-                "contents",
-                json_string( contents.c_str() ) );
-
-            json_array_append( file_arr, f_obj );
+                files,
+                name.c_str(),
+                json_string(contents.c_str()) );
         }
 
     } // for itr
 
-    json_object_set( _cfg_dir, "files", file_arr );
+    json_object_set( _cfg_dir, "files", files );
 
     return SUCCESS();
 
@@ -839,62 +638,6 @@ irods::error load_version_file(
     return SUCCESS();
 
 } // load_version_file
-
-
-irods::error get_database_config(
-    json_t*& _db_cfg ) {
-    // =-=-=-=-=-=-=-
-    // if json file exists, simply load that
-    std::string db_cfg;
-    irods::error ret = irods::get_full_path_for_config_file(
-                           "database_config.json",
-                           db_cfg );
-    if ( ret.ok() && fs::exists( db_cfg ) ) {
-        json_error_t error;
-
-        _db_cfg = json_load_file(
-                      db_cfg.c_str(),
-                      0, &error );
-        if ( !_db_cfg ) {
-            std::string msg( "failed to load file [" );
-            msg += db_cfg;
-            msg += "] json error [";
-            msg += error.text;
-            msg += "]";
-            return ERROR(
-                       -1,
-                       msg );
-
-
-        }
-        else {
-            // sanitize passwords
-            json_object_set( _db_cfg, "db_password", json_string( "XXXXX" ) );
-            return SUCCESS();
-
-        }
-    }
-
-    _db_cfg = json_object();
-    if ( !_db_cfg ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "allocation of json_object failed" );
-    }
-
-    try {
-        json_object_set( _db_cfg, "catalog_database_type", json_string(irods::get_server_property<const std::string>("catalog_database_type").c_str()));
-    } catch ( const irods::exception& ) {}
-
-    try {
-        json_object_set( _db_cfg, "db_username", json_string(irods::get_server_property<const std::string>("DBUsername").c_str()));
-    } catch ( const irods::exception& ) {}
-
-    json_object_set( _db_cfg, "db_password", json_string( "XXXXX" ) );
-
-    return SUCCESS();
-
-} // get_database_config
 
 int _rsServerReport(
     rsComm_t*    _comm,
@@ -994,15 +737,6 @@ int _rsServerReport(
     if(!ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
-    }
-
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        json_t* db_cfg = 0;
-        ret = get_database_config( db_cfg );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-        }
-        json_object_set( resc_svr, "database_config", db_cfg );
     }
 
     char* tmp_buf = json_dumps( resc_svr, JSON_INDENT( 4 ) );

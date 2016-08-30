@@ -29,7 +29,6 @@
 #include "irods_network_factory.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_control_plane.hpp"
-#include "readServerConfig.hpp"
 #include "initServer.hpp"
 #include "procLog.h"
 #include "rsGlobalExtern.hpp"
@@ -81,7 +80,7 @@ namespace {
     irods::error createAndSetRECacheSalt() {
         // Should only ever set the cache salt once
         try {
-            const auto& existing_salt = irods::get_server_property<const std::string>(RE_CACHE_SALT_KW);
+            const auto& existing_salt = irods::get_server_property<const std::string>(irods::CFG_RE_CACHE_SALT_KW);
             rodsLog( LOG_ERROR, "createAndSetRECacheSalt: salt already set [%s]", existing_salt.c_str() );
             return ERROR( SYS_ALREADY_INITIALIZED, "createAndSetRECacheSalt: cache salt already set" );
         } catch ( const irods::exception& ) {
@@ -106,7 +105,7 @@ namespace {
                     << cache_salt_random;
 
             try {
-                irods::set_server_property<std::string>( RE_CACHE_SALT_KW, cache_salt.str() );
+                irods::set_server_property<std::string>( irods::CFG_RE_CACHE_SALT_KW, cache_salt.str() );
             } catch ( const irods::exception& e ) {
                 rodsLog( LOG_ERROR, "createAndSetRECacheSalt: failed to set server_properties" );
                 return irods::error(e);
@@ -278,63 +277,67 @@ serverize( char *logDir ) {
 #endif
 }
 
-static irods::error instantiate_shared_memory( ) {
-    const path plugin_home(irods::get_irods_default_plugin_directory());
-    if ( !is_directory(plugin_home) ) {
-        return ERROR( SYS_INVALID_FILE_PATH, boost::format("The result of get_irods_default_plugin_directory: \"%s\", was not a directory.") % plugin_home.string() );
+static bool instantiate_shared_memory_for_plugin( const std::unordered_map<std::string, boost::any>& _plugin_object ) {
+    try {
+        const auto& mem_name = boost::any_cast<const std::string&>(_plugin_object.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+        prepareServerSharedMemory(mem_name);
+        detachSharedMemory(mem_name);
+    } catch ( const std::out_of_range& ) {
+        return false;
     }
+    return true;
+}
 
-    for ( const auto& plugin_directory : boost::make_iterator_range(directory_iterator(plugin_home), {})) {
-        try {
-            const auto& plugins = irods::get_server_property<const std::vector<boost::any>>(plugin_directory.path().filename().string());
-            for( const auto& plugin : plugins ) {
-                try {
-                    const auto& mem_name = boost::any_cast<const std::string&>(
-                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin
-                                ).at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
-                    prepareServerSharedMemory(mem_name);
-                    detachSharedMemory(mem_name);
-                } catch ( const std::out_of_range& ) {
-                } catch ( const boost::bad_any_cast& e ) {
-                    return ERROR(INVALID_ANY_CAST, e.what());
+static bool uninstantiate_shared_memory_for_plugin( const std::unordered_map<std::string, boost::any>& _plugin_object ) {
+    try {
+        const auto& mem_name = boost::any_cast<const std::string&>(_plugin_object.at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
+        removeSharedMemory(mem_name);
+        resetMutex(mem_name.c_str());
+    } catch ( const std::out_of_range& ) {
+        return false;
+    }
+    return true;
+}
+
+static irods::error instantiate_shared_memory( ) {
+    try {
+        for ( const auto& item : irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW) ) {
+            if ( item.first == irods::PLUGIN_TYPE_RULE_ENGINE ) {
+                for ( const auto& plugin : boost::any_cast<const std::vector<boost::any>&>(item.second) ) {
+                    instantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin));
+                }
+            } else {
+                for ( const auto& plugin : boost::any_cast<const std::unordered_map<std::string, boost::any>&>(item.second) ) {
+                    instantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin.second));
                 }
             }
-        } catch ( const irods::exception& e ) {
-            if ( e.code() != KEY_NOT_FOUND ) {
-                return irods::error(e);
-            }
         }
+    } catch ( const boost::bad_any_cast& e ) {
+        return ERROR(INVALID_ANY_CAST, e.what());
+    } catch ( const irods::exception& e ) {
+        return irods::error(e);
     }
     return SUCCESS();
 
 } // instantiate_shared_memory
 
 static irods::error uninstantiate_shared_memory( ) {
-    const path plugin_home(irods::get_irods_default_plugin_directory());
-    if ( !is_directory(plugin_home) ) {
-        return ERROR( SYS_INVALID_FILE_PATH, boost::format("The result of get_irods_default_plugin_directory: \"%s\", was not a directory.") % plugin_home.string() );
-    }
-
-    for ( const auto& plugin_directory : boost::make_iterator_range(directory_iterator(plugin_home), {})) {
-        try {
-            const auto& plugins = irods::get_server_property<const std::vector<boost::any>>(plugin_directory.path().filename().string());
-            for( const auto& plugin : plugins ) {
-                try {
-                    const auto& mem_name = boost::any_cast<const std::string&>(
-                            boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin
-                                ).at(irods::CFG_SHARED_MEMORY_INSTANCE_KW));
-                    removeSharedMemory(mem_name);
-                    resetMutex(mem_name.c_str());
-                } catch ( const std::out_of_range& ) {
-                } catch ( const boost::bad_any_cast& e ) {
-                    return ERROR(INVALID_ANY_CAST, e.what());
+    try {
+        for ( const auto& item : irods::get_server_property<const std::unordered_map<std::string, boost::any>&>(irods::CFG_PLUGIN_CONFIGURATION_KW) ) {
+            if ( item.first == irods::PLUGIN_TYPE_RULE_ENGINE ) {
+                for ( const auto& plugin : boost::any_cast<const std::vector<boost::any>&>(item.second) ) {
+                    uninstantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin));
+                }
+            } else {
+                for ( const auto& plugin : boost::any_cast<const std::unordered_map<std::string, boost::any>&>(item.second) ) {
+                    uninstantiate_shared_memory_for_plugin(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(plugin.second));
                 }
             }
-        } catch ( const irods::exception& e ) {
-            if ( e.code() != KEY_NOT_FOUND ) {
-                return irods::error(e);
-            }
         }
+    } catch ( const boost::bad_any_cast& e ) {
+        return ERROR(INVALID_ANY_CAST, e.what());
+    } catch ( const irods::exception& e ) {
+        return irods::error(e);
     }
     return SUCCESS();
 

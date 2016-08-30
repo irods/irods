@@ -34,7 +34,6 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "procLog.h"
 #include "initServer.hpp"
 
-#include "readServerConfig.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
 

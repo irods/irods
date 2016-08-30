@@ -38,7 +38,7 @@ namespace irods {
                 try {
                     const auto& federation = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
                     try {
-                        if ( _host_name == boost::any_cast<const std::string&>(federation.at(irods::CFG_ICAT_HOST_KW)) ) {
+                        if ( _host_name == boost::any_cast<const std::string&>(boost::any_cast<const std::vector<boost::any>&>(federation.at(irods::CFG_CATALOG_PROVIDER_HOSTS_KW))[0]) ) {
                             return boost::any_cast<const std::string&>(federation.at(irods::CFG_NEGOTIATION_KEY_KW));
                         }
                     } catch ( const boost::bad_any_cast& ) {

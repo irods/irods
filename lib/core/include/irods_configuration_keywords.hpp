@@ -5,21 +5,18 @@
 
 namespace irods {
     // server_config.json keywords
-    const std::string CFG_FILENAME_KW( "filename" );
     const std::string CFG_KERBEROS_NAME_KW( "kerberos_name" );
     const std::string CFG_KERBEROS_KEYTAB_KW( "kerberos_keytab" );
-    const std::string CFG_PAM_PASSWORD_LENGTH_KW( "pam_password_length" );
-    const std::string CFG_PAM_NO_EXTEND_KW( "pam_no_extend" );
-    const std::string CFG_PAM_PASSWORD_MIN_TIME_KW( "pam_password_min_time" );
-    const std::string CFG_PAM_PASSWORD_MAX_TIME_KW( "pam_password_max_time" );
+    const std::string CFG_PAM_PASSWORD_LENGTH_KW( "password_length" );
+    const std::string CFG_PAM_NO_EXTEND_KW( "no_extend" );
+    const std::string CFG_PAM_PASSWORD_MIN_TIME_KW( "password_min_time" );
+    const std::string CFG_PAM_PASSWORD_MAX_TIME_KW( "password_max_time" );
 
-    const std::string CFG_CATALOG_DATABASE_TYPE_KW( "catalog_database_type" );
     const std::string CFG_DB_USERNAME_KW( "db_username" );
     const std::string CFG_DB_PASSWORD_KW( "db_password" );
     const std::string CFG_ZONE_NAME_KW( "zone_name" );
     const std::string CFG_ZONE_KEY_KW( "zone_key" );
     const std::string CFG_NEGOTIATION_KEY_KW( "negotiation_key" );
-    const std::string CFG_ICAT_HOST_KW( "icat_host" );
     const std::string CFG_RE_RULEBASE_SET_KW( "re_rulebase_set" );
     const std::string CFG_RE_FUNCTION_NAME_MAPPING_SET_KW(
         "re_function_name_mapping_set" );
@@ -52,6 +49,7 @@ namespace irods {
     const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS(
         "maximum_number_of_concurrent_rule_engine_server_processes" );
     
+    const std::string CFG_RE_CACHE_SALT_KW("reCacheSalt");
     const std::string CFG_RE_SERVER_SLEEP_TIME(
         "rule_engine_server_sleep_time_in_seconds");
     const std::string CFG_RE_SERVER_EXEC_TIME(
@@ -153,12 +151,15 @@ namespace irods {
     const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW(
         "server_control_plane_encryption_algorithm" );
 
+    const std::string CFG_CATALOG_PROVIDER_HOSTS_KW("catalog_provider_hosts");
     const std::string CFG_CATALOG_SERVICE_ROLE("catalog_service_role");
     const std::string CFG_SERVICE_ROLE_PROVIDER("provider");
     const std::string CFG_SERVICE_ROLE_CONSUMER("consumer");
     const std::string CFG_SERVICE_ROLE_PROXY("proxy");
 
     const std::string CFG_IRODS_PLUGINS_HOME_KW( "irods_plugins_home" );
+
+    const std::string CFG_PLUGIN_CONFIGURATION_KW("plugin_configuration");
 
     // plugin types
     const std::string PLUGIN_TYPE_API( "api" );
@@ -170,7 +171,6 @@ namespace irods {
     const std::string PLUGIN_TYPE_MICROSERVICE( "microservices" );
 
 
-    const std::string CFG_RULE_ENGINES_KW( "rule_engines" );
     const std::string CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW("plugin_specific_configuration");
     const std::string CFG_INSTANCE_NAME_KW("instance_name");
     const std::string CFG_PLUGIN_NAME_KW("plugin_name");
