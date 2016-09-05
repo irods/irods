@@ -96,9 +96,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
   target_link_libraries(
     ${EXECUTABLE}
     PRIVATE
-    irods_client_core
-    irods_client_plugins
-    irods_client_api_table
+    irods_client
     irods_plugin_dependencies
     irods_common
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
