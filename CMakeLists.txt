@@ -971,6 +971,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_c_api.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_api_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_negotiation.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_parser.cpp

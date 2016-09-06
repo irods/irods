@@ -27,6 +27,8 @@ int main () {
     }
     rErrMsg_t errMsg;
 
+    init_client_api_table();
+
     rcComm_t* conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName, myEnv.rodsZone, 1, &errMsg );
 
     /* Test that irods errors are compile time constants in c */
