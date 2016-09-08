@@ -356,6 +356,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/cpUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_c_api.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_api_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_negotiation.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/lsUtil.cpp
