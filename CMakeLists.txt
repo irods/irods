@@ -179,6 +179,12 @@ add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-
 link_libraries(c++abi)
 include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json")
+  message(FATAL_ERROR "Missing file: ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
+Are your git submodules initialized? If not, try running the following in the source directory:
+git submodule update --init")
+endif()
+
 add_custom_command(
   OUTPUT ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp
   COMMAND ${IRODS_EXTERNALS_FULLPATH_AVRO}/bin/avrogencpp -n irods -o ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp -i ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
