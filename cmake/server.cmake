@@ -44,6 +44,7 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/server_setup_instructions.txt
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
   )
 
 install(
