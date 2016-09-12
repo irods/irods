@@ -867,9 +867,6 @@ obfiDecode( const char *in, char *out, int extra ) {
                 }
             }
 
-            if ( timeVal == 0 ) {
-                timeVal = obfiTimeval();
-            }
             encodedTime = ( ( headstring[1] - 'a' ) << 4 ) + ( headstring[2] - 'a' ) +
                           ( ( headstring[3] - 'a' ) << 12 ) + ( ( headstring[4] - 'a' ) << 8 );
 
