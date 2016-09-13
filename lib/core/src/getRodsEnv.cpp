@@ -263,10 +263,6 @@ extern "C" {
             _env->rodsMatchHashPolicy );
 
         capture_string_property(
-            irods::CFG_IRODS_GSI_SERVER_DN_KW,
-            _env->rodsServerDn );
-
-        capture_string_property(
             irods::CFG_IRODS_DEBUG_KW,
             _env->rodsDebug );
 
@@ -558,11 +554,6 @@ extern "C" {
         capture_string_env_var(
             env_var,
             _env->rodsMatchHashPolicy );
-
-        env_var = irods::CFG_IRODS_GSI_SERVER_DN_KW;
-        capture_string_env_var(
-            env_var,
-            _env->rodsServerDn );
 
         _env->rodsLogLevel = 0;
         env_var = irods::CFG_IRODS_LOG_LEVEL_KW;

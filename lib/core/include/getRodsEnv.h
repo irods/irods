@@ -16,7 +16,6 @@ typedef struct {
     char rodsAuthScheme[NAME_LEN];
     char rodsDefResource[NAME_LEN];
     char rodsZone[NAME_LEN];
-    char *rodsServerDn;
     int rodsLogLevel;
     char rodsAuthFile[LONG_NAME_LEN];
     char rodsDebug[NAME_LEN];

@@ -427,13 +427,6 @@ irods::error convert_service_account(
 
     json_object_set( _svc_acct, "irods_default_resource", json_string( my_env.rodsDefResource ) );
 
-    if ( my_env.rodsServerDn ) {
-        json_object_set( _svc_acct, "irods_server_dn", json_string( my_env.rodsServerDn ) );
-    }
-    else {
-        json_object_set( _svc_acct, "irods_server_dn", json_string( "" ) );
-    }
-
     json_object_set( _svc_acct, "irods_log_level", json_integer( my_env.rodsPort ) );
 
     json_object_set( _svc_acct, "irods_authentication_file", json_string( my_env.rodsAuthFile ) );
