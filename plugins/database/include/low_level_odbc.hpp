@@ -33,7 +33,6 @@ int cllExecSqlWithResultBV( icatSessionStruct *icss, int *stmtNum, const char *s
 int cllGetRow( icatSessionStruct *icss, int statementNumber );
 int cllFreeStatement( icatSessionStruct *icss, int statementNumber );
 int cllNextValueString( const char *itemName, char *outString, int maxSize );
-extern "C" int cllTest();
 int cllCurrentValueString( const char *itemName, char *outString, int maxSize );
 int cllGetRowCount( icatSessionStruct *icss, int statementNumber );
 int cllCheckPending( const char *sql, int option, int dbType );

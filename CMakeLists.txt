@@ -1128,11 +1128,6 @@ set(
   )
 
 set(
-  IRODS_MAIN_EXECUTABLE_TEST_CHL_SOURCES
-  ${CMAKE_SOURCE_DIR}/test/test_chl.cpp
-  )
-
-set(
   IRODS_MAIN_EXECUTABLE_HOSTNAME_RESOLVES_TO_LOCAL_ADDRESS_SOURCES
   ${CMAKE_SOURCE_DIR}/server/core/src/hostname_resolves_to_local_address.cpp
   )
@@ -1142,7 +1137,6 @@ set(
   irodsAgent
   irodsServer
   irodsXmsgServer
-  test_chl
   hostname_resolves_to_local_address
   )
 
@@ -1496,8 +1490,8 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
-    irodsAgent irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck test_chl irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re re-irods native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
-    ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql test_cll_${DATABASE_PLUGIN} test_genq_${DATABASE_PLUGIN} test_genu_${DATABASE_PLUGIN}
+    irodsAgent irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re re-irods native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
+    ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()
 

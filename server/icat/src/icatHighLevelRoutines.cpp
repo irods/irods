@@ -813,30 +813,6 @@ int chlDelRuleExec(
 } // chlDelRuleExec
 
 /// =-=-=-=-=-=-=-
-/// @brief  This can be called to test other routines, passing in an actual
-/// sComm structure.
-
-/// for example, in _rsSomething instead of:
-/// status = chlSomething (SomethingInp);
-/// change it to this:
-/// status = chlTest(rsComm, Something->name);
-/// and it tests the chlRegDataObj function.
-int chlTest( rsComm_t *rsComm, char *name ) {
-
-    dataObjInfo_t dataObjInfo;
-    snprintf( dataObjInfo.objPath, sizeof( dataObjInfo.objPath ), "%s", name );
-    dataObjInfo.replNum = 1;
-    snprintf( dataObjInfo.version, sizeof( dataObjInfo.version ), "%s", "12" );
-    snprintf( dataObjInfo.dataType, sizeof( dataObjInfo.dataType ), "%s", "URL" );
-    dataObjInfo.dataSize = 42;
-    snprintf( dataObjInfo.rescName, sizeof( dataObjInfo.rescName ), "%s", "resc A" );
-    snprintf( dataObjInfo.filePath, sizeof( dataObjInfo.filePath ), "%s", "/scratch/slocal/test1" );
-    dataObjInfo.replStatus = 5;
-
-    return chlRegDataObj( rsComm, &dataObjInfo );
-}
-
-/// =-=-=-=-=-=-=-
 /// @brief Adds the child, with context, to the resource all specified in the resc_input map
 int chlAddChildResc(
     rsComm_t*   _comm,

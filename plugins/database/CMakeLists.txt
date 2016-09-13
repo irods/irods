@@ -118,56 +118,6 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     RENAME icatSysTables.sql
     )
 
-  foreach(TEST_BINARY cll genq genu)
-    add_executable(
-      test_${TEST_BINARY}_${PLUGIN}
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/test_${TEST_BINARY}.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/db_plugin.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/general_query.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/general_query_setup.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/general_update.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/irods_catalog_properties.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/irods_sql_logger.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/low_level_odbc.cpp
-      ${CMAKE_SOURCE_DIR}/plugins/database/src/mid_level_routines.cpp
-      )
-    target_include_directories(
-      test_${TEST_BINARY}_${PLUGIN}
-      PRIVATE
-      ${CMAKE_BINARY_DIR}/lib/core/include
-      ${CMAKE_SOURCE_DIR}/lib/core/include
-      ${CMAKE_SOURCE_DIR}/lib/api/include
-      ${CMAKE_SOURCE_DIR}/lib/hasher/include
-      ${CMAKE_SOURCE_DIR}/server/core/include
-      ${CMAKE_SOURCE_DIR}/server/icat/include
-      ${CMAKE_SOURCE_DIR}/server/re/include
-      ${CMAKE_SOURCE_DIR}/plugins/database/include
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-      ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
-      )
-    target_link_libraries(
-      test_${TEST_BINARY}_${PLUGIN}
-      PRIVATE
-      irods_server
-      irods_plugin_dependencies
-      irods_common
-      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
-      ${ODBC_LIBRARY}
-      )
-    target_compile_definitions(test_${TEST_BINARY}_${PLUGIN} PRIVATE ${IRODS_DATABASE_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
-    target_compile_options(test_${TEST_BINARY}_${PLUGIN} PRIVATE -Wno-write-strings)
-    set_property(TARGET test_${TEST_BINARY}_${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-    set_property(TARGET test_${TEST_BINARY}_${PLUGIN} PROPERTY OUTPUT_NAME test_${TEST_BINARY})
-    set_property(TARGET test_${TEST_BINARY}_${PLUGIN} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PLUGIN})
-
-    install(
-      TARGETS
-      test_${TEST_BINARY}_${PLUGIN}
-      RUNTIME
-      DESTINATION ${IRODS_HOME_DIRECTORY}/test/bin
-      COMPONENT ${IRODS_PACKAGE_COMPONENT_${PLUGIN_UPPERCASE}_NAME}
-      )
-  endforeach()
 endforeach()
 
 install(

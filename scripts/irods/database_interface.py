@@ -28,16 +28,6 @@ def setup_catalog(irods_config, default_resource_directory=None):
                 cursor.rollback()
                 raise
 
-def test_catalog(irods_config):
-    l = logging.getLogger(__name__)
-    # Make sure communications are working.
-    #       This simple test issues a few SQL statements
-    #       to the database, testing that the connection
-    #       works.  iRODS is uninvolved at this point.
-
-    l.info('Testing database communications...');
-    lib.execute_command([os.path.join(irods_config.server_test_directory, 'test_cll')])
-
 def server_launch_hook(irods_config):
     l = logging.getLogger(__name__)
     l.debug('Syncing .odbc.ini file...')

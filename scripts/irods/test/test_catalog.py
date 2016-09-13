@@ -237,7 +237,6 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("isysmeta mod testfile.txt +1h", "EMPTY")
         check_relative_expiry(seconds_ahead)
 
-
 class Test_CatalogPermissions(ResourceBase, unittest.TestCase):
 
     def setUp(self):

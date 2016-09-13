@@ -116,7 +116,6 @@ def setup_server(irods_config, json_configuration_file=None):
 
     if irods_config.is_catalog:
         l.info(irods.lib.get_header('Setting up the database'))
-        database_interface.test_catalog(irods_config)
         database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
     l.info(irods.lib.get_header('Starting iRODS...'))
