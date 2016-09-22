@@ -1,0 +1,20 @@
+{
+    "build_system_information": "Linux example.org 3.2.0-77-generic #112-Ubuntu SMP Tue Feb 10 15:22:22 UTC 2015 x86_64 x86_64",
+    "catalog_schema_version": 4,
+    "commit_id": "50f13f0c7c9f75e06e79f760e3b979363b777027",
+    "compile_time": "2015-06-05T15:58:39Z",
+    "compiler_version": "g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3",
+    "configuration_schema_version": 2,
+    "installation_time": "2015-06-05T21:12:54Z",
+    "irods_version": "4.1.2",
+    "previous_version": {
+        "build_system_information": "",
+        "catalog_schema_version": 3,
+        "commit_id": "77be27207aa3b191d2962d04f89e0d72b7253205",
+        "compile_time": "2014-08-20T17:36:40Z",
+        "compiler_version": "",
+        "configuration_schema_version": 1,
+        "installation_time": "2014-08-20T17:36:40Z",
+        "irods_version": "4.0.3"
+    }
+}

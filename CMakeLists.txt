@@ -1399,6 +1399,57 @@ set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME}_PRE_INSTALL_SCRIPT_FILE "${
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME}_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/plugins/database/packaging/postinst")
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_ORACLE_NAME}_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/plugins/database/packaging/postrm")
 
+
+# Install configuration schemas with updated id field
+set(
+  IRODS_CONFIGURATION_SCHEMA_VERSION
+  3
+  )
+set(
+  IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY
+  ${CMAKE_BINARY_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
+  )
+set(
+  IRODS_CONFIGURATION_SCHEMA_FILES
+  VERSION.json
+  client_environment.json
+  client_hints.json
+  configuration_directory.json
+  database_config.json
+  filename.json
+  grid_status.json
+  host_access_control_config.json
+  hosts_config.json
+  plugin.json
+  resource.json
+  rule_engine.json
+  server.json
+  server_config.json
+  server_status.json
+  service_account_environment.json
+  zone_bundle.json
+  )
+foreach(SCHEMA_FILE ${IRODS_CONFIGURATION_SCHEMA_FILES})
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}/${SCHEMA_FILE}
+    ${IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY}/${SCHEMA_FILE}
+    COPYONLY
+    )
+  install(
+    FILES
+    ${IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY}/${SCHEMA_FILE}
+    DESTINATION ${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
+    COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+    )
+endforeach()
+install(
+  CODE
+  "execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY} ${CPACK_PACKAGING_INSTALL_PREFIX}${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION})"
+  COMPONENT
+  ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  )
+
+
 set(IRODS_INCLUDE_DIRS usr/include/irods)
 
 include(CMakePackageConfigHelpers)
@@ -1436,9 +1487,14 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     non-package-install-${DATABASE_PLUGIN}
     COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_SERVER_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    COMMAND
     "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
     irodsAgent irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck test_chl irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem re re-irods native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql test_cll_${DATABASE_PLUGIN} test_genq_${DATABASE_PLUGIN} test_genu_${DATABASE_PLUGIN}

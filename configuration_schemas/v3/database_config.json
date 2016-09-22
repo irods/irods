@@ -1,0 +1,19 @@
+{
+    "id": "https://schemas.irods.org/configuration/v3/database_config.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "db_host": {"type": "string"},
+        "db_name": {"type": "string"},
+        "db_password": {"type": "string"},
+        "db_port": {"type": "integer"},
+        "db_username": {"type": "string"}
+    },
+    "required": [
+        "db_host",
+        "db_name",
+        "db_password",
+        "db_port",
+        "db_username"
+    ]
+}

@@ -1,0 +1,58 @@
+{
+    "id": "https://schemas.irods.org/configuration/v3/resource_server.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "configuration_directory": {
+            "$ref": "configuration_directory.json"
+        },
+        "host_access_control_config": {
+            "$ref": "host_access_control_config.json"
+        },
+        "host_system_information": {
+            "type": "object",
+            "properties": {
+                "os_distribution_name": {"type": "string"},
+                "os_distribution_version": {"type": "string"},
+                "uname": {"type": "string"}
+            },
+            "required": ["os_distribution_name","os_distribution_version","uname"]
+        },
+        "hostname": {"type": "string"},
+        "hosts_config": {
+            "$ref": "hosts_config.json"
+        },
+        "plugins": {
+            "type": "array",
+            "items": {
+                "$ref": "plugin.json"
+            }
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "$ref": "resource.json"
+            }
+        },
+        "server_config": {
+            "$ref": "server_config.json"
+        },
+        "service_account_environment": {
+            "$ref": "service_account_environment.json"
+        },
+        "version": {
+            "$ref": "VERSION.json"
+        }
+    },
+    "required": [
+        "configuration_directory",
+        "host_access_control_config",
+        "host_system_information",
+        "hosts_config",
+        "plugins",
+        "resources",
+        "server_config",
+        "service_account_environment",
+        "version"
+    ]
+}

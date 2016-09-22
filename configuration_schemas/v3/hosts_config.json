@@ -1,0 +1,28 @@
+{
+    "id": "https://schemas.irods.org/configuration/v3/hosts_config.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "host_entries": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "address_type": {"enum": ["local","remote"]},
+                    "addresses": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "address": {"type": "string"}
+                            },
+                            "required": ["address"]
+                        }
+                    }
+                },
+                "required": ["address_type","addresses"]
+            }
+        }
+    },
+    "required": ["host_entries"]
+}

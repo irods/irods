@@ -1,0 +1,39 @@
+{
+    "schema_version": "https://schemas.irods.org/configuration/v3/grid_status.json",
+    "hosts": [
+        {
+            "hostname": "awesome",
+            "irods_server_pid": 1234,
+            "re_server_pid": 1234,
+            "xmsg_server_pid": 1234,
+            "status": "perfect",
+            "agents": [
+                {
+                    "agent_pid": 23444,
+                    "age": "04:13:20"
+                },
+                {
+                    "agent_pid": 2344,
+                    "age": "04:13:20"
+                }
+            ]
+        },
+        {
+            "hostname": "again",
+            "irods_server_pid": 12345,
+            "re_server_pid": 12345,
+            "xmsg_server_pid": 12345,
+            "status": "notsogood",
+            "agents": [
+                {
+                    "agent_pid": 555,
+                    "age": "04:13:20"
+                },
+                {
+                    "agent_pid": 2344,
+                    "age": "224:43:30"
+                }
+            ]
+        }
+    ]
+}

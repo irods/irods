@@ -1,0 +1,25 @@
+{
+    "id": "https://schemas.irods.org/configuration/v3/zone_bundle.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Schema for an iRODS zone bundle (possibly featuring Federation)",
+    "properties": {
+        "schema_version": {"type": "string"},
+        "zones": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "servers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "server.json"
+                        }
+                    }
+                },
+                "required": ["servers"]
+            }
+        }
+    },
+    "required": ["schema_version", "zones"]
+}

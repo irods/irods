@@ -1,0 +1,24 @@
+{
+    "id": "https://schemas.irods.org/configuration/v3/server_status.json#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "agents": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "agent_pid": {"type": "integer"},
+                    "age": {"type": "string", "pattern": "^[0-9]+:[0-5][0-9]:[0-5][0-9]$"}
+                },
+                "required": ["agent_pid","age"]
+            }
+        },
+        "hostname": {"type": "string"},
+        "irods_server_pid": {"type": "integer"},
+        "re_server_pid": {"type": "integer"},
+        "status": {"type": "string"},
+        "xmsg_server_pid": {"type": "integer"}
+    },
+    "required": ["agents","hostname","irods_server_pid","re_server_pid","status","xmsg_server_pid"]
+}
