@@ -37,13 +37,11 @@ main( int argc, char **argv ) {
 
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
-#ifndef _WIN32
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
     signal( SIGUSR1, signalExit );
     signal( SIGPIPE, rsPipeSignalHandler );
-#endif
 
     /* Handle option to log sql commands */
     tmpStr = getenv( SP_LOG_SQL );

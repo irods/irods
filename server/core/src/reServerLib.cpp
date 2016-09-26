@@ -2,10 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* reServerLib.cpp - functions for the irodsReServer */
 
-#ifndef windows_platform
 #include <sys/types.h>
 #include <sys/wait.h>
-#endif
 #include "rcMisc.h"
 #include "reServerLib.hpp"
 #include "rodsConnect.h"
@@ -542,7 +540,6 @@ execRuleExec( reExecProc_t * reExecProc ) {
     return status;
 }
 
-#ifndef windows_platform
 int
 initReExec( reExec_t * reExec ) {
     int i;
@@ -689,7 +686,6 @@ waitAndFreeReThr( rcComm_t * rcComm, reExec_t * reExec ) {
     }
     return thrInx;
 }
-#endif
 
 int
 matchPidInReExec( reExec_t * reExec, pid_t pid ) {

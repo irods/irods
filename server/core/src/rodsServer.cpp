@@ -11,15 +11,9 @@
 
 #include <pthread.h>
 
-#ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#endif
-
-#ifdef windows_platform
-#include "irodsntutil.hpp"
-#endif
 
 // =-=-=-=-=-=-=-
 //
@@ -149,12 +143,8 @@ namespace {
     }
 }
 
-#ifndef windows_platform   /* all UNIX */
 int
 main( int argc, char **argv )
-#else   /* Windows */
-int irodsWinMain( int argc, char **argv )
-#endif
 {
     int c;
     int uFlag = 0;
@@ -219,7 +209,6 @@ int irodsWinMain( int argc, char **argv )
     }
 
     /* start of irodsReServer has been moved to serverMain */
-#ifndef _WIN32
     signal( SIGTTIN, SIG_IGN );
     signal( SIGTTOU, SIG_IGN );
     signal( SIGCHLD, SIG_DFL ); /* SIG_IGN causes autoreap. wait get nothing */
@@ -232,7 +221,6 @@ int irodsWinMain( int argc, char **argv )
     signal( SIGINT, serverExit );
     signal( SIGHUP, serverExit );
     signal( SIGTERM, serverExit );
-#endif
 #endif
 
     // Set up local_addr for socket communication
@@ -270,22 +258,12 @@ int
 serverize( char *logDir ) {
     char *logFile = NULL;
 
-#ifdef windows_platform
-    if ( iRODSNtServerRunningConsoleMode() ) {
-        return;
-    }
-#endif
-
     getLogfileName( &logFile, logDir, RODS_LOGFILE );
 
-#ifndef windows_platform
 #ifdef SYSLOG
     LogFd = 0;
 #else
     LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
-#endif
-#else
-    LogFd = iRODSNt_open( logFile, O_CREAT | O_APPEND | O_WRONLY, 1 );
 #endif
 
     if ( LogFd < 0 ) {
@@ -296,7 +274,6 @@ serverize( char *logDir ) {
     }
 
     free( logFile );
-#ifndef windows_platform
     if ( fork() ) {     /* parent */
         exit( 0 );
     }
@@ -319,9 +296,6 @@ serverize( char *logDir ) {
         LogFd = 2;
 #endif
     }
-#else
-    _close( LogFd );
-#endif
 
 #ifdef SYSLOG
     return 0;
@@ -559,13 +533,11 @@ serverMain( char *logDir ) {
 
             addConnReqToQue( &svrComm, newSock );
 
-#ifndef windows_platform
             loopCnt++;
             if ( loopCnt >= LOGFILE_CHK_CNT ) {
                 chkLogfileName( logDir, RODS_LOGFILE );
                 loopCnt = 0;
             }
-#endif
         }
 
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
@@ -608,11 +580,7 @@ serverExit( int sig )
 serverExit()
 #endif
 {
-#ifndef windows_platform
     rodsLog( LOG_NOTICE, "rodsServer caught signal %d, exiting", sig );
-#else
-    rodsLog( LOG_NOTICE, "rodsServer is exiting." );
-#endif
     recordServerProcess( NULL ); /* unlink the process id file */
 
     // Wake and terminate agent spawning process
@@ -640,7 +608,6 @@ procChildren( agentProc_t **agentProcHead ) {
     int status;
 
 
-#ifndef _WIN32
     while ( ( childPid = waitpid( -1, &status, WNOHANG ) ) > 0 ) {
         tmpAgentProc = getAgentProcByPid( childPid, agentProcHead );
         if ( tmpAgentProc != NULL ) {
@@ -655,7 +622,6 @@ procChildren( agentProc_t **agentProcHead ) {
         }
         rmProcLog( childPid );
     }
-#endif
 
     return 0;
 }
@@ -918,6 +884,7 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     close( tmp_socket );
 
     return status;
+}
 
 int
 queConnectedAgentProc( int childPid, agentProc_t *connReq,
@@ -1043,13 +1010,6 @@ initServer( rsComm_t *svrComm ) {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-#ifdef windows_platform
-    if ( int status startWinsock() ) {
-        rodsLog( LOG_NOTICE, "initServer: startWinsock() failed. status=%d", status );
-        return -1;
-    }
-#endif
-
     status = initServerInfo( 0, svrComm );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -1058,7 +1018,7 @@ initServer( rsComm_t *svrComm ) {
         return status;
     }
 
-    // JMC - legcay resources - printLocalResc ();
+    // JMC - legacy resources - printLocalResc ();
     resc_mgr.print_local_resources();
 
     printZoneInfo();
@@ -1101,7 +1061,6 @@ initServer( rsComm_t *svrComm ) {
    before, just unlink the file. */
 int
 recordServerProcess( rsComm_t *svrComm ) {
-#ifndef windows_platform
     int myPid;
     FILE *fd;
     DIR  *dirp;
@@ -1146,7 +1105,6 @@ recordServerProcess( rsComm_t *svrComm ) {
             }
         }
     }
-#endif
     return 0;
 }
 
@@ -1205,7 +1163,6 @@ initServerMain( rsComm_t *svrComm ) {
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess( svrComm );
     /* start the irodsReServer */
-#ifndef windows_platform   /* no reServer for Windows yet */
     rodsServerHost_t *reServerHost = NULL;
     getReHost( &reServerHost );
     if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
@@ -1248,7 +1205,6 @@ initServerMain( rsComm_t *svrComm ) {
         }
 
     }
-#endif
 
     return 0;
 }
@@ -1352,8 +1308,6 @@ stopProcConnReqThreads() {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
         }
     }
-
-
 }
 
 void
@@ -1535,9 +1489,8 @@ procSingleConnReq( agentProc_t *connReq ) {
     
     int status = spawnAgent( connReq, &ConnectedAgentHead );
 
-#ifndef windows_platform
     close( newSock );
-#endif
+
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "spawnAgent error for puser=%s and cuser=%s from %s, status = %d",

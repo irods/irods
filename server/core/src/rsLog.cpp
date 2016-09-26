@@ -10,21 +10,16 @@ static time_t LogfileLastChkTime = 0;
 
 char *
 getLogDir() {
-#ifndef windows_platform
     char *myDir;
 
     if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
         return myDir;
     }
     return DEF_LOG_DIR;
-#else
-    return iRODSNtServerGetLogDir;
-#endif
 }
 
 void
 getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
-#ifndef _WIN32
     time_t myTime;
     struct tm *mytm;
     char *logfilePattern; // JMC - backport 4793
@@ -66,14 +61,8 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     // =-=-=-=-=-=-=-
 
 
-#else /* for Windows */
-    char tmpstr[1024];
-    iRODSNtGetLogFilenameWithPath( tmpstr );
-    *logFile = _strdup( tmpstr );
-#endif
 }
 
-#ifndef _WIN32
 int
 chkLogfileName( const char *logDir, const char *logFileName ) {
     time_t myTime;
@@ -120,6 +109,3 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
 
     return 0;
 }
-
-#endif
-

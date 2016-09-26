@@ -4,11 +4,7 @@
 /* miscServerFunct.c - misc server functions
  */
 
-
-#ifndef windows_platform
 #include <sys/wait.h>
-#endif
-
 
 #include "miscServerFunct.hpp"
 #include "QUANTAnet_rbudpBase_c.h"
@@ -332,11 +328,7 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
     }
 
     int myCookie;
-#ifdef _WIN32
-    int nbytes = recv( myFd, &myCookie, sizeof( myCookie ), 0 );
-#else
     int nbytes = read( myFd, &myCookie, sizeof( myCookie ) );
-#endif
     myCookie = ntohl( myCookie );
     if ( nbytes != sizeof( myCookie ) || myCookie != thisPortList->cookie ) {
         rodsLog( LOG_NOTICE,
@@ -1334,9 +1326,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int i, sock, myFd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-#ifndef windows_platform
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
     int retVal = 0;
     rodsLong_t dataSize;
     int oprType;
@@ -1374,9 +1364,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     myPortList = &portalOprOut->portList;
 
-#ifndef windows_platform
     memset( tid, 0, sizeof( tid ) );
-#endif
     memset( myInput, 0, sizeof( myInput ) );
 
     sock = connectToRhostPortal( myPortList->hostAddr,
@@ -1511,9 +1499,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int i, out_fd, in_fd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-#ifndef windows_platform
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
     int retVal = 0;
     rodsLong_t dataSize;
     rodsLong_t size0, size1, offset0;
@@ -1540,9 +1526,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return SYS_INVALID_PORTAL_OPR;
     }
 
-#ifndef windows_platform
     memset( tid, 0, sizeof( tid ) );
-#endif
     memset( myInput, 0, sizeof( myInput ) );
 
     size0 = dataOprInp->dataSize / numThreads;
@@ -2043,8 +2027,6 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
     int status;
 #if defined(aix_platform)
     socklen_t      laddrlen = sizeof( struct sockaddr );
-#elif defined(windows_platform)
-    int laddrlen = sizeof( struct sockaddr );
 #else
     uint         laddrlen = sizeof( struct sockaddr );
 #endif
@@ -2188,7 +2170,6 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 
     return status;
 }
-#ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm ) {
     struct sockaddr_in  remoteAddr;
@@ -2384,8 +2365,6 @@ svrChkReconnAtReadEnd( rsComm_t *rsComm ) {
     return 0;
 }
 
-#endif
-
 int
 svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     int status;
@@ -2480,8 +2459,6 @@ forkAndExec( char *av[] ) {
     int status = -1;
     int childStatus = 0;
 
-
-#ifndef windows_platform   /* UNIX */
     childPid = RODS_FORK();
 
     if ( childPid == 0 ) {
@@ -2505,12 +2482,7 @@ forkAndExec( char *av[] ) {
                  status, childStatus );
         status = EXEC_CMD_ERROR;
     }
-#else
-    rodsLog( LOG_ERROR,
-             "forkAndExec: fork and exec not supported" );
 
-    status = SYS_NOT_SUPPORTED;
-#endif
     return status;
 }
 
@@ -2843,7 +2815,6 @@ readStartupPack(
  */
 int
 initServiceUser() {
-#ifndef windows_platform
     char *serviceUser;
     struct passwd *pwent;
 
@@ -2875,9 +2846,6 @@ initServiceUser() {
                       "setServiceUser: user %s doesn't exist", serviceUser );
         return SYS_USER_RETRIEVE_ERR;
     }
-#else
-    return 0;
-#endif
 }
 
 /* isServiceUserSet - check if the service user has been configured
@@ -2904,7 +2872,6 @@ changeToRootUser() {
         return 0;
     }
 
-#ifndef windows_platform
     /* preserve the errno from before. We'll often be   */
     /* called after a "permission denied" type error,   */
     /* so we need to preserve this previous error state */
@@ -2916,7 +2883,6 @@ changeToRootUser() {
                       "changeToRootUser: can't change to root user id" );
         return SYS_USER_NO_PERMISSION - my_errno;
     }
-#endif
 
     return 0;
 }
@@ -2934,7 +2900,6 @@ changeToServiceUser() {
         return 0;
     }
 
-#ifndef windows_platform
     prev_errno = errno;
 
     if ( setegid( ServiceGid ) == -1 ) {
@@ -2950,7 +2915,6 @@ changeToServiceUser() {
                       "changeToServiceUser: can't change to service user id" );
         return SYS_USER_NO_PERMISSION - my_errno;
     }
-#endif
 
     return 0;
 }
@@ -2968,7 +2932,6 @@ changeToUser( uid_t uid ) {
         return 0;
     }
 
-#ifndef windows_platform
     prev_errno = errno;
     if ( geteuid() != 0 ) {
         changeToRootUser();
@@ -2982,7 +2945,6 @@ changeToUser( uid_t uid ) {
         return SYS_USER_NO_PERMISSION - my_errno;
     }
     errno = prev_errno;
-#endif
 
     return 0;
 }
@@ -2994,7 +2956,6 @@ changeToUser( uid_t uid ) {
  */
 int
 dropRootPrivilege() {
-#ifndef windows_platform
     int prev_errno, my_errno;
     uid_t new_real_uid;
 
@@ -3026,7 +2987,6 @@ dropRootPrivilege() {
     }
 
     errno = prev_errno;
-#endif
 
     return 0;
 }

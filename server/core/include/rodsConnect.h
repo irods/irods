@@ -4,13 +4,9 @@
 #include "rodsDef.h"
 #include "rcConnect.h"
 
-#ifndef windows_platform
 #define HOST_CONFIG_FILE  "hosts_config.json"
 #define RE_RULES_FILE   "reRules"
-#else
-#define HOST_CONFIG_FILE  "irodsHost.txt"
-#define RE_RULES_FILE   "reRules.txt"
-#endif
+
 /* Keywords used in CONNECT_CONTROL_FILE */
 #define USER_WHITELIST_KW		"whitelist"
 #define USER_BLACKLIST_KW	"blacklist"

@@ -11,11 +11,8 @@
 
 #include <sys/types.h>
 
-#ifndef _WIN32
-//#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#endif
 
 #include "rods.h"
 #include "rcConnect.h"
@@ -97,7 +94,6 @@ rodsLong_t longNoSupport( ... );
 void getZoneServerId( char *zoneName, char *zoneSID );
 int
 svrPortalPutGetRbudp( rsComm_t *rsComm );
-#ifndef windows_platform
 void
 reconnManager( rsComm_t *rsComm );
 int
@@ -108,7 +104,6 @@ int
 svrChkReconnAtSendStart( rsComm_t *rsComm );
 int
 svrChkReconnAtSendEnd( rsComm_t *rsComm );
-#endif
 int
 svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto );
 char *

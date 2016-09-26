@@ -27,11 +27,9 @@
 #define LOGFILE_PATTERN "logfilePattern" /* pattern for new name of log file */
 // =-=-=-=-=-=-=-
 
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 
 char *
 getLogDir();
@@ -39,8 +37,6 @@ getLogDir();
 void
 getLogfileName( char **logFile, const char *logDir, const char *logFileName );
 
-#ifndef _WIN32
 int chkLogfileName( const char *logDir, const char *logFileName );
-#endif
 
 #endif /* RS_LOG_H */

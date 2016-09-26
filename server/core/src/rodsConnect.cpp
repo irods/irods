@@ -482,53 +482,37 @@ printServerHost( rodsServerHost_t *myServerHost ) {
     hostName_t *tmpHostName;
 
     if ( myServerHost->localFlag == LOCAL_HOST ) {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, "    LocalHostName: " );
 #else /* SYSLOG */
         fprintf( stderr, "    LocalHostName: " );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, "    LocalHostName: " );
-#endif
     }
     else {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, "    RemoteHostName: " );
 #else /* SYSLOG */
         fprintf( stderr, "    RemoteHostName: " );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, "    RemoteHostName: " );
-#endif
     }
 
     tmpHostName = myServerHost->hostName;
 
     while ( tmpHostName != NULL ) {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, " %s,", tmpHostName->name );
 #else /* SYSLOG */
         fprintf( stderr, " %s,", tmpHostName->name );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, " %s,", tmpHostName->name );
-#endif
         tmpHostName = tmpHostName->next;
     }
 
-#ifndef windows_platform
 #ifdef SYSLOG
     rodsLog( LOG_NOTICE, " Port Num: %d.\n\n", ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
 #else /* SYSLOG */
     fprintf( stderr, " Port Num: %d.\n\n",
              ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
 #endif /* SYSLOG */
-#else
-    rodsLog( LOG_NOTICE, " Port Num: %d.\n\n", ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
-#endif
 
     return 0;
 }
@@ -539,51 +523,35 @@ printZoneInfo() {
     rodsServerHost_t *tmpRodsServerHost;
 
     tmpZoneInfo = ZoneInfoHead;
-#ifndef windows_platform
 #ifdef SYSLOG
     rodsLog( LOG_NOTICE, "Zone Info:\n" );
 #else /* SYSLOG */
     fprintf( stderr, "Zone Info:\n" );
 #endif /* SYSLOG */
-#else
-    rodsLog( LOG_NOTICE, "Zone Info:\n" );
-#endif
     while ( tmpZoneInfo != NULL ) {
         /* print the master */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
 #else /* SYSLOG */
         fprintf( stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-#endif
+
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
-#ifndef windows_platform
 #ifdef SYSLOG
             rodsLog( LOG_NOTICE, "Type: LOCAL_ICAT   " );
 #else /* SYSLOG */
             fprintf( stderr, "Type: LOCAL_ICAT   " );
 #endif /* SYSLOG */
-#else
-            rodsLog( LOG_NOTICE, "Type: LOCAL_ICAT   " );
-#endif
         }
         else {
-#ifndef windows_platform
 #ifdef SYSLOG
             rodsLog( LOG_NOTICE, "Type: REMOTE_ICAT   " );
 #else /* SYSLOG */
             fprintf( stderr, "Type: REMOTE_ICAT   " );
 #endif /* SYSLOG */
-#else
-            rodsLog( LOG_NOTICE, "Type: REMOTE_ICAT   " );
-#endif
         }
 
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
                  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
@@ -591,15 +559,10 @@ printZoneInfo() {
         fprintf( stderr, " HostAddr: %s   PortNum: %d\n\n",
                  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
-                 tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#endif
 
         /* print the slave */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->slaveServerHost;
         if ( tmpRodsServerHost != NULL ) {
-#ifndef windows_platform
 #ifdef SYSLOG
             rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
             rodsLog( LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   " );
@@ -611,50 +574,32 @@ printZoneInfo() {
             fprintf( stderr, " HostAddr: %s   PortNum: %d\nn",
                      tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
 #endif /* SYSLOG */
-#else
-            rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-            rodsLog( LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   " );
-            rodsLog( LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
-                     tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#endif
         }
 
         tmpZoneInfo = tmpZoneInfo->next;
     }
     /* print the reHost */
     if ( getReHost( &tmpRodsServerHost ) >= 0 ) {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, "reHost:   %s", tmpRodsServerHost->hostName->name );
 #else /* SYSLOG */
         fprintf( stderr, "reHost:   %s\n\n", tmpRodsServerHost->hostName->name );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, "reHost:   %s", tmpRodsServerHost->hostName->name );
-#endif
     }
     else {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_ERROR, "reHost error" );
 #else /* SYSLOG */
         fprintf( stderr, "reHost error" );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_ERROR, "reHost error" );
-#endif
     }
 
     if ( getXmsgHost( &tmpRodsServerHost ) >= 0 ) {
-#ifndef windows_platform
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, "xmsgHost", tmpRodsServerHost->hostName->name );
 #else /* SYSLOG */
         fprintf( stderr, "xmsgHost:  %s\n\n", tmpRodsServerHost->hostName->name );
 #endif /* SYSLOG */
-#else
-        rodsLog( LOG_NOTICE, "xmsgHost:  %s", tmpRodsServerHost->hostName->name );
-#endif
     }
 
     return 0;

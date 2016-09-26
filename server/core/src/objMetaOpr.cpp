@@ -2,11 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* objMetaOpr.c - metadata operation at the object level */
 
-#ifndef windows_platform
-
 #include <sys/types.h>
 #include <sys/wait.h>
-#endif
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
 #include "collection.hpp"

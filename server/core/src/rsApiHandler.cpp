@@ -242,9 +242,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
     bytesBuf_t *rErrorBBuf = NULL;
     bytesBuf_t *myRErrorBBuf;
 
-//#ifndef windows_platform
     svrChkReconnAtSendStart( rsComm );
-//#endif
 
     if ( retVal == SYS_HANDLER_DONE_NO_ERROR ) {
         /* not actually an error */

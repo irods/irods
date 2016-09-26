@@ -10,11 +10,6 @@
 #include "rsApiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
-#ifdef windows_platform
-#include "rsLog.hpp"
-static void NtAgentSetEnvsFromArgs( int ac, char **av );
-#endif
-
 // =-=-=-=-=-=-=-
 #include "irods_dynamic_cast.hpp"
 #include "irods_signal.hpp"
@@ -285,11 +280,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     int status;
     rsComm_t rsComm;
 
-#ifdef windows_platform
-    iRODSNtAgentInit( argc, argv );
-#endif
-
-#ifndef windows_platform
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
@@ -301,14 +291,11 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     // register irods signal handlers
     register_handlers();
-#endif
 
-#ifndef windows_platform
 #ifdef SERVER_DEBUG
     if ( isPath( "/tmp/rodsdebug" ) ) {
 rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20 );
     }
-#endif
 #endif
 
     int listen_socket, conn_socket;
@@ -376,7 +363,6 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             return -1;
         }
     }
-
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 

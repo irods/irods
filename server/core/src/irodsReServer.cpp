@@ -57,21 +57,16 @@ signalExit( int ) {
 
 char *
 getLogDir() {
-#ifndef windows_platform
     char *myDir;
 
     if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
         return myDir;
     }
     return DEF_LOG_DIR;
-#else
-    return iRODSNtServerGetLogDir;
-#endif
 }
 
 void
 getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
-#ifndef _WIN32
     time_t myTime;
     struct tm *mytm;
     char *logfilePattern; // JMC - backport 4793
@@ -111,13 +106,6 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     strftime( logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm );
     sprintf( *logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix );
     // =-=-=-=-=-=-=-
-
-
-#else /* for Windows */
-    char tmpstr[1024];
-    iRODSNtGetLogFilenameWithPath( tmpstr );
-    *logFile = _strdup( tmpstr );
-#endif
 }
 
 int
@@ -160,7 +148,6 @@ logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
 
 void
 daemonize( int runMode, int logFd ) {
-#ifndef _WIN32
     if ( runMode == SINGLE_PASS ) {
         return;
     }
@@ -185,11 +172,7 @@ daemonize( int runMode, int logFd ) {
     ( void ) dup2( logFd, 1 );
     ( void ) dup2( logFd, 2 );
     close( logFd );
-#endif
 }
-
-
-
 
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
 
@@ -209,7 +192,6 @@ main( int argc, char **argv ) {
 
     ProcessType = RE_SERVER_PT;
 
-#ifndef _WIN32
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
     signal( SIGTERM, signalExit );
@@ -219,7 +201,6 @@ main( int argc, char **argv ) {
      * went away. But probably have to call waitpid.
      * signal(SIGCHLD, SIG_IGN); */
     signal( SIGCHLD, SIG_DFL );
-#endif
 
     /* Handle option to log sql commands */
     tmpStr = getenv( SP_LOG_SQL );
@@ -400,10 +381,8 @@ reServerMain( char* logDir ) {
                 continue;
             }
 
-#ifndef windows_platform
 #ifndef SYSLOG
             chkLogfileName( logDir, RULE_EXEC_LOGFILE );
-#endif
 #endif
             rodsLog(
                 LOG_NOTICE,

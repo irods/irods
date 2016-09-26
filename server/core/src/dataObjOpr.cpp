@@ -2,11 +2,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* dataObjOpr.c - data object operations */
 
-#ifndef windows_platform
-// JMC #include <pthread.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#endif
 #include "rcMisc.h"
 #include "dataObjOpr.hpp"
 #include "objMetaOpr.hpp"

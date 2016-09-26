@@ -500,7 +500,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
     GlobalQuotaOverrun = 0;
     RescQuotaPolicy = RESC_QUOTA_UNINIT;
 
-#ifndef windows_platform
     if ( rsComm->reconnFlag == RECONN_TIMEOUT ) {
         rsComm->reconnSock = svrSockOpenForInConn( rsComm, &rsComm->reconnPort,
                              &rsComm->reconnAddr, SOCK_STREAM );
@@ -522,7 +521,6 @@ initAgent( int processType, rsComm_t *rsComm ) {
         }
     }
     initExecCmdMutex();
-#endif
 
     InitialState = INITIAL_DONE;
     ThisComm = rsComm;
@@ -611,9 +609,7 @@ rsPipeSignalHandler( int ) {
         LastBrokenPipeTime = curTime;
         rodsLog( LOG_NOTICE,
                  "caught a broken pipe signal. Attempt to reconnect" );
-#ifndef _WIN32
         signal( SIGPIPE, ( void ( * )( int ) ) rsPipeSignalHandler );
-#endif
 
     }
 }
@@ -753,7 +749,6 @@ initRsComm( rsComm_t *rsComm ) {
 
 void
 daemonize( int runMode, int logFd ) {
-#ifndef _WIN32
     if ( runMode == SINGLE_PASS ) {
         return;
     }
@@ -778,7 +773,6 @@ daemonize( int runMode, int logFd ) {
     ( void ) dup2( logFd, 1 );
     ( void ) dup2( logFd, 2 );
     close( logFd );
-#endif
 }
 
 /* logFileOpen - Open the logFile for the reServer.
@@ -955,7 +949,6 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rstrcpy( rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN );
 
         tmpStr = getenv( SP_OPTION );
-#ifndef windows_platform
         if ( tmpStr == NULL ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
@@ -964,12 +957,6 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         else {
             rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
         }
-#else
-        if ( tmpStr != NULL ) {
-            rstrcpy( rsComm->option, tmpStr, LONG_NAME_LEN );
-        }
-#endif
-
     }
     if ( rsComm->sock != 0 ) {
         /* remove error messages from xmsLog */

@@ -1249,7 +1249,6 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
 
 int
 executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
-#ifndef _WIN32
     bzero( lock, sizeof( *lock ) );
     lock->l_type = type;
     lock->l_whence = SEEK_SET;
@@ -1262,7 +1261,6 @@ executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
         return status;
     }
     return 0;
-#endif
 }
 
 /* fsDataObjLock - lock the data object using the local file system  :(
