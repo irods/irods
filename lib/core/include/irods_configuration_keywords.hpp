@@ -19,7 +19,7 @@ namespace irods {
     const std::string CFG_NEGOTIATION_KEY_KW( "negotiation_key" );
     const std::string CFG_REGEX_KW( "pep_regex_to_match" );
     const std::string CFG_RE_RULEBASE_SET_KW( "re_rulebase_set" );
-    const std::string CFG_RE_NAMESPACE_SET_KW( "re_namespace_set" );
+    const std::string CFG_RE_NAMESPACE_SET_KW( "rule_engine_namespaces" );
     const std::string CFG_NAMESPACE_KW( "namespace" );
     const std::string CFG_RE_FUNCTION_NAME_MAPPING_SET_KW(
         "re_function_name_mapping_set" );
