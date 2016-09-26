@@ -169,7 +169,7 @@ namespace irods {
                     std::string out_param;
                     #ifdef ENABLE_RE
                     bool ret;
-                    error op_err;
+                    error op_err = SUCCESS();
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
@@ -185,20 +185,32 @@ namespace irods {
                         std::string rule_name = ns + "pep_" + _operation_name + "_pre";
                         if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                             if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
+                                op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
                             } else {
                                 rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
                             }
                         }
                     }
 
+                    // If pre-pep fails, do not execute rule or post-pep
+                    if (!op_err.ok()) {
+                        rodsLog(LOG_DEBUG, "Pre-pep for operation [%s] failed with error code [%d], rule and post-pep not executed", _operation_name.c_str(), op_err.code());
+                        return op_err;
+                    }
+
                     op_err = adapted_fcn( ctx, &out_param );
+
+                    // If rule call fails, do not execute post_pep
+                    if (!op_err.ok()) {
+                        rodsLog(LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
+                        return op_err;
+                    }
 
                     for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
                         std::string rule_name = ns + "pep_" + _operation_name + "_post";
                         if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                             if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
+                                op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
                             } else {
                                 rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
                             }
