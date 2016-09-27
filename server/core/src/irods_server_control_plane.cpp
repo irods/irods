@@ -909,7 +909,8 @@ namespace irods {
             // check host value against list from the icat
             if ( !is_host_in_list(
                         *itr,
-                        _irods_hosts ) ) {
+                        _irods_hosts ) &&
+                 *itr != icat_host_name_ ) {
                 std::string msg( "invalid server hostname [" );
                 msg += *itr;
                 msg += "]";

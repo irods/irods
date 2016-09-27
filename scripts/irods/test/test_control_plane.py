@@ -102,3 +102,12 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
         finally:
             assert_command('iadmin rmresc invalid_resc')
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Skip for Topology Testing')
+    def test_icat_shutdown_with_no_resource(self):
+        try:
+            assert_command('iadmin rmresc demoResc')
+            host_name = lib.get_hostname()
+            assert_command(['irods-grid', 'status', '--hosts', host_name], 'STDOUT_SINGLELINE', host_name)
+        finally:
+            host_name = lib.get_hostname()
+            assert_command('iadmin mkresc demoResc unixfilesystem '+host_name+':/var/lib/irods/Vault', 'STDOUT_SINGLELINE', 'demoResc')
