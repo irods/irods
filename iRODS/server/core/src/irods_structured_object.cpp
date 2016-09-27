@@ -182,7 +182,7 @@ namespace irods {
         resc_ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
         resc_ptr->set_property<long>( RESOURCE_ID, -1 );
-        resc_ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
+        resc_ptr->set_property<std::string>( RESOURCE_FREESPACE, "-1" );
         resc_ptr->set_property<long>( RESOURCE_QUOTA, -1 );
 
         resc_ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
@@ -263,6 +263,3 @@ namespace irods {
     } // get_re_vars
 
 }; // namespace irods
-
-
-

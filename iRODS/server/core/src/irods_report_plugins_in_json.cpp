@@ -61,8 +61,8 @@ namespace irods {
             return PASS(ret);
         }
 
-        long freespace = 0;
-        ret = _resc->get_property< long >( irods::RESOURCE_FREESPACE, freespace );
+        std::string freespace;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_FREESPACE, freespace );
         if ( !ret.ok() ) {
             return PASS(ret);
         }
@@ -80,6 +80,7 @@ namespace irods {
         json_object_set( _entry, "context_string",  json_string( context.c_str() ) );
         json_object_set( _entry, "parent_resource", json_string( parent.c_str() ) );
         json_object_set( _entry, "children",        json_string( children.c_str() ) );
+        json_object_set( _entry, "free_space",      json_string( freespace.c_str() ) );
 
         try {
             json_int_t object_count_int = boost::lexical_cast<json_int_t>(object_count);
@@ -87,10 +88,6 @@ namespace irods {
         } catch ( const boost::bad_lexical_cast& ) {
             json_object_set( _entry, "object_count", json_integer( -1 ) );
         }
-
-
-        std::stringstream fs; fs << freespace;
-        json_object_set( _entry, "free_space", json_string( fs.str().c_str() ) );
 
         if ( status != INT_RESC_STATUS_DOWN ) {
             json_object_set( _entry, "status", json_string( "up" ) );
@@ -103,4 +100,3 @@ namespace irods {
     }
 
 }; // namespace irods
-

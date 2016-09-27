@@ -466,9 +466,9 @@ namespace irods {
             }
 
             resc->set_property<long>( RESOURCE_ID, strtoll( tmpRescId.c_str(), 0, 0 ) );
-            resc->set_property<long>( RESOURCE_FREESPACE, strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
             resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
+            resc->set_property<std::string>( RESOURCE_FREESPACE, tmpFreeSpace );
             resc->set_property<std::string>( RESOURCE_ZONE,      tmpZoneName );
             resc->set_property<std::string>( RESOURCE_NAME,      tmpRescName );
             resc->set_property<std::string>( RESOURCE_LOCATION,  tmpRescLoc );
@@ -567,9 +567,9 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // start filling in the properties
         resc->set_property<long>( RESOURCE_ID, 999 );
-        resc->set_property<long>( RESOURCE_FREESPACE, 999 );
         resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
+        resc->set_property<std::string>( RESOURCE_FREESPACE, "999" );
         resc->set_property<std::string>( RESOURCE_ZONE,      zone_info->zoneName );
         resc->set_property<std::string>( RESOURCE_NAME,      LOCAL_USE_ONLY_RESOURCE );
         resc->set_property<std::string>( RESOURCE_LOCATION,  "localhost" );
@@ -914,6 +914,3 @@ namespace irods {
     } // call_maintenance_operations
 
 }; // namespace irods
-
-
-
