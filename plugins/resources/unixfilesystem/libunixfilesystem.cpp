@@ -80,8 +80,9 @@
 // =-=-=-=-=-=-=-
 // 1. Define utility functions that the operations might need
 const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
-const std::string HIGH_WATER_MARK( "high_water_mark" );
-const std::string REQUIRED_FREE_INODES_FOR_CREATE("required_free_inodes_for_create");
+const std::string HIGH_WATER_MARK( "high_water_mark" ); // no longer used
+const std::string REQUIRED_FREE_INODES_FOR_CREATE("required_free_inodes_for_create"); // no longer used
+const std::string MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES("minimum_free_space_for_create_in_bytes");
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
@@ -460,131 +461,88 @@ extern "C" {
 
     } // stat_vault_path
 
-    static bool replica_passes_high_water_mark(
-        irods::resource_plugin_context& _ctx,
-        rodsLong_t                      _file_size ) {
-        namespace bt = boost;
-        namespace fs = boost::filesystem;
-
-        std::string hwm_str;
-        irods::error ret = _ctx.prop_map().get<std::string>(
-                               HIGH_WATER_MARK,
-                               hwm_str );
-        if( !ret.ok() ) {
-            return false;
+    void warn_if_deprecated_context_string_set(irods::resource_plugin_context& _ctx) {
+        std::string resource_name;
+        irods::error ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
+        if (!ret.ok()) {
+            rodsLog(LOG_ERROR, "warn_if_deprecated_context_string_set: failed to get resource name");
         }
 
-        rodsLong_t hwm_val = 0;
-        try {
-            hwm_val = bt::lexical_cast<rodsLong_t>(hwm_str);
-        } catch ( const bt::bad_lexical_cast& ) {
-            rodsLog(
-                LOG_ERROR,
-                "malformed high water mark [%s]",
-                hwm_str.c_str() );
-            return false;
+        std::string holder;
+        ret = _ctx.prop_map().get<std::string>(HIGH_WATER_MARK, holder);
+        if (!(ret.code()==-1800000)) {
+            rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), HIGH_WATER_MARK.c_str());
         }
 
-        std::string vault_path;
-        ret = _ctx.prop_map().get<std::string>(
-                  irods::RESOURCE_PATH,
-                  vault_path );
-        if( !ret.ok() ) {
-            rodsLog(
-                LOG_ERROR,
-                "missing vault path" );
-            return false;
+        ret = _ctx.prop_map().get<std::string>(REQUIRED_FREE_INODES_FOR_CREATE, holder);
+        if (!(ret.code()==-1800000)) {
+            rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), REQUIRED_FREE_INODES_FOR_CREATE.c_str());
         }
-
-        struct statfs sb;
-        ret = stat_vault_path(
-                  vault_path,
-                  sb );
-        if( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return false;
-        }
-
-        rodsLong_t used_space = sb.f_bsize * ( sb.f_blocks - sb.f_bfree);
-        rodsLong_t new_used_space = _file_size + used_space;
-        if( new_used_space > hwm_val ) {
-            return true;
-        }
-
-        return false;
-
-    } // replica_passes_high_water_mark
-
-    static bool replica_exceeds_vault_free_inodes(irods::plugin_context& _ctx) {
-        std::string required_free_inodes_str;
-        irods::error ret = _ctx.prop_map().get<std::string>(REQUIRED_FREE_INODES_FOR_CREATE, required_free_inodes_str);
-        if (ret.code()==-1800000) { // if no key, don't perform inode check
-            return false;
-        } else if (!ret.ok()) {
-            rodsLog(LOG_ERROR, "error [%ji] when getting key [%s]", static_cast<intmax_t>(ret.code()), REQUIRED_FREE_INODES_FOR_CREATE.c_str());
-            return true;
-        }
-
-        intmax_t required_free_inodes_val = 0;
-        try {
-            required_free_inodes_val = boost::lexical_cast<intmax_t>(required_free_inodes_str);
-        } catch (const boost::bad_lexical_cast&) {
-            rodsLog(LOG_ERROR, "malformed required_free_inodes_for_create [%s]", required_free_inodes_str.c_str());
-            return true;
-        }
-
-        if (required_free_inodes_val < 0) {
-            rodsLog(LOG_ERROR, "negative required_free_inodes_for_create [%s]", required_free_inodes_str.c_str());
-            return true;
-        }
-
-        std::string vault_path;
-        irods::error get_ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, vault_path);
-        if (!get_ret.ok()) {
-            rodsLog(LOG_ERROR, "replica_exceeds_vault_free_inodes: resource has no vault path");
-            return true;
-        }
-
-        struct statfs sb;
-        get_ret = stat_vault_path(vault_path, sb);
-        if (!get_ret.ok()) {
-            irods::log(PASS(get_ret));
-            return true;
-        }
-
-        uintmax_t required_free_inodes_val_unsigned = static_cast<uintmax_t>(required_free_inodes_val);
-        if (sb.f_ffree < required_free_inodes_val_unsigned) {
-            return true;
-        }
-        return false;
     }
 
-    static bool replica_exceeds_vault_freespace(
-        irods::plugin_context& _ctx,
-        rodsLong_t _file_size ) {
+    static bool replica_exceeds_resource_free_space(irods::plugin_context& _ctx, rodsLong_t _file_size) {
+        std::string resource_name;
+        irods::error ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
+        if (!ret.ok()) {
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: failed to get resource name");
+        }
 
         if (_file_size < 0) {
             return false;
         }
 
-        std::string vault_path;
-        irods::error get_ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_PATH, vault_path);
-        if (!get_ret.ok()) {
-            rodsLog(LOG_ERROR, "replica_exceeds_vault_freespace: resource has no vault path");
+        std::string minimum_free_space_string;
+        irods::error err = _ctx.prop_map().get<std::string>(MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES, minimum_free_space_string);
+        if (err.code()==-1800000) { // if no key, don't perform check
+            return false;
+        } else if (!err.ok()) {
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: failed to get MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES property for resource [%s]", resource_name.c_str());
+            irods::log(err);
             return true;
         }
 
-        struct statfs sb;
-        get_ret = stat_vault_path(vault_path, sb);
-        if (!get_ret.ok()) {
-            irods::log(PASS(get_ret));
+        if (minimum_free_space_string.size()>0 && minimum_free_space_string[0] == '-') {  // do sign check on string because boost::lexical_cast will wrap negative numbers around instead of throwing when casting string to unsigned
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: minimum free space < 0 [%s] for resource [%s]", minimum_free_space_string.c_str(), resource_name.c_str());
             return true;
         }
 
-        const uintmax_t free_space = sb.f_bavail * sb.f_frsize;
-        if (static_cast<uintmax_t>(_file_size) > free_space) {
+        uintmax_t minimum_free_space = 0;
+        try {
+            minimum_free_space = boost::lexical_cast<uintmax_t>(minimum_free_space_string);
+        } catch (const boost::bad_lexical_cast&) {
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: invalid MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES [%s] for resource [%s]", minimum_free_space_string.c_str(), resource_name.c_str());
             return true;
         }
+
+        std::string resource_free_space_string;
+        err = _ctx.prop_map().get<std::string>(irods::RESOURCE_FREESPACE, resource_free_space_string);
+        if (!err.ok()) {
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: minimum free space constraint was requested, and failed to get resource free space for resource [%s]", resource_name.c_str());
+            irods::log(err);
+            return true;
+        }
+
+        if (resource_free_space_string.size()>0 && resource_free_space_string[0] == '-') {  // do sign check on string because boost::lexical_cast will wrap negative numbers around instead of throwing when casting string to unsigned
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: resource free space < 0 [%s] for resource [%s]", resource_free_space_string.c_str(), resource_name.c_str());
+            return true;
+        }
+
+        uintmax_t resource_free_space = 0;
+        try {
+            resource_free_space = boost::lexical_cast<uintmax_t>(resource_free_space_string);
+        } catch (const boost::bad_lexical_cast&) {
+            rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: invalid free space [%s] for resource [%s]", resource_free_space_string.c_str(), resource_name.c_str());
+            return true;
+        }
+
+        if (minimum_free_space > resource_free_space) {
+            return true;
+        }
+
+        if (resource_free_space - minimum_free_space < static_cast<uint64_t>(_file_size)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -629,12 +587,10 @@ extern "C" {
             ret = unix_file_get_fsfreespace_plugin( _ctx );
             if ( ( result = ASSERT_PASS( ret, "Error determining freespace on system." ) ).ok() ) {
                 rodsLong_t file_size = fco->size();
-                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+                if (replica_exceeds_resource_free_space(_ctx, file_size)) {
                     std::stringstream msg;
-                    msg << "file size " << file_size << " passes high water mark";
-                    return ERROR(
-                               USER_FILE_TOO_LARGE,
-                               msg.str() );
+                    msg << "file size " << file_size << " would violate minimum free space constraint";
+                    return ERROR(USER_FILE_TOO_LARGE, msg.str());
                 }
 
                 if ( ( result = ASSERT_ERROR( file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
@@ -1393,20 +1349,14 @@ extern "C" {
                 // vote no if the file size passes the high water mark
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
                 rodsLong_t file_size = fco->size();
-                if( replica_passes_high_water_mark( _ctx, file_size ) ) {
+
+
+                if (replica_exceeds_resource_free_space(_ctx, file_size)) {
                     _out_vote = 0.0;
                     return CODE(USER_FILE_TOO_LARGE);
                 }
 
-                if (replica_exceeds_vault_freespace(_ctx, file_size)) {
-                    _out_vote = 0.0;
-                    return CODE(USER_FILE_TOO_LARGE);
-                }
-
-                if (replica_exceeds_vault_free_inodes(_ctx)) {
-                    _out_vote = 0.0;
-                    return CODE(USER_INSUFFICIENT_FREE_INODES);
-                }
+                warn_if_deprecated_context_string_set(_ctx);
 
                 // =-=-=-=-=-=-=-
                 // get the resource host for comparison to curr host
