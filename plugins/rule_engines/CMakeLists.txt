@@ -1,38 +1,38 @@
 set(
-  IRODS_RULE_ENGINE_PLUGIN_RE-IRODS_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/arithmetics.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/cache.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/configuration.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/conversion.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/datetime.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/filesystem.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/msiHelper.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/index.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/nre.reHelpers1.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/nre.reHelpers2.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/nre.reLib1.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/parser.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/reStruct.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/reVariableMap.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/reVariableMap.gen.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/restructs.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/rules.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/typing.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/utils.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/rsRe.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/functions.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/libre-irods.cpp
+  IRODS_RULE_ENGINE_PLUGIN-IRODS_RULE_LANGUAGE_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/arithmetics.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/cache.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/configuration.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/conversion.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/datetime.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/msiHelper.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/index.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers1.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers2.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reLib1.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/parser.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reStruct.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.gen.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/restructs.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/rules.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/typing.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/utils.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/rsRe.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/functions.cpp
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/libirods_rule_engine_plugin-irods_rule_language.cpp
   )
 
 set(
-  IRODS_RULE_ENGINE_PLUGIN_RE-DEFAULT_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-default/libre-default.cpp
+  IRODS_RULE_ENGINE_PLUGIN-CPP_DEFAULT_POLICY_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-cpp_default_policy/libirods_rule_engine_plugin-cpp_default_policy.cpp
   )
 
 set(
   IRODS_RULE_ENGINE_PLUGINS
-  re-irods
-  re-default
+  irods_rule_engine_plugin-irods_rule_language
+  irods_rule_engine_plugin-cpp_default_policy
   )
 
 foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
@@ -41,7 +41,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
   add_library(
     ${PLUGIN}
     MODULE
-    ${IRODS_RULE_ENGINE_PLUGIN_${PLUGIN_UPPERCASE}_SOURCES}
+    ${${PLUGIN_UPPERCASE}_SOURCES}
     )
 
   target_include_directories(
@@ -50,7 +50,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
-    ${CMAKE_SOURCE_DIR}/plugins/rule_engines/re-irods/include
+    ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/include
     ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include
