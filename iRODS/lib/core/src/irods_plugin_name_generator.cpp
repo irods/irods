@@ -21,6 +21,15 @@ namespace irods {
         return !std::isalnum( _c ) && !( '_' == _c ) && !( '-' == _c );
     } // not_allowed_char
 
+    std::string normalize_resource_type(const std::string& resource_type) {
+        std::string normalized_resource_type = resource_type;
+        normalized_resource_type.erase(std::remove_if(normalized_resource_type.begin(),
+                                                      normalized_resource_type.end(),
+                                                      not_allowed_char),
+                                       normalized_resource_type.end());
+        return normalized_resource_type;
+    }
+
     plugin_name_generator::plugin_name_generator() {
         // TODO - stub
     }

@@ -9,6 +9,7 @@
 
 #include "reFuncDefs.hpp"
 #include "msiHelper.hpp"
+
 /**
  * \fn msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr, ruleExecInfo_t *rei)
  *
@@ -873,5 +874,3 @@ msiSplitPathByKey( msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentC
     }
     return rei->status;
 }
-
-

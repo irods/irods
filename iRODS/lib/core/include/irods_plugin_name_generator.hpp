@@ -7,6 +7,8 @@
 
 namespace irods {
 
+    std::string normalize_resource_type(const std::string& resource_type);
+
     /**
      * @brief Functor for generating plugin filenames from the resource name
      */
@@ -34,6 +36,6 @@ namespace irods {
             error generate_plugin_name( const std::string& filename, std::string& _rtn_name );
 
     };
-}; // namespace irods
+} // namespace irods
 
 #endif // _IRODS_PLUGIN_NAME_GENERATOR_HPP_

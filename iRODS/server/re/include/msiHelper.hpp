@@ -50,5 +50,3 @@ msiExit( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei );
 int
 msiStrCat( msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei );
 #endif  /* MSI_HELPER_H */
-
-

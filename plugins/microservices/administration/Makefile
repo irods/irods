@@ -1,5 +1,6 @@
 BASEDIRS = \
-           msisync_to_archive
+           msisync_to_archive \
+           msi_update_unixfilesystem_resource_free_space
 
 ######################################################################
 # Configuration should occur above this line
@@ -7,7 +8,7 @@ BASEDIRS = \
 include ../../../iRODS/config/platform.mk
 include ../../../iRODS/config/config.mk
 
-GCC = g++ -DRODS_SERVER 
+GCC = g++ -DRODS_SERVER
 
 ifeq ($(IRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
@@ -39,4 +40,3 @@ clean:
 	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done
 	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1
-
