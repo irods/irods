@@ -12,6 +12,7 @@ import configuration
 from resource_suite import ResourceBase
 import lib
 import copy
+import socket
 
 SessionsMixin = lib.make_sessions_mixin([('otherrods','pass')], [])
 
@@ -70,3 +71,12 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
 
         self.admin_sessions[0].environment_file_contents = env_backup
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Skip for Topology Testing')
+    def test_icat_shutdown_with_no_resource(self):
+        try:
+            lib.assert_command('iadmin rmresc demoResc')
+            host_name = socket.getfqdn()
+            lib.assert_command(['irods-grid', 'status', '--hosts', host_name], 'STDOUT_SINGLELINE', host_name)
+        finally:
+            host_name = socket.getfqdn()
+            lib.assert_command('iadmin mkresc demoResc unixfilesystem '+host_name+':/var/lib/irods/Vault', 'STDOUT_SINGLELINE', 'demoResc')
