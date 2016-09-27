@@ -36,16 +36,10 @@
                         "re_rulebase_set": [
                             "core"
                         ],
-                        "re_pep_regex_set": [
-                            {
-                                "pep_regex_to_match": "ac[^ ]*"
-                            },
-                            {
-                                "pep_regex_to_match": "msi[^ ]*"
-                            },
-                            {
-                                "pep_regex_to_match": "[^ ]*pep_[^ ]*_(pre|post)"
-                            }
+                        "regexes_for_supported_peps": [
+                            "ac[^ ]*",
+                            "msi[^ ]*",
+                            "[^ ]*pep_[^ ]*_(pre|post)"
                         ]
                 },
                 "shared_memory_instance" : "legacy_re"

@@ -97,13 +97,13 @@ void register_regexes_from_array(
     try {
         const auto& arr = boost::any_cast<const std::vector<boost::any>&>( _array );
         for ( const auto& elem : arr ) {
-            try {   
-                const auto& tmp = boost::any_cast<const std::string&>( boost::any_cast<const std::unordered_map<std::string, boost::any>&>(elem).at(irods::CFG_REGEX_KW) );
+            try {  
+                const auto& tmp = boost::any_cast<const std::string&>(elem);
                 RuleExistsHelper::Instance()->registerRuleRegex( tmp ); 
             } catch ( boost::bad_any_cast& ) {
                 rodsLog(
                         LOG_ERROR,
-                        "%s - failed to cast pep_regex_to_match to string",
+                        "%s - failed to cast regex to string",
                         __FUNCTION__);
                 continue;
             }
