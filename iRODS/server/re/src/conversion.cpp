@@ -394,10 +394,10 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
                     int slen = RES_STRING_STR_LEN( res->subtrees[i] );
                     maxlen = maxlen < slen ? slen : maxlen;
                 }
-                arr->size = maxlen;
-                arr->value = ( char * )malloc( sizeof( char ) * maxlen * ( arr->len ) );
+                arr->size = maxlen + 1;
+                arr->value = ( char * )malloc( sizeof( char ) * (arr->size) * ( arr->len ) );
                 for ( i = 0; i < res->degree; i++ ) {
-                    strcpy( arr->value + maxlen * i, res->subtrees[i]->text );
+                    strcpy( arr->value + arr->size * i, res->subtrees[i]->text );
                 }
                 var->inOutStruct = arr;
                 var->type = strdup( StrArray_MS_T );
@@ -770,4 +770,3 @@ int convertResToIntReturnValue( Res *res ) {
     return retVal;
 
 }
-
