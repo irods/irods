@@ -36,8 +36,6 @@
 
 /* #define SERVER_DEBUG 1   */
 
-#define HAVE_MSGHDR_MSG_CONTROL
-
 #include "sys/socket.h"
 #include "sys/un.h"
 #include "sys/wait.h"
@@ -56,27 +54,16 @@ ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     msg.msg_control = control_buf;
     msg.msg_controllen = sizeof(control_buf);
 
-#ifdef HAVE_MSGHDR_MSG_CONTROL
     struct cmsghdr *cmptr;
-#else
-    msg.msg_accrights = (caddr_t) &newFd;
-    msg.msg_accrightslen = sizeof(int);
-#endif
+
     if ( ( n = recvmsg( readFd, &msg, MSG_WAITALL ) ) <= 0) {
         return n;
     }
-#ifdef HAVE_MSGHDR_MSG_CONTROL
     cmptr = CMSG_FIRSTHDR( &msg );
     unsigned char* data = CMSG_DATA(cmptr);
     int theSocket = *((int*) data);
     *socket = theSocket;
-#else
-    if ( msg.msg_accrightslen == sizeof(int) ) {
-        *socket = newFd;
-    } else {
-        *socket = -1;
-    }
-#endif
+
     return n;
 }
 

@@ -38,8 +38,6 @@ using namespace boost::filesystem;
 
 #include "sockCommNetworkInterface.hpp"
 
-#define HAVE_MSGHDR_MSG_CONTROL
-
 #include "sys/un.h"
 
 #include "irods_random.hpp"
@@ -706,7 +704,6 @@ ssize_t sendSocketOverSocket( int writeFd, int socket ) {
     struct msghdr msg;
     struct iovec iov[1];
 
-#ifdef HAVE_MSGHDR_MSG_CONTROL
     union {
         struct cmsghdr cm;
         char control[CMSG_SPACE(sizeof(int))];
@@ -722,10 +719,6 @@ ssize_t sendSocketOverSocket( int writeFd, int socket ) {
     cmptr->cmsg_level = SOL_SOCKET;
     cmptr->cmsg_type = SCM_RIGHTS;
     *((int *) CMSG_DATA(cmptr)) = socket;
-#else
-    msg.msg_accrights = (caddr_t) &sendfd;
-    msg.msg_accrightslen = sizeof(int);
-#endif
 
     msg.msg_name = NULL;
     msg.msg_namelen = 0;
