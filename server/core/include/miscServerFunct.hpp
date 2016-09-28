@@ -157,6 +157,7 @@ irods::error add_global_re_params_to_kvp_for_dynpep(
 
 irods::error get_catalog_service_role( std::string& );
 irods::error get_default_rule_plugin_instance(std::string&);
+irods::error list_rule_plugin_instances( std::vector< std::string >& );
 
 void applyMetadataFromKVP( rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 void applyACLFromKVP( rsComm_t *rsComm, dataObjInp_t *dataObjInp);

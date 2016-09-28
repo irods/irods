@@ -3164,10 +3164,34 @@ irods::error get_default_rule_plugin_instance(
         _instance_name = boost::any_cast<const std::string&>(boost::any_cast<const std::unordered_map<std::string, boost::any>&>(irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE})[0]).at(irods::CFG_INSTANCE_NAME_KW));
     } catch ( const irods::exception& e ) {
         return irods::error(e);
+    } catch ( const boost::bad_any_cast& e ) {
+        return ERROR( INVALID_ANY_CAST, e.what() );
+    } catch ( const std::out_of_range& e ) {
+        return ERROR( KEY_NOT_FOUND, e.what() );
     }
+
     return SUCCESS();
 
 } // get_default_rule_plugin_instance
+
+irods::error list_rule_plugin_instances(
+        std::vector< std::string > &_instance_names ) {
+    try {
+        const auto& re_plugin_arr = irods::get_server_property< const std::vector< boost::any >& >( irods::CFG_RULE_ENGINES_KW );
+        for ( const auto& el : re_plugin_arr ) {
+            const auto& plugin_config = boost::any_cast< const std::unordered_map< std::string, boost::any >& >( el );
+            _instance_names.push_back( boost::any_cast< const std::string& >( plugin_config.at( irods::CFG_INSTANCE_NAME_KW ) ) );
+        }
+    } catch ( const irods::exception& e ) {
+        return irods::error(e);
+    } catch ( const boost::bad_any_cast& e ) {
+        return ERROR( INVALID_ANY_CAST, e.what() );
+    } catch ( const std::out_of_range& e ) {
+        return ERROR( KEY_NOT_FOUND, e.what() );
+    }
+
+    return SUCCESS();
+}
 
 static bool data_object_has_metadata(
     rsComm_t*   _comm,

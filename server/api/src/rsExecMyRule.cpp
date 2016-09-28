@@ -17,6 +17,33 @@ int rsExecMyRule(
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
+    char* available_str = getValByKey(
+                            &_exec_inp->condInput,
+                            "available" );
+
+    if ( available_str ) {
+        std::vector< std::string > instance_names;
+        irods::error ret = list_rule_plugin_instances( instance_names );
+        
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            return ret.code();
+        }
+
+        std::string ret_string = "Available rule engine plugin instances:\n";
+        for ( auto& name : instance_names ) {
+            ret_string += "\t";
+            ret_string += name;
+            ret_string += "\n";
+        }
+
+        int i = addRErrorMsg( &_comm->rError, 0, ret_string.c_str() );
+        if (i) {
+        irods::log( ERROR( i, "addRErrorMsg failed" ) );
+        }
+        return i;
+    }
+
     rodsServerHost_t* rods_svr_host = nullptr;
     int remoteFlag = resolveHost( &_exec_inp->addr, &rods_svr_host );
 
