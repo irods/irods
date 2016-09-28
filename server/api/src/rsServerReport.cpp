@@ -385,8 +385,9 @@ irods::error get_resource_array(
             irods::log( PASS( ret ) );
             continue;
         }
+
+        // do not report coordinating resources, done elsewhere
         if ( !tmp_host ) {
-            rodsLog( LOG_ERROR, "null tmp_host in get_resource_array" );
             continue;
         }
 
