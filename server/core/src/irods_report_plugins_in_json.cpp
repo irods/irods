@@ -88,4 +88,88 @@ namespace irods {
 
     } // get_plugin_array
 
+    error serialize_resource_plugin_to_json(
+        const resource_ptr& _resc,
+        json_t*             _entry ) {
+        if ( !_entry ) {
+            return ERROR(
+                       SYS_NULL_INPUT,
+                       "null json object _entry" );
+        }
+
+        std::string host_name;
+        error ret = _resc->get_property< std::string >( irods::RESOURCE_LOCATION, host_name );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string name;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_NAME, name );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string type;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_TYPE, type );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string vault;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_PATH, vault );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string context;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_CONTEXT, context );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string parent;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_PARENT, parent );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        std::string parent_context;
+        ret = _resc->get_property< std::string >( irods::RESOURCE_PARENT_CONTEXT, parent_context );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        long freespace = 0;
+        ret = _resc->get_property< long >( irods::RESOURCE_FREESPACE, freespace );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        int status = 0;
+        ret = _resc->get_property< int >( irods::RESOURCE_STATUS, status );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
+        json_object_set( _entry, "name",            json_string( name.c_str() ) );
+        json_object_set( _entry, "type",            json_string( type.c_str() ) );
+        json_object_set( _entry, "host",            json_string( host_name.c_str() ) );
+        json_object_set( _entry, "vault_path",      json_string( vault.c_str() ) );
+        json_object_set( _entry, "context_string",  json_string( context.c_str() ) );
+        json_object_set( _entry, "parent_resource", json_string( parent.c_str() ) );
+        json_object_set( _entry, "parent_context",  json_string( parent_context.c_str() ) );
+
+        std::stringstream fs; fs << freespace;
+        json_object_set( _entry, "free_space", json_string( fs.str().c_str() ) );
+
+        if ( status != INT_RESC_STATUS_DOWN ) {
+            json_object_set( _entry, "status", json_string( "up" ) );
+        }
+        else {
+            json_object_set( _entry, "status", json_string( "down" ) );
+        }
+
+        return SUCCESS();
+    }
+
 }; // namespace irods

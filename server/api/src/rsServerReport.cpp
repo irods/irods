@@ -421,54 +421,6 @@ irods::error get_resource_array(
 
         }
 
-        std::string type;
-        ret = resc->get_property< std::string >( irods::RESOURCE_TYPE, type );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        std::string vault;
-        ret = resc->get_property< std::string >( irods::RESOURCE_PATH, vault );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        std::string context;
-        ret = resc->get_property< std::string >( irods::RESOURCE_CONTEXT, context );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        std::string parent;
-        ret = resc->get_property< std::string >( irods::RESOURCE_PARENT, parent );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        std::string parent_context;
-        ret = resc->get_property< std::string >( irods::RESOURCE_PARENT_CONTEXT, parent_context );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        long freespace = 0;
-        ret = resc->get_property< long >( irods::RESOURCE_FREESPACE, freespace );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
-
-        int status = 0;
-        ret = resc->get_property< int >( irods::RESOURCE_STATUS, status );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            continue;
-        }
 
         json_t* entry = json_object();
         if ( !entry ) {
@@ -477,22 +429,11 @@ irods::error get_resource_array(
                        "failed to alloc entry" );
         }
 
-        json_object_set( entry, "name",            json_string( name.c_str() ) );
-        json_object_set( entry, "type",            json_string( type.c_str() ) );
-        json_object_set( entry, "host",            json_string( host_name.c_str() ) );
-        json_object_set( entry, "vault_path",      json_string( vault.c_str() ) );
-        json_object_set( entry, "context_string",  json_string( context.c_str() ) );
-        json_object_set( entry, "parent_resource", json_string( parent.c_str() ) );
-        json_object_set( entry, "parent_context",  json_string( parent_context.c_str() ) );
-
-        std::stringstream fs; fs << freespace;
-        json_object_set( entry, "free_space", json_string( fs.str().c_str() ) );
-
-        if ( status != INT_RESC_STATUS_DOWN ) {
-            json_object_set( entry, "status", json_string( "up" ) );
-        }
-        else {
-            json_object_set( entry, "status", json_string( "down" ) );
+        ret = serialize_resource_plugin_to_json(itr->second, entry);
+        if(!ret.ok()) {
+            ret = PASS(ret);
+            irods::log(ret);
+            json_object_set(entry, "ERROR", json_string(ret.result().c_str()));
         }
 
         json_array_append( _resources, entry );

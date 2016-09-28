@@ -12,6 +12,7 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_report_plugins_in_json.hpp"
 
 #include "jansson.h"
 #include <boost/format.hpp>
@@ -73,6 +74,7 @@ int rsZoneReport(
 
 } // rsZoneReport
 
+static
 void report_server_connect_error(
     int                _error,
     const std::string& _host_name,
@@ -103,7 +105,7 @@ void report_server_connect_error(
 
 }
 
-
+static
 irods::error get_server_reports(
     rsComm_t* _comm,
     json_t*&  _resc_arr ) {
@@ -220,6 +222,57 @@ irods::error get_server_reports(
 
 } // get_server_reports
 
+static
+irods::error get_coordinating_resources(
+    rsComm_t* _comm,
+    json_t*&  _resources ) {
+
+    _resources = json_array();
+    if ( !_resources ) {
+        return ERROR(
+                   SYS_MALLOC_ERR,
+                   "json_object() failed" );
+    }
+
+    for( auto itr = std::begin(resc_mgr); itr != std::end(resc_mgr); ++itr ) {
+        irods::resource_ptr& resc = itr->second;
+
+        rodsServerHost_t* tmp_host = nullptr;
+        irods::error ret = resc->get_property< rodsServerHost_t* >(
+                               irods::RESOURCE_HOST,
+                               tmp_host );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+        }
+
+        // skip non-null hosts ( not coordinating )
+        if ( tmp_host ) {
+            continue;
+
+        }
+
+        json_t* entry = json_object();
+        if ( !entry ) {
+            return ERROR(
+                       SYS_MALLOC_ERR,
+                       "failed to alloc entry" );
+        }
+
+        ret = serialize_resource_plugin_to_json(itr->second, entry);
+        if(!ret.ok()) {
+            ret = PASS(ret);
+            irods::log(ret);
+            json_object_set(entry, "ERROR", json_string(ret.result().c_str()));
+        }
+
+        json_array_append( _resources, entry );
+
+    } // for itr
+
+    return SUCCESS();
+
+} // get_coordinating_resources
 
 int _rsZoneReport(
     rsComm_t*    _comm,
@@ -238,16 +291,6 @@ int _rsZoneReport(
         return status;
     }
 
-    json_t* svr_arr = 0;
-    irods::error ret = get_server_reports( _comm, svr_arr );
-    if ( !ret.ok() ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsZoneReport - get_server_reports failed, status = %d",
-            ret.code() );
-        return ret.code();
-    }
-
     json_error_t j_err;
     json_t* cat_svr = json_loads( ( char* )bbuf->buf, JSON_REJECT_DUPLICATES, &j_err );
     freeBBuf( bbuf );
@@ -259,7 +302,25 @@ int _rsZoneReport(
         return ACTION_FAILED_ERR;
     }
 
-    json_array_append( svr_arr, cat_svr );
+    json_t* coord_resc = 0;
+    irods::error ret = get_coordinating_resources( _comm, coord_resc );
+    if ( !ret.ok() ) {
+        rodsLog(
+            LOG_ERROR,
+            "_rsZoneReport - get_server_reports failed, status = %d",
+            ret.code() );
+        return ret.code();
+    }
+
+    json_t* svr_arr = 0;
+    ret = get_server_reports( _comm, svr_arr );
+    if ( !ret.ok() ) {
+        rodsLog(
+            LOG_ERROR,
+            "_rsZoneReport - get_server_reports failed, status = %d",
+            ret.code() );
+        return ret.code();
+    }
 
     json_t* zone_obj = json_object();
     if ( !zone_obj ) {
@@ -270,6 +331,8 @@ int _rsZoneReport(
     }
 
     json_object_set( zone_obj, "servers", svr_arr );
+    json_object_set( cat_svr, "coordinating_resources", coord_resc );
+    json_object_set( zone_obj, "icat_server", cat_svr );
 
     json_t* zone_arr = json_array();
     if ( !zone_arr ) {
