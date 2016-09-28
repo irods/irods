@@ -5,6 +5,7 @@ import platform
 import shlex
 import sys
 import time
+import json
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -26,6 +27,32 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     ###################
     # izonereport
     ###################
+    def test_izonereport_with_coordinating_resources__ticket_3303(self):
+        try:
+            lib.assert_command('iadmin mkresc repl_resc replication', 'STDOUT_SINGLELINE', 'repl_resc')
+            lib.assert_command('iadmin mkresc comp_resc compound', 'STDOUT_SINGLELINE', 'comp_resc')
+            lib.assert_command('iadmin modresc comp_resc context comp_resc_context')
+            lib.assert_command('iadmin modresc repl_resc context repl_resc_context')
+
+            _, stdout, _ = lib.assert_command('izonereport', 'STDOUT_SINGLELINE', 'comp_resc')
+
+            expected_names = [
+                         'repl_resc',
+                         'comp_resc'
+                 ]
+
+            icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
+            if "coordinating_resources" in icat_server_object.keys():
+                coord_array = icat_server_object['coordinating_resources']
+
+                for d in coord_array:
+                    assert d['name'] in expected_names
+            else:
+                assert false
+
+        finally:
+            lib.assert_command('iadmin rmresc repl_resc')
+            lib.assert_command('iadmin rmresc comp_resc')
 
     def test_izonereport_and_validate(self):
         jsonschema_installed = True

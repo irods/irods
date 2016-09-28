@@ -7,6 +7,7 @@
 #include "server_report.h"
 #include "irods_resource_manager.hpp"
 #include "irods_resource_backport.hpp"
+#include "irods_report_plugins_in_json.hpp"
 
 #include "jansson.h"
 
@@ -56,7 +57,7 @@ int rsZoneReport(
 
 
 #ifdef RODS_CAT
-
+static
 irods::error get_server_reports(
     rsComm_t* _comm,
     json_t*&  _resc_arr ) {
@@ -161,6 +162,57 @@ irods::error get_server_reports(
 
 } // get_server_reports
 
+static
+irods::error get_coordinating_resources(
+    json_t*&  _resources ) {
+
+    _resources = json_array();
+    if ( !_resources ) {
+        return ERROR(
+                   SYS_MALLOC_ERR,
+                   "json_object() failed" );
+    }
+
+    irods::resource_manager::iterator itr = resc_mgr.begin();
+    for( ; itr != resc_mgr.end(); ++itr ) {
+        irods::resource_ptr& resc = itr->second;
+
+        rodsServerHost_t* tmp_host = 0;
+        irods::error ret = resc->get_property< rodsServerHost_t* >(
+                               irods::RESOURCE_HOST,
+                               tmp_host );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+            continue;
+        }
+
+        // skip non-null hosts ( not coordinating )
+        if ( tmp_host ) {
+            continue;
+
+        }
+
+        json_t* entry = json_object();
+        if ( !entry ) {
+            return ERROR(
+                       SYS_MALLOC_ERR,
+                       "failed to alloc entry" );
+        }
+
+        ret = serialize_resource_plugin_to_json(itr->second, entry);
+        if(!ret.ok()) {
+            ret = PASS(ret);
+            irods::log(ret);
+            json_object_set(entry, "ERROR", json_string(ret.result().c_str()));
+        }
+
+        json_array_append( _resources, entry );
+
+    } // for itr
+
+    return SUCCESS();
+
+} // get_coordinating_resources
 
 int _rsZoneReport(
     rsComm_t*    _comm,
@@ -190,9 +242,18 @@ int _rsZoneReport(
         return ACTION_FAILED_ERR;
     }
 
+    json_t* coord_resc = 0;
+    irods::error ret = get_coordinating_resources( coord_resc );
+    if ( !ret.ok() ) {
+        rodsLog(
+            LOG_ERROR,
+            "_rsZoneReport - get_server_reports failed, status = %d",
+            ret.code() );
+        return ret.code();
+    }
 
     json_t* svr_arr = 0;
-    irods::error ret = get_server_reports( _comm, svr_arr );
+    ret = get_server_reports( _comm, svr_arr );
     if ( !ret.ok() ) {
         rodsLog(
             LOG_ERROR,
@@ -209,6 +270,7 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
+    json_object_set( cat_svr, "coordinating_resources", coord_resc );
     json_object_set( zone_obj, "icat_server", cat_svr );
     json_object_set( zone_obj, "resource_servers", svr_arr );
 
