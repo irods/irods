@@ -70,8 +70,9 @@ def setup_server(irods_config, json_configuration_file=None):
     else:
         json_configuration_dict = None
 
-    l.info(irods.lib.get_header('Stopping iRODS...'))
-    IrodsController(irods_config).stop()
+    if IrodsController().get_binary_to_pids_dict():
+        l.info(irods.lib.get_header('Stopping iRODS...'))
+        IrodsController(irods_config).stop()
 
     if not os.path.exists(irods_config.version_path):
         shutil.copyfile('.'.join([irods_config.version_path, 'dist']), irods_config.version_path)
