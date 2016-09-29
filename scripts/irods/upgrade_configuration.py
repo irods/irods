@@ -149,8 +149,8 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                 ]
             config_dict.setdefault('plugin_configuration', {})['rule_engine'] = [
                     {
-                        'instance_name': 're-irods-instance',
-                        'plugin_name': 're-irods',
+                        'instance_name': 'irods_rule_engine_plugin-irods_rule_language-instance',
+                        'plugin_name': 'irods_rule_engine_plugin-irods_rule_language',
                         'plugin_specific_configuration': dict(
                             [(k, config_dict.pop(k['filename'])) for k in [
                                 're_data_variable_mapping_set',
@@ -159,11 +159,6 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                             ]
                         ),
                         'shared_memory_instance': 'upgraded_legacy_re'
-                    },
-                    {
-                        'instance_name': 're-instance',
-                        'plugin_name': 're',
-                        'plugin_specific_configuration': {}
                     }
                 ]
             #put pam options in their plugin configuration
