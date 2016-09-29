@@ -3177,10 +3177,9 @@ irods::error get_default_rule_plugin_instance(
 irods::error list_rule_plugin_instances(
         std::vector< std::string > &_instance_names ) {
     try {
-        const auto& re_plugin_arr = irods::get_server_property< const std::vector< boost::any >& >( irods::CFG_RULE_ENGINES_KW );
-        for ( const auto& el : re_plugin_arr ) {
-            const auto& plugin_config = boost::any_cast< const std::unordered_map< std::string, boost::any >& >( el );
-            _instance_names.push_back( boost::any_cast< const std::string& >( plugin_config.at( irods::CFG_INSTANCE_NAME_KW ) ) );
+        const auto& rule_engines = irods::get_server_property<const std::vector<boost::any>>(std::vector<std::string>{irods::CFG_PLUGIN_CONFIGURATION_KW, irods::PLUGIN_TYPE_RULE_ENGINE});
+        for ( const auto& el : rule_engines ) {
+            _instance_names.push_back( boost::any_cast< const std::string& >( boost::any_cast< const std::unordered_map<std::string, boost::any>&>( el ).at(irods::CFG_INSTANCE_NAME_KW) ) );
         }
     } catch ( const irods::exception& e ) {
         return irods::error(e);
