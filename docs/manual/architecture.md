@@ -560,13 +560,65 @@ Storage resources represent storage interfaces and include the file driver infor
 
 The unixfilesystem storage resource is the default resource type that can communicate with a device through the standard POSIX interface.
 
-A high water mark capability has been added to the unixfilesystem resource in 4.1.8.  The high water mark can be configured with the context string using the following syntax:
+A free_space check capability has been added to the unixfilesystem resource in 4.1.10.  The free_space check can be configured with the context string using the following syntax:
 
 ```
-irods@hostname:~/ $ iadmin modresc unixResc context 'high_water_mark=1000'
+irods@hostname:~/ $ iadmin modresc unixResc context 'minimum_free_space_for_create_in_bytes=21474836480'
 ```
 
-The value is the total disk space used in bytes.  If a create operation would result in the total bytes on disk being larger than the high water mark, then the resource will return `USER_FILE_TOO_LARGE` and the create operation will not occur.  This feature allows administrators to protect their systems from absolute disk full events.  Writing to, or extending, existing file objects is still allowed.
+The example requires this unixfilesystem plugin instance (unixResc) to keep 20GiB free when considering whether to accept a create operation.  If a create operation would result in the bytes free on disk being smaller than the set value, then the resource will return `USER_FILE_TOO_LARGE` and the create operation will not occur.  This feature allows administrators to protect their systems from absolute disk full events.  Writing to, or extending, existing file objects is still allowed and not affected by this setting.
+
+The check that is performed by the unixfilesystem plugin instance compares the 'minimum_free_space_for_create_in_bytes' value from the context string to the 'free_space' value stored in the 'R_RESC_MAIN' (resource) table in the iCAT.  The 'free_space' value in the catalog can be updated with 'iadmin modresc <rescName> freespace <value>' or with the 'msi_update_unixfilesystem_resource_free_space(*leaf_resource)' on every server where unixfilesystems are active.
+
+To update the 'free_space' value from the command line (manually) to 1TiB, the following 'iadmin' command can be used:
+
+```
+irods@hostname:~/ $ iadmin modresc unixResc freespace 1099511627776
+```
+
+To update the 'free_space' value after every large file put and replication (automatically), the following rules can be used:
+
+```
+acPostProcForParallelTransferReceived(*leaf_resource) {
+    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+}
+acPostProcForDataCopyReceived(*leaf_resource) {
+    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+}
+```
+
+'acPostProcForParallelTransferReceived' is only triggered by parallel transfer, so puts of small files will not cause iRODS to update the free_space entry of a resource.  However, when the small file is replicated (by e.g. a replication resource) the free_space of the resource receiving the replica will be updated, because 'acPostProcForDataCopyReceived' is hit by both large and small files.
+
+To use a blacklist of resources (that you do not want updated), that can be implemented directly in the rule logic:
+
+```
+acPostProcForParallelTransferReceived(*leaf_resource) {
+    *black_list = list("some", "of", "the", "resources");
+    *update_free_space = 1;
+    foreach(*resource in *black_list) {
+        if (*resource == *leaf_resource) {
+            *update_free_space = 0;
+            break;
+        }
+    }
+    if (*update_free_space) {
+        msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+    }
+}
+acPostProcForDataCopyReceived(*leaf_resource) {
+    *black_list = list("some", "of", "the", "resources");
+    *update_free_space = 1;
+    foreach(*resource in *black_list) {
+        if (*resource == *leaf_resource) {
+            *update_free_space = 0;
+            break;
+        }
+    }
+    if (*update_free_space) {
+        msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+    }
+}
+```
 
 #### Structured File Type (tar, zip, gzip, bzip)
 

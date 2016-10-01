@@ -45,6 +45,24 @@ acSetRescSchemeForRepl {msiSetDefaultResc("rootResc","null"); }
 iRODS is initially configured with the motivation of having a usable system.  To prepare a new installation for production, `demoResc` should be removed and replaced with a resource backed by a suitable production-quality storage system.  The Vault for `demoResc` is, by default, in the iRODS service account home directory (`/var/lib/irods/iRODS/Vault`) and not ready for production use.
 
 
+## Using free_space check on unixfilesystem resources
+
+Since 4.1.10, the unixfilesystem resource context string can set 'minimum_free_space_for_create_in_bytes" which will be checked against the 'free_space' value set in the iCAT catalog for that resource before voting to accept any create operations.
+
+To update the 'free_space' value automatically, add the following rule to an active rulebase on each server:
+
+```
+acPostProcForParallelTransferReceived(*leaf_resource) {
+    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+}
+acPostProcForDataCopyReceived(*leaf_resource) {
+    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+}
+```
+
+This will set the 'free_space' for the active resource (the one that just performed the create) in the database.  The value will then be used in the routing calculations for the next create operation.
+
+
 ## Using both delay and remote execution
 
 Normally, since the `remote()` microservice is a synchronous call, it should be included in the chain of microservices that is scheduled for delayed execution:
