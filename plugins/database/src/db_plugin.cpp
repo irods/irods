@@ -8780,7 +8780,7 @@ checkLevel:
         }
 
 
-        if ( strcmp( _option, "freespace" ) == 0 ) {
+        if (strcmp(_option, "freespace") == 0 || strcmp(_option, "free_space") == 0) {
             int inType = 0;    /* regular mode, just set as provided */
             if ( *_option_value == '+' ) {
                 inType = 1;     /* increment by the input value */
