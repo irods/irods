@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -689,6 +690,33 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         minimum = free_space - filesize*2
         self.admin.assert_icommand('iadmin modresc demoResc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file3')
+
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Updates core.re on machine hosting demoResc, which is resource1 in topo")
+    def test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForHandlePortalOprPut(self):
+        filename = 'test_msi_update_unixfilesystem_resource_free_space'
+        filepath = lib.make_file(filename, 50000000)
+
+        # make sure the physical path exists
+        lib.mkdir_p(lib.get_vault_path(self.admin, 'demoResc'))
+
+        corefile = lib.get_core_re_dir() + "/core.re"
+        with lib.file_backed_up(corefile):
+            rules_to_prepend = '''
+acPostProcForParallelTransferReceived(*leaf_resource) {msi_update_unixfilesystem_resource_free_space(*leaf_resource);}
+            '''
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+
+            self.user0.assert_icommand(['iput', filename])
+            free_space = psutil.disk_usage(lib.get_vault_path(self.admin, 'demoResc')).free
+
+        ilsresc_output = self.admin.run_icommand(['ilsresc', '-l', 'demoResc'])[1]
+        for l in ilsresc_output.splitlines():
+            if l.startswith('free space:'):
+                ilsresc_freespace = int(l.rpartition(':')[2])
+        assert abs(free_space - ilsresc_freespace) < 4096*10, 'free_space {0}, ilsresc free space {1}'.format(free_space, ilsresc_freespace)
+        os.unlink(filename)
 
     def test_key_value_passthru(self):
         env = os.environ.copy()
