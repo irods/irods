@@ -1,3 +1,6 @@
+python /var/lib/irods/scripts/chown_directories_for_postinstall.py
+ldconfig
+
 # detect whether this is an upgrade
 UPGRADE_FLAG_FILE=/var/lib/irods/packaging/upgrade_db.tmp
 if [ -f "$UPGRADE_FLAG_FILE" ] ; then

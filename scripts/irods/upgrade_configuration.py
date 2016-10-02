@@ -147,20 +147,30 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                     'audit_',
                     'indexing_'
                 ]
-            config_dict.setdefault('plugin_configuration', {})['rule_engine'] = [
+            config_dict.setdefault('plugin_configuration', {})['rule_engines'] = [
                     {
                         'instance_name': 'irods_rule_engine_plugin-irods_rule_language-instance',
                         'plugin_name': 'irods_rule_engine_plugin-irods_rule_language',
                         'plugin_specific_configuration': dict(
-                            [(k, config_dict.pop(k['filename'])) for k in [
+                            [(k, [e['filename'] for e in config_dict.pop(k)]) for k in [
                                 're_data_variable_mapping_set',
                                 're_function_name_mapping_set',
                                 're_rulebase_set']
+                            ] + [
+                                ('regexes_for_supported_peps', [
+                                        'ac[^ ]*',
+                                        'msi[^ ]*',
+                                        '[^ ]*pep_[^ ]*_(pre|post)'
+                                    ]
+                                )
                             ]
                         ),
                         'shared_memory_instance': 'upgraded_legacy_re'
                     }
                 ]
+            config_dict['plugin_configuration'].setdefault('authentication', {})
+            config_dict['plugin_configuration'].setdefault('network', {})
+            config_dict['plugin_configuration'].setdefault('resource', {})
             #put pam options in their plugin configuration
             for k, k_prime in [
                     ('pam_no_extend', 'no_extend'),
