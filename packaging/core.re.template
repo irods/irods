@@ -725,6 +725,8 @@ acRunWorkFlow(*File, *R_BUF) {
 
 acPostProcForHandlePortalOprPut(*leaf_resource) {}
 
+acPostProcForDataCopyReceived(*leaf_resource) {}
+
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
 #pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }

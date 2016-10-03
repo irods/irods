@@ -8,6 +8,8 @@
 #include "miscServerFunct.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rcGlobalExtern.h"
+#include "irods_hierarchy_parser.hpp"
+#include "reFuncDefs.hpp"
 
 /* rsDataCopy - Do the copy data transfer.
  * Input -
@@ -90,6 +92,53 @@ remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
     return status;
 }
 
+static
+int
+apply_acPostProcForDataCopyReceived(rsComm_t *rsComm, dataOprInp_t *dataOprInp) {
+    if (rsComm == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL rsComm");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if (dataOprInp == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL dataOprInp");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    const int l3_index = dataOprInp->destL3descInx;
+    if (l3_index < 3 || l3_index >= NUM_FILE_DESC) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: bad l3 descriptor index %d", l3_index);
+        return SYS_FILE_DESC_OUT_OF_RANGE;
+    }
+
+    const char* resource_hierarchy = FileDesc[l3_index].rescHier;
+    if (resource_hierarchy == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL resource_hierarchy");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    irods::hierarchy_parser hierarchy_parser;
+    irods::error err = hierarchy_parser.set_string(resource_hierarchy);
+    if (!err.ok()) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: set_string error [%s]", err.result().c_str());
+        return err.status();
+    }
+
+    std::string leaf_resource;
+    err = hierarchy_parser.last_resc(leaf_resource);
+    if (!err.ok()) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: last_resc error [%s]", err.result().c_str());
+        return err.status();
+    }
+
+    const char *args[] = {leaf_resource.c_str()};
+    ruleExecInfo_t rei;
+    memset(&rei, 0, sizeof(rei));
+    rei.rsComm = rsComm;
+    int ret = applyRuleArg("acPostProcForDataCopyReceived", args, sizeof(args)/sizeof(args[0]), &rei, NO_SAVE_REI);
+    return ret;
+}
+
 int
 _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp_t *dataOprInp;
@@ -105,17 +154,21 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( dataOprInp->oprType == SAME_HOST_COPY_OPR ) {
         /* src is on the same host */
         retVal = sameHostCopy( rsComm, dataCopyInp );
+        if (retVal >= 0) {
+            apply_acPostProcForDataCopyReceived(rsComm, dataOprInp);
+        }
     }
     else if ( dataOprInp->oprType == COPY_TO_LOCAL_OPR ||
               dataOprInp->oprType == COPY_TO_REM_OPR ) {
         retVal = remLocCopy( rsComm, dataCopyInp );
-    }
-    else {
+        if (retVal >= 0 && dataOprInp->oprType == COPY_TO_LOCAL_OPR) {
+            apply_acPostProcForDataCopyReceived(rsComm, dataOprInp);
+        }
+    } else {
         rodsLog( LOG_NOTICE,
                  "_rsDataCopy: Invalid oprType %d", dataOprInp->oprType );
         return SYS_INVALID_OPR_TYPE;
     }
 
     return retVal;
-}
-
+ }

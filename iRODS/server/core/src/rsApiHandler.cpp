@@ -389,7 +389,7 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
     }
     return 0;
 }
-
+static
 int
 apply_acPostProcForParallelTransferReceived(rsComm_t *rsComm) {
     if (rsComm == NULL) {
