@@ -13,6 +13,7 @@
 #include "unregDataObj.h"
 #include "modAVUMetadata.h"
 #include "sockComm.h"
+#include "reFuncDefs.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -26,6 +27,7 @@ jmp_buf Jenv;
 #include "irods_server_api_table.hpp"
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "irods_hierarchy_parser.hpp"
 
 
 int rsApiHandler(
@@ -389,6 +391,51 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
 }
 
 int
+apply_acPostProcForParallelTransferReceived(rsComm_t *rsComm) {
+    if (rsComm == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL rsComm");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    if (rsComm->portalOpr == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL rsComm->portalOpr");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    const int l3_index = rsComm->portalOpr->dataOprInp.destL3descInx;
+    if (l3_index < 3 || l3_index >= NUM_FILE_DESC) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: bad l3 descriptor index %d", l3_index);
+        return SYS_FILE_DESC_OUT_OF_RANGE;
+    }
+
+    const char* resource_hierarchy = FileDesc[l3_index].rescHier;
+    if (resource_hierarchy == NULL) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL resource_hierarchy");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    irods::hierarchy_parser hierarchy_parser;
+    irods::error err = hierarchy_parser.set_string(resource_hierarchy);
+    if (!err.ok()) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: set_string error [%s]", err.result().c_str());
+        return err.status();
+    }
+
+    std::string leaf_resource;
+    err = hierarchy_parser.last_resc(leaf_resource);
+    if (!err.ok()) {
+        rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: last_resc error [%s]", err.result().c_str());
+        return err.status();
+    }
+
+    const char *args[] = {leaf_resource.c_str()};
+    ruleExecInfo_t rei;
+    memset(&rei, 0, sizeof(rei));
+    rei.rsComm = rsComm;
+    int ret = applyRuleArg("acPostProcForParallelTransferReceived", args, sizeof(args)/sizeof(args[0]), &rei, NO_SAVE_REI);
+    return ret;
+}
+
+int
 handlePortalOpr( rsComm_t * rsComm ) {
     int oprType;
     int status;
@@ -403,6 +450,9 @@ handlePortalOpr( rsComm_t * rsComm ) {
     case PUT_OPR:
     case GET_OPR:
         status = svrPortalPutGet( rsComm );
+        if (status >=0 && oprType == PUT_OPR) {
+            apply_acPostProcForParallelTransferReceived(rsComm);
+        }
         break;
     default:
         rodsLog( LOG_NOTICE,
