@@ -69,8 +69,8 @@ irods::error get_next_child_in_hier(
 
             // =-=-=-=-=-=-=-
             // get the next resource from the child map
-            if ( ( result = ASSERT_ERROR( _cmap.has_entry( next ), CHILD_NOT_FOUND, "Child map missing entry: \"%s\"",
-                                          next.c_str() ) ).ok() ) {
+            if ( ( result = ASSERT_ERROR( _cmap.has_entry( next ), CHILD_NOT_FOUND, "Child map missing entry: hier [%s] name [%s] next [%s]",
+                                          _hier.c_str(), _name.c_str(), next.c_str() ) ).ok() ) {
                 // =-=-=-=-=-=-=-
                 // assign resource
                 _resc = _cmap[ next ].second;
@@ -735,15 +735,18 @@ extern "C" {
             // pick resource in pool at random index
             irods::resource_ptr resc = candidate_resources[rand_index];
 
+            irods::hierarchy_parser hierarchy_copy(*_out_parser);
+
             // =-=-=-=-=-=-=-
             // forward the 'create' redirect to the appropriate child
             ret = resc->call< const std::string*, const std::string*, irods::hierarchy_parser*, float* >( _ctx.comm(),
                     irods::RESOURCE_OP_RESOLVE_RESC_HIER,
-                    _ctx.fco(), _opr, _curr_host, _out_parser,
+                    _ctx.fco(), _opr, _curr_host, &hierarchy_copy,
                     _out_vote );
             // Found a valid child
             if ( ret.ok() && *_out_vote != 0 ) {
                 child_found = true;
+                *_out_parser = hierarchy_copy;
             }
             else {
                 // =-=-=-=-=-=-=-
@@ -952,6 +955,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
