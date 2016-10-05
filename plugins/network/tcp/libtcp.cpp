@@ -508,7 +508,6 @@ extern "C" {
                                bytes_read,
                                _time_val );
         _buffer->len = bytes_read;
-        ( ( char* )_buffer->buf )[_buffer->len] = '\0';
 
         // =-=-=-=-=-=-=-
         // log transaction if requested
@@ -729,36 +728,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
