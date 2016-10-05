@@ -285,8 +285,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // log debug information if appropriate
         if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "received header: len = %d\n%s\n",
+            printf( "received header: len = %d\n%.*s\n",
                     header_length,
+                    bytes_read,
                     static_cast<char*>( _buffer ) );
         }
 
@@ -309,7 +310,8 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // log debug information if appropriate
         if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "sending header: len = %d\n%s\n",
+            printf( "sending header: len = %d\n%.*s\n",
+                    _header->len,
                     _header->len,
                     ( char * ) _header->buf );
         }
@@ -426,7 +428,7 @@ extern "C" {
         if ( _msg_buf && _msg_buf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
-                printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
+                printf( "sending msg: \n%.*s\n", _msg_buf->len, ( char* ) _msg_buf->buf );
             }
             ret = tcp_socket_write(
                       socket_handle,
@@ -444,7 +446,7 @@ extern "C" {
         if ( _error_buf && _error_buf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
-                printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
+                printf( "sending msg: \n%.*s\n", _error_buf->len, ( char* ) _error_buf->buf );
 
             }
 
@@ -464,7 +466,7 @@ extern "C" {
         if ( _stream_bbuf && _stream_bbuf->len > 0 ) {
             if ( XML_PROT == _protocol &&
                     getRodsLogLevel() >= LOG_DEBUG3 ) {
-                printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
+                printf( "sending msg: \n%.*s\n", _stream_bbuf->len, ( char* ) _stream_bbuf->buf );
             }
 
             ret = tcp_socket_write(
@@ -513,7 +515,7 @@ extern "C" {
         // log transaction if requested
         if ( _protocol == XML_PROT &&
                 getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "received msg: \n%s\n", ( char* )_buffer->buf );
+            printf( "received msg: \n%.*s\n", _buffer->len, ( char* )_buffer->buf );
         }
 
         // =-=-=-=-=-=-=-
