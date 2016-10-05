@@ -46,13 +46,29 @@ The following operations are available for dynamic PEP evaluation.  At this time
 resource_open<br />
 resource_read<br />
 resource_write<br />
+resource_close<br />
+resource_unlink<br />
+resource_stat<br />
+resource_fstat<br />
+resource_fsync<br />
+resource_mkdir<br />
+resource_chmod<br />
+resource_opendir<br />
+resource_readdir<br />
+resource_rename<br />
+resource_freespace<br />
+resource_lseek<br />
+resource_rmdir<br />
+resource_closedir<br />
+resource_truncate<br />
 resource_stagetocache<br />
 resource_synctoarch<br />
 resource_registered<br />
 resource_unregistered<br />
 resource_modified<br />
 resource_resolve_hierarchy<br />
-resource_rebalance
+resource_rebalance<br />
+resource_notify
 </td>
 <td>
 Yes<br />
@@ -65,8 +81,23 @@ Yes<br />
 Yes<br />
 Yes<br />
 Yes<br />
-Yes
-</td>
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes<br />
+Yes</td>
 </tr>
 <tr>
 <td>Authentication</td>
@@ -185,6 +216,9 @@ database_check_quota<br/>
 database_del_unused_avus<br/>
 database_add_specific_query<br/>
 database_del_specific_query<br/>
+database_debug_query<br/>
+database_debug_gen_update<br/>
+database_is_rule_in_table<br/>
 database_version_rule_base<br/>
 database_version_dvm_base<br/>
 database_ins_rule_table<br/>
@@ -234,6 +268,9 @@ No<br/>
 No<br/>
 Yes<br/>
 No<br/>
+Yes<br/>
+Yes<br/>
+Yes<br/>
 Yes<br/>
 Yes<br/>
 Yes<br/>
