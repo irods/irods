@@ -1277,32 +1277,6 @@ rodsSleep( int sec, int microSec ) {
     return 0;
 }
 
-
-char *
-rods_inet_ntoa( struct in_addr in ) {
-    char *clHostAddr = inet_ntoa( in );
-
-    if ( isLoopbackAddress( clHostAddr ) ||
-            strcmp( clHostAddr, "0.0.0.0" ) == 0 ) { /* localhost */
-        char sb[LONG_NAME_LEN];
-
-        if ( gethostname( sb, sizeof( sb ) ) != 0 ) {
-            return clHostAddr;
-        }
-
-        struct hostent *phe;
-        const int status = gethostbyname_with_retry( sb, &phe );
-        if ( status != 0 ) {
-            return clHostAddr;
-        }
-        clHostAddr = inet_ntoa( *( struct in_addr* ) phe->h_addr );
-    }
-
-    return clHostAddr;
-}
-
-// =-=-=-=-=-=-=-
-//
 irods::error readReconMsg(
     irods::network_object_ptr _ptr,
     reconnMsg_t**       _msg ) {
