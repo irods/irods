@@ -77,7 +77,7 @@ namespace irods {
             // =-=-=-=-=-=-=-
             /// @brief create a partial hier string for a given resource to the root
             error get_hier_to_root_for_resc( const std::string&, std::string& );
-            
+
             // =-=-=-=-=-=-=-
             /// @brief gather vectors of leaf ids for each child of the given resource
             typedef std::vector<rodsLong_t> leaf_bundle_t;
@@ -215,10 +215,7 @@ namespace irods {
             error gather_operations_recursive( const std::string&,          // child string of parent resc
                                                std::vector< std::string >&, // vector of 'done' resc names
                                                std::vector<pdmo_type>& );   // vector of ops for this composition
-            // =-=-=-=-=-=-=-
-            /// @brief initalize the special local file system resource
-            error init_local_file_system_resource( void );
-            
+
             // =-=-=-=-=-=-=-
             /// @brief helper function for gather_leaf_bundles_for_resc
             error gather_leaf_bundle_for_child( const std::string&, leaf_bundle_t& );
@@ -239,6 +236,3 @@ namespace irods {
 
 
 #endif // __IRODS_RESOURCE_MANAGER_HPP__
-
-
-

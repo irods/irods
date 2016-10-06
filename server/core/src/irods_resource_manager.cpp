@@ -324,14 +324,6 @@ namespace irods {
         }
 
         // =-=-=-=-=-=-=-
-        // initialize the special local file system resource
-        // JMC :: no longer needed
-        //error spec_ret = init_local_file_system_resource();
-        //if ( !spec_ret.ok() ) {
-        //    return PASSMSG( "init_local_file_system_resource failed.", op_ret );
-        //}
-
-        // =-=-=-=-=-=-=-
         // call start for plugins
         error start_err = start_resource_plugins();
         if ( !start_err.ok() ) {
@@ -755,77 +747,6 @@ namespace irods {
         return SUCCESS();
 
     } // init_from_type
-
-
-// =-=-=-=-=-=-=-
-// public - initialize the special local file system resource
-    error resource_manager::init_local_file_system_resource( void ) {
-        // =-=-=-=-=-=-=-
-        // init the local fs resource
-        resource_ptr resc;
-        error err = init_from_type( LOCAL_USE_ONLY_RESOURCE_TYPE,
-                                    LOCAL_USE_ONLY_RESOURCE,
-                                    LOCAL_USE_ONLY_RESOURCE,
-                                    "",
-                                    resc );
-        // =-=-=-=-=-=-=-
-        // error check
-        if ( !err.ok() ) {
-            std::stringstream msg;
-            msg << "resource_manager::init_local_file_system_resource - failed to create resource";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the zone info for the local zone
-        zoneInfo_t* zone_info = 0;
-        getLocalZoneInfo( &zone_info );
-
-        // =-=-=-=-=-=-=-
-        // build a host addr struct to get the server host info
-        char host_name[ MAX_NAME_LEN ];
-        gethostname( host_name, MAX_NAME_LEN );
-
-        rodsHostAddr_t addr;
-        rstrcpy( addr.hostAddr, host_name, LONG_NAME_LEN );
-        rstrcpy( addr.zoneName, const_cast<char*>( zone_info->zoneName ), NAME_LEN );
-
-        rodsServerHost_t* tmpRodsServerHost = 0;
-        if ( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
-            rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s",
-                     addr.hostAddr );
-        }
-
-        resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
-
-        // =-=-=-=-=-=-=-
-        // start filling in the properties
-        resc->set_property<rodsLong_t>( RESOURCE_ID, 999 );
-        resc->set_property<long>( RESOURCE_FREESPACE, 999 );
-        resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
-
-        resc->set_property<std::string>( RESOURCE_ZONE,      zone_info->zoneName );
-        resc->set_property<std::string>( RESOURCE_NAME,      LOCAL_USE_ONLY_RESOURCE );
-        resc->set_property<std::string>( RESOURCE_LOCATION,  "localhost" );
-        resc->set_property<std::string>( RESOURCE_TYPE,      LOCAL_USE_ONLY_RESOURCE_TYPE );
-        resc->set_property<std::string>( RESOURCE_CLASS,     "cache" );
-        resc->set_property<std::string>( RESOURCE_PATH,      LOCAL_USE_ONLY_RESOURCE_VAULT );
-        resc->set_property<std::string>( RESOURCE_INFO,      "info" );
-        resc->set_property<std::string>( RESOURCE_COMMENTS,  "comments" );
-        resc->set_property<std::string>( RESOURCE_CREATE_TS, "999" );
-        resc->set_property<std::string>( RESOURCE_MODIFY_TS, "999" );
-        resc->set_property<std::string>( RESOURCE_CHILDREN,  "" );
-        resc->set_property<std::string>( RESOURCE_PARENT,    "" );
-        resc->set_property<std::string>( RESOURCE_CONTEXT,   "" );
-        resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
-
-        // =-=-=-=-=-=-=-
-        // assign to the map
-        resource_name_map_[ LOCAL_USE_ONLY_RESOURCE ] = resc;
-
-        return SUCCESS();
-
-    } // init_local_file_system_resource
 
 // =-=-=-=-=-=-=-
 // private - walk the resource map and wire children up to parents
