@@ -436,14 +436,14 @@ def version_string_to_tuple(version_string):
     return tuple(map(int, version_string.split('.')))
 
 def hostname_resolves_to_local_address(hostname):
-    _, _, ret = execute_command_permissive([
+    _, err, ret = execute_command_permissive([
         os.path.join( paths.server_bin_directory(), 'hostname_resolves_to_local_address'),
         hostname])
     if ret == 0:
         return True
     elif ret == 1:
         return False
-    raise IrodsError('Invalid hostname "%s" in call to hostname_resolves_to_local_address.' % (hostname))
+    raise IrodsError('Error encountered in hostname_resolves_to_local_address for hostname [{0}]:\n{1}'.format(hostname, err))
 
 def get_header(message):
     lines = [l.strip() for l in message.splitlines()]
