@@ -35,7 +35,6 @@ statusString||rei->doi->statusString
 destRescName||rei->doi->destRescName
 backupRescName||rei->doi->backupRescName
 rescName||rei->doi->rescName
-rescGroupName||rei->doi->rescGroupName
 # user info coming directly
 userClient||rei->uoic
 userClient||rei->rsComm->clientUser
@@ -111,7 +110,7 @@ connectCnt||rei->rsComm->connectCnt
 connectSock||rei->rsComm->sock
 connectOption||rei->rsComm->option
 connectStatus||rei->rsComm->status
-connectApiTnx||rei->rsComm->apiInx
+connectApiInx||rei->rsComm->apiInx
 KVPairs||rei->condInputData
 # connectWindowSize||rei->rsComm->windowSize
 # connectReconnFlag||rei->rsComm->reconnFlag
