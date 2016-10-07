@@ -723,7 +723,7 @@ acRunWorkFlow(*File, *R_BUF) {
    msiDataObjClose(*S_FD,*Status2);
 }
 
-acPostProcForHandlePortalOprPut(*leaf_resource) {}
+acPostProcForParallelTransferReceived(*leaf_resource) {}
 
 acPostProcForDataCopyReceived(*leaf_resource) {}
 
