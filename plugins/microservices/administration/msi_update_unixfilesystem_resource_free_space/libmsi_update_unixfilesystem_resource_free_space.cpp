@@ -112,32 +112,39 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
     admin_in.arg3 = "freespace";
     admin_in.arg4 = free_space_in_bytes_string.c_str();
 
-    class TemporaryPrivilegeEscalation {
-        ruleExecInfo_t* rei_;
-        const int saved_client_auth_flg;
-        const int saved_proxy_auth_flg;
-    public:
-        explicit TemporaryPrivilegeEscalation(ruleExecInfo_t* _rei)
-            : rei_(_rei)
-            , saved_client_auth_flg(_rei->rsComm->clientUser.authInfo.authFlag)
-            , saved_proxy_auth_flg(_rei->rsComm->proxyUser.authInfo.authFlag)
-            {
-                rei_->rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-                rei_->rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-            }
-        ~TemporaryPrivilegeEscalation() {
-            rei_->rsComm->clientUser.authInfo.authFlag = saved_client_auth_flg;
-            rei_->rsComm->proxyUser.authInfo.authFlag = saved_proxy_auth_flg;
-        }
-    };
-
-    int rsGeneralAdmin_ret;
-    {
-        TemporaryPrivilegeEscalation guard(rei);
-        rsGeneralAdmin_ret = rsGeneralAdmin(rei->rsComm, &admin_in);
+    rodsEnv service_account_environment;
+    const int getRodsEnv_ret = getRodsEnv(&service_account_environment);
+    if (getRodsEnv_ret < 0) {
+        rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: getRodsEnv failure [%d]", getRodsEnv_ret);
+        return getRodsEnv_ret;
     }
 
-    return rsGeneralAdmin_ret;
+    rErrMsg_t errMsg;
+    memset(&errMsg, 0, sizeof(errMsg));
+    rcComm_t *admin_connection = rcConnect(service_account_environment.rodsHost, service_account_environment.rodsPort,
+                                           service_account_environment.rodsUserName, service_account_environment.rodsZone, 0, &errMsg);
+
+    if (admin_connection == NULL) {
+        char *mySubName = NULL;
+        char *myName = rodsErrorName(errMsg.status, &mySubName);
+        rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: rcConnect failure [%s] [%s] [%d] [%s]",
+                myName, mySubName, errMsg.status, errMsg.msg);
+        return errMsg.status;
+    }
+
+    const int clientLogin_ret = clientLogin(admin_connection);
+    if (clientLogin_ret != 0) {
+        rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: clientLogin failure [%d]", clientLogin_ret);
+        return clientLogin_ret;
+    }
+
+    const int rcGeneralAdmin_ret = rcGeneralAdmin(admin_connection, &admin_in);
+    rcDisconnect(admin_connection);
+    if (rcGeneralAdmin_ret < 0) {
+        printErrorStack(admin_connection->rError);
+        rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: rcGeneralAdmin failure [%d]", rcGeneralAdmin_ret);
+    }
+    return rcGeneralAdmin_ret;
 }
 
 extern "C"
