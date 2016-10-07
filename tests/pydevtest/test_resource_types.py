@@ -691,9 +691,8 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         self.admin.assert_icommand('iadmin modresc demoResc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file3')
 
-    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Updates core.re on machine hosting demoResc, which is resource1 in topo")
-    def test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForHandlePortalOprPut(self):
-        filename = 'test_msi_update_unixfilesystem_resource_free_space'
+    def test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived(self):
+        filename = 'test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived'
         filepath = lib.make_file(filename, 50000000)
 
         # make sure the physical path exists
