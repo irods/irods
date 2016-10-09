@@ -10796,7 +10796,7 @@ irods::error db_mod_access_control_op(
     char objIdStr[MAX_NAME_LEN];
     snprintf( objIdStr, sizeof( objIdStr ), "%lld", objId );
 
-    rodsLog( LOG_NOTICE, "recursiveFlag %d", _recursive_flag );
+    rodsLog( LOG_DEBUG, "recursiveFlag %d", _recursive_flag );
 
     /* non-Recursive mode */
     if ( _recursive_flag == 0 ) {
