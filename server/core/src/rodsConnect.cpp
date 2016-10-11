@@ -167,7 +167,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
         afterTime = time( 0 );
         if ( afterTime - beforeTime >= 2 ) {
             rodsLog( LOG_NOTICE,
-                     "WARNING WARNING: gethostbyname of %s is taking %d sec. This could severely affect interactivity of your Rods system",
+                     "WARNING WARNING: gethostbyname of %s is taking %d sec. This could severely affect interactivity of your iRODS system",
                      myHostName, afterTime - beforeTime );
             /* XXXXXX may want to mark resource down later */
         }
