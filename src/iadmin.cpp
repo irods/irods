@@ -1858,6 +1858,9 @@ usage( char *subOpt ) {
         "The free_space value can be simply specified, or if it starts with + or -",
         "the free_space amount will be incremented or decremented by the value.",
         " ",
+        "'context' is any contextual information relevant to this resource.",
+        "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
+        " ",
         "'rebalance' will trigger the rebalancing operation on a coordinating resource node.",
         ""
     };
