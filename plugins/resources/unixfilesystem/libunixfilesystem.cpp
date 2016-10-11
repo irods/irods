@@ -587,12 +587,6 @@ extern "C" {
             ret = unix_file_get_fsfreespace_plugin( _ctx );
             if ( ( result = ASSERT_PASS( ret, "Error determining freespace on system." ) ).ok() ) {
                 rodsLong_t file_size = fco->size();
-                if (replica_exceeds_resource_free_space(_ctx, file_size)) {
-                    std::stringstream msg;
-                    msg << "file size " << file_size << " would violate minimum free space constraint";
-                    return ERROR(USER_FILE_TOO_LARGE, msg.str());
-                }
-
                 if ( ( result = ASSERT_ERROR( file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
                                               file_size, ret.code() ) ).ok() ) {
                     // =-=-=-=-=-=-=-
