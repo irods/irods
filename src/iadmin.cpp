@@ -1596,7 +1596,7 @@ void usageMain() {
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " rmdir Name (remove directory) ",
         " mkresc Name Type [Host:Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, host, path, status, comment, info, freespace, context, rebalance] Value (mod Resc)",
+        " modresc Name [name, type, host, path, status, comment, info, free_space, context, rebalance] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
@@ -1842,7 +1842,7 @@ usage( char *subOpt ) {
     };
 
     char *modrescMsgs[] = {
-        " modresc Name [name, type, host, path, status, comment, info, freespace, context, rebalance] Value",
+        " modresc Name [name, type, host, path, status, comment, info, free_space, context, rebalance] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
@@ -1855,8 +1855,8 @@ usage( char *subOpt ) {
         "the Resource Monitoring System (if running) to set the resource status",
         "to '" RESC_AUTO_UP "' or '" RESC_AUTO_DOWN "'.",
         " ",
-        "The freespace value can be simply specified, or if it starts with + or -",
-        "the freespace amount will be incremented or decremented by the value.",
+        "The free_space value can be simply specified, or if it starts with + or -",
+        "the free_space amount will be incremented or decremented by the value.",
         " ",
         "'rebalance' will trigger the rebalancing operation on a coordinating resource node.",
         ""
