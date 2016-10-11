@@ -10,11 +10,9 @@
 
 namespace irods {
 
-    static const std::string IRODS_LEGACY_ENV_FILE = "/.irods/.irodsEnv";
     static const std::string IRODS_JSON_ENV_FILE = "/.irods/irods_environment.json";
 
     error get_json_environment_file( std::string& _env_file, std::string& _session_file);
-    error get_legacy_environment_file( std::string& _env_file, std::string& _session_file);
 
     class environment_properties {
 
@@ -48,16 +46,7 @@ namespace irods {
 
             template< typename T >
             T& get_property( const std::string& _key ) {
-                try {
-                    return config_props_.get< T >( _key );
-                } catch ( const irods::exception& e ) {
-                    if ( e.code() == KEY_NOT_FOUND ) {
-                        try {
-                            return config_props_.get< T >( legacy_key_map_.at( _key ) );
-                        } catch ( const std::out_of_range& e ) {}
-                    }
-                    throw e;
-                }
+                return config_props_.get< T >( _key );
             }
 
             template< typename T >
@@ -82,12 +71,7 @@ namespace irods {
             void operator=( environment_properties const& );
 
             /**
-             * @brief capture the legacy version: .irodsEnv
-             */
-            void capture_legacy( const std::string& );
-
-            /**
-             * @brief capture the new json version: irods_environment.json
+             * @brief capture irods_environment.json
              */
             void capture_json( const std::string& );
 
@@ -95,9 +79,6 @@ namespace irods {
              * @brief properties lookup table
              */
             configuration_parser config_props_;
-
-            /// @brief map of old keys to new keys
-            std::map< std::string, std::string > legacy_key_map_;
 
     }; // class environment_properties
 
