@@ -874,9 +874,15 @@ execAgent( int newSock, startupPack_t *startupPack ) {
 
     sendSocketOverSocket( tmp_socket, newSock );
 
+    status = recv( tmp_socket, &in_buf, 1024, 0 );
+    if ( status == -1 ) {
+        rodsLog( LOG_DEBUG, "Did not receive child pid from agent" );
+    }
+    int childPid = atoi(in_buf);
+
     close( tmp_socket );
 
-    return status;
+    return childPid;
 }
 
 int

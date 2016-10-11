@@ -158,6 +158,9 @@ int receiveDataFromServer( int inSocket ) {
     char socket_buf[16];
     snprintf(socket_buf, 16, "%d", newSocket);
 
+    len = snprintf( ack_buffer, 256, "%d", getpid() );
+    send ( conn_tmp_socket, ack_buffer, len, 0 );
+
     status = setenv( "spNewSock", socket_buf, 1 );
 
     close( conn_tmp_socket );
