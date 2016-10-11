@@ -38,7 +38,7 @@ parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
     return status;
 }
 
-/* parseRodsPath - Parase a rods path into full rods path taking care of
+/* parseRodsPath - Parse a rods path into full rods path taking care of
  * all the "/../", "/./" and "." entries in the path.
  * The input is taken from rodsPath->inPath.
  * The output path is written in rodsPath->outPath.
