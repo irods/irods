@@ -4,19 +4,9 @@ This repository hosts the client iCommands, the default command line interface t
 
 ## Build
 
-To build the iCommands, you will need the `irods-dev` package.
+To build the iCommands, you will need the `irods-dev` and `irods-runtime` packages.
 
 This is a CMake project and can be built with:
-
-```
-cd irods_client_icommands
-mkdir build
-cd build
-cmake ../
-make package
-```
-
-or
 
 ```
 cd irods_client_icommands
