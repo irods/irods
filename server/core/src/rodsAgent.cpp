@@ -282,6 +282,8 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     // register irods signal handlers
     register_handlers();
 
+    initProcLog();
+
 #ifdef SERVER_DEBUG
     if ( isPath( "/tmp/rodsdebug" ) ) {
 rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20 );
@@ -345,6 +347,7 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             int child_status;
             while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
                 rodsLog( LOG_NOTICE, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
+                rmProcLog( reaped_pid );
             }
         } else {
             rodsLog( LOG_ERROR, "fork() failed in rodsAgent process factory" );

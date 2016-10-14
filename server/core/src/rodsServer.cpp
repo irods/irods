@@ -618,7 +618,7 @@ procChildren( agentProc_t **agentProcHead ) {
                      "Agent process %d exited with status %d but not in queue",
                      childPid, status );
         }
-        rmProcLog( childPid );
+//        rmProcLog( childPid );
     }
 
     return 0;
@@ -785,12 +785,6 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     if (status < 0) {
         rodsLog( LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent" );
     }
-
-    status = sendEnvironmentVarStrToSocket( SP_RE_CACHE_SALT,irods::get_server_property<const std::string>( irods::CFG_RE_CACHE_SALT_KW).c_str(),  tmp_socket );
-    if (status < 0) {
-        rodsLog( LOG_ERROR, "Failed to send SP_RE_CACHE_SALT to agent" );
-    }
-
     status = sendEnvironmentVarIntToSocket( SP_CONNECT_CNT, startupPack->connectCnt, tmp_socket);
     if (status < 0) {
         rodsLog( LOG_ERROR, "Failed to send SP_CONNECT_CNT to agent" );
