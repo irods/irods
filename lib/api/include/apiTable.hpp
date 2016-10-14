@@ -444,7 +444,7 @@ static irods::apidef_t client_api_table_inp[] = {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
         "fileOpenInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,fileOpenInp_t*)>(RS_FILE_TRUNCATE)),
-        "file_open", clearFileOpenInp,
+        "file_truncate", clearFileOpenInp,
         (funcPtr)CALL_FILEOPENINP
     },
     {
@@ -651,7 +651,7 @@ static irods::apidef_t client_api_table_inp[] = {
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "getTempPasswordForOtherInp_PI", 0,  "getTempPasswordForOtherOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,getTempPasswordForOtherInp_t*,getTempPasswordForOtherOut_t**)>(RS_GET_TEMP_PASSWORD_FOR_OTHER)),
-		"get_temp_password", irods::clearInStruct_noop,
+		"get_temp_password_for_other", irods::clearInStruct_noop,
         (funcPtr)CALL_GETTEMPPASSWORDFOROTHERINP_GETTEMPPASSWORDFOROTHEROUT
     },
     {
@@ -710,7 +710,7 @@ static irods::apidef_t client_api_table_inp[] = {
         CLOSE_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "INT_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,int*)>(RS_CLOSE_COLLECTION)),
-		"close_colletion", irods::clearInStruct_noop,
+		"close_collection", irods::clearInStruct_noop,
         (funcPtr)CALL_INTP
     },
     {
@@ -1033,7 +1033,7 @@ static irods::apidef_t client_api_table_inp[] = {
         SUB_STRUCT_FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "SubFile_PI", 0, NULL, 1,
         boost::any(std::function<int(rsComm_t*,subFile_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_GET)),
-		"sub-struct_file_get", irods::clearInStruct_noop,
+		"sub_struct_file_get", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP_BYTESBUFOUT
     },
     {
@@ -1075,7 +1075,7 @@ static irods::apidef_t client_api_table_inp[] = {
         STRUCT_FILE_EXT_AND_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "StructFileExtAndRegInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,structFileExtAndRegInp_t*)>(RS_STRUCT_FILE_EXT_AND_REG)),
-		"struct_file-ext_and_reg", irods::clearInStruct_noop,
+		"struct_file_ext_and_reg", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEEXTANDREGINP
     },
     {
@@ -1294,7 +1294,7 @@ static irods::apidef_t client_api_table_inp[] = {
         EXEC_RULE_EXPRESSION_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
         "ExecRuleExpression_PI", 0,  NULL, 0,
         boost::any(std::function<int(rsComm_t*,exec_rule_expression_t*)>(RS_EXEC_RULE_EXPRESSION)),
-        "set_round_robin_context", irods::clearInStruct_noop,
+        "exec_rule_expression", irods::clearInStruct_noop,
         (funcPtr)CALL_EXECRULEEXPRESSIONINP
     },
 }; // _api_table_inp
