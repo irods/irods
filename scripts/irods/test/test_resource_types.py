@@ -690,43 +690,28 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
         shutil.rmtree(IrodsConfig().irods_directory + "/demoRescVault", ignore_errors=True)
 
-    def test_unix_filesystem_high_water_mark__2981(self):
-        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 3000000 # bigger than normal cache buffers
+    def test_unix_filesystem_free_space__3306(self):
+        filename = 'test_unix_filesystem_free_space__3306.txt'
+        filesize = 3000000
         lib.make_file(filename, filesize)
 
-        # make sure the physical path exists
-        lib.make_dir_p(self.admin.get_vault_session_path('demoResc'))
+        free_space = 10000000
+        self.admin.assert_icommand('iadmin modresc demoResc freespace {0}'.format(free_space))
 
-        # above threshold - should NOT accept new file
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('demoResc')).used - 100
-        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        # free_space already below threshold - should NOT accept new file
+        minimum = free_space + 10
+        self.admin.assert_icommand('iadmin modresc demoResc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'USER_FILE_TOO_LARGE')
 
-        # crossing threshold - should NOT accept new file
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('demoResc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        # free_space will be below threshold if replica is created - should NOT accept new file
+        minimum = free_space - filesize/2
+        self.admin.assert_icommand('iadmin modresc demoResc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'USER_FILE_TOO_LARGE')
 
-        # below threshold - should accept new file
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('demoResc')).used + 10000000
-        self.admin.assert_icommand("iadmin modresc demoResc context high_water_mark={0}".format(hwm))
+        # after replica creation, free_space will still be greater than minimum - should accept new file
+        minimum = free_space - filesize*2
+        self.admin.assert_icommand('iadmin modresc demoResc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file3')
-
-    def test_unix_filesystem_free_inodes_for_create__3195(self):
-        if statvfs_path_or_parent(self.admin.get_vault_path('demoResc')).f_files == 0:
-            return # file system doesn't report inodes
-        filename = 'test_unix_filesystem_free_inodes_for_create__3195.txt'
-        filesize = 50000
-        lib.make_file(filename, filesize)
-
-        # below threshold - should NOT accept new file
-        self.admin.assert_icommand("iadmin modresc demoResc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
-        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'USER_INSUFFICIENT_FREE_INODES')
-
-        # above threshold - should accept new file
-        self.admin.assert_icommand("iadmin modresc demoResc context required_free_inodes_for_create=1")
-        self.admin.assert_icommand(['iput', filename, 'file3'])
 
     def test_key_value_passthru(self):
         env = os.environ.copy()
@@ -981,42 +966,29 @@ class Test_Resource_Random(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
-    def test_unix_filesystem_high_water_mark__2981(self):
-        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 3000000 # bigger than normal cache buffers
+    def test_unix_filesystem_free_space__3306(self):
+        filename = 'test_unix_filesystem_free_space__3306'
+        filesize = 3000000
         lib.make_file(filename, filesize)
 
-        # make sure the physical paths exist
-        lib.make_dir_p(self.admin.get_vault_session_path('unix1Resc'))
-        lib.make_dir_p(self.admin.get_vault_session_path('unix2Resc'))
-        lib.make_dir_p(self.admin.get_vault_session_path('unix3Resc'))
+        free_space = 1000000000
+        self.admin.assert_icommand('iadmin modresc unix1Resc freespace {0}'.format(free_space))
+        self.admin.assert_icommand('iadmin modresc unix2Resc freespace {0}'.format(free_space))
+        self.admin.assert_icommand('iadmin modresc unix3Resc freespace {0}'.format(free_space))
 
-        # above threshold - should NOT accept new file on any child
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix3Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
+        # minimum below free space - should NOT accept new file on any child
+        minimum = free_space + 10
+        self.admin.assert_icommand('iadmin modresc unix1Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        self.admin.assert_icommand('iadmin modresc unix2Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        self.admin.assert_icommand('iadmin modresc unix3Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
-        # crossing threshold - should NOT accept new file on any child
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix3Resc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
-        self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
-
-        # below threshold - should accept new file on unix2Resc only
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used + 10000000
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix3Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix3Resc context high_water_mark={0}".format(hwm))
+        # minimum above free space plus file size - should accept new file on unix2Resc only
+        minimum = free_space + 10
+        self.admin.assert_icommand('iadmin modresc unix1Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        self.admin.assert_icommand('iadmin modresc unix3Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        minimum = free_space - filesize - 10
+        self.admin.assert_icommand('iadmin modresc unix2Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file3')
         self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
 
@@ -3484,59 +3456,28 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
-    def test_unix_filesystem_high_water_mark__2981(self):
-        filename = 'test_unix_filesystem_high_water_mark__2981.txt'
-        filesize = 3000000 # bigger than normal cache buffers
+    def test_unix_filesystem_free_space__3306(self):
+        filename = 'test_unix_filesystem_free_space__3306'
+        filesize = 3000000
         lib.make_file(filename, filesize)
 
-        # make sure the physical paths exist
-        lib.make_dir_p(self.admin.get_vault_session_path('unix1Resc'))
-        lib.make_dir_p(self.admin.get_vault_session_path('unix2Resc'))
+        free_space = 1000000000
+        self.admin.assert_icommand('iadmin modresc unix1Resc freespace {0}'.format(free_space))
+        self.admin.assert_icommand('iadmin modresc unix2Resc freespace {0}'.format(free_space))
 
-        # above threshold - should NOT accept new file on any child
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        # minimum above free space - should NOT accept new file on any child
+        minimum = free_space + 10
+        self.admin.assert_icommand('iadmin modresc unix1Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        self.admin.assert_icommand('iadmin modresc unix2Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file1', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
 
-        # crossing threshold - should NOT accept new file on any child
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used + 10000
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
-        self.admin.assert_icommand('iput ' + filename + ' file2', 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
-
-        # below threshold - should accept new file on unix2Resc only
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix1Resc')).used - 100
-        self.admin.assert_icommand("iadmin modresc unix1Resc context high_water_mark={0}".format(hwm))
-        hwm = psutil.disk_usage(self.admin.get_vault_session_path('unix2Resc')).used + 10000000
-        self.admin.assert_icommand("iadmin modresc unix2Resc context high_water_mark={0}".format(hwm))
+        # minimum below free space after put - should accept new file on unix2Resc only
+        minimum = free_space + 10
+        self.admin.assert_icommand('iadmin modresc unix1Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
+        minimum = free_space - filesize - 10
+        self.admin.assert_icommand('iadmin modresc unix2Resc context minimum_free_space_for_create_in_bytes={0}'.format(minimum))
         self.admin.assert_icommand('iput ' + filename + ' file3')
         self.admin.assert_icommand('ils -l file3', 'STDOUT_SINGLELINE', 'unix2Resc')
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
-    def test_unix_filesystem_free_inodes_for_create__3195(self):
-        if statvfs_path_or_parent(self.admin.get_vault_path('unix1Resc')).f_files == 0:
-            return # file system doesn't report inodes
-        if statvfs_path_or_parent(self.admin.get_vault_path('unix2Resc')).f_files == 0:
-            return # file system doesn't report inodes
-
-        filename = 'test_unix_filesystem_free_inodes_for_create__3195.txt'
-        filesize = 50000
-        lib.make_file(filename, filesize)
-
-        # below threshold - should NOT accept new file on any child
-        self.admin.assert_icommand("iadmin modresc unix1Resc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
-        self.admin.assert_icommand("iadmin modresc unix2Resc context required_free_inodes_for_create=4611686018427387904") # 2^62 should exceed free inodes on most filesystems, while not overflowing the intmax_t we store it in
-        self.admin.assert_icommand(['iput', filename, 'file1'], 'STDERR_SINGLELINE', 'NO_NEXT_RESC_FOUND')
-
-        # above threshold - should accept new file on unix2Resc only
-        self.admin.assert_icommand("iadmin modresc unix2Resc context required_free_inodes_for_create=1")
-        for i in range(5):
-            self.admin.assert_icommand(['iput', filename, 'file{0}'.format(i)])
-            self.admin.assert_icommand('ils -l file{0}'.format(i), 'STDOUT_SINGLELINE', 'unix2Resc')
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
