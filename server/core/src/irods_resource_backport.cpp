@@ -44,8 +44,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get the resource property - freespace
         prop_name = RESOURCE_FREESPACE;
-        long freespace = 0;
-        err = _resc->get_property< long >( prop_name, freespace );
+        std::string freespace;
+        err = _resc->get_property< std::string >( prop_name, freespace );
         if ( !err.ok() ) {
             std::stringstream msg;
             msg << "failed to get property [";
@@ -211,10 +211,10 @@ namespace irods {
         }
 
         addKeyVal(_kvp, RESC_ID_KW,     boost::lexical_cast<std::string>(id).c_str());
-        addKeyVal(_kvp, FREE_SPACE_KW,  boost::lexical_cast<std::string>(freespace).c_str());
         addKeyVal(_kvp, QUOTA_LIMIT_KW, boost::lexical_cast<std::string>(quota).c_str());
         addKeyVal(_kvp, RESC_STATUS_KW, boost::lexical_cast<std::string>(status).c_str());
 
+        addKeyVal(_kvp, FREE_SPACE_KW,      freespace.c_str());
         addKeyVal(_kvp, RESC_ZONE_KW,       zone.c_str());
         addKeyVal(_kvp, RESC_NAME_KW,       name.c_str());
         addKeyVal(_kvp, RESC_LOC_KW,        location.c_str());

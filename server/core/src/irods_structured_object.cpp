@@ -182,11 +182,11 @@ namespace irods {
         resc_ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
         resc_ptr->set_property<rodsLong_t>( RESOURCE_ID, -1 );
-        resc_ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
         resc_ptr->set_property<long>( RESOURCE_QUOTA, -1 );
 
         resc_ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
 
+        resc_ptr->set_property<std::string>( RESOURCE_FREESPACE, "-1" );
         resc_ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
         resc_ptr->set_property<std::string>( RESOURCE_NAME,      plugin_type );
         resc_ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
@@ -263,6 +263,3 @@ namespace irods {
     } // get_re_vars
 
 }; // namespace irods
-
-
-

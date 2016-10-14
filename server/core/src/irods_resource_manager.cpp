@@ -692,9 +692,9 @@ namespace irods {
 
             rodsLong_t resource_id = strtoll( tmpRescId.c_str(), 0, 0 );
             resc->set_property<rodsLong_t>( RESOURCE_ID, resource_id );
-            resc->set_property<long>( RESOURCE_FREESPACE, strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
             resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 
+            resc->set_property<std::string>( RESOURCE_FREESPACE,      tmpFreeSpace );
             resc->set_property<std::string>( RESOURCE_ZONE,           tmpZoneName );
             resc->set_property<std::string>( RESOURCE_NAME,           tmpRescName );
             resc->set_property<std::string>( RESOURCE_LOCATION,       tmpRescLoc );
