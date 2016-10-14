@@ -38,7 +38,7 @@ the National Climatic Data Center (NCDC); the National Optical Astronomy
 Observatory (NOAO); the Australian Research Collaboration Service (ARCS); and 
 the Centre de Calcul de l'Institut National de Physique Nucléaire et de 
 Physique des Particules (CC-IN2P3) in France are using iRODS for managing 
-petybytes of data in hundreds of millions of files on distributed storage 
+petabytes of data in hundreds of millions of files on distributed storage 
 resources spread across the country and around the globe.
 
 #### Preservation Environments for Long-term Archiving

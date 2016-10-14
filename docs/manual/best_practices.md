@@ -49,7 +49,7 @@ iRODS is initially configured with the motivation of having a usable system.  To
 
 Since 4.1.10, the unixfilesystem resource context string can set 'minimum_free_space_for_create_in_bytes" which will be checked against the 'free_space' value set in the iCAT catalog for that resource before voting to accept any create operations.
 
-To update the 'free_space' value automatically, add the following rule to an active rulebase on each server:
+To update the 'free_space' value automatically, add the following rules to an active rulebase on each server:
 
 ```
 acPostProcForParallelTransferReceived(*leaf_resource) {

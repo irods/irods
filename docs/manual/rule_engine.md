@@ -64,14 +64,6 @@ delay("<PLUSET>1m</PLUSET><EF>20m</EF>") {
 }
 ~~~
 
-This example will queue the chain of microservices to begin in 1 minute and repeat every 20 minutes forever:
-
-~~~c
-delay("<PLUSET>1m</PLUSET><EF>20m</EF>") {
-    writeLine("serverLog", " -- Delayed Execution");
-}
-~~~
-
 
 ## Remote execution
 
