@@ -1,5 +1,9 @@
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq wget curl libfuse-dev libcurl4-gnutls-dev libpam0g-dev libxml2-dev libbz2-dev libssl-dev libkrb5-dev zlib1g-dev python-dev help2man unixodbc unixodbc-dev python-psutil
+ - sudo apt-get install -qq wget curl libcurl4-gnutls-dev libpam0g-dev libxml2-dev libbz2-dev libssl-dev zlib1g-dev python-dev help2man unixodbc unixodbc-dev python-psutil
+ - wget -qO - https://unstable.irods.org/irods-unstable-signing-key.asc | sudo apt-key add -
+ - echo "deb [arch=amd64] https://unstable.irods.org/apt/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/renci-irods-unstable.list
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq irods-externals-*
 
-script: hostname; cat /etc/hosts; ifconfig; sudo ./packaging/build.sh -r -j6 icat postgres
+script: export PATH=/opt/irods-externals/cmake3.5.2-0/bin:/opt/irods-externals/clang3.8-0/bin:$PATH; mkdir build; cd build; cmake ../; make package
