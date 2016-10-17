@@ -47,6 +47,7 @@ int agent_conn_socket;
 bool connected_to_agent = false;
 
 pid_t agent_spawning_pid;
+char agent_factory_socket_file[128];
 
 uint ServerBootTime;
 int SvrSock;
@@ -224,12 +225,11 @@ main( int argc, char **argv )
     // Set up local_addr for socket communication
     memset( &local_addr, 0, sizeof(local_addr) );
     local_addr.sun_family = AF_UNIX;
-    char tmp_socket_file[128];
     char random_suffix[65];
     get64RandomBytes( random_suffix );
-    strcpy(tmp_socket_file, "/tmp/irods_agent_socket_");
-    strcat(tmp_socket_file, random_suffix);
-    strcpy( local_addr.sun_path, tmp_socket_file );
+    strcpy( agent_factory_socket_file, "/tmp/irods_agent_socket_" );
+    strcat( agent_factory_socket_file, random_suffix );
+    strcpy( local_addr.sun_path, agent_factory_socket_file );
 
     agent_spawning_pid = fork();
 
@@ -240,11 +240,11 @@ main( int argc, char **argv )
         exit( runIrodsAgent( local_addr ) );
     } else if ( agent_spawning_pid > 0 ) {
         // Parent process
-        rodsLog(LOG_NOTICE, "Agent spawning process pid = [%d]", agent_spawning_pid);
+        rodsLog(LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid);
         agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
     } else {
         // Error, fork failed
-        rodsLog( LOG_ERROR, "fork() failed when attempting to create agent spawning process" );
+        rodsLog( LOG_ERROR, "fork() failed when attempting to create agent factory process" );
         exit( 1 );
     }
 
@@ -560,6 +560,7 @@ serverMain( char *logDir ) {
     uninstantiate_shared_memory();
 
     close( agent_conn_socket );
+    unlink( agent_factory_socket_file );
 
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
@@ -581,6 +582,9 @@ serverExit()
     rodsLog( LOG_NOTICE, "rodsServer caught signal %d, exiting", sig );
     recordServerProcess( NULL ); /* unlink the process id file */
 
+    close( agent_conn_socket );
+    unlink( agent_factory_socket_file );
+
     // Wake and terminate agent spawning process
     kill( agent_spawning_pid, SIGTERM );
     kill( agent_spawning_pid, SIGCONT );
@@ -596,7 +600,6 @@ usage( char *prog ) {
     printf( " -V  very verbose (LOG_DEBUG1)\n" );
     printf( " -q  quiet (LOG_ERROR)\n" );
     printf( " -s  log SQL commands\n" );
-
 }
 
 int
@@ -875,6 +878,7 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     int childPid = atoi(in_buf);
 
     close( tmp_socket );
+    unlink( tmp_socket_file );
 
     return childPid;
 }
