@@ -726,6 +726,9 @@ acRunWorkFlow(*File, *R_BUF) {
    msiDataObjRead(*S_FD,33554412,*R_BUF);
    msiDataObjClose(*S_FD,*Status2);
 }
+
+acPostProcForParallelTransferReceived(*leaf_resource) {}
+
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
 #pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
