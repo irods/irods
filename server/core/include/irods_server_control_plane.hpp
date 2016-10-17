@@ -21,6 +21,7 @@ namespace irods {
     const std::string SERVER_CONTROL_PAUSE( "server_control_pause" );
     const std::string SERVER_CONTROL_RESUME( "server_control_resume" );
     const std::string SERVER_CONTROL_STATUS( "server_control_status" );
+    const std::string SERVER_CONTROL_PING( "server_control_ping" );
 
     const std::string SERVER_CONTROL_ALL_OPT( "all" );
     const std::string SERVER_CONTROL_HOSTS_OPT( "hosts" );

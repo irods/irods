@@ -95,24 +95,8 @@ class IrodsController(object):
                 cwd=self.config.server_bin_directory,
                 env=self.config.execution_environment)
 
-            try_count = 1
-            max_retries = 100
-            while True:
-                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                        irods_port, try_count)
-                with contextlib.closing(socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)) as s:
-                    if s.connect_ex(('127.0.0.1', irods_port)) == 0:
-                        if lib.get_pids_executing_binary_file(
-                                self.config.server_executable):
-                            l.debug('Successfully connected to port %s.', irods_port)
-                            break
-                        else:
-                            try_count = max_retries
-                if try_count >= max_retries:
-                    raise IrodsError('iRODS server failed to start.')
-                try_count += 1
-                time.sleep(1)
+            l.debug('Attempting to ping iRODS server...')
+            lib.execute_command_timeout(['irods-grid', 'ping', '--hosts={0}'.format(lib.get_hostname())], timeout=10)
         except IrodsError as e:
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
@@ -125,23 +109,8 @@ class IrodsController(object):
         if 'IRODS_ENVIRONMENT_FILE' in self.config.execution_environment:
             kwargs['env'] = copy.copy(os.environ)
             kwargs['env']['IRODS_ENVIRONMENT_FILE'] = self.config.execution_environment['IRODS_ENVIRONMENT_FILE']
-        p = lib.execute_command_nonblocking(args, **kwargs)
         start_time = time.time()
-        while time.time() < start_time + timeout:
-            if p.poll() is not None:
-                out, err = lib.communicate_and_log(p, args)
-                lib.check_command_return(args, out, err, p.returncode, **kwargs)
-                break
-            time.sleep(0.3)
-        else:
-            try:
-                if p.poll() is None:
-                    p.kill()
-            except OSError:
-                pass
-            raise IrodsError(
-                'The call to "irods-grid shutdown" did not complete within'
-                ' {0} seconds.'.format(timeout))
+        lib.execute_command_timeout(args, timeout=timeout, **kwargs)
 
         # "irods-grid shutdown" is non-blocking
         while time.time() < start_time + timeout:

@@ -462,6 +462,20 @@ namespace irods {
 
     } // operation_status
 
+    static error operation_ping(
+        const std::string&, // _wait_option,
+        const size_t, //       _wait_seconds,
+        std::string& _output ) {
+
+        _output += "{\n    \"status\": \"alive\"\n},\n";
+        /*rodsEnv my_env;
+        _reloadRodsEnv( my_env );
+        _output += "{\n    \"pinging\": \"";
+        _output += my_env.rodsHost;
+        _output += "\"\n},\n";*/
+        return SUCCESS();
+    }
+
     bool server_control_executor::compare_host_names(
         const std::string& _hn1,
         const std::string& _hn2 ) {
@@ -535,6 +549,7 @@ namespace irods {
         op_map_[ SERVER_CONTROL_PAUSE ]    = operation_pause;
         op_map_[ SERVER_CONTROL_RESUME ]   = operation_resume;
         op_map_[ SERVER_CONTROL_STATUS ]   = operation_status;
+        op_map_[ SERVER_CONTROL_PING ]     = operation_ping;
         if ( _prop == CFG_RULE_ENGINE_CONTROL_PLANE_PORT ) {
             op_map_[ SERVER_CONTROL_SHUTDOWN ] = rule_engine_operation_shutdown;
         }
@@ -951,10 +966,7 @@ namespace irods {
         host_list_t&                 _hosts ) {
         // capture and validate the command parameter
         _name = _cmd.command;
-        if ( SERVER_CONTROL_SHUTDOWN != _name &&
-                SERVER_CONTROL_PAUSE    != _name &&
-                SERVER_CONTROL_RESUME   != _name &&
-                SERVER_CONTROL_STATUS   != _name ) {
+        if ( op_map_.count(_name) == 0 ) {
             std::string msg( "invalid command [" );
             msg += _name;
             msg += "]";

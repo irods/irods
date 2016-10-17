@@ -23,6 +23,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import time
 
 from . import six
 
@@ -65,6 +66,25 @@ def execute_command_nonblocking(args, stdout=subprocess.PIPE, stderr=subprocess.
                     'please ensure \'{0}\' is installed and in the path.'.format(
                         args[0]))])),
             sys.exc_info()[2])
+
+def execute_command_timeout(args, timeout=10, **kwargs):
+    p = execute_command_nonblocking(args, **kwargs)
+    start_time = time.time()
+    while time.time() < start_time + timeout:
+        if p.poll() is not None:
+            out, err = communicate_and_log(p, args)
+            check_command_return(args, out, err, p.returncode, **kwargs)
+            break
+        time.sleep(0.3)
+    else:
+        try:
+            if p.poll() is None:
+                p.kill()
+        except OSError:
+            pass
+        raise IrodsError(
+            'The call {0} did not complete within'
+            ' {1} seconds.'.format(args, timeout))
 
 def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, **kwargs):
     if input is not None:
