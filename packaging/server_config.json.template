@@ -24,7 +24,7 @@
         "resource" : {},
         "rule_engines": [
             {
-                "instance_name":"irods_rule_engine_plugin-irods_rule_language-instance",
+                "instance_name": "irods_rule_engine_plugin-irods_rule_language-instance",
                 "plugin_name": "irods_rule_engine_plugin-irods_rule_language",
                 "plugin_specific_configuration": {
                         "re_data_variable_mapping_set": [
@@ -43,6 +43,12 @@
                         ]
                 },
                 "shared_memory_instance" : "legacy_re"
+            },
+            {
+                "instance_name": "irods_rule_engine_plugin-cpp_default_policy-instance",
+                "plugin_name: "irods_rule_engine_plugin-cpp_default_policy",
+                "plugin_specific_configuration": {
+                }
             }
         ]
     },
