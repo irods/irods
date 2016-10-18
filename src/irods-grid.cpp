@@ -24,7 +24,7 @@
 template <typename T>
 irods::error usage(T& ostream) {
     ostream << "usage:  'irods-grid action [ option ] target'" << std::endl;
-    ostream << "action: ( required ) status, pause, resume, shutdown" << std::endl;
+    ostream << "action: ( required ) status, ping, pause, resume, shutdown" << std::endl;
     ostream << "option: --force-after=seconds or --wait-forever" << std::endl;
     ostream << "target: ( required ) --all, --hosts=<fqdn1>,<fqdn2>,..." << std::endl;
 
@@ -40,12 +40,14 @@ irods::error parse_program_options(
     namespace po = boost::program_options;
     po::options_description opt_desc( "options" );
     opt_desc.add_options()
-    ( "action", "either 'status', 'shutdown', 'pause', or 'resume'" )
+    ( "action", "either 'status', 'ping', 'shutdown', 'pause', or 'resume'" )
     ( "help", "show command usage" )
     ( "all", "operation applies to all servers in the grid" )
     ( "hosts", po::value<std::string>(), "operation applies to a list of hosts in the grid" )
     ( "force-after", po::value<size_t>(), "force shutdown after N seconds" )
     ( "wait-forever", "wait indefinitely for a graceful shutdown" )
+    ( "ping", "attempt a connection to a server(s)" )
+    ( "status", "display status a server(s)" )
     ( "shutdown", "gracefully shutdown a server(s)" )
     ( "pause", "refuse new client connections" )
     ( "resume", "allow new client connections" );
@@ -79,6 +81,7 @@ irods::error parse_program_options(
             const std::string& action = vm["action"].as<std::string>();
             boost::unordered_map< std::string, std::string > cmd_map;
             cmd_map[ "status"   ] = irods::SERVER_CONTROL_STATUS;
+            cmd_map[ "ping"     ] = irods::SERVER_CONTROL_PING;
             cmd_map[ "pause"    ] = irods::SERVER_CONTROL_PAUSE;
             cmd_map[ "resume"   ] = irods::SERVER_CONTROL_RESUME;
             cmd_map[ "shutdown" ] = irods::SERVER_CONTROL_SHUTDOWN;
