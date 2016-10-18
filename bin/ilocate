@@ -27,10 +27,10 @@ fi
 
 iQuestQry ()  # $1 == query_column, $2 == inputstr
 {
-		sql_output=`iquest --no-page "select COLL_NAME,DATA_NAME WHERE $1 $operand '$2'" 2> /dev/null`
+		sql_output=`iquest --no-page "%s/%s" "select COLL_NAME,DATA_NAME WHERE $1 $operand '$2'" 2> /dev/null`
 		if [ $? -eq 0 ]
 		then
-			echo "$sql_output" | egrep "^[A-Z]+_NAME = " | sed -e '/COLL_NAME/ s/$/\//' | awk '{print $3}' | sed -e :a -e '/$/N; s/\n/\ /; ta' | sed -e 's/\/ /\//g' | sed -e 's/ /\n/g' 
+			echo "$sql_output" | grep -v "CAT_NO_ROWS_FOUND"
 			return 0
 		else
 			return 1
