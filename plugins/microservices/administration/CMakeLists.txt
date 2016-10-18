@@ -1,6 +1,7 @@
 set(
   IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS
   msisync_to_archive
+  msi_update_unixfilesystem_resource_free_space
   )
 
 foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
