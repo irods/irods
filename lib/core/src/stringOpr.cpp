@@ -60,10 +60,10 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
         return dest;
     }
     else if ( status >= 0 ) {
-        std::cerr << irods::stacktrace().dump();
         rodsLog( LOG_ERROR,
-                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d src [%s]",
-                 status, maxLen, src );
+                 "rstrcpy not enough space in dest, slen:%d, maxLen:%d, stacktrace:\n%s",
+                 status, maxLen, irods::stacktrace().dump().c_str());
+        rodsLog( LOG_DEBUG, "rstrcpy arguments dest [%s] src [%s]", dest, src );
         return NULL;
     }
     else {
@@ -90,8 +90,9 @@ char *rstrcat( char *dest, const char *src, int maxLen ) {
 
     if ( slen + dlen >= maxLen ) {
         rodsLog( LOG_ERROR,
-                 "rstrcat not enough space in dest, slen:%d, dlen:%d, maxLen:%d",
-                 slen, dlen, maxLen );
+                 "rstrcat not enough space in dest, slen:%d, dlen:%d, maxLen:%d, stacktrace:\n%s",
+                 slen, dlen, maxLen, irods::stacktrace().dump().c_str() );
+        rodsLog( LOG_DEBUG, "rstrcat arguments dest [%s] src [%s]", dest, src );
         return NULL;
     }
 
@@ -115,8 +116,9 @@ char *rstrncat( char *dest, const char *src, int srcLen, int maxLen ) {
 
     if ( slen + dlen >= maxLen ) {
         rodsLog( LOG_ERROR,
-                 "rstrncat not enough space in dest, slen:%d, dlen:%d, maxLen:%d",
-                 slen, dlen, maxLen );
+                 "rstrncat not enough space in dest, slen:%d, dlen:%d, maxLen:%d, stacktrace:\n%s",
+                 slen, dlen, maxLen, irods::stacktrace().dump().c_str() );
+        rodsLog( LOG_DEBUG, "rstrncat arguments: dest [%s] src [%s]", dest, src );
         return NULL;
     }
 
