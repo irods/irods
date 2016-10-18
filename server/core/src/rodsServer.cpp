@@ -604,6 +604,7 @@ usage( char *prog ) {
 
 int
 procChildren( agentProc_t **agentProcHead ) {
+/*
     int childPid;
     agentProc_t *tmpAgentProc;
     int status;
@@ -623,6 +624,37 @@ procChildren( agentProc_t **agentProcHead ) {
         }
 //        rmProcLog( childPid );
     }
+
+    return 0;
+*/
+    agentProc_t *tmpAgentProc, *prevAgentProc, *finishedAgentProc;
+    prevAgentProc = NULL;
+
+    boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
+
+    tmpAgentProc = *agentProcHead;
+
+    while ( tmpAgentProc != NULL ) {
+        // Check if pid is still an active process
+        if ( !kill( tmpAgentProc->pid, 0 ) ) {
+            rodsLog( LOG_NOTICE, "XXXXX Agent [%d] is finished, removing from queue", tmpAgentProc->pid );
+            finishedAgentProc = tmpAgentProc;
+
+            if ( prevAgentProc == NULL ) {
+                *agentProcHead = tmpAgentProc->next;
+            } else {
+                prevAgentProc->next = tmpAgentProc->next;
+            }
+            tmpAgentProc = tmpAgentProc->next;
+            free( finishedAgentProc );
+        } else {
+            rodsLog( LOG_NOTICE, "XXXXX Agent [%d] still running", tmpAgentProc->pid );
+            prevAgentProc = tmpAgentProc;
+            tmpAgentProc = tmpAgentProc->next;
+        }
+    }
+
+    con_agent_lock.unlock();
 
     return 0;
 }
