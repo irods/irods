@@ -46,7 +46,7 @@
             },
             {
                 "instance_name": "irods_rule_engine_plugin-cpp_default_policy-instance",
-                "plugin_name: "irods_rule_engine_plugin-cpp_default_policy",
+                "plugin_name": "irods_rule_engine_plugin-cpp_default_policy",
                 "plugin_specific_configuration": {
                 }
             }
