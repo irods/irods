@@ -299,6 +299,7 @@ class ResourceSuite(ResourceBase):
 
             filename = 'encryptedfile.txt'
             filepath = lib.create_local_testfile(filename)
+            IrodsController().restart()
             self.admin.assert_icommand(['iinit', self.admin.password])
             self.admin.assert_icommand(['iput', filename])
             self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', filename)
