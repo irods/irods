@@ -183,7 +183,7 @@ main( int argc, char **argv )
             putenv( tmpStr1 );
             rodsLogLevel( LOG_DEBUG1 );
             break;
-        case 'q':           /* quiet (only errors and above) */
+        case 'q':               /* quiet (only errors and above) */
             snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_ERROR );
             putenv( tmpStr1 );
             rodsLogLevel( LOG_ERROR );
@@ -240,7 +240,7 @@ main( int argc, char **argv )
         exit( runIrodsAgent( local_addr ) );
     } else if ( agent_spawning_pid > 0 ) {
         // Parent process
-        rodsLog(LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid);
+        rodsLog( LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid );
         agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
     } else {
         // Error, fork failed
@@ -281,10 +281,6 @@ serverize( char *logDir ) {
                      "serverize: setsid failed, errno = %d\n", errno );
             exit( 1 );
         }
-
-
-//sleep( 60 );
-
 
 #ifndef SYSLOG
         ( void ) dup2( LogFd, 0 );
@@ -402,7 +398,6 @@ serverMain( char *logDir ) {
         return ret.code();
     }
 
-
     uint64_t return_code = 0;
     // =-=-=-=-=-=-=-
     // Launch the Control Plane
@@ -429,6 +424,11 @@ serverMain( char *logDir ) {
             std::string the_server_state = server_state();
             if ( irods::server_state::STOPPED == the_server_state ) {
                 procChildren( &ConnectedAgentHead );
+
+                // Wake up the agent factory process so it can clean up and exit
+                kill( agent_spawning_pid, SIGTERM );
+                kill( agent_spawning_pid, SIGCONT );
+
                 rodsLog(
                     LOG_NOTICE,
                     "iRODS Server is exiting with state [%s].",
@@ -564,10 +564,6 @@ serverMain( char *logDir ) {
 
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
-    // Wake and kill agent spawning process
-    kill( agent_spawning_pid, SIGTERM );
-    kill( agent_spawning_pid, SIGCONT );
-
     return return_code;
 
 }
@@ -604,29 +600,6 @@ usage( char *prog ) {
 
 int
 procChildren( agentProc_t **agentProcHead ) {
-/*
-    int childPid;
-    agentProc_t *tmpAgentProc;
-    int status;
-
-
-    while ( ( childPid = waitpid( -1, &status, WNOHANG ) ) > 0 ) {
-        tmpAgentProc = getAgentProcByPid( childPid, agentProcHead );
-        if ( tmpAgentProc != NULL ) {
-            rodsLog( LOG_NOTICE, "Agent process %d exited with status %d",
-                     childPid, status );
-            free( tmpAgentProc );
-        }
-        else {
-            rodsLog( LOG_NOTICE,
-                     "Agent process %d exited with status %d but not in queue",
-                     childPid, status );
-        }
-//        rmProcLog( childPid );
-    }
-
-    return 0;
-*/
     agentProc_t *tmpAgentProc, *prevAgentProc, *finishedAgentProc;
     prevAgentProc = NULL;
 
@@ -637,7 +610,6 @@ procChildren( agentProc_t **agentProcHead ) {
     while ( tmpAgentProc != NULL ) {
         // Check if pid is still an active process
         if ( !kill( tmpAgentProc->pid, 0 ) ) {
-            rodsLog( LOG_NOTICE, "XXXXX Agent [%d] is finished, removing from queue", tmpAgentProc->pid );
             finishedAgentProc = tmpAgentProc;
 
             if ( prevAgentProc == NULL ) {
@@ -648,7 +620,6 @@ procChildren( agentProc_t **agentProcHead ) {
             tmpAgentProc = tmpAgentProc->next;
             free( finishedAgentProc );
         } else {
-            rodsLog( LOG_NOTICE, "XXXXX Agent [%d] still running", tmpAgentProc->pid );
             prevAgentProc = tmpAgentProc;
             tmpAgentProc = tmpAgentProc->next;
         }

@@ -25,6 +25,7 @@
 #include "irods_server_api_table.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_server_state.hpp"
 #include "irods_threads.hpp"
 #include "irods_re_plugin.hpp"
 #include "irods_re_serialization.hpp"
@@ -207,7 +208,6 @@ int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
             std::string lhs = tmpStr.substr(0, i);
             std::string rhs = tmpStr.substr(i+1, tmpStr.size());
 
-
             if ( lhs == SP_CONNECT_CNT ) {
                 rsComm->connectCnt = std::stoi( rhs );
             } else if ( lhs == SP_PROTOCOL ) {
@@ -265,18 +265,28 @@ int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
     return 0;
 }
 
+void
+irodsAgentSignalExit( int ) {
+    int reaped_pid, child_status;
+    while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
+        rmProcLog( reaped_pid );
+    }
+
+    exit( 1 );
+}
+
 int
 runIrodsAgent( sockaddr_un agent_addr ) {
     int status;
     rsComm_t rsComm;
 
-    signal( SIGINT, signalExit );
-    signal( SIGHUP, signalExit );
-    signal( SIGTERM, signalExit );
+    signal( SIGINT, irodsAgentSignalExit );
+    signal( SIGHUP, irodsAgentSignalExit );
+    signal( SIGTERM, irodsAgentSignalExit );
     /* set to SIG_DFL as recommended by andy.salnikov so that system()
      * call returns real values instead of 1 */
     signal( SIGCHLD, SIG_DFL );
-    signal( SIGUSR1, signalExit );
+    signal( SIGUSR1, irodsAgentSignalExit );
     signal( SIGPIPE, SIG_IGN );
 
     // register irods signal handlers
@@ -322,6 +332,13 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
     }
 
     while ( true ) {
+        int reaped_pid;
+        int child_status;
+        while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
+            rodsLog( LOG_NOTICE, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
+            rmProcLog( reaped_pid );
+        }
+
         pid_t child_pid = fork();
 
         if (child_pid == 0) {
@@ -329,7 +346,7 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             irods::environment_properties::instance().capture();
             irods::server_properties::instance().capture();
 
-            // Child process - Need to init the rsComm object  and break loop
+            // Child process - Need to init the rsComm object and break loop
             status = receiveDataFromServer( conn_socket );
 
             irods::error ret2 = setRECacheSaltFromEnv();
@@ -342,13 +359,6 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
         } else if (child_pid > 0) {
             // Parent process - want to go right back to paused state
             raise(SIGSTOP);
-
-            int reaped_pid;
-            int child_status;
-            while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
-                rodsLog( LOG_NOTICE, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
-                rmProcLog( reaped_pid );
-            }
         } else {
             rodsLog( LOG_ERROR, "fork() failed in rodsAgent process factory" );
             close( conn_socket );
@@ -356,6 +366,7 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             return -1;
         }
     }
+
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 
