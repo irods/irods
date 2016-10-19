@@ -4049,3 +4049,71 @@ class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
+
+class Test_Resource_RandomWithinRandom(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+    def setUp(self):
+        with session.make_session_for_existing_admin() as admin_session:
+            irods_config = IrodsConfig()
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc random", 'STDOUT_SINGLELINE', 'random')
+            admin_session.assert_icommand("iadmin mkresc random0 random", 'STDOUT_SINGLELINE', 'random')
+            admin_session.assert_icommand("iadmin mkresc random1 random", 'STDOUT_SINGLELINE', 'random')
+            admin_session.assert_icommand("iadmin mkresc random2 random", 'STDOUT_SINGLELINE', 'random')
+            admin_session.assert_icommand("iadmin mkresc random3 random", 'STDOUT_SINGLELINE', 'random')
+            admin_session.assert_icommand("iadmin mkresc unix0 'unixfilesystem' " + test.settings.HOSTNAME_1 + ":" +
+                                          irods_config.irods_directory + "/unix0Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix1 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
+                                          irods_config.irods_directory + "/unix1Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix2 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
+                                          irods_config.irods_directory + "/unix2Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin mkresc unix3 'unixfilesystem' " + test.settings.HOSTNAME_2 + ":" +
+                                          irods_config.irods_directory + "/unix3Vault", 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc random0")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc random1")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc random2")
+            admin_session.assert_icommand("iadmin addchildtoresc demoResc random3")
+            admin_session.assert_icommand("iadmin addchildtoresc random0 unix0")
+            admin_session.assert_icommand("iadmin addchildtoresc random1 unix1")
+            admin_session.assert_icommand("iadmin addchildtoresc random2 unix2")
+            admin_session.assert_icommand("iadmin addchildtoresc random3 unix3")
+        super(Test_Resource_RandomWithinRandom, self).setUp()
+
+    def tearDown(self):
+        super(Test_Resource_RandomWithinRandom, self).tearDown()
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc random3 unix3")
+            admin_session.assert_icommand("iadmin rmchildfromresc random2 unix2")
+            admin_session.assert_icommand("iadmin rmchildfromresc random1 unix1")
+            admin_session.assert_icommand("iadmin rmchildfromresc random0 unix0")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc random3")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc random2")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc random1")
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc random0")
+            admin_session.assert_icommand("iadmin rmresc unix3")
+            admin_session.assert_icommand("iadmin rmresc unix2")
+            admin_session.assert_icommand("iadmin rmresc unix1")
+            admin_session.assert_icommand("iadmin rmresc unix0")
+            admin_session.assert_icommand("iadmin rmresc random3")
+            admin_session.assert_icommand("iadmin rmresc random2")
+            admin_session.assert_icommand("iadmin rmresc random1")
+            admin_session.assert_icommand("iadmin rmresc random0")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
+        irods_config = IrodsConfig()
+        shutil.rmtree(irods_config.irods_directory + "/unix0Vault", ignore_errors=True)
+        shutil.rmtree(irods_config.irods_directory + "/unix1Vault", ignore_errors=True)
+        shutil.rmtree(irods_config.irods_directory + "/unix2Vault", ignore_errors=True)
+        shutil.rmtree(irods_config.irods_directory + "/unix3Vault", ignore_errors=True)
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
+    def test_trying_next_child_after_child_votes_no__3315(self):
+        self.admin.assert_icommand('iadmin modresc unix0 context minimum_free_space_for_create_in_bytes=1000000000000') # should cause unix0 to vote no because free_space is not set
+        self.admin.assert_icommand('iadmin modresc unix1 context minimum_free_space_for_create_in_bytes=1000000000000') # should cause unix1 to vote no because free_space is not set
+        self.admin.assert_icommand('iadmin modresc unix2 context minimum_free_space_for_create_in_bytes=1000000000000') # should cause unix2 to vote no because free_space is not set
+        filename = 'test_trying_next_child_after_child_votes_no__3315.txt'
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand(['iput', filename])
+        os.unlink(filepath)
