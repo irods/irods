@@ -385,7 +385,7 @@ reServerMain( char* logDir ) {
             chkLogfileName( logDir, RULE_EXEC_LOGFILE );
 #endif
             rodsLog(
-                LOG_NOTICE,
+                LOG_DEBUG,
                 "reServerMain: checking the queue for jobs" );
             status = getReInfo( rc_comm, &genQueryOut );
             if ( status < 0 ) {
