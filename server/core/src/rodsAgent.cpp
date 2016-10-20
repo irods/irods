@@ -153,7 +153,7 @@ int receiveDataFromServer( int inSocket ) {
         }
     }
 
-    int newSocket; 
+    int newSocket;
     receiveSocketFromSocket( conn_tmp_socket, &newSocket );
 
     char socket_buf[16];
@@ -173,7 +173,7 @@ int receiveDataFromServer( int inSocket ) {
 int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
     char in_buf[1024];
     bool data_complete = false;
-    
+
     while (!data_complete) {
         memset( in_buf, 0, 1024 );
         recv( socket, &in_buf, 1024, 0 );
@@ -220,7 +220,7 @@ int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
                 if ( rhs == PUBLIC_USER_NAME ) {
                     rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
                 }
-            } else if ( lhs == SP_PROXY_RODS_ZONE ) { 
+            } else if ( lhs == SP_PROXY_RODS_ZONE ) {
                 rstrcpy( rsComm->proxyUser.rodsZone, rhs.c_str(), NAME_LEN );
             } else if ( lhs == SP_CLIENT_USER ) {
                 rstrcpy( rsComm->clientUser.userName, rhs.c_str(), NAME_LEN );
@@ -245,7 +245,7 @@ int initRsCommFromServerSocket( rsComm_t *rsComm, int socket ) {
         }
     }
 
-    int newSocket; 
+    int newSocket;
     receiveSocketFromSocket( socket, &newSocket );
     rsComm->sock = newSocket;
 
@@ -335,7 +335,8 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
         int reaped_pid;
         int child_status;
         while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
-            rodsLog( LOG_NOTICE, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
+            const int log_level = child_status == 0 ? LOG_DEBUG : LOG_ERROR;
+            rodsLog( log_level, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
             rmProcLog( reaped_pid );
         }
 
@@ -515,7 +516,9 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
     cleanup();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );
-    rodsLog( LOG_NOTICE, "Agent [%d] exiting with status = %d", getpid(), status );
+
+    const int log_level = status == 0 ? LOG_DEBUG : LOG_ERROR;
+    rodsLog( log_level, "Agent [%d] exiting with status = %d", getpid(), status );
     return status;
 }
 
