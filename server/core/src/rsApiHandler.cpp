@@ -584,7 +584,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         }
     }
     else if ( strcmp( myHeader.type, RODS_DISCONNECT_T ) == 0 ) {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "readAndProcClientMsg: received disconnect msg from client" );
 
         return DISCONN_STATUS;
