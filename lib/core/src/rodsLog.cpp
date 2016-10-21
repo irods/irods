@@ -7,6 +7,7 @@
 const static std::map<const int, const std::string> irods_error_map = irods_error_map_construction::irods_error_map;
 
 #include "rods.h"
+#include "irods_socket_information.hpp"
 
 #ifdef SYSLOG
 #ifndef windows_platform
@@ -21,6 +22,7 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include <map>
 #include <string>
 #include <sys/time.h>
+#include "irods_exception.hpp"
 
 #ifndef windows_platform
 #include <unistd.h>
@@ -43,6 +45,38 @@ pid_t myPid = 0;
 static void rodsNtElog( char *msg );
 #endif
 
+std::string create_log_error_prefix() {
+    std::string ret("remote addresses: ");
+    try {
+        std::vector<int> fds = get_open_socket_file_descriptors();
+        std::vector<std::string> remote_addresses;
+        remote_addresses.reserve(fds.size());
+        for (const auto fd : fds) {
+            std::string remote_address = socket_fd_to_remote_address(fd);
+            if (remote_address != "") {
+                remote_addresses.push_back(std::move(remote_address));
+            }
+        }
+        if (remote_addresses.size() == 0) {
+            ret = "";
+            return ret;
+        }
+        std::sort(remote_addresses.begin(), remote_addresses.end());
+        auto new_end = std::unique(remote_addresses.begin(), remote_addresses.end());
+        remote_addresses.erase(new_end, remote_addresses.end());
+        for (size_t i=0; i<remote_addresses.size()-1; ++i) {
+            ret += remote_addresses[i];
+            ret += ", ";
+        }
+        ret += remote_addresses.back();
+    } catch (const irods::exception& e) {
+        ret = "";
+        return ret;
+    }
+
+    return ret;
+}
+
 /*
  Log or display a message.  The level argument indicates how severe
  the message is, and depending on the verbosityLevel may or may not be
@@ -50,7 +84,6 @@ static void rodsNtElog( char *msg );
  */
 void
 rodsLog( int level, const char *formatStr, ... ) {
-    char *prefix;
     time_t timeValue;
     FILE *errOrOut;
     va_list ap;
@@ -110,7 +143,7 @@ rodsLog( int level, const char *formatStr, ... ) {
 #endif
     }
 
-    prefix = "";
+    std::string prefix = "";
     if ( level == LOG_SQL ) {
         prefix = "LOG_SQL";
     }
@@ -121,7 +154,8 @@ rodsLog( int level, const char *formatStr, ... ) {
         prefix = "SYSTEM WARNING";
     }
     if ( level == LOG_ERROR ) {
-        prefix = "ERROR";
+        prefix = create_log_error_prefix();
+        prefix += " ERROR";
     }
     if ( level == LOG_NOTICE ) {
         prefix = "NOTICE";
@@ -162,24 +196,24 @@ rodsLog( int level, const char *formatStr, ... ) {
     {
 #ifdef SYSLOG
 #ifdef SYSLOG_FACILITY_CODE
-        syslog( SYSLOG_FACILITY_CODE | LOG_NOTICE, "%s - %s: %s", myZone, prefix, message );
+        syslog( SYSLOG_FACILITY_CODE | LOG_NOTICE, "%s - %s: %s", myZone, prefix.c_str(), message );
 #else
-        syslog( LOG_DAEMON | LOG_NOTICE, "%s - %s: %s", myZone, prefix, message );
+        syslog( LOG_DAEMON | LOG_NOTICE, "%s - %s: %s", myZone, prefix.c_str(), message );
 #endif
 #else
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s", extraInfo, prefix.c_str(), message );
 #else
-        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix.c_str(), message );
         rodsNtElog( nt_log_msg );
 #endif
 #endif
     }
     else {
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix.c_str(), message );
 #else
-        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix.c_str(), message );
         rodsNtElog( nt_log_msg );
 #endif
     }
