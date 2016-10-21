@@ -470,12 +470,12 @@ extern "C" {
 
         std::string holder;
         ret = _ctx.prop_map().get<std::string>(HIGH_WATER_MARK, holder);
-        if (!(ret.code()==-1800000)) {
+        if (ret.code() != KEY_NOT_FOUND) {
             rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), HIGH_WATER_MARK.c_str());
         }
 
         ret = _ctx.prop_map().get<std::string>(REQUIRED_FREE_INODES_FOR_CREATE, holder);
-        if (!(ret.code()==-1800000)) {
+        if (ret.code() != KEY_NOT_FOUND) {
             rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), REQUIRED_FREE_INODES_FOR_CREATE.c_str());
         }
     }
@@ -493,7 +493,7 @@ extern "C" {
 
         std::string minimum_free_space_string;
         irods::error err = _ctx.prop_map().get<std::string>(MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES, minimum_free_space_string);
-        if (err.code()==-1800000) { // if no key, don't perform check
+        if (err.code() == KEY_NOT_FOUND) {
             return false;
         } else if (!err.ok()) {
             rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: failed to get MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES property for resource [%s]", resource_name.c_str());
