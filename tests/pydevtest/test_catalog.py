@@ -196,6 +196,16 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand_fail("imkdir -z")  # run imkdir with bad option
 
     ###################
+    # ilocate
+    ###################
+
+    def test_ilocate_with_spaces_in_collection_name__3332(self):
+        self.admin.assert_icommand("imkdir 'before after'")
+        self.admin.assert_icommand("iput {0} 'before after/'".format(self.testfile))
+        self.admin.assert_icommand("ils -L 'before after'", 'STDOUT_SINGLELINE', self.testfile)
+        self.admin.assert_icommand("ilocate {0}".format(self.testfile), 'STDOUT_SINGLELINE', 'after') # no longer truncating before the space
+
+    ###################
     # iquest
     ###################
 
