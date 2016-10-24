@@ -165,7 +165,7 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                                 )
                             ]
                         ),
-                        'shared_memory_instance': 'upgraded_legacy_re'
+                        'shared_memory_instance': 'upgraded_irods_rule_language_rule_engine'
                     }
                 ]
             config_dict['plugin_configuration'].setdefault('authentication', {})

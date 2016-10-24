@@ -42,7 +42,7 @@
                             "[^ ]*pep_[^ ]*_(pre|post)"
                         ]
                 },
-                "shared_memory_instance" : "legacy_re"
+                "shared_memory_instance" : "irods_rule_language_rule_engine"
             },
             {
                 "instance_name": "irods_rule_engine_plugin-cpp_default_policy-instance",
