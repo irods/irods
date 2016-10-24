@@ -155,6 +155,17 @@ The same schema is used to define (but not enforce) the client side environment.
   - `irods_user_name`
   - `irods_zone_name`
 
+To use an environment file other than `~/.irods/irods_environment.json`, set `IRODS_ENVIRONMENT_FILE` to load from a different location:
+
+```
+export IRODS_ENVIRONMENT_FILE=/full/path/to/different.json
+```
+
+Other individual environment variables can be set by using the UPPERCASE versions of the variables named above, for example:
+
+```
+export IRODS_LOG_LEVEL=7
+```
 
 # Checksum Configuration
 
