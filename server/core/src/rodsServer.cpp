@@ -236,7 +236,7 @@ main( int argc, char **argv )
     if ( agent_spawning_pid == 0 ) {
         // Child process
         ProcessType = AGENT_PT;
-        
+
         exit( runIrodsAgent( local_addr ) );
     } else if ( agent_spawning_pid > 0 ) {
         // Parent process
@@ -684,7 +684,7 @@ int sendEnvironmentVarIntToSocket ( const char* var, int val, int socket ) {
     char buf[256];
     int len;
     len = snprintf( buf, 256, "%s=%d;", var, val );
-    
+
     if (len > 256) {
         rodsLog(LOG_ERROR, "\"%s=%d\" too large for send buffer", var, val);
         return -1;
@@ -772,7 +772,7 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     }
 
     strcpy( tmp_socket_addr.sun_path, tmp_socket_file );
-        
+
     tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
 
     // Wait until receiving acknowledgement that socket has been created
@@ -1028,7 +1028,7 @@ initServer( rsComm_t *svrComm ) {
     if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
-    
+
     std::string svc_role;
     irods::error ret = get_catalog_service_role(svc_role);
     if(!ret.ok()) {
@@ -1422,7 +1422,7 @@ spawnManagerTask() {
                 free( mySpawnReq );
             }
             else {
-                rodsLog( LOG_NOTICE,
+                rodsLog( LOG_DEBUG,
                          "Agent process %d started for puser=%s and cuser=%s from %s",
                          mySpawnReq->pid, mySpawnReq->startupPack.proxyUser,
                          mySpawnReq->startupPack.clientUser,
@@ -1486,7 +1486,7 @@ procSingleConnReq( agentProc_t *connReq ) {
 
     connReq->startupPack = *startupPack;
     free( startupPack );
-    
+
     int status = spawnAgent( connReq, &ConnectedAgentHead );
 
     close( newSock );
@@ -1498,7 +1498,7 @@ procSingleConnReq( agentProc_t *connReq ) {
                  inet_ntoa( connReq->remoteAddr.sin_addr ), status );
     }
     else {
-        rodsLog( LOG_NOTICE,
+        rodsLog( LOG_DEBUG,
                  "Agent process %d started for puser=%s and cuser=%s from %s",
                  connReq->pid, connReq->startupPack.proxyUser,
                  connReq->startupPack.clientUser,
