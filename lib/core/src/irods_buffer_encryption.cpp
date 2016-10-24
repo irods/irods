@@ -15,6 +15,18 @@
 #include <memory>
 
 namespace irods {
+    class evp_lifetime_mgr {
+    public:
+        evp_lifetime_mgr() {
+            OpenSSL_add_all_algorithms();
+        }
+
+        ~evp_lifetime_mgr() {
+            EVP_cleanup();
+        }
+    };
+    static const evp_lifetime_mgr global_evp_lifetime_mgr_;
+
     std::string buffer_crypt::gen_hash(
         unsigned char* _buf,
         int            _sz ) {
@@ -38,14 +50,7 @@ namespace irods {
         key_size_( 32 ),
         salt_size_( 8 ),
         num_hash_rounds_( 16 ),
-        algorithm_( "AES-256-CBC" ) {
-
-        std::transform(
-            algorithm_.begin(),
-            algorithm_.end(),
-            algorithm_.begin(),
-            ::tolower );
-
+        algorithm_( "aes-256-cbc" ) {
     }
 
     buffer_crypt::buffer_crypt(
@@ -80,9 +85,7 @@ namespace irods {
 
         if ( algorithm_.empty() ) {
             algorithm_ = "aes-256-cbc";
-
         }
-
     } // ctor
 
 // =-=-=-=-=-=-=-
