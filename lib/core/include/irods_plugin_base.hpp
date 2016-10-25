@@ -173,6 +173,10 @@ namespace irods {
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
+                    rei.uoic          = &_comm->clientUser;
+                    rei.uoip          = &_comm->proxyUser;
+                    rei.uoio          = nullptr;
+                    rei.coi           = nullptr;
 
                     rule_engine_context_manager<
                         unit,
@@ -259,6 +263,10 @@ namespace irods {
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
+                    rei.uoic          = &_comm->clientUser;
+                    rei.uoip          = &_comm->proxyUser;
+                    rei.uoio          = nullptr;
+                    rei.coi           = nullptr;
 
                     rule_engine_context_manager<
                         unit,
