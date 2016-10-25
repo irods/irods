@@ -2718,12 +2718,16 @@ readStartupPack(
     irods::network_object_ptr _ptr,
     startupPack_t**     startupPack,
     struct timeval*     tv ) {
-    int status;
     msgHeader_t myHeader;
-    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     irods::error ret = readMsgHeader( _ptr, &myHeader, tv );
     if ( !ret.ok() ) {
         return PASS( ret );
+    }
+
+    if ( strcmp(myHeader.type, RODS_HEARTBEAT_T) == 0 ) {
+        *startupPack = static_cast<startupPack_t*>(malloc(sizeof(**startupPack)));
+        snprintf((*startupPack)->option, sizeof((*startupPack)->option), "%s", RODS_HEARTBEAT_T);
+        return SUCCESS();
     }
 
     if ( myHeader.msgLen > ( int ) sizeof( startupPack_t ) * 2 ||
@@ -2733,6 +2737,7 @@ readStartupPack(
         return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
     }
 
+    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     memset( &bsBBuf, 0, sizeof( bytesBuf_t ) );
     ret = readMsgBody(
               _ptr,
@@ -2781,7 +2786,7 @@ readStartupPack(
     }
 
     /* always use XML_PROT for the startup pack */
-    status = unpackStruct( inputStructBBuf.buf, ( void ** ) startupPack,
+    int status = unpackStruct( inputStructBBuf.buf, ( void ** ) startupPack,
                            "StartupPack_PI", RodsPackTable, XML_PROT );
 
     clearBBuf( &inputStructBBuf );

@@ -221,6 +221,7 @@ typedef struct msgHeader {
 
 /* msg type */
 #define RODS_CONNECT_T    "RODS_CONNECT"
+#define RODS_HEARTBEAT_T  "HEARTBEAT"
 #define RODS_VERSION_T    "RODS_VERSION"
 #define RODS_API_REQ_T    "RODS_API_REQ"
 #define RODS_DISCONNECT_T    "RODS_DISCONNECT"

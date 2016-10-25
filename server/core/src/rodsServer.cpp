@@ -1309,7 +1309,6 @@ stopProcConnReqThreads() {
         }
     }
 }
-
 void
 readWorkerTask() {
 
@@ -1341,7 +1340,7 @@ readWorkerTask() {
         // repave the socket handle with the new socket
         // for this connection
         net_obj->socket_handle( newSock );
-        startupPack_t *startupPack;
+        startupPack_t *startupPack = nullptr;
         struct timeval tv;
         tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
         tv.tv_usec = 0;
@@ -1350,19 +1349,34 @@ readWorkerTask() {
         if ( !ret.ok() ) {
             rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", ret.code() );
             sendVersion( net_obj, ret.code(), 0, NULL, 0 );
-
             boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
-
             queAgentProc( myConnReq, &BadReqHead, TOP_POS );
-
             bad_req_lock.unlock();
-
             mySockClose( newSock );
+        }
+        else if ( strcmp(startupPack->option, RODS_HEARTBEAT_T) == 0 ) {
+            const char* heartbeat = RODS_HEARTBEAT_T;
+            const int heartbeat_length = strlen(heartbeat);
+            int bytes_to_send = heartbeat_length;
+            while ( bytes_to_send ) {
+                const int bytes_sent = send(newSock, &(heartbeat[heartbeat_length - bytes_to_send]), bytes_to_send, 0);
+                const int errsav = errno;
+                if ( bytes_sent > 0 ) {
+                    bytes_to_send -= bytes_sent;
+                } else if ( errsav != EINTR ) {
+                    rodsLog(LOG_ERROR, "Socket error encountered during heartbeat; socket returned %s", strerror(errsav));
+                    break;
+                }
+            }
+            mySockClose(newSock);
+            free( myConnReq );
+            free( startupPack );
         }
         else if ( startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT ) {
             sendVersion( net_obj, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0 );
             mySockClose( newSock );
             free( myConnReq );
+            free( startupPack );
         }
         else {
             if ( startupPack->clientUser[0] == '\0' ) {

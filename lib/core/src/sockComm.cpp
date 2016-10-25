@@ -1085,7 +1085,6 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     char *tmpStr;
     bytesBuf_t *startupPackBBuf = NULL;
 
-
     /* setup the startup pack */
 
     startupPack.irodsProt  = conn->irodsProt;

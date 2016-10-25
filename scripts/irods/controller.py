@@ -95,8 +95,27 @@ class IrodsController(object):
                 cwd=self.config.server_bin_directory,
                 env=self.config.execution_environment)
 
-            l.debug('Attempting to ping iRODS server...')
-            lib.execute_command_timeout(['irods-grid', 'ping', '--hosts={0}'.format(lib.get_hostname())], timeout=10)
+            try_count = 1
+            max_retries = 100
+            while True:
+                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
+                        irods_port, try_count)
+                with contextlib.closing(socket.socket(
+                        socket.AF_INET, socket.SOCK_STREAM)) as s:
+                    if s.connect_ex(('127.0.0.1', irods_port)) == 0:
+                        l.debug('Successfully connected to port %s.', irods_port)
+                        if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
+                            raise IrodsError('iRODS port is bound, but server is not started.')
+                        s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
+                        message = s.recv(256)
+                        if message != b'HEARTBEAT':
+                            raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
+                        break
+                if try_count >= max_retries:
+                    raise IrodsError('iRODS server failed to start.')
+                try_count += 1
+                time.sleep(1)
+
         except IrodsError as e:
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
