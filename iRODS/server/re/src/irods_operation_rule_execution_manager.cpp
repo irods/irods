@@ -85,6 +85,11 @@ namespace irods {
         ruleExecInfo_t rei;
         memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
         rei.rsComm        = _comm;
+        rei.uoic          = &_comm->clientUser;
+        rei.uoip          = &_comm->proxyUser;
+        rei.uoio          = 0;
+        rei.coi           = 0;
+
         rei.condInputData = &_kvp; // give rule scope to our key value pairs
         rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 
