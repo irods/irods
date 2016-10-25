@@ -502,7 +502,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
 
-            
+
             files_in_vault = set(lib.files_in_dir(os.path.join(lib.get_vault_session_path(self.user0),
                                                               partial_path)))
             self.assertTrue(local_files == files_in_vault,
@@ -541,6 +541,24 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 'ERROR: phymvUtil: \'/\' does not specify a zone; physical move only makes sense within a zone.')
         self.admin.assert_icommand('iadmin rmresc test1')
         self.admin.assert_icommand('iadmin rmresc test2')
+
+    def test_delay_in_dynamic_pep__3342(self):
+        corefile = lib.get_core_re_dir() + "/core.re"
+        # manipulate core.re and check the server log
+        with lib.file_backed_up(corefile):
+            initial_size_of_server_log = lib.get_log_size('re')
+            rules_to_prepend = '''
+pep_resource_write_post(*OUT) {delay("<PLUSET>1s</PLUSET>") {writeLine("serverLog","dynamic pep in delay");}}
+'''
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
+                lib.make_file(f.name, 80, contents='arbitrary')
+                self.admin.assert_icommand(['iput', '-f', f.name])
+            time.sleep(35)
+            assert 1 == lib.count_occurrences_of_string_in_log(
+                're', 'writeLine: inString = dynamic pep in delay', start_index=initial_size_of_server_log)
 
     def test_iput_bulk_check_acpostprocforput__2841(self):
         # prepare test directory
@@ -590,7 +608,7 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
     def test_iput_resc_scheme_forced(self):
         filename = 'test_iput_resc_scheme_forced_test_file.txt'
         filepath = lib.create_local_testfile(filename)
-        
+
         # manipulate core.re and check the server log
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
@@ -606,29 +624,29 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","forced"); }
 
             self.user0.assert_icommand(['iput', '-f', filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             # test as rodsadmin
             self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
             self.admin.assert_icommand(['iput', '-f', filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
             self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath) 
+            os.unlink(filepath)
 
     def test_iput_resc_scheme_preferred(self):
         filename = 'test_iput_resc_scheme_preferred_test_file.txt'
         filepath = lib.create_local_testfile(filename)
-        
+
         # manipulate core.re and check the server log
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
@@ -644,29 +662,29 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","preferred"); }
 
             self.user0.assert_icommand(['iput', '-f', filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             # test as rodsadmin
             self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
             self.admin.assert_icommand(['iput', '-f', filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
             self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath) 
+            os.unlink(filepath)
 
     def test_iput_resc_scheme_null(self):
         filename = 'test_iput_resc_scheme_null_test_file.txt'
         filepath = lib.create_local_testfile(filename)
-        
+
         # manipulate core.re and check the server log
         corefile = lib.get_core_re_dir() + "/core.re"
         with lib.file_backed_up(corefile):
@@ -682,24 +700,24 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
 
             self.user0.assert_icommand(['iput', '-f', filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.user0.assert_icommand(['irm', '-f', filename]) 
+            self.user0.assert_icommand(['irm', '-f', filename])
 
             # test as rodsadmin
             self.admin.assert_icommand(['ils', '-l', filename], 'STDERR_SINGLELINE', 'does not exist')
 
             self.admin.assert_icommand(['iput', '-f', filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
             self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
-            self.admin.assert_icommand(['irm', '-f', filename]) 
+            self.admin.assert_icommand(['irm', '-f', filename])
 
-            os.unlink(filepath) 
+            os.unlink(filepath)
 
 
 
