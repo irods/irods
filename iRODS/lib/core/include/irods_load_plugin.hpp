@@ -150,7 +150,7 @@ namespace irods {
         BOOST_STATIC_ASSERT( class_has_delay_load< PluginType >::value );
         // resolve the plugin path
         std::string plugin_home;
-        error ret = resolve_plugin_path( _interface, plugin_home ); 
+        error ret = resolve_plugin_path( _interface, plugin_home );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -211,6 +211,8 @@ namespace irods {
             return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
+        rodsLog(LOG_DEBUG, "load_plugin - calling plugin_factory() in [%s]", so_name.c_str());
+
         // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
         _plugin = factory( _instance_name, _context );
@@ -258,6 +260,3 @@ namespace irods {
 
 
 #endif // __IRODS_LOAD_PLUGIN_HPP__
-
-
-
