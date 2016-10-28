@@ -193,6 +193,8 @@ namespace irods {
             return ERROR( PLUGIN_ERROR, msg.str() );
         }
 
+        rodsLog(LOG_DEBUG, "load_plugin - calling plugin_factory() in [%s]", so_name.c_str());
+
         // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
         _plugin = factory( _instance_name, _context );
