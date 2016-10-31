@@ -749,9 +749,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
     ret = readVersion( net_obj, &conn->svrVersion );
     if ( !ret.ok() ) {
-        rodsLogError( LOG_ERROR, ret.code(),
-                      "connectToRhost: readVersion to %s failed, status = %d",
-                      conn->host, ret.code() );
+        irods::log(PASS(ret));
         close( conn->sock );
         return ret.code();
     }
