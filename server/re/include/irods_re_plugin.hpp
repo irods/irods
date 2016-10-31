@@ -176,25 +176,41 @@ namespace irods {
         }
 
         error start_operation(T& _in) {
-            auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["start"] );
-            return fcn(_in,instance_name_);
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["start"] );
+                return fcn(_in, instance_name_);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract start operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
         error stop_operation(T& _in) {
-            auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["stop"] );
-            return fcn(_in,instance_name_);
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,const std::string&)>>( operations_["stop"] );
+                return fcn(_in,instance_name_);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract stop operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
         error rule_exists(std::string _rn, T& _re_ctx, bool& _out) {
-            auto fcn = boost::any_cast<std::function<error(T&,std::string,bool&)>>( operations_["rule_exists"] );
-            return fcn(_re_ctx, _rn, _out);
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,std::string,bool&)>>( operations_["rule_exists"] );
+                return fcn(_re_ctx, _rn, _out);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract rule_exists operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
         template<typename ...As>
         error exec_rule(std::string _rn, T& _re_ctx, As&&... _ps, callback _callback) {
-            auto l = pack(std::forward<As>(_ps)...);
-            auto fcn = boost::any_cast<std::function<error(T&, std::string, std::list<boost::any> &, callback)>>( operations_["exec_rule"] );
-            return fcn(_re_ctx, _rn, l, _callback);
+            try {
+                auto l = pack(std::forward<As>(_ps)...);
+                auto fcn = boost::any_cast<std::function<error(T&, std::string, std::list<boost::any> &, callback)>>( operations_["exec_rule"] );
+                return fcn(_re_ctx, _rn, l, _callback);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
         template<typename ...As>
@@ -203,11 +219,15 @@ namespace irods {
                 T&          _re_ctx,
                 callback    _callback,
                 As&&...     _ps) {
-            auto l = pack(std::forward<As>(_ps)...);
-            auto fcn = boost::any_cast<
-                           std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
-                               operations_["exec_rule_text"] );
-            return fcn(_re_ctx, _rt, l, _callback);
+            try {
+                auto l = pack(std::forward<As>(_ps)...);
+                auto fcn = boost::any_cast<
+                    std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                        operations_["exec_rule_text"] );
+                return fcn(_re_ctx, _rt, l, _callback);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule_text operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
         template<typename ...As>
@@ -216,11 +236,15 @@ namespace irods {
                 T&          _re_ctx,
                 callback    _callback,
                 As&&...     _ps) {
-            auto l = pack(std::forward<As>(_ps)...);
-            auto fcn = boost::any_cast<
-                           std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
-                               operations_["exec_rule_expression"] );
-            return fcn(_re_ctx, _rt, l, _callback);
+            try {
+                auto l = pack(std::forward<As>(_ps)...);
+                auto fcn = boost::any_cast<
+                    std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                        operations_["exec_rule_expression"] );
+                return fcn(_re_ctx, _rt, l, _callback);
+            } catch (const boost::bad_any_cast& e) {
+                return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule_expression operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
+            }
         }
 
     private:
