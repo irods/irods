@@ -18,14 +18,14 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // provide our own interface which will take our error which can
 // be refactored later
-    void log( error );
+    void log( const error& );
 
 // =-=-=-=-=-=-=-
 // provide our own interface which will take stl types which can
 // be refactored later
-    void log( int, std::string );
+    void log( int, const std::string& );
 
-}; // namespace irods
+}
 
 #define DEBUGMSG(msg)                                           \
     {                                                           \
@@ -41,6 +41,3 @@ namespace irods {
     }
 
 #endif // __IRODS_LOG_HPP__
-
-
-
