@@ -18,13 +18,34 @@ getLogDir() {
     return DEF_LOG_DIR;
 }
 
+int get_log_file_rotation_time() {
+    char* rotation_time_str = getenv(LOGFILE_INT);
+    if ( rotation_time_str ) {
+        const int rotation_time = atoi(rotation_time_str);
+        if( rotation_time > 1 ) {
+            return rotation_time;
+        }
+    }
+
+    try {
+        const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
+        if(rotation_time > 1) {
+            return rotation_time;
+        }
+
+    }
+    catch( irods::exception& _e ) {
+    }
+
+    return DEF_LOGFILE_INT;
+
+} // get_log_file_rotation_time
+
 void
 getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     time_t myTime;
-    struct tm *mytm;
-    char *logfilePattern; // JMC - backport 4793
-    char *logfileIntStr;
-    int logfileInt;
+    struct tm *mytm = nullptr;
+    char *logfilePattern = nullptr; // JMC - backport 4793
     int tm_mday = 1;
     char logfileSuffix[MAX_NAME_LEN]; // JMC - backport 4793
     char myLogDir[MAX_NAME_LEN];
@@ -39,16 +60,16 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     }
     *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
 
+
+
+
     LogfileLastChkTime = myTime = time( 0 );
     mytm = localtime( &myTime );
-    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
-            ( logfileInt = atoi( logfileIntStr ) ) < 1 ) {
-        logfileInt = DEF_LOGFILE_INT;
-    }
+    const int rotation_time = get_log_file_rotation_time();
 
-    tm_mday = ( mytm->tm_mday / logfileInt ) * logfileInt + 1;
+    tm_mday = ( mytm->tm_mday / rotation_time ) * rotation_time + 1;
     if ( tm_mday > mytm->tm_mday ) {
-        tm_mday -= logfileInt;
+        tm_mday -= rotation_time;
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4793

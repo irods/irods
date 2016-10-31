@@ -51,7 +51,8 @@ namespace irods {
         "maximum_temporary_password_lifetime_in_seconds" );
     const std::string CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS(
         "maximum_number_of_concurrent_rule_engine_server_processes" );
-    
+    const std::string DEFAULT_LOG_ROTATION_IN_DAYS("default_log_rotation_in_days");
+
     const std::string CFG_RE_CACHE_SALT_KW("reCacheSalt");
     const std::string CFG_RE_SERVER_SLEEP_TIME(
         "rule_engine_server_sleep_time_in_seconds");
