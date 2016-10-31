@@ -6,7 +6,7 @@
 #include "getRodsEnv.h"
 #include "irods_log.hpp"
 #include "objInfo.h"
-#include "MD5Strategy.hpp"
+#include "SHA256Strategy.hpp"
 #include "rodsKeyWdDef.h"
 #include "rcMisc.h"
 #include "checksum.hpp"
@@ -41,7 +41,7 @@ int chksumLocFile(
 
     // =-=-=-=-=-=-=-
     // capture the configured scheme if it is valid
-    std::string env_scheme( irods::MD5_NAME );
+    std::string env_scheme( irods::SHA256_NAME );
     if ( strlen( env.rodsDefaultHashScheme ) > 0 ) {
         env_scheme = env.rodsDefaultHashScheme;
 
