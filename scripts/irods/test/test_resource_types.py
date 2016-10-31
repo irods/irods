@@ -767,12 +767,14 @@ acPostProcForParallelTransferReceived(*leaf_resource) {msi_update_unixfilesystem
         filename = 'fsckfile.txt'
         filepath = lib.create_local_testfile(filename)
         orig_digest = lib.file_digest(filepath, 'sha256', encoding='base64')
-        full_logical_path = '/' + self.admin.zone_name + '/home/' + self.admin.username + '/' + self.admin._session_id + '/' + filename
+        long_collection_name = '255_byte_directory_name_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12_abcdefghijklmnopqrstuvwxyz12'
+        self.admin.assert_icommand("imkdir " + self.admin.session_collection + "/" + long_collection_name)
+        full_logical_path = self.admin.session_collection + "/" + long_collection_name + "/" + filename
         # assertions
-        self.admin.assert_icommand('ils -L ' + filename, 'STDERR_SINGLELINE', 'does not exist')  # should not be listed
+        self.admin.assert_icommand('ils -L ' + full_logical_path, 'STDERR_SINGLELINE', 'does not exist')  # should not be listed
         self.admin.assert_icommand('iput -K ' + filepath + ' ' + full_logical_path)  # iput
-        self.admin.assert_icommand('ils -L ' + filename, 'STDOUT_SINGLELINE', filename)  # should be listed
-        file_vault_full_path = os.path.join(self.admin.get_vault_session_path(), filename)
+        self.admin.assert_icommand('ils -L ' + full_logical_path, 'STDOUT_SINGLELINE', filename)  # should be listed
+        file_vault_full_path = os.path.join(self.admin.get_vault_session_path(), long_collection_name, filename)
         # method 1
         self.admin.assert_icommand('ichksum -K ' + full_logical_path, 'STDOUT_MULTILINE',
                                    ['Total checksum performed = 1, Failed checksum = 0',
@@ -781,7 +783,7 @@ acPostProcForParallelTransferReceived(*leaf_resource) {msi_update_unixfilesystem
         self.admin.assert_icommand("iquest \"select DATA_CHECKSUM where DATA_NAME = '%s'\"" % filename,
                                    'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:' + orig_digest])  # iquest
         # method 3
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', filename)  # ils
+        self.admin.assert_icommand('ils -L ' + long_collection_name, 'STDOUT_SINGLELINE', filename)  # ils
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
         # change content in vault
         with open(file_vault_full_path, 'r+t') as f:

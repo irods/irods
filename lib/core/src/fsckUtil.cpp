@@ -44,13 +44,13 @@ fsckObj( rcComm_t *conn,
     if ( lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ] ) {
         lenInpPath--;
     }
-    if ( lenInpPath >= LONG_NAME_LEN ) {
+    if ( lenInpPath >= MAX_PATH_ALLOWED ) {
         rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in fsckObj",
-                 inpPathO, ( intmax_t ) LONG_NAME_LEN );
+                 inpPathO, ( intmax_t ) MAX_PATH_ALLOWED );
         return USER_STRLEN_TOOLONG;
     }
 
-    char inpPath[ LONG_NAME_LEN ];
+    char inpPath[ MAX_PATH_ALLOWED ];
     strncpy( inpPath, inpPathO, lenInpPath );
     inpPath[ lenInpPath ] = '\0';
     // if it is part of a mounted collection, abort
@@ -68,7 +68,7 @@ fsckObj( rcComm_t *conn,
 int
 fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname ) {
     int status = 0;
-    char fullPath[LONG_NAME_LEN] = "\0";
+    char fullPath[MAX_PATH_ALLOWED] = "\0";
 
     /* check if it is a directory */
     path srcDirPath( inpPath );
@@ -85,7 +85,7 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
-        snprintf( fullPath, LONG_NAME_LEN, "%s",
+        snprintf( fullPath, MAX_PATH_ALLOWED, "%s",
                   cp.c_str() );
         if ( is_symlink( cp ) ) {
             /* don't do anything if it is symlink */
