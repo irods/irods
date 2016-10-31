@@ -298,6 +298,148 @@ set(
   )
 
 set(
+  IRODS_SERVER_API_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthCheck.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthPluginRequest.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthRequest.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthResponse.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthenticate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsBulkDataObjPut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsBulkDataObjReg.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsChkNVPathPerm.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsChkObjPermAndStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsClientHints.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsCloseCollection.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsCollCreate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsCollRepl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataCopy.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataGet.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjChksum.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjClose.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjCopy.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjCreate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjCreateAndStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjGet.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjLock.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjLseek.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjOpen.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjOpenAndStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjPhymv.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjPut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjRead.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjRename.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjRepl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjRsync.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjTrim.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjTruncate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjUnlink.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataObjWrite.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsDataPut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsEndTransaction.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsExecCmd.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsExecMyRule.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsExecRuleExpression.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileChksum.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileChmod.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileClose.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileClosedir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileCreate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileGet.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileGetFsFreeSpace.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileLseek.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileMkdir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileOpen.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileOpendir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFilePut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileRead.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileReaddir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileRename.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileRmdir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileStageToCache.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileSyncToArch.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileTruncate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileUnlink.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsFileWrite.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGenQuery.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGeneralAdmin.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGeneralRowInsert.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGeneralRowPurge.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGeneralUpdate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetHierFromLeafId.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetHierarchyForResc.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetHostForGet.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetHostForPut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetLimitedPassword.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetMiscSvrInfo.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetRemoteZoneResc.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetRescQuota.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPassword.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPasswordForOther.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetXmsgTicket.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsIESClientHints.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FileGetSingleBuf.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FilePutSingleBuf.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsModAVUMetadata.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsModAccessControl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsModColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsModDataObjMeta.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsObjStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsOpenCollection.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsOprComplete.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsPamAuthRequest.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsPhyBundleColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsPhyPathReg.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsProcStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsQuerySpecColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRcvXmsg.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsReadCollection.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRegColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRegDataObj.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRegReplica.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRmColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecDel.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecMod.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecSubmit.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSendXmsg.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsServerReport.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSetRoundRobinContext.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSimpleQuery.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSpecificQuery.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSslEnd.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSslStart.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStreamClose.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStreamRead.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStructFileBundle.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStructFileExtAndReg.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStructFileExtract.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsStructFileSync.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileClose.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileClosedir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileCreate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileGet.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileLseek.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileMkdir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileOpen.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileOpendir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFilePut.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileRead.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileReaddir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileRename.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileRmdir.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileStat.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileTruncate.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileUnlink.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSubStructFileWrite.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsSyncMountedColl.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsTicketAdmin.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsUnbunAndRegPhyBunfile.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsUnregDataObj.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsUserAdmin.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rsZoneReport.hpp
+  )
+
+set(
   IRODS_SERVER_CORE_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/server/core/include/collection.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp
@@ -389,6 +531,7 @@ install(
   ${IRODS_LIB_HASHER_INCLUDE_HEADERS}
   ${IRODS_LIB_API_INCLUDE_HEADERS}
   ${IRODS_LIB_RBUDP_INLUDE_HEADERS}
+  ${IRODS_SERVER_API_INCLUDE_HEADERS}
   ${IRODS_SERVER_CORE_INCLUDE_HEADERS}
   ${IRODS_SERVER_ICAT_INCLUDE_HEADERS}
   ${IRODS_SERVER_RE_INCLUDE_HEADERS}
