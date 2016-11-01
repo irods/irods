@@ -367,15 +367,15 @@ namespace irods {
                     }
                     else {
                         rodsLog(
-                                LOG_WARN,
+                                LOG_WARNING,
                                 "%s",
                                 PASS( err ).result().c_str() );
                     }
                 } catch( const irods::exception& ) {
-                    rodsLog(LOG_WARN, "failed to get agent key");
+                    rodsLog(LOG_WARNING, "failed to get agent key");
                 }
             } catch ( const irods::exception e ) {
-                rodsLog(LOG_WARN, "failed to get local zone SID");
+                rodsLog(LOG_WARNING, "failed to get local zone SID");
             }
         }
 

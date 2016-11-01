@@ -170,7 +170,7 @@ namespace irods {
                                   svr_sid );
                         if ( !err.ok() ) {
                             rodsLog(
-                                LOG_WARN,
+                                LOG_WARNING,
                                 "CS_NEG :: [%s]",
                                 PASS( err ).status() );
                         }
@@ -188,7 +188,7 @@ namespace irods {
                     } // if sid is not empty
                     else {
                         rodsLog(
-                            LOG_WARN,
+                            LOG_WARNING,
                             "CS_NEG :: %s - sent SID is empty",
                             __FUNCTION__ );
                     }

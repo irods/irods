@@ -22,12 +22,15 @@
   via a command-line argument to adjust the rodsLog verbosity level.
 */
 
-#define LOG_WARN    6
-
 #define LOG_NOTICE  5
 #define LOG_STATUS  5
-/* This is informational only, part of the normal operation but will
+/* These are informational only, part of the normal operation but will
    often be of interest. */
+
+#define LOG_WARNING    4
+/* This means that the system is probably not performing as expected.
+   This is not harmful, but should probably be looked into by the
+   administrator. */
 
 #define LOG_ERROR  3
 /* This means that the function cannot complete what it was asked to
@@ -40,8 +43,9 @@
    inconsistency of some kind.  An example is a file with a physical
    size that is different than that recorded in the database.
 */
+
 #define LOG_SYS_FATAL 1
-/* This is used of errors that mean that the system (not just one
+/* This is used for errors that mean that the system (not just one
    server, client, or user) cannot continue.  An example is when the
    server is unable to talk to the database. */
 

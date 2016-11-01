@@ -160,8 +160,8 @@ rodsLog( int level, const char *formatStr, ... ) {
     if ( level == LOG_NOTICE ) {
         prefix = "NOTICE";
     }
-    if ( level == LOG_WARN ) {
-        prefix = "WARN";
+    if ( level == LOG_WARNING ) {
+        prefix = "WARNING";
     }
 #ifdef SYSLOG
     if ( level == LOG_DEBUG ) {
@@ -291,8 +291,8 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     if ( level == LOG_NOTICE ) {
         prefix = "NOTICE";
     }
-    if ( level == LOG_WARN ) {
-        prefix = "WARN";
+    if ( level == LOG_WARNING ) {
+        prefix = "WARNING";
     }
     if ( level <= LOG_DEBUG ) {
         prefix = "DEBUG";
