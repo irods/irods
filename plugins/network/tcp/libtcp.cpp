@@ -12,6 +12,7 @@
 #include "irods_tcp_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "sockCommNetworkInterface.hpp"
+#include "boost/format.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -50,73 +51,38 @@ extern "C" {
         // reset bytes read
         _bytes_read = 0;
 
-        // =-=-=-=-=-=-=-
-        // loop while there is data to read
         while ( len_to_read > 0 ) {
-            // =-=-=-=-=-=-=-
-            // do a time out managed select of the socket fd
-            if ( 0 != _time_value ) {
-                int status = select( _socket + 1, &set, NULL, NULL, &timeout );
-                if ( status == 0 ) {
-                    // =-=-=-=-=-=-=-
-                    // the select has timed out
-                    if ( ( _length - len_to_read ) > 0 ) {
-                        return ERROR( _length - len_to_read,
-                                      "failed to read requested number of bytes" );
-                    }
-                    else {
-                        return ERROR( SYS_SOCK_READ_TIMEDOUT,
-                                      "socket timeout error" );
-                    }
-
-                }
-                else if ( status < 0 ) {
-                    // =-=-=-=-=-=-=-
-                    // keep trying on interrupt or just error out
+            if ( NULL != _time_value ) {
+                const int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+                if ( status == 0 ) { // the select has timed out
+                    return ERROR( SYS_SOCK_READ_TIMEDOUT, (boost::format("socket timeout with [%d] bytes read") % _bytes_read).str());
+                } else if ( status < 0 ) {
                     if ( errno == EINTR ) {
                         continue;
-
+                    } else {
+                        return ERROR( SYS_SOCK_READ_ERR - errno, (boost::format("error on select after [%d] bytes read") % _bytes_read).str());
                     }
-                    else {
-                        return ERROR( SYS_SOCK_READ_ERR - errno,
-                                      "error on select" );
-
-                    }
-
                 } // else
-
             } // if tv
 
-            // =-=-=-=-=-=-=-
-            // select has been done, finally do the read
-            int num_bytes = read( _socket, ( void * ) read_ptr,  len_to_read );
-
-            // =-=-=-=-=-=-=-
-            // error trapping the read
-            if ( num_bytes <= 0 ) {
-                // =-=-=-=-=-=-=-
-                // gracefully handle an interrupt
+            int num_bytes = read( _socket, ( void * ) read_ptr, len_to_read );
+            if ( num_bytes < 0 ) {
                 if ( EINTR == errno ) {
-                    errno     = 0;
+                    errno = 0;
                     num_bytes = 0;
+                } else {
+                    return ERROR(SYS_SOCK_READ_ERR - errno, (boost::format("error reading from socket after [%d] bytes read") % _bytes_read).str());
                 }
-                else {
-                    break;
-                }
+            } else if ( num_bytes == 0 ) {
+                break;
             }
 
-            // =-=-=-=-=-=-=-
-            // all has gone well, do byte book keeping
             len_to_read -= num_bytes;
             read_ptr    += num_bytes;
             _bytes_read += num_bytes;
-
         } // while
 
-        // =-=-=-=-=-=-=-
-        // and were done? report length not read
         return CODE( _length - len_to_read );
-
     } // tcp_socket_read
 
     // =-=-=-=-=-=-=-
@@ -218,81 +184,51 @@ extern "C" {
         int header_length = 0;
         int bytes_read    = 0;
         ret = tcp_socket_read(
-                  socket_handle,
-                  static_cast<void*>( &header_length ),
-                  sizeof( int ),
-                  bytes_read,
-                  _time_val );
-        if ( !ret.ok() ||
-                bytes_read != sizeof( header_length ) ) {
-
-            int status = 0;
-            if ( bytes_read < 0 ) {
-                status =  bytes_read - errno;
-            }
-            else {
-                status = SYS_HEADER_READ_LEN_ERR - errno;
-            }
-            std::stringstream msg;
-            msg << "read "
-                << bytes_read
-                << " expected " << sizeof( header_length );
-            return ERROR( status, msg.str() );
+            socket_handle,
+            static_cast<void*>( &header_length ),
+            sizeof( header_length ),
+            bytes_read,
+            _time_val );
+        if (!ret.ok()) {
+            return PASS(ret);
         }
 
-        // =-=-=-=-=-=-=-
-        // convert from network to host byte order
+        if (bytes_read != sizeof(header_length)) {
+            return ERROR(SYS_HEADER_READ_LEN_ERR, (boost::format("only read [%d] of [%d]") % bytes_read % sizeof(header_length)).str());
+        }
+
         header_length = ntohl( header_length );
 
-        // =-=-=-=-=-=-=-
         // check head length against expected size range
         if ( header_length >  MAX_NAME_LEN ||
-                header_length <= 0 ) {
+             header_length <= 0 ) {
             std::stringstream msg;
             msg << "header length is out of range: "
                 << header_length
                 << " expected >= 0 and < "
                 << MAX_NAME_LEN;
             return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
-
         }
 
-        // =-=-=-=-=-=-=-
         // now read the actual header
         ret = tcp_socket_read(
-                  socket_handle,
-                  _buffer,
-                  header_length,
-                  bytes_read,
-                  _time_val );
-        if ( !ret.ok() ||
-                bytes_read != header_length ) {
-            int status = 0;
-            if ( bytes_read < 0 ) {
-                status = bytes_read - errno;
-            }
-            else {
-                status = SYS_HEADER_READ_LEN_ERR - errno;
-            }
-            std::stringstream msg;
-            msg << "read "
-                << bytes_read
-                << " expected " << header_length;
-            return ERROR( status, msg.str() );
+            socket_handle,
+            _buffer,
+            header_length,
+            bytes_read,
+            _time_val );
 
+        if (!ret.ok()) {
+            return PASS(ret);
         }
 
-        // =-=-=-=-=-=-=-
-        // log debug information if appropriate
-        if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "received header: len = %d\n%.*s\n",
-                    header_length,
-                    bytes_read,
-                    static_cast<char*>( _buffer ) );
+        if (bytes_read != header_length) {
+            return ERROR(SYS_HEADER_READ_LEN_ERR, (boost::format("only read [%d] of [%d]") % bytes_read % header_length).str());
         }
+
+        rodsLog(LOG_DEBUG3, "received header: len = %d\n%.*s\n", header_length, bytes_read, static_cast<char*>( _buffer ) );
 
         return SUCCESS();
-
     } // tcp_read_msg_header
 
     // =-=-=-=-=-=-=-
@@ -501,37 +437,28 @@ extern "C" {
 
         int bytes_read = 0;
 
-        // =-=-=-=-=-=-=-
         // read buffer
         irods::error ret = tcp_socket_read(
-                               _socket_handle,
-                               _buffer->buf,
-                               _length,
-                               bytes_read,
-                               _time_val );
+            _socket_handle,
+            _buffer->buf,
+            _length,
+            bytes_read,
+            _time_val );
         _buffer->len = bytes_read;
 
-        // =-=-=-=-=-=-=-
         // log transaction if requested
-        if ( _protocol == XML_PROT &&
-                getRodsLogLevel() >= LOG_DEBUG3 ) {
-            printf( "received msg: \n%.*s\n", _buffer->len, ( char* )_buffer->buf );
+        if ( _protocol == XML_PROT ) {
+            rodsLog(LOG_DEBUG3, "received msg: \n%.*s\n", _buffer->len, ( char* )_buffer->buf );
         }
 
-        // =-=-=-=-=-=-=-
-        // trap failed read
-        if ( !ret.ok() ||
-                bytes_read != _length ) {
+        if (!ret.ok()) {
+            free(_buffer->buf);
+            return PASS(ret);
+        }
 
-            free( _buffer->buf );
-
-            std::stringstream msg;
-            msg << "read "
-                << bytes_read
-                << " expected " << _length;
-            return ERROR( SYS_READ_MSG_BODY_LEN_ERR - errno,
-                          msg.str() );
-
+        if (bytes_read != _length) {
+            free(_buffer->buf);
+            return ERROR(SYS_READ_MSG_BODY_LEN_ERR, (boost::format("only read [%d] of [%d]") % bytes_read % _length).str());
         }
 
         return SUCCESS();
