@@ -182,7 +182,7 @@ int rsApiHandler(
                      rsComm,
                      myArgv[0],
                      myArgv[1],
-                     myArgv[3],
+                     myArgv[2],
                      myArgv[3]);
     }
 
