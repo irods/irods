@@ -125,11 +125,6 @@ def xmsg_server_executable():
         server_bin_directory(),
         'irodsXmsgServer')
 
-def agent_executable():
-    return os.path.join(
-        server_bin_directory(),
-        'irodsAgent')
-
 def service_account_file_path():
     return os.path.join(config_directory(), 'service_account.config')
 

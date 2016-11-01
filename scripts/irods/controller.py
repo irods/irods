@@ -212,8 +212,7 @@ class IrodsController(object):
             binaries = [
                 self.config.server_executable,
                 self.config.rule_engine_executable,
-                self.config.xmsg_server_executable,
-                self.config.agent_executable]
+                self.config.xmsg_server_executable]
         d = {}
         for b in binaries:
             pids = lib.get_pids_executing_binary_file(b)

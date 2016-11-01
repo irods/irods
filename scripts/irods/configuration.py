@@ -386,10 +386,6 @@ class IrodsConfig(object):
         return paths.xmsg_server_executable()
 
     @property
-    def agent_executable(self):
-        return paths.agent_executable()
-
-    @property
     def database_schema_update_directory(self):
         return paths.database_schema_update_directory()
 
