@@ -272,7 +272,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         return status;
     }
 
-    if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
         printf( "received header: len = %d\n%s\n", myLen, tmpBuf );
     }
 
@@ -324,7 +324,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         nbytes = sslRead( sock, inputStructBBuf->buf, myHeader->msgLen,
                           NULL, tv, ssl );
 
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
+        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "received msg: \n%s\n", ( char * ) inputStructBBuf->buf );
         }
 
@@ -348,7 +348,7 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
         nbytes = sslRead( sock, errorBBuf->buf, myHeader->errorLen,
                           NULL, tv, ssl );
 
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
+        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "received error msg: \n%s\n", ( char * ) errorBBuf->buf );
         }
 
@@ -408,7 +408,7 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
         return status;
     }
 
-    if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
         printf( "sending header: len = %d\n%s\n", headerBBuf->len,
                 ( char * ) headerBBuf->buf );
     }
@@ -469,7 +469,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
     /* send the rest */
 
     if ( msgBBuf && msgBBuf->len > 0 ) {
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
+        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending msg: \n%s\n", ( char * ) msgBBuf->buf );
         }
         status = sslWrite( msgBBuf->buf, msgBBuf->len, NULL, ssl );
@@ -479,7 +479,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
     }
 
     if ( errorBBuf && errorBBuf->len > 0 ) {
-        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG3 ) {
+        if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending error msg: \n%s\n", ( char * ) errorBBuf->buf );
         }
         status = sslWrite( errorBBuf->buf, errorBBuf->len,

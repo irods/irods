@@ -10,10 +10,18 @@
 /* This is for logging SQL statements.  These are only logged when
    specifically requested and so are a high priority at this level. */
 
-#define LOG_DEBUG1  10
-#define LOG_DEBUG2  9
-#define LOG_DEBUG3  8
-#define LOG_DEBUG   7
+
+#define LOG_DEBUG1   10
+#define LOG_DEBUG2   9
+#define LOG_DEBUG3   8
+/* Legacy DEBUG levels - leaving here for backwards compatibility */
+
+#define LOG_DEBUG10  10
+#define LOG_DEBUG9   9
+#define LOG_DEBUG8   8
+#define LOG_DEBUG7   7
+#define LOG_DEBUG    7
+#define LOG_DEBUG6   6
 /*
   The DEBUG messages are for the software engineer to analyze and
   debug operations.  These are typically added during development and

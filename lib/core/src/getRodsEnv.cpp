@@ -91,14 +91,20 @@ extern "C" {
         if ( strcmp( inputStr, "LOG_DEBUG" ) == 0 ) {
             return LOG_DEBUG;
         }
-        if ( strcmp( inputStr, "LOG_DEBUG3" ) == 0 ) {
-            return LOG_DEBUG3;
+        if ( strcmp( inputStr, "LOG_DEBUG6" ) == 0 ) {
+            return LOG_DEBUG6;
         }
-        if ( strcmp( inputStr, "LOG_DEBUG2" ) == 0 ) {
-            return LOG_DEBUG2;
+        if ( strcmp( inputStr, "LOG_DEBUG7" ) == 0 ) {
+            return LOG_DEBUG7;
         }
-        if ( strcmp( inputStr, "LOG_DEBUG1" ) == 0 ) {
-            return LOG_DEBUG1;
+        if ( strcmp( inputStr, "LOG_DEBUG8" ) == 0 ) {
+            return LOG_DEBUG8;
+        }
+        if ( strcmp( inputStr, "LOG_DEBUG9" ) == 0 ) {
+            return LOG_DEBUG9;
+        }
+        if ( strcmp( inputStr, "LOG_DEBUG10" ) == 0 ) {
+            return LOG_DEBUG10;
         }
         return 0;
     }

@@ -459,7 +459,7 @@ _cllExecSqlNoResult(
     icatSessionStruct* icss,
     const char*        sql,
     int                option ) {
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG10, sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT myHstmt;
@@ -560,7 +560,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
        needed here, and in fact causes postgres processes to be in the
        'idle in transaction' state which prevents some operations (such as
        backup).  So this was removed. */
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG10, sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;
@@ -727,7 +727,7 @@ cllExecSqlWithResultBV(
     const char *sql,
     std::vector< std::string > &bindVars ) {
 
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG10, sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;

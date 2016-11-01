@@ -179,7 +179,7 @@ int cmlGetOneRowFromSqlBV( const char *sql,
     if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
-        rodsLog( LOG_DEBUG1, "cmlGetOneRowFromSqlBV %s", updatedSql );
+        rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlBV %s", updatedSql );
     }
 #endif
     int status = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
@@ -228,7 +228,7 @@ int cmlGetOneRowFromSql( const char *sql,
     if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
-        rodsLog( LOG_DEBUG1, "cmlGetOneRowFromSql %s", updatedSql );
+        rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSql %s", updatedSql );
     }
 #endif
 
@@ -281,7 +281,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
     if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
-        rodsLog( LOG_DEBUG1, "cmlGetOneRowFromSqlV2 %s", updatedSql );
+        rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlV2 %s", updatedSql );
     }
 #endif
 
@@ -333,7 +333,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
     if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
-        rodsLog( LOG_DEBUG1, "cmlGetOneRowFromSqlV3 %s", updatedSql );
+        rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlV3 %s", updatedSql );
     }
 #endif
 

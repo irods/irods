@@ -179,9 +179,9 @@ main( int argc, char **argv )
             rodsLogLevel( LOG_NOTICE );
             break;
         case 'V':               /* very Verbose */
-            snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_DEBUG1 );
+            snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_DEBUG10 );
             putenv( tmpStr1 );
-            rodsLogLevel( LOG_DEBUG1 );
+            rodsLogLevel( LOG_DEBUG10 );
             break;
         case 'q':               /* quiet (only errors and above) */
             snprintf( tmpStr1, 100, "%s=%d", SP_LOG_LEVEL, LOG_ERROR );
@@ -593,7 +593,7 @@ usage( char *prog ) {
     printf( "Usage: %s [-uvVqs]\n", prog );
     printf( " -u  user command level, remain attached to the tty\n" );
     printf( " -v  verbose (LOG_NOTICE)\n" );
-    printf( " -V  very verbose (LOG_DEBUG1)\n" );
+    printf( " -V  very verbose (LOG_DEBUG10)\n" );
     printf( " -q  quiet (LOG_ERROR)\n" );
     printf( " -s  log SQL commands\n" );
 }

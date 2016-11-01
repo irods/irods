@@ -45,7 +45,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
         /* add a NULL termination */
         extendPackedOutput( &packedOutput, 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
         *outPtr = '\0';
-        if ( getRodsLogLevel() >= LOG_DEBUG2 ) {
+        if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
             printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
         }
     }
@@ -3299,7 +3299,7 @@ parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
 
         if ( strncmp( inStrPtr, myPackedItem->name, nameLen ) != 0 ) {
             /* this can be normal */
-            rodsLog( LOG_DEBUG1,
+            rodsLog( LOG_DEBUG10,
                      "parseXmlValue: XML start tag error for %s, expect <%s>",
                      *inPtr, myPackedItem->name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
@@ -3308,7 +3308,7 @@ parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
         myLen += nameLen;
 
         if ( *inStrPtr != '>' ) {
-            rodsLog( LOG_DEBUG1,
+            rodsLog( LOG_DEBUG10,
                      "parseXmlValue: XML start tag error for %s, expect <%s>",
                      *inPtr, myPackedItem->name );
 

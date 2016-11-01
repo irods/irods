@@ -606,7 +606,7 @@ irods::error ssl_read_msg_header(
 
             // =-=-=-=-=-=-=-
             // log debug information if appropriate
-            if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+            if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
                 printf( "received header: len = %d\n%s\n",
                         header_length,
                         static_cast<char*>( _buffer ) );
@@ -973,7 +973,7 @@ irods::error ssl_write_msg_header(
 
         // =-=-=-=-=-=-=-
         // log debug information if appropriate
-        if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+        if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending header: len = %d\n%s\n", _header->len, ( char * ) _header->buf );
         }
 
@@ -1062,7 +1062,7 @@ irods::error ssl_send_rods_msg(
                 int bytes_written = 0;
                 if ( msg_header.msgLen > 0 ) {
                     if ( XML_PROT == _protocol &&
-                            getRodsLogLevel() >= LOG_DEBUG3 ) {
+                            getRodsLogLevel() >= LOG_DEBUG8 ) {
                         printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
                     }
                     ret = ssl_socket_write( _msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl() );
@@ -1075,7 +1075,7 @@ irods::error ssl_send_rods_msg(
                     // send the error buffer
                     if ( msg_header.errorLen > 0 ) {
                         if ( XML_PROT == _protocol &&
-                                getRodsLogLevel() >= LOG_DEBUG3 ) {
+                                getRodsLogLevel() >= LOG_DEBUG8 ) {
                             printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
 
                         }
@@ -1090,7 +1090,7 @@ irods::error ssl_send_rods_msg(
                         // send the stream buffer
                         if ( msg_header.bsLen > 0 ) {
                             if ( XML_PROT == _protocol &&
-                                    getRodsLogLevel() >= LOG_DEBUG3 ) {
+                                    getRodsLogLevel() >= LOG_DEBUG8 ) {
                                 printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
                             }
 
@@ -1132,7 +1132,7 @@ irods::error read_bytes_buf(
         // =-=-=-=-=-=-=-
         // log transaction if requested
         if ( _protocol == XML_PROT &&
-                getRodsLogLevel() >= LOG_DEBUG3 ) {
+                getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "received msg: \n%s\n",
                     ( char* ) _buffer->buf );
         }

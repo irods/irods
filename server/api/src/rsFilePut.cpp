@@ -146,7 +146,7 @@ int _rsFilePut(
     // log, error if any
     if ( fd < 0 ) {
         if ( getErrno( fd ) == EEXIST ) {
-            rodsLog( LOG_DEBUG1,
+            rodsLog( LOG_DEBUG10,
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd );
         }

@@ -118,7 +118,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     // more error trapping, etc.
     if ( fd < 0 ) {
         if ( getErrno( fd ) == EEXIST ) {
-            rodsLog( LOG_DEBUG1,
+            rodsLog( LOG_DEBUG10,
                      "_rsSubStructFilePut: filePut for %s, status = %d",
                      _sub_file->subFilePath, fd );
         }

@@ -792,7 +792,7 @@ irods::error load_balanced_redirect_for_create_operation(
     std::string hier;
     parser.str( hier );
     rodsLog(
-        LOG_DEBUG1,
+        LOG_DEBUG10,
         "load_balanced node - hier : [%s], vote %f",
         hier.c_str(),
         vote );
@@ -864,7 +864,7 @@ irods::error load_balanced_redirect_for_open_operation(
                                &vote );
         std::string hier;
         parser.str( hier );
-        rodsLog( LOG_DEBUG1, "load_balanced node - hier : [%s], vote %f", hier.c_str(), vote );
+        rodsLog( LOG_DEBUG10, "load_balanced node - hier : [%s], vote %f", hier.c_str(), vote );
         if ( !err.ok() ) {
             irods::log( PASS( err ) );
         }

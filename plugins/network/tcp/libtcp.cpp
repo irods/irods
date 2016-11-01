@@ -282,7 +282,7 @@ irods::error tcp_read_msg_header(
 
     // =-=-=-=-=-=-=-
     // log debug information if appropriate
-    if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
         printf( "received header: len = %d\n%.*s\n",
                 header_length,
                 bytes_read,
@@ -307,7 +307,7 @@ irods::error tcp_write_msg_header(
 
     // =-=-=-=-=-=-=-
     // log debug information if appropriate
-    if ( getRodsLogLevel() >= LOG_DEBUG3 ) {
+    if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
         printf( "sending header: len = %d\n%.*s\n",
                 _header->len,
                 _header->len,
@@ -425,7 +425,7 @@ irods::error tcp_send_rods_msg(
     int bytes_written = 0;
     if ( _msg_buf && _msg_buf->len > 0 ) {
         if ( XML_PROT == _protocol &&
-                getRodsLogLevel() >= LOG_DEBUG3 ) {
+                getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending msg: \n%.*s\n", _msg_buf->len, ( char* ) _msg_buf->buf );
         }
         ret = tcp_socket_write(
@@ -443,7 +443,7 @@ irods::error tcp_send_rods_msg(
     // send the error buffer
     if ( _error_buf && _error_buf->len > 0 ) {
         if ( XML_PROT == _protocol &&
-                getRodsLogLevel() >= LOG_DEBUG3 ) {
+                getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending msg: \n%.*s\n", _error_buf->len, ( char* ) _error_buf->buf );
 
         }
@@ -463,7 +463,7 @@ irods::error tcp_send_rods_msg(
     // send the stream buffer
     if ( _stream_bbuf && _stream_bbuf->len > 0 ) {
         if ( XML_PROT == _protocol &&
-                getRodsLogLevel() >= LOG_DEBUG3 ) {
+                getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending msg: \n%.*s\n", _stream_bbuf->len, ( char* ) _stream_bbuf->buf );
         }
 
@@ -512,7 +512,7 @@ irods::error read_bytes_buf(
     // =-=-=-=-=-=-=-
     // log transaction if requested
     if ( _protocol == XML_PROT &&
-            getRodsLogLevel() >= LOG_DEBUG3 ) {
+            getRodsLogLevel() >= LOG_DEBUG8 ) {
         printf( "received msg: \n%.*s\n", _buffer->len, ( char* )_buffer->buf );
     }
 

@@ -167,13 +167,13 @@ rodsLog( int level, const char *formatStr, ... ) {
     if ( level == LOG_DEBUG ) {
         prefix = "DEBUG";
     }
-    if ( level == LOG_DEBUG1 ) {
+    if ( level == LOG_DEBUG10 ) {
         prefix = "DEBUG1";
     }
-    if ( level == LOG_DEBUG2 ) {
+    if ( level == LOG_DEBUG9 ) {
         prefix = "DEBUG2";
     }
-    if ( level == LOG_DEBUG3 ) {
+    if ( level == LOG_DEBUG8 ) {
         prefix = "DEBUG3";
     }
     if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
@@ -182,13 +182,13 @@ rodsLog( int level, const char *formatStr, ... ) {
     if ( level == LOG_DEBUG ) {
         prefix = "DEBUG";
     }
-    if ( level == LOG_DEBUG1 ) {
+    if ( level == LOG_DEBUG10 ) {
         prefix = "DEBUG1";
     }
-    if ( level == LOG_DEBUG2 ) {
+    if ( level == LOG_DEBUG9 ) {
         prefix = "DEBUG2";
     }
-    if ( level == LOG_DEBUG3 ) {
+    if ( level == LOG_DEBUG8 ) {
         prefix = "DEBUG3";
     }
     if ( message[strlen( message ) - 1] == '\n' )

@@ -732,7 +732,7 @@ irods::error deferred_redirect_for_operation(
                                &vote );
         std::string hier;
         parser.str( hier );
-        rodsLog( LOG_DEBUG1, "deferred node - hier : [%s], vote %f", hier.c_str(), vote );
+        rodsLog( LOG_DEBUG10, "deferred node - hier : [%s], vote %f", hier.c_str(), vote );
         if ( !err.ok() ) {
             // on a fail, force a zero vote and not error
             // out in order to preserve reliability within
