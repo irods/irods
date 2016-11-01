@@ -229,6 +229,13 @@ irods::error rule_exists(irods::default_re_ctx&, std::string _rn, bool& _ret) {
     return SUCCESS();
 }
 
+irods::error list_rules( irods::default_re_ctx&, std::vector<std::string>& rule_vec ) {
+    for ( int i = 0; i < ruleEngineConfig.coreRuleSet->len; ++i ) {
+       rule_vec.push_back( ruleEngineConfig.coreRuleSet->rules[i]->node->subtrees[0]->text ); 
+    }
+    return SUCCESS();
+}
+
 irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
     if(ruleEngineConfig.ruleEngineStatus == UNINITIALIZED) {
         rodsLog(
@@ -468,6 +475,10 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
             "rule_exists",
             std::function<irods::error(irods::default_re_ctx&, std::string, bool&)>( rule_exists ) );
 
+    re->add_operation<irods::default_re_ctx&, std::vector<std::string>&>(
+            "list_rules",
+            std::function<irods::error(irods::default_re_ctx&,std::vector<std::string>&)>( list_rules ) );
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule ) );
@@ -475,6 +486,7 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule_text",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_text ) );
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule_expression",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule_expression ) );

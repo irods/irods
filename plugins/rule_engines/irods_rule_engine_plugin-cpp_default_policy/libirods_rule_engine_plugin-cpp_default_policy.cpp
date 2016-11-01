@@ -823,6 +823,14 @@ irods::error rule_exists(irods::default_re_ctx&, std::string _rn, bool& _ret) {
     return SUCCESS();
 }
 
+irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& rule_vec) {
+    for (auto& map_entry : static_policy_enforcement_points) {
+       rule_vec.push_back(map_entry.first);
+    }
+
+    return SUCCESS();
+}
+
 irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
     ruleExecInfo_t * rei;
     irods::error err;
@@ -833,7 +841,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
 
     if(static_policy_enforcement_points.find(_rn) !=
        static_policy_enforcement_points.end() ) {
-       return  static_policy_enforcement_points[_rn](_eff_hdlr,_ps);
+       return static_policy_enforcement_points[_rn](_eff_hdlr,_ps);
     }
     else {
         rodsLog(
@@ -867,6 +875,10 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&, std::string, bool&>(
             "rule_exists",
             std::function<irods::error(irods::default_re_ctx&, std::string, bool&)>( rule_exists ) );
+
+    re->add_operation<irods::default_re_ctx&, std::vector<std::string>&>(
+            "list_rules",
+            std::function<irods::error(irods::default_re_ctx&, std::vector<std::string>&)>( list_rules ) );
             
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",

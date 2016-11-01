@@ -202,6 +202,15 @@ namespace irods {
             }
         }
 
+        error list_rules(T& _re_ctx, std::vector<std::string>& _rule_vec) {
+            try {
+                auto fcn = boost::any_cast<std::function<error(T&,std::vector<std::string>&)>>( operations_["list_rules"] );
+                return fcn(_re_ctx, _rule_vec);
+            } catch ( const boost::bad_any_cast& e ) {
+                return ERROR( INVALID_ANY_CAST, boost::format( "failed to extract list_rules operation from instance [%s] exception message [%s]") % instance_name_ % e.what() );
+                        }
+        }
+
         template<typename ...As>
         error exec_rule(std::string _rn, T& _re_ctx, As&&... _ps, callback _callback) {
             try {
@@ -416,9 +425,6 @@ namespace irods {
 
     };
 
-
-
-
     template <typename ER, typename EM, typename T, typename ...As>
     inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, std::string _rn, As &&... _ps) {
         bool ret;
@@ -430,8 +436,6 @@ namespace irods {
         return _em(_rn, std::forward<As>(_ps)...);
     }
 
-
-
     template<typename T, typename C>
     class rule_exists_manager {
     public:
@@ -440,13 +444,13 @@ namespace irods {
 
         virtual ~rule_exists_manager() {}
 
-        error rule_exists(std::string _rn, bool& ret) {
-            auto er = [&ret] (re_pack_inp<T>&, std::string) {
+        error rule_exists(const std::string& _rn, bool& ret) {
+            auto er = [&ret] (re_pack_inp<T>&, const std::string&) {
                 ret = true;
                 return SUCCESS();
             };
 
-            auto em = [&ret] (std::string) {
+            auto em = [&ret] (const std::string&) {
                 ret = false;
                 return SUCCESS();
             };
@@ -455,7 +459,6 @@ namespace irods {
     protected:
         rule_engine_manager<T,C> &re_mgr_;
     };
-
 
     // rule_engine_manager + ctx DONE
     template<typename T, typename C, rule_execution_manager_pack Audit>
@@ -539,6 +542,10 @@ namespace irods {
                        msg );
         }
 
+        error list_rules(std::vector< std::string >& rule_vec) {
+            return this->rex_mgr_.list_rules( rule_vec );
+        }
+
     protected:
         C ctx_;
         dynamic_operation_execution_manager<T,C,DONT_AUDIT_RULE> rex_mgr_;
@@ -612,6 +619,19 @@ namespace irods {
                        msg );
         }
 
+        error list_rules(std::vector< std::string >& rule_vec) {
+            for( auto itr  = begin(this->re_mgr_.re_packs_);
+                      itr != end(this->re_mgr_.re_packs_);
+                            ++itr ) {
+                error ret = itr->re_->list_rules( itr->re_ctx_, rule_vec );
+                if ( !ret.ok() ) {
+                    rodsLog( LOG_ERROR, "Error in list_rules for instance [%s]", itr->instance_name_.c_str() );
+                    return ret;
+                }
+            }
+
+            return SUCCESS();
+        }
     protected:
         C ctx_;
 

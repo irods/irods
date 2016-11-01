@@ -25,5 +25,5 @@ class Test_ClientHints(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_ClientHints, self).tearDown()
 
     def test_client_hints(self):
-        self.admin.assert_icommand('iclienthintstest', 'STDOUT_SINGLELINE', 'plugins')
+        self.admin.assert_icommand('iclienthints', 'STDOUT_SINGLELINE', 'plugins')
 

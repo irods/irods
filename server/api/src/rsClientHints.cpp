@@ -140,6 +140,34 @@ int _rsClientHints(
     }
     json_object_set_new(client_hints, "plugins", plugins);
 
+    // List rules
+    ruleExecInfo_t rei;
+    memset( ( char*) &rei, 0, sizeof( ruleExecInfo_t ) );
+    rei.rsComm  = _comm;
+    rei.uoic    = &_comm->clientUser;
+    rei.uoip    = &_comm->proxyUser;
+    rei.uoio    = nullptr;
+    rei.coi     = nullptr;
+
+    irods::rule_engine_context_manager<
+        irods::unit,
+        ruleExecInfo_t*,
+        irods::DONT_AUDIT_RULE > re_ctx_mgr(
+                                irods::re_plugin_globals->global_re_mgr,
+                                &rei );
+
+    std::vector< std::string > rule_vec;
+    ret = re_ctx_mgr.list_rules( rule_vec );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+    }
+
+    json_t* rules = json_array();
+    for ( const auto& rule : rule_vec ) {
+        json_array_append( rules, json_string( rule.c_str() ) );
+    }
+    json_object_set_new( client_hints, "rules", rules );
+
     char* tmp_buf = json_dumps(client_hints, JSON_INDENT( 4 ) );
     json_decref( client_hints );
 
