@@ -411,13 +411,13 @@ namespace irods {
                        "allocation of json object failed" );
         }
 
-        json_object_set( obj, "hostname", json_string( my_env.rodsHost ) );
-        json_object_set( obj, "irods_server_pid", json_integer( my_pid ) );
-        json_object_set( obj, "re_server_pid", json_integer( re_pid ) );
-        json_object_set( obj, "xmsg_server_pid", json_integer( xmsg_pid ) );
+        json_object_set_new( obj, "hostname", json_string( my_env.rodsHost ) );
+        json_object_set_new( obj, "irods_server_pid", json_integer( my_pid ) );
+        json_object_set_new( obj, "re_server_pid", json_integer( re_pid ) );
+        json_object_set_new( obj, "xmsg_server_pid", json_integer( xmsg_pid ) );
 
         server_state& s = server_state::instance();
-        json_object_set( obj, "status", json_string( s().c_str() ) );
+        json_object_set_new( obj, "status", json_string( s().c_str() ) );
 
         json_t* arr = json_array();
         if ( !arr ) {
@@ -441,21 +441,18 @@ namespace irods {
                            "allocation of json object failed" );
             }
 
-            json_object_set( agent_obj, "agent_pid", json_integer( pid ) );
-            json_object_set( agent_obj, "age", json_integer( age ) );
-            json_array_append( arr, agent_obj );
-
-            json_decref( agent_obj );
-
+            json_object_set_new( agent_obj, "agent_pid", json_integer( pid ) );
+            json_object_set_new( agent_obj, "age", json_integer( age ) );
+            json_array_append_new( arr, agent_obj );
         }
 
-        json_object_set( obj, "agents", arr );
+        json_object_set_new( obj, "agents", arr );
 
         char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
-
         json_decref( obj );
 
         _output += tmp_buf;
+        free(tmp_buf);
         _output += ",";
 
         return SUCCESS();

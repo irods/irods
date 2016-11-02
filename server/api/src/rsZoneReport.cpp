@@ -100,8 +100,8 @@ void report_server_connect_error(
             __FUNCTION__, __LINE__);
     }
 
-    json_object_set(obj, "ERROR", json_string(msg.str().c_str()));
-    json_array_append( _resc_arr, obj );
+    json_object_set_new(obj, "ERROR", json_string(msg.str().c_str()));
+    json_array_append_new( _resc_arr, obj );
 
 }
 
@@ -214,7 +214,7 @@ irods::error get_server_reports(
             continue;
         }
 
-        json_array_append( _resc_arr, j_resc );
+        json_array_append_new( _resc_arr, j_resc );
 
     } // for itr
 
@@ -263,10 +263,10 @@ irods::error get_coordinating_resources(
         if(!ret.ok()) {
             ret = PASS(ret);
             irods::log(ret);
-            json_object_set(entry, "ERROR", json_string(ret.result().c_str()));
+            json_object_set_new(entry, "ERROR", json_string(ret.result().c_str()));
         }
 
-        json_array_append( _resources, entry );
+        json_array_append_new( _resources, entry );
 
     } // for itr
 
@@ -330,9 +330,9 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set( zone_obj, "servers", svr_arr );
-    json_object_set( cat_svr, "coordinating_resources", coord_resc );
-    json_object_set( zone_obj, "icat_server", cat_svr );
+    json_object_set_new( zone_obj, "servers", svr_arr );
+    json_object_set_new( cat_svr, "coordinating_resources", coord_resc );
+    json_object_set_new( zone_obj, "icat_server", cat_svr );
 
     json_t* zone_arr = json_array();
     if ( !zone_arr ) {
@@ -342,7 +342,7 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
-    json_array_append( zone_arr, zone_obj );
+    json_array_append_new( zone_arr, zone_obj );
 
     json_t* zone = json_object();
     if ( !zone ) {
@@ -352,7 +352,7 @@ int _rsZoneReport(
         return SYS_MALLOC_ERR;
     }
 
-    json_object_set(
+    json_object_set_new(
         zone,
         "schema_version",
         json_string((boost::format("%s/%s/zone_bundle.json") %
@@ -360,11 +360,9 @@ int _rsZoneReport(
              irods::get_server_property<const std::string>("schema_validation_base_uri")).str().c_str()
             )
         );
-    json_object_set( zone, "zones", zone_arr );
+    json_object_set_new( zone, "zones", zone_arr );
 
     char* tmp_buf = json_dumps( zone, JSON_INDENT( 4 ) );
-
-    // *SHOULD* free All The Things...
     json_decref( zone );
 
     ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( bytesBuf_t ) );

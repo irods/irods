@@ -74,11 +74,11 @@ json_t* make_federation_set(
         }
 
         json_t* fed_obj = json_object();
-        json_object_set( fed_obj, "zone_name",       json_string( zone_sid_vals[ 0 ].c_str() ) );
-        json_object_set( fed_obj, "zone_key",        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-        json_object_set( fed_obj, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+        json_object_set_new( fed_obj, "zone_name",       json_string( zone_sid_vals[ 0 ].c_str() ) );
+        json_object_set_new( fed_obj, "zone_key",        json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
+        json_object_set_new( fed_obj, "negotiation_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-        json_array_append( _object, fed_obj );
+        json_array_append_new( _object, fed_obj );
 
     } // for i
 
@@ -96,17 +96,17 @@ irods::error sanitize_server_config_keys(
     }
 
     // sanitize the top level keys
-    json_object_set(
+    json_object_set_new(
         _svr_cfg,
         "zone_key",
         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-    json_object_set(
+    json_object_set_new(
         _svr_cfg,
         "negotiation_key",
         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
 
-    json_object_set(
+    json_object_set_new(
         _svr_cfg,
         "server_control_plane_key",
         json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
@@ -124,11 +124,11 @@ irods::error sanitize_server_config_keys(
     size_t      idx = 0;
     json_t*     obj = 0;
     json_array_foreach( fed_obj, idx, obj ) {
-        json_object_set(
+        json_object_set_new(
             obj,
             "negotiation_key",
             json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-        json_object_set(
+        json_object_set_new(
             obj,
             "zone_key",
             json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
@@ -270,7 +270,7 @@ irods::error convert_service_account(
     }
     else {
         // sanitize the keys
-        json_object_set(
+        json_object_set_new(
                 _svc_acct,
                 "irods_server_control_plane_key",
                 json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
@@ -327,7 +327,7 @@ irods::error get_host_system_information(
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( _host_system_information, "uname", json_string( uname_string.c_str() ) );
+    json_object_set_new( _host_system_information, "uname", json_string( uname_string.c_str() ) );
 
     std::vector<std::string> args;
     args.push_back( "os_distribution_name" );
@@ -336,7 +336,7 @@ irods::error get_host_system_information(
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
+    json_object_set_new( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
 
     args.clear();
     args.push_back( "os_distribution_version" );
@@ -345,7 +345,7 @@ irods::error get_host_system_information(
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
+    json_object_set_new( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
 
     return SUCCESS();
 
@@ -433,10 +433,10 @@ irods::error get_resource_array(
         if(!ret.ok()) {
             ret = PASS(ret);
             irods::log(ret);
-            json_object_set(entry, "ERROR", json_string(ret.result().c_str()));
+            json_object_set_new(entry, "ERROR", json_string(ret.result().c_str()));
         }
 
-        json_array_append( _resources, entry );
+        json_array_append_new( _resources, entry );
 
     } // for itr
 
@@ -510,7 +510,7 @@ irods::error get_config_dir(
     fs::path p( cfg_file );
     std::string config_dir = p.parent_path().string();
 
-    json_object_set( _cfg_dir, "path", json_string( config_dir.c_str() ) );
+    json_object_set_new( _cfg_dir, "path", json_string( config_dir.c_str() ) );
 
     for ( fs::directory_iterator itr( config_dir );
             itr != fs::directory_iterator();
@@ -532,7 +532,7 @@ irods::error get_config_dir(
                 irods::log( PASS( ret ) );
                 continue;
             }
-            json_object_set(
+            json_object_set_new(
                 files,
                 name.c_str(),
                 json_string(contents.c_str()) );
@@ -540,7 +540,7 @@ irods::error get_config_dir(
 
     } // for itr
 
-    json_object_set( _cfg_dir, "files", files );
+    json_object_set_new( _cfg_dir, "files", files );
 
     return SUCCESS();
 
@@ -616,63 +616,63 @@ int _rsServerReport(
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "version", version );
+    json_object_set_new( resc_svr, "version", version );
 
     json_t* host_system_information = 0;
     ret = get_host_system_information( host_system_information );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "host_system_information", host_system_information );
+    json_object_set_new( resc_svr, "host_system_information", host_system_information );
 
     json_t* svr_cfg = 0;
     ret = convert_server_config( svr_cfg );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "server_config", svr_cfg );
+    json_object_set_new( resc_svr, "server_config", svr_cfg );
 
     json_t* host_ctrl = 0;
     ret = convert_host_access_control( host_ctrl );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "host_access_control_config", host_ctrl );
+    json_object_set_new( resc_svr, "host_access_control_config", host_ctrl );
 
     json_t* irods_host = 0;
     ret = convert_irods_host( irods_host );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "hosts_config", irods_host );
+    json_object_set_new( resc_svr, "hosts_config", irods_host );
 
     json_t* svc_acct = 0;
     ret = convert_service_account( svc_acct );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "service_account_environment", svc_acct );
+    json_object_set_new( resc_svr, "service_account_environment", svc_acct );
 
     json_t* plugins = 0;
     ret = irods::get_plugin_array( plugins );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "plugins", plugins );
+    json_object_set_new( resc_svr, "plugins", plugins );
 
     json_t* resources = 0;
     ret = get_resource_array( resources );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "resources", resources );
+    json_object_set_new( resc_svr, "resources", resources );
 
     json_t* cfg_dir = 0;
     ret = get_config_dir( cfg_dir );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set( resc_svr, "configuration_directory", cfg_dir );
+    json_object_set_new( resc_svr, "configuration_directory", cfg_dir );
 
     std::string svc_role;
     ret = get_catalog_service_role(svc_role);
@@ -682,8 +682,6 @@ int _rsServerReport(
     }
 
     char* tmp_buf = json_dumps( resc_svr, JSON_INDENT( 4 ) );
-
-    // *SHOULD* free All The Things...
     json_decref( resc_svr );
 
     ( *_bbuf )->buf = tmp_buf;

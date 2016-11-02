@@ -130,27 +130,17 @@ int _rsClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_object_set(
-        client_hints,
-        "hash_scheme",
-        json_string( hash.c_str() ) );
-    json_object_set(
-        client_hints,
-        "match_hash_policy",
-        json_string( hash_policy.c_str() ) );
+    json_object_set_new(client_hints, "hash_scheme", json_string( hash.c_str() ) );
+    json_object_set_new(client_hints, "match_hash_policy", json_string( hash_policy.c_str() ) );
 
     json_t* plugins = 0;
     ret = irods::get_plugin_array(plugins);
-    if(!ret.ok()) {
+    if (!ret.ok()) {
         irods::log(PASS(ret));
     }
-    json_object_set(client_hints, "plugins", plugins);
+    json_object_set_new(client_hints, "plugins", plugins);
 
-    char* tmp_buf = json_dumps(
-                        client_hints,
-                        JSON_INDENT( 4 ) );
-
-    // *SHOULD* free All The Things...
+    char* tmp_buf = json_dumps(client_hints, JSON_INDENT( 4 ) );
     json_decref( client_hints );
 
     ( *_bbuf )->buf = tmp_buf;

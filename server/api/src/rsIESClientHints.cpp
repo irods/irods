@@ -136,7 +136,7 @@ irods::error get_query_array(
             ++i ) {
 
         char* alias = &values[ len * i ];
-        json_array_append( _queries, json_string( alias ) );
+        json_array_append_new( _queries, json_string( alias ) );
 
     } // for i
 
@@ -172,24 +172,15 @@ int _rsIESClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_object_set(
-        ies_hints,
-        "strict_acls",
-        json_string( acls.c_str() ) );
+    json_object_set_new(ies_hints, "strict_acls", json_string( acls.c_str() ) );
 
     json_t* query_arr = 0;
     ret = get_query_array( _comm, query_arr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
-    json_object_set(
-        ies_hints,
-        "specific_queries",
-        query_arr );
-
+    json_object_set_new(ies_hints, "specific_queries", query_arr);
     char* tmp_buf = json_dumps( ies_hints, JSON_INDENT( 4 ) );
-
-    // *SHOULD* free All The Things...
     json_decref( ies_hints );
 
     ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( bytesBuf_t ) );

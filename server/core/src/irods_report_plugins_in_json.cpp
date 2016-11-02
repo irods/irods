@@ -24,12 +24,12 @@ namespace irods {
                 ++itr ) {
 
             json_t* plug = json_object();
-            json_object_set( plug, "name",     json_string( itr->c_str() ) );
-            json_object_set( plug, "type",     json_string( _type_name ) );
-            json_object_set( plug, "version",  json_string( "" ) );
-            json_object_set( plug, "checksum_sha256", json_string( "" ) );
+            json_object_set_new( plug, "name",     json_string( itr->c_str() ) );
+            json_object_set_new( plug, "type",     json_string( _type_name ) );
+            json_object_set_new( plug, "version",  json_string( "" ) );
+            json_object_set_new( plug, "checksum_sha256", json_string( "" ) );
 
-            json_array_append( _json_array, plug );
+            json_array_append_new( _json_array, plug );
         }
 
         return SUCCESS();
@@ -150,20 +150,20 @@ namespace irods {
             return PASS(ret);
         }
 
-        json_object_set( _entry, "name",            json_string( name.c_str() ) );
-        json_object_set( _entry, "type",            json_string( type.c_str() ) );
-        json_object_set( _entry, "host",            json_string( host_name.c_str() ) );
-        json_object_set( _entry, "vault_path",      json_string( vault.c_str() ) );
-        json_object_set( _entry, "context_string",  json_string( context.c_str() ) );
-        json_object_set( _entry, "parent_resource", json_string( parent.c_str() ) );
-        json_object_set( _entry, "parent_context",  json_string( parent_context.c_str() ) );
-        json_object_set( _entry, "free_space",      json_string( freespace.c_str() ) );
+        json_object_set_new( _entry, "name",            json_string( name.c_str() ) );
+        json_object_set_new( _entry, "type",            json_string( type.c_str() ) );
+        json_object_set_new( _entry, "host",            json_string( host_name.c_str() ) );
+        json_object_set_new( _entry, "vault_path",      json_string( vault.c_str() ) );
+        json_object_set_new( _entry, "context_string",  json_string( context.c_str() ) );
+        json_object_set_new( _entry, "parent_resource", json_string( parent.c_str() ) );
+        json_object_set_new( _entry, "parent_context",  json_string( parent_context.c_str() ) );
+        json_object_set_new( _entry, "free_space",      json_string( freespace.c_str() ) );
 
         if ( status != INT_RESC_STATUS_DOWN ) {
-            json_object_set( _entry, "status", json_string( "up" ) );
+            json_object_set_new( _entry, "status", json_string( "up" ) );
         }
         else {
-            json_object_set( _entry, "status", json_string( "down" ) );
+            json_object_set_new( _entry, "status", json_string( "down" ) );
         }
 
         return SUCCESS();
