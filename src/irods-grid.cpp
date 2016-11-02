@@ -280,7 +280,7 @@ std::string format_grid_message(
             THROW( -1, std::string("server paused error\n") + _status );
         }
 
-        THROW( -1, std::string("json_loads failed\n") + j_err.text );
+        THROW( -1, boost::format("json_loads failed with error: %s\nserver status: %s\n") % j_err.text % _status );
     }
 
     char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
