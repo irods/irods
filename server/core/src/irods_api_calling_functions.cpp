@@ -10,7 +10,6 @@ int call_miscSvrInfo_out(
     rsComm_t*          _comm,
     miscSvrInfo_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                miscSvrInfo_t**>(
                    _comm,
                    _out );
@@ -22,7 +21,6 @@ int call_fileCreateInp_fileCreateOut(
     fileCreateInp_t*  _inp,
     fileCreateOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileCreateInp_t*,
                fileCreateOut_t**>(
                    _comm,
@@ -35,7 +33,6 @@ int call_fileOpenInp(
     rsComm_t*         _comm,
     fileOpenInp_t*    _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileOpenInp_t*>(
                    _comm,
                    _inp);
@@ -47,7 +44,6 @@ int call_fileWriteInp_bytesBufInp(
     fileWriteInp_t*   _inp,
     bytesBuf_t*       _buf ) {
     return _api->call_handler<
-               rsComm_t*,
                fileWriteInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -60,7 +56,6 @@ int call_fileCloseInp(
     rsComm_t*         _comm,
     fileCloseInp_t*    _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileCloseInp_t*>(
                    _comm,
                    _inp);
@@ -72,7 +67,6 @@ int call_fileLseekInp_fileLseekOut(
     fileLseekInp_t*   _inp,
     fileLseekOut_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileLseekInp_t*,
                fileLseekOut_t**>(
                    _comm,
@@ -86,7 +80,6 @@ int call_fileReadInp_bytesBufOut(
     fileReadInp_t*   _inp,
     bytesBuf_t*       _buf ) {
     return _api->call_handler<
-               rsComm_t*,
                fileReadInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -99,7 +92,6 @@ int call_fileReadInp(
     rsComm_t*         _comm,
     fileReadInp_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileReadInp_t*>(
                    _comm,
                    _inp);
@@ -110,7 +102,6 @@ int call_fileUnlinkInp(
     rsComm_t*         _comm,
     fileUnlinkInp_t*  _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileUnlinkInp_t*>(
                    _comm,
                    _inp);
@@ -121,7 +112,6 @@ int call_fileMkdirInp(
     rsComm_t*         _comm,
     fileMkdirInp_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileMkdirInp_t*>(
                    _comm,
                    _inp);
@@ -132,7 +122,6 @@ int call_fileChmodInp(
     rsComm_t*         _comm,
     fileChmodInp_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileChmodInp_t*>(
                    _comm,
                    _inp);
@@ -143,7 +132,6 @@ int call_fileRmdirInp(
     rsComm_t*         _comm,
     fileRmdirInp_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileRmdirInp_t*>(
                    _comm,
                    _inp);
@@ -155,7 +143,6 @@ int call_fileStatInp_rodsStatOut(
     fileStatInp_t*    _inp,
     rodsStat_t**      _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileStatInp_t*,
                rodsStat_t**>(
                    _comm,
@@ -169,7 +156,6 @@ int call_fileGetFreespaceInp_fileGetFreespaceOut(
     fileGetFsFreeSpaceInp_t*  _inp,
     fileGetFsFreeSpaceOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileGetFsFreeSpaceInp_t*,
                fileGetFsFreeSpaceOut_t**>(
                    _comm,
@@ -182,7 +168,6 @@ int call_fileOpendirInp(
     rsComm_t*         _comm,
     fileOpendirInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileOpendirInp_t*>(
                    _comm,
                    _inp);
@@ -193,7 +178,6 @@ int call_fileClosedirInp(
     rsComm_t*          _comm,
     fileClosedirInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileClosedirInp_t*>(
                    _comm,
                    _inp);
@@ -205,7 +189,6 @@ int call_fileReaddirInp_rodsDirentOut(
     fileReaddirInp_t* _inp,
     rodsDirent_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileReaddirInp_t*,
                rodsDirent_t**>(
                    _comm,
@@ -219,7 +202,6 @@ int call_fileRenameInp_fileRenameOut(
     fileRenameInp_t*  _inp,
     fileRenameOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileRenameInp_t*,
                fileRenameOut_t**>(
                    _comm,
@@ -234,7 +216,6 @@ int call_fileOpenInp_bytesBufInp_filePutOut(
     bytesBuf_t*       _buf,
     filePutOut_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileOpenInp_t*,
                bytesBuf_t*,
                filePutOut_t**>(
@@ -250,7 +231,6 @@ int call_fileOpenInp_bytesBufOut(
     fileOpenInp_t*    _inp,
     bytesBuf_t*       _buf ) {
     return _api->call_handler<
-               rsComm_t*,
                fileOpenInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -263,7 +243,6 @@ int call_fileStageSyncInp(
     rsComm_t*           _comm,
     fileStageSyncInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                fileStageSyncInp_t*>(
                    _comm,
                    _inp);
@@ -275,7 +254,6 @@ int call_fileStageSyncInp_fileSyncOut(
     fileStageSyncInp_t* _inp,
     fileSyncOut_t**     _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileStageSyncInp_t*>(
                    _comm,
                    _inp,
@@ -287,7 +265,6 @@ int call_dataObjInp(
     rsComm_t*         _comm,
     dataObjInp_t*     _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*>(
                    _comm,
                    _inp);
@@ -299,7 +276,6 @@ int call_openedDataObjInp_bytesBufOut(
     openedDataObjInp_t* _inp,
     bytesBuf_t*         _buf ) {
     return _api->call_handler<
-               rsComm_t*,
                openedDataObjInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -312,7 +288,6 @@ int call_openedDataObjInp(
     rsComm_t*           _comm,
     openedDataObjInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                openedDataObjInp_t*>(
                    _comm,
                    _inp );
@@ -325,7 +300,6 @@ int call_dataObjInp_bytesBufInp_portalOprOut(
     bytesBuf_t*         _buf,
     portalOprOut_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                bytesBuf_t*,
                portalOprOut_t**>(
@@ -342,7 +316,6 @@ int call_dataObjInp_portalOprOut_bytesBufOut(
     portalOprOut_t**    _out,
     bytesBuf_t*         _buf ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                portalOprOut_t**,
                bytesBuf_t*>(
@@ -358,7 +331,6 @@ int call_dataObjInp_transferStatOut(
     dataObjInp_t*     _inp,
     transferStat_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                transferStat_t**>(
                    _comm,
@@ -372,7 +344,6 @@ int call_openedDataObjInp_fileLseekOut(
     openedDataObjInp_t* _inp,
     fileLseekOut_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                openedDataObjInp_t*,
                fileLseekOut_t**>(
                    _comm,
@@ -386,7 +357,6 @@ int call_dataObjCopyInp_transferStatOut(
     dataObjCopyInp_t* _inp,
     transferStat_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjCopyInp_t*,
                transferStat_t**>(
                    _comm,
@@ -400,7 +370,6 @@ int call_dataOprInp_portalOprOut(
     dataOprInp_t*       _inp,
     portalOprOut_t**    _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataOprInp_t*,
                portalOprOut_t**>(
                    _comm,
@@ -413,7 +382,6 @@ int call_dataCopyInp(
     rsComm_t*         _comm,
     dataCopyInp_t*    _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                dataCopyInp_t*>(
                    _comm,
                    _inp);
@@ -425,7 +393,6 @@ int call_simpleQueryInp_simpleQueryOut(
     simpleQueryInp_t*   _inp,
     simpleQueryOut_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                simpleQueryInp_t*,
                simpleQueryOut_t**>(
                    _comm,
@@ -438,7 +405,6 @@ int call_generalAdminInp(
     rsComm_t*          _comm,
     generalAdminInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                generalAdminInp_t*>(
                    _comm,
                    _inp);
@@ -450,7 +416,6 @@ int call_genQueryInp_genQueryOut(
     genQueryInp_t*    _inp,
     genQueryOut_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                genQueryInp_t*,
                genQueryOut_t**>(
                    _comm,
@@ -463,7 +428,6 @@ int call_authRequestOut(
     rsComm_t*          _comm,
     authRequestOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                authRequestOut_t**>(
                    _comm,
                    _out);
@@ -474,7 +438,6 @@ int call_authResponseInp(
     rsComm_t*          _comm,
     authResponseInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                authResponseInp_t*>(
                    _comm,
                    _inp);
@@ -486,7 +449,6 @@ int call_authCheckInp_authCheckOut(
     authCheckInp_t*   _inp,
     authCheckOut_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                authCheckInp_t*,
                authCheckOut_t**>(
                    _comm,
@@ -499,7 +461,6 @@ int call_endTransactionInp(
     rsComm_t*            _comm,
     endTransactionInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                endTransactionInp_t*>(
                    _comm,
                    _inp);
@@ -511,7 +472,6 @@ int call_specificQueryInp_genQueryOut(
     specificQueryInp_t* _inp,
     genQueryOut_t**     _out ) {
     return _api->call_handler<
-               rsComm_t*,
                specificQueryInp_t*,
                genQueryOut_t**>(
                    _comm,
@@ -524,7 +484,6 @@ int call_ticketAdminInp(
     rsComm_t*         _comm,
     ticketAdminInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                ticketAdminInp_t*>(
                    _comm,
                    _inp);
@@ -535,7 +494,6 @@ int call_getTempPasswordOut(
     rsComm_t*              _comm,
     getTempPasswordOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getTempPasswordOut_t**>(
                    _comm,
                    _out);
@@ -547,7 +505,6 @@ int call_getTempPasswordForOtherInp_getTempPasswordForOtherOut(
     getTempPasswordForOtherInp_t*  _inp,
     getTempPasswordForOtherOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getTempPasswordForOtherInp_t*,
                getTempPasswordForOtherOut_t**>(
                    _comm,
@@ -561,7 +518,6 @@ int call_pamAuthRequestInp_pamAuthRequestOut(
     pamAuthRequestInp_t*  _inp,
     pamAuthRequestOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                pamAuthRequestInp_t*,
                pamAuthRequestOut_t**>(
                    _comm,
@@ -575,7 +531,6 @@ int call_getLimitedPasswordInp_getLimitedPasswordOut(
     getLimitedPasswordInp_t*  _inp,
     getLimitedPasswordOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getLimitedPasswordInp_t*,
                getLimitedPasswordOut_t**>(
                    _comm,
@@ -588,7 +543,6 @@ int call_collInp(
     rsComm_t*         _comm,
     collInp_t*        _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                collInp_t*>(
                    _comm,
                    _inp);
@@ -600,7 +554,6 @@ int call_intp_collEntOut(
     int*              _inp,
     collEnt_t**       _out ) {
     return _api->call_handler<
-               rsComm_t*,
                int*,
                collEnt_t**>(
                    _comm,
@@ -613,7 +566,6 @@ int call_userAdminInp(
     rsComm_t*         _comm,
     userAdminInp_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                userAdminInp_t*>(
                    _comm,
                    _inp);
@@ -624,7 +576,6 @@ int call_generalRowInserInp(
     rsComm_t*             _comm,
     generalRowInsertInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                generalRowInsertInp_t*>(
                    _comm,
                    _inp);
@@ -635,7 +586,6 @@ int call_generalRowPurgeInp(
     rsComm_t*             _comm,
     generalRowPurgeInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                generalRowPurgeInp_t*>(
                    _comm,
                    _inp);
@@ -646,7 +596,6 @@ int call_intp(
     rsComm_t*         _comm,
     int*              _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                int*>(
                    _comm,
                    _inp);
@@ -658,7 +607,6 @@ int call_collInp_collOprStatOut(
     collInp_t*        _inp,
     collOprStat_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                collInp_t*,
                collOprStat_t**>(
                    _comm,
@@ -671,7 +619,6 @@ int call_modAVUMetadataInp(
     rsComm_t*            _comm,
     modAVUMetadataInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                modAVUMetadataInp_t*>(
                    _comm,
                    _inp);
@@ -682,7 +629,6 @@ int call_modAccessControlInp(
     rsComm_t*            _comm,
     modAccessControlInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                modAccessControlInp_t*>(
                    _comm,
                    _inp);
@@ -693,7 +639,6 @@ int call_ruleExecModInp(
     rsComm_t*            _comm,
     ruleExecModInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                ruleExecModInp_t*>(
                    _comm,
                    _inp);
@@ -704,7 +649,6 @@ int call_generalUpdateInp(
     rsComm_t*            _comm,
     generalUpdateInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                generalUpdateInp_t*>(
                    _comm,
                    _inp);
@@ -715,7 +659,6 @@ int call_modDataObjMetaInp(
     rsComm_t*            _comm,
     modDataObjMeta_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                modDataObjMeta_t*>(
                    _comm,
                    _inp);
@@ -727,7 +670,6 @@ int call_ruleExecSubmitInp_charOut(
     ruleExecSubmitInp_t* _inp,
     char**               _out ) {
     return _api->call_handler<
-               rsComm_t*,
                ruleExecSubmitInp_t*,
                char**>(
                    _comm,
@@ -740,7 +682,6 @@ int call_ruleExecDelInp(
     rsComm_t*            _comm,
     ruleExecDelInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                ruleExecDelInp_t*>(
                    _comm,
                    _inp);
@@ -752,7 +693,6 @@ int call_execMyRuleInp_msParamArrayOut(
     execMyRuleInp_t*        _inp,
     msParamArray_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                execMyRuleInp_t*,
                msParamArray_t**>(
                    _comm,
@@ -765,7 +705,6 @@ int call_dataObjCopyInp(
     rsComm_t*         _comm,
     dataObjCopyInp_t* _inp) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjCopyInp_t*>(
                    _comm,
                    _inp);
@@ -777,7 +716,6 @@ int call_dataObjInp_msParamArrayOut(
     dataObjInp_t*        _inp,
     msParamArray_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                msParamArray_t**>(
                    _comm,
@@ -791,7 +729,6 @@ int call_dataObjInp_charOut(
     dataObjInp_t*        _inp,
     char**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                char**>(
                    _comm,
@@ -805,7 +742,6 @@ int call_dataObjInp_rodsObjStatOut(
     dataObjInp_t*     _inp,
     rodsObjStat_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                rodsObjStat_t**>(
                    _comm,
@@ -819,7 +755,6 @@ int call_execCmdInp_execCmdOut(
     execCmd_t*        _inp,
     execCmdOut_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                execCmd_t*,
                execCmdOut_t**>(
                    _comm,
@@ -832,7 +767,6 @@ int call_structFileOprInp(
     rsComm_t*           _comm,
     structFileOprInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                structFileOprInp_t*>(
                    _comm,
                    _inp);
@@ -842,7 +776,6 @@ int call_subFileInp(
     rsComm_t*         _comm,
     subFile_t*        _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                subFile_t*>(
                    _comm,
                    _inp);
@@ -854,7 +787,6 @@ int call_subStructFileFdOprInp_bytesBufOut(
     subStructFileFdOprInp_t* _inp,
     bytesBuf_t*              _out ) {
     return _api->call_handler<
-               rsComm_t*,
                subStructFileFdOprInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -867,7 +799,6 @@ int call_subStructFileFdOprInp(
     rsComm_t*                _comm,
     subStructFileFdOprInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                subStructFileFdOprInp_t*>(
                    _comm,
                    _inp);
@@ -879,7 +810,6 @@ int call_subFileInp_rodsStatOut(
     subFile_t*        _inp,
     rodsStat_t**      _out ) {
     return _api->call_handler<
-               rsComm_t*,
                subFile_t*,
                rodsStat_t**>(
                    _comm,
@@ -893,7 +823,6 @@ int call_subStructFileLseekInp_fileLseekOut(
     subStructFileLseekInp_t* _inp,
     fileLseekOut_t**         _out ) {
     return _api->call_handler<
-               rsComm_t*,
                subStructFileLseekInp_t*,
                fileLseekOut_t**>(
                    _comm,
@@ -906,7 +835,6 @@ int call_subStructFileRenameInp(
     rsComm_t*                _comm,
     subStructFileRenameInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                subStructFileRenameInp_t*>(
                    _comm,
                    _inp);
@@ -918,7 +846,6 @@ int call_dataObjInp_genQueryOut(
     dataObjInp_t*     _inp,
     genQueryOut_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                genQueryOut_t**>(
                    _comm,
@@ -932,7 +859,6 @@ int call_subStructFileFdOprInp_rodsDirentOut(
     subStructFileFdOprInp_t* _inp,
     rodsDirent_t**           _out ) {
     return _api->call_handler<
-               rsComm_t*,
                subStructFileFdOprInp_t*,
                rodsDirent_t**>(
                    _comm,
@@ -946,7 +872,6 @@ int call_getXmsgTicketInp_xmsgTicketInfoOut(
     getXmsgTicketInp_t* _inp,
     xmsgTicketInfo_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getXmsgTicketInp_t*,
                xmsgTicketInfo_t**>(
                    _comm,
@@ -959,7 +884,6 @@ int call_sendXmsgInp(
     rsComm_t*         _comm,
     sendXmsgInp_t*    _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                sendXmsgInp_t*>(
                    _comm,
                    _inp);
@@ -971,7 +895,6 @@ int call_rcvXmsgInp_rcvXmsgOut(
     rcvXmsgInp_t* _inp,
     rcvXmsgOut_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                rcvXmsgInp_t*,
                rcvXmsgOut_t**>(
                    _comm,
@@ -985,7 +908,6 @@ int call_subFileInp_bytesBufOut(
     subFile_t* _inp,
     bytesBuf_t*  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                subFile_t*,
                bytesBuf_t*>(
                    _comm,
@@ -998,7 +920,6 @@ int call_structFileExtAndRegInp(
     rsComm_t*                 _comm,
     structFileExtAndRegInp_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                structFileExtAndRegInp_t*>(
                    _comm,
                    _inp);
@@ -1009,7 +930,6 @@ int call_chkObjPermAndStat(
     rsComm_t*            _comm,
     chkObjPermAndStat_t* _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                chkObjPermAndStat_t*>(
                    _comm,
                    _inp);
@@ -1021,7 +941,6 @@ int call_dataObjInp_rodsHostAddrOut(
     dataObjInp_t*     _inp,
     rodsHostAddr_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                rodsHostAddr_t**>(
                    _comm,
@@ -1035,7 +954,6 @@ int call_dataObjInp_openStatOut(
     dataObjInp_t*     _inp,
     openStat_t**  _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInp_t*,
                openStat_t**>(
                    _comm,
@@ -1049,7 +967,6 @@ int call_intInp_bytesBufOut(
     int*              _inp,
     bytesBuf_t*       _out ) {
     return _api->call_handler<
-               rsComm_t*,
                int*,
                bytesBuf_t*>(
                    _comm,
@@ -1063,7 +980,6 @@ int call_getRescQuotaInp_rescQuotaOut(
     getRescQuotaInp_t* _inp,
     rescQuota_t**      _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getRescQuotaInp_t*,
                rescQuota_t**>(
                    _comm,
@@ -1077,7 +993,6 @@ int call_genQueryOutOut_genQueryOut(
     genQueryOut_t*    _inp,
     genQueryOut_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                genQueryOut_t*,
                genQueryOut_t**>(
                    _comm,
@@ -1091,7 +1006,6 @@ int call_bulkOprInp_bytesBufOut(
     bulkOprInp_t*     _inp,
     bytesBuf_t*       _out ) {
     return _api->call_handler<
-               rsComm_t*,
                bulkOprInp_t*,
                bytesBuf_t*>(
                    _comm,
@@ -1105,7 +1019,6 @@ int call_procStatInp_genQueryOut(
     procStatInp_t*    _inp,
     genQueryOut_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                procStatInp_t*,
                genQueryOut_t**>(
                    _comm,
@@ -1119,7 +1032,6 @@ int call_dataObjInfoInp_dataObjInfoOut(
     dataObjInfo_t*    _inp,
     dataObjInfo_t**   _out ) {
     return _api->call_handler<
-               rsComm_t*,
                dataObjInfo_t*,
                dataObjInfo_t**>(
                    _comm,
@@ -1132,7 +1044,6 @@ int call_unregDataObjInp(
     rsComm_t*         _comm,
     unregDataObj_t*   _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                unregDataObj_t*>(
                    _comm,
                    _inp);
@@ -1143,7 +1054,6 @@ int call_regReplicaInp(
     rsComm_t*         _comm,
     regReplica_t*     _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                regReplica_t*>(
                    _comm,
                    _inp);
@@ -1155,7 +1065,6 @@ int call_fileChksumInp_charOut(
     fileChksumInp_t*  _inp,
     char**            _out ) {
     return _api->call_handler<
-               rsComm_t*,
                fileChksumInp_t*,
                char**>(
                    _comm,
@@ -1168,7 +1077,6 @@ int call_sslStartInp(
     rsComm_t*         _comm,
     sslStartInp_t*     _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                sslStartInp_t*>(
                    _comm,
                    _inp);
@@ -1179,7 +1087,6 @@ int call_sslEndInp(
     rsComm_t*         _comm,
     sslEndInp_t*     _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                sslEndInp_t*>(
                    _comm,
                    _inp);
@@ -1191,7 +1098,6 @@ int call_authPluginReqInp_authPluginReqOut(
     authPluginReqInp_t*  _inp,
     authPluginReqOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                authPluginReqInp_t*,
                authPluginReqOut_t**>(
                    _comm,
@@ -1205,7 +1111,6 @@ int call_getHierarchyForRescInp_getHierarchyForRescOut(
     getHierarchyForRescInp_t*  _inp,
     getHierarchyForRescOut_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                getHierarchyForRescInp_t*,
                getHierarchyForRescOut_t**>(
                    _comm,
@@ -1218,7 +1123,6 @@ int call_bytesBufOut(
     rsComm_t*         _comm,
     bytesBuf_t**      _out ) {
     return _api->call_handler<
-               rsComm_t*,
                bytesBuf_t**>(
                    _comm,
                    _out);
@@ -1230,7 +1134,6 @@ int call_get_hier_inp_get_hier_out(
     get_hier_inp_t*  _inp,
     get_hier_out_t** _out ) {
     return _api->call_handler<
-               rsComm_t*,
                get_hier_inp_t*,
                get_hier_out_t**>(
                    _comm,
@@ -1243,7 +1146,6 @@ int call_setRoundRobinContextInp(
     rsComm_t*                  _comm,
     setRoundRobinContextInp_t*  _inp ) {
     return _api->call_handler<
-               rsComm_t*,
                setRoundRobinContextInp_t*>(
                    _comm,
                    _inp);
@@ -1254,7 +1156,6 @@ int call_execRuleExpressionInp(
     rsComm_t*               _comm,
     exec_rule_expression_t* _inp) {
     return _api->call_handler<
-               rsComm_t*,
                exec_rule_expression_t*>(
                    _comm,
                    _inp);

@@ -39,7 +39,6 @@ int call_helloInp_helloOut(
     helloInp_t*       _inp,
     helloOut_t**      _out ) {
     return _api->call_handler<
-               rsComm_t*,
                helloInp_t*,
                helloOut_t** >(
                    _comm,

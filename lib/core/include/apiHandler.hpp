@@ -24,6 +24,11 @@
 
 #include <functional>
 
+// XXXXX
+#include "boost/type_index.hpp"
+#include "boost/core/demangle.hpp"
+// XXXXX
+
 
 namespace irods {
 
@@ -63,13 +68,13 @@ namespace irods {
 
     template < typename... types_t >
     class api_call_adaptor {
-        std::function<int(types_t...)> fcn_;
+        std::function<int(rsComm_t*, types_t...)> fcn_;
     public:
-        api_call_adaptor( std::function<int(types_t...)> _fcn ): fcn_(_fcn) {
+        api_call_adaptor( std::function<int(rsComm_t*, types_t...)> _fcn ): fcn_(_fcn) {
         }
 
-        irods::error operator()( irods::plugin_context&, types_t... _t ) {
-            int ret = fcn_( _t... );
+        irods::error operator()( irods::plugin_context&, rsComm_t* _comm, types_t... _t ) {
+            int ret = fcn_( _comm, _t... );
             if( ret >= 0 ) {
                 return CODE( ret );
             }
@@ -106,6 +111,7 @@ namespace irods {
 
             template<typename... types_t>
                 int call_handler(
+                    rsComm_t* _comm,
                     types_t... _t ) {
                     using namespace std;
                     if( !operations_.has_entry(operation_name) ) {
@@ -117,45 +123,86 @@ namespace irods {
                     }
 
                     try {
-                        typedef std::function<int(types_t...)> fcn_t;
+                        typedef std::function<int(rsComm_t*, types_t...)> fcn_t;
                         fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
                         #ifdef ENABLE_RE
+                        bool ret;
+                        bool pre_pep_failed = false;
+                        bool post_pep_failed = false;
                         irods::error op_err;
-                        if (RuleExistsHelper::Instance()->checkOperation(operation_name)) {
-                            ruleExecInfo_t rei;
-                            memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
-                            dynamic_operation_execution_manager<
-                                default_re_ctx,
-                                default_ms_ctx,
-                                DONT_AUDIT_RULE > rex_mgr(
-                                        shared_ptr<
-                                        rule_engine_context_manager<
-                                        default_re_ctx,
-                                        default_ms_ctx,
-                                        DONT_AUDIT_RULE> >(
-                                            new rule_engine_context_manager<
-                                            default_re_ctx,
-                                            default_ms_ctx,
-                                            DONT_AUDIT_RULE >(
-                                                re_plugin_globals->global_re_mgr, &rei)));
+                        irods::error saved_op_err;
+                        irods::error to_return_op_err;
+                        irods::plugin_property_map prop_map;
+                        irods::plugin_context ctx(NULL,prop_map);
+                        ruleExecInfo_t rei;
+                        memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
+                        rei.rsComm      = _comm;
+                        rei.uoic        = &_comm->clientUser;
+                        rei.uoip        = &_comm->proxyUser;
+                        rei.uoio        = nullptr;
+                        rei.coi         = nullptr;
 
-                            std::function<error(irods::plugin_context&,types_t...)> adapted_fcn(
-                                    ( api_call_adaptor<types_t...>(fcn) ) );
+                        rule_engine_context_manager<
+                            irods::unit,
+                            ruleExecInfo_t*,
+                            AUDIT_RULE > re_ctx_mgr(
+                                re_plugin_globals->global_re_mgr,
+                                &rei );
 
-                            irods::plugin_property_map prop_map;
-                            irods::plugin_context ctx(NULL,prop_map);
-                            op_err = rex_mgr.call(
-                                    "api_instance",
-                                    operation_name,
-                                    adapted_fcn,
-                                    ctx,
-                                    _t...);
-                            return op_err.code();
-                        } else {
-                            return fcn(_t...);
+                        for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                            std::string rule_name = ns + "pep_" + operation_name + "_pre";
+                            if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                                if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
+                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, NULL );
+                                    if ( !op_err.ok() ) {
+                                        rodsLog( LOG_DEBUG, "Pre-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code() );
+                                        saved_op_err = op_err;
+                                        pre_pep_failed = true;
+                                    }
+                                } else {
+                                    rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                                }
+                            }
                         }
+
+                        // If pre-pep fails, do not execute rule or post-pep(s)
+                        if ( pre_pep_failed ) {
+                            rodsLog( LOG_DEBUG, "Pre-pep for operation [%s] failed, rule and post-pep not executed", operation_name.c_str() );
+                            return saved_op_err.code();
+                        }
+
+                        std::function<error(irods::plugin_context&, rsComm_t*,types_t...)> adapted_fcn{
+                                api_call_adaptor<types_t...>(fcn) };
+
+                        op_err = adapted_fcn( ctx, _comm, forward<types_t>(_t)...);
+
+                        // If rule call fails, do not execute post_pep
+                        if ( !op_err.ok() ) {
+                            rodsLog( LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", operation_name.c_str(), op_err.code() );
+                            return op_err.code();
+                        }
+
+                        to_return_op_err = op_err;
+
+                        for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                            std::string rule_name = ns + "pep_" + operation_name + "_post";
+                            if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                                if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
+                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, NULL );
+                                    if ( !op_err.ok() ) {
+                                        rodsLog( LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code() );
+                                        saved_op_err = op_err;
+                                        post_pep_failed = true;
+                                    }
+                                } else {
+                                    rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
+                                }
+                            }
+                        }
+
+                        return to_return_op_err.code();
                         #else
-                            return fcn(_t...);
+                            return fcn(_comm, _t...);
                         #endif
                     }
                     catch( const boost::bad_any_cast& ) {
