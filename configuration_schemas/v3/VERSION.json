@@ -3,11 +3,8 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "properties": {
-        "build_system_information": {"type": "string"},
         "catalog_schema_version": {"type": "integer" },
         "commit_id": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-        "compile_time": {"type": "string", "format": "date-time"},
-        "compiler_version": {"type": "string"},
         "configuration_schema_version": {"type": "integer" },
         "installation_time": {"type": "string", "format": "date-time"},
         "irods_version": {"type": "string"},
@@ -16,10 +13,8 @@
         }
     },
     "required": [
-        "build_system_information",
         "catalog_schema_version",
         "commit_id",
-        "compiler_version",
         "configuration_schema_version",
         "irods_version"
     ]
