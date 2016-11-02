@@ -12,8 +12,11 @@
         "host_system_information": {
             "type": "object",
             "properties": {
+                "hostname": {"type": "string"},
                 "os_distribution_name": {"type": "string"},
                 "os_distribution_version": {"type": "string"},
+                "service_account_user_name": {"type": "string"},
+                "service_account_group_name": {"type": "string"},
                 "uname": {"type": "string"}
             },
             "required": ["os_distribution_name","os_distribution_version","uname"]

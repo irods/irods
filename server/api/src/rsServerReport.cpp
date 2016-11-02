@@ -12,6 +12,8 @@
 #include "irods_load_plugin.hpp"
 #include "irods_report_plugins_in_json.hpp"
 #include "rsServerReport.hpp"
+#include <unistd.h>
+#include <grp.h>
 
 #include "jansson.h"
 
@@ -283,7 +285,7 @@ irods::error convert_service_account(
 
 
 irods::error get_uname_string(
-    std::string _str ) {
+    std::string& _str ) {
 
     struct utsname os_name;
     memset( &os_name, 0, sizeof( os_name ) );
@@ -310,42 +312,95 @@ irods::error get_uname_string(
 
 } // get_uname_string
 
+irods::error get_user_name_string(std::string& user_name_string) {
+    uid_t uid = getuid();
+    passwd *pw = getpwuid(uid);
+    if (pw==nullptr) {
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, boost::format("getpwuid() returned null for uid [%d]") % uid);
+    }
+    user_name_string = pw->pw_name;
+    return SUCCESS();
+}
+
+irods::error get_group_name_string(std::string& group_name_string) {
+    uid_t uid = getuid();
+    passwd *pw = getpwuid(uid);
+    if (pw==nullptr) {
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, boost::format("getpwuid() returned null for uid [%d]") % uid);
+    }
+    group *grp = getgrgid(pw->pw_gid);
+    if (grp==nullptr) {
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, boost::format("getgrgid() returned null for gid [%d]") % pw->pw_gid);
+    }
+    group_name_string = grp->gr_name;
+    return SUCCESS();
+}
 
 irods::error get_host_system_information(
     json_t*& _host_system_information ) {
 
     _host_system_information = json_object();
     if ( !_host_system_information ) {
-        return ERROR(
-                   SYS_MALLOC_ERR,
-                   "json_object() failed" );
+        return ERROR(SYS_MALLOC_ERR, "json_object() failed" );
     }
 
+    std::string user_name_string;
+    irods::error ret = get_user_name_string(user_name_string);
+    if (ret.ok()) {
+        json_object_set_new( _host_system_information, "service_account_user_name", json_string( user_name_string.c_str() ) );
+    } else {
+        irods::log(ret);
+        json_object_set_new( _host_system_information, "service_account_user_name", json_null());
+    }
+
+    std::string group_name_string;
+    ret = get_group_name_string(group_name_string);
+    if (ret.ok()) {
+        json_object_set_new( _host_system_information, "service_account_group_name", json_string( group_name_string.c_str() ) );
+    } else {
+        irods::log(ret);
+        json_object_set_new( _host_system_information, "service_account_group_name", json_null());
+    }
+
+    char hostname_buf[512];
+    const int gethostname_ret = gethostname(hostname_buf, sizeof(hostname_buf));
+    if (gethostname_ret != 0) {
+        rodsLog(LOG_ERROR, "get_host_system_information: gethostname() failed [%d]", errno);
+        json_object_set_new( _host_system_information, "hostname", json_null());
+    } else {
+        json_object_set_new( _host_system_information, "hostname", json_string(hostname_buf));
+    }
 
     std::string uname_string;
-    irods::error ret = get_uname_string( uname_string );
-    if ( !ret.ok() ) {
+    ret = get_uname_string( uname_string );
+    if ( ret.ok() ) {
+        json_object_set_new( _host_system_information, "uname", json_string( uname_string.c_str() ) );
+    } else {
         irods::log( PASS( ret ) );
+        json_object_set_new( _host_system_information, "uname", json_null());
     }
-    json_object_set_new( _host_system_information, "uname", json_string( uname_string.c_str() ) );
 
     std::vector<std::string> args;
     args.push_back( "os_distribution_name" );
     std::string os_distribution_name;
     ret = get_script_output_single_line( "python", "system_identification.py", args, os_distribution_name );
-    if ( !ret.ok() ) {
+    if ( ret.ok() ) {
+        json_object_set_new( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
+    } else {
         irods::log( PASS( ret ) );
+        json_object_set_new( _host_system_information, "os_distribution_name", json_null());
     }
-    json_object_set_new( _host_system_information, "os_distribution_name", json_string( os_distribution_name.c_str() ) );
 
     args.clear();
     args.push_back( "os_distribution_version" );
     std::string os_distribution_version;
     ret = get_script_output_single_line( "python", "system_identification.py", args, os_distribution_version );
-    if ( !ret.ok() ) {
+    if (ret.ok()) {
+        json_object_set_new( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
+    } else {
         irods::log( PASS( ret ) );
+        json_object_set_new( _host_system_information, "os_distribution_version", json_null());
     }
-    json_object_set_new( _host_system_information, "os_distribution_version", json_string( os_distribution_version.c_str() ) );
 
     return SUCCESS();
 
