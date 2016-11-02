@@ -71,61 +71,29 @@ namespace irods {
         kvp_map_t&         _kvp,
         const std::string& _assoc,
         const std::string& _delim ) {
-        std::string::size_type pos = _string.find( _assoc );
-        if( std::string::npos == pos || _string.empty() ) {
-            return ERROR(INVALID_KVP_STRING, _string );
-        }
 
         // =-=-=-=-=-=-=-
-        // test for the delim first, if there is none then
-        // short circuit, test for association and place in map
-        pos = _string.find( _delim );
-        if ( std::string::npos == pos ) {
-            // =-=-=-=-=-=-=-
-            // no delim, look for association
-            pos = _string.find( kvp_association() );
-            if ( std::string::npos == pos ) {
-                // =-=-=-=-=-=-=-
-                // no association, just add to the map
-                return ERROR(INVALID_KVP_STRING, _string );
-            }
-            else {
-                // =-=-=-=-=-=-=-
-                // association found, break it into a kvp
-                // and place it in the map
-                error ret = parse_token_into_kvp(
-                                 _string,
-                                 _kvp,
-                                 _assoc );
-                                if( !ret.ok() ) {
-                                        return PASS( ret );
-                                }
-            }
-
-        } // if no delim found
-
-        // =-=-=-=-=-=-=-
-        // otherwise parse the string into tokens split by the delimiter
-        std::list< std::string > token_list;;
+        // parse the string into tokens split by the delimiter
+        std::vector< std::string > tokens;
         try {
-            boost::split( token_list, _string, boost::is_any_of( _delim ) );
+            boost::split( tokens, _string, boost::is_any_of( _delim ) );
         }
         catch ( const boost::bad_function_call& ) {
             rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
-            token_list.clear();
+            return ERROR(BAD_FUNCTION_CALL, "bad function call to boost::split in parse_kvp_string");
         }
-        BOOST_FOREACH( std::string & token, token_list ) {
-                        if( token.empty() ) {
-                                continue;
-                        }
+        for( const auto& token : tokens ) {
+            if( token.empty() ) {
+                    continue;
+            }
 
             // =-=-=-=-=-=-=-
             // now that the string is broken into tokens we need to
             // extract the key and value to put them into the map
             error ret = parse_token_into_kvp( token, _kvp, _assoc );
-                        if( !ret.ok() ) {
-                                return PASS( ret );
-                        }
+            if( !ret.ok() ) {
+                return PASS( ret );
+            }
         }
 
         return SUCCESS();
