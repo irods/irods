@@ -214,6 +214,7 @@ NEW_ERROR(SYS_BAD_INPUT,                               -158000)
 NEW_ERROR(SYS_PORT_RANGE_EXHAUSTED,                    -159000)
 NEW_ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,              -160000)
 NEW_ERROR(SYS_SOCK_WRITE_ERR,                          -161000)
+NEW_ERROR(SYS_SOCK_CONNECT_ERR,                        -162000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */

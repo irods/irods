@@ -237,19 +237,64 @@ main( int argc, char **argv )
         // Child process
         ProcessType = AGENT_PT;
 
-        exit( runIrodsAgent( local_addr ) );
+        return runIrodsAgent( local_addr );
     } else if ( agent_spawning_pid > 0 ) {
         // Parent process
         rodsLog( LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid );
         agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+//        sleep(1);
+/* XXXXX
+        fd_set agent_socket;
+        FD_ZERO( &agent_socket );
+        FD_SET( agent_conn_socket, &agent_socket);
+
+        struct timeval time_out;
+        time_out.tv_sec = 1;
+        time_out.tv_usec = 0;
+*/
+        uint sock_connect_start_time = time( 0 );
+        while (true) {
+            unsigned int len = sizeof(local_addr);
+            ssize_t status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
+            if ( status >= 0 ) {
+                break;
+            }
+
+            int saved_errno = errno;
+            if ( ( time( 0 ) - sock_connect_start_time ) > 5 ) {
+                rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", saved_errno, strerror( saved_errno ) );
+                return SYS_SOCK_CONNECT_ERR;
+            }
+        }
+/*
+        int saved_errno = errno;
+        if ( select( 
+                 agent_conn_socket + 1,
+                 ( fd_set * ) NULL,
+                 &agent_socket,
+                 ( fd_set *) NULL,
+                 &time_out ) > 0 ) {
+            status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
+            rodsLog( LOG_NOTICE, "XXXXX Successfully connected to agent factory socket" );
+        } else if ( status < 0 ) {
+            rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", saved_errno, strerror( saved_errno ) );
+            return SYS_SOCK_CONNECT_ERR;
+        }
+*/
+/*
+        if (status < 0) {
+            rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", errno, strerror( errno ) );
+            return SYS_SOCK_CONNECT_ERR;
+        }
+*/
     } else {
         // Error, fork failed
         rodsLog( LOG_ERROR, "fork() failed when attempting to create agent factory process" );
-        exit( 1 );
+        return SYS_FORK_ERROR;
     }
 
-    serverMain( logDir );
-    exit( 0 );
+    return serverMain( logDir );
 }
 
 int
@@ -671,9 +716,6 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     newSock = connReq->sock;
     startupPack = &connReq->startupPack;
 
-    // Wake up the agent spawning process
-    kill( agent_spawning_pid, SIGCONT );
-
     childPid = execAgent( newSock, startupPack );
     queConnectedAgentProc( childPid, connReq, agentProcHead );
 
@@ -681,29 +723,39 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
 }
 
 int sendEnvironmentVarIntToSocket ( const char* var, int val, int socket ) {
-    char buf[256];
-    int len;
-    len = snprintf( buf, 256, "%s=%d;", var, val );
+    std::stringstream msg;
 
-    if (len > 256) {
-        rodsLog(LOG_ERROR, "\"%s=%d\" too large for send buffer", var, val);
-        return -1;
+    msg << var
+        << "="
+        << val
+        << ";";
+
+    ssize_t status = send( socket, msg.str().c_str(), msg.str().length(), 0 );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error in sendEnvironmentVarIntToSocket, errno = [%d]: %s", errno, strerror( errno ) );
+    } else if ( static_cast<size_t>(status) != msg.str().length() ) {
+        rodsLog( LOG_DEBUG, "Failed to send entire message in sendEnvironmentVarIntToSocket - msg [%s] is [%d] bytes long, sent [%d] bytes", msg.str().c_str(), msg.str().length(), status );
     }
 
-    return send( socket, buf, len, 0 );
+    return status;
 }
 
 int sendEnvironmentVarStrToSocket ( const char* var, const char* val, int socket ) {
-    char buf[256];
-    int len;
-    len = snprintf( buf, 256, "%s=%s;", var, val );
+    std::stringstream msg;
 
-    if (len > 256) {
-        rodsLog(LOG_ERROR, "\"%s=%s\" too large for send buffer", var, val);
-        return -1;
+    msg << var
+        << "="
+        << val
+        << ";";
+
+    ssize_t status = send( socket, msg.str().c_str(), msg.str().length(), 0 );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error in sendEnvironmentVarIntToSocket, errno = [%d]: %s", errno, strerror( errno ) );
+    } else if ( static_cast<size_t>(status) != msg.str().length() ) {
+        rodsLog( LOG_DEBUG, "Failed to send entire message in sendEnvironmentVarIntToSocket - msg [%s] is [%d] bytes long, sent [%d] bytes", msg.str().c_str(), msg.str().length(), status );
     }
 
-    return send( socket, buf, len, 0 );
+    return status;
 }
 
 ssize_t sendSocketOverSocket( int writeFd, int socket ) {
@@ -739,21 +791,21 @@ ssize_t sendSocketOverSocket( int writeFd, int socket ) {
 
 int
 execAgent( int newSock, startupPack_t *startupPack ) {
-    int status;
+    ssize_t status;
     unsigned int len = sizeof(local_addr);
     char in_buf[1024];
     memset( in_buf, 0, 1024 );
-
+/*
     if (!connected_to_agent) {
         status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
-        if (status == -1) {
-            rodsLog(LOG_ERROR, "[%s:%d] Error connecting to agent socket", __FUNCTION__, __LINE__);
-            return -1;
+        if (status < 0) {
+            rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", errno, strerror( errno ) );
+            return SYS_SOCK_CONNECT_ERR;
         }
 
         connected_to_agent = true;
     }
-
+*/
     // Create unique socket for each call to exec agent
     sockaddr_un tmp_socket_addr;
     char tmp_socket_file[108];
@@ -767,24 +819,34 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     strcat(tmp_socket_file, random_suffix);
 
     status = send( agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0 );
-    if ( status <= 0 ) {
-        rodsLog( LOG_ERROR, "Failed to send tmp_socket_file string to agent" );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error sending socket to agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+    } else if ( static_cast<size_t>(status) < strlen( tmp_socket_file ) ) {
+
+        rodsLog( LOG_DEBUG, "Failed to send entire message - msg [%s] is [%d] bytes long, sent [%d] bytes", tmp_socket_file, strlen( tmp_socket_file ), status );
     }
 
     strcpy( tmp_socket_addr.sun_path, tmp_socket_file );
 
     tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+    if ( tmp_socket < 0 ) {
+        rodsLog( LOG_ERROR, "Unable to create socket in execAgent, errno = [%d]: %s", errno, strerror( errno ) );
+    }
 
     // Wait until receiving acknowledgement that socket has been created
     status = recv( agent_conn_socket, &in_buf, 1024, 0 );
-    if ( status == -1 || strcmp(in_buf, "OK") != 0 ) {
-        rodsLog( LOG_DEBUG, "Sending socket to agent spawning process failed" );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_READ_ERR;
+    } else if ( strcmp(in_buf, "OK") != 0 ) {
+        rodsLog( LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf );
         return status;
     }
 
     status = connect( tmp_socket, (const struct sockaddr*) &tmp_socket_addr, len );
     if (status < 0) {
-        rodsLog( LOG_ERROR, "Failed to connect tmp_socket to agent" );
+        rodsLog( LOG_ERROR, "Unable to connect to socket in agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_CONNECT_ERR;
     }
 
     status = sendEnvironmentVarStrToSocket( SP_RE_CACHE_SALT,irods::get_server_property<const std::string>( irods::CFG_RE_CACHE_SALT_KW).c_str(),  tmp_socket );
@@ -867,21 +929,33 @@ execAgent( int newSock, startupPack_t *startupPack ) {
     }
 
     status = recv( tmp_socket, &in_buf, 1024, 0 );
-    if ( status == -1 || strcmp(in_buf, "OK") != 0 ) {
-        rodsLog( LOG_DEBUG, "Sending environment variables to agent spawning process failed" );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_READ_ERR;
+    } else if ( strcmp(in_buf, "OK") != 0 ) {
+        rodsLog( LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf );
         return status;
     }
 
     sendSocketOverSocket( tmp_socket, newSock );
 
     status = recv( tmp_socket, &in_buf, 1024, 0 );
-    if ( status == -1 ) {
-        rodsLog( LOG_DEBUG, "Did not receive child pid from agent" );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "Error in recv child_pid from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_READ_ERR;
     }
+
     int childPid = atoi(in_buf);
 
-    close( tmp_socket );
-    unlink( tmp_socket_file );
+    status = close( tmp_socket );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+    }
+
+    status = unlink( tmp_socket_file );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "unlink(tmp_socket_file) failed with errno = [%d]: %s", errno, strerror( errno ) );
+    }
 
     return childPid;
 }

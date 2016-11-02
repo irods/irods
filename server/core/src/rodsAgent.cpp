@@ -68,53 +68,26 @@ ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     return n;
 }
 
-int receiveDataFromServer( int inSocket ) {
+int receiveDataFromServer( int conn_tmp_socket ) {
     int status;
+    ssize_t num_bytes;
     char in_buf[1024];
     memset( in_buf, 0, 1024 );
     bool data_complete = false;
 
-    recv( inSocket, &in_buf, 1024, 0 );
-
-    sockaddr_un tmp_socket_addr;
-    memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
-    tmp_socket_addr.sun_family = AF_UNIX;
-    strcpy( tmp_socket_addr.sun_path, in_buf );
-    unsigned int len = sizeof(tmp_socket_addr);
-
-    int tmp_socket, conn_tmp_socket;
-    tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
-
-    // Delete socket if it already exists
-    unlink( tmp_socket_addr.sun_path );
-
-    if ( bind( tmp_socket, (struct sockaddr*) &tmp_socket_addr, len ) == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-        return -1;
-    }
-
-    if ( listen( tmp_socket, 5) == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in receiveDataFromServer", __FUNCTION__, __LINE__);
-        return -1;
-    }
-
-    // Send acknowledgement that socket has been created
     char ack_buffer[256];
-    len = snprintf( ack_buffer, 256, "OK" );
-    send ( inSocket, ack_buffer, len, 0 );
-
-    conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
-    if ( conn_tmp_socket == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-        return -1;
-    }
+    unsigned int len = snprintf( ack_buffer, 256, "OK" );
 
     while (!data_complete) {
         memset( in_buf, 0, 1024 );
-        recv( conn_tmp_socket, &in_buf, 1024, 0 );
+        num_bytes = recv( conn_tmp_socket, &in_buf, 1024, 0 );
 
-        if (strlen(in_buf) == 0) {
-            return -1;
+        if ( num_bytes < 0 ) {
+            rodsLog( LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]", errno, strerror( errno ) );
+            return SYS_SOCK_READ_ERR;
+        } else if ( num_bytes == 0 ) {
+            rodsLog( LOG_ERROR, "Received 0 bytes from rodsServer" );
+            return SYS_SOCK_READ_ERR;
         }
 
         char* tokenized_strings = strtok(in_buf, ";");
@@ -126,7 +99,11 @@ int receiveDataFromServer( int inSocket ) {
                 data_complete = true;
 
                 // Send acknowledgement that all data has been received
-                send ( conn_tmp_socket, ack_buffer, strlen(ack_buffer) + 1, 0 );
+                num_bytes = send ( conn_tmp_socket, ack_buffer, strlen(ack_buffer) + 1, 0 );
+                if ( num_bytes < 0 ) {
+                    rodsLog( LOG_ERROR, "Error sending acknowledgment to rodsServer, errno = [%d]", errno, strerror( errno ) );
+                    return SYS_SOCK_READ_ERR;
+                }
 
                 break;
             }
@@ -154,19 +131,32 @@ int receiveDataFromServer( int inSocket ) {
     }
 
     int newSocket;
-    receiveSocketFromSocket( conn_tmp_socket, &newSocket );
+    num_bytes = receiveSocketFromSocket( conn_tmp_socket, &newSocket );
+    if ( num_bytes < 0 ) {
+        rodsLog( LOG_ERROR, "Error receiving socket from rodsServer, errno = [%d]", errno, strerror( errno ) );
+        return SYS_SOCK_READ_ERR;
+    } else if ( num_bytes == 0 ) {
+        rodsLog( LOG_ERROR, "Received 0 bytes from rodsServer" );
+        return SYS_SOCK_READ_ERR;
+    }
 
     char socket_buf[16];
     snprintf(socket_buf, 16, "%d", newSocket);
 
     len = snprintf( ack_buffer, 256, "%d", getpid() );
-    send ( conn_tmp_socket, ack_buffer, len, 0 );
+    num_bytes = send ( conn_tmp_socket, ack_buffer, len, 0 );
+    if ( num_bytes < 0 ) {
+        rodsLog( LOG_ERROR, "Error sending agent pid to rodsServer, errno = [%d]", errno, strerror( errno ) );
+        return SYS_SOCK_READ_ERR;
+    }
 
     status = setenv( "spNewSock", socket_buf, 1 );
 
-    close( conn_tmp_socket );
-    close( tmp_socket );
-
+    status = close( conn_tmp_socket );
+    if ( status < 0 ) {
+        rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+    }
+    
     return status;
 }
 
@@ -300,71 +290,165 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
     }
 #endif
 
-    int listen_socket, conn_socket;
+    int listen_socket, conn_socket, tmp_socket, conn_tmp_socket;
     struct sockaddr_un client_addr;
     unsigned int len = sizeof(agent_addr);
 
     listen_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-    if ( listen_socket == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Unable to create socket in agent process factory", __FUNCTION__, __LINE__);
-        return -1;
+    if ( listen_socket < 0 ) {
+        rodsLog( LOG_ERROR, "Unable to create socket in runIrodsAgent, errno = [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_OPEN_ERR;
     }
 
     // Delete socket if it already exists
     unlink( agent_addr.sun_path );
 
-    if ( bind( listen_socket, (struct sockaddr*) &agent_addr, len ) == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in agent process factory", __FUNCTION__, __LINE__);
-        return -1;
+    if ( bind( listen_socket, (struct sockaddr*) &agent_addr, len ) < 0 ) {
+        rodsLog( LOG_ERROR, "Unable to bind socket in runIrodsAgent, errno [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_BIND_ERR;
     }
 
-    if ( listen( listen_socket, 5) == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in agent process factory", __FUNCTION__, __LINE__);
-        return -1;
+    if ( listen( listen_socket, 5) < 0 ) {
+        rodsLog( LOG_ERROR, "Unable to set up socket for listening in runIrodsAgent, errno [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_LISTEN_ERR;
     }
-
-    raise(SIGSTOP);
 
     conn_socket = accept( listen_socket, (struct sockaddr*) &client_addr, &len);
-    if ( conn_socket == -1 ) {
-        rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in agent process factory", __FUNCTION__, __LINE__);
-        return -1;
+    if ( conn_socket < 0 ) {
+        rodsLog( LOG_ERROR, "Failed to accept client socket in runIrodsAgent, errno [%d]: %s", errno, strerror( errno ) );
+        return SYS_SOCK_ACCEPT_ERR;
     }
 
+    int ready;
+    fd_set read_socket;
+    FD_ZERO( &read_socket );
+    FD_SET( conn_socket, &read_socket);
+
     while ( true ) {
-        int reaped_pid;
-        int child_status;
-        while( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
+        // Reap any zombie processes from completed agents
+        int reaped_pid, child_status;
+        while ( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
             const int log_level = child_status == 0 ? LOG_DEBUG : LOG_ERROR;
             rodsLog( log_level, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
             rmProcLog( reaped_pid );
         }
 
-        pid_t child_pid = fork();
+        // Wait until socket is readable ( no timeout )
+        ready = select( 
+                    conn_socket + 1,
+                    &read_socket,
+                    ( fd_set * ) NULL,
+                    ( fd_set * ) NULL,
+                    NULL );
 
-        if (child_pid == 0) {
-            // Child process - reload properties and receive data from server process
-            irods::environment_properties::instance().capture();
-            irods::server_properties::instance().capture();
+        // Check the ready socket
+        if ( ready == -1 && errno == EINTR ) {
+            // Caught a signal, return to the select() call
+            rodsLog( LOG_DEBUG, "select() was interrupted in the agent factory process, continuing..." );
+            continue;
+        } else if ( ready == -1 ) {
+            // select() failed, quit
+            rodsLog( LOG_ERROR, "select() failed with errno = [%d]: %s", errno, strerror( errno ) );
+            return SYS_SOCK_SELECT_ERR;
+        } else {
+            // select returned, attempt to receive data
+            // If 0 bytes are received, socket has been closed
+            // If a socket address is on the line, create it and fork a child process
+            ssize_t bytes_received;
+            char in_buf[1024];
+            memset( in_buf, 0, 1024 );
 
-            // Child process - Need to init the rsComm object and break loop
-            status = receiveDataFromServer( conn_socket );
+            bytes_received = recv( conn_socket, &in_buf, 1024, 0 );
 
-            irods::error ret2 = setRECacheSaltFromEnv();
-            if ( !ret2.ok() ) {
-                rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
-                exit( 1 );
+            if ( bytes_received == -1 ) {
+                rodsLog(LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]: %s", errno, strerror( errno ) );
+                return SYS_SOCK_READ_ERR;
+            } else if ( bytes_received == 0 ) {
+                // The socket peer has shut down
+                rodsLog(LOG_NOTICE, "The rodsServer socket peer has shut down");
+                return 0;
+            } else {
+                // Assume that we have received valid data over the socket connection
+                // Set up the temporary (per-agent) sockets
+                sockaddr_un tmp_socket_addr;
+                memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
+                tmp_socket_addr.sun_family = AF_UNIX;
+                strncpy( tmp_socket_addr.sun_path, in_buf, sizeof(tmp_socket_addr.sun_path) );
+                unsigned int len = sizeof(tmp_socket_addr);
+
+                tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+
+                // Delete socket if it already exists
+                unlink( tmp_socket_addr.sun_path );
+
+                if ( bind( tmp_socket, (struct sockaddr*) &tmp_socket_addr, len ) == -1 ) {
+                    rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in receiveDataFromServer", __FUNCTION__, __LINE__);
+                    return SYS_SOCK_BIND_ERR;
+                }
+
+                if ( listen( tmp_socket, 5) == -1 ) {
+                    rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in receiveDataFromServer", __FUNCTION__, __LINE__);
+                    return SYS_SOCK_LISTEN_ERR;
+                }
+
+                // Send acknowledgement that socket has been created
+                char ack_buffer[256];
+                len = snprintf( ack_buffer, 256, "OK" );
+                send ( conn_socket, ack_buffer, len, 0 );
+
+                conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
+                if ( conn_tmp_socket == -1 ) {
+                    rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in receiveDataFromServer", __FUNCTION__, __LINE__);
+                    return SYS_SOCK_ACCEPT_ERR;
+                }
             }
 
-            break;
-        } else if (child_pid > 0) {
-            // Parent process - want to go right back to paused state
-            raise(SIGSTOP);
-        } else {
-            rodsLog( LOG_ERROR, "fork() failed in rodsAgent process factory" );
-            close( conn_socket );
-            close( listen_socket );
-            return -1;
+            // Data is ready on conn_socket, fork a child process to handle it
+            pid_t child_pid = fork();
+
+            if ( child_pid == 0 ) {
+                // Child process - reload properties and receive data from server process
+                irods::environment_properties::instance().capture();
+
+                status = receiveDataFromServer( conn_tmp_socket );
+
+                irods::server_properties::instance().capture();
+
+                irods::error ret2 = setRECacheSaltFromEnv();
+                if ( !ret2.ok() ) {
+                    rodsLog( LOG_ERROR, "rodsAgent::main: Failed to set RE cache mutex name\n%s", ret2.result().c_str() );
+                    return SYS_INTERNAL_ERR;
+                }
+
+                break;
+            } else if ( child_pid > 0 ) {
+                // Parent process - want to return to select() call
+                status = close( conn_tmp_socket );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+                }
+                
+                close( tmp_socket );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+                }
+
+                continue;
+            } else {
+                rodsLog( LOG_ERROR, "fork() failed in rodsAgent process factory" );
+
+                status = close( conn_socket );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "close(conn_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+                }
+
+                status = close( listen_socket );
+                if ( status < 0 ) {
+                    rodsLog( LOG_ERROR, "close(listen_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
+                }
+
+                return SYS_FORK_ERROR;
+            }
         }
     }
 
