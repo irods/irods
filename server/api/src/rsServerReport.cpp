@@ -240,47 +240,26 @@ irods::error convert_irods_host(
 
 irods::error convert_service_account(
     json_t*& _svc_acct ) {
-    // =-=-=-=-=-=-=-
-    // if json file exists, simply load that
-    std::string env_file;
-    try {
-        env_file = irods::get_irods_home_directory().string();
-    } catch (const irods::exception& e) {
-        rodsLog(LOG_ERROR, e.what());
-        return ERROR(-1, "failed to get irods home directory");
+    std::string env_file_path;
+    std::string session_file_path;
+    irods::error ret = irods::get_json_environment_file(env_file_path, session_file_path);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
 
-    env_file += irods::IRODS_JSON_ENV_FILE;
-
-    if ( !fs::exists( env_file ) ) {
-        return ERROR(SYS_CONFIG_FILE_ERR, boost::format("Could not find environment file at [%s]") % env_file);
+    if (!fs::exists(env_file_path)) {
+        return ERROR(SYS_CONFIG_FILE_ERR, boost::format("Could not find environment file at [%s]") % env_file_path);
     }
+
     json_error_t error;
-
-    _svc_acct = json_load_file(
-            env_file.c_str(),
-            0, &error );
+    _svc_acct = json_load_file(env_file_path.c_str(), 0, &error);
     if ( !_svc_acct ) {
-        std::string msg( "failed to load file [" );
-        msg += env_file;
-        msg += "] json error [";
-        msg += error.text;
-        msg += "]";
-        return ERROR(
-                -1,
-                msg );
-    }
-    else {
+        return ERROR(-1, boost::format("failed to load [%s], json error [%s]") % env_file_path % error.text);
+    } else {
         // sanitize the keys
-        json_object_set_new(
-                _svc_acct,
-                "irods_server_control_plane_key",
-                json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
-
+        json_object_set_new(_svc_acct, "irods_server_control_plane_key", json_string( "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" ) );
         return SUCCESS();
-
     }
-
 } // convert_service_account
 
 
