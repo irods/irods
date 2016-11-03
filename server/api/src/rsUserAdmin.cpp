@@ -222,7 +222,7 @@ icatApplyRule( rsComm_t *rsComm, char *ruleName, char *arg1 ) {
     int status;
     const char *args[2];
 
-    rodsLog( LOG_NOTICE, "icatApplyRule called" );
+    rodsLog( LOG_DEBUG, "icatApplyRule called" );
     memset( ( char* )&rei, 0, sizeof( rei ) );
     args[0] = arg1;
     rei.rsComm = rsComm;
