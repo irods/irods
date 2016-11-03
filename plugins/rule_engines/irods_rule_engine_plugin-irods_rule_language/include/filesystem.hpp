@@ -8,7 +8,7 @@
 #include <string>
 #include "datetime.hpp"
 
-int getModifiedTime( char *fn, time_type *timestamp );
-char *getRuleBasePath( char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] );
+int getModifiedTime( const char *fn, time_type *timestamp );
+char *getRuleBasePath( const char *ruleBaseName, char rulesFileName[MAX_NAME_LEN] );
 
 #endif /* FILESYSTEM_H_ */

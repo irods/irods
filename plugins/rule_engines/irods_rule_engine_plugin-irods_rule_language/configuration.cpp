@@ -341,7 +341,9 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
     time_type timestamp = time_type_initializer, mtim;
     while ( strlen( r2 ) > 0 ) {
         rSplitStr( r2, r1, NAME_LEN, r3, RULE_SET_DEF_LENGTH, ',' );
-        getRuleBasePath( r1, fn );
+        if (getRuleBasePath( r1, fn )==nullptr) {
+            return -1;
+        }
         if ( ( res = getModifiedTime( fn, &mtim ) ) != 0 ) {
             return res;
         }
