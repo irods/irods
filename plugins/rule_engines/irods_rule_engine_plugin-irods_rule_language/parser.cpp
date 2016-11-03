@@ -302,12 +302,20 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
                 token->type = TK_TEXT;
             }
             else if ( ch == '\"' ) {
-                nextString( e, token->text, token->vars );
-                token->type = TK_STRING;
+                if ( nextString( e, token->text, token->vars ) == -1 ) {
+                    token->type = N_ERROR;
+                }
+                else {
+                    token->type = TK_STRING;
+                }
             }
             else if ( ch == '\'' ) {
-                nextString2( e, token->text, token->vars );
-                token->type = TK_STRING;
+                if ( nextString2( e, token->text, token->vars ) == -1 ) {
+                    token->type = N_ERROR;
+                }
+                else {
+                    token->type = TK_STRING;
+                }
             }
             else if ( ch == '`' ) {
                 if ( lookAhead( e, 1 ) == '`' ) {
@@ -320,8 +328,12 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
                     }
                 }
                 else {
-                    nextStringBase( e, token->text, "`", 1, '\\', 1, token->vars );
-                    token->type = TK_BACKQUOTED;
+                    if ( nextStringBase( e, token->text, "`", 1, '\\', 1, token->vars ) == -1 ) {
+                        token->type = N_ERROR;
+                    }
+                    else {
+                        token->type = TK_BACKQUOTED;
+                    }
                 }
             }
             else {
