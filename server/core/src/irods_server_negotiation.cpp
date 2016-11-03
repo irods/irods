@@ -170,9 +170,9 @@ namespace irods {
                                   svr_sid );
                         if ( !err.ok() ) {
                             rodsLog(
-                                LOG_WARNING,
-                                "CS_NEG :: [%s]",
-                                PASS( err ).status() );
+                                LOG_DEBUG,
+                                "CS_NEG\n%s",
+                                PASS( err ).result().c_str() );
                         }
                         else {
                             // =-=-=-=-=-=-=-
@@ -233,6 +233,3 @@ namespace irods {
     } // client_server_negotiation_for_server
 
 }; // namespace irods
-
-
-
