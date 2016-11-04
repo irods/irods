@@ -1950,7 +1950,8 @@ irods::error db_open_op(
         snprintf(irods_pam_password_min_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MIN_TIME_KW}).c_str());
         snprintf(irods_pam_password_max_time, NAME_LEN, "%s", irods::get_server_property<const std::string>(std::vector<std::string>{irods::PLUGIN_TYPE_AUTHENTICATION, irods::AUTH_PAM_SCHEME, irods::CFG_PAM_PASSWORD_MAX_TIME_KW}).c_str());
     } catch ( const irods::exception& e ) {
-        return irods::error(e);
+        rodsLog(LOG_DEBUG, "[%s:%d] PAM property not found", __FUNCTION__, __LINE__);
+        return CODE( status );
     }
 
     if ( irods_pam_auth_no_extend ) {
