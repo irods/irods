@@ -1,5 +1,44 @@
 # Release Notes
 
+## 4.1.10
+
+Release Date: 2016-11-03
+
+### Feature
+
+ - New microservice, static PEPs to update unixfilesystem resource free_space [#3307] [#3312]
+
+!!! Note
+    This updated feature (along with [#3306]) changes the optional
+    unixfilesystem context string keyword from 'high_water_mark' to its
+    semantic complement 'minimum_free_space_for_create_in_bytes'.  Using
+    the deprecated 'high_water_mark' or 'required_free_inodes_for_create'
+    will write a LOG_NOTICE to the server log.
+
+### Bug Fixes
+
+ - Fix for microservice parameter limitation [#3092] [#3095]
+
+ - Fixes for unixfilesystem and free_space check [#3247] [#3305] [#3306] [#3311] [#3340]
+
+ - Fix for reading past end of buffer [#3255]
+
+ - Better debugging [#3260] [#3308] [#3313] [#3348] [#3351]
+
+ - Fixes for izonereport [#3294] [#3303]
+
+ - Fix for irods-grid [#3301]
+
+ - Fix for list() microservice in rule engine [#3304]
+
+ - Fix for dynamic PEP documentation [#3314]
+
+ - Fix for random resource hierarchy logic [#3315]
+
+ - Fix for ilocate whitespace in results [#3332]
+
+ - Fix for delay rule in dynamic PEPs [#3342]
+
 ## 4.1.9
 
 Release Date: 2016-07-28
