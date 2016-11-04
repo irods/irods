@@ -148,6 +148,7 @@ namespace irods {
         code_             = _rhs.code_;
         message_          = _rhs.message_;
         result_stack_     = _rhs.result_stack_;
+        exception_        = _rhs.exception_;
     } // cctor
 
 // =-=-=-=-=-=-=-
@@ -170,6 +171,7 @@ namespace irods {
         code_             = _rhs.code_;
         message_          = _rhs.message_;
         result_stack_     = _rhs.result_stack_;
+        exception_        = _rhs.exception_;
         return *this;
     } // assignment operator
 
