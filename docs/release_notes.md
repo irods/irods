@@ -9,6 +9,14 @@ Release Date: 2016-11-04
  - New microservice, static PEPs to update unixfilesystem resource free_space [#3307] [#3312]
 
 !!! Note
+    Upgrading to 4.1.10 will not automatically add the two new static PEPs
+    to core.re.  To avoid spurious DEBUG messages, add the following two
+    empty definitions to core.re:
+
+    acPostProcForParallelTransferReceived(\*leaf_resource) {}
+    acPostProcForDataCopyReceived(\*leaf_resource) {}
+
+!!! Note
     This updated feature (along with [#3306]) changes the optional
     unixfilesystem context string keyword from 'high_water_mark' to its
     semantic complement 'minimum_free_space_for_create_in_bytes'.  Using

@@ -140,3 +140,14 @@ This is largely due to the SSL handshaking and resource hierarchies in 4.0+.
 
 It is recommended to use the supported iCommands from 4.0+.
 
+## Missing Static PEP Definitions
+
+In 4.1.10, two new static policy enforcement points (PEPs) were introduced and must be defined in a server's rulebase to avoid spurious DEBUG messages being returned to clients and appearing in the rodsLog.
+
+!!! warning
+    DEBUG: <unknown source type\>
+
+Adding the following two empty static PEP definitions to `core.re` will satisfy the rule engine:
+
+    acPostProcForParallelTransferReceived(*leaf_resource) {}
+    acPostProcForDataCopyReceived(*leaf_resource) {}
