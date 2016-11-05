@@ -1,3 +1,9 @@
+/**
+ * @file  libmsisync_to_archive.cpp
+ *
+ */
+
+
 // =-=-=-=-=-=-=-
 #include "apiHeaderAll.h"
 #include "msParam.h"
@@ -56,6 +62,36 @@ irods::error find_compound_resource_in_hierarchy(
     return SUCCESS();
 }
 
+/**
+ * \fn msisync_to_archive (msParam_t* _resource_hierarchy, msParam_t* _physical_path, msParam_t* _logical_path, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice syncs a dataObject to archive from compound's cache
+ *
+ * \module microservice
+ *
+ * \since 4.1.8
+ *
+ * \usage See clients/icommands/test/rules/
+ *
+ * \param[in] _resource_hierarchy - The semicolon delimited string designating the source replica's location
+ * \param[in] _physical_path - The physical path of the to-be-created replica
+ * \param[in] _logical_path - The logical path of the dataObject to be replicated
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0
+ * \pre none
+ * \post none
+ * \sa none
+ **/
 int msisync_to_archive(
     msParam_t*      _resource_hierarchy,
     msParam_t*      _physical_path,

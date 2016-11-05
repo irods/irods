@@ -1,3 +1,8 @@
+/**
+ * @file  miscMS.cpp
+ *
+ */
+
 #include "rsGlobalExtern.hpp"
 #include "dataObjCreate.h"
 #include "objMetaOpr.hpp"

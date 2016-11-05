@@ -1,3 +1,9 @@
+/**
+ * @file  genQueryMS.cpp
+ *
+ */
+
+
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
 #include "rcMisc.h"

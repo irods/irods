@@ -1,3 +1,8 @@
+/**
+ * @file  icatGeneralMS.cpp
+ *
+ */
+
 #include "rcMisc.h"
 #include "icatHighLevelRoutines.hpp"
 #include "objMetaOpr.hpp"
