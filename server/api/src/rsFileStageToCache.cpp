@@ -186,9 +186,12 @@ int _rsFileStageToCache(
 
         // =-=-=-=-=-=-=-
         // try it again?  ( make the call to fileStageToCache via the resource plugin )
-        stage_err = fileStageToCache( _comm,
-                                      file_obj,
-                                      _stage_inp->cacheFilename );
+        if (stage_err.code() != SYS_OPERATION_IN_PROGRESS) {
+            stage_err = fileStageToCache( _comm,
+                                          file_obj,
+                                          _stage_inp->cacheFilename );
+        }
+
         // =-=-=-=-=-=-=-
         // handle errors if any
         if ( !stage_err.ok() ) {
