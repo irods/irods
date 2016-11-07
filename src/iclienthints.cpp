@@ -1,5 +1,5 @@
 /*
- * iclienthints - produce json configuration zonereport
+ * iclienthints - produce json configuration clienthints
 */
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
