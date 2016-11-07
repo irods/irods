@@ -459,7 +459,6 @@ runQueuedRuleExec( rcComm_t *rcComm, reExec_t *reExec,
         /* wait for all jobs to finish */
         bool wait_done  = false;
         while ( !wait_done ) {
-            //if( reExec->runCnt + 1 >= reExec->maxRunCnt ) 
             {
                   int w = waitAndFreeReThr( rcComm, reExec );
                   if( w >= 0 ) {
@@ -710,10 +709,6 @@ freeReThr( reExec_t * reExec, int thrInx ) {
         rodsLog( LOG_ERROR, "freeReThr :: NULL reExec ptr" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-#ifdef RE_SERVER_DEBUG
-    rodsLog( LOG_NOTICE,
-             "freeReThr: thrInx %d, pid %d", thrInx, reExec->reExecProc[thrInx].pid );
-#endif
     if ( thrInx < 0 || thrInx >= reExec->maxRunCnt ) {
         rodsLog( LOG_ERROR, "freeReThr: Bad input thrInx %d", thrInx );
         return SYS_BAD_RE_THREAD_INX;
@@ -789,7 +784,7 @@ int runRuleExec(
                      _comm,
                      &exec_rule );
     _re_exec_proc->status = status;
-    
+
     return status;
 }
 

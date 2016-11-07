@@ -46,6 +46,12 @@
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
 
+
+InformationRequiredToSafelyRenameProcess::InformationRequiredToSafelyRenameProcess(char**argv) {
+    argv0 = argv[0];
+    argv0_size = strlen(argv[0]);
+}
+
 int
 //initServerInfo( rsComm_t *rsComm ) {
 initServerInfo( int processType, rsComm_t * rsComm) {

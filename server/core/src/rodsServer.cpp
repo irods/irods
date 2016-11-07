@@ -74,7 +74,7 @@ boost::condition_variable SpawnReqCond;
 
 std::vector<std::string> setExecArg( const char *commandArgv );
 
-int runIrodsAgent( sockaddr_un agent_addr );
+int runIrodsAgent( sockaddr_un agent_addr, const InformationRequiredToSafelyRenameProcess& info );
 
 namespace {
 // We incorporate the cache salt into the rule engine's named_mutex and shared memory object.
@@ -139,6 +139,14 @@ namespace {
 
         snprintf( buf, num_hex_bytes + 1, "%s", ss.str().c_str() );
         return 0;
+    }
+}
+
+static void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info) {
+    const char* desired_name = "irodsServer: factory";
+    const auto l_desired = strlen(desired_name);
+    if (l_desired <= info.argv0_size) {
+        strncpy(info.argv0, desired_name, info.argv0_size);
     }
 }
 
@@ -236,8 +244,10 @@ main( int argc, char **argv )
     if ( agent_spawning_pid == 0 ) {
         // Child process
         ProcessType = AGENT_PT;
+        InformationRequiredToSafelyRenameProcess info(argv);
+        set_agent_spawner_process_name(info);
 
-        return runIrodsAgent( local_addr );
+        return runIrodsAgent( local_addr, info );
     } else if ( agent_spawning_pid > 0 ) {
         // Parent process
         rodsLog( LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid );

@@ -10,6 +10,7 @@
 #include "rsApiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_socket_information.hpp"
 // =-=-=-=-=-=-=-
 #include "irods_dynamic_cast.hpp"
 #include "irods_signal.hpp"
@@ -34,8 +35,6 @@
 
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
-
-/* #define SERVER_DEBUG 1   */
 
 #include "sys/socket.h"
 #include "sys/un.h"
@@ -68,7 +67,22 @@ ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     return n;
 }
 
-int receiveDataFromServer( int conn_tmp_socket ) {
+static void set_agent_process_name(const InformationRequiredToSafelyRenameProcess& info, const int socket_fd) {
+    try {
+        std::string remote_address = socket_fd_to_remote_address(socket_fd);
+        if (remote_address.size() > 0) {
+            const std::string desired_name = "irodsServer: " + remote_address;
+            const auto l_desired = desired_name.size();
+            if (l_desired <= info.argv0_size) {
+                strncpy(info.argv0, desired_name.c_str(), info.argv0_size);
+            }
+        }
+    } catch ( const irods::exception& e ) {
+        rodsLog(LOG_ERROR, "set_agent_process_name: failed to get remote address of socket\n%s", e.what());
+    }
+}
+
+int receiveDataFromServer( int conn_tmp_socket, const InformationRequiredToSafelyRenameProcess& info ) {
     int status;
     ssize_t num_bytes;
     char in_buf[1024];
@@ -140,6 +154,8 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         return SYS_SOCK_READ_ERR;
     }
 
+    set_agent_process_name(info, newSocket);
+
     char socket_buf[16];
     snprintf(socket_buf, 16, "%d", newSocket);
 
@@ -150,7 +166,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         return SYS_SOCK_READ_ERR;
     }
 
-    status = setenv( "spNewSock", socket_buf, 1 );
+    status = setenv( SP_NEW_SOCK, socket_buf, 1 );
 
     status = close( conn_tmp_socket );
     if ( status < 0 ) {
@@ -266,7 +282,7 @@ irodsAgentSignalExit( int ) {
 }
 
 int
-runIrodsAgent( sockaddr_un agent_addr ) {
+runIrodsAgent( sockaddr_un agent_addr, const InformationRequiredToSafelyRenameProcess& info ) {
     int status;
     rsComm_t rsComm;
 
@@ -283,12 +299,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     register_handlers();
 
     initProcLog();
-
-#ifdef SERVER_DEBUG
-    if ( isPath( "/tmp/rodsdebug" ) ) {
-rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20 );
-    }
-#endif
 
     int listen_socket, conn_socket, conn_tmp_socket;
     struct sockaddr_un client_addr;
@@ -407,12 +417,11 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
 
             // Data is ready on conn_socket, fork a child process to handle it
             pid_t child_pid = fork();
-
             if ( child_pid == 0 ) {
                 // Child process - reload properties and receive data from server process
                 irods::environment_properties::instance().capture();
 
-                status = receiveDataFromServer( conn_tmp_socket );
+                status = receiveDataFromServer( conn_tmp_socket, info );
 
                 irods::server_properties::instance().capture();
 

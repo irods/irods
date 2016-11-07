@@ -12,6 +12,11 @@
 #include <string>
 
 /* server host configuration */
+struct InformationRequiredToSafelyRenameProcess {
+    explicit InformationRequiredToSafelyRenameProcess(char**argv);
+    char* argv0;
+    size_t argv0_size;
+};
 
 int
 //initServerInfo( rsComm_t *rsComm );
