@@ -38,6 +38,7 @@ set(
   icd
   ichksum
   ichmod
+  iclienthints
   icp
   idbug
   ienv
