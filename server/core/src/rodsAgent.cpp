@@ -156,7 +156,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
     }
-    
+
     return status;
 }
 
@@ -290,7 +290,7 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
     }
 #endif
 
-    int listen_socket, conn_socket, tmp_socket, conn_tmp_socket;
+    int listen_socket, conn_socket, conn_tmp_socket;
     struct sockaddr_un client_addr;
     unsigned int len = sizeof(agent_addr);
 
@@ -319,11 +319,6 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
         return SYS_SOCK_ACCEPT_ERR;
     }
 
-    int ready;
-    fd_set read_socket;
-    FD_ZERO( &read_socket );
-    FD_SET( conn_socket, &read_socket);
-
     while ( true ) {
         // Reap any zombie processes from completed agents
         int reaped_pid, child_status;
@@ -333,13 +328,13 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             rmProcLog( reaped_pid );
         }
 
-        // Wait until socket is readable ( no timeout )
-        ready = select( 
-                    conn_socket + 1,
-                    &read_socket,
-                    ( fd_set * ) NULL,
-                    ( fd_set * ) NULL,
-                    NULL );
+        fd_set read_socket;
+        FD_ZERO( &read_socket );
+        FD_SET( conn_socket, &read_socket);
+        struct timeval time_out;
+        time_out.tv_sec  = 0;
+        time_out.tv_usec = 30 * 1000;
+        const int ready = select(conn_socket + 1, &read_socket, nullptr, nullptr, &time_out);
 
         // Check the ready socket
         if ( ready == -1 && errno == EINTR ) {
@@ -350,16 +345,16 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
             // select() failed, quit
             rodsLog( LOG_ERROR, "select() failed with errno = [%d]: %s", errno, strerror( errno ) );
             return SYS_SOCK_SELECT_ERR;
+        } else if (ready == 0) {
+            continue;
         } else {
             // select returned, attempt to receive data
             // If 0 bytes are received, socket has been closed
             // If a socket address is on the line, create it and fork a child process
-            ssize_t bytes_received;
             char in_buf[1024];
-            memset( in_buf, 0, 1024 );
-
-            bytes_received = recv( conn_socket, &in_buf, 1024, 0 );
-
+            memset( in_buf, 0, sizeof(in_buf));
+            const ssize_t bytes_received = recv( conn_socket, &in_buf, sizeof(in_buf), 0 );
+            int tmp_socket;
             if ( bytes_received == -1 ) {
                 rodsLog(LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]: %s", errno, strerror( errno ) );
                 return SYS_SOCK_READ_ERR;
@@ -393,7 +388,7 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
 
                 // Send acknowledgement that socket has been created
                 char ack_buffer[256];
-                len = snprintf( ack_buffer, 256, "OK" );
+                len = snprintf( ack_buffer, sizeof(ack_buffer), "OK" );
                 send ( conn_socket, ack_buffer, len, 0 );
 
                 conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
@@ -427,8 +422,8 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
                 }
-                
-                close( tmp_socket );
+
+                status = close( tmp_socket );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
                 }
