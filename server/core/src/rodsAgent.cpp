@@ -323,8 +323,16 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
         // Reap any zombie processes from completed agents
         int reaped_pid, child_status;
         while ( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
-            const int log_level = child_status == 0 ? LOG_DEBUG : LOG_ERROR;
-            rodsLog( log_level, "Agent process [%d] exited with status [%d]", reaped_pid, child_status );
+            if (WIFEXITED(child_status)) {
+                const int exit_status = WEXITSTATUS(child_status);
+                const int log_level = exit_status == 0 ? LOG_DEBUG : LOG_ERROR;
+                rodsLog( log_level, "Agent process [%d] exited with status [%d]", reaped_pid, exit_status );
+            } else if (WIFSIGNALED(child_status)) {
+                const int exit_signal = WTERMSIG(child_status);
+                rodsLog( LOG_ERROR, "Agent process [%d] terminated by signal [%d]", reaped_pid, exit_signal );
+            } else {
+                rodsLog( LOG_ERROR, "Agent process [%d] terminated with unusual status [%d]", reaped_pid, child_status );
+            }
             rmProcLog( reaped_pid );
         }
 
@@ -335,7 +343,6 @@ rods::get_server_property<const std::string>( RE_CACHE_SALT_KW)        sleep( 20
         time_out.tv_sec  = 0;
         time_out.tv_usec = 30 * 1000;
         const int ready = select(conn_socket + 1, &read_socket, nullptr, nullptr, &time_out);
-
         // Check the ready socket
         if ( ready == -1 && errno == EINTR ) {
             // Caught a signal, return to the select() call
