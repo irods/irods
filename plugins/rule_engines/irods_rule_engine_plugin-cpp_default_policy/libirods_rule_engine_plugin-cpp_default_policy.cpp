@@ -103,6 +103,11 @@ static std::string get_string_array_from_array( const boost::any& _array ) {
 // =-=-=-=-=-=-=-
 // implementations of static policy enforcement points from legacy core.re
 
+irods::error printHello( irods::callback _cb, std::list<boost::any>& ) {
+// printHello { print_hello; }
+    return _cb(std::string("print_hello"));
+}
+
 irods::error acPreConnect( irods::callback _cb, std::list<boost::any>& _params ) {
 // acPreConnect(*OUT) { *OUT="CS_NEG_DONT_CARE"; }
     for( auto itr : _params ) {
@@ -693,7 +698,7 @@ irods::error acPostProcForServerPortal( irods::callback, std::list<boost::any>& 
     return SUCCESS();
 }
 
-irods::error acPreProcForWriteSessionVariable( irods::callback, std::list<boost::any>& _params) {
+irods::error acPreProcForWriteSessionVariable( irods::callback, std::list<boost::any>& _params ) {
 //acPreProcForWriteSessionVariable(*var) {
 //  ON(*var == "status") {
 //    succeed;
@@ -726,8 +731,70 @@ irods::error acPreProcForWriteSessionVariable( irods::callback, std::list<boost:
     }
 }
 
+irods::error acPostProcForParallelTransferReceived( irods::callback, std::list<boost::any>& ) {
+    return SUCCESS();
+}
+
+irods::error acPostProcForDataCopyReceived( irods::callback, std::list<boost::any>& ) {
+    return SUCCESS();
+}
+
+irods::error acSetCreateConditions( irods::callback _cb, std::list<boost::any>& ) {
+//  msiGetNewObjDescriptor ::: recover_msiGetNewObjDescriptor; acSetResourceList;
+    irods::error ret = _cb(std::string("msiGetNewObjDescriptor"));
+    if( !ret.ok() ) {
+        _cb(std::string("recover_msiGetNewObjDescriptor"));
+        return ret;
+    }
+
+    ret = _cb(std::string("acSetResourceList"));
+
+    return ret;
+}
+
+irods::error acDOC( irods::callback _cb, std::list<boost::any>& ) {
+//  msiPhyDataObjCreate ::: recover_msiPhyDataObjCreate; acRegisterData ::: msiRollback; msiCommit;
+    irods::error ret = _cb(std::string("msiPhyDataObjCreate"));
+    if( !ret.ok() ) {
+        _cb(std::string("recover_msiPhyDataObjCreate"));
+        return ret;
+    }
+
+    ret = _cb(std::string("acRegisterData"));
+    if( !ret.ok() ) {
+        _cb(std::string("msiRollback"));
+        return ret;
+    }
+
+    ret = _cb(std::string("msiCommit"));
+
+    return ret;
+}
+
+irods::error acSetResourceList( irods::callback _cb, std::list<boost::any>& ) {
+//  msiSetResourceList;
+    return _cb(std::string("msiSetResourceList"));
+}
+
+irods::error acSetCopyNumber( irods::callback _cb, std::list<boost::any>& ) {
+//  msiSetCopyNumber;
+    return _cb(std::string("msiSetCopyNumber"));
+}
+
+irods::error acRegisterData( irods::callback _cb, std::list<boost::any>& ) {
+//  msiRegisterData ::: msiRollback
+    irods::error ret = _cb(std::string("msiRegisterData"));
+    if( !ret.ok() ) {
+        _cb(std::string("msiRollback"));
+        return ret;
+    }
+
+    return ret;
+}
+
 irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name) {
     (void) _u;
+    STATIC_PEP(printHello);
     STATIC_PEP(acPreConnect);
     STATIC_PEP(acCreateUser);
     STATIC_PEP(acCreateDefaultCollections);
@@ -806,9 +873,17 @@ irods::error start(irods::default_re_ctx& _u, const std::string& _instance_name)
     STATIC_PEP(acPreProcForServerPortal);
     STATIC_PEP(acPostProcForServerPortal);
     STATIC_PEP(acPreProcForWriteSessionVariable);
+    STATIC_PEP(acPostProcForParallelTransferReceived);
+    STATIC_PEP(acPostProcForDataCopyReceived);
+    STATIC_PEP(acSetCreateConditions);
+    STATIC_PEP(acDOC);
+    STATIC_PEP(acSetResourceList);
+    STATIC_PEP(acSetCopyNumber);
+    STATIC_PEP(acRegisterData);
 
     // Can just do it, since this rule engine is pre-compiled
     RuleExistsHelper::Instance()->registerRuleRegex( DEFAULT_RULE_REGEX );
+
 
     return SUCCESS();
 }
@@ -852,12 +927,14 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
     }
 }
 
-irods::error exec_rule_text(irods::default_re_ctx&, std::string _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
-    return SUCCESS();
+irods::error exec_rule_text(irods::default_re_ctx&, std::string _rt, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+    rodsLog( LOG_DEBUG, "exec_rule_text not supported in the cpp_default_policy rule engine plugin");
+    return ERROR( SYS_NOT_SUPPORTED, "exec_rule_text not supported in the cpp_default_policy rule engine plugin" );
 }
 
-irods::error exec_rule_expression(irods::default_re_ctx&, std::string _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
-    return SUCCESS();
+irods::error exec_rule_expression(irods::default_re_ctx&, std::string _rt, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+    rodsLog( LOG_DEBUG, "exec_rule_expression not supported in the cpp_default_policy rule engine plugin");
+    return ERROR( SYS_NOT_SUPPORTED, "exec_rule_expression not supported in the cpp_default_policy rule engine plugin" );
 }
 
 extern "C"
