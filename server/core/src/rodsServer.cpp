@@ -451,7 +451,6 @@ serverMain( char *logDir ) {
 
                 // Wake up the agent factory process so it can clean up and exit
                 kill( agent_spawning_pid, SIGTERM );
-                kill( agent_spawning_pid, SIGCONT );
 
                 rodsLog(
                     LOG_NOTICE,
@@ -607,7 +606,6 @@ serverExit()
 
     // Wake and terminate agent spawning process
     kill( agent_spawning_pid, SIGTERM );
-    kill( agent_spawning_pid, SIGCONT );
 
     exit( 1 );
 }
@@ -633,7 +631,7 @@ procChildren( agentProc_t **agentProcHead ) {
 
     while ( tmpAgentProc != NULL ) {
         // Check if pid is still an active process
-        if ( !kill( tmpAgentProc->pid, 0 ) ) {
+        if ( kill( tmpAgentProc->pid, 0 ) ) {
             finishedAgentProc = tmpAgentProc;
 
             if ( prevAgentProc == NULL ) {
