@@ -250,6 +250,7 @@
 #define PHYSICAL_PATH_KW             "physical_path"
 #define MODE_KW                      "mode_kw"
 #define FLAGS_KW                     "flags_kw"
+#define OBJ_COUNT_KW                 "object_count"
 // borrowed RESC_HIER_STR_KW
 
 // =-=-=-=-=-=-=-

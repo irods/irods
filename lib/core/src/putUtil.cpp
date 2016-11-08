@@ -249,6 +249,23 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                                   myRodsArgs, &dataObjOprInp );
         }
         else if ( targPath->objType == COLL_OBJ_T ) {
+
+            // count number of files in directory
+            size_t file_count = 0;
+            boost::filesystem::path base_dir(rodsPathInp->srcPath[i].outPath);
+            boost::filesystem::recursive_directory_iterator it(base_dir), end;
+            while (it != end)
+            {
+                if (boost::filesystem::is_regular_file(it->status())) {
+                    file_count++;
+                }
+                ++it;
+            }
+
+            // send recursive flag and file count in case resource plugin needs it
+            addKeyVal(&dataObjOprInp.condInput, RECURSIVE_OPR__KW, "1"); // value doesn't matter, other than for testing
+            addKeyVal(&dataObjOprInp.condInput, OBJ_COUNT_KW, std::to_string(file_count).c_str());
+
             setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             if ( myRodsArgs->bulk == True ) {
                 status = bulkPutDirUtil( myConn,
