@@ -24,12 +24,6 @@
 
 #include <functional>
 
-// XXXXX
-#include "boost/type_index.hpp"
-#include "boost/core/demangle.hpp"
-// XXXXX
-
-
 namespace irods {
 
 // NOOP function for clearInStruct
