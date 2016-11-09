@@ -164,7 +164,7 @@ int _rsClientHints(
 
     json_t* rules = json_array();
     for ( const auto& rule : rule_vec ) {
-        json_array_append( rules, json_string( rule.c_str() ) );
+        json_array_append_new( rules, json_string( rule.c_str() ) );
     }
     json_object_set_new( client_hints, "rules", rules );
 
