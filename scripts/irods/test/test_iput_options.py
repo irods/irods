@@ -56,3 +56,9 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput -f --metadata "a;v1;u1" ' + filepath)
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'value: v1')
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'units: u1')
+    def test_iput_checksum_zero_length_file__issue_3275(self):
+        filename = 'test_iput_checksum_zero_length_file__issue_3275'
+        lib.touch(filename)
+        self.user0.assert_icommand(['iput', '-K', filename])
+        self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
+        os.unlink(filename)

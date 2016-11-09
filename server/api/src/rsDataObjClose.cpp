@@ -277,6 +277,7 @@ _rsDataObjClose(
     int status = 0;
     int l1descInx, l3descInx;
     keyValPair_t regParam;
+    memset( &regParam, 0, sizeof( regParam ) );
     rodsLong_t newSize;
     char tmpStr[MAX_NAME_LEN];
     modDataObjMeta_t modDataObjMetaInp;
@@ -343,7 +344,6 @@ _rsDataObjClose(
             L1desc[l1descInx].oprType != REPLICATE_DEST &&
             L1desc[l1descInx].oprType != PHYMV_DEST &&
             L1desc[l1descInx].oprType != COPY_DEST ) {
-
         /* no write */
         // =-=-=-=-=-=-=-
         // JMC - backport 4537
@@ -367,6 +367,23 @@ _rsDataObjClose(
                 rsDataObjUnlink( rsComm, L1desc[l1descInx].dataObjInp );
             }
             return e.code();
+        }
+
+        if ( L1desc[l1descInx].chksumFlag != 0 && L1desc[l1descInx].oprType == PUT_OPR ) {
+            char *chksumStr = NULL;
+            status = procChksumForClose( rsComm, l1descInx, &chksumStr );
+            if (status >= 0) {
+                std::string checksum = std::string( chksumStr );
+                free( chksumStr );
+
+                if ( !checksum.empty() ) {
+                    addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
+                }
+
+                modDataObjMetaInp.dataObjInfo = L1desc[l1descInx].dataObjInfo;
+                modDataObjMetaInp.regParam = &regParam;
+                status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
+            }
         }
 
         return status;
@@ -426,7 +443,6 @@ _rsDataObjClose(
         }
     }
 
-    memset( &regParam, 0, sizeof( regParam ) );
     if ( L1desc[l1descInx].oprType == PHYMV_DEST ) {
         /* a phymv */
         destDataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -763,7 +779,6 @@ procChksumForClose(
     rsComm_t *rsComm,
     int l1descInx,
     char **chksumStr ) {
-
     int status = 0;
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
     int oprType = L1desc[l1descInx].oprType;
@@ -836,10 +851,10 @@ procChksumForClose(
         if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
             if ( strlen( L1desc[l1descInx].chksum ) > 0 ) {
                 addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, L1desc[l1descInx].chksum );
-
             }
 
             status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
+
             rmKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW );
             if ( status < 0 ) {
                 return status;
@@ -855,6 +870,7 @@ procChksumForClose(
                 *chksumStr = NULL;
                 return USER_CHKSUM_MISMATCH;
             }
+
             if ( strcmp( dataObjInfo->chksum, *chksumStr ) == 0 ) {
                 /* the same as in rcat */
                 free( *chksumStr );

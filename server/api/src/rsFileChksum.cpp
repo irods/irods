@@ -224,6 +224,12 @@ int fileChksum(
         return result.code();
     }
     int bytes_read = read_err.code();
+    
+    // RTS - Issue #3275
+    if ( bytes_read == 0 ) {
+        std::string buffer_read;
+        buffer_read.resize( SVR_MD5_BUF_SZ );
+    }
 
     // =-=-=-=-=-=-=-
     // loop and update while there are still bytes to be read
@@ -267,5 +273,4 @@ int fileChksum(
     strncpy( chksumStr, digest.c_str(), NAME_LEN );
 
     return 0;
-
 }

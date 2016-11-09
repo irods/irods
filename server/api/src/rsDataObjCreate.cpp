@@ -278,7 +278,6 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
 int
 _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
-
     int status = 0;
     int l1descInx = 0;
 
