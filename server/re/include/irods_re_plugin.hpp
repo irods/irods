@@ -444,13 +444,13 @@ namespace irods {
 
         virtual ~rule_exists_manager() {}
 
-        error rule_exists(const std::string& _rn, bool& ret) {
-            auto er = [&ret] (re_pack_inp<T>&, const std::string&) {
+        error rule_exists(std::string _rn, bool& ret) {
+            auto er = [&ret] (re_pack_inp<T>&, std::string) {
                 ret = true;
                 return SUCCESS();
             };
 
-            auto em = [&ret] (const std::string&) {
+            auto em = [&ret] (std::string) {
                 ret = false;
                 return SUCCESS();
             };
