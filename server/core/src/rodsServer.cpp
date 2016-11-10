@@ -48,6 +48,7 @@ bool connected_to_agent = false;
 
 pid_t agent_spawning_pid;
 char agent_factory_socket_file[128];
+char agent_factory_socket_dir[128];
 
 uint ServerBootTime;
 int SvrSock;
@@ -235,7 +236,17 @@ main( int argc, char **argv )
     local_addr.sun_family = AF_UNIX;
     char random_suffix[65];
     get64RandomBytes( random_suffix );
-    strcpy( agent_factory_socket_file, "/tmp/irods_agent_socket_" );
+
+    char mkdtemp_template[] = "/tmp/irods_sockets_XXXXXX";
+    char* mkdtemp_result = mkdtemp(mkdtemp_template); 
+    if ( mkdtemp_result == NULL ) {
+        rodsLog( LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno) );
+        return SYS_INTERNAL_ERR;
+    }
+    strcpy( agent_factory_socket_dir, mkdtemp_result );
+
+    strcpy( agent_factory_socket_file, agent_factory_socket_dir );
+    strcat( agent_factory_socket_file, "/irods_factory_" );
     strcat( agent_factory_socket_file, random_suffix );
     strcpy( local_addr.sun_path, agent_factory_socket_file );
 
@@ -581,6 +592,7 @@ serverMain( char *logDir ) {
 
     close( agent_conn_socket );
     unlink( agent_factory_socket_file );
+    rmdir( agent_factory_socket_dir );
 
     rodsLog( LOG_NOTICE, "iRODS Server is done." );
 
@@ -603,6 +615,7 @@ serverExit()
 
     close( agent_conn_socket );
     unlink( agent_factory_socket_file );
+    rmdir( agent_factory_socket_dir );
 
     // Wake and terminate agent spawning process
     kill( agent_spawning_pid, SIGTERM );
@@ -765,15 +778,16 @@ execAgent( int newSock, startupPack_t *startupPack ) {
 
     // Create unique socket for each call to exec agent
     sockaddr_un tmp_socket_addr;
-    char tmp_socket_file[108];
+    char tmp_socket_file[128];
     char random_suffix[65];
     int tmp_socket;
     memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
     tmp_socket_addr.sun_family = AF_UNIX;
     get64RandomBytes( random_suffix );
 
-    strcpy(tmp_socket_file, "/tmp/irods_agent_socket_");
-    strcat(tmp_socket_file, random_suffix);
+    strcpy( tmp_socket_file, agent_factory_socket_dir );
+    strcat( tmp_socket_file, "/irods_agent_" );
+    strcat( tmp_socket_file, random_suffix );
 
     status = send( agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0 );
     if ( status < 0 ) {
