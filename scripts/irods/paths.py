@@ -12,6 +12,9 @@ def irods_directory():
 def config_directory():
     return os.path.join(root_directory(), 'etc', 'irods')
 
+def plugins_directory():
+    return os.path.join(root_directory(), 'usr', 'lib', 'irods', 'plugins')
+
 def home_directory():
     return irods_user_and_group_entries()[0][5]
 

@@ -7,6 +7,7 @@ import os
 from . import database_connect
 from . import database_upgrade
 from . import lib
+from . import paths
 from .exceptions import IrodsError, IrodsWarning
 
 #These are the functions that must be implemented in order
@@ -76,11 +77,11 @@ def database_already_in_use_by_irods(irods_config):
 def setup_database_config(irods_config):
     l = logging.getLogger(__name__)
 
-    if os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libpostgres.so')):
+    if os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libpostgres.so')):
         db_type = 'postgres'
-    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'libmysql.so')):
+    elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libmysql.so')):
         db_type = 'mysql'
-    elif os.path.exists(os.path.join(irods_config.irods_directory, 'plugins', 'database', 'liboracle.so')):
+    elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'liboracle.so')):
         db_type = 'oracle'
     else:
         raise IrodsError('Database type must be one of postgres, mysql, or oracle.')

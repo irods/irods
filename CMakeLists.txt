@@ -1288,6 +1288,7 @@ target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
 set(IRODS_HOME_DIRECTORY var/lib/irods)
+set(IRODS_PLUGINS_DIRECTORY usr/lib/irods/plugins)
 
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)

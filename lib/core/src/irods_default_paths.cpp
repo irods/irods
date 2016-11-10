@@ -42,7 +42,7 @@ namespace irods {
     boost::filesystem::path
     get_irods_default_plugin_directory() {
         boost::filesystem::path path{get_irods_root_directory()};
-        path.append("var").append("lib").append("irods").append("plugins");
+        path.append("usr").append("lib").append("irods").append("plugins");
         return path;
     }
 }
