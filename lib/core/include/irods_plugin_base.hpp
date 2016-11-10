@@ -170,9 +170,9 @@ namespace irods {
                     #ifdef ENABLE_RE
                     bool ret;
                     bool pre_pep_failed = false;
-                    bool post_pep_failed = false;
                     error op_err = SUCCESS();
                     error saved_op_err = SUCCESS();
+                    error to_return_op_err = SUCCESS();
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
@@ -210,12 +210,12 @@ namespace irods {
                         return saved_op_err;
                     }
 
-                    op_err = adapted_fcn( ctx, &out_param );
+                    to_return_op_err = adapted_fcn( ctx, &out_param );
 
                     // If rule call fails, do not execute post_pep
-                    if (!op_err.ok()) {
-                        rodsLog(LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
-                        return op_err;
+                    if (!to_return_op_err.ok()) {
+                        rodsLog(LOG_DEBUG, "Operation [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
+                        return to_return_op_err;
                     }
 
                     for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
@@ -225,8 +225,6 @@ namespace irods {
                                 op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
                                 if (!op_err.ok()) {
                                     rodsLog(LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                    saved_op_err = op_err;
-                                    post_pep_failed = true;
                                 }
                             } else {
                                 rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
@@ -234,11 +232,7 @@ namespace irods {
                         }
                     }
 
-                    if (post_pep_failed) {
-                        return saved_op_err;
-                    } else {
-                        return op_err;
-                    }
+                    return to_return_op_err;
                     #else
                     return adapted_fcn( ctx, &out_param );
                     #endif
@@ -276,9 +270,9 @@ namespace irods {
                     #ifdef ENABLE_RE
                     bool ret;
                     bool pre_pep_failed = false;
-                    bool post_pep_failed = false;
                     error op_err = SUCCESS();
                     error saved_op_err = SUCCESS();
+                    error to_return_op_err = SUCCESS();
                     ruleExecInfo_t rei;
                     memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                     rei.rsComm        = _comm;
@@ -316,12 +310,12 @@ namespace irods {
                         return saved_op_err;
                     }
 
-                    op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
+                    to_return_op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
 
                     // If rule call fails, do not execute post_pep
-                    if (!op_err.ok()) {
+                    if (!to_return_op_err.ok()) {
                         rodsLog(LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
-                        return op_err;
+                        return to_return_op_err;
                     }
 
                     for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
@@ -331,8 +325,6 @@ namespace irods {
                                 re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param, forward<types_t>(_t)... );
                                 if (!op_err.ok()) {
                                     rodsLog(LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                    saved_op_err = op_err;
-                                    post_pep_failed = true;
                                 }
                             } else {
                                 rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
@@ -340,11 +332,7 @@ namespace irods {
                         }
                     }
 
-                    if (post_pep_failed) {
-                        return saved_op_err;
-                    } else {
-                        return op_err;
-                    }
+                    return to_return_op_err;
                     #else
                     return adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
                     #endif

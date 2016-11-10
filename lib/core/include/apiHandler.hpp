@@ -122,10 +122,9 @@ namespace irods {
                         #ifdef ENABLE_RE
                         bool ret;
                         bool pre_pep_failed = false;
-                        bool post_pep_failed = false;
-                        irods::error op_err;
-                        irods::error saved_op_err;
-                        irods::error to_return_op_err;
+                        irods::error op_err = SUCCESS();
+                        irods::error saved_op_err = SUCCESS();
+                        irods::error to_return_op_err = SUCCESS();
                         irods::plugin_property_map prop_map;
                         irods::plugin_context ctx(NULL,prop_map);
                         ruleExecInfo_t rei;
@@ -168,15 +167,13 @@ namespace irods {
                         std::function<error(irods::plugin_context&, rsComm_t*,types_t...)> adapted_fcn{
                                 api_call_adaptor<types_t...>(fcn) };
 
-                        op_err = adapted_fcn( ctx, _comm, forward<types_t>(_t)...);
+                        to_return_op_err = adapted_fcn( ctx, _comm, forward<types_t>(_t)...);
 
                         // If rule call fails, do not execute post_pep
-                        if ( !op_err.ok() ) {
+                        if ( !to_return_op_err.ok() ) {
                             rodsLog( LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", operation_name.c_str(), op_err.code() );
-                            return op_err.code();
+                            return to_return_op_err.code();
                         }
-
-                        to_return_op_err = op_err;
 
                         for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
                             std::string rule_name = ns + "pep_" + operation_name + "_post";
@@ -185,8 +182,6 @@ namespace irods {
                                     op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, NULL );
                                     if ( !op_err.ok() ) {
                                         rodsLog( LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code() );
-                                        saved_op_err = op_err;
-                                        post_pep_failed = true;
                                     }
                                 } else {
                                     rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
