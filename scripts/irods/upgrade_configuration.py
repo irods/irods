@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import datetime
 import json
 import logging
 import os
@@ -39,6 +40,7 @@ def upgrade(irods_config):
 
     with open('.'.join([paths.version_path(), 'dist']), 'r') as f:
         new_version = json.load(f)
+    new_version['installation_time'] = datetime.datetime.now().isoformat()
     new_version_tuple = lib.version_string_to_tuple(new_version['irods_version'])
     if os.path.exists(paths.version_path()):
         old_version = irods_config.version

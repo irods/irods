@@ -40,6 +40,7 @@ def wrap_if_necessary():
 wrap_if_necessary()
 
 import contextlib
+import datetime
 import grp
 import itertools
 import json
@@ -75,7 +76,10 @@ def setup_server(irods_config, json_configuration_file=None):
         IrodsController(irods_config).stop()
 
     if not os.path.exists(irods_config.version_path):
-        shutil.copyfile('.'.join([irods_config.version_path, 'dist']), irods_config.version_path)
+        with open('.'.join([irods_config.version_path, 'dist'])) as f:
+            version_json = json.load(f)
+        version_json['installation_time'] = datetime.datetime.now().isoformat()
+        irods_config.commit(version_json, irods.paths.version_path())
 
     if json_configuration_dict is not None:
         irods_user = json_configuration_dict['host_system_information']['service_account_user']
