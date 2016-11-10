@@ -214,7 +214,7 @@ main( int argc, char **argv ) {
     char *ruleExecId = NULL;
     int jobType = 0;
 
-    ProcessType = RE_SERVER_PT;
+    ProcessType = CLIENT_PT;
 
     signal( SIGINT, signalExit );
     signal( SIGHUP, signalExit );
