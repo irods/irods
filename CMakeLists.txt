@@ -51,9 +51,12 @@ endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic") # So stacktrace entries from executables have function names
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic") # export-dynamic so stacktrace entries from executables have function names
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
+add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
+link_libraries(c++abi)
+include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -172,13 +175,6 @@ set(IRODS_PACKAGE_COMPONENT_MYSQL_NAME "database-plugin-mysql${IRODS_PACKAGE_FIL
 string(TOUPPER ${IRODS_PACKAGE_COMPONENT_MYSQL_NAME} IRODS_PACKAGE_COMPONENT_MYSQL_NAME_UPPERCASE)
 set(IRODS_PACKAGE_COMPONENT_ORACLE_NAME "database-plugin-oracle${IRODS_PACKAGE_FILE_NAME_SUFFIX}")
 string(TOUPPER ${IRODS_PACKAGE_COMPONENT_ORACLE_NAME} IRODS_PACKAGE_COMPONENT_ORACLE_NAME_UPPERCASE)
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
-add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
-link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
 
 if (NOT EXISTS "${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json")
   message(FATAL_ERROR "Missing file: ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
