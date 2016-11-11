@@ -82,7 +82,7 @@ static void set_agent_process_name(const InformationRequiredToSafelyRenameProces
     }
 }
 
-int receiveDataFromServer( int conn_tmp_socket, const InformationRequiredToSafelyRenameProcess& info ) {
+int receiveDataFromServer( int conn_tmp_socket ) {
     int status;
     ssize_t num_bytes;
     char in_buf[1024];
@@ -153,8 +153,6 @@ int receiveDataFromServer( int conn_tmp_socket, const InformationRequiredToSafel
         rodsLog( LOG_ERROR, "Received 0 bytes from rodsServer" );
         return SYS_SOCK_READ_ERR;
     }
-
-    set_agent_process_name(info, newSocket);
 
     char socket_buf[16];
     snprintf(socket_buf, 16, "%d", newSocket);
@@ -282,7 +280,7 @@ irodsAgentSignalExit( int ) {
 }
 
 int
-runIrodsAgent( sockaddr_un agent_addr, const InformationRequiredToSafelyRenameProcess& info ) {
+runIrodsAgent( sockaddr_un agent_addr ) {
     int status;
     rsComm_t rsComm;
 
@@ -421,7 +419,7 @@ runIrodsAgent( sockaddr_un agent_addr, const InformationRequiredToSafelyRenamePr
                 // Child process - reload properties and receive data from server process
                 irods::environment_properties::instance().capture();
 
-                status = receiveDataFromServer( conn_tmp_socket, info );
+                status = receiveDataFromServer( conn_tmp_socket );
 
                 irods::server_properties::instance().capture();
 
