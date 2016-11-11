@@ -732,12 +732,9 @@ acPostProcForParallelTransferReceived(*leaf_resource) {}
 acPostProcForDataCopyReceived(*leaf_resource) {}
 
 # =-=-=-=-=-=-=-
-# examples of dynamically called rules via the operation_wrapper
-#pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-
+# examples of API dynamic policy enforcement points
+# pep_api_data_obj_put_pre(*COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
+# pep_api_data_obj_put_post(*COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
 
 # =-=-=-=-=-=-=-
 # policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
