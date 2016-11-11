@@ -570,8 +570,11 @@ cleanup() {
 
 void
 cleanupAndExit( int status ) {
+#if 0
+    // RTS - rodsLog calls in signal handlers are unsafe - #3326 
     rodsLog( LOG_NOTICE,
              "Agent exiting with status = %d", status );
+#endif
 
     cleanup();
 
@@ -585,8 +588,11 @@ cleanupAndExit( int status ) {
 
 void
 signalExit( int ) {
+#if 0
+    // RTS - rodsLog calls in signal handlers are unsafe - #3326 
     rodsLog( LOG_NOTICE,
              "caught a signal and exiting\n" );
+#endif
     cleanupAndExit( SYS_CAUGHT_SIGNAL );
 }
 

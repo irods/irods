@@ -598,7 +598,10 @@ serverExit( int sig )
 serverExit()
 #endif
 {
+#if 0
+    // RTS - rodsLog calls in signal handlers are unsafe - #3326 
     rodsLog( LOG_NOTICE, "rodsServer caught signal %d, exiting", sig );
+#endif
     recordServerProcess( NULL ); /* unlink the process id file */
 
     close( agent_conn_socket );

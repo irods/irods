@@ -14,8 +14,11 @@ extern "C" {
     /// @brief Signal handler for seg faults
     static void segv_handler(
         int signal ) {
+#if 0
+        // RTS - output in signal handlers are unsafe - #3326 
         std::cerr << "Caught signal [" << signal << "]. Dumping stacktrace and exiting" << std::endl;
         std::cerr << irods::stacktrace().dump();
+#endif
         exit( signal );
     }
 
