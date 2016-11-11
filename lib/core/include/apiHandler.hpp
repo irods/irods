@@ -126,7 +126,7 @@ namespace irods {
                         irods::error saved_op_err = SUCCESS();
                         irods::error to_return_op_err = SUCCESS();
                         irods::plugin_property_map prop_map;
-                        irods::plugin_context ctx(NULL,prop_map);
+                        irods::plugin_context ctx(_comm,prop_map);
                         ruleExecInfo_t rei;
                         memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
                         rei.rsComm      = _comm;
@@ -146,7 +146,7 @@ namespace irods {
                             std::string rule_name = ns + "pep_" + operation_name + "_pre";
                             if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                                 if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
-                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, NULL );
+                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, std::forward<types_t>(_t)... );
                                     if ( !op_err.ok() ) {
                                         rodsLog( LOG_DEBUG, "Pre-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code() );
                                         saved_op_err = op_err;
@@ -179,7 +179,7 @@ namespace irods {
                             std::string rule_name = ns + "pep_" + operation_name + "_post";
                             if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                                 if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
-                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, NULL );
+                                    op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, std::forward<types_t>(_t)... );
                                     if ( !op_err.ok() ) {
                                         rodsLog( LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code() );
                                     }
