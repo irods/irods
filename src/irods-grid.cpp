@@ -23,10 +23,37 @@
 
 template <typename T>
 irods::error usage(T& ostream) {
-    ostream << "usage:  'irods-grid action [ option ] target'" << std::endl;
+    ostream << "Usage:  'irods-grid action [ option ] target'" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Sends a message on control channel for possible grid-wide operations" << std::endl;
+    ostream << " " << std::endl;
     ostream << "action: ( required ) status, ping, pause, resume, shutdown" << std::endl;
+    ostream << " " << std::endl;
     ostream << "option: --force-after=seconds or --wait-forever" << std::endl;
+    ostream << " " << std::endl;
     ostream << "target: ( required ) --all, --hosts=<fqdn1>,<fqdn2>,..." << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Examples:" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Status - returns a status of the server (or servers) requested in a validated" << std::endl;
+    ostream << "json document which includes iRODS Server PID, iRODS Server hostname," << std::endl;
+    ostream << "Rule Execution server PID, Agent PIDs and their age," << std::endl;
+    ostream << "XMessage server PID, Server status" << std::endl;
+    ostream << " irods-grid status --all" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Ping - attempt a connection to a server or servers" << std::endl;
+    ostream << " irods-grid ping --all" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Pause - suspend all incoming connections while allowing existing client connections to complete" << std::endl;
+    ostream << " irods-grid pause --all" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Resume - allow incoming connections from new clients" << std::endl;
+    ostream << " irods-grid resume --all" << std::endl;
+    ostream << " " << std::endl;
+    ostream << "Shutdown - gracefully shutdown an iRODS server or servers after allowing existing client connections to complete" << std::endl;
+    ostream << " irods-grid shutdown --force-after=5 --all" << std::endl;
+    ostream << " " << std::endl;
+    ostream << " irods-grid shutdown --wait-forever --all" << std::endl;
 
     return ERROR( SYS_INVALID_INPUT_PARAM, "usage" );
 
