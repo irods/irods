@@ -41,7 +41,6 @@ set(
   ichmod
   iclienthints
   icp
-  idbug
   ienv
   ierror
   iexecmd
