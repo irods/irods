@@ -50,7 +50,7 @@ printMainHelp() {
         "imkdir       - make an iRODS directory (Collection).",
         "imv          - move/rename an iRODS Data Object (file) or Collection (directory).",
         "ipasswd      - change your iRODS password.",
-        "iphybun      - physically bundle files (admin only).",
+        "iphybun      - DEPRECATED - physically bundle files (admin only).",
         "iphymv       - physically move a Data Object to another storage Resource.",
         "ips          - display iRODS agent (server) connection information.",
         "iput         - put (store) a file into iRODS.",

@@ -96,7 +96,7 @@ void
 usage() {
     char *msgs[] = {
         "Usage: iphybun [-hK] [-D dataType] [-S srcResource] [-R resource] [-s maxSize_in_GB] [-N numOfSubFiles] collection ... ",
-        "iphybun allows iRODS administrators to physically bundle files in a collection into",
+        "DEPRECATED - iphybun allows iRODS administrators to physically bundle files in a collection into",
         "a number of tar files to make it more efficient to store these files on tape.",
         "The tar files are placed into the /myZone/bundle/.... collection with file",
         "names - collection.aRandomNumber. A new tar file will be created whenever",
