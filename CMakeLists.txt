@@ -22,6 +22,7 @@ endif()
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++")
@@ -125,6 +126,21 @@ install(
   DESTINATION usr/bin
   )
 
+foreach(TARGET ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
+    set (MAKE_MAN_COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${TARGET})
+    add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
+        MAIN_DEPENDENCY ${TARGET}
+        COMMAND ${MAKE_MAN_COMMAND}
+    )
+    add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${TARGET} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz) #forces execution of custom_command
+    install(
+      FILES
+      ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
+      DESTINATION usr/share/man/man1
+    )
+endforeach()
+
 install(
   FILES
   ${CMAKE_SOURCE_DIR}/bin/igetwild
@@ -132,6 +148,21 @@ install(
   DESTINATION usr/bin
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   )
+
+foreach(TARGET ${FILES})
+    set (MAKE_MAN_COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${TARGET})
+    add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
+        MAIN_DEPENDENCY ${TARGET}
+        COMMAND ${MAKE_MAN_COMMAND}
+    )
+    add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${TARGET} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz) #forces execution of custom_command
+    install(
+      FILES
+      ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
+      DESTINATION usr/share/man/man1
+    )
+endforeach()
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
