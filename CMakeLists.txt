@@ -117,50 +117,53 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
   target_compile_definitions(${EXECUTABLE} PRIVATE RODS_SERVER ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
   set_property(TARGET ${EXECUTABLE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+  install(
+    TARGETS
+    ${EXECUTABLE}
+    RUNTIME
+    DESTINATION usr/bin
+    )
+
+  if (${EXECUTABLE} STREQUAL "iapitest")
+    continue()
+  endif()
+
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz
+    DEPENDS ${EXECUTABLE}
+    COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${EXECUTABLE} ${CMAKE_BINARY_DIR}/man
+    )
+  add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${EXECUTABLE} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz) #forces execution of custom_command
+  install(
+    FILES
+    ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz
+    DESTINATION usr/share/man/man1
+    )
 endforeach()
 
-install(
-  TARGETS
-  ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES}
-  RUNTIME
-  DESTINATION usr/bin
+set(
+  IRODS_CLIENT_ICOMMANDS_SCRIPTS
+  igetwild
+  ilocate
   )
-
-foreach(TARGET ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
-    set (MAKE_MAN_COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${TARGET})
-    add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
-        DEPENDS ${TARGET}
-        COMMAND ${MAKE_MAN_COMMAND}
+foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
+  install(
+    FILES
+    ${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}
+    DESTINATION usr/bin
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
-    add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${TARGET} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz) #forces execution of custom_command
-    install(
-      FILES
-      ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
-      DESTINATION usr/share/man/man1
-    )
-endforeach()
 
-install(
-  FILES
-  ${CMAKE_SOURCE_DIR}/bin/igetwild
-  ${CMAKE_SOURCE_DIR}/bin/ilocate
-  DESTINATION usr/bin
-  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-  )
-
-foreach(TARGET ${FILES})
-    set (MAKE_MAN_COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${TARGET})
-    add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
-        MAIN_DEPENDENCY ${TARGET}
-        COMMAND ${MAKE_MAN_COMMAND}
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz
+    DEPENDS ${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}
+    COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_SOURCE_DIR}/bin ${IRODS_CLIENT_ICOMMANDS_SCRIPT} ${CMAKE_BINARY_DIR}/man
     )
-    add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${TARGET} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz) #forces execution of custom_command
-    install(
-      FILES
-      ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
-      DESTINATION usr/share/man/man1
+  add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${IRODS_CLIENT_ICOMMANDS_SCRIPT} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz) #forces execution of custom_command
+  install(
+    FILES
+    ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz
+    DESTINATION usr/share/man/man1
     )
 endforeach()
 
@@ -212,8 +215,8 @@ elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
 endif()
 
 if (NOT CPACK_GENERATOR)
-    set(CPACK_GENERATOR ${IRODS_CPACK_GENERATOR} CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
-    message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
+  set(CPACK_GENERATOR ${IRODS_CPACK_GENERATOR} CACHE STRING "CPack generator to use, e.g. {DEB, RPM, TGZ}." FORCE)
+  message(STATUS "Setting unspecified CPACK_GENERATOR to ${CPACK_GENERATOR}. This is the correct setting for normal builds.")
 endif()
 
 include(CPack)
