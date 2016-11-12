@@ -2,6 +2,7 @@
 
 IRODSVERSION=$1
 BUILDDIR=$2
+ICMD=$3
 MANDIR="man"
 
 #grep is ggrep on solaris
@@ -32,74 +33,20 @@ else
     echo "Detected help2man [$HELP2MAN] v[$H2MVERSION]"
 fi
 
-# prepare man pages for the icommands
+# prepare man pages for the icommand
 cd $BUILDDIR
-rm -rf $MANDIR
 mkdir -p $MANDIR
 if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "NOTE :: Skipping man page generation -- help2man version needs to be >= 1.37"
     echo "     :: (or, add --version capability to all iCommands)"
     echo "     :: (installed here: help2man version $H2MVERSION)"
 else
-#    IRODSMANVERSION=`$GREPCMD "find_package(IRODS" "../CMakeLists.txt" | awk '{print $2}'`
-#    ICMDDIR="/home/rskarbez/build/icommands-rip"
-    ICMDS=(
-    iadmin
-    ibun
-    icd
-    ichksum
-    ichmod
-    icp
-    idbug
-    ienv
-    ierror
-    iexecmd
-    iexit
-    ifsck
-    iget
-    igetwild
-    igroupadmin
-    ihelp
-    iinit
-    ilocate
-    ils
-    ilsresc
-    imcoll
-    imeta
-    imiscsvrinfo
-    imkdir
-    imv
-    ipasswd
-    iphybun
-    iphymv
-    ips
-    iput
-    ipwd
-    iqdel
-    iqmod
-    iqstat
-    iquest
-    iquota
-    ireg
-    irepl
-    irm
-    irmtrash
-    irsync
-    irule
-    iscan
-    isysmeta
-    iticket
-    itrim
-    iuserinfo
-    ixmsg
-    izonereport
-    )
-    for ICMD in "${ICMDS[@]}"
-    do
-        help2man -h -h -N -n "an iRODS iCommand" --version-string="iRODS-$IRODSVERSION" $BUILDDIR/$ICMD > $MANDIR/$ICMD.1
-    done
-    for manfile in `ls $MANDIR`
-    do
-        gzip -9 $MANDIR/$manfile
-    done
+    if [ -f $MANDIR/$ICMD.1 ] ; then
+        rm $MANDIR/$ICMD.1
+    fi
+    if [ -f $MANDIR/$ICMD.1.gz ] ; then
+        rm $MANDIR/$ICMD.1.gz
+    fi
+    help2man -h -h -N -n "an iRODS iCommand" --version-string="iRODS-$IRODSVERSION" $BUILDDIR/$ICMD > $MANDIR/$ICMD.1
+    gzip -9 $MANDIR/$ICMD.1
 fi
