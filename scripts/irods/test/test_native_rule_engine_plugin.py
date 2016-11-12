@@ -76,12 +76,6 @@ writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*INSTANCE] [*CONTE
 """, "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
             ['user_auth_info_auth_flag=5', 'user_rods_zone=tempZone', 'user_user_name=otherrods', 'metadataIncluded=ATTR;VALUE;UNIT'], 2)
 
-#pep_rs_hello_world_pre(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
-#    writeLine("serverLog", "pep_rs_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
-#}
-#pep_rs_hello_world_post(*INST,*OUT,*COMM,*HELLO_IN,*HELLO_OUT) {
-#    writeLine("serverLog", "pep_rs_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
-#}
     def test_api_plugin(self):
         self.helper_test_pep("""
 pep_api_rs_hello_world_pre(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
