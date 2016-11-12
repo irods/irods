@@ -41,7 +41,7 @@ irods::error parse_program_options(
     po::options_description opt_desc( "options" );
     opt_desc.add_options()
     ( "action", "either 'status', 'ping', 'shutdown', 'pause', or 'resume'" )
-    ( "help", "show command usage" )
+    ( "help,h", "show command usage" )
     ( "all", "operation applies to all servers in the grid" )
     ( "hosts", po::value<std::string>(), "operation applies to a list of hosts in the grid" )
     ( "force-after", po::value<size_t>(), "force shutdown after N seconds" )
