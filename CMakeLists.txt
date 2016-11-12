@@ -130,7 +130,7 @@ foreach(TARGET ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     set (MAKE_MAN_COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${TARGET})
     add_custom_command(
         OUTPUT ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz
-        MAIN_DEPENDENCY ${TARGET}
+        DEPENDS ${TARGET}
         COMMAND ${MAKE_MAN_COMMAND}
     )
     add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${TARGET} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${TARGET}.1.gz) #forces execution of custom_command
