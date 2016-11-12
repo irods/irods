@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
+
 
 IRODSVERSION=$1
 BUILDDIR=$2
 ICMD=$3
-MANDIR="man"
+MANDIR=$4
 
 #grep is ggrep on solaris
 if [ "$DETECTEDOS" == "Solaris" ] ; then
@@ -30,7 +31,6 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     fi
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
-    echo "Detected help2man [$HELP2MAN] v[$H2MVERSION]"
 fi
 
 # prepare man pages for the icommand
