@@ -47,8 +47,17 @@ def upgrade(irods_config):
         old_version_tuple = lib.version_string_to_tuple(old_version['irods_version'])
 
     else:
-        with open('.'.join([paths.version_path(), 'previous']), 'r') as f:
-            old_version = json.load(f)
+        version_previous_path = '.'.join([paths.version_path(), 'previous'])
+        if os.path.exists(version_previous_path):
+            with open(version_previous_path, 'r') as f:
+                old_version = json.load(f)
+        else :
+            old_version = {'schema_name': 'VERSION',
+                    'schema_version': 'v2',
+                    'irods_version': '4.1.0',
+                    'commit_id': '0000000000000000000000000000000000000000',
+                    'catalog_schema_version': 1,
+                    'configuration_schema_version': 2}
         old_version_tuple = lib.version_string_to_tuple(old_version['irods_version'])
         if new_version_tuple == old_version_tuple:
             new_version['previous_version'] = old_version
@@ -401,7 +410,7 @@ def convert_legacy_configuration_to_json(irods_config):
         'schema_version': 'v2',
         'irods_version': legacy_version.get('IRODSVERSION', '4.0.0'),
         'catalog_schema_version': int(legacy_version.get('CATALOG_SCHEMA_VERSION', 1)),
-        'configuration_schema_version': 'v0',
+        'configuration_schema_version': 0,
         'commit_id': '0000000000000000000000000000000000000000',
         'build_system_information': 'unavailable',
         'compiler_version': 'unavailable'
