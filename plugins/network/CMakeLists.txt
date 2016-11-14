@@ -75,7 +75,6 @@ foreach(PLUGIN ${IRODS_NETWORK_PLUGINS})
       irods_common
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
       ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-      ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
       ${OPENSSL_CRYPTO_LIBRARY}
       ${OPENSSL_SSL_LIBRARY}
       )
