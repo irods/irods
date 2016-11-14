@@ -74,6 +74,8 @@ namespace irods{
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else if (std::string(t->type).compare(GenQueryOut_MS_T) == 0) {
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
+        } else if (std::string(t->type).compare(BUF_LEN_MS_T) == 0) {
+            replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else {
             return ERROR(-1, "cannot convert parameter");
         }
