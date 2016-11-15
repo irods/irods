@@ -11,22 +11,27 @@ else:
 from . import resource_suite
 from .. import lib
 from .. import paths
+from ..configuration import IrodsConfig
+from .rule_texts_for_tests import rule_texts
 
 
 class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
+    instance_name = IrodsConfig().default_rule_engine_instance
+    class_name = 'Test_Quotas'
 
     def setUp(self):
         super(Test_Quotas, self).setUp()
 
     def tearDown(self):
         super(Test_Quotas, self).tearDown()
-    
+
     def test_iquota__3044(self):
         filename_1 = 'test_iquota__3044_1'
         filename_2 = 'test_iquota__3044_2'
         corefile = paths.core_re_directory() + "/core.re"
         with lib.file_backed_up(corefile):
-            rules_to_prepend = 'acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }\n'
+            #rules_to_prepend = 'acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }\n'
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iquota__3044']
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
@@ -61,7 +66,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     cmd = 'irm -rf {0}'.format(filename_2) # clean up
                     self.admin.assert_icommand(cmd.split())
             time.sleep(2)  # remove once file hash fix is commited #2279
-    
+ 
     def test_iquota_empty__3048(self):
         cmd = 'iadmin suq' # no arguments
         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing username parameter') # usage information

@@ -58,6 +58,10 @@ class IrodsConfig(object):
         return self.server_config['catalog_service_role'] == 'consumer'
 
     @property
+    def default_rule_engine_instance(self):
+        return self.server_config['plugin_configuration']['rule_engines'][0]['instance_name']
+
+    @property
     def database_config(self):
         try:
             database_config = [e for e in self.server_config['plugin_configuration']['database'].values()][0]
