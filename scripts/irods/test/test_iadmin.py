@@ -26,29 +26,7 @@ from . import session
 from . import settings
 from .. import lib
 from . import resource_suite
-
-rule1_2242_contents = '''test {
-    $userNameClient = "foobar";
-}
-
-INPUT *A="status"
-OUTPUT ruleExecOut
-
-'''
-
-rule2_2242_contents = '''test {
-    $status = "1";
-}
-
-acPreProcForWriteSessionVariable(*x) {
-    writeLine("stdout", "bwahahaha");
-    succeed;
-}
-
-INPUT *A="status"
-OUTPUT ruleExecOut
-
-'''
+from .rule_texts_for_tests import rule_texts
 
 def write_host_access_control(filename, username, group, address, mask):
     add_ent = {
@@ -66,6 +44,8 @@ def write_host_access_control(filename, username, group, address, mask):
 
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
+    instance_name = IrodsConfig().default_rule_engine_instance
+    class_name = 'Test_Iadmin'
 
     def setUp(self):
         super(Test_Iadmin, self).setUp()
@@ -998,11 +978,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        part1 = "sed -e '/^acChkHostAccessControl { }/i acChkHostAccessControl { msiCheckHostAccessControl; }' "
-        part2 = part1 + corefile + ' > ' + origcorefile
-        os.system(part2)
+
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp " + origcorefile + " " + corefile)
+        newrule = rule_texts[self.instance_name][self.class_name]['test_host_access_control']
+        lib.prepend_string_to_file(newrule, corefile);
+
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -1035,14 +1015,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
         corefile = IrodsConfig().core_re_directory + "/core.re"
-        origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
-        part1 = "sed -e '/^acAclPolicy {msiAclPolicy(\"STRICT\"); }/iacAclPolicy {ON($userNameClient == \"quickshare\") { } }' "
-        part2 = part1 + corefile + ' > ' + origcorefile
-        os.system(part2)
+
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system("cp " + origcorefile + " " + corefile)
+        newrule = rule_texts[self.instance_name][self.class_name]['test_issue_2420']
+        lib.prepend_string_to_file(newrule, corefile);
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # restart the server to reread the new core.re
@@ -1116,7 +1094,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         corefile = IrodsConfig().core_re_directory + "/core.re"
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-            rules_to_prepend = 'acSetRescSchemeForCreate{ msiSetDefaultResc("' + testresc1 + '","forced"); }\n'
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_msiset_default_resc__2712']
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279

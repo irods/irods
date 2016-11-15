@@ -18,10 +18,13 @@ from .. import test
 from . import settings
 from .. import lib
 from . import resource_suite
+from .rule_texts_for_tests import rule_texts
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
 class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestCase):
+    instance_name = IrodsConfig().default_rule_engine_instance
+    class_name = 'Test_ICommands_File_Operations'
 
     def setUp(self):
         super(Test_ICommands_File_Operations, self).setUp()
@@ -87,8 +90,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         assert os.path.isfile(os.path.join(self.admin.local_session_dir,base_name,rods_files[-1]))
 
         self.admin.assert_icommand(['ichmod','-r','own',self.admin.username,base_name])
-
-
 
     def test_iput_r(self):
         self.iput_r_large_collection(self.user0, "test_iput_r_dir", file_count=1000, file_size=100)
@@ -615,9 +616,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # manipulate core.re and check the server log
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-            rules_to_prepend = '''
-pep_resource_write_post(*A,*B,*C,*D,*E) {delay("<PLUSET>1s</PLUSET>") {writeLine("serverLog","dynamic pep in delay");}}
-'''
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_delay_in_dynamic_pep__3342']
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(1)  # remove once file hash fix is committed #2279
@@ -640,10 +639,8 @@ pep_resource_write_post(*A,*B,*C,*D,*E) {delay("<PLUSET>1s</PLUSET>") {writeLine
             # manipulate core.re and check the server log
             with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-                rules_to_prepend = '''
-acBulkPutPostProcPolicy { msiSetBulkPutPostProcPolicy("on"); }
-acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"); }
-            '''
+                rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_bulk_check_acpostprocforput__2841']
+
                 time.sleep(1)  # remove once file hash fix is committed #2279
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
                 time.sleep(1)  # remove once file hash fix is committed #2279
@@ -680,9 +677,8 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
         # manipulate core.re and check the server log
         corefile = IrodsConfig().core_re_directory + "/core.re"
         with lib.file_backed_up(corefile):
-            rules_to_prepend = '''
-acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","forced"); }
-            '''
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_forced']
+
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(1)  # remove once file hash fix is committed #2279
@@ -718,9 +714,8 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","forced"); }
         # manipulate core.re and check the server log
         corefile = IrodsConfig().core_re_directory + "/core.re"
         with lib.file_backed_up(corefile):
-            rules_to_prepend = '''
-acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","preferred"); }
-            '''
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_preferred']
+
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(1)  # remove once file hash fix is committed #2279
@@ -756,9 +751,8 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","preferred"); }
         # manipulate core.re and check the server log
         corefile = IrodsConfig().core_re_directory + "/core.re"
         with lib.file_backed_up(corefile):
-            rules_to_prepend = '''
-acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
-            '''
+            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_null']
+
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(1)  # remove once file hash fix is committed #2279
@@ -787,7 +781,6 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
 
             os.unlink(filepath)
 
-
     def test_igetwild_with_semicolon_in_filename(self):
 
         localfile = 'thelocalfile.txt'
@@ -810,5 +803,3 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
             self.user0.assert_icommand(['irm', '-rf', 'subdir'])
             os.unlink(badpath)
         os.unlink(localpath)
-
-

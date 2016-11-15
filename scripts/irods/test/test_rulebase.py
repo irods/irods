@@ -18,9 +18,12 @@ from . import settings
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from .rule_texts_for_tests import rule_texts
 
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
+    instance_name = IrodsConfig().default_rule_engine_instance
+    class_name = 'Test_Rulebase'
 
     def setUp(self):
         super(Test_Rulebase, self).setUp()
@@ -39,7 +42,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.environment_file_contents.update(client_update)
 
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file('\nacPreConnect(*OUT) { *OUT="CS_NEG_REQUIRE"; }\n', corefile)
+            rule_string = rule_texts[self.instance_name][self.class_name]['test_client_server_negotiation__2564']
+            lib.prepend_string_to_file(rule_string, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             self.admin.assert_icommand( 'ils','STDERR_SINGLELINE','CLIENT_NEGOTIATION_ERROR')
@@ -48,18 +52,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_msiDataObjWrite__2795(self):
         rule_file = "test_rule_file.r"
-        rule_string = """
-test_msiDataObjWrite__2795 {
-  ### write a string to a file in irods
-  msiDataObjCreate("*TEST_ROOT" ++ "/test_file.txt","null",*FD);
-  msiDataObjWrite(*FD,"this_is_a_test_string",*LEN);
-  msiDataObjClose(*FD,*Status);
-
-}
-
-INPUT *TEST_ROOT=\""""+self.admin.session_collection+"""\"
-OUTPUT ruleExecOut
-"""
+        rule_string = rule_texts[self.instance_name][self.class_name]['test_msiDataObjWrite__2795_1'] + self.admin.session_collection + rule_texts[self.instance_name][self.class_name]['test_msiDataObjWrite__2795_2']
         with open(rule_file, 'wt') as f:
             print(rule_string, file=f, end='')
 
@@ -75,14 +68,7 @@ OUTPUT ruleExecOut
         assert( not file_contents.endswith('\0') )
 
     def test_irods_re_infinite_recursion_3169(self):
-        rules_to_prepend = """
-call_with_wrong_number_of_string_arguments(*A, *B, *C) {
-}
-
-acPostProcForPut {
-  call_with_wrong_number_of_string_arguments("a", "b");
-}
-"""
+        rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_irods_re_infinite_recursion_3169']
         corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
         with lib.file_backed_up(corefile):
             time.sleep(2) # remove once file hash fix is commited #2279
@@ -106,26 +92,7 @@ acPostProcForPut {
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             # add new rule to end of core.re
-            newrule = """
-# multiple replication rule
-replicateMultiple(*destRgStr) {
-    *destRgList = split(*destRgStr, ',');
-    writeLine("serverLog", " acPostProcForPut multiple replicate $objPath $filePath -> *destRgStr");
-    foreach (*destRg in *destRgList) {
-        writeLine("serverLog", " acPostProcForPut replicate $objPath $filePath -> *destRg");
-        *e = errorcode(msiSysReplDataObj(*destRg,"null"));
-        if (*e != 0) {
-            if(*e == -808000) {
-                writeLine("serverLog", "$objPath cannot be found");
-                $status = 0;
-                succeed;
-            } else {
-                fail(*e);
-            }
-        }
-    }
-}
-"""
+            newrule = rule_texts[self.instance_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources']
 
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(newrule, corefile)
@@ -154,7 +121,8 @@ replicateMultiple(*destRgStr) {
 
         # add dynamic PEP with rscomm usage
         time.sleep(1)  # remove once file hash fix is commited #2279
-        os.system('''echo "pep_resource_open_pre(*OUT,*FOO,*BAR) { msiGetSystemTime( *junk, '' ); }" >> ''' + corefile)
+        newrule = rule_texts[self.instance_name][self.class_name]['test_dynamic_pep_with_rscomm_usage']
+        lib.prepend_string_to_file(newrule, corefile);
         time.sleep(1)  # remove once file hash fix is commited #2279
 
         # check rei functioning
@@ -168,15 +136,7 @@ replicateMultiple(*destRgStr) {
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rulebase_update__2585(self):
         irods_config = IrodsConfig()
-        my_rule = """
-my_rule {
-    delay("<PLUSET>1s</PLUSET>") {
-        do_some_stuff();
-    }
-}
-INPUT null
-OUTPUT ruleExecOut
-"""
+        my_rule = rule_texts[self.instance_name][self.class_name]['test_rulebase_update__2585']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -228,13 +188,7 @@ OUTPUT ruleExecOut
 
     def test_rulebase_update_without_delay(self):
         irods_config = IrodsConfig()
-        my_rule = """
-my_rule {
-    do_some_stuff();
-}
-INPUT null
-OUTPUT ruleExecOut
-"""
+        my_rule = rule_texts[self.instance_name][self.class_name]['test_rulebase_update_without_delay']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -286,14 +240,7 @@ OUTPUT ruleExecOut
     def test_argument_preservation__3236(self):
         with tempfile.NamedTemporaryFile(suffix='.r') as f:
 
-            rule_string = """
-test_msiDataObjWrite__3236 {
-   msiTakeThreeArgumentsAndDoNothing(*arg1, *arg2, *arg3);
-   writeLine("stdout", "AFTER arg1=*arg1 arg2=*arg2 arg3=*arg3");
-}
-INPUT *arg1="abc", *arg2="def", *arg3="ghi"
-OUTPUT ruleExecOut
-"""
+            rule_string = rule_texts[self.instance_name][self.class_name]['test_argument_preservation__3236']
             f.write(rule_string)
             f.flush()
 
@@ -303,6 +250,8 @@ OUTPUT ruleExecOut
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
+    instance_name = IrodsConfig().default_rule_engine_instance
+    class_name = 'Test_Resource_Session_Vars__3024'
 
     def setUp(self):
         super(Test_Resource_Session_Vars__3024, self).setUp()
@@ -362,27 +311,13 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         self.pep_test_helper(commands=['iput -f {testfile}'])
 
     def test_acPreprocForDataObjOpen(self):
-        client_rule = '''
-test_{pep_name} {{
-    msiDataObjOpen("{target_obj}",*FD);
-    msiDataObjClose(*FD,*Status);
-}}
-INPUT null
-OUTPUT ruleExecOut
-'''
+        client_rule = rule_texts[self.instance_name][self.class_name]['test_acPreprocForDataObjOpen']
 
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
     def test_acPostProcForOpen(self):
         # prepare rule file
-        client_rule = '''
-test_{pep_name} {{
-    msiDataObjOpen("{target_obj}",*FD);
-    msiDataObjClose(*FD,*Status);
-}}
-INPUT null
-OUTPUT ruleExecOut
-'''
+        client_rule = rule_texts[self.instance_name][self.class_name]['test_acPostProcForOpen']
 
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
