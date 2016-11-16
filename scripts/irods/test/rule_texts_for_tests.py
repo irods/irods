@@ -275,7 +275,7 @@ INPUT *TEST_ROOT="'''
 rule_texts['irods_rule_engine_plugin-irods_rule_language-instance']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-irods_rule_language-instance']['Test_Rulebase']['test_irods_re_infinite_recursion__3169'] = '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language-instance']['Test_Rulebase']['test_irods_re_infinite_recursion_3169'] = '''
 call_with_wrong_number_of_string_arguments(*A, *B, *C) {
 }
 
@@ -593,7 +593,7 @@ def acPreConnect(rule_args, callback):
 #rule_texts['irods_rule_engine_plugin-python-instance']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
 #OUTPUT ruleExecOut
 #'''
-#rule_texts['irods_rule_engine_plugin-python-instance']['Test_Rulebase']['test_irods_re_infinite_recursion__3169'] = '''
+#rule_texts['irods_rule_engine_plugin-python-instance']['Test_Rulebase']['test_irods_re_infinite_recursion_3169'] = '''
 #call_with_wrong_number_of_string_arguments(*A, *B, *C) {
 #}
 #
