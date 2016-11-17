@@ -596,10 +596,14 @@ char* convertResToString( Res *res0 ) {
             res[0] = 0;
             type = res0->exprType->text;
             if ( strcmp( type, KeyValPair_MS_T ) == 0 ) {
+                int num_pairs = 0;
                 keyValPair_t *kvp = ( keyValPair_t * ) RES_UNINTER_STRUCT( res0 );
-                snprintf( res, 1024, "KeyValue[%d]:", kvp->len );
+                if ( kvp != NULL ) {
+                    num_pairs = kvp->len;
+                }
+                snprintf( res, 1024, "KeyValue[%d]:", num_pairs );
                 int i;
-                for ( i = 0; i < kvp->len; i++ ) {
+                for ( i = 0; i < num_pairs; i++ ) {
                     snprintf( res + strlen( res ), 1024 - strlen( res ), "%s=%s;", kvp->keyWord[i], kvp->value[i] );
                 }
 
