@@ -37,8 +37,10 @@ static time_t LogfileLastChkTime = 0;
 
 void
 cleanupAndExit( int status ) {
+#if 0
     rodsLog( LOG_NOTICE,
              "Agent exiting with status = %d", status );
+#endif
 
     if ( status >= 0 ) {
         exit( 0 );
@@ -50,8 +52,10 @@ cleanupAndExit( int status ) {
 
 void
 signalExit( int ) {
+#if 0
     rodsLog( LOG_NOTICE,
              "caught a signal and exiting\n" );
+#endif
     cleanupAndExit( SYS_CAUGHT_SIGNAL );
 }
 
