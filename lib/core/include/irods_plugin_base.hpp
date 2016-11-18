@@ -168,18 +168,18 @@ namespace irods {
 
                     std::string out_param;
                     #ifdef ENABLE_RE
-                    bool ret;
+                    bool ret = false;
                     bool pre_pep_failed = false;
                     error op_err = SUCCESS();
                     error saved_op_err = SUCCESS();
                     error to_return_op_err = SUCCESS();
                     ruleExecInfo_t rei;
-                    memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
-                    rei.rsComm        = _comm;
-                    rei.uoic          = &_comm->clientUser;
-                    rei.uoip          = &_comm->proxyUser;
-                    rei.uoio          = nullptr;
-                    rei.coi           = nullptr;
+                    memset( &rei, 0, sizeof( rei ) );
+                    if (_comm) {
+                        rei.rsComm        = _comm;
+                        rei.uoic          = &_comm->clientUser;
+                        rei.uoip          = &_comm->proxyUser;
+                    }
 
                     rule_engine_context_manager<
                         unit,
@@ -268,18 +268,18 @@ namespace irods {
 
                     std::string out_param;
                     #ifdef ENABLE_RE
-                    bool ret;
+                    bool ret = false;
                     bool pre_pep_failed = false;
                     error op_err = SUCCESS();
                     error saved_op_err = SUCCESS();
                     error to_return_op_err = SUCCESS();
                     ruleExecInfo_t rei;
-                    memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
-                    rei.rsComm        = _comm;
-                    rei.uoic          = &_comm->clientUser;
-                    rei.uoip          = &_comm->proxyUser;
-                    rei.uoio          = nullptr;
-                    rei.coi           = nullptr;
+                    memset( &rei, 0, sizeof( rei ) );
+                    if (_comm) {
+                        rei.rsComm        = _comm;
+                        rei.uoic          = &_comm->clientUser;
+                        rei.uoip          = &_comm->proxyUser;
+                    }
 
                     rule_engine_context_manager<
                         unit,
