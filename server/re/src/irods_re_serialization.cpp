@@ -217,39 +217,43 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 rsComm_t* l = boost::any_cast<rsComm_t*>(_p);
-                _out["client_addr"] = l->clientAddr;
+                if (l) {
+                    _out["client_addr"] = l->clientAddr;
 
-                if(l->auth_scheme) {_out["auth_scheme"] = l->auth_scheme;}
+                    if(l->auth_scheme) {_out["auth_scheme"] = l->auth_scheme;}
 
-                _out["proxy_user_name"] = l->proxyUser.userName;
-                _out["proxy_rods_zone"] = l->proxyUser.rodsZone;
-                _out["proxy_user_type"] = l->proxyUser.userType;
-                _out["proxy_sys_uid"] = boost::lexical_cast<std::string>(l->proxyUser.sysUid);
-                _out["proxy_auth_info_auth_scheme"] = l->proxyUser.authInfo.authScheme;
-                _out["proxy_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.authFlag);
-                _out["proxy_auth_info_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.flag);
-                _out["proxy_auth_info_ppid"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.ppid);
-                _out["proxy_auth_info_host"] = l->proxyUser.authInfo.host;
-                _out["proxy_auth_info_auth_str"] = l->proxyUser.authInfo.authStr;
-                _out["proxy_user_other_info_user_info"] = l->proxyUser.userOtherInfo.userInfo;
-                _out["proxy_user_other_info_user_comments"] = l->proxyUser.userOtherInfo.userComments;
-                _out["proxy_user_other_info_user_create"] = l->proxyUser.userOtherInfo.userCreate;
-                _out["proxy_user_other_info_user_modify"] = l->proxyUser.userOtherInfo.userModify;
+                    _out["proxy_user_name"] = l->proxyUser.userName;
+                    _out["proxy_rods_zone"] = l->proxyUser.rodsZone;
+                    _out["proxy_user_type"] = l->proxyUser.userType;
+                    _out["proxy_sys_uid"] = boost::lexical_cast<std::string>(l->proxyUser.sysUid);
+                    _out["proxy_auth_info_auth_scheme"] = l->proxyUser.authInfo.authScheme;
+                    _out["proxy_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.authFlag);
+                    _out["proxy_auth_info_flag"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.flag);
+                    _out["proxy_auth_info_ppid"] = boost::lexical_cast<std::string>(l->proxyUser.authInfo.ppid);
+                    _out["proxy_auth_info_host"] = l->proxyUser.authInfo.host;
+                    _out["proxy_auth_info_auth_str"] = l->proxyUser.authInfo.authStr;
+                    _out["proxy_user_other_info_user_info"] = l->proxyUser.userOtherInfo.userInfo;
+                    _out["proxy_user_other_info_user_comments"] = l->proxyUser.userOtherInfo.userComments;
+                    _out["proxy_user_other_info_user_create"] = l->proxyUser.userOtherInfo.userCreate;
+                    _out["proxy_user_other_info_user_modify"] = l->proxyUser.userOtherInfo.userModify;
 
-                _out["user_user_name"] = l->clientUser.userName;
-                _out["user_rods_zone"] = l->clientUser.rodsZone;
-                _out["user_user_type"] = l->clientUser.userType;
-                _out["user_sys_uid"] = boost::lexical_cast<std::string>(l->clientUser.sysUid);
-                _out["user_auth_info_auth_scheme"] = l->clientUser.authInfo.authScheme;
-                _out["user_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.authFlag);
-                _out["user_auth_info_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.flag);
-                _out["user_auth_info_ppid"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.ppid);
-                _out["user_auth_info_host"] = l->clientUser.authInfo.host;
-                _out["user_auth_info_auth_str"] = l->clientUser.authInfo.authStr;
-                _out["user_user_other_info_user_info"] = l->clientUser.userOtherInfo.userInfo;
-                _out["user_user_other_info_user_comments"] = l->clientUser.userOtherInfo.userComments;
-                _out["user_user_other_info_user_create"] = l->clientUser.userOtherInfo.userCreate;
-                _out["user_user_other_info_user_modify"] = l->clientUser.userOtherInfo.userModify;
+                    _out["user_user_name"] = l->clientUser.userName;
+                    _out["user_rods_zone"] = l->clientUser.rodsZone;
+                    _out["user_user_type"] = l->clientUser.userType;
+                    _out["user_sys_uid"] = boost::lexical_cast<std::string>(l->clientUser.sysUid);
+                    _out["user_auth_info_auth_scheme"] = l->clientUser.authInfo.authScheme;
+                    _out["user_auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.authFlag);
+                    _out["user_auth_info_flag"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.flag);
+                    _out["user_auth_info_ppid"] = boost::lexical_cast<std::string>(l->clientUser.authInfo.ppid);
+                    _out["user_auth_info_host"] = l->clientUser.authInfo.host;
+                    _out["user_auth_info_auth_str"] = l->clientUser.authInfo.authStr;
+                    _out["user_user_other_info_user_info"] = l->clientUser.userOtherInfo.userInfo;
+                    _out["user_user_other_info_user_comments"] = l->clientUser.userOtherInfo.userComments;
+                    _out["user_user_other_info_user_create"] = l->clientUser.userOtherInfo.userCreate;
+                    _out["user_user_other_info_user_modify"] = l->clientUser.userOtherInfo.userModify;
+                } else {
+                    _out["rsComm_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -318,21 +322,25 @@ namespace irods {
             try {
                 dataObjInp_t* l = boost::any_cast<dataObjInp_t*>(_p);
 
-                _out["obj_path"]    = l->objPath;
-                _out["create_mode"] = boost::lexical_cast<std::string>(l->createMode);
-                _out["open_flags"]  = boost::lexical_cast<std::string>(l->openFlags);
-                _out["offset"]      = boost::lexical_cast<std::string>(l->offset);
-                _out["data_size"]   = boost::lexical_cast<std::string>(l->dataSize);
-                _out["num_threads"] = boost::lexical_cast<std::string>(l->numThreads);
-                _out["opr_type"]    = boost::lexical_cast<std::string>(l->oprType);
-                if(l->specColl) {
-                    serialize_spec_coll_info_ptr(
-                        l->specColl,
-                        _out );
-                }
-                
-                for(int i = 0; i < l->condInput.len; ++i) {
-                    _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                if (l) {
+                    _out["obj_path"]    = l->objPath;
+                    _out["create_mode"] = boost::lexical_cast<std::string>(l->createMode);
+                    _out["open_flags"]  = boost::lexical_cast<std::string>(l->openFlags);
+                    _out["offset"]      = boost::lexical_cast<std::string>(l->offset);
+                    _out["data_size"]   = boost::lexical_cast<std::string>(l->dataSize);
+                    _out["num_threads"] = boost::lexical_cast<std::string>(l->numThreads);
+                    _out["opr_type"]    = boost::lexical_cast<std::string>(l->oprType);
+                    if(l->specColl) {
+                        serialize_spec_coll_info_ptr(
+                                l->specColl,
+                                _out );
+                    }
+
+                    for(int i = 0; i < l->condInput.len; ++i) {
+                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                    }
+                } else {
+                    _out["dataObjInp_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
@@ -349,11 +357,15 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 authResponseInp_t* l = boost::any_cast<authResponseInp_t*>(_p);
-                if(l->response) {
-                    _out["response"] = l->response;
-                }
-                if(l->username) {
-                    _out["username"]  = l->username;
+                if (l) {
+                    if(l->response) {
+                        _out["response"] = l->response;
+                    }
+                    if(l->username) {
+                        _out["username"]  = l->username;
+                    }
+                } else {
+                    _out["authResponseInp_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
@@ -370,43 +382,48 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 dataObjInfo_t* l = boost::any_cast<dataObjInfo_t*>(_p);
-                _out["logical_path"] = l->objPath;
-                _out["resc_hier"] = l->rescHier;
-                _out["data_type"] = l->dataType;
-                _out["data_size"] = boost::lexical_cast<std::string>(l->dataSize);
-                _out["checksum"] = l->chksum;
-                _out["version"] = l->version;
-                _out["physical_path"] = l->filePath;
-                _out["data_owner_name"] = l->dataOwnerName;
-                _out["data_owner_zone"] = l->dataOwnerZone;
-                _out["replica_number"] = boost::lexical_cast<std::string>(l->replNum);
-                _out["replica_status"] = boost::lexical_cast<std::string>(l->replStatus);
-                _out["data_id"] = boost::lexical_cast<std::string>(l->dataId);
-                _out["coll_id"] = boost::lexical_cast<std::string>(l->collId);
-                _out["data_map_id"] = boost::lexical_cast<std::string>(l->dataMapId);
-                _out["flags"] = boost::lexical_cast<std::string>(l->flags);
-                _out["data_comments"] = l->dataComments;
-                _out["data_mode"] = l->dataMode;
-                _out["data_expiry"] = l->dataExpiry;
-                _out["data_create"] = l->dataCreate;
-                _out["data_modify"] = l->dataModify;
-                _out["data_access"] = l->dataAccess;
-                _out["data_access_index"] = boost::lexical_cast<std::string>(l->dataAccessInx);
-                _out["write_flag"] = boost::lexical_cast<std::string>(l->writeFlag);
-                _out["dest_resc_name"] = l->destRescName;
-                _out["backup_resc_name"] = l->backupRescName;
-                _out["sub_path"] = l->subPath;
-                _out["reg_uid"] = boost::lexical_cast<std::string>(l->regUid);
-                _out["resc_id"] = l->rescId;
 
-                if(l->specColl) {
-                    serialize_spec_coll_info_ptr(
-                        l->specColl,
-                        _out );
-                }
-                
-                for(int i = 0; i < l->condInput.len; ++i) {
-                    _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                if (l) {
+                    _out["logical_path"] = l->objPath;
+                    _out["resc_hier"] = l->rescHier;
+                    _out["data_type"] = l->dataType;
+                    _out["data_size"] = boost::lexical_cast<std::string>(l->dataSize);
+                    _out["checksum"] = l->chksum;
+                    _out["version"] = l->version;
+                    _out["physical_path"] = l->filePath;
+                    _out["data_owner_name"] = l->dataOwnerName;
+                    _out["data_owner_zone"] = l->dataOwnerZone;
+                    _out["replica_number"] = boost::lexical_cast<std::string>(l->replNum);
+                    _out["replica_status"] = boost::lexical_cast<std::string>(l->replStatus);
+                    _out["data_id"] = boost::lexical_cast<std::string>(l->dataId);
+                    _out["coll_id"] = boost::lexical_cast<std::string>(l->collId);
+                    _out["data_map_id"] = boost::lexical_cast<std::string>(l->dataMapId);
+                    _out["flags"] = boost::lexical_cast<std::string>(l->flags);
+                    _out["data_comments"] = l->dataComments;
+                    _out["data_mode"] = l->dataMode;
+                    _out["data_expiry"] = l->dataExpiry;
+                    _out["data_create"] = l->dataCreate;
+                    _out["data_modify"] = l->dataModify;
+                    _out["data_access"] = l->dataAccess;
+                    _out["data_access_index"] = boost::lexical_cast<std::string>(l->dataAccessInx);
+                    _out["write_flag"] = boost::lexical_cast<std::string>(l->writeFlag);
+                    _out["dest_resc_name"] = l->destRescName;
+                    _out["backup_resc_name"] = l->backupRescName;
+                    _out["sub_path"] = l->subPath;
+                    _out["reg_uid"] = boost::lexical_cast<std::string>(l->regUid);
+                    _out["resc_id"] = l->rescId;
+
+                    if(l->specColl) {
+                        serialize_spec_coll_info_ptr(
+                                l->specColl,
+                                _out );
+                    }
+
+                    for(int i = 0; i < l->condInput.len; ++i) {
+                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                    }
+                } else {
+                    _out["dataObjInfo_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
@@ -424,8 +441,12 @@ namespace irods {
             try {
                 keyValPair_t* l = boost::any_cast<keyValPair_t*>(_p);
 
-                for(int i = 0; i < l->len; ++i) {
-                    _out[l->keyWord[i]] = l->value[i];
+                if (l) {
+                    for(int i = 0; i < l->len; ++i) {
+                        _out[l->keyWord[i]] = l->value[i];
+                    }
+                } else {
+                    _out["keyValPair_ptr"] = "nullptr";
                 }
 
             }
@@ -445,20 +466,24 @@ namespace irods {
             try {
                 userInfo_t* l = boost::any_cast<userInfo_t*>(_p);
 
-                _out["user_name"] = l->userName;
-                _out["rods_zone"] = l->rodsZone;
-                _out["user_type"] = l->userType;
-                _out["sys_uid"] = boost::lexical_cast<std::string>(l->sysUid);
-                _out["auth_info_auth_scheme"] = l->authInfo.authScheme;
-                _out["auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->authInfo.authFlag);
-                _out["auth_info_flag"] = boost::lexical_cast<std::string>(l->authInfo.flag);
-                _out["auth_info_ppid"] = boost::lexical_cast<std::string>(l->authInfo.ppid);
-                _out["auth_info_host"] = l->authInfo.host;
-                _out["auth_info_auth_str"] = l->authInfo.authStr;
-                _out["user_other_info_user_info"] = l->userOtherInfo.userInfo;
-                _out["user_other_info_user_comments"] = l->userOtherInfo.userComments;
-                _out["user_other_info_user_create"] = l->userOtherInfo.userCreate;
-                _out["user_other_info_user_modify"] = l->userOtherInfo.userModify;
+                if (l) {
+                    _out["user_name"] = l->userName;
+                    _out["rods_zone"] = l->rodsZone;
+                    _out["user_type"] = l->userType;
+                    _out["sys_uid"] = boost::lexical_cast<std::string>(l->sysUid);
+                    _out["auth_info_auth_scheme"] = l->authInfo.authScheme;
+                    _out["auth_info_auth_flag"] = boost::lexical_cast<std::string>(l->authInfo.authFlag);
+                    _out["auth_info_flag"] = boost::lexical_cast<std::string>(l->authInfo.flag);
+                    _out["auth_info_ppid"] = boost::lexical_cast<std::string>(l->authInfo.ppid);
+                    _out["auth_info_host"] = l->authInfo.host;
+                    _out["auth_info_auth_str"] = l->authInfo.authStr;
+                    _out["user_other_info_user_info"] = l->userOtherInfo.userInfo;
+                    _out["user_other_info_user_comments"] = l->userOtherInfo.userComments;
+                    _out["user_other_info_user_create"] = l->userOtherInfo.userCreate;
+                    _out["user_other_info_user_modify"] = l->userOtherInfo.userModify;
+                } else {
+                    _out["userInfo_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -475,26 +500,30 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 collInfo_t* l = boost::any_cast<collInfo_t*>(_p);
-                
-                _out["coll_id"] = boost::lexical_cast<std::string>(l->collId);
-                _out["coll_name"] = l->collName;
-                _out["coll_parent_name"] = l->collParentName;
-                _out["coll_owner_name"] = l->collOwnerName;
-                _out["coll_owner_zone"] = l->collOwnerZone;
-                _out["coll_map_id"] = boost::lexical_cast<std::string>(l->collMapId);
-                _out["coll_access_index"] = boost::lexical_cast<std::string>(l->collAccessInx);
-                _out["coll_comments"] = l->collComments;
-                _out["coll_inheritance"] = l->collInheritance;
-                _out["coll_expiry"] = l->collExpiry;
-                _out["coll_create"] = l->collCreate;
-                _out["coll_modify"] = l->collModify;
-                _out["coll_access"] = l->collAccess;
-                _out["coll_type"] = l->collType;
-                _out["coll_info1"] = l->collInfo1;
-                _out["coll_info2"] = l->collInfo2;
 
-                for(int i = 0; i < l->condInput.len; ++i) {
-                    _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                if (l) {
+                    _out["coll_id"] = boost::lexical_cast<std::string>(l->collId);
+                    _out["coll_name"] = l->collName;
+                    _out["coll_parent_name"] = l->collParentName;
+                    _out["coll_owner_name"] = l->collOwnerName;
+                    _out["coll_owner_zone"] = l->collOwnerZone;
+                    _out["coll_map_id"] = boost::lexical_cast<std::string>(l->collMapId);
+                    _out["coll_access_index"] = boost::lexical_cast<std::string>(l->collAccessInx);
+                    _out["coll_comments"] = l->collComments;
+                    _out["coll_inheritance"] = l->collInheritance;
+                    _out["coll_expiry"] = l->collExpiry;
+                    _out["coll_create"] = l->collCreate;
+                    _out["coll_modify"] = l->collModify;
+                    _out["coll_access"] = l->collAccess;
+                    _out["coll_type"] = l->collType;
+                    _out["coll_info1"] = l->collInfo1;
+                    _out["coll_info2"] = l->collInfo2;
+
+                    for(int i = 0; i < l->condInput.len; ++i) {
+                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                    }
+                } else {
+                    _out["collInfo_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
@@ -511,16 +540,21 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 modAVUMetadataInp_t* l = boost::any_cast<modAVUMetadataInp_t*>(_p);
-                if( l->arg0 ) { _out["arg0"] = l->arg0; }
-                if( l->arg1 ) { _out["arg1"] = l->arg1; }
-                if( l->arg2 ) { _out["arg2"] = l->arg2; }
-                if( l->arg3 ) { _out["arg3"] = l->arg3; }
-                if( l->arg4 ) { _out["arg4"] = l->arg4; }
-                if( l->arg5 ) { _out["arg5"] = l->arg5; }
-                if( l->arg6 ) { _out["arg6"] = l->arg6; }
-                if( l->arg7 ) { _out["arg7"] = l->arg7; }
-                if( l->arg8 ) { _out["arg8"] = l->arg8; }
-                if( l->arg9 ) { _out["arg9"] = l->arg9; }
+
+                if (l) {
+                    if( l->arg0 ) { _out["arg0"] = l->arg0; }
+                    if( l->arg1 ) { _out["arg1"] = l->arg1; }
+                    if( l->arg2 ) { _out["arg2"] = l->arg2; }
+                    if( l->arg3 ) { _out["arg3"] = l->arg3; }
+                    if( l->arg4 ) { _out["arg4"] = l->arg4; }
+                    if( l->arg5 ) { _out["arg5"] = l->arg5; }
+                    if( l->arg6 ) { _out["arg6"] = l->arg6; }
+                    if( l->arg7 ) { _out["arg7"] = l->arg7; }
+                    if( l->arg8 ) { _out["arg8"] = l->arg8; }
+                    if( l->arg9 ) { _out["arg9"] = l->arg9; }
+                } else {
+                    _out["modAVUMetaInp_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -536,11 +570,16 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 modAccessControlInp_t* l = boost::any_cast<modAccessControlInp_t*>(_p);
-                _out["recursive_flag"] = boost::lexical_cast<std::string>(l->recursiveFlag);
-                if( l->accessLevel ) { _out["access_level"] = l->accessLevel; }
-                if( l->userName ) { _out["user_name"] = l->userName; }
-                if( l->zone ) { _out["zone"] = l->zone; }
-                if( l->path ) { _out["path"] = l->path; }
+
+                if (l) {
+                    _out["recursive_flag"] = boost::lexical_cast<std::string>(l->recursiveFlag);
+                    if( l->accessLevel ) { _out["access_level"] = l->accessLevel; }
+                    if( l->userName ) { _out["user_name"] = l->userName; }
+                    if( l->zone ) { _out["zone"] = l->zone; }
+                    if( l->path ) { _out["path"] = l->path; }
+                } else {
+                    _out["modAccessControlInp_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -556,17 +595,22 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 modDataObjMeta_t* l = boost::any_cast<modDataObjMeta_t*>(_p);
-                error ret = serialize_dataObjInfo_ptr(
-                                l->dataObjInfo,
-                                _out);
-                if(!ret.ok()) {
-                    irods::log(PASS(ret));
-                }
 
-                if( l->regParam ) {
-                    for(int i = 0; i < l->regParam->len; ++i) {
-                        _out[l->regParam->keyWord[i]] = l->regParam->value[i];
+                if (l) {
+                    error ret = serialize_dataObjInfo_ptr(
+                            l->dataObjInfo,
+                            _out);
+                    if(!ret.ok()) {
+                        irods::log(PASS(ret));
                     }
+
+                    if( l->regParam ) {
+                        for(int i = 0; i < l->regParam->len; ++i) {
+                            _out[l->regParam->keyWord[i]] = l->regParam->value[i];
+                        }
+                    }
+                } else {
+                    _out["modDataObjMeta_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
@@ -583,28 +627,32 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 ruleExecSubmitInp_t* l = boost::any_cast<ruleExecSubmitInp_t*>(_p);
-                
-               _out["rule_name"] = l->ruleName; 
-               _out["rei_file_path"] = l->reiFilePath; 
-               _out["user_name"] = l->userName; 
-               _out["exe_address"] = l->exeAddress; 
-               _out["exe_time"] = l->exeTime; 
-               _out["exe_frequency"] = l->exeFrequency; 
-               _out["priority"] = l->priority; 
-               _out["last_exec_time"] = l->lastExecTime; 
-               _out["exe_status"] = l->exeStatus; 
-               _out["estimate_exe_time"] = l->estimateExeTime; 
-               _out["notification_addr"] = l->notificationAddr; 
-               _out["rule_exec_id"] = l->ruleExecId; 
-                
-                for(int i = 0; i < l->condInput.len; ++i) {
-                    _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+
+                if (l) {
+                    _out["rule_name"] = l->ruleName; 
+                    _out["rei_file_path"] = l->reiFilePath; 
+                    _out["user_name"] = l->userName; 
+                    _out["exe_address"] = l->exeAddress; 
+                    _out["exe_time"] = l->exeTime; 
+                    _out["exe_frequency"] = l->exeFrequency; 
+                    _out["priority"] = l->priority; 
+                    _out["last_exec_time"] = l->lastExecTime; 
+                    _out["exe_status"] = l->exeStatus; 
+                    _out["estimate_exe_time"] = l->estimateExeTime; 
+                    _out["notification_addr"] = l->notificationAddr; 
+                    _out["rule_exec_id"] = l->ruleExecId; 
+
+                    for(int i = 0; i < l->condInput.len; ++i) {
+                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                    }
+                } else {
+                    _out["ruleExecSubmitInp_ptr"] = "nullptr";
                 }
             }
             catch ( std::exception& ) {
                 return ERROR(
-                         INVALID_ANY_CAST,
-                         "failed to cast ruleExecSubmitInp ptr" );
+                        INVALID_ANY_CAST,
+                        "failed to cast ruleExecSubmitInp ptr" );
             }
 
             return SUCCESS();
@@ -616,33 +664,36 @@ namespace irods {
             try {
                 dataObjCopyInp_t* l = boost::any_cast<dataObjCopyInp_t*>(_p);
 
-                serialized_parameter_t src;
-                error ret = serialize_dataObjInp_ptr(
-                                l->srcDataObjInp,
-                                src );
-                if(!ret.ok()) {
-                    irods::log(PASS(ret));
-                }
-                else {
-                    for( auto p : src ) {
-                        _out["src_"+p.first] = p.second;
+                if (l) {
+                    serialized_parameter_t src;
+                    error ret = serialize_dataObjInp_ptr(
+                            l->srcDataObjInp,
+                            src );
+                    if(!ret.ok()) {
+                        irods::log(PASS(ret));
                     }
-                }
-
-
-                serialized_parameter_t dst;
-                ret = serialize_dataObjInp_ptr(
-                          l->destDataObjInp,
-                          dst );
-                if(!ret.ok()) {
-                    irods::log(PASS(ret));
-                }
-                else {
-                    for( auto p : dst ) {
-                        _out["dst_"+p.first] = p.second;
+                    else {
+                        for( auto p : src ) {
+                            _out["src_"+p.first] = p.second;
+                        }
                     }
-                }
 
+
+                    serialized_parameter_t dst;
+                    ret = serialize_dataObjInp_ptr(
+                            l->destDataObjInp,
+                            dst );
+                    if(!ret.ok()) {
+                        irods::log(PASS(ret));
+                    }
+                    else {
+                        for( auto p : dst ) {
+                            _out["dst_"+p.first] = p.second;
+                        }
+                    }
+                } else {
+                    _out["dataObjCopyInp_ptr"] = "nullptr";
+                }
             }
             catch ( std::exception& ) {
                 return ERROR(
@@ -658,7 +709,7 @@ namespace irods {
                 serialized_parameter_t& _out) { 
             try {
                 rodsObjStat_t** tmp = boost::any_cast<rodsObjStat_t**>(_p);
-                if(tmp && *tmp ) {
+                if(tmp && *tmp) {
                     rodsObjStat_t* l = *tmp;
 
                     _out["obj_size"] = boost::lexical_cast<std::string>(l->objSize);
@@ -927,10 +978,6 @@ namespace irods {
         } // serialize_parameter
 
     }; // re_serialization
-
-
-
-
 
 }; // namespace irods
 
