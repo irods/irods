@@ -121,7 +121,7 @@ namespace irods {
                         typedef std::function<int(rsComm_t*, types_t...)> fcn_t;
                         fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
                         #ifdef ENABLE_RE
-                        bool ret;
+                        bool ret = false;
                         bool pre_pep_failed = false;
                         irods::error op_err = SUCCESS();
                         irods::error saved_op_err = SUCCESS();
@@ -129,12 +129,12 @@ namespace irods {
                         irods::plugin_property_map prop_map;
                         irods::plugin_context ctx(_comm,prop_map);
                         ruleExecInfo_t rei;
-                        memset( ( char* )&rei, 0, sizeof( ruleExecInfo_t ) );
-                        rei.rsComm      = _comm;
-                        rei.uoic        = &_comm->clientUser;
-                        rei.uoip        = &_comm->proxyUser;
-                        rei.uoio        = nullptr;
-                        rei.coi         = nullptr;
+                        memset( &rei, 0, sizeof( rei ) );
+                        if (_comm) {
+                            rei.rsComm      = _comm;
+                            rei.uoic        = &_comm->clientUser;
+                            rei.uoip        = &_comm->proxyUser;
+                        }
 
                         rule_engine_context_manager<
                             irods::unit,
