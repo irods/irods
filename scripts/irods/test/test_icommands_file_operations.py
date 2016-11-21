@@ -23,7 +23,7 @@ from .rule_texts_for_tests import rule_texts, rule_files
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
 class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_ICommands_File_Operations'
 
     def setUp(self):
@@ -612,11 +612,11 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def test_delay_in_dynamic_pep__3342(self):
         irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
         # manipulate core.re and check the server log
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_delay_in_dynamic_pep__3342']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_delay_in_dynamic_pep__3342']
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(1)  # remove once file hash fix is committed #2279
@@ -632,14 +632,14 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
         irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
             files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
             # manipulate core.re and check the server log
             with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-                rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_bulk_check_acpostprocforput__2841']
+                rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_bulk_check_acpostprocforput__2841']
 
                 time.sleep(1)  # remove once file hash fix is committed #2279
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -675,9 +675,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_forced']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_forced']
 
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -712,9 +712,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_preferred']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_preferred']
 
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -749,9 +749,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_null']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_null']
 
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)

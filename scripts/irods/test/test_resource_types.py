@@ -675,7 +675,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
 
 
 class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_Unixfilesystem'
 
     def setUp(self):
@@ -723,9 +723,9 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         # make sure the physical path exists
         lib.make_dir_p(self.admin.get_vault_path('demoResc'))
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
         with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived']
 
             time.sleep(1)  # remove once file hash fix is committed #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -1664,7 +1664,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
 
 class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_Compound'
 
     def setUp(self):
@@ -1720,7 +1720,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path_rsync'] = logical_path_rsync
         parameters['dest_resc'] = 'null'
         rule_file_path = 'test_msiDataObjRsync__2976.r'
-        rule_str = rule_texts[self.instance_name][self.class_name]['test_msiDataObjRsync__2976'].format(**parameters)
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjRsync__2976'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -1758,7 +1758,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path_rsync'] = logical_path_rsync
         parameters['dest_resc'] = 'demoResc'
         rule_file_path = 'test_msiDataObjRsync__2976.r'
-        rule_str = rule_texts[self.instance_name][self.class_name]['test_msiCollRsync__2976'].format(**parameters)
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiCollRsync__2976'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -1800,7 +1800,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters = {}
         parameters['logical_path'] = logical_path
         rule_file_path = 'test_msiDataObjUnlink__2983.r'
-        rule_str = rule_texts[self.instance_name][self.class_name]['test_msiDataObjUnlink__2983'].format(**parameters)
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjUnlink__2983'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -1821,7 +1821,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['logical_path'] = logical_path
         parameters['dest_resc'] = 'demoResc'
         rule_file_path = 'test_msiDataObjRepl_as_admin__2988.r'
-        rule_str = rule_texts[self.instance_name][self.class_name]['test_msiDataObjRepl_as_admin__2988'].format(**parameters)
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjRepl_as_admin__2988'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -1862,7 +1862,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         parameters['resc_hier'] = 'demoResc;cacheResc'
 
         rule_file_path = 'test_msisync_to_archive__2962.r'
-        rule_str = rule_texts[self.instance_name][self.class_name]['test_msisync_to_archive__2962'].format(**parameters)
+        rule_str = rule_texts[self.plugin_name][self.class_name]['test_msisync_to_archive__2962'].format(**parameters)
 
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
@@ -1936,10 +1936,10 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         os.remove(phypath)
 
         # manipulate the core.re to add the new policy
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iget_prefer_from_archive_corrupt_archive__ticket_3145']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive_corrupt_archive__ticket_3145']
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
@@ -1975,10 +1975,10 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660']
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
@@ -2583,7 +2583,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
 
 
 class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompound'
 
     def setUp(self):
@@ -2657,7 +2657,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         backupcorefile = corefile + "--" + self._testMethodName
 
         # new file to put and get
@@ -2691,7 +2691,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manipulate the core.re to add the new policy
         shutil.copy(corefile, backupcorefile)
         with open(corefile, 'at') as f:
-            print(rule_texts[self.instance_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660'], file=f, end='')
+            print(rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660'], file=f, end='')
 
         # restart the server to reread the new core.re
         IrodsController().restart()
@@ -3036,18 +3036,18 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
 
 class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDevTest, ResourceSuite, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive'
 
     def setUp(self):
         # back up core file
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
         # manipulate the core.re to add the new policy
         with open(corefile, 'at') as f:
-            f.write(rule_texts[self.instance_name][self.class_name]['setUp'])
+            f.write(rule_texts[self.plugin_name][self.class_name]['setUp'])
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
