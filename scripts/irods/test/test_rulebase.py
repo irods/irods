@@ -18,7 +18,7 @@ from . import settings
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
-from .rule_texts_for_tests import rule_texts
+from .rule_texts_for_tests import rule_texts, rule_files
 
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
@@ -32,7 +32,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         super(Test_Rulebase, self).tearDown()
 
     def test_client_server_negotiation__2564(self):
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             client_update = {
                 'irods_client_server_policy': 'CS_NEG_REFUSE'
@@ -69,7 +69,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_irods_re_infinite_recursion_3169(self):
         rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_irods_re_infinite_recursion_3169']
-        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             time.sleep(2) # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -85,7 +85,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file('\nacPostProcForPut { replicateMultiple( \"r1,r2\" ); }\n', corefile)
@@ -115,7 +115,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_dynamic_pep_with_rscomm_usage(self):
         # save original core.re
-        corefile = os.path.join(IrodsConfig().core_re_directory, "core.re")
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
         origcorefile = os.path.join(IrodsConfig().core_re_directory, "core.re.orig")
         os.system("cp " + corefile + " " + origcorefile)
 
@@ -370,21 +370,22 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         return '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
 
-    def make_new_server_config_json(self, server_config_filename):
-        # load server_config.json to inject a new rule base
-        with open(server_config_filename) as f:
-            svr_cfg = json.load(f)
-
-        # inject a new rule base into the native rule engine
-        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
-
-        # dump to a string to repave the existing server_config.json
-        return json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
+#    def make_new_server_config_json(self, server_config_filename):
+#        # load server_config.json to inject a new rule base
+#        with open(server_config_filename) as f:
+#            svr_cfg = json.load(f)
+#
+#        # inject a new rule base into the native rule engine
+#        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = ["test", "core"]
+#
+#        # dump to a string to repave the existing server_config.json
+#        return json.dumps(svr_cfg, sort_keys=True,indent=4, separators=(',', ': '))
 
     def pep_test_helper(self, precommands=[], commands=[], rule_body='', client_rule=None, target_name=None, user_session=None):
         irods_config = IrodsConfig()
-        test_re = os.path.join(irods_config.core_re_directory, 'test.re')
-        server_config_filename = irods_config.server_config_path
+#        test_re = os.path.join(irods_config.core_re_directory, 'test.re')
+#        server_config_filename = irods_config.server_config_path
+        core_re = os.path.join(irods_config.core_re_directory, rule_files[self.instance_name])
         pep_name = self.pep_name
 
         # user session
@@ -401,20 +402,24 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         # query for resource properties
         resource_property_list = self.get_resource_property_list(user_session)
 
-        # make new server configuration with additional re file
-        new_server_config = self.make_new_server_config_json(server_config_filename)
+#        # make new server configuration with additional re file
+#        new_server_config = self.make_new_server_config_json(server_config_filename)
 
-        with lib.file_backed_up(server_config_filename):
+#        with lib.file_backed_up(server_config_filename):
+        with lib.file_backed_up(core_re):
             # make pep rule
             test_rule = self.make_pep_rule(pep_name, rule_body)
 
             # write pep rule into test_re
-            with open(test_re, 'w') as f:
-                f.write(test_rule)
+#            with open(test_re, 'w') as f:
+#                f.write(test_rule)
+            time.sleep(2)
+            lib.prepend_string_to_file(test_rule, core_re)
+            time.sleep(2)
 
-            # repave the existing server_config.json to add test_re
-            with open(server_config_filename, 'w') as f:
-                f.write(new_server_config)
+#            # repave the existing server_config.json to add test_re
+#            with open(server_config_filename, 'w') as f:
+#                f.write(new_server_config)
 
             # make client-side rule file
             if client_rule is not None:
@@ -456,7 +461,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         # cleanup
         user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
-        os.unlink(test_re)
+#        os.unlink(test_re)
 
     def test_genquery_foreach_MAX_SQL_ROWS_multiple__3489(self):
         MAX_SQL_ROWS = 256 # needs to be the same as constant in server code

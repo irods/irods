@@ -1,3 +1,7 @@
+rule_files = {}
+rule_files['irods_rule_engine_plugin-irods_rule_language-instance'] = 'core.re'
+rule_files['irods_rule_engine_plugin-python-instance'] = 'core.py'
+
 rule_texts = {}
 
 #==============================================================
@@ -347,7 +351,7 @@ def acSetRescSchemeForCreate(rule_args, callback):
 '''
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Iadmin'] ['test_host_access_control'] = ''' 
 def acChkHostAccessControl(rule_args, callback):
-    callback.msiCheckHostAccessControl();
+    callback.msiCheckHostAccessControl;
 '''
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Iadmin'] ['test_issue_2420'] = ''' 
 def acAclPolicy(rule_args, callback):
@@ -360,13 +364,10 @@ def acAclPolicy(rule_args, callback):
 #===== Test_ICommands_File_Operations =====
 
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_ICommands_File_Operations'] = {}
-#rule_texts['irods_rule_engine_plugin-python-instance']['Test_ICommands_File_Operations'] ['test_delay_in_dynamic_pep__3342'] = ''' 
-#pep_resource_write_post(*A,*B,*C,*D,*E) {
-#    delay("<PLUSET>1s</PLUSET>") {
-#        writeLine("serverLog","dynamic pep in delay");
-#    }
-#}     
-#'''
+rule_texts['irods_rule_engine_plugin-python-instance']['Test_ICommands_File_Operations'] ['test_delay_in_dynamic_pep__3342'] = ''' 
+def pep_resource_write_post(rule_args, callback):
+    callback.delayExec('<PLUSET>1s</PLUSET>', 'callback.writeLine("serverLog", "dynamic pep in delay")', '')
+'''
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_ICommands_File_Operations'] ['test_iput_bulk_check_acpostprocforput__2841'] = ''' 
 def acBulkPutPostProcPolicy(rule_args, callback):
     callback.msiSetBulkPutPostProcPolicy('on'); 
@@ -417,10 +418,10 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback):
     callback.writeLine('serverLog', 'pep_resource_resolve_hierarchy_pre - [{}] [{}] [{}] [{}] [{}] [{}] [{}]'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3], rule_args[4], rule_args[5], rule_args[6]))
 '''
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Native_Rule_Engine_Plugin']['test_api_plugin'] = '''
-pep_api_rs_hello_world_pre(rule_args, callback):
+def pep_api_rs_hello_world_pre(rule_args, callback):
     callback.writeLine('serverLog', 'pep_api_rs_hello_world_pre - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
 
-pep_api_rs_hello_world_post(rule_args, callback):
+def pep_api_rs_hello_world_post(rule_args, callback):
     callback.writeLine('serverLog', 'pep_api_rs_hello_world_post - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
 '''
 #rule_texts['irods_rule_engine_plugin-python-instance']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2242_1'] = '''
@@ -447,12 +448,12 @@ pep_api_rs_hello_world_post(rule_args, callback):
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2309_1'] = '''
 def acSetNumThreads(rule_args, callback):
     opr_type = session_vars['oprType']
-    callback.writeLine('serverLog', 'test_rule_engine_2309: put: acSetNumThreads oprType ' + opr_type)
+    callback.writeLine('serverLog', 'test_rule_engine_2309: put: acSetNumThreads oprType [' + str(opr_type) + ']')
 '''
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2309_2'] = '''
 def acSetNumThreads(rule_args, callback):
     opr_type = session_vars['oprType']
-    callback.writeLine('serverLog', 'test_rule_engine_2309: get: acSetNumThreads oprType ' + opr_type)
+    callback.writeLine('serverLog', 'test_rule_engine_2309: get: acSetNumThreads oprType [' + str(opr_type) + ']')
 '''
 
 #===== Test_Quotas =====
@@ -549,22 +550,22 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback):
 #===== Test_Resource_Session_Vars__3024 =====
 
 rule_texts['irods_rule_engine_plugin-python-instance']['Test_Resource_Session_Vars__3024'] = {}
-#rule_texts['irods_rule_engine_plugin-python-instance']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''
-#test_{pep_name} {{
-#    msiDataObjOpen("{target_obj}", *FD);
-#    msiDataObjClose(*FD, *Status);
-#}}
-#INPUT null
-#OUTPUT ruleExecOut
-#'''
-#rule_texts['irods_rule_engine_plugin-python-instance']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''
-#test_{pep_name} {{
-#    msiDataObjOpen("{target_obj}", *FD);
-#    msiDataObjClose(*FD, *Status);
-#}}
-#INPUT null
-#OUTPUT ruleExecOut
-#'''
+rule_texts['irods_rule_engine_plugin-python-instance']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''
+test_{pep_name} {{
+    callback.msiDataObjOpen("{target_obj}", *FD);
+    callback.msiDataObjClose(*FD, *Status);
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-python-instance']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''
+test_{pep_name} {{
+    callback.msiDataObjOpen("{target_obj}", *FD);
+    callback.msiDataObjClose(*FD, *Status);
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
 
 #===== Test_Resource_Unixfilesystem =====
 

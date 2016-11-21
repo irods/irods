@@ -18,7 +18,7 @@ from .. import test
 from . import settings
 from .. import lib
 from . import resource_suite
-from .rule_texts_for_tests import rule_texts
+from .rule_texts_for_tests import rule_texts, rule_files
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
@@ -612,7 +612,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
     def test_delay_in_dynamic_pep__3342(self):
         irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/core.re"
+        corefile = irods_config.core_re_directory + "/" + rule_files[self.instance_name]
         # manipulate core.re and check the server log
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
@@ -632,7 +632,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
         irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/core.re"
+        corefile = irods_config.core_re_directory + "/" + rule_files[self.instance_name]
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
             files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
@@ -675,7 +675,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_forced']
 
@@ -712,7 +712,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_preferred']
 
@@ -749,7 +749,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iput_resc_scheme_null']
 

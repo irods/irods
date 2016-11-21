@@ -26,7 +26,7 @@ from . import session
 from . import settings
 from .. import lib
 from . import resource_suite
-from .rule_texts_for_tests import rule_texts
+from .rule_texts_for_tests import rule_texts, rule_files
 
 def write_host_access_control(filename, username, group, address, mask):
     add_ent = {
@@ -974,7 +974,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         my_ip = socket.gethostbyname(socket.gethostname())
 
         # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
@@ -1014,7 +1014,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
@@ -1091,7 +1091,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_msiset_default_resc__2712(self):
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_msiset_default_resc__2712']
