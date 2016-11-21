@@ -21,7 +21,7 @@ from .. import lib
 from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
-from .rule_texts_for_tests import rule_texts
+from .rule_texts_for_tests import rule_texts, rule_files
 
 def statvfs_path_or_parent(path):
     while not os.path.exists(path):
@@ -723,7 +723,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         # make sure the physical path exists
         lib.make_dir_p(self.admin.get_vault_path('demoResc'))
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
         with lib.file_backed_up(corefile):
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived']
 
@@ -1936,7 +1936,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         os.remove(phypath)
 
         # manipulate the core.re to add the new policy
-        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iget_prefer_from_archive_corrupt_archive__ticket_3145']
@@ -1975,7 +1975,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, 'core.re')
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
             rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660']
@@ -2657,7 +2657,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         backupcorefile = corefile + "--" + self._testMethodName
 
         # new file to put and get
@@ -3041,7 +3041,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
     def setUp(self):
         # back up core file
-        corefile = IrodsConfig().core_re_directory + "/core.re"
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 

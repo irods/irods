@@ -14,6 +14,7 @@ from . import settings
 from .. import paths
 from .. import lib
 from ..configuration import IrodsConfig
+from .rule_texts_for_tests import rule_files
 from .rule_texts_for_tests import rule_texts
 
 class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
@@ -27,7 +28,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         super(Test_Native_Rule_Engine_Plugin, self).tearDown()
 
     def helper_test_pep(self, rules_to_prepend, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
-        corefile = paths.core_re_directory() + "/core.re"
+        corefile = paths.core_re_directory() + "/" + rule_files[self.instance_name]
 
         with lib.file_backed_up(corefile):
             time.sleep(1)  # remove once file hash fix is commited #2279
@@ -53,10 +54,10 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     def test_re_serialization(self):
         self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_re_serialization'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
-            ['user_auth_info_auth_flag=5', 'user_rods_zone=tempZone', 'user_user_name=otherrods', 'metadataIncluded=ATTR;VALUE;UNIT'], 2)
+            ['file_size=33', 'logical_path=/tempZone/home/otherrods', 'metadataIncluded'], 2)
 
     def test_api_plugin(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_api_plugin'], "iapitest", ['pep_api_hello_world_pre - api_instance auth_scheme=native', 'that=hello, world.++++this=42, null_value', 'HELLO WORLD', 'pep_api_hello_world_post - api_instance auth_scheme=native', 'that=hello, world.++++this=42, that=hello, world.++++this=42++++value=128'])
+        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_api_plugin'], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
 
     def test_rule_engine_2242(self):
         rule_file1 = "rule1_2242.r"
@@ -77,7 +78,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        corefile = paths.core_re_directory() + "/core.re"
+        corefile = paths.core_re_directory() + "/" + rule_files[self.instance_name]
         coredvm = paths.core_re_directory() + "/core.dvm"
         with lib.file_backed_up(coredvm):
             lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
