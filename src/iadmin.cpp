@@ -1141,6 +1141,14 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             }
         }
         else {
+            if ( strcmp( cmdToken[2], "type" ) == 0 ) { 
+                // trim spaces in resource type string
+                std::string resc_type( cmdToken[3] );
+                resc_type.erase( std::remove_if( resc_type.begin(), resc_type.end(), ::isspace ), resc_type.end() );
+                memset( cmdToken[3], 0, strlen( cmdToken[3] ) );
+                strncpy( cmdToken[3], resc_type.c_str(), resc_type.length() );
+            }
+
             generalAdmin( 0, "modify", "resource", cmdToken[1], cmdToken[2],
                           cmdToken[3], "", "", "", "", "" );
         }
