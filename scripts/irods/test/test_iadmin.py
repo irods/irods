@@ -44,7 +44,7 @@ def write_host_access_control(filename, username, group, address, mask):
 
 
 class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Iadmin'
 
     def setUp(self):
@@ -974,13 +974,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         my_ip = socket.gethostbyname(socket.gethostname())
 
         # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         origcorefile = corefile + '.orig'
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
         time.sleep(1)  # remove once file hash fix is commited #2279
-        newrule = rule_texts[self.instance_name][self.class_name]['test_host_access_control']
+        newrule = rule_texts[self.plugin_name][self.class_name]['test_host_access_control']
         lib.prepend_string_to_file(newrule, corefile);
 
         time.sleep(1)  # remove once file hash fix is commited #2279
@@ -1014,12 +1014,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_issue_2420(self):
         # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(corefile, backupcorefile)
 
         time.sleep(1)  # remove once file hash fix is commited #2279
-        newrule = rule_texts[self.instance_name][self.class_name]['test_issue_2420']
+        newrule = rule_texts[self.plugin_name][self.class_name]['test_issue_2420']
         lib.prepend_string_to_file(newrule, corefile);
         time.sleep(1)  # remove once file hash fix is commited #2279
 
@@ -1091,10 +1091,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_msiset_default_resc__2712(self):
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
             initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_msiset_default_resc__2712']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_msiset_default_resc__2712']
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279

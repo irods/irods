@@ -22,7 +22,7 @@ from .rule_texts_for_tests import rule_texts, rule_files
 
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Rulebase'
 
     def setUp(self):
@@ -32,7 +32,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         super(Test_Rulebase, self).tearDown()
 
     def test_client_server_negotiation__2564(self):
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
             client_update = {
                 'irods_client_server_policy': 'CS_NEG_REFUSE'
@@ -42,7 +42,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             self.admin.environment_file_contents.update(client_update)
 
             time.sleep(2)  # remove once file hash fix is commited #2279
-            rule_string = rule_texts[self.instance_name][self.class_name]['test_client_server_negotiation__2564']
+            rule_string = rule_texts[self.plugin_name][self.class_name]['test_client_server_negotiation__2564']
             lib.prepend_string_to_file(rule_string, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
@@ -52,7 +52,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_msiDataObjWrite__2795(self):
         rule_file = "test_rule_file.r"
-        rule_string = rule_texts[self.instance_name][self.class_name]['test_msiDataObjWrite__2795_1'] + self.admin.session_collection + rule_texts[self.instance_name][self.class_name]['test_msiDataObjWrite__2795_2']
+        rule_string = rule_texts[self.plugin_name][self.class_name]['test_msiDataObjWrite__2795_1'] + self.admin.session_collection + rule_texts[self.plugin_name][self.class_name]['test_msiDataObjWrite__2795_2']
         with open(rule_file, 'wt') as f:
             print(rule_string, file=f, end='')
 
@@ -68,8 +68,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         assert( not file_contents.endswith('\0') )
 
     def test_irods_re_infinite_recursion_3169(self):
-        rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_irods_re_infinite_recursion_3169']
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_irods_re_infinite_recursion_3169']
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
             time.sleep(2) # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -85,14 +85,14 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
 
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.instance_name]
+        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file('\nacPostProcForPut { replicateMultiple( \"r1,r2\" ); }\n', corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             # add new rule to end of core.re
-            newrule = rule_texts[self.instance_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources']
+            newrule = rule_texts[self.plugin_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources']
 
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(newrule, corefile)
@@ -115,13 +115,13 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_dynamic_pep_with_rscomm_usage(self):
         # save original core.re
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.instance_name])
+        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
         origcorefile = os.path.join(IrodsConfig().core_re_directory, "core.re.orig")
         os.system("cp " + corefile + " " + origcorefile)
 
         # add dynamic PEP with rscomm usage
         time.sleep(1)  # remove once file hash fix is commited #2279
-        newrule = rule_texts[self.instance_name][self.class_name]['test_dynamic_pep_with_rscomm_usage']
+        newrule = rule_texts[self.plugin_name][self.class_name]['test_dynamic_pep_with_rscomm_usage']
         lib.prepend_string_to_file(newrule, corefile);
         time.sleep(1)  # remove once file hash fix is commited #2279
 
@@ -136,7 +136,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rulebase_update__2585(self):
         irods_config = IrodsConfig()
-        my_rule = rule_texts[self.instance_name][self.class_name]['test_rulebase_update__2585']
+        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -188,7 +188,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
     def test_rulebase_update_without_delay(self):
         irods_config = IrodsConfig()
-        my_rule = rule_texts[self.instance_name][self.class_name]['test_rulebase_update_without_delay']
+        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -240,7 +240,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     def test_argument_preservation__3236(self):
         with tempfile.NamedTemporaryFile(suffix='.r') as f:
 
-            rule_string = rule_texts[self.instance_name][self.class_name]['test_argument_preservation__3236']
+            rule_string = rule_texts[self.plugin_name][self.class_name]['test_argument_preservation__3236']
             f.write(rule_string)
             f.flush()
 
@@ -250,7 +250,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Resource_Session_Vars__3024'
 
     def setUp(self):
@@ -311,13 +311,13 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         self.pep_test_helper(commands=['iput -f {testfile}'])
 
     def test_acPreprocForDataObjOpen(self):
-        client_rule = rule_texts[self.instance_name][self.class_name]['test_acPreprocForDataObjOpen']
+        client_rule = rule_texts[self.plugin_name][self.class_name]['test_acPreprocForDataObjOpen']
 
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
     def test_acPostProcForOpen(self):
         # prepare rule file
-        client_rule = rule_texts[self.instance_name][self.class_name]['test_acPostProcForOpen']
+        client_rule = rule_texts[self.plugin_name][self.class_name]['test_acPostProcForOpen']
 
         self.pep_test_helper(precommands=['iput -f {testfile}'], commands=['irule -F {client_rule_file}'], client_rule=client_rule)
 
@@ -385,7 +385,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         irods_config = IrodsConfig()
 #        test_re = os.path.join(irods_config.core_re_directory, 'test.re')
 #        server_config_filename = irods_config.server_config_path
-        core_re = os.path.join(irods_config.core_re_directory, rule_files[self.instance_name])
+        core_re = os.path.join(irods_config.core_re_directory, rule_files[self.plugin_name])
         pep_name = self.pep_name
 
         # user session
@@ -463,6 +463,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
 #        os.unlink(test_re)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_genquery_foreach_MAX_SQL_ROWS_multiple__3489(self):
         MAX_SQL_ROWS = 256 # needs to be the same as constant in server code
         filename = 'test_genquery_foreach_MAX_SQL_ROWS_multiple__3489_dummy_file'

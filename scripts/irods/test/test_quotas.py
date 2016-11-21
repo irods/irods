@@ -16,7 +16,7 @@ from .rule_texts_for_tests import rule_texts
 
 
 class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Quotas'
 
     def setUp(self):
@@ -31,7 +31,7 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         corefile = paths.core_re_directory() + "/core.re"
         with lib.file_backed_up(corefile):
             #rules_to_prepend = 'acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }\n'
-            rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_iquota__3044']
+            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iquota__3044']
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(rules_to_prepend, corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279

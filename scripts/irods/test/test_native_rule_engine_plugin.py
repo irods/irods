@@ -18,7 +18,7 @@ from .rule_texts_for_tests import rule_files
 from .rule_texts_for_tests import rule_texts
 
 class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
-    instance_name = IrodsConfig().default_rule_engine_instance
+    plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Native_Rule_Engine_Plugin'
 
     def setUp(self):
@@ -28,7 +28,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         super(Test_Native_Rule_Engine_Plugin, self).tearDown()
 
     def helper_test_pep(self, rules_to_prepend, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
-        corefile = paths.core_re_directory() + "/" + rule_files[self.instance_name]
+        corefile = paths.core_re_directory() + "/" + rule_files[self.plugin_name]
 
         with lib.file_backed_up(corefile):
             time.sleep(1)  # remove once file hash fix is commited #2279
@@ -44,24 +44,24 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
 
     def test_network_pep(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_network_pep'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_network_pep'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
 
     def test_auth_pep(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_auth_pep'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile, ['THIS IS AN OUT VARIABLE'], 2)
+        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_auth_pep'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile, ['THIS IS AN OUT VARIABLE'], 2)
 
     def test_out_variable(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_out_variable'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile, ['THIS IS AN OUT VARIABLE'], 2)
+        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_out_variable'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile, ['THIS IS AN OUT VARIABLE'], 2)
 
     def test_re_serialization(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_re_serialization'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
+        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_re_serialization'], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile,
             ['file_size=33', 'logical_path=/tempZone/home/otherrods', 'metadataIncluded'], 2)
 
     def test_api_plugin(self):
-        self.helper_test_pep(rule_texts[self.instance_name][self.class_name]['test_api_plugin'], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
+        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_api_plugin'], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
 
     def test_rule_engine_2242(self):
         rule_file1 = "rule1_2242.r"
-        rule_string1 = rule_texts[self.instance_name][self.class_name]['test_rule_engine_2242_1']
+        rule_string1 = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2242_1']
         with open(rule_file1, 'wt') as f:
             print(rule_string1, file=f, end='')
 
@@ -69,7 +69,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         assert 'Update session variable $userNameClient not allowed' in out
 
         rule_file2 = "rule2_2242.r"
-        rule_string2 = rule_texts[self.instance_name][self.class_name]['test_rule_engine_2242_2']
+        rule_string2 = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2242_2']
 
         with open(rule_file2, 'wt') as f:
             print(rule_string2, file=f, end='')
@@ -78,13 +78,13 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
-        corefile = paths.core_re_directory() + "/" + rule_files[self.instance_name]
+        corefile = paths.core_re_directory() + "/" + rule_files[self.plugin_name]
         coredvm = paths.core_re_directory() + "/core.dvm"
         with lib.file_backed_up(coredvm):
             lib.prepend_string_to_file('oprType||rei->doinp->oprType\n', coredvm)
             with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_rule_engine_2309_1']
+                rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2309_1']
 
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
@@ -100,7 +100,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
             with lib.file_backed_up(corefile):
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                rules_to_prepend = rule_texts[self.instance_name][self.class_name]['test_rule_engine_2309_2']
+                rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2309_2']
 
                 time.sleep(1)  # remove once file hash fix is commited #2279
                 lib.prepend_string_to_file(rules_to_prepend, corefile)
