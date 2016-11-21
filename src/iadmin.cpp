@@ -1146,7 +1146,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 std::string resc_type( cmdToken[3] );
                 resc_type.erase( std::remove_if( resc_type.begin(), resc_type.end(), ::isspace ), resc_type.end() );
                 memset( cmdToken[3], 0, strlen( cmdToken[3] ) );
-                strncpy( cmdToken[3], resc_type.c_str(), resc_type.length() );
+                snprintf( cmdToken[3], resc_type.length()+1, "%s", resc_type.c_str() );
             }
 
             generalAdmin( 0, "modify", "resource", cmdToken[1], cmdToken[2],
