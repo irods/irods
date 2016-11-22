@@ -239,6 +239,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.unlink(test_re)
         os.unlink(rule_file)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python REP does not guarantee argument preservation')
     def test_argument_preservation__3236(self):
         with tempfile.NamedTemporaryFile(suffix='.r') as f:
 
@@ -277,7 +278,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         self.pep_test_helper(commands=['iput -f {testfile}'])
 
     def test_acSetNumThreads(self):
-        rule_body = 'msiSetNumThreads("default","0","default");'
+        rule_body = rule_texts[self.plugin_name][self.class_name]['test_acSetNumThreads']
         self.pep_test_helper(commands=['iput -f {large_file}'], rule_body=rule_body)
 
     def test_acDataDeletePolicy(self):
@@ -298,7 +299,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
         # admin user will register a file
         sess=self.admin
 
-        # make new pysical file in user's vault
+        # make new physical file in user's vault
         reg_file_path = os.path.join(sess.get_vault_session_path(), 'reg_test_file')
         lib.make_dir_p(os.path.dirname(reg_file_path))
         lib.touch(reg_file_path)
@@ -372,6 +373,28 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         return '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
 
+    def make_pep_rule_python(self, pep_name, rule_body):
+        # prepare rule
+        # rule will write PEP name as well as
+        # resource related rule session vars to server log
+        write_statements = '    callback.writeLine("serverLog", "{pep_name}")\n'.format(**locals())
+        write_statements += ('    callback.writeLine("serverLog", session_vars["KVPairs"]["zoneName"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["freeSpace"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["quotaLimit"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescStatus"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescId"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescName"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescType"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescLoc"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescClass"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescVaultPath"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescInfo"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescComments"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescCreate"])\n'
+                      '    callback.writeLine("serverLog", session_vars["KVPairs"]["rescModify"])\n')
+
+        return 'def {pep_name}(rule_args, callback):\n{write_statements}\n{rule_body}'.format(**locals())
+
 #    def make_new_server_config_json(self, server_config_filename):
 #        # load server_config.json to inject a new rule base
 #        with open(server_config_filename) as f:
@@ -392,7 +415,11 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         # user session
         if user_session is None:
-            user_session = self.user0
+            if client_rule is None:
+                user_session = self.user0
+            else:
+                # Python rule engine needs admin privileges to run irule
+                user_session = self.admin
 
         # local vars to format command strings
         testfile = self.testfile
@@ -410,7 +437,10 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 #        with lib.file_backed_up(server_config_filename):
         with lib.file_backed_up(core_re):
             # make pep rule
-            test_rule = self.make_pep_rule(pep_name, rule_body)
+            if self.plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
+                test_rule = self.make_pep_rule(pep_name, rule_body)
+            elif self.plugin_name == 'irods_rule_engine_plugin-python':
+                test_rule = self.make_pep_rule_python(pep_name, rule_body)
 
             # write pep rule into test_re
 #            with open(test_re, 'w') as f:
