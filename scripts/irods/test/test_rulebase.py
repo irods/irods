@@ -88,11 +88,12 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
         with lib.file_backed_up(corefile):
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file('\nacPostProcForPut { replicateMultiple( \"r1,r2\" ); }\n', corefile)
+#            lib.prepend_string_to_file('\nacPostProcForPut { replicateMultiple( \"r1,r2\" ); }\n', corefile)
+            lib.prepend_string_to_file(rule_texts[self.plugin_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources_1'], corefile)
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             # add new rule to end of core.re
-            newrule = rule_texts[self.plugin_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources']
+            newrule = rule_texts[self.plugin_name][self.class_name]['test_acPostProcForPut_replicate_to_multiple_resources_2']
 
             time.sleep(2)  # remove once file hash fix is commited #2279
             lib.prepend_string_to_file(newrule, corefile)
