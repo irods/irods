@@ -134,6 +134,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         time.sleep(1)  # remove once file hash fix is commited #2279
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update__2585(self):
         irods_config = IrodsConfig()
         my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585']
@@ -186,6 +187,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.unlink(test_re)
         os.unlink(rule_file)
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
         irods_config = IrodsConfig()
         my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay']
