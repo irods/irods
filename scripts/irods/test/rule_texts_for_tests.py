@@ -249,6 +249,8 @@ test_{pep_name} {{
 INPUT null
 OUTPUT ruleExecOut
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Resource_Session_Vars__3024']['test_acSetNumThreads'] = '''msiSetNumThreads("default", "0", "default");
+'''
 
 #===== Test_Resource_Unixfilesystem =====
 
@@ -444,6 +446,7 @@ def pep_api_rs_hello_world_pre(rule_args, callback):
 def pep_api_rs_hello_world_post(rule_args, callback):
     callback.writeLine('serverLog', 'pep_api_rs_hello_world_post - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
 '''
+# SKIP TEST test_rule_engine_2242 -- PYTHON REP CAN'T UPDATE SESSION VARS
 #rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2242_1'] = '''
 #test {  
 #    $userNameClient = "foobar";
@@ -570,23 +573,30 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback):
 #===== Test_Resource_Session_Vars__3024 =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'] = {}
-#rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''
-#test_{pep_name} {{
-#    callback.msiDataObjOpen("{target_obj}", *FD);
-#    callback.msiDataObjClose(*FD, *Status);
-#}}
-#INPUT null
-#OUTPUT ruleExecOut
-#'''
-#rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''
-#test_{pep_name} {{
-#    callback.msiDataObjOpen("{target_obj}", *FD);
-#    callback.msiDataObjClose(*FD, *Status);
-#}}
-#INPUT null
-#OUTPUT ruleExecOut
-#'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def test_{pep_name}(rule_args, callback):
+    dummy_int = {{}}
+    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
+    out_dict = callback.msiDataObjOpen("{target_obj}", dummy_int)
+    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][1]
 
+    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def test_{pep_name}(rule_args, callback):
+    dummy_int = {{}}
+    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
+    out_dict = callback.msiDataObjOpen("{target_obj}", dummy_int)
+    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][1]
+
+    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acSetNumThreads'] = '''    callback.msiSetNumThreads('default', '0', 'default')
+'''
 #===== Test_Resource_Unixfilesystem =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Unixfilesystem'] = {}
@@ -602,18 +612,22 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_client_serv
 def acPreConnect(rule_args, callback):
     rule_args[0] = 'CS_NEG_REQUIRE'
 '''
-#rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''
-#test_msiDataObjWrite__2795 {
-#    ### write a string to a file in irods
-#    msiDataObjCreate("*TEST_ROOT" ++ "/test_file.txt","null",*FD);
-#    msiDataObjWrite(*FD,"this_is_a_test_string",*LEN);
-#    msiDataObjClose(*FD,*Status);
-#}
-#
-#INPUT *TEST_ROOT="'''
-#rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
-#OUTPUT ruleExecOut
-#'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def test_msiDataObjWrite__2795(rule_args, callback):
+    dummy_int = {}
+    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
+    out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/test_file.txt', 'null', dummy_int)
+    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][2]
+
+    dummy_buf_len = {}
+    dummy_buf_len[PYTHON_MSPARAM_TYPE] = PYTHON_BUF_LEN_MS_T
+    out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', dummy_buf_len)
+
+    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+
+INPUT *TEST_ROOT="'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
+OUTPUT ruleExecOut
+'''
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_irods_re_infinite_recursion_3169'] = '''
 #call_with_wrong_number_of_string_arguments(*A, *B, *C) {
 #}
@@ -642,11 +656,13 @@ def acPreConnect(rule_args, callback):
 #    }
 #}
 #'''
-#rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
-#pep_resource_open_pre(*OUT, *FOO, *BAR) {
-#    msiGetSystemTime( *junk, '' );
-#}
-#'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
+def pep_resource_open_pre(rule_args, callback):
+    retStr = ''
+    callback.msiGetSystemTime( retStr, '' )
+'''
+# SKIP TEST test_rulebase_update__2585 FOR NON IRODS_RULE_LANGUAGE REPS
+#   Only applicable if using a rule cache
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_rulebase_update__2585'] = '''
 #my_rule {
 #    delay("<PLUSET>1s</PLUSET>") {
@@ -656,6 +672,8 @@ def acPreConnect(rule_args, callback):
 #INPUT null
 #OUTPUT ruleExecOut
 #'''
+# SKIP TEST test_rulebase_update__2585 FOR NON IRODS_RULE_LANGUAGE REPS
+#   Only applicable if using a rule cache
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_rulebase_update_without_delay'] = '''
 #my_rule {
 #        do_some_stuff();
@@ -663,6 +681,9 @@ def acPreConnect(rule_args, callback):
 #INPUT null
 #OUTPUT ruleExecOut
 #'''
+# SKIP TEST test_argument_preservation__3236 FOR PYTHON REP
+#   Python REP does not guarantee arguments cannot be changed
+#   (They're just elements in a dict)
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_argument_preservation__3236'] = '''
 #test_msiDataObjWrite__3236 {
 #    msiTakeThreeArgumentsAndDoNothing(*arg1, *arg2, *arg3);

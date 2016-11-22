@@ -59,6 +59,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     def test_api_plugin(self):
         self.helper_test_pep(rule_texts[self.plugin_name][self.class_name]['test_api_plugin'], "iapitest", ['pep_api_hello_world_pre -', ', null_value', 'HELLO WORLD', 'pep_api_hello_world_post -', 'value=128'])
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Python rule engine has no mechanism to update session vars')
     def test_rule_engine_2242(self):
         rule_file1 = "rule1_2242.r"
         rule_string1 = rule_texts[self.plugin_name][self.class_name]['test_rule_engine_2242_1']
