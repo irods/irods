@@ -312,7 +312,7 @@ pep_resource_open_pre(*OUT, *FOO, *BAR) {
     msiGetSystemTime( *junk, '' );
 }
 '''
-rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update__2585'] = '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update__2585_1'] = '''
 my_rule {
     delay("<PLUSET>1s</PLUSET>") {
         do_some_stuff();
@@ -321,12 +321,32 @@ my_rule {
 INPUT null
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update_without_delay'] = '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update__2585_2'] = '''
+do_some_stuff() {
+    writeLine("serverLog", "TEST_STRING_TO_FIND_1_2585");
+}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update__2585_3'] = '''
+do_some_stuff() {
+    writeLine("serverLog", "TEST_STRING_TO_FIND_2_2585");
+}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update_without_delay_1'] = '''
 my_rule {
         do_some_stuff();
 }
 INPUT null
 OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update_without_delay_2'] = '''
+do_some_stuff() {
+    writeLine("serverLog", "TEST_STRING_TO_FIND_1_NODELAY");
+}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_rulebase_update_without_delay_3'] = '''
+do_some_stuff() {
+    writeLine("serverLog", "TEST_STRING_TO_FIND_2_NODELAY");
+}
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_argument_preservation__3236'] = '''
 test_msiDataObjWrite__3236 {

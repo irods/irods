@@ -137,7 +137,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update__2585(self):
         irods_config = IrodsConfig()
-        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585']
+        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_1']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -158,7 +158,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             test_re = os.path.join(irods_config.core_re_directory, 'test.re')
             # write new rule file to config dir
             with open(test_re, 'wt') as f:
-                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_2585" ); }', file=f, end='')
+                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_2'], file=f, end='')
 
             # repave the existing server_config.json
             with open(server_config_filename, 'w') as f:
@@ -174,7 +174,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # repave rule with new string
             os.unlink(test_re)
             with open(test_re, 'wt') as f:
-                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_2585" ); }', file=f, end='')
+                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update__2585_3'], file=f, end='')
 
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
@@ -190,7 +190,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
         irods_config = IrodsConfig()
-        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay']
+        my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_1']
         rule_file = 'my_rule.r'
         with open(rule_file, 'wt') as f:
             print(my_rule, file=f, end='')
@@ -211,7 +211,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             test_re = os.path.join(irods_config.core_re_directory, 'test.re')
             # write new rule file to config dir
             with open(test_re, 'wt') as f:
-                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_1_NODELAY" ); }', file=f, end='')
+                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_2'], file=f, end='')
 
             # repave the existing server_config.json
             with open(server_config_filename, 'w') as f:
@@ -227,7 +227,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # repave rule with new string
             os.unlink(test_re)
             with open(test_re, 'wt') as f:
-                print('do_some_stuff() { writeLine( "serverLog", "TEST_STRING_TO_FIND_2_NODELAY" ); }', file=f, end='')
+                print(rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_3'], file=f, end='')
 
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
