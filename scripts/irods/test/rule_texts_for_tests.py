@@ -631,6 +631,7 @@ INPUT *TEST_ROOT="'''
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
 OUTPUT ruleExecOut
 '''
+# SKIP TEST test_irods_re_infinite_recursion_3169 for PYTHON REP
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_irods_re_infinite_recursion_3169'] = '''
 #call_with_wrong_number_of_string_arguments(*A, *B, *C) {
 #}
