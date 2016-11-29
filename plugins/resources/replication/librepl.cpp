@@ -1855,7 +1855,7 @@ irods::error repl_file_notify(
     irods::error result = SUCCESS();
     if ( irods::CREATE_OPERATION == ( *_opr ) ||
             irods::WRITE_OPERATION  == ( *_opr ) ) {
-        result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_opr ), "failed to set opetion_type property" );
+        result = ASSERT_PASS( _ctx.prop_map().set< std::string >( operation_type_prop, *_opr ), "failed to set operation_type property" );
     }
 
     irods::error ret = replCheckParams< irods::file_object >( _ctx );
