@@ -1787,12 +1787,12 @@ irods::error repl_file_rebalance(
                  root_count );
     if ( status < 0 ) {
         std::stringstream msg;
-        msg << "failed to get distinct cound for ["
+        msg << "failed to get distinct count for ["
             << resc_name
             << "]";
         return ERROR( status, msg.str().c_str() );
     }
-    
+
     // =-=-=-=-=-=-=-
     // gather bundles of leaf ids
     std::vector<leaf_bundle_t> leaf_bundles;
@@ -1802,7 +1802,7 @@ irods::error repl_file_rebalance(
     if(!ret.ok()) {
         return PASS(ret);
     }
-    
+
     // =-=-=-=-=-=-=-
     // iterate over the leaf bundles
     for( size_t idx = 0;
