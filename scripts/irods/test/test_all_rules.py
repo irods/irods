@@ -22,7 +22,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
 
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
-    rulesdir = os.path.join(IrodsConfig().irods_directory, 'clients', 'icommands', 'test', 'rules')
+    if IrodsConfig().default_rule_engine_plugin == 'irods_rule_engine_plugin-irods_rule_language':
+        rulesdir = os.path.join(IrodsConfig().irods_directory, 'clients', 'icommands', 'test', 'rules')
+    elif IrodsConfig().default_rule_engine_plugin == 'irods_rule_engine_plugin-python':
+        rulesdir = os.path.join(IrodsConfig().irods_directory, 'scripts', 'irods', 'test', 'python_rules')
     conf_dir = IrodsConfig().core_re_directory
 
     def setUp(self):
@@ -33,7 +36,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         hostname = socket.gethostname()
         hostuser = getpass.getuser()
         progname = __file__
-        dir_w = os.path.normpath(os.path.join(rulesdir, '..'))
+        dir_w = os.path.join(IrodsConfig().irods_directory, 'clients', 'icommands', 'test')
         self.rods_session.assert_icommand('icd')  # to get into the home directory (for testallrules assumption)
         self.rods_session.assert_icommand('iadmin mkuser devtestuser rodsuser')
         self.rods_session.assert_icommand('iadmin mkresc testallrulesResc unixfilesystem ' + hostname + ':/tmp/' +
