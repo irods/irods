@@ -847,7 +847,7 @@ irods::error passthru_file_rebalance(
 } // passthru_file_rebalance
 
 // =-=-=-=-=-=-=-
-// passthru_file_rebalance - code which would notify the subtree of a change
+// passthru_file_notify - code which would notify the subtree of a change
 irods::error passthru_file_notify(
     irods::plugin_context& _ctx,
     const std::string*     _opr ) {
