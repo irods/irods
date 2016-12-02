@@ -261,7 +261,7 @@ int setRescQuota(
         }
     } else {
         rodsLog(
-            LOG_ERROR,//LOG_DEBUG,
+            LOG_DEBUG,
             "%s rsGetRescQuota for total quota - status %d",
             __FUNCTION__,
             status );
