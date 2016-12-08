@@ -20,11 +20,14 @@ from . import session
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
 
+    global plugin_name
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
     global rulesdir
     currentdir = os.path.dirname(os.path.realpath(__file__))
-    if IrodsConfig().default_rule_engine_plugin == 'irods_rule_engine_plugin-irods_rule_language':
+    if plugin_name == 'irods_rule_engine_plugin-irods_rule_language':
         rulesdir = os.path.join(IrodsConfig().irods_directory, 'clients', 'icommands', 'test', 'rules')
-    elif IrodsConfig().default_rule_engine_plugin == 'irods_rule_engine_plugin-python':
+    elif plugin_name == 'irods_rule_engine_plugin-python':
         rulesdir = os.path.join(IrodsConfig().irods_directory, 'scripts', 'irods', 'test', 'python_rules')
     conf_dir = IrodsConfig().core_re_directory
 
@@ -105,6 +108,35 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     def generate_tests_allrules():
 
         def filter_rulefiles(rulefile):
+
+            # Skip rules that do not work in the Python rule language
+            #   Generally, this is because they use types (such as ExecCmdOut) that are not yet implemented
+            if plugin_name == 'irods_rule_engine_plugin-python':
+                names_to_skip = [
+                    'rulemsiDoSomething',
+                    'rulemsiExecCmd',
+                    'rulemsiExecStrCondQuery',
+                    'rulemsiExit',
+                    'rulemsiExtractTemplateMDFromBuf',
+                    'rulemsiGetStderrInExecCmdOut',
+                    'rulemsiGetStdoutInExecCmdOut',
+                    'rulemsiGetValByKey',
+                    'rulemsiListEnabledMS',
+                    'rulemsiMakeQuery',
+                    'rulemsiPrintGenQueryOutToBuffer',
+                    'rulemsiPrintKeyValPair',
+                    'rulemsiReadMDTemplateIntoTagStruct',
+                    'rulemsiStrToBytesBuf',
+                    'rulewriteBytesBuf',
+                    'test_no_memory_error_patch_2242',
+                    'testsuite1',
+                    'testsuite2',
+                    'testsuite3',
+                    'testsuiteForLcov'
+                ]
+                for n in names_to_skip:
+                    if n in rulefile:
+                        return False
 
             # only works for package install, rule file hardcodes source directory
             if rulefile == 'rulemsiPhyPathReg.r':
@@ -424,9 +456,11 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', bundle_path])
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_str_2528(self):
         self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT_SINGLELINE', "a=A++++b=B")
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'msiGetStderrInExecCmdOut not available in Python yet - RTS')
     def test_return_data_structure_non_null_2604(self):
         self.rods_session.assert_icommand(
             '''irule "*Err = errorcode(msiExecCmd('cmd', '', '', '', '', *Out)); msiGetStderrInExecCmdOut(*Out, *Stderr); writeLine('stdout', 'stderr: *Err*Stderr')" null ruleExecOut''', 'STDOUT_SINGLELINE', "stderr")
