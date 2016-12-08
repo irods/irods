@@ -1039,6 +1039,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # check the results for the error
         assert(-1 == out.find("userNameClient"))
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'python does not yet support msiGetStdoutInExecCmdOut - RTS')
     def test_server_config_environment_variables(self):
         irods_config = IrodsConfig()
         with lib.file_backed_up(irods_config.server_config_path):
