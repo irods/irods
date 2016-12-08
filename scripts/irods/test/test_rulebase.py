@@ -67,6 +67,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
         assert( not file_contents.endswith('\0') )
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
     def test_irods_re_infinite_recursion_3169(self):
         rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_irods_re_infinite_recursion_3169']
         corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
