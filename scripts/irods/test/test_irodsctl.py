@@ -20,7 +20,8 @@ from ..configuration import IrodsConfig
 
 class Test_Irodsctl(unittest.TestCase):
     def test_re_shm_creation(self):
-        assert lib.re_shm_exists()
+        if 'irods_rule_engine_plugin-irods_rule_language' in IrodsConfig().configured_rule_engine_plugins:
+            assert lib.re_shm_exists()
 
     def test_re_shm_cleanup(self):
         irodsctl_fullpath = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
