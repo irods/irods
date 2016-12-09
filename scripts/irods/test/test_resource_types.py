@@ -3095,7 +3095,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         shutil.rmtree(irods_config.irods_directory + "/cacheResc2Vault", ignore_errors=True)
 
         # restore the original core.re
-        corefile = irods_config.core_re_directory + "/core.re"
+        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
         backupcorefile = corefile + "--" + self._testMethodName
         shutil.copy(backupcorefile, corefile)
         os.remove(backupcorefile)
