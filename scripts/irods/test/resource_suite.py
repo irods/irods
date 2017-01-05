@@ -47,11 +47,11 @@ class ResourceBase(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
             ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/" + self.anotherresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
         with open(self.testfile, 'wt') as f:
             print('I AM A TESTFILE -- [' + self.testfile + ']', file=f, end='')
-        self.admin.run_icommand(['imkdir', self.testdir])
-        self.admin.run_icommand(['iput', self.testfile])
-        self.admin.run_icommand(['icp', self.testfile, '../../public/'])
-        self.admin.run_icommand(['ichmod', 'read', self.user0.username, '../../public/' + self.testfile])
-        self.admin.run_icommand(['ichmod', 'write', self.user1.username, '../../public/' + self.testfile])
+        self.admin.assert_icommand(['imkdir', self.testdir])
+        self.admin.assert_icommand(['iput', self.testfile])
+        self.admin.assert_icommand(['icp', self.testfile, '../../public/'])
+        self.admin.assert_icommand(['ichmod', 'read', self.user0.username, '../../public/' + self.testfile])
+        self.admin.assert_icommand(['ichmod', 'write', self.user1.username, '../../public/' + self.testfile])
         print('run_resource_setup - END')
 
     def tearDown(self):

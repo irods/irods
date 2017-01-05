@@ -20,9 +20,8 @@ from . import session
 from .. import lib
 from ..configuration import IrodsConfig
 
-
+@unittest.skipIf(IrodsConfig().catalog_database_type != 'postgres', 'test only works with postgres database')
 class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase):
-
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
             context_prefix = lib.get_hostname() + ':' + IrodsConfig().irods_directory
@@ -34,10 +33,35 @@ class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase)
             admin_session.assert_icommand('iadmin addchildtoresc demoResc rescA')
             admin_session.assert_icommand('iadmin addchildtoresc demoResc rescB')
             admin_session.assert_icommand('iadmin addchildtoresc demoResc rescC')
+
+        cfg = IrodsConfig()
+        if cfg.catalog_database_type == "postgres":
+            # seed load table with fake values - rescA should win
+            from .. import database_connect
+            with contextlib.closing(database_connect.get_database_connection(cfg)) as connection:
+                with contextlib.closing(connection.cursor()) as cursor:
+                    secs = int(time.time())
+                    cursor.execute("insert into r_server_load_digest values ('rescA', 50, %s)" % secs)
+                    cursor.execute("insert into r_server_load_digest values ('rescB', 75, %s)" % secs)
+                    cursor.execute("insert into r_server_load_digest values ('rescC', 95, %s)" % secs)
+                    cursor.commit()
+
         super(Test_LoadBalanced_Resource, self).setUp()
 
     def tearDown(self):
         super(Test_LoadBalanced_Resource, self).tearDown()
+        irods_config = IrodsConfig()
+        if irods_config.catalog_database_type == "postgres":
+            # seed load table with fake values - rescA should win
+            from .. import database_connect
+            with contextlib.closing(database_connect.get_database_connection(irods_config)) as connection:
+                with contextlib.closing(connection.cursor()) as cursor:
+                    # clean up our alterations to the load table
+                    cursor.execute("delete from r_server_load_digest where resc_name='rescA'")
+                    cursor.execute("delete from r_server_load_digest where resc_name='rescB'")
+                    cursor.execute("delete from r_server_load_digest where resc_name='rescC'")
+                    cursor.commit()
+
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescA")
             admin_session.assert_icommand("iadmin rmchildfromresc demoResc rescB")
@@ -54,22 +78,14 @@ class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase)
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_load_balanced(self):
-        # =-=-=-=-=-=-=-
         # read server_config.json and .odbc.ini
         cfg = IrodsConfig()
-
         if cfg.catalog_database_type == "postgres":
             # =-=-=-=-=-=-=-
             # seed load table with fake values - rescA should win
             from .. import database_connect
             with contextlib.closing(database_connect.get_database_connection(cfg)) as connection:
                 with contextlib.closing(connection.cursor()) as cursor:
-                    secs = int(time.time())
-                    cursor.execute("insert into r_server_load_digest values ('rescA', 50, %s)" % secs)
-                    cursor.execute("insert into r_server_load_digest values ('rescB', 75, %s)" % secs)
-                    cursor.execute("insert into r_server_load_digest values ('rescC', 95, %s)" % secs)
-                    cursor.commit()
-
                     # Make a local file to put
                     local_filepath = os.path.join(self.admin.local_session_dir, 'things.txt')
                     lib.make_file(local_filepath, 500, 'arbitrary')
@@ -94,12 +110,5 @@ class Test_LoadBalanced_Resource(resource_suite.ResourceBase, unittest.TestCase)
                     self.admin.assert_icommand("iput -f %s %s" % (local_filepath, test_file))
                     self.admin.assert_icommand("ils -L " + test_file, 'STDOUT_SINGLELINE', "rescC")
                     self.admin.assert_icommand("irm -f " + test_file)
-
-                    # =-=-=-=-=-=-=-
-                    # clean up our alterations to the load table
-                    cursor.execute("delete from r_server_load_digest where resc_name='rescA'")
-                    cursor.execute("delete from r_server_load_digest where resc_name='rescB'")
-                    cursor.execute("delete from r_server_load_digest where resc_name='rescC'")
-                    cursor.commit()
         else:
-            print('skipping test_load_balanced due to unsupported database for this test.')
+            raise RuntimeError('unsupported database type {0}'.format(cfg.catalog_database_type))
