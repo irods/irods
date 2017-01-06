@@ -635,7 +635,7 @@ void usage() {
         "iquota",
         "iquota -a",
         "iquota usage",
-        "iqouta -a usage",
+        "iquota -a usage",
         "iquota -u josh",
         ""
     };
