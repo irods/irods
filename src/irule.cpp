@@ -584,10 +584,11 @@ parseParameters( boost::program_options::variables_map _vm, int ruleGen, execMyR
                 return -1;
             }
 
-            for ( size_t inx = 0; inx < parameters.size(); inx++ ) {
+            for ( size_t inx = 0; inx < parameters.size(); ++inx ) {
                 std::string param = parameters.at(inx);
                 /* using the values from the input line following -F <filename> */
                 /* each string is supposed to have to format label=value */
+
                 if ( param == "prompt" ) {
                     promptF = 1;
                     break;
@@ -617,22 +618,21 @@ parseParameters( boost::program_options::variables_map _vm, int ruleGen, execMyR
                         }
                     }
                     if ( j == strArray.len ) {
-                        printf( "Ignoring Argument \"%s\"", param.c_str() );
+                        printf( "Ignoring Argument \"%s\"\n", param.c_str() );
                     }
-                    else {
-                        char *valPtr = &value[inx * strArray.size];
-                        char *tmpPtr;
-                        if ( labelF == 1 ) {
-                            return CAT_INVALID_ARGUMENT;
-                        }
-                        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
-                            tmpPtr++;
-                            //                char *val = quoteString( argv[optInd + i], string, 0 );
-                            char *val = quoteString( param.c_str(), _vm.count( "string" ), 1 );
-                            rstrcpy( tmpPtr, val,
-                                    strArray.size - ( tmpPtr - valPtr + 1 ) );
-                            free( val );
-                        }
+                } else {
+                    char *valPtr = &value[inx * strArray.size];
+                    char *tmpPtr;
+
+                    if ( labelF == 1 ) {
+                        return CAT_INVALID_ARGUMENT;
+                    }
+                    if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
+                        tmpPtr++;
+                        char *val = quoteString( param.c_str(), _vm.count( "string" ), 0 );
+                        rstrcpy( tmpPtr, val,
+                                strArray.size - ( tmpPtr - valPtr + 1 ) );
+                        free( val );
                     }
                 }
             }
