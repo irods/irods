@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 # Simple script that does some wildcard processing to iget irods files
 # with names with entered patterns in the names (at the beginning,
@@ -16,8 +16,8 @@
 # names and b, e, or m on the command line, to avoid prompts for them.
 
 
-if [ $1 ]; then
-  collName=$1
+if [ "$1" ]; then
+  collName="$1"
 else
   echo "This simple script allows you to iget a set of files"
   echo "using wildcard type matching on file names."
@@ -29,52 +29,52 @@ else
   read collName
 fi
 
-if [ $collName = "-h" ]; then
+if [ "$collName" = "-h" ]; then
   echo "Get one or more iRODS files using wildcard characters."
   echo "Usage: igetwild collection pattern b|m|e  (beginning, middle, or end)"
   echo "Will prompt for missing items."
   echo ""
-  ienv -h | tail -n1 | sed s/ienv/igetwild/
+  ienv -h | tail -n1 | sed -e 's/ienv/igetwild/'
   exit 0
 fi
 
-tmpFile1=`mktemp -t irods_tmp_igetwild1.XXXXXX`
-tmpFile2=`mktemp -t irods_tmp_igetwild2.XXXXXX`
-tmpFile3=`mktemp -t irods_tmp_igetwild3.XXXXXX`
+tmpFile1=$(mktemp -t irods_tmp_igetwild1.XXXXXX)
+tmpFile2=$(mktemp -t irods_tmp_igetwild2.XXXXXX)
+tmpFile3=$(mktemp -t irods_tmp_igetwild3.XXXXXX)
+#clean up tmpfiles on error
+trap "rm -f $tmpFile1 $tmpFile2 $tmpFile3" ERR
 
-if [ $2 ]; then
-  matchPattern=$2
+if [ "$2" ]; then
+  matchPattern="$2"
 else
   printf "Please enter the pattern in the file names to iget (just the text): "
   read matchPattern
 fi
 
 matchPosition=e
-if [ $3 ]; then
-  matchPosition=$3
+if [ "$3" ]; then
+  matchPosition="$3"
 else
   printf "Should this be at the end, beginning, or middle of the names? [e b or m] : "
   read matchPosition
 fi
 
-rm -f $tmpFile1 $tmpFile2 $tmpFile3
-
-if [ $matchPosition = "e" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > $tmpFile1
+if [ "$matchPosition" = "e" ]; then
+  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > "$tmpFile1"
 fi
-if [ $matchPosition = "b" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > $tmpFile1
+if [ "$matchPosition" = "b" ]; then
+  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > "$tmpFile1"
 fi
-if [ $matchPosition = "m" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > $tmpFile1
+if [ "$matchPosition" = "m" ]; then
+  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > "$tmpFile1"
 fi
 
 
 
-grep DATA_NAME $tmpFile1 > $tmpFile2
+grep DATA_NAME "$tmpFile1" > "$tmpFile2"
 
-`cat $tmpFile2 | sed 's#DATA_NAME = #iget -v '$collName'/#g' > $tmpFile3`
+$(cat "$tmpFile2" | sed -e "s#DATA_NAME = #iget -v ${collName}/#g" > "$tmpFile3")
 
-sh < $tmpFile3
+sh < "$tmpFile3"
 
-rm -f $tmpFile1 $tmpFile2 $tmpFile3
+rm -f "$tmpFile1" "$tmpFile2" "$tmpFile3"
