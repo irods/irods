@@ -42,7 +42,7 @@ tmpFile1=$(mktemp -t irods_tmp_igetwild1.XXXXXX)
 tmpFile2=$(mktemp -t irods_tmp_igetwild2.XXXXXX)
 tmpFile3=$(mktemp -t irods_tmp_igetwild3.XXXXXX)
 #clean up tmpfiles on error
-trap "rm -f $tmpFile1 $tmpFile2 $tmpFile3" ERR
+trap 'rm -f $tmpFile1 $tmpFile2 $tmpFile3' ERR
 
 if [ "$2" ]; then
   matchPattern="$2"
@@ -59,22 +59,36 @@ else
   read matchPosition
 fi
 
+#iquest doesn't have -0; the only character not in filenames is /, so ask
+#iquest to return answers delimited with /\n [we can't avoid the \n-delimiter]
 if [ "$matchPosition" = "e" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > "$tmpFile1"
+  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > "$tmpFile1"
 fi
 if [ "$matchPosition" = "b" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > "$tmpFile1"
+  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > "$tmpFile1"
 fi
 if [ "$matchPosition" = "m" ]; then
-  iquest "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > "$tmpFile1"
+  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > "$tmpFile1"
 fi
 
+#We now want to convert "/\n" to the 0 byte. The first sed rune
+#appends every line to the pattern space (ba -> go to branch point a ;
+#:a -> label of branch a), then performs the substitution.
+#Alas, sed can't see the final newline, so it leaves the final / in place
+#So the second sed rune replaces that final / with the 0 byte.
 
+<"$tmpFile1" sed -e ':a;{N;s,/\n,\x0,g};ba' | sed -e 's,/$,\x0,' >"$tmpFile2"
 
-grep DATA_NAME "$tmpFile1" > "$tmpFile2"
+#That, though, does leave the final newline in place (unavoidable in
+#sed), so we remove it using "head"; -c-1 prints everything except the
+#final character.
 
-$(cat "$tmpFile2" | sed -e "s#DATA_NAME = #iget -v ${collName}/#g" > "$tmpFile3")
+head -c-1 "$tmpFile2" >"$tmpFile3"
 
-sh < "$tmpFile3"
+#If you didn't mind a perl dependency, you could replace the above (both seds and the head) with
+#perl -pe 's,/\n,\x0,g'
+
+#-0 "use 0 byte as record separator" -n1 "only pass iget one argument at a time"
+xargs -a "$tmpFile3" -0 -n1 iget -v
 
 rm -f "$tmpFile1" "$tmpFile2" "$tmpFile3"
