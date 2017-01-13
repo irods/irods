@@ -65,7 +65,7 @@
 #endif
 
 #if defined(mysql)
-SET SESSION storage_engine='InnoDB';
+SET SESSION @IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD@='InnoDB';
 #endif
 
 create table R_ZONE_MAIN ( zone_id INT64TYPE not null, zone_name varchar(250) not null, zone_type_name varchar(250) not null, zone_conn_string varchar(1000), r_comment varchar(1000), create_ts varchar(32), modify_ts varchar(32)) ;
