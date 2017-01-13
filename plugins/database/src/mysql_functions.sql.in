@@ -1,4 +1,4 @@
-SET SESSION storage_engine='InnoDB';
+SET SESSION @IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD@='InnoDB';
 
 drop function if exists R_ObjectId_nextval;
 delimiter %%

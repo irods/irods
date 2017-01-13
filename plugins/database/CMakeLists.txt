@@ -26,13 +26,32 @@ set(
   oracle
   )
 
+if (NOT IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD)
+  if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "ubuntu" AND IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR STREQUAL "16")
+    set(IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD "default_storage_engine" CACHE STRING "Keyword used when setting MySQL default storage engine for session." FORCE)
+  else()
+    set(IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD "storage_engine" CACHE STRING "Keyword used when setting MySQL default storage engine for session." FORCE)
+  endif()
+  message(STATUS "Setting unspecified IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD to '${IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD}'. This is the correct setting for normal builds.")
+endif()
+configure_file(
+  ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp.in
+  ${CMAKE_BINARY_DIR}/plugins/database/src/icatSysTables.sql.pp
+  @ONLY
+  )
+configure_file(
+  ${CMAKE_SOURCE_DIR}/plugins/database/src/mysql_functions.sql.in
+  ${CMAKE_BINARY_DIR}/plugins/database/src/mysql_functions.sql
+  @ONLY
+  )
+
 foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
   string(TOUPPER ${PLUGIN} PLUGIN_UPPERCASE)
 
   add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
-    COMMAND cpp -E -P -D${PLUGIN} ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
-    MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp
+    COMMAND cpp -E -P -D${PLUGIN} ${CMAKE_BINARY_DIR}/plugins/database/src/icatSysTables.sql.pp ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql
+    MAIN_DEPENDENCY ${CMAKE_BINARY_DIR}/plugins/database/src/icatSysTables.sql.pp
     )
   add_custom_target(IRODS_PHONY_TARGET_icatSysTables_${PLUGIN}.sql ALL DEPENDS ${CMAKE_BINARY_DIR}/icatSysTables_${PLUGIN}.sql) # Forces execution of custom_command
 
@@ -125,7 +144,7 @@ endforeach()
 
 install(
   FILES
-  ${CMAKE_SOURCE_DIR}/plugins/database/src/mysql_functions.sql
+  ${CMAKE_BINARY_DIR}/plugins/database/src/mysql_functions.sql
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging/sql
   COMPONENT ${IRODS_PACKAGE_COMPONENT_MYSQL_NAME}
   )
