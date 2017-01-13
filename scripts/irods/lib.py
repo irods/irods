@@ -553,7 +553,7 @@ def int_filter(field='Input'):
         try:
             return int(x)
         except ValueError as e:
-            irods.six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
+            six.reraise(InputFilterError, InputFilterError('%s must be an integer.' % (field)), sys.exc_info()[2])
     return f
 
 def set_filter(set_, field='Input'):
