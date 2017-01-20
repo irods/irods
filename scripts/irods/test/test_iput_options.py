@@ -62,3 +62,15 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.user0.assert_icommand(['iput', '-K', filename])
         self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
         os.unlink(filename)
+    def test_iput_with_metadata_same_file_name__issue_3434(self):
+        filename = 'test_iput_with_metadata_same_file_name__issue_3434'
+        filepath = os.path.join(self.admin.local_session_dir, filename)
+        lib.make_file(filepath, 1)
+        self.admin.assert_icommand('iput --metadata "a;v;u" ' + filepath)
+        self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/' + filename, 'STDOUT_SINGLELINE', 'value: v')
+        self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/' + filename, 'STDOUT_SINGLELINE', 'units: u')
+        self.admin.assert_icommand('imkdir foo')
+        self.admin.assert_icommand('icd foo')
+        self.admin.assert_icommand('iput --metadata "a;v;u" ' + filepath)
+        self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/foo/' + filename, 'STDOUT_SINGLELINE', 'value: v')
+        self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/foo/' + filename, 'STDOUT_SINGLELINE', 'units: u')
