@@ -103,12 +103,18 @@ logPsgError( int level, HENV henv, HDBC hdbc, HSTMT hstmt, int dbType ) {
                     strstr( ( char * )psgErrorMsg, "Duplicate entry" ) ) {
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
-        }
-        else {
-            if ( strstr( ( char * )psgErrorMsg, "duplicate key" ) ) {
+        } else if (dbType == DB_TYPE_POSTGRES ) {
+            if ( strcmp( ( char * )sqlstate, "23505" ) == 0 &&
+                    strstr( ( char * )psgErrorMsg, "duplicate key" ) ) {
+                errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+            }
+        } else if ( dbType == DB_TYPE_ORACLE ) { 
+            if ( strcmp( ( char * )sqlstate, "23000" ) == 0 &&
+                    strstr( ( char * )psgErrorMsg, "unique constraint" ) ) {
                 errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             }
         }
+
         rodsLog( level, "SQLSTATE: %s", sqlstate );
         rodsLog( level, "SQLCODE: %ld", sqlcode );
         rodsLog( level, "SQL Error message: %s", psgErrorMsg );
