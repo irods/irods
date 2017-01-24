@@ -499,7 +499,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # =-=-=-=-=-=-=-
         # visualize our pruning
         self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
-        
+
         # =-=-=-=-=-=-=-
         # remove physical data in order to test durability of the rebalance
         path = lib.get_vault_session_path(self.admin, 'leaf_a')
@@ -1226,3 +1226,12 @@ acSetNumThreads() {
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         os.remove(path_of_corrupt_so)
+
+    def test_addchildtoresc_forbidden_characters_3449(self):
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'parent', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'child', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', ';'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '}'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '{'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'parent'])
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'child'])
