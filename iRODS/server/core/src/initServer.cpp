@@ -1348,7 +1348,7 @@ chkAllowedUser( const char *userName, const char *rodsZone ) {
         }
         return 0;
     } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, e.what());
+        rodsLog(LOG_ERROR, "%s", e.what());
         return e.code();
     }
 

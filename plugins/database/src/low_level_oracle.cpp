@@ -366,7 +366,7 @@ logTheBindVariables( int level ) {
             rodsLogSql( tmpStr );
         }
         else {
-            rodsLog( level, tmpStr );
+            rodsLog( level, "%s", tmpStr );
         }
     }
 }
@@ -529,7 +529,7 @@ cllExecSqlNoResult( icatSessionStruct *icss, const char *sqlInput ) {
                            ( ub4 ) OCI_NTV_SYNTAX, ( ub4 ) OCI_DEFAULT );
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlNoResult: OCIStmtPrepare failed: %d", stat );
-        rodsLog( LOG_ERROR, sql );
+        rodsLog( LOG_ERROR, "%s", sql );
         logOraError( LOG_ERROR, p_err, stat );
         return CAT_OCI_ERROR;
     }
@@ -693,7 +693,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
                            ( ub4 ) OCI_NTV_SYNTAX, ( ub4 ) OCI_DEFAULT );
     if ( stat != OCI_SUCCESS ) {
         rodsLog( LOG_ERROR, "cllExecSqlWithResult: OCIStmtPrepare failed: %d", stat );
-        rodsLog( LOG_ERROR, sqlConverted );
+        rodsLog( LOG_ERROR, "%s", sqlConverted );
         logOraError( LOG_ERROR, p_err, stat );
         return CAT_OCI_ERROR;
     }

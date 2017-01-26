@@ -448,7 +448,7 @@ logTheBindVariables( int level ) {
     for ( int i = 0; i < cllBindVarCountPrev; i++ ) {
         char tmpStr[TMP_STR_LEN + 2];
         snprintf( tmpStr, TMP_STR_LEN, "bindVar[%d]=%s", i + 1, cllBindVars[i] );
-        rodsLog( level, tmpStr );
+        rodsLog( level, "%s", tmpStr );
     }
 }
 
@@ -516,7 +516,7 @@ _cllExecSqlNoResult(
     const char*        sql,
     int                option ) {
 
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG1, "%s", sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT myHstmt;
@@ -617,7 +617,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
        needed here, and in fact causes postgres processes to be in the
        'idle in transaction' state which prevents some operations (such as
        backup).  So this was removed. */
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG1, "%s", sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;
@@ -776,7 +776,7 @@ cllExecSqlWithResultBV(
     const char *sql,
     std::vector< std::string > &bindVars ) {
 
-    rodsLog( LOG_DEBUG1, sql );
+    rodsLog( LOG_DEBUG1, "%s", sql );
 
     HDBC myHdbc = icss->connectPtr;
     HSTMT hstmt;

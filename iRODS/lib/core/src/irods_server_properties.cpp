@@ -449,7 +449,7 @@ namespace irods {
                     try {
                         rem_sids = config_props_.get< std::vector< std::string > >( prop_name );
                     } catch ( const irods::exception& e ) {
-                        rodsLog( LOG_ERROR, e.what() );
+                        rodsLog( LOG_ERROR, "%s", e.what() );
                     }
 
                     // do not want duplicate entries
@@ -565,5 +565,3 @@ namespace irods {
     } // set_server_property
 
 } // namespace irods
-
-

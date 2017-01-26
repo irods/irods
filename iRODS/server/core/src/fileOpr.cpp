@@ -66,6 +66,7 @@ allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
     return fileInx;
 }
 
+
 int
 freeFileDesc( int fileInx ) {
     if ( fileInx < 3 || fileInx >= NUM_FILE_DESC ) {
@@ -168,7 +169,7 @@ int mkFileDirR(
         std::string vault_path;
         irods::error err = irods::get_vault_path_for_hier_string( hier, vault_path );
         if ( !err.ok() ) {
-            rodsLog( LOG_ERROR, err.result().c_str() );
+            rodsLog( LOG_ERROR, "%s", err.result().c_str() );
             return err.code();
         }
 
@@ -575,4 +576,3 @@ bindStreamToIRods( rodsServerHost_t *rodsServerHost, int fd ) {
 
     return fileInx;
 }
-

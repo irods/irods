@@ -399,7 +399,7 @@ extern "C" {
                 msg << "extract_file - failed to write [";
                 msg << path;
                 msg << "]";
-                rodsLog( LOG_NOTICE, msg.str().c_str() );
+                rodsLog( LOG_NOTICE, "%s", msg.str().c_str() );
             }
 
         } // while
@@ -2161,7 +2161,7 @@ extern "C" {
                 msg << "build_directory_listing - unhandled entry [";
                 msg << _path.filename();
                 msg << "]";
-                rodsLog( LOG_NOTICE, msg.str().c_str() );
+                rodsLog( LOG_NOTICE, "%s", msg.str().c_str() );
             }
 
         }
@@ -2709,6 +2709,3 @@ extern "C" {
     } // plugin_factory
 
 }; // extern "C"
-
-
-
