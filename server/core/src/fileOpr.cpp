@@ -170,7 +170,7 @@ int mkFileDirR(
         std::string vault_path;
         irods::error err = irods::get_vault_path_for_hier_string( hier, vault_path );
         if ( !err.ok() ) {
-            rodsLog( LOG_ERROR, err.result().c_str() );
+            rodsLog( LOG_ERROR, "%s", err.result().c_str() );
             return err.code();
         }
 

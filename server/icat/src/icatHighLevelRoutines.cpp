@@ -103,7 +103,7 @@ int chlOpen() {
         }
         database_plugin_type = database_plugin_map.begin()->first;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 

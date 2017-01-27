@@ -714,7 +714,7 @@ namespace irods {
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
             shared_secret.assign(key.begin(), key.end());
         } catch ( const irods::exception& e ) {
-            rodsLog( LOG_ERROR, e.what() );
+            irods::log(e);
             return;
         }
 

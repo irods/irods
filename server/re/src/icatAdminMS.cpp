@@ -529,7 +529,7 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
     try {
         irods::set_server_property<std::string>(irods::STRICT_ACL_KW, strict);
     } catch ( irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 

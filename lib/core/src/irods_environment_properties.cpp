@@ -43,7 +43,7 @@ namespace irods {
         try {
             json_file = get_irods_home_directory().string();
         } catch (const irods::exception& e) {
-            rodsLog(LOG_ERROR, e.what());
+            irods::log(e);
             return ERROR(-1, "failed to get irods home directory");
         }
         std::string json_session_file = json_file;
@@ -110,7 +110,7 @@ namespace irods {
                 config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, json_session_file );
                 return;
             } catch ( const irods::exception& e ) {
-                rodsLog( LOG_ERROR, e.what() );
+                irods::log(e);
             }
         }
         else {

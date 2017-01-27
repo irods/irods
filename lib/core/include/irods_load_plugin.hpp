@@ -49,7 +49,7 @@ namespace irods {
             try {
                 plugin_home = get_irods_default_plugin_directory();
             } catch (const irods::exception& e) {
-                rodsLog(LOG_ERROR, e.what());
+                irods::log(e);
                 return ERROR(SYS_INVALID_INPUT_PARAM, "failed to get default plugin directory");
             }
         }

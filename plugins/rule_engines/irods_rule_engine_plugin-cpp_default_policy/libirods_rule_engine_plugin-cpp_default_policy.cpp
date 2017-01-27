@@ -88,7 +88,7 @@ static std::string get_string_array_from_array( const boost::any& _array ) {
                     __PRETTY_FUNCTION__ );
                 continue;
             }
-            
+
             str_array += ",";
         } // for
 
@@ -158,7 +158,7 @@ acCreateUserF1 {
 
         other_user_name = other_user_info.userName;
     } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, e.what());
+        irods::log(e);
         return ERROR(e.code(), "irods exception in acCreateUser");
     }
 
@@ -204,7 +204,7 @@ irods::error acCreateUserZoneCollections( irods::callback _cb, std::list<boost::
         rods_zone_proxy = user_info.rodsZone;
         other_user_name = other_user_info.userName;
     } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, e.what());
+        irods::log(e);
         return ERROR(e.code(), "irods exception in acCreateDefaultCollections");
     }
 
@@ -269,7 +269,7 @@ acDeleteUserF1 {
 
     ret = _cb(std::string("msiCommit"));
 
-    ret = _cb(std::string("acPostProcForDeleteUser")); 
+    ret = _cb(std::string("acPostProcForDeleteUser"));
 
     return ret;
 }
@@ -300,7 +300,7 @@ irods::error acDeleteUserZoneCollections( irods::callback _cb, std::list<boost::
         rods_zone_proxy = user_info.rodsZone;
         other_user_name = other_user_info.userName;
     } catch ( const irods::exception& e ) {
-        rodsLog(LOG_ERROR, e.what());
+        irods::log(e);
         return ERROR(e.code(), "irods exception in acDeleteDefaultCollections");
     }
 
@@ -374,7 +374,7 @@ irods::error acDeleteCollByAdmin( irods::callback _cb, std::list<boost::any>& _p
 irods::error acRenameLocalZone( irods::callback _cb, std::list<boost::any>& ) {
 //  msiRenameCollection ::: msiRollback;
 //  msiRenameLocalZone ::: msiRenameLocalZone;
-//  msiCommit; 
+//  msiCommit;
    irods::error ret = _cb(std::string("msiRenameCollection"));
     if( !ret.ok() ) {
         _cb(std::string("msiRollback"));
@@ -441,7 +441,7 @@ irods::error acSetRescSchemeForRepl( irods::callback _cb, std::list<boost::any>&
     if( !ret.ok() ) {
         resc_name = "demoResc";
     }
-*/    
+*/
     std::string resc_name = "demoResc";
     try {
         resc_name = irods::server_properties::instance().get_property<std::string>("default_resource_name");
@@ -716,7 +716,7 @@ irods::error acPreProcForWriteSessionVariable( irods::callback, std::list<boost:
             if (i == 0) {
                 session_var = tmp;
                 break;
-            } 
+            }
 
             i++;
         } catch (const boost::bad_any_cast& e) {
@@ -956,7 +956,7 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
     re->add_operation<irods::default_re_ctx&, std::vector<std::string>&>(
             "list_rules",
             std::function<irods::error(irods::default_re_ctx&, std::vector<std::string>&)>( list_rules ) );
-            
+
     re->add_operation<irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback>(
             "exec_rule",
             std::function<irods::error(irods::default_re_ctx&,std::string,std::list<boost::any>&,irods::callback)>( exec_rule ) );
@@ -971,4 +971,3 @@ irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::
 
     return re;
 }
-

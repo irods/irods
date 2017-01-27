@@ -129,7 +129,7 @@ extern "C" {
         try {
             irods::environment_properties::instance().capture();
         } catch ( const irods::exception& e ) {
-            rodsLog( e.code(), e.what() );
+            irods::log(e);
             return;
         }
 
@@ -150,7 +150,7 @@ extern "C" {
             if ( e.code() == KEY_NOT_FOUND ) {
                 rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
             } else {
-                rodsLog( LOG_ERROR, e.what() );
+                irods::log(e);
             }
             return e.code();
         }
@@ -168,7 +168,7 @@ extern "C" {
             if ( e.code() == KEY_NOT_FOUND ) {
                 rodsLog( LOG_DEBUG, "%s is not defined", _key.c_str() );
             } else {
-                rodsLog( LOG_ERROR, e.what() );
+                irods::log(e);
             }
             return e.code();
         }

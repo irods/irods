@@ -418,7 +418,7 @@ irods::error extract_file( int _index ) {
             msg << "extract_file - failed to write [";
             msg << path;
             msg << "]";
-            rodsLog( LOG_NOTICE, msg.str().c_str() );
+            rodsLog( LOG_NOTICE, "%s", msg.str().c_str() );
         }
 
     } // while
@@ -2180,7 +2180,7 @@ irods::error build_directory_listing( const boost::filesystem::path&          _p
             msg << "build_directory_listing - unhandled entry [";
             msg << _path.filename();
             msg << "]";
-            rodsLog( LOG_NOTICE, msg.str().c_str() );
+            rodsLog( LOG_NOTICE, "%s", msg.str().c_str() );
         }
 
     }

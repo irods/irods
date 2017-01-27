@@ -97,9 +97,9 @@ void register_regexes_from_array(
     try {
         const auto& arr = boost::any_cast<const std::vector<boost::any>&>( _array );
         for ( const auto& elem : arr ) {
-            try {  
+            try {
                 const auto& tmp = boost::any_cast<const std::string&>(elem);
-                RuleExistsHelper::Instance()->registerRuleRegex( tmp ); 
+                RuleExistsHelper::Instance()->registerRuleRegex( tmp );
             } catch ( boost::bad_any_cast& ) {
                 rodsLog(
                         LOG_ERROR,
@@ -176,7 +176,7 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
                     rodsLog(
                             LOG_DEBUG,
                             "No regexes found in server config - using default regexes: [%s], [%s], [%s]",
-                            STATIC_PEP_RULE_REGEX.c_str(), 
+                            STATIC_PEP_RULE_REGEX.c_str(),
                             DYNAMIC_PEP_RULE_REGEX.c_str(),
                             MICROSERVICE_RULE_REGEX.c_str() );
                 }
@@ -231,7 +231,7 @@ irods::error rule_exists(irods::default_re_ctx&, std::string _rn, bool& _ret) {
 
 irods::error list_rules( irods::default_re_ctx&, std::vector<std::string>& rule_vec ) {
     for ( int i = 0; i < ruleEngineConfig.coreRuleSet->len; ++i ) {
-       rule_vec.push_back( ruleEngineConfig.coreRuleSet->rules[i]->node->subtrees[0]->text ); 
+       rule_vec.push_back( ruleEngineConfig.coreRuleSet->rules[i]->node->subtrees[0]->text );
     }
     return SUCCESS();
 }
@@ -347,9 +347,7 @@ irods::error exec_rule(irods::default_re_ctx&, std::string _rn, std::list<boost:
     if (ret < 0) {
         std::stringstream msg;
         msg << "applyRuleUpdateParams failed for rule " << _rn;
-        rodsLog(
-            LOG_DEBUG,
-            msg.str().c_str() );
+        rodsLog(LOG_DEBUG, "%s", msg.str().c_str() );
         return ERROR(ret, msg.str());
     }
 
@@ -383,7 +381,7 @@ irods::error exec_rule_text(
 
     ++itr; // skip msparam
     std::string out_desc = *boost::any_cast<std::string*>(*itr);
-    
+
     ++itr; // skip msparam
     ruleExecInfo_t* rei = boost::any_cast<ruleExecInfo_t*>(*itr);
 
@@ -396,9 +394,7 @@ irods::error exec_rule_text(
      if (status < 0) {
         std::stringstream msg;
         msg << "execMyRule failed for rule " << _rt;
-        rodsLog(
-            LOG_DEBUG,
-            msg.str().c_str() );
+        rodsLog(LOG_DEBUG, "%s", msg.str().c_str() );
         return ERROR(status, msg.str());
     }
 
@@ -432,7 +428,7 @@ irods::error exec_rule_expression(
 
     ++itr; // skip msparam
     std::string out_desc = *boost::any_cast<std::string*>(*itr);
-    
+
     ++itr; // skip msparam
     ruleExecInfo_t* rei = boost::any_cast<ruleExecInfo_t*>(*itr);
 
@@ -449,9 +445,7 @@ irods::error exec_rule_expression(
     if (status < 0) {
         std::stringstream msg;
         msg << "computeExpression failed for input " << _rt;
-        rodsLog(
-            LOG_DEBUG,
-            msg.str().c_str() );
+        rodsLog(LOG_DEBUG, "%s", msg.str().c_str() );
         return ERROR(status, msg.str());
     }
 

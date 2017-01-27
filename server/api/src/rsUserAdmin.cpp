@@ -59,12 +59,6 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
     int status, status2;
 
     const char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    char errString1[] =
-        "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d";
-    char errString2[] =
-        "rsUserAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d";
-    char errString3[] =
-        "rsUserAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d";
 
     int argc;
     ruleExecInfo_t rei2;
@@ -91,8 +85,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
             if ( rei2.status < 0 ) {
                 status2 = rei2.status;
             }
-            rodsLog( LOG_ERROR,
-                     userAdminInp->arg1, userAdminInp->arg2, status2 );
+            rodsLog( LOG_ERROR, "_rsUserAdmin: acPreProcForModifyUser failed [%s] [%s] [%d]", userAdminInp->arg1, userAdminInp->arg2, status2 );
             return status2;
         }
         status = chlModUser( rsComm,
@@ -109,7 +102,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
             if ( rei2.status < 0 ) {
                 status2 = rei2.status;
             }
-            rodsLog( LOG_ERROR, errString1,
+            rodsLog( LOG_ERROR, "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
                      userAdminInp->arg1, userAdminInp->arg2, status2 );
             return status2;
         }
@@ -128,7 +121,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                 if ( rei2.status < 0 ) {
                     status2 = rei2.status;
                 }
-                rodsLog( LOG_ERROR, errString2, args[0], args[1], status2 );
+                rodsLog( LOG_ERROR, "rsUserAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d", args[0], args[1], status2 );
                 return status2;
             }
 
@@ -142,7 +135,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
                     if ( rei2.status < 0 ) {
                         status2 = rei2.status;
                     }
-                    rodsLog( LOG_ERROR, errString3, args[0], args[1], status2 );
+                    rodsLog( LOG_ERROR, "rsUserAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d", args[0], args[1], status2 );
                     return status2;
                 }
             }

@@ -664,7 +664,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
     try {
         chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -672,7 +672,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -890,7 +890,7 @@ void partialDataGet(
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -903,7 +903,7 @@ void partialDataGet(
     try {
         chunk_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_CHUNK_SIZE_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -1118,7 +1118,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -1672,7 +1672,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -1788,7 +1788,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return;
     }
 
@@ -2529,7 +2529,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 
@@ -2593,7 +2593,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 
@@ -2658,7 +2658,7 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     try {
         trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 
@@ -3054,7 +3054,7 @@ irods::error get_script_output_single_line(
          << " " << irods::get_irods_home_directory().string()
          << "/scripts/" << script_name;
     } catch (const irods::exception& e) {
-        rodsLog(LOG_ERROR, e.what());
+        irods::log(e);
         return ERROR(-1, "failed to get irods home directory");
     }
     for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
