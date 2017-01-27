@@ -589,7 +589,7 @@ irods::error load_version_file(
     try {
         version_file = irods::get_irods_home_directory();
     } catch (const irods::exception& e) {
-        rodsLog(LOG_ERROR, e.what());
+        irods::log(e);
         return ERROR(-1, "failed to get irods home directory");
     }
     version_file.append("VERSION.json");

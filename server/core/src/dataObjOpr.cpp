@@ -1159,7 +1159,7 @@ chkOrphanFile(
                 status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
                 irods::delete_server_property( irods::AGENT_CONN_KW );
             } catch (const irods::exception& e ) {
-                rodsLog( LOG_ERROR, e.what() );
+                irods::log(e);
                 return e.code();
             }
         } else {

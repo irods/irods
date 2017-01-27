@@ -31,7 +31,7 @@ namespace irods {
                 return SUCCESS();
             }
         } catch (const irods::exception& e) {
-            rodsLog(LOG_ERROR, e.what());
+            irods::log(e);
             return ERROR(-1, "failed to get irods home directory");
         }
 
@@ -54,7 +54,7 @@ namespace irods {
                 return SUCCESS();
             }
         } catch (const irods::exception& e) {
-            rodsLog(LOG_ERROR, e.what());
+            irods::log(e);
             return ERROR(-1, "failed to get irods home directory");
         }
 

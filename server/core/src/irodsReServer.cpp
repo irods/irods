@@ -380,7 +380,7 @@ reServerMain( char* logDir ) {
     try {
         re_exec_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_EXEC_TIME);
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         re_exec_time = RE_SERVER_EXEC_TIME;
     }
 
@@ -488,7 +488,7 @@ int reSvrSleep( ) {
     try {
         re_sleep_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         re_sleep_time = RE_SERVER_SLEEP_TIME;
     }
 

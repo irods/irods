@@ -879,7 +879,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     try {
         single_buff_sz = irods::get_advanced_setting<const int>(irods::CFG_MAX_SIZE_FOR_SINGLE_BUFFER) * 1024 * 1024;
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 

@@ -903,7 +903,7 @@ static int _modRescInHierarchies( const std::string& old_resc, const std::string
     // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
     irods::error ret = irods::get_catalog_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
     if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, ret.result().c_str() );
+        rodsLog( LOG_ERROR, "%s", ret.result().c_str() );
     }
 
     // =-=-=-=-=-=-=-

@@ -755,7 +755,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     try {
         def_num_thr = irods::get_advanced_setting<const int>(irods::CFG_DEF_NUMBER_TRANSFER_THREADS);
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
 
@@ -773,7 +773,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
     try {
         size_per_tran_thr = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
     } catch ( const irods::exception& e ) {
-        rodsLog( LOG_ERROR, e.what() );
+        irods::log(e);
         return e.code();
     }
     if ( 0 >= size_per_tran_thr ) {
@@ -831,7 +831,7 @@ msiSetNumThreads( msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr,
         try {
             trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS);
         } catch ( const irods::exception& e ) {
-            rodsLog( LOG_ERROR, e.what() );
+            irods::log(e);
             return e.code();
         }
         if ( 0 >= trans_buff_size ) {
@@ -1447,7 +1447,7 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
         try {
             max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
         } catch ( const irods::exception& e ) {
-            rodsLog( LOG_ERROR, e.what() );
+            irods::log(e);
             return e.code();
         }
 
