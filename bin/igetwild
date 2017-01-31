@@ -55,20 +55,21 @@ matchPosition=e
 if [ "$3" ]; then
   matchPosition="$3"
 else
-  printf "Should this be at the end, beginning, or middle of the names? [e b or m] : "
+  printf "Should this be at the beginning, middle, or end of the names? [b m e]: "
   read matchPosition
 fi
 
 #iquest doesn't have -0; the only character not in filenames is /, so ask
 #iquest to return answers delimited with /\n [we can't avoid the \n-delimiter]
-if [ "$matchPosition" = "e" ]; then
-  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > "$tmpFile1"
-fi
 if [ "$matchPosition" = "b" ]; then
-  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > "$tmpFile1"
-fi
-if [ "$matchPosition" = "m" ]; then
-  iquest "%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > "$tmpFile1"
+  iquest "$collName/%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '$matchPattern%'" > "$tmpFile1"
+elif [ "$matchPosition" = "m" ]; then
+  iquest "$collName/%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern%'" > "$tmpFile1"
+elif [ "$matchPosition" = "e" ]; then
+  iquest "$collName/%s/" "select DATA_NAME where COLL_NAME = '$collName' and DATA_NAME like '%$matchPattern'" > "$tmpFile1"
+else
+  echo "matchPosition must be one of [b|m|e]"
+  exit 1
 fi
 
 #We now want to convert "/\n" to the 0 byte. The first sed rune
@@ -84,9 +85,6 @@ fi
 #final character.
 
 head -c-1 "$tmpFile2" >"$tmpFile3"
-
-#If you didn't mind a perl dependency, you could replace the above (both seds and the head) with
-#perl -pe 's,/\n,\x0,g'
 
 #-0 "use 0 byte as record separator" -n1 "only pass iget one argument at a time"
 xargs -a "$tmpFile3" -0 -n1 iget -v
