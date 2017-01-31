@@ -788,5 +788,27 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
             os.unlink(filepath)
 
 
+    def test_igetwild_with_semicolon_in_filename(self):
+
+        localfile = 'thelocalfile.txt'
+        localpath = lib.create_local_testfile(localfile)
+        badfiles = ['; touch oops', '\;\ touch\ oops']
+        counter = 0
+        for badname in badfiles:
+            counter = counter + 1
+            print("====================[{0}of{1}]=[{2}]===================".format(counter, len(badfiles), badname))
+            badpath = lib.create_local_testfile(badname)
+            os.unlink(badpath)
+            self.user0.assert_icommand(['imkdir', 'subdir'])
+            self.user0.assert_icommand(['ils', '-rL', 'subdir/'+badname], 'STDERR_SINGLELINE', 'does not exist')
+            self.user0.assert_icommand(['iput', localfile, 'subdir/'+badname])
+            self.user0.assert_icommand(['ils', '-rL'], 'STDOUT_SINGLELINE', 'subdir/'+badname)
+            self.user0.assert_icommand(['ils', '-L', 'oops'], 'STDERR_SINGLELINE', 'does not exist')
+            self.user0.assert_icommand(['igetwild', self.user0.session_collection+'/subdir', 'oops', 'e'], 'STDOUT_SINGLELINE', badname)
+            assert os.path.isfile(badpath)
+            assert not os.path.isfile(os.path.join(self.user0.session_collection, 'oops'))
+            self.user0.assert_icommand(['irm', '-rf', 'subdir'])
+            os.unlink(badpath)
+        os.unlink(localpath)
 
 
