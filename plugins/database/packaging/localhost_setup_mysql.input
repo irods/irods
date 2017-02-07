@@ -1,5 +1,6 @@
-irods
-irods
+
+
+
 
 localhost
 3306
@@ -7,6 +8,7 @@ ICAT
 irods
 y
 testpassword
+
 tempZone
 1247
 20000
@@ -19,5 +21,5 @@ TEMPORARY_ZONE_KEY
 32_byte_server_negotiation_key__
 32_byte_server_control_plane_key
 rods
-/var/lib/irods/Vault
+
 
