@@ -3535,6 +3535,7 @@ char *generateErrMsg( char *msg, long errloc, char *ruleBaseName, char errmsg[ER
         generateErrMsgFromFile( msg, errloc, ruleBaseName + 1, ruleBasePath, errmsg );
         return errmsg;
     default:
+        rodsLog(LOG_ERROR, "generateErrMsg: ruleBaseName of unknown type: [%s] [%ji] [%s]", msg, static_cast<intmax_t>(errloc), ruleBaseName);
         snprintf( errmsg, ERR_MSG_LEN, "<unknown source type>" );
         return errmsg;
     }
