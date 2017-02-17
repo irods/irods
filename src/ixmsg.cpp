@@ -14,6 +14,7 @@ int  connectFlag = 0;
 void
 printIxmsgHelp( const char *cmd ) {
 
+    printf( "DEPRECATED\n" );
     printf( "Usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd );
     printf( "Usage: %s r [-n NumberOfMessages] [-t ticketNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd );
     printf( "Usage: %s t \n" , cmd );
