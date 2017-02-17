@@ -248,7 +248,7 @@ class IrodsConfig(object):
                         lib.indent('JSON Configuration Validation failed.'))),
                     sys.exc_info()[2])
 
-            l.debug('Attempting to validate against %s against %s', config_file['path'], schema_uri)
+            l.debug('Attempting to validate %s against %s', config_file['path'], schema_uri)
             try:
                 json_validation.validate_dict(
                         config_file['dict'],
