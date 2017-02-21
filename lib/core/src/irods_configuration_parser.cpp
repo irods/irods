@@ -127,8 +127,10 @@ namespace irods {
             return boost::any(json_real_value(_val));
 
             case JSON_TRUE:
+            return boost::any(json_true());
+            
             case JSON_FALSE:
-            return boost::any(json_boolean( _val ));
+            return boost::any(json_false());
 
             case JSON_NULL:
             return boost::any(std::string("NULL"));
