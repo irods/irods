@@ -1645,13 +1645,15 @@ extern "C" {
             // get list of distinct missing data ids or dirty repls, iterate
             // until query fails - no more repls necessary for child
             dist_child_result_t results( 1 );
+            irods::ReasonForReplication reason_for_replication;
             while ( !results.empty() ) {
                 irods::error ga_ret = irods::gather_data_objects_for_rebalance(
                                           _ctx.comm(),
                                           resc_name,
                                           c_itr->first,
                                           limit,
-                                          results );
+                                          results,
+                                          reason_for_replication);
                 if ( ga_ret.ok() ) {
                     if ( !results.empty() ) {
                         // =-=-=-=-=-=-=-
@@ -1660,7 +1662,8 @@ extern "C" {
                                                     _ctx.comm(),  // comm ptr
                                                     resc_name,    // parent resc name
                                                     c_itr->first, // child resc name
-                                                    results );    // result set
+                                                    results,      // result set
+                                                    reason_for_replication);
                         if ( !proc_ret.ok() ) {
                             return PASS( proc_ret );
                         }

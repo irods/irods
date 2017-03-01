@@ -10,6 +10,7 @@
 // irods includes
 #include "dataObjRepl.h"
 #include "genQuery.h"
+#include "boost/format.hpp"
 
 namespace irods {
 
@@ -187,7 +188,7 @@ namespace irods {
             _results.push_back( data_id );
 
         } // for i
-			
+
         freeGenQueryOut( &gen_out );
 
         return SUCCESS();
@@ -262,10 +263,8 @@ namespace irods {
         int status = rsGenQuery( _comm, &gen_inp, &gen_out );
         clearGenQueryInp( &gen_inp );
         if ( status < 0 || 0 == gen_out ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       status,
-                       "genQuery failed." );
+            freeGenQueryOut( &gen_out );
+            return ERROR(status, (boost::format("genQuery failed: _data_id [%d] _parent [%s]. data object probably doesn't have any good replicas") % _data_id % _parent).str());
         }
 
         // =-=-=-=-=-=-=-
@@ -371,12 +370,10 @@ namespace irods {
         const std::string&   _parent_resc,
         const std::string&   _child_resc,
         const int            _limit,
-        dist_child_result_t& _results ) {
-        // =-=-=-=-=-=-=-
-        // clear incoming result set
-        _results.clear();
+        dist_child_result_t& _results,
+        ReasonForReplication& _reason_for_replication) {
 
-        // =-=-=-=-=-=-=-
+        _results.clear();
         // check for dirty replicas first
         error ret = gather_dirty_replicas_for_child(
                         _comm,
@@ -388,27 +385,24 @@ namespace irods {
             return PASS( ret );
         }
 
-        // =-=-=-=-=-=-=-
-        // compute remaining limit as the difference between the
-        // original limit and the number of results;
-        int mod_limit = _limit - _results.size();
-
-        // =-=-=-=-=-=-=-
-        // query for remaining items which need re-replicated to this child
-        if (mod_limit > 0) {
-			int query_status = chlGetDistinctDataObjsMissingFromChildGivenParent(
-								   _parent_resc,
-								   _child_resc,
-								   mod_limit,
-								   _results );
-			if ( CAT_NO_ROWS_FOUND != query_status ) {
-				return ERROR(
-						   query_status,
-						   "chlGetDistinctDataObjsMissingFromChildGivenParent failed." );
-			}
+        if (!_results.empty()) {
+            _reason_for_replication = ReplicaOutOfDate;
+            return SUCCESS();
         }
 
+        // query for remaining items which need re-replicated to this child
+        int query_status = chlGetDistinctDataObjsMissingFromChildGivenParent(
+            _parent_resc,
+            _child_resc,
+            _limit,
+            _results );
+        if ( CAT_NO_ROWS_FOUND != query_status ) {
+            return ERROR(
+                query_status,
+                "chlGetDistinctDataObjsMissingFromChildGivenParent failed." );
+        }
 
+        _reason_for_replication = ReplicaMissingFromChild;
         return SUCCESS();
 
     } // gather_data_objects_for_rebalance
@@ -420,7 +414,8 @@ namespace irods {
         rsComm_t*                  _comm,
         const std::string&         _parent_resc_name,
         const std::string&         _child_resc_name,
-        const dist_child_result_t& _results ) {
+        const dist_child_result_t& _results,
+        const ReasonForReplication& _reason_for_replication) {
         // =-=-=-=-=-=-=-
         // check incoming params
         if ( !_comm ) {
@@ -552,6 +547,14 @@ namespace irods {
             std::string dst_hier;
             parser.str( dst_hier );
 
+            if (_reason_for_replication == ReplicaOutOfDate) {
+                rodsLog(LOG_NOTICE, "proc_results_for_rebalance: updating a replica for data id [%d]", *r_itr);
+            } else if (_reason_for_replication == ReplicaMissingFromChild) {
+                rodsLog(LOG_NOTICE, "proc_results_for_rebalance: replicating data id [%d] from [%s] to [%s]", *r_itr, src_hier.c_str(), dst_hier.c_str());
+            } else {
+                rodsLog(LOG_NOTICE, "proc_results_for_rebalance: unknown reason for replication [%d] replicating data id [%d] from [%s] to [%s]", static_cast<int>(_reason_for_replication), *r_itr, src_hier.c_str(), dst_hier.c_str());
+            }
+
             // =-=-=-=-=-=-=-
             // now that we have all the pieces in place, actually
             // do the replication
@@ -576,7 +579,7 @@ namespace irods {
             }
 
         } // for r_itr
-        
+
         replErrorStack(&repl_errors, &_comm->rError);
 
         return final_err;
@@ -584,6 +587,3 @@ namespace irods {
     } // proc_results_for_rebalance
 
 }; // namespace irods
-
-
-
