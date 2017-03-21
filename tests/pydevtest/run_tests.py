@@ -97,7 +97,7 @@ if __name__ == '__main__':
                                  'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
                                  'test_control_plane', 'test_iticket', 'test_irodsctl', 'test_fuse', 'test_resource_configuration',
-                                 'test_ils'])
+                                 'test_ils', 'test_iquest'])
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
 
