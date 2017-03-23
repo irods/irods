@@ -201,16 +201,14 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // perform the general query
             if ( status < 0 ) {
-                if ( status != CAT_NO_ROWS_FOUND ) {
-                    rodsLog( LOG_NOTICE, "initResc: rsGenQuery error, status = %d",
-                             status );
+                if (status == CAT_NO_ROWS_FOUND) {
+                    break;
                 }
-
+                rodsLog(LOG_ERROR, "initResc: rsGenQuery error, status = %d", status );
                 freeGenQueryOut( &genQueryOut );
                 clearGenQueryInp( &genQueryInp );
                 return ERROR( status, "genQuery failed." );
-
-            } // if
+            }
 
             // =-=-=-=-=-=-=-
             // given a series of rows, each being a resource, create a resource and add it to the table
