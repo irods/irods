@@ -72,7 +72,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int allFlag;
     int verifyFlag;
     int forceFlag;
-    
+
     char* inp_chksum = getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW );
 
     if ( getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL ) {
@@ -265,14 +265,13 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if ( strcmp( *outChksumStr, dataObjInfo->chksum ) != 0 ) {
-        rodsLog( LOG_ERROR,
-                 "verifyDatObjChksum: computed chksum %s != icat value %s for %s",
-                 *outChksumStr, dataObjInfo->chksum, dataObjInfo->objPath );
+        std::stringstream error_message;
+        error_message << "verifyDatObjChksum: computed chksum [" << *outChksumStr << "] != icat value [" << dataObjInfo->chksum << "] for [" << dataObjInfo->objPath << "] hierarchy [" << dataObjInfo->rescHier << "] replNum [" << dataObjInfo->replNum << "]";
+        rodsLog( LOG_ERROR, "%s", error_message.str().c_str());
+        addRErrorMsg(&rsComm->rError, USER_CHKSUM_MISMATCH, error_message.str().c_str());
         return USER_CHKSUM_MISMATCH;
     }
     else {
         return status;
     }
 }
-
-
