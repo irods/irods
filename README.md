@@ -8,7 +8,7 @@ The development infrastructure supports exhaustive testing on supported platform
 
 - iRODS: [https://irods.org](https://irods.org)
 
-- iRODS Consortium: [https://irods.org/consortium](https://irods.org/consortium)
+- iRODS Consortium: [https://irods.org/about](https://irods.org/about/)
 
 - RENCI: [http://www.renci.org](http://www.renci.org)
 
@@ -25,7 +25,7 @@ iRODS has a 20+ year history of funded projects.
 
 Funders have included DARPA, NSF, DOD, DOE, LC, NARA, NASA, NOAA, USPTO, and LLNL.
 
-[https://irods.org/about/history](https://irods.org/about/history)
+[https://irods.org/history](https://irods.org/history/)
 
 ## License
 
