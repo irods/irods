@@ -81,8 +81,8 @@ int rsExecMyRule(
 
     rstrcpy( rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN );
 
-    std::string my_rule_text   = _exec_inp->myRule;
-    std::string out_param_desc = _exec_inp->outParamDesc;
+    const std::string& my_rule_text   = _exec_inp->myRule;
+    const std::string& out_param_desc = _exec_inp->outParamDesc;
     irods::rule_engine_context_manager<
         irods::unit,
         ruleExecInfo_t*,
@@ -90,11 +90,10 @@ int rsExecMyRule(
                                irods::re_plugin_globals->global_re_mgr,
                                &rei);
     irods::error err = re_ctx_mgr.exec_rule_text(
-                           my_rule_text,
                            inst_name,
+                           my_rule_text,
                            _exec_inp->inpParamArray,
-                           &out_param_desc,
-                           &rei);
+                           out_param_desc);
     if(!err.ok()) {
         rodsLog(
             LOG_ERROR,

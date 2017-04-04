@@ -236,7 +236,7 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
 }
 
 int
-execMyRule( char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
+execMyRule( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParamsDesc,
             ruleExecInfo_t *rei ) {
 
     return execMyRuleWithSaveFlag( ruleDef, inMsParamArray, outParamsDesc, rei, 0 );
@@ -260,16 +260,14 @@ void appendOutputToInput( msParamArray_t *inpParamArray, char **outParamNames, i
     }
 
 }
-int extractVarNames( char **varNames, char *outBuf ) {
+int extractVarNames( char **varNames, const char *outBuf ) {
     int n = 0;
-    char *p = outBuf;
-    char *psrc = p;
+    const char *p = outBuf;
+    const char *psrc = p;
 
     for ( ;; ) {
         if ( *psrc == '%' ) {
-            *psrc = '\0';
-            varNames[n++] = strdup( p );
-            *psrc = '%';
+            varNames[n++] = strndup( p, psrc - p );
             p = psrc + 1;
         }
         else if ( *psrc == '\0' ) {
@@ -284,7 +282,7 @@ int extractVarNames( char **varNames, char *outBuf ) {
 }
 
 int
-execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
+execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParamsDesc,
                         ruleExecInfo_t *rei, int reiSaveFlag )
 
 {

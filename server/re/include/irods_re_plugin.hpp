@@ -125,7 +125,7 @@ namespace irods {
         callback(rule_engine_context_manager<T,C,Audit>& _callback_hdlr) : callback_hdlr_(&_callback_hdlr) {}
 
         template<typename... As>
-        error operator()(std::string _rn, As&&... _ps);
+        error operator()(const std::string& _rn, As&&... _ps);
     protected:
         boost::any callback_hdlr_;
     };
@@ -193,9 +193,9 @@ namespace irods {
             }
         }
 
-        error rule_exists(std::string _rn, T& _re_ctx, bool& _out) {
+        error rule_exists(const std::string& _rn, T& _re_ctx, bool& _out) {
             try {
-                auto fcn = boost::any_cast<std::function<error(T&,std::string,bool&)>>( operations_["rule_exists"] );
+                auto fcn = boost::any_cast<std::function<error(T&,const std::string&,bool&)>>( operations_["rule_exists"] );
                 return fcn(_re_ctx, _rn, _out);
             } catch (const boost::bad_any_cast& e) {
                 return ERROR(INVALID_ANY_CAST, boost::format("failed to extract rule_exists operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
@@ -212,45 +212,42 @@ namespace irods {
         }
 
         template<typename ...As>
-        error exec_rule(std::string _rn, T& _re_ctx, As&&... _ps, callback _callback) {
+        error exec_rule(const std::string& _rn, T& _re_ctx, As&&... _ps, callback _callback) {
             try {
                 auto l = pack(std::forward<As>(_ps)...);
-                auto fcn = boost::any_cast<std::function<error(T&, std::string, std::list<boost::any> &, callback)>>( operations_["exec_rule"] );
+                auto fcn = boost::any_cast<std::function<error(T&, const std::string&, std::list<boost::any> &, callback)>>( operations_["exec_rule"] );
                 return fcn(_re_ctx, _rn, l, _callback);
             } catch (const boost::bad_any_cast& e) {
                 return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
             }
         }
 
-        template<typename ...As>
         error exec_rule_text(
-                std::string _rt,
-                T&          _re_ctx,
-                callback    _callback,
-                As&&...     _ps) {
+                T&                 _re_ctx,
+                const std::string& _rt,
+                msParamArray_t*    _ms_params,
+                const std::string& _out_desc,
+                callback           _callback) {
             try {
-                auto l = pack(std::forward<As>(_ps)...);
                 auto fcn = boost::any_cast<
-                    std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                    std::function<error(T&, const std::string&, msParamArray_t*, const std::string&, callback)>>(
                         operations_["exec_rule_text"] );
-                return fcn(_re_ctx, _rt, l, _callback);
+                return fcn(_re_ctx, _rt, _ms_params, _out_desc, _callback);
             } catch (const boost::bad_any_cast& e) {
                 return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule_text operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
             }
         }
 
-        template<typename ...As>
         error exec_rule_expression(
-                std::string _rt,
-                T&          _re_ctx,
-                callback    _callback,
-                As&&...     _ps) {
+                T&                 _re_ctx,
+                const std::string& _rt,
+                msParamArray_t*    _ms_params,
+                callback           _callback) {
             try {
-                auto l = pack(std::forward<As>(_ps)...);
                 auto fcn = boost::any_cast<
-                    std::function<error(T&, std::string, std::list<boost::any> &, callback)>>(
+                    std::function<error(T&, const std::string&, msParamArray_t*, callback)>>(
                         operations_["exec_rule_expression"] );
-                return fcn(_re_ctx, _rt, l, _callback);
+                return fcn(_re_ctx, _rt, _ms_params, _callback);
             } catch (const boost::bad_any_cast& e) {
                 return ERROR(INVALID_ANY_CAST, boost::format("failed to extract exec_rule_expression operation from instance [%s] exception message [%s]") % instance_name_ % e.what());
             }
@@ -271,30 +268,28 @@ namespace irods {
 
         dynamic_operation_execution_manager(
             std::shared_ptr<rule_engine_context_manager<T,C,Audit> > _re_mgr  // rule engine manager
-        ) : re_mgr_(_re_mgr) { }
+        ) : re_mgr_{_re_mgr} { }
 
-        template<typename... As >
         error exec_rule_text(
-            std::string _rule_text,
-            std::string _instance_name,
-            As&& ... _ps) {
+            const std::string& _instance_name,
+            const std::string& _rule_text,
+            msParamArray_t*    _ms_params,
+            const std::string& _out_desc) {
                 return re_mgr_->exec_rule_text(
-                           _rule_text,
                            _instance_name,
-                           clone(_ps)...);
-
+                           _rule_text,
+                           _ms_params,
+                           _out_desc);
         }
 
-        template<typename... As >
         error exec_rule_expression(
-            std::string _rule_text,
-            std::string _instance_name,
-            As&& ... _ps) {
+            const std::string& _instance_name,
+            const std::string& _rule_text,
+            msParamArray_t*    _ms_params) {
                 return re_mgr_->exec_rule_expression(
-                           _rule_text,
                            _instance_name,
-                           clone(_ps)...);
-
+                           _rule_text,
+                           _ms_params);
         }
 
         template<typename OP, typename... As >
@@ -426,7 +421,7 @@ namespace irods {
     };
 
     template <typename ER, typename EM, typename T, typename ...As>
-    inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, std::string _rn, As &&... _ps) {
+    inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, const std::string& _rn, As &&... _ps) {
         bool ret;
         for(auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
             error ruleExistsError = itr->re_->rule_exists(_rn, itr->re_ctx_, ret);
@@ -444,17 +439,17 @@ namespace irods {
     class rule_exists_manager {
     public:
         rule_exists_manager(rule_engine_manager<T,C>& _re_mgr) :
-                re_mgr_(_re_mgr) {}
+                re_mgr_{_re_mgr} {}
 
         virtual ~rule_exists_manager() {}
 
-        error rule_exists(std::string _rn, bool& ret) {
-            auto er = [&ret] (re_pack_inp<T>&, std::string) {
+        error rule_exists(const std::string& _rn, bool& ret) {
+            auto er = [&ret] (re_pack_inp<T>&, const std::string&) {
                 ret = true;
                 return SUCCESS();
             };
 
-            auto em = [&ret] (std::string) {
+            auto em = [&ret] (const std::string&) {
                 ret = false;
                 return SUCCESS();
             };
@@ -472,23 +467,23 @@ namespace irods {
     class rule_engine_context_manager<T,C,AUDIT_RULE> final : public rule_exists_manager<T,C> {
     public:
         rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx) :
-                rule_exists_manager<T,C>(_re_mgr),
-                ctx_(_ctx),
-                rex_mgr_( std::shared_ptr<rule_engine_context_manager<T,C,DONT_AUDIT_RULE> >(new rule_engine_context_manager<T,C,DONT_AUDIT_RULE >(_re_mgr, _ctx))) {}
+                rule_exists_manager<T,C>{_re_mgr},
+                ctx_{_ctx},
+                rex_mgr_{std::make_shared<rule_engine_context_manager<T,C,DONT_AUDIT_RULE>>(_re_mgr, _ctx)} {}
 
 
         template <typename ...As>
-        error exec_rule(std::string _rn, As &&... _ps) {
-            auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps)... _ps) {
-                std::function<error(std::string, re_pack_inp<T>&, decltype(_ps)...)> fun =
-                [this](std::string _rn, re_pack_inp<T>& _itr, decltype(_ps)... _ps) {
+        error exec_rule(const std::string& _rn, As &&... _ps) {
+            auto er = [this](re_pack_inp<T>& _itr, const std::string& _rn, decltype(_ps)... _ps) {
+                std::function<error(const std::string&, re_pack_inp<T>&, decltype(_ps)...)> fun =
+                [this](const std::string& _rn, re_pack_inp<T>& _itr, decltype(_ps)... _ps) {
                     return _itr.re_->template exec_rule<As...>(_rn, _itr.re_ctx_, std::forward<As >(_ps)..., callback(*this));
                 };
                 return this->rex_mgr_.call(_itr.instance_name_,std::string ("exec_rule"), fun, _rn, _itr, std::forward<As>(_ps)...);
             };
-            auto em = [this](std::string _rn, decltype(_ps) ... _ps) {
-                std::function<error(std::string, C&, decltype(_ps)...)> fun =
-                [this](std::string _rn, C& _ctx, decltype(_ps) ... _ps) {
+            auto em = [this](const std::string& _rn, decltype(_ps) ... _ps) {
+                std::function<error(const std::string&, C&, decltype(_ps)...)> fun =
+                [this](const std::string& _rn, C& _ctx, decltype(_ps) ... _ps) {
                     return this->re_mgr_.ms_mgr_.exec_microservice(_rn, _ctx, std::forward<As>(_ps)...);
                 };
                 return this->rex_mgr_.call(std::string ("microservice_manager"),std::string ("exec_microservice"), fun, _rn, this->ctx_, std::forward<As>(_ps)...);
@@ -496,50 +491,48 @@ namespace irods {
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
 
-        template <typename ...As>
-        error exec_rule_text(std::string _rt, std::string instance_name_, As &&... _ps) {
-            error ret;
-            for( auto itr  = begin(this->re_mgr_.re_packs_);
-                      itr != end(this->re_mgr_.re_packs_);
-                            ++itr ) {
-                if( instance_name_ == itr->instance_name_ ) {
-                    ret = this->rex_mgr_.exec_rule_text(
+        //TODO: Add auditing via rex_mgr_ call
+        error exec_rule_text(
+                const std::string& _instance_name,
+                const std::string& _rt,
+                msParamArray_t*    _ms_params,
+                const std::string& _out_desc) {
+
+            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
+                if( _instance_name == re_pack.instance_name_ ) {
+                    return re_pack.re_->exec_rule_text(
+                            re_pack.re_ctx_,
                             _rt,
-                            itr->instance_name_,
-                            itr->re_ctx_,
-                            callback(*this),
-                            std::forward<As>(_ps)...);
-                    return ret;
+                            _ms_params,
+                            _out_desc,
+                            callback(*this));
                 }
             }
 
             std::string msg( "instance not found [" );
-            msg += instance_name_;
+            msg += _instance_name;
             msg += "]";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );
         }
 
-        template <typename ...As>
-        error exec_rule_expression(std::string _rt, std::string instance_name_, As &&... _ps) {
-            error ret;
-            for( auto itr  = begin(this->re_mgr_.re_packs_);
-                      itr != end(this->re_mgr_.re_packs_);
-                            ++itr ) {
-                if( instance_name_ == itr->instance_name_ ) {
-                    ret = this->rex_mgr_.exec_rule_expression(
+        error exec_rule_expression(
+                const std::string& _instance_name,
+                const std::string& _rt,
+                msParamArray_t*    _ms_params) {
+            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
+                if( _instance_name == re_pack.instance_name_ ) {
+                    return re_pack.re_->exec_rule_expression(
+                            re_pack.re_ctx_,
                             _rt,
-                            itr->instance_name_,
-                            itr->re_ctx_,
-                            callback(*this),
-                            std::forward<As>(_ps)...);
-                    return ret;
+                            _ms_params,
+                            callback(*this));
                 }
             }
 
             std::string msg( "instance not found [" );
-            msg += instance_name_;
+            msg += _instance_name;
             msg += "]";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
@@ -561,62 +554,62 @@ namespace irods {
     public:
 
         rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx) :
-                rule_exists_manager<T,C>(_re_mgr),
-                ctx_(_ctx) {}
+                rule_exists_manager<T,C>{_re_mgr},
+                ctx_{_ctx} {}
 
         template <typename ...As>
-        error exec_rule(std::string _rn, As &&... _ps) {
-            auto er = [this](re_pack_inp<T>& _itr, std::string _rn, decltype(_ps)... _ps) {
+        error exec_rule(const std::string& _rn, As &&... _ps) {
+            auto er = [this](re_pack_inp<T>& _itr, const std::string& _rn, decltype(_ps)... _ps) {
                 return _itr.re_->template exec_rule<As...>( _rn, _itr.re_ctx_, std::forward<As>(_ps)..., callback(*this));
             };
-            auto em = [this](std::string _rn, decltype(_ps)... _ps) {
+            auto em = [this](const std::string& _rn, decltype(_ps)... _ps) {
                 return this->re_mgr_.ms_mgr_.exec_microservice(_rn, this->ctx_, std::forward<As>(_ps)...);
             };
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
 
-        template <typename ...As>
-        error exec_rule_text(std::string _rt, std::string instance_name_, As &&... _ps) {
-            error ret;
-            for( auto itr  = begin(this->re_mgr_.re_packs_);
-                      itr != end(this->re_mgr_.re_packs_);
-                            ++itr ) {
-                if( instance_name_ == itr->instance_name_ ) {
-                    ret = itr->re_->exec_rule_text(
+        error exec_rule_text(
+                const std::string& _instance_name,
+                const std::string& _rt,
+                msParamArray_t*    _ms_params,
+                const std::string& _out_desc) {
+
+            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
+                if( _instance_name == re_pack.instance_name_ ) {
+                    return re_pack.re_->exec_rule_text(
+                            re_pack.re_ctx_,
                             _rt,
-                            itr->re_ctx_,
-                            callback(*this),
-                            std::forward<As>(_ps)...);
-                    return ret;
+                            _ms_params,
+                            _out_desc,
+                            callback(*this));
                 }
             }
 
             std::string msg( "instance not found [" );
-            msg += instance_name_;
+            msg += _instance_name;
             msg += "]";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        msg );
         }
 
-        template <typename ...As>
-        error exec_rule_expression(std::string _rt, std::string instance_name_, As &&... _ps) {
-            error ret;
-            for( auto itr  = begin(this->re_mgr_.re_packs_);
-                      itr != end(this->re_mgr_.re_packs_);
-                            ++itr ) {
-                if( instance_name_ == itr->instance_name_ ) {
-                    ret = itr->re_->exec_rule_expression(
+        error exec_rule_expression(
+                const std::string& _instance_name,
+                const std::string& _rt,
+                msParamArray_t* _ms_params) {
+
+            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
+                if( _instance_name == re_pack.instance_name_ ) {
+                    return re_pack.re_->exec_rule_expression(
+                            re_pack.re_ctx_,
                             _rt,
-                            itr->re_ctx_,
-                            callback(*this),
-                            std::forward<As>(_ps)...);
-                    return ret;
+                            _ms_params,
+                            callback(*this));
                 }
             }
 
             std::string msg( "instance not found [" );
-            msg += instance_name_;
+            msg += _instance_name;
             msg += "]";
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
@@ -685,7 +678,7 @@ namespace irods {
     };
 
     template<typename... As>
-    error callback::operator()(std::string _rn,  As&& ... _ps) {
+    error callback::operator()(const std::string& _rn,  As&& ... _ps) {
         if(callback_hdlr_.type() == typeid(rule_engine_context_manager<default_re_ctx, default_ms_ctx, AUDIT_RULE> *)) {
             auto cb = boost::any_cast<rule_engine_context_manager<default_re_ctx, default_ms_ctx, AUDIT_RULE> *>(callback_hdlr_);
             return cb->exec_rule(_rn, std::forward<As> (_ps)...);

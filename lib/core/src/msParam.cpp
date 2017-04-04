@@ -14,7 +14,7 @@
  */
 
 int
-addMsParam( msParamArray_t *msParamArray, char *label,
+addMsParam( msParamArray_t *msParamArray, const char *label,
             const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
     return addMsParamToArray( msParamArray, label, type,
                                     inOutStruct, inpOutBuf, 0 );
@@ -44,7 +44,7 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
  */
 
 int
-addMsParamToArray( msParamArray_t *msParamArray, char *label,
+addMsParamToArray( msParamArray_t *msParamArray, const char *label,
                    const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag ) {
     msParam_t **newParam;
     int len, newLen;

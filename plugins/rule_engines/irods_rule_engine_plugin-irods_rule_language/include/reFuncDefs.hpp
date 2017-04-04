@@ -149,9 +149,9 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
 ***/
 int print_uoi( userInfo_t *uoi );
 int print_doi( dataObjInfo_t *doi );
-int execMyRule( char * ruleDef,  msParamArray_t *inMsParamArray, char *outParamsDesc,
+int execMyRule( char * ruleDef,  msParamArray_t *inMsParamArray, const char *outParamsDesc,
                 ruleExecInfo_t *rei );
-int execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
+int execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const char *outParamsDesc,
                             ruleExecInfo_t *rei, int reiSaveFlag );
 int executeMyRuleBody( char *action, char *ruleAction, char *ruleRecovery,
                        msParamArray_t *inMsParamArray,
