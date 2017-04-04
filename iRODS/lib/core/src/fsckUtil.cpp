@@ -34,17 +34,15 @@ fsckObj( rcComm_t *conn,
         return USER_INPUT_PATH_ERR;
     }
 
-    /* don't do anything if it is symlink */
-    if ( is_symlink( p ) ) {
+    if (is_symlink(p)) {
         return 0;
     }
 
     int lenInpPath = strlen( inpPathO );
-    /* remove any trailing "/" from inpPathO */
-    if ( lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ] ) {
+    if (lenInpPath > 0 && '/' == inpPathO[ lenInpPath - 1 ]) {
         lenInpPath--;
     }
-    if ( lenInpPath >= LONG_NAME_LEN ) {
+    if (lenInpPath >= LONG_NAME_LEN) {
         rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in fsckObj",
                  inpPathO, ( intmax_t ) LONG_NAME_LEN );
         return USER_STRLEN_TOOLONG;
@@ -89,11 +87,17 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, SetGenQu
         }
         else if ( is_directory( cp ) ) {
             if ( myRodsArgs->recursive == True ) {
-                status = fsckObjDir( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
+                const int tmp_status = fsckObjDir( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
+                if (status == 0) {
+                    status = tmp_status;
+                }
             }
         }
         else {
-            status = chkObjConsistency( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
+            const int tmp_status = chkObjConsistency( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
+            if (status == 0) {
+                status = tmp_status;
+            }
         }
     }
     return status;
@@ -111,8 +115,8 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
     strategy(&genQueryInp, inpPath, argument_for_SetGenQueryInpFromPhysicalPath);
 
     genQueryOut_t *genQueryOut = NULL;
-    int status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
-    if ( status != CAT_NO_ROWS_FOUND && NULL != genQueryOut ) {
+    int status = rcGenQuery( conn, &genQueryInp, &genQueryOut );
+    if ( status == 0 && NULL != genQueryOut ) {
         const char *objName = genQueryOut->sqlResult[0].value;
         const char *objPath = genQueryOut->sqlResult[1].value;
         const intmax_t objSize = atoll( genQueryOut->sqlResult[2].value );
@@ -132,6 +136,7 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
             }
         } else {
             printf( "CORRUPTION: local file [%s] size not consistent with iRODS object [%s/%s] size.\n", inpPath, objPath, objName );
+            status = SYS_INTERNAL_ERR;
         }
     } else {
         printf("ERROR chkObjConsistency: rcGenQuery failed: status [%d] genQueryOut [%p] file [%s]\n", status, genQueryOut, inpPath);

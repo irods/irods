@@ -61,18 +61,18 @@ main( int argc, char **argv ) {
 
     if ( status < 0 ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     status = getRodsEnv( &myEnv );
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
-        exit( 1 );
+        return 1;
     }
 
     status = parseCmdLinePath( argc, argv, optind, &myEnv,
@@ -119,6 +119,9 @@ main( int argc, char **argv ) {
 
     printErrorStack( conn->rError );
     rcDisconnect( conn );
+    if (status != 0) {
+        return 3;
+    }
     return status;
 }
 
