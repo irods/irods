@@ -17,7 +17,7 @@
 #define HASH_BUF_SZ (1024*1024)
 
 int chksumLocFile(
-    char*       _file_name,
+    const char*       _file_name,
     char*       _checksum,
     const char* _hash_scheme ) {
     if ( !_file_name ||
@@ -178,7 +178,7 @@ int chksumLocFile(
 
 int verifyChksumLocFile(
     char *fileName,
-    char *myChksum,
+    const char *myChksum,
     char *chksumStr ) {
     // =-=-=-=-=-=-=-
     // extract scheme from checksum string
@@ -253,4 +253,3 @@ rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, cons
 
     return 0;
 }
-
