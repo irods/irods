@@ -147,12 +147,12 @@ resetMsParam( msParam_t *msParam );
 int
 clearMsParam( msParam_t *msParam, int freeStruct );
 int
-addMsParam( msParamArray_t *msParamArray, char *label,
+addMsParam( msParamArray_t *msParamArray, const char *label,
             const char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf );
 int
 addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt );
 int
-addMsParamToArray( msParamArray_t *msParamArray, char *label,
+addMsParamToArray( msParamArray_t *msParamArray, const char *label,
                    const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag );
 int
 replMsParamArray( msParamArray_t *msParamArray,

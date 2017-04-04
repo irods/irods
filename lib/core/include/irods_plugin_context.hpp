@@ -24,7 +24,7 @@ namespace irods {
                 first_class_object_ptr      _fco,
                 const std::string&          _results )  :
                 comm_( nullptr ),
-                prop_map_( _prop_map ),
+                prop_map_( &_prop_map ),
                 fco_( _fco ),
                 results_( _results )  {
 
@@ -38,17 +38,32 @@ namespace irods {
                 first_class_object_ptr      _fco,
                 const std::string&          _results )  :
                 comm_( _comm ),
-                prop_map_( _prop_map ),
+                prop_map_( &_prop_map ),
                 fco_( _fco ),
                 results_( _results )  {
 
             } // ctor
 
+            // =-=-=-=-=-=-=-
+            // ctor
+            plugin_context& operator=( plugin_context other ) {
+                swap(*this, other);
+                return *this;
+            }
+
             plugin_context(
                 rsComm_t* _comm,
                 irods::plugin_property_map& _prop_map ) :
                 comm_( _comm ),
-                prop_map_( _prop_map ) {
+                prop_map_( &_prop_map ) {
+            }
+
+            friend void swap(plugin_context& first, plugin_context& second) // nothrow
+            {
+                std::swap(first.comm_, second.comm_);
+                std::swap(first.fco_, second.fco_);
+                std::swap(first.prop_map_, second.prop_map_);
+                std::swap(first.results_, second.results_);
             }
 
             // =-=-=-=-=-=-=-
@@ -82,7 +97,7 @@ namespace irods {
             }
 
             virtual irods::plugin_property_map&   prop_map()     {
-                return prop_map_;
+                return *prop_map_;
             }
             virtual first_class_object_ptr fco()          {
                 return fco_;
@@ -104,10 +119,10 @@ namespace irods {
         protected:
             // =-=-=-=-=-=-=-
             // attributes
-            rsComm_t*              comm_;      // server connection handle
-            irods::plugin_property_map&   prop_map_;  // resource property map
-            first_class_object_ptr fco_;       // first class object in question
-            std::string            results_;   // results from the pre op rule call
+            rsComm_t*                   comm_;      // server connection handle
+            irods::plugin_property_map* prop_map_;  // resource property map
+            first_class_object_ptr      fco_;       // first class object in question
+            std::string                 results_;   // results from the pre op rule call
 
     }; // class plugin_context
 
@@ -118,6 +133,3 @@ namespace irods {
 }; // namespace irods
 
 #endif // __IRODS_PLUGIN_CONTEXT_HPP__
-
-
-

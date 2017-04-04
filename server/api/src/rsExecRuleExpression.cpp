@@ -52,19 +52,18 @@ int rsExecRuleExpression(
         }
     }
 
-    std::string out_param_desc = "ruleExecOut";
     irods::rule_engine_context_manager<
         irods::unit,
         ruleExecInfo_t*,
         irods::AUDIT_RULE> re_ctx_mgr(
                                irods::re_plugin_globals->global_re_mgr,
                                rei);
+
+    std::string instance_name_string{instance_name};
     irods::error err = re_ctx_mgr.exec_rule_expression(
+                           instance_name_string,
                            my_rule_text,
-                           instance_name,
-                           _exec_rule->params_,
-                           &out_param_desc,
-                           rei);
+                           _exec_rule->params_);
     if(!err.ok()) {
         rodsLog(
             LOG_ERROR,
