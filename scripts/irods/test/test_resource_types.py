@@ -1,5 +1,6 @@
 from __future__ import print_function
 import getpass
+import inspect
 import os
 import psutil
 import re
@@ -15,13 +16,14 @@ else:
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file, CoreFile
 from .. import test
 from . import settings
 from .. import lib
 from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
-from .rule_texts_for_tests import rule_texts, rule_files
+from .rule_texts_for_tests import rule_texts
 
 def statvfs_path_or_parent(path):
     while not os.path.exists(path):
@@ -723,12 +725,9 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
         # make sure the physical path exists
         lib.make_dir_p(self.admin.get_vault_path('demoResc'))
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
-        with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived']
-
+        with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             self.user0.assert_icommand(['iput', filename])
@@ -1936,11 +1935,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         os.remove(phypath)
 
         # manipulate the core.re to add the new policy
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
-        with lib.file_backed_up(corefile):
+        with temporary_core_file() as core:
             time.sleep(2)  # remove once file hash fix is commited #2279
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive_corrupt_archive__ticket_3145']
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             self.admin.assert_icommand("irm -f " + filename)
@@ -1975,12 +1972,10 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
         # manipulate the core.re to add the new policy
 
-        corefile = os.path.join(IrodsConfig().core_re_directory, rule_files[self.plugin_name])
-        with lib.file_backed_up(corefile):
-            time.sleep(2)  # remove once file hash fix is commited #2279
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660']
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
-            time.sleep(2)  # remove once file hash fix is commited #2279
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            time.sleep(1)  # remove once file hash fix is committed #2279
 
             # restart the server to reread the new core.re
             IrodsController().restart()
@@ -2656,9 +2651,6 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_iget_prefer_from_archive__ticket_1660(self):
-        # define core.re filepath
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        backupcorefile = corefile + "--" + self._testMethodName
 
         # new file to put and get
         filename = "archivepolicyfile.txt"
@@ -2689,56 +2681,42 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         print("original file diff confirmed")
 
         # manipulate the core.re to add the new policy
-        shutil.copy(corefile, backupcorefile)
-        with open(corefile, 'at') as f:
-            print(rule_texts[self.plugin_name][self.class_name]['test_iget_prefer_from_archive__ticket_1660'], file=f, end='')
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            time.sleep(1)  # remove once file hash fix is committed #2279
 
-        # restart the server to reread the new core.re
-        IrodsController().restart()
+            # restart the server to reread the new core.re
+            IrodsController().restart()
 
-        # manually update the replicas in archive vaults
-        out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-        archivereplica1phypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]
-        archivereplica2phypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]
-        print(archive1replicaphypath)
-        print(archive2replicaphypath)
-        with open(archivereplica1phypath, 'wt') as f:
-            print('MANUALLY UPDATED ON ARCHIVE 1 **AGAIN**\n', file=f, end='')
-        with open(archivereplica2phypath, 'wt') as f:
-            print('MANUALLY UPDATED ON ARCHIVE 2 **AGAIN**\n', file=f, end='')
+            # manually update the replicas in archive vaults
+            out, _, _ = self.admin.run_icommand('ils -L ' + filename)
+            archivereplica1phypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]
+            archivereplica2phypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]
+            print(archive1replicaphypath)
+            print(archive2replicaphypath)
+            with open(archivereplica1phypath, 'wt') as f:
+                print('MANUALLY UPDATED ON ARCHIVE 1 **AGAIN**\n', file=f, end='')
+            with open(archivereplica2phypath, 'wt') as f:
+                print('MANUALLY UPDATED ON ARCHIVE 2 **AGAIN**\n', file=f, end='')
 
-        # confirm the new content is on disk
-        with open(archivereplica1phypath) as f:
-            for line in f:
-                print(line)
-        with open(archivereplica2phypath) as f:
-            for line in f:
-                print(line)
-
-        # confirm the core file has new policy
-        print("----- confirm core has new policy ----")
-        with open(corefile) as f:
-            for line in f:
-                if 'pep_' in line:
+            # confirm the new content is on disk
+            with open(archivereplica1phypath) as f:
+                for line in f:
                     print(line)
+            with open(archivereplica2phypath) as f:
+                for line in f:
+                    print(line)
+
+            self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])
+
+            # confirm this is the new archive file
+            with open(retrievedfile) as f:
+                for line in f:
+                    if 'AGAIN' in line:
+                        break
                 else:
-                    print('.')
-        print("----- confirmation done ----")
-
-        self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])
-
-        # confirm this is the new archive file
-        with open(retrievedfile) as f:
-            for line in f:
-                print(line)
-                if 'AGAIN' in line:
-                    break
-            else:
-                assert False
-
-        # restore the original core.re
-        shutil.copy(backupcorefile, corefile)
-        os.remove(backupcorefile)
+                    assert False
 
         # local cleanup
         os.remove(filepath)
@@ -3041,13 +3019,13 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
 
     def setUp(self):
         # back up core file
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        backupcorefile = corefile + "--" + self._testMethodName
-        shutil.copy(corefile, backupcorefile)
+        core = CoreFile()
+        backupcorefilepath = core.filepath + "--" + self._testMethodName
+        shutil.copy(core.filepath, backupcorefilepath)
 
-        # manipulate the core.re to add the new policy
-        with open(corefile, 'at') as f:
-            f.write(rule_texts[self.plugin_name][self.class_name]['setUp'])
+        time.sleep(1)  # remove once file hash fix is committed #2279
+        core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+        time.sleep(1)  # remove once file hash fix is committed #2279
 
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
@@ -3095,10 +3073,10 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         shutil.rmtree(irods_config.irods_directory + "/cacheResc2Vault", ignore_errors=True)
 
         # restore the original core.re
-        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
-        backupcorefile = corefile + "--" + self._testMethodName
-        shutil.copy(backupcorefile, corefile)
-        os.remove(backupcorefile)
+        core = CoreFile()
+        backupcorefilepath = core.filepath + "--" + self._testMethodName
+        shutil.copy(backupcorefilepath, core.filepath)
+        os.remove(backupcorefilepath)
 
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed

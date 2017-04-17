@@ -9,6 +9,7 @@ import commands
 import contextlib
 import copy
 import getpass
+import inspect
 import json
 import os
 import shutil
@@ -20,13 +21,14 @@ import tempfile
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
 from .. import paths
 from .. import test
 from . import session
 from . import settings
 from .. import lib
 from . import resource_suite
-from .rule_texts_for_tests import rule_texts, rule_files
+from .rule_texts_for_tests import rule_texts
 
 def write_host_access_control(filename, username, group, address, mask):
     add_ent = {
@@ -973,68 +975,37 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_host_access_control(self):
         my_ip = socket.gethostbyname(socket.gethostname())
 
-        # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        origcorefile = corefile + '.orig'
-        backupcorefile = corefile + "--" + self._testMethodName
-        shutil.copy(corefile, backupcorefile)
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            time.sleep(1)  # remove once file hash fix is committed #2279
 
-        time.sleep(1)  # remove once file hash fix is commited #2279
-        newrule = rule_texts[self.plugin_name][self.class_name]['test_host_access_control']
-        lib.prepend_string_to_file(newrule, corefile);
+            # restart the server to reread the new core.re
+            IrodsController().restart()
 
-        time.sleep(1)  # remove once file hash fix is commited #2279
+            host_access_control = os.path.join(paths.config_directory(), 'host_access_control_config.json')
 
-        # restart the server to reread the new core.re
-        IrodsController().restart()
-
-        host_access_control = ''
-        if os.path.isfile('/etc/irods/host_access_control_config.json'):
-            host_access_control = '/etc/irods/host_access_control_config.json'
-        else:
-            host_access_control = os.path.join(IrodsConfig().config_directory, 'host_access_control_config.json')
-
-        orig_file = host_access_control + '.orig'
-        os.system('cp %s %s' % (host_access_control, orig_file))
-
-        write_host_access_control(host_access_control, 'nope', 'nope', '', '')
-
-        self.admin.assert_icommand_fail("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
-
-        write_host_access_control(host_access_control, 'all', 'all', my_ip, '255.255.255.255')
-
-        self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
-
-        # restore the original host_access_control.json
-        os.system('mv %s %s' % (orig_file, host_access_control))
-
-        # restore the original core.re
-        shutil.copy(backupcorefile, corefile)
-        os.remove(backupcorefile)
+            with lib.file_backed_up(host_access_control):
+                write_host_access_control(host_access_control, 'nope', 'nope', '', '')
+                self.admin.assert_icommand("ils", 'STDERR_SINGLELINE', "SYS_AGENT_INIT_ERR")
+                write_host_access_control(host_access_control, 'all', 'all', my_ip, '255.255.255.255')
+                self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
     def test_issue_2420(self):
-        # manipulate the core.re to enable host access control
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        backupcorefile = corefile + "--" + self._testMethodName
-        shutil.copy(corefile, backupcorefile)
 
-        time.sleep(1)  # remove once file hash fix is commited #2279
-        newrule = rule_texts[self.plugin_name][self.class_name]['test_issue_2420']
-        lib.prepend_string_to_file(newrule, corefile);
-        time.sleep(1)  # remove once file hash fix is commited #2279
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            time.sleep(1)  # remove once file hash fix is committed #2279
 
-        # restart the server to reread the new core.re
-        IrodsController().restart()
+            # restart the server to reread the new core.re
+            IrodsController().restart()
 
-        self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
+            self.admin.assert_icommand("ils", 'STDOUT_SINGLELINE', self.admin.zone_name)
 
-        # look for the error "unable to read session variable $userNameClient."
-        out, _, _ = lib.execute_command_permissive(
-            ['grep', 'unable to read session variable $userNameClient.', IrodsConfig().server_log_path])
-
-        # restore the original core.re
-        shutil.copy(backupcorefile, corefile)
-        os.remove(backupcorefile)
+            # look for the error "unable to read session variable $userNameClient."
+            out, _, _ = lib.execute_command_permissive(
+                ['grep', 'unable to read session variable $userNameClient.', IrodsConfig().server_log_path])
 
         # check the results for the error
         assert(-1 == out.find("userNameClient"))
@@ -1092,16 +1063,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_msiset_default_resc__2712(self):
         hostname = lib.get_hostname()
         testresc1 = 'TestResc'
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        with lib.file_backed_up(corefile):
-            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_msiset_default_resc__2712']
+        with temporary_core_file() as core:
             time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(2)  # remove once file hash fix is commited #2279
 
             trigger_file = 'file_to_trigger_acSetRescSchemeForCreate'
             lib.make_file(trigger_file, 10)
+            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
             self.user0.assert_icommand(['iput', trigger_file])
             self.user0.assert_icommand(['ils', '-L', trigger_file], 'STDOUT_SINGLELINE', testresc1)
 
