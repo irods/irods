@@ -78,14 +78,14 @@ writeLine("serverLog", "pep_resource_resolve_hierarchy_pre - [*INSTANCE] [*CONTE
 
     def test_api_plugin(self):
         self.helper_test_pep("""
-pep_api_rs_hello_world_pre(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
-    writeLine("serverLog", "pep_api_rs_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
+pep_api_hello_world_pre(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
+    writeLine("serverLog", "pep_api_hello_world_pre - *INST *OUT *HELLO_IN, *HELLO_OUT");
 }
-pep_api_rs_hello_world_post(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
-    writeLine("serverLog", "pep_api_rs_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
+pep_api_hello_world_post(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
+    writeLine("serverLog", "pep_api_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
 }
 """, "iapitest",
-            ['pep_api_rs_hello_world_pre - api_instance auth_scheme=native', 'that=hello, world.++++this=42, null_value', 'HELLO WORLD', 'pep_api_rs_hello_world_post - api_instance auth_scheme=native', 'that=hello, world.++++this=42, that=hello, world.++++this=42++++value=128'])
+            ['pep_api_hello_world_pre - api_instance auth_scheme=native', 'that=hello, world.++++this=42, null_value', 'HELLO WORLD', 'pep_api_hello_world_post - api_instance auth_scheme=native', 'that=hello, world.++++this=42, that=hello, world.++++this=42++++value=128'])
 
     def test_rule_engine_2242(self):
         rule_file1 = "rule1_2242.r"

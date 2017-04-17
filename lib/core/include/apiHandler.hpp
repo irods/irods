@@ -144,7 +144,7 @@ namespace irods {
                                 &rei );
 
                         for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                            std::string rule_name = ns + "pep_api_" + operation_name + "_pre";
+                            std::string rule_name = ns + "pep_" + operation_name + "_pre";
                             if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                                 if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
                                     op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, std::forward<types_t>(_t)... );
@@ -177,7 +177,7 @@ namespace irods {
                         }
 
                         for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                            std::string rule_name = ns + "pep_api_" + operation_name + "_post";
+                            std::string rule_name = ns + "pep_" + operation_name + "_post";
                             if ( RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
                                 if ( re_ctx_mgr.rule_exists( rule_name, ret ).ok() && ret ) {
                                     op_err = re_ctx_mgr.exec_rule( rule_name, "api_instance", ctx, std::forward<types_t>(_t)... );
