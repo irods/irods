@@ -288,13 +288,10 @@ call_with_wrong_number_of_string_arguments(*A, *B, *C) {
 acPostProcForPut {
     call_with_wrong_number_of_string_arguments("a", "b");
 }
+
+acPostProcForPut { )
 '''
-rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources_1'] = '''
-acPostProcForPut {
-    replicateMultiple( "r1, r2" )
-}
-'''
-rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources_2'] = '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources'] = '''
 # multiple replication rule
 replicateMultiple(*destRgStr) {
     *destRgList = split(*destRgStr, ',');
@@ -312,6 +309,9 @@ replicateMultiple(*destRgStr) {
             }
         }
     }
+}
+acPostProcForPut {
+    replicateMultiple( "r1, r2" )
 }
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
@@ -373,16 +373,16 @@ rule_texts['irods_rule_engine_plugin-python'] = {}
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Iadmin'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Iadmin'] ['test_msiset_default_resc__2712'] = ''' 
-def acSetRescSchemeForCreate(rule_args, callback):
+def acSetRescSchemeForCreate(rule_args, callback, rei):
     callback.msiSetDefaultResc('TestResc', 'forced');
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Iadmin'] ['test_host_access_control'] = ''' 
-def acChkHostAccessControl(rule_args, callback):
-    callback.msiCheckHostAccessControl;
+def acChkHostAccessControl(rule_args, callback, rei):
+    callback.msiCheckHostAccessControl()
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Iadmin'] ['test_issue_2420'] = ''' 
-def acAclPolicy(rule_args, callback):
-    userNameClient = session_vars['userNameClient']
+def acAclPolicy(rule_args, callback, rei):
+    userNameClient = str(rei.uoic.userName if rei.uoic else rei.rsComm.clientUser.userName)
     if (userNameClient == 'quickshare'):
         pass
 '''
@@ -392,27 +392,27 @@ def acAclPolicy(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_delay_in_dynamic_pep__3342'] = ''' 
-def pep_resource_write_post(rule_args, callback):
+def pep_resource_write_post(rule_args, callback, rei):
     callback.delayExec('<PLUSET>1s</PLUSET>', 'callback.writeLine("serverLog", "dynamic pep in delay")', '')
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_iput_bulk_check_acpostprocforput__2841'] = ''' 
-def acBulkPutPostProcPolicy(rule_args, callback):
+def acBulkPutPostProcPolicy(rule_args, callback, rei):
     callback.msiSetBulkPutPostProcPolicy('on'); 
 
-def acPostProcForPut(rule_args, callback):
-    obj_path = session_vars['objPath']
+def acPostProcForPut(rule_args, callback, rei):
+    obj_path = str(rei.doi.objPath if rei.doi else rei.doinp.objPath)
     callback.writeLine('serverLog', 'acPostProcForPut called for ' + obj_path); 
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_iput_resc_scheme_forced'] = ''' 
-def acSetRescSchemeForCreate(rule_args, callback):
+def acSetRescSchemeForCreate(rule_args, callback, rei):
     callback.msiSetDefaultResc('demoResc','forced'); 
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_iput_resc_scheme_preferred'] = ''' 
-def acSetRescSchemeForCreate(rule_args, callback):
+def acSetRescSchemeForCreate(rule_args, callback, rei):
     callback.msiSetDefaultResc('demoResc','preferred'); 
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_iput_resc_scheme_null'] = ''' 
-def acSetRescSchemeForCreate(rule_args, callback): 
+def acSetRescSchemeForCreate(rule_args, callback, rei): 
     callback.msiSetDefaultResc('demoResc','null');
 '''
 
@@ -420,35 +420,35 @@ def acSetRescSchemeForCreate(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_network_pep'] = '''
-def pep_network_agent_start_pre(rule_args, callback):
+def pep_network_agent_start_pre(rule_args, callback, rei):
     rule_args[2] = 'THIS IS AN OUT VARIABLE'
 
-def pep_network_agent_start_post(rule_args, callback):
+def pep_network_agent_start_post(rule_args, callback, rei):
     callback.writeLine('serverLog', rule_args[2])
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_auth_pep'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'THIS IS AN OUT VARIABLE'
 
-def pep_resource_resolve_hierarchy_post(rule_args, callback):
+def pep_resource_resolve_hierarchy_post(rule_args, callback, rei):
     callback.writeLine('serverLog', rule_args[2])
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_out_variable'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'THIS IS AN OUT VARIABLE'
 
-def pep_resource_resolve_hierarchy_post(rule_args, callback):
+def pep_resource_resolve_hierarchy_post(rule_args, callback, rei):
     callback.writeLine('serverLog', rule_args[2])
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_re_serialization'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     callback.writeLine('serverLog', 'pep_resource_resolve_hierarchy_pre - [{}] [{}] [{}] [{}] [{}] [{}] [{}]'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3], rule_args[4], rule_args[5], rule_args[6]))
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_api_plugin'] = '''
-def pep_api_rs_hello_world_pre(rule_args, callback):
+def pep_api_rs_hello_world_pre(rule_args, callback, rei):
     callback.writeLine('serverLog', 'pep_api_rs_hello_world_pre - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
 
-def pep_api_rs_hello_world_post(rule_args, callback):
+def pep_api_rs_hello_world_post(rule_args, callback, rei):
     callback.writeLine('serverLog', 'pep_api_rs_hello_world_post - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
 '''
 # SKIP TEST test_rule_engine_2242 FOR PYTHON RULE LANGUAGE
@@ -475,13 +475,13 @@ def pep_api_rs_hello_world_post(rule_args, callback):
 #OUTPUT ruleExecOut
 #'''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2309_1'] = '''
-def acSetNumThreads(rule_args, callback):
-    opr_type = session_vars['oprType']
+def acSetNumThreads(rule_args, callback, rei):
+    opr_type = str(rei.doinp.oprType)
     callback.writeLine('serverLog', 'test_rule_engine_2309: put: acSetNumThreads oprType [' + str(opr_type) + ']')
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2309_2'] = '''
-def acSetNumThreads(rule_args, callback):
-    opr_type = session_vars['oprType']
+def acSetNumThreads(rule_args, callback, rei):
+    opr_type = str(rei.doinp.oprType)
     callback.writeLine('serverLog', 'test_rule_engine_2309: get: acSetNumThreads oprType [' + str(opr_type) + ']')
 '''
 
@@ -489,58 +489,46 @@ def acSetNumThreads(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Quotas'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Quotas']['test_iquota__3044'] = '''
-def acRescQuotaPolicy(rule_args, callback):
+def acRescQuotaPolicy(rule_args, callback, rei):
     callback.msiSetRescQuotaPolicy('on')
 '''
 
 #===== Test_Resource_Compound =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound'] = {}
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-
-    out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], dummy_int)
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+    out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
     if not out_dict[PYTHON_RE_RET_STATUS]:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
 
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiCollRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-
-    out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', dummy_int)
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiCollRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+    out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
     if not out_dict[PYTHON_RE_RET_STATUS]:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
 
 INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjUnlink__2983'] = '''def test_msiDataObjUnlink(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-   
-    out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', dummy_int)
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjUnlink__2983'] = '''def test_msiDataObjUnlink(rule_args, callback, rei):
+    out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
     if not out_dict[PYTHON_RE_RET_STATUS]:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
 
 INPUT *SourceFile="{logical_path}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRepl_as_admin__2988'] = '''def test_msiDataObjRepl(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-
-    out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', dummy_int)
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRepl_as_admin__2988'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+    out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
     if not out_dict[PYTHON_RE_RET_STATUS]:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
 
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def test_msisync_to_archive(rule_args, callback):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def test_msisync_to_archive(rule_args, callback, rei):
     out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
     if not out_dict[PYTHON_RE_RET_STATUS]:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
@@ -549,11 +537,11 @@ INPUT *LogicalPath="{logical_path}", *PhysicalPath="{physical_path}",*RescHier="
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_iget_prefer_from_archive_corrupt_archive__ticket_3145'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'compound_resource_cache_refresh_policy=always'
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_iget_prefer_from_archive__ticket_1660'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'compound_resource_cache_refresh_policy=always'
 '''
 
@@ -561,7 +549,7 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_ReplicationToTwoCompound'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_ReplicationToTwoCompound']['test_iget_prefer_from_archive__ticket_1660'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'compound_resource_cache_refresh_policy=always'
 '''
 
@@ -569,31 +557,27 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive']['setUp'] = '''
-def pep_resource_resolve_hierarchy_pre(rule_args, callback):
+def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
     rule_args[2] = 'compound_resource_cache_refresh_policy=always'
 '''
 
 #===== Test_Resource_Session_Vars__3024 =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'] = {}
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def test_{pep_name}(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-    out_dict = callback.msiDataObjOpen("{target_obj}", dummy_int)
-    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][1]
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
+    out_dict = callback.msiDataObjOpen("{target_obj}", 0)
+    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][1]
 
-    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+    out_dict = callback.msiDataObjClose(file_desc, 0)
 
 INPUT null
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def test_{pep_name}(rule_args, callback):
-    dummy_int = {{}}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-    out_dict = callback.msiDataObjOpen("{target_obj}", dummy_int)
-    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][1]
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
+    out_dict = callback.msiDataObjOpen("{target_obj}", 0)
+    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][1]
 
-    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+    out_dict = callback.msiDataObjClose(file_desc, 0)
 
 INPUT null
 OUTPUT ruleExecOut
@@ -604,7 +588,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Unixfilesystem'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Unixfilesystem']['test_msi_update_unixfilesystem_resource_free_space_and_acPostProcForParallelTransferReceived'] = '''
-def acPostProcForParallelTransferReceived(rule_args, callback):
+def acPostProcForParallelTransferReceived(rule_args, callback, rei):
     callback.msi_update_unixfilesystem_resource_free_space(rule_args[0])
 '''
 
@@ -612,20 +596,16 @@ def acPostProcForParallelTransferReceived(rule_args, callback):
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_client_server_negotiation__2564'] = '''
-def acPreConnect(rule_args, callback):
+def acPreConnect(rule_args, callback, rei):
     rule_args[0] = 'CS_NEG_REQUIRE'
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def test_msiDataObjWrite__2795(rule_args, callback):
-    dummy_int = {}
-    dummy_int[PYTHON_MSPARAM_TYPE] = PYTHON_INT_MS_T
-    out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/test_file.txt', 'null', dummy_int)
-    file_desc = out_dict[PYTHON_RE_RET_OUTPUT][2]
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def test_msiDataObjWrite__2795(rule_args, callback, rei):
+    out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/test_file.txt', 'null', 0)
+    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][2]
 
-    dummy_buf_len = {}
-    dummy_buf_len[PYTHON_MSPARAM_TYPE] = PYTHON_BUF_LEN_MS_T
-    out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', dummy_buf_len)
+    out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', 0)
 
-    out_dict = callback.msiDataObjClose(file_desc, dummy_int)
+    out_dict = callback.msiDataObjClose(file_desc, 0)
 
 INPUT *TEST_ROOT="'''
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_2'] = '''"
@@ -640,28 +620,27 @@ OUTPUT ruleExecOut
 #    call_with_wrong_number_of_string_arguments("a", "b");
 #}
 #'''
-rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources_1'] = '''
-def acPostProcForPut(rule_args, callback):
-    replicateMultiple("r1,r2", callback)
-'''
-rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources_2'] = '''
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources'] = '''
 # multiple replication rule
-def replicateMultiple(in_string, callback):
-    dest_list = in_string.split(',')
-    callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + session_vars['objPath'] + ' ' + session_vars['filePath'] + ' -> ' + in_string)
+def replicateMultiple(dest_list, callback, rei):
+    obj_path = str(rei.doi.objPath if rei.doi is not None else rei.doinp.objPath)
+    filepath = str(rei.doi.filePath)
+    callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + obj_path + ' ' + filepath + ' -> ' + str(dest_list))
     for dest in dest_list:
-        callback.writeLine('serverLog', 'acPostProcForPut replicate ' + session_vars['objPath'] + ' ' + session_vars['filePath'] + ' -> ' + dest)
+        callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
         out_dict = callback.msiSysReplDataObj(dest, 'null')
         if not out_dict[PYTHON_RE_RET_CODE] == 0:
             if out_dict[PYTHON_RE_RET_CODE] == -808000:
-                callback.writeLine('serverLog', session_vars['objPath'] + ' cannot be found')
+                callback.writeLine('serverLog', obj_path + ' cannot be found')
                 return 0
             else:
                 callback.writeLine('serverLog', 'ERROR: ' + out_dict[PYTHON_RE_RET_CODE])
                 return int(out_dict[PYTHON_RE_RET_CODE])
+def acPostProcForPut(rule_args, callback, rei):
+    replicateMultiple(["r1","r2"], callback, rei)
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
-def pep_resource_open_pre(rule_args, callback):
+def pep_resource_open_pre(rule_args, callback, rei):
     retStr = ''
     callback.msiGetSystemTime( retStr, '' )
 '''

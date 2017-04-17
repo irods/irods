@@ -1,3 +1,4 @@
+import inspect
 import os
 import re
 import sys
@@ -11,6 +12,7 @@ else:
 from . import resource_suite
 from .. import lib
 from .. import paths
+from ..core_file import temporary_core_file
 from ..configuration import IrodsConfig
 from .rule_texts_for_tests import rule_texts
 
@@ -28,13 +30,10 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
     def test_iquota__3044(self):
         filename_1 = 'test_iquota__3044_1'
         filename_2 = 'test_iquota__3044_2'
-        corefile = paths.core_re_directory() + "/core.re"
-        with lib.file_backed_up(corefile):
-            #rules_to_prepend = 'acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }\n'
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iquota__3044']
-            time.sleep(2)  # remove once file hash fix is commited #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
-            time.sleep(2)  # remove once file hash fix is commited #2279
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+            time.sleep(1)  # remove once file hash fix is committed #2279
             for quotatype in [['suq',self.admin.username], ['sgq','public']]: # user and group
                 for quotaresc in [self.testresc, 'total']: # resc and total
                     cmd = 'iadmin {0} {1} {2} 10000000'.format(quotatype[0], quotatype[1], quotaresc) # set high quota

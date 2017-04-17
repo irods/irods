@@ -5,6 +5,7 @@ else:
     import unittest2 as unittest
 import contextlib
 import errno
+import inspect
 import logging
 import os
 import pprint
@@ -14,11 +15,13 @@ import shutil
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
+from ..core_file import temporary_core_file
+from .. import paths
 from .. import test
 from . import settings
 from .. import lib
 from . import resource_suite
-from .rule_texts_for_tests import rule_texts, rule_files
+from .rule_texts_for_tests import rule_texts
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
@@ -600,10 +603,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand('ils -l', 'STDOUT_SINGLELINE', [file_name, str(new_size)])
 
     def test_iphymv_root(self):
-        irods_config = IrodsConfig()
-        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.irods_directory + '/test1',
+        self.admin.assert_icommand('iadmin mkresc test1 unixfilesystem ' + lib.get_hostname() + ':' + paths.irods_directory() + '/test1',
                 'STDOUT_SINGLELINE', '')
-        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + lib.get_hostname() + ':' + irods_config.irods_directory + '/test2',
+        self.admin.assert_icommand('iadmin mkresc test2 unixfilesystem ' + lib.get_hostname() + ':' + paths.irods_directory() + '/test2',
                 'STDOUT_SINGLELINE', '')
         self.admin.assert_icommand('iphymv -S test1 -R test2 -r /', 'STDERR_SINGLELINE',
                 'ERROR: phymvUtil: \'/\' does not specify a zone; physical move only makes sense within a zone.')
@@ -611,41 +613,35 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.admin.assert_icommand('iadmin rmresc test2')
 
     def test_delay_in_dynamic_pep__3342(self):
-        irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
-        # manipulate core.re and check the server log
-        with lib.file_backed_up(corefile):
-            initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_delay_in_dynamic_pep__3342']
+        with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
+
+            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
                 lib.make_file(f.name, 80, contents='arbitrary')
                 self.admin.assert_icommand(['iput', '-f', f.name])
             time.sleep(35)
-            assert 1 == lib.count_occurrences_of_string_in_log(irods_config.server_log_path,
+            assert 1 == lib.count_occurrences_of_string_in_log(paths.server_log_path(),
                 'writeLine: inString = dynamic pep in delay', start_index=initial_size_of_server_log)
 
     def test_iput_bulk_check_acpostprocforput__2841(self):
         # prepare test directory
         number_of_files = 5
         dirname = self.admin.local_session_dir + '/files'
-        irods_config = IrodsConfig()
-        corefile = irods_config.core_re_directory + "/" + rule_files[self.plugin_name]
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
             files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
             # manipulate core.re and check the server log
-            with lib.file_backed_up(corefile):
-                initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
-                rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_bulk_check_acpostprocforput__2841']
+            with temporary_core_file() as core:
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                time.sleep(1)  # remove once file hash fix is committed #2279
 
-                time.sleep(1)  # remove once file hash fix is committed #2279
-                lib.prepend_string_to_file(rules_to_prepend, corefile)
-                time.sleep(1)  # remove once file hash fix is committed #2279
+                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['iput', '-frb', dirname])
-                assert number_of_files == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
+                assert number_of_files == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
                 shutil.rmtree(dirname)
 
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
@@ -675,12 +671,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filepath = lib.create_local_testfile(filename)
 
         # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_forced']
-
+        with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
@@ -711,13 +704,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filename = 'test_iput_resc_scheme_preferred_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
-        # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_preferred']
-
+        with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
@@ -748,13 +737,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         filename = 'test_iput_resc_scheme_null_test_file.txt'
         filepath = lib.create_local_testfile(filename)
 
-        # manipulate core.re and check the server log
-        corefile = IrodsConfig().core_re_directory + "/" + rule_files[self.plugin_name]
-        with lib.file_backed_up(corefile):
-            rules_to_prepend = rule_texts[self.plugin_name][self.class_name]['test_iput_resc_scheme_null']
-
+        with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
-            lib.prepend_string_to_file(rules_to_prepend, corefile)
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
             time.sleep(1)  # remove once file hash fix is committed #2279
 
             # test as rodsuser
