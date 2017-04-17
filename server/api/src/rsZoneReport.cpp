@@ -357,7 +357,7 @@ int _rsZoneReport(
         "schema_version",
         json_string((boost::format("%s/%s/zone_bundle.json") %
              irods::get_server_property<const std::string>("schema_validation_base_uri") %
-             irods::get_server_property<const std::string>("schema_validation_base_uri")).str().c_str()
+             irods::get_server_property<const std::string>("schema_version")).str().c_str()
             )
         );
     json_object_set_new( zone, "zones", zone_arr );
