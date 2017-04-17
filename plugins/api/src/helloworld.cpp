@@ -134,7 +134,7 @@ extern "C" {
                                 std::function<
                                     int( rsComm_t*,helloInp_t*,helloOut_t**)>(
                                         rs_hello_world), // operation
-								"rs_hello_world",    // operation name
+								"api_hello_world",    // operation name
                                 0,  // null clear fcn
                                 (funcPtr)CALL_HELLOINP_HELLO_OUT
                               };
