@@ -927,7 +927,7 @@ namespace irods {
                 { std::type_index(typeid(rodsObjStat_t**)), serialize_rodsObjStat_ptr_ptr },
                 { std::type_index(typeid(rodsObjStat_t*)), serialize_rodsObjStat_ptr },
                 { std::type_index(typeid(genQueryInp_t*)), serialize_genQueryInp_ptr },
-                { std::type_index(typeid(genQueryInp_t*)), serialize_genQueryOut_ptr },
+                { std::type_index(typeid(genQueryOut_t*)), serialize_genQueryOut_ptr },
                 { std::type_index(typeid(char**)), serialize_char_ptr_ptr }
             };
             return the_map;
