@@ -429,7 +429,11 @@ namespace irods {
     inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, std::string _rn, As &&... _ps) {
         bool ret;
         for(auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
-            if (itr->re_->rule_exists(_rn, itr->re_ctx_, ret).ok() && ret) {
+            error ruleExistsError = itr->re_->rule_exists(_rn, itr->re_ctx_, ret);
+            if (!ruleExistsError.ok()) {
+                return ruleExistsError;
+            }
+            if (ret) {
                 return _er(*itr, _rn, std::forward<As>(_ps)...);
             }
         }
