@@ -10,6 +10,7 @@ else:
 
 from . import resource_suite
 from .. import lib
+from .. import paths
 
 
 class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
@@ -19,10 +20,11 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
 
     def tearDown(self):
         super(Test_Quotas, self).tearDown()
-
+    
     def test_iquota__3044(self):
-        myfile = 'quotafile'
-        corefile = lib.get_core_re_dir() + "/core.re"
+        filename_1 = 'test_iquota__3044_1'
+        filename_2 = 'test_iquota__3044_2'
+        corefile = paths.core_re_directory() + "/core.re"
         with lib.file_backed_up(corefile):
             rules_to_prepend = 'acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }\n'
             time.sleep(2)  # remove once file hash fix is commited #2279
@@ -30,9 +32,12 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
             time.sleep(2)  # remove once file hash fix is commited #2279
             for quotatype in [['suq',self.admin.username], ['sgq','public']]: # user and group
                 for quotaresc in [self.testresc, 'total']: # resc and total
-                    cmd = 'iadmin {0} {1} {2} 8000'.format(quotatype[0], quotatype[1], quotaresc) # set high quota
+                    cmd = 'iadmin {0} {1} {2} 10000000'.format(quotatype[0], quotatype[1], quotaresc) # set high quota
                     self.admin.assert_icommand(cmd.split())
-                    cmd = 'irepl -R {0} {1}'.format(self.testresc, self.testfile)
+                    cmd = 'iquota'
+                    self.admin.assert_icommand(cmd.split(), 'STDOUT_SINGLELINE', 'Nearing quota') # not over yet
+                    lib.make_file(filename_1, 1024, contents='arbitrary')
+                    cmd = 'iput -R {0} {1}'.format(self.testresc, filename_1) # should succeed
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'iadmin cu' # calculate, update db
                     self.admin.assert_icommand(cmd.split())
@@ -42,19 +47,21 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'iquota'
                     self.admin.assert_icommand(cmd.split(), 'STDOUT_SINGLELINE', 'OVER QUOTA') # confirm it's over
-                    lib.make_file(myfile, 30, contents='arbitrary')
-                    cmd = 'iput -R {0} {1}'.format(self.testresc, myfile) # should fail
+                    lib.make_file(filename_2, 1024, contents='arbitrary')
+                    cmd = 'iput -R {0} {1}'.format(self.testresc, filename_2) # should fail
                     self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
                     cmd = 'iadmin {0} {1} {2} 0'.format(quotatype[0], quotatype[1], quotaresc) # remove quota
                     self.admin.assert_icommand(cmd.split())
                     cmd = 'iadmin cu' # update db
                     self.admin.assert_icommand(cmd.split())
-                    cmd = 'iput -R {0} {1}'.format(self.testresc, myfile) # should succeed again
+                    cmd = 'iput -R {0} {1}'.format(self.testresc, filename_2) # should succeed again
                     self.admin.assert_icommand(cmd.split())
-                    cmd = 'irm -rf {0}'.format(myfile) # clean up
+                    cmd = 'irm -rf {0}'.format(filename_1) # clean up
+                    self.admin.assert_icommand(cmd.split())
+                    cmd = 'irm -rf {0}'.format(filename_2) # clean up
                     self.admin.assert_icommand(cmd.split())
             time.sleep(2)  # remove once file hash fix is commited #2279
-
+    
     def test_iquota_empty__3048(self):
         cmd = 'iadmin suq' # no arguments
         self.admin.assert_icommand(cmd.split(), 'STDERR_SINGLELINE', 'ERROR: missing username parameter') # usage information
