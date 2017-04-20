@@ -131,6 +131,28 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
             }
 
             // =-=-=-=-=-=-=-
+            // if "--repl" was specified, make sure we are dealing with a leaf resource
+            if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
+                bool is_coordinating_resource = false;
+                ret = resc_mgr.is_coordinating_resource(dst_resc, is_coordinating_resource);
+                if ( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                    return ret.code();
+                }
+
+                if ( is_coordinating_resource ) {
+                    char errMsg[256];
+                    snprintf( errMsg, sizeof errMsg, "%s is a coordinating resource; --repl was set, so must specify leaf resource", dst_resc);
+                    int i = addRErrorMsg( &rsComm->rError, USER_INVALID_RESC_INPUT, errMsg );
+                    if ( i < 0 ) {
+                        irods::log( ERROR( i, "addRErrorMsg failed" ) );
+                    }
+
+                    return USER_INVALID_RESC_INPUT;
+                }
+            }
+
+            // =-=-=-=-=-=-=-
             // get parent
             irods::resource_ptr parent_resc;
             ret = resc->get_parent( parent_resc );

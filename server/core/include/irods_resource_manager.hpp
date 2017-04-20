@@ -112,6 +112,10 @@ namespace irods {
             error resc_id_to_name( const std::string&, std::string& );
 
             // =-=-=-=-=-=-=-
+            /// @brief check whether the specified resource name is a coordinating resource
+            error is_coordinating_resource( const std::string&, bool& );
+
+            // =-=-=-=-=-=-=-
             /// @brief resolve a resource from a match with a given property
             template< typename value_type >
             error resolve_from_property( std::string   _prop,    // property key

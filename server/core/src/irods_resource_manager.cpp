@@ -1211,4 +1211,20 @@ namespace irods {
 
     } // resc_id_to_name
 
+    error resource_manager::is_coordinating_resource(
+        const std::string& _resc_name,
+        bool&              _ret ) {
+        if( !resource_name_map_.has_entry(_resc_name) ) {
+            return ERROR(
+                       SYS_RESC_DOES_NOT_EXIST,
+                       _resc_name );
+        }
+
+        resource_ptr resc = resource_name_map_[_resc_name];
+
+        _ret = resc->num_children() > 0;
+
+        return SUCCESS();
+    } // is_coordinating_resource
+
 }; // namespace irods
