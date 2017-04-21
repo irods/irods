@@ -149,6 +149,8 @@ lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
         return status;
     }
 
+    // Need to clear each time in case there are multiple inputs to ils -l
+    clearInxVal( &genQueryInp->sqlCondInp );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myColl );
     addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, condStr );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myData );
