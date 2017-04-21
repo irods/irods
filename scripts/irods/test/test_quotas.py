@@ -77,3 +77,9 @@ class Test_Quotas(resource_suite.ResourceBase, unittest.TestCase):
         # In 4.2.0, iadmin cu does not actually update the r_quota_usage table, so will remain at -10,000,000
         # When fixed, will show the actual value, and so the string below will not match and the assert will fail
         self.admin.assert_icommand_fail(['iquota', '-u', self.admin.username], 'STDOUT_SINGLELINE', 'Over:  -10,000,000 (-10 million) bytes')
+
+    def test_filter_out_groups_when_selecting_user__issue_3507(self):
+        self.admin.assert_icommand(['igroupadmin', 'mkgroup', 'test_group_3507'])
+        # Attempt to set user quota passing in the name of a group; should fail
+        self.admin.assert_icommand_fail(['iadmin', 'suq', 'test_group_3507', '10000000'])
+

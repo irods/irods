@@ -12686,7 +12686,7 @@ irods::error db_set_quota_op(
             bindVars.push_back( userName );
             bindVars.push_back( userZone );
             status = cmlGetIntegerValueFromSql(
-                         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
+                         "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
                          &userId, bindVars, &icss );
         }
         if ( status != 0 ) {
