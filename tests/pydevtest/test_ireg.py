@@ -138,12 +138,14 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ireg', '-Kk', '-R', 'demoResc', os.path.abspath(filename), self.admin.session_collection + '/' + filename]) 
         # ireg --repl should fail if it targets a coordinating (i.e. non-leaf) resource  
         self.admin.assert_icommand_fail(['ireg', '-Kk', '--repl', '-R', 'r_resc', os.path.abspath(filename_2), self.admin.session_collection + '/' + filename], 'STDOUT_SINGLELINE', 'coordinating resource')
+        # ireg --repl should fail if it targets a coordinating (i.e. non-leaf) resource  
+        self.admin.assert_icommand(['ireg', '-Kk', '--repl', '-R', 'r_resc', os.path.abspath(filename_2), self.admin.session_collection + '/' + filename], 'STDERR_SINGLELINE', 'USER_INVALID_RESC_INPUT')
         # ireg --repl should succeed targeting a leaf resource 
         self.admin.assert_icommand(['ireg', '-Kk', '--repl', '-R', 'l_resc', os.path.abspath(filename_2), self.admin.session_collection + '/' + filename]) 
         # ils is just for debug information
         self.admin.assert_icommand(['ils', '-L', self.admin.session_collection], 'STDOUT_SINGLELINE')
         # trim from l_resc so that resource can be deleted later
-        self.admin.assert_icommand(['itrim', '-n1', '-N1', self.admin.session_collection + '/' + filename], 'STDOUT_SINGLELINE', 'trimmed')
+        self.admin.assert_icommand(['itrim', '-n1', '-N1', self.admin.session_collection + '/' + filename])
         # ils is just for debug information
         self.admin.assert_icommand(['ils', '-L', self.admin.session_collection], 'STDOUT_SINGLELINE')
         os.system('rm -f ' + filename)
