@@ -68,6 +68,10 @@ namespace irods {
             error get_root_resources( std::vector< std::string >& );
 
             // =-=-=-=-=-=-=-
+            /// @brief check whether the specified resource name is a coordinating resource
+            error is_coordinating_resource( const std::string&, bool& );
+
+            // =-=-=-=-=-=-=-
             /// @brief print the list of local resources out to stderr
             void print_local_resources();
 

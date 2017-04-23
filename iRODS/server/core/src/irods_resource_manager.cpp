@@ -329,6 +329,24 @@ namespace irods {
     } // get_root_resources
 
 // =-=-=-=-=-=-=-
+/// @brief check whether the specified resource name is a coordinating resource
+    error resource_manager::is_coordinating_resource( 
+        const std::string& _resc_name,
+        bool&              _ret ) {
+
+        resource_ptr resc; 
+        error resolve_error = resolve(_resc_name, resc);
+
+        if ( !resolve_error.ok() ) {
+            PASSMSG("Could not resolve resource", resolve_error);
+        }
+
+        _ret = resc->num_children() > 0;
+
+        return SUCCESS();
+    } // is_coordinating_resource
+
+// =-=-=-=-=-=-=-
 // public - take results from genQuery, extract values and create resources
     error resource_manager::process_init_results( genQueryOut_t* _result ) {
         // =-=-=-=-=-=-=-
