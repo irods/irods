@@ -5,6 +5,8 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+import os
+
 from . import session
 from . import settings
 from . import resource_suite
@@ -28,4 +30,5 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iput', filename_1, rods_filename_1])
         self.admin.assert_icommand(['iput', filename_2, rods_filename_2])
         self.admin.assert_icommand(['ils', '-l', rods_filename_1, rods_filename_2], 'STDOUT_MULTILINE', filename_1, filename_2)
-
+        os.system('rm -f ' + filename_1)
+        os.system('rm -f ' + filename_2)
