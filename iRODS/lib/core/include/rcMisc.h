@@ -14,6 +14,7 @@
 #include "objInfo.h"
 #include "rodsPath.h"
 #include "bulkDataObjPut.h"
+#include <netinet/in.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -320,7 +321,9 @@ getPathStMode( const char* p );
 
 void getRandomBytes( void * buf, int bytes );
 unsigned int getRandomInt();
-int gethostbyname_with_retry(const char *_hostname, struct hostent **_hostent);
+int getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res);
+int get_canonical_name(const char *_hostname, char* _buf, size_t _len);
+int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out);
 
 #ifdef __cplusplus
 }

@@ -59,7 +59,6 @@ int setLocalAddr( int sock, struct sockaddr_in *localAddr );
 int sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag );
 int connectToRhostPortal( char *rodsHost, int rodsPort, int cookie, int windowSize );
 int rsAcceptConn( rsComm_t *svrComm );
-char* rods_inet_ntoa( struct in_addr in );
 int irodsCloseSock( int sock );
 int addUdpPortToPortList( portList_t *thisPortList, int udpport );
 int getUdpPortFromPortList( portList_t *thisPortList );
