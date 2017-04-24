@@ -149,6 +149,7 @@ lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
         return status;
     }
 
+    clearInxVal( &genQueryInp->sqlCondInp );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myColl );
     addInxVal( &genQueryInp->sqlCondInp, COL_COLL_NAME, condStr );
     snprintf( condStr, MAX_NAME_LEN, "='%s'", myData );
