@@ -155,9 +155,6 @@ convZoneSockError( int inStatus );
 int
 resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost );
 int
-resolveHostByDataObjInfo( dataObjInfo_t *dataObjInfo,
-                          rodsServerHost_t **rodsServerHost );
-int
 resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                               rodsServerHost_t **rodsServerHost );
 int

@@ -447,7 +447,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     int remoteFlag;
     if ( dataObjInfo == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "resolveHostByDataObjInfo: NULL dataObjInfo" );
+                 "resoAndConnHostByDataObjInfo: NULL dataObjInfo" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
