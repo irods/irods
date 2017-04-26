@@ -1492,7 +1492,7 @@ insertWhere( char *condition, int option ) {
 int
 genqAppendAccessCheck() {
     int doCheck = 0;
-    int addedTicketCheck = 0;
+    int ticketAlreadyChecked = 0;
 
     if ( accessControlPriv == LOCAL_PRIV_USER_AUTH ) {
         return 0;
@@ -1529,68 +1529,61 @@ genqAppendAccessCheck() {
         return 0;
     }
 
-    /* if an item in R_DATA_MAIN is being accessed, add a
-       (complicated) addition to the where clause to check access */
-    if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
-            strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
+    if ( sessionTicket[0] == '\0' ) {
+        /* Normal access control */
 
-        if ( strlen( whereSQL ) > 6 ) {
-            if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-        }
-        if ( sessionTicket[0] == '\0' ) {
-            /* Normal access control */
-
-            cllBindVars[cllBindVarCount++] = accessControlUserName;
-            cllBindVars[cllBindVarCount++] = accessControlZone;
-            if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-        }
-        else {
-            /* Ticket-based access control */
-            cllBindVars[cllBindVarCount++] = sessionTicket;
-            cllBindVars[cllBindVarCount++] = sessionTicket;
-            if ( !rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-            addedTicketCheck = 1;
-        }
-    }
-
-    /* if an item in R_COLL_MAIN is being accessed, add a
-       (complicated) addition to the where clause to check access */
-    if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
-            strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
-        if ( sessionTicket[0] == '\0' ) {
-            /* Normal access control */
+        if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
+                strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
             if ( strlen( whereSQL ) > 6 ) {
                 if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
+
             cllBindVars[cllBindVarCount++] = accessControlUserName;
             cllBindVars[cllBindVarCount++] = accessControlZone;
-            if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
-        else {
-            /* Ticket-based access control */
-            /* We add this unless we already added the SQL check a few
-              lines above that includes this */
-            if ( addedTicketCheck != 1 ) {
+        
+        if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
+                strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
+            if ( strlen( whereSQL ) > 6 ) {
+                if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            }
+
+            cllBindVars[cllBindVarCount++] = accessControlUserName;
+            cllBindVars[cllBindVarCount++] = accessControlZone;
+            if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_COLL_MAIN.coll_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+        }
+    }
+    else {
+        /* Ticket-based access control */
+
+        if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
+                strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
+            if ( strlen( whereSQL ) > 6 ) {
+                if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            }
+
+            cllBindVars[cllBindVarCount++] = sessionTicket;
+            cllBindVars[cllBindVarCount++] = sessionTicket;
+            cllBindVars[cllBindVarCount++] = sessionTicket;
+            if ( !rstrcat( whereSQL, "( R_DATA_MAIN.data_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+            ticketAlreadyChecked = 1;
+        }
+
+        if ( !ticketAlreadyChecked ) {
+            if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
+                strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
+
                 cllBindVars[cllBindVarCount++] = sessionTicket;
-                if ( strstr( whereSQL, "parent_coll_name =" ) != NULL ) {
-                    /*
-                      If the where clause is checking on the parent
-                      collection, assume that the needed ticket check is on
-                      the parent.  This works for the 'ils' queries so that
-                      a read (or write) ticket on a collection will find the
-                      existing sub-collections.
-                      */
-                    if ( !rstrcat( whereSQL, "parent_coll_name IN (select coll_name from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-                }
-                else {
-                    if ( !rstrcat( whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-                }
+                cllBindVars[cllBindVarCount++] = sessionTicket;
+                if ( !rstrcat( whereSQL, "( R_COLL_MAIN.coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?) OR R_COLL_MAIN.coll_name LIKE (select (coll_name || '%') from R_COLL_MAIN where coll_id in (select object_id from R_TICKET_MAIN TICK where TICK.ticket_string=?)))", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
         }
     }
+
     return 0;
 }
 

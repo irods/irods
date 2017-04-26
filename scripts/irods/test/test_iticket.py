@@ -266,3 +266,30 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj, 'STDERR')
         self.admin.assert_icommand('iticket mod ' + ticket + ' write-byte 0')
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj)
+
+    def test_ticket_read_apply_recursively__issue_3299(self):
+        collname_1 = 'ticket_read_apply_recursively__issue_3299'
+        collname_2 = 'subdir'
+        collname_3 = 'subsubdir'
+        filename_1 = '3299_test_file_1'
+        filename_2 = '3299_test_file_2'
+        filename_3 = '3299_test_file_3'
+        ticket = 'ticket_3299'
+        lib.make_file(filename_1, 1024, 'arbitrary')
+        lib.make_file(filename_2, 1024, 'arbitrary')
+        lib.make_file(filename_3, 1024, 'arbitrary')
+        self.admin.assert_icommand(['icd', self.admin.session_collection])
+        self.admin.assert_icommand(['imkdir', collname_1])
+        self.admin.assert_icommand(['icd', collname_1])
+        self.admin.assert_icommand(['imkdir', collname_2])
+        self.admin.assert_icommand(['iput', '-f', filename_1])
+        self.admin.assert_icommand(['icd', collname_2])
+        self.admin.assert_icommand(['imkdir', collname_3])
+        self.admin.assert_icommand(['iput', '-f', filename_2])
+        self.admin.assert_icommand(['icd', collname_3])
+        self.admin.assert_icommand(['iput', '-f', filename_3])
+        self.admin.assert_icommand(['icd', self.admin.session_collection])
+        self.admin.assert_icommand(['iticket', 'create', 'read', collname_1, ticket])
+        self.admin.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1], 'STDOUT_SINGLELINE', filename_3)
+        self.user.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1, '-t', ticket], 'STDOUT_SINGLELINE', filename_3)
+
