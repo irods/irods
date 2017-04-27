@@ -239,14 +239,12 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
         rstrcpy( thisPortList->hostAddr, laddr, LONG_NAME_LEN );
     }
     else {
-        struct hostent *hostEnt;
         /* server. try to use what is configured */
         if (    LocalServerHost != NULL
              && strcmp( LocalServerHost->hostName->name, "localhost" ) != 0
-             && gethostbyname_with_retry( LocalServerHost->hostName->name, &hostEnt ) == 0 ) {
-            rstrcpy( thisPortList->hostAddr, hostEnt->h_name, LONG_NAME_LEN );
-        }
-        else {
+             && get_canonical_name( LocalServerHost->hostName->name, thisPortList->hostAddr, LONG_NAME_LEN) == 0 ) {
+            // empty block b/c get_canonical_name does the copy on success
+        } else {
             rstrcpy( thisPortList->hostAddr, laddr, LONG_NAME_LEN );
         }
     }
