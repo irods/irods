@@ -14,13 +14,14 @@
 #include <string>
 #include <vector>
 
+#include "boost/program_options.hpp"
+
 #define MAX_SQL 300
 #define BIG_STR 3000
+#define MAX_CMD_TOKENS 40
 
 char cwd[BIG_STR];
 
-int debug = 0;
-int testMode = 0; /* some particular internal tests */
 int longMode = 0; /* more detailed listing */
 int upperCaseFlag = 0;
 
@@ -34,6 +35,12 @@ int printCount = 0;
 
 int usage( char *subOpt );
 
+int do_command( 
+    std::vector< std::string >              _input,
+    boost::program_options::variables_map&  _vm );
+
+int do_interactive( 
+    boost::program_options::variables_map&  _vm );
 /*
  print the results of a general query.
  */
@@ -96,8 +103,8 @@ showDataObj( char *name, char *attrName, int wild ) {
     char myDirName[MAX_NAME_LEN];
     char myFileName[MAX_NAME_LEN];
     int status;
-    /* "id" only used in testMode, in longMode id is reset to be 'time set' :*/
-    char *columnNames[] = {"attribute", "value", "units", "id"};
+    /* Fourth 'time set' column is only used in longMode */
+    char *columnNames[] = { "attribute", "value", "units", "time set" };    
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -113,21 +120,13 @@ showDataObj( char *name, char *attrName, int wild ) {
     i1b[1] = 0;
     i1a[2] = COL_META_DATA_ATTR_UNITS;
     i1b[2] = 0;
-    if ( testMode ) {
-        i1a[3] = COL_META_DATA_ATTR_ID;
-        i1b[3] = 0;
-    }
     if ( longMode ) {
         i1a[3] = COL_META_DATA_MODIFY_TIME;
         i1b[3] = 0;
-        columnNames[3] = "time set";
     }
     genQueryInp.selectInp.inx = i1a;
     genQueryInp.selectInp.value = i1b;
     genQueryInp.selectInp.len = 3;
-    if ( testMode ) {
-        genQueryInp.selectInp.len = 4;
-    }
     if ( longMode ) {
         genQueryInp.selectInp.len = 4;
     }
@@ -654,6 +653,8 @@ int queryDataObj( char *cmdToken[] ) {
         genQueryInp.sqlCondInp.len += 2;
     }
 
+    std::cout << "XXXXX cmdToken[cmdIx] = " << *cmdToken[cmdIx] << std::endl;
+
     if ( *cmdToken[cmdIx] != '\0' ) {
         printf( "Unrecognized input\n" );
         return -2;
@@ -1092,6 +1093,7 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                  status, myName, mySubName );
         free( mySubName );
     }
+    
     return status;
 }
 
@@ -1129,7 +1131,7 @@ getInput( char *cmdToken[], int maxTokens ) {
         if ( ttybuf[i] == '\n' ) {
             ttybuf[i] = '\0';
             cmdToken[nTokens++] = cpTokenStart;
-            return 0;
+            return nTokens;
         }
         if ( tokenFlag == 0 ) {
             if ( ttybuf[i] == '\'' ) {
@@ -1176,226 +1178,932 @@ getInput( char *cmdToken[], int maxTokens ) {
             return -1;
         }
     }
+    return nTokens;
+}
+
+int
+parse_program_options (
+    int                                     _argc,
+    char**                                  _argv,
+    rodsArguments_t&                        _rods_args,
+    boost::program_options::parsed_options& _parsed,
+    boost::program_options::variables_map&  _vm) {
+    namespace po = boost::program_options;
+
+    po::options_description global("Global options");
+    global.add_options()
+        ("help,h",                                             "Show imeta help")
+        ("verbose,v",                                          "Verbose output")
+        ("very_verbose,V",                                     "Very verbose output")
+        ("zone_name,z", po::value< std::string >(),            "Work with the specified zone")
+        ("command", po::value< std::string >(),                "Command to execute")
+        ("subargs", po::value< std::vector< std::string > >(), "Arguments for command");
+
+    po::positional_options_description pos;
+    pos.add("command", 1).
+        add("subargs", -1);
+
+    try {
+        _parsed = 
+            po::command_line_parser( _argc, _argv ).
+            options( global ).
+            positional( pos ).
+            allow_unregistered().
+            run();
+
+        po::store( _parsed, _vm );
+        po::notify( _vm );
+
+        if ( _vm.count( "verbose" ) ) {
+            _rods_args.verbose = 1;
+        }
+
+        if ( _vm.count( "very_verbose" ) ) {
+            _rods_args.verbose = 1;
+            _rods_args.veryVerbose = 1;
+            rodsLogLevel( LOG_NOTICE );
+        }
+
+        if ( _vm.count( "zone_name" ) ) {
+            _rods_args.zone = 1;
+            _rods_args.zoneName = (char*) _vm["zone_name"].as<std::string>().c_str();
+        }
+
+        if ( _vm.count( "help" ) ) {
+            usage( "" );
+            exit( 0 );
+        }
+
+        return 0;
+    } catch ( po::error& _e ) {
+        std::cout << std::endl
+                  << "Error: "
+                  << _e.what()
+                  << std::endl
+                  << std::endl;
+        return SYS_INVALID_INPUT_PARAM;
+    }
+}
+
+int do_interactive( boost::program_options::variables_map& _vm ) {
+    char *cmdToken[40];
+    int status;
+    std::vector< std::string > command;
+
+    while ( true ) {
+        status = getInput( cmdToken, MAX_CMD_TOKENS );
+        if ( status < 0 ) {
+            return status;
+        }
+
+        command.clear();
+        // getInput now returns the number of tokens on success
+        for ( int i = 0; i < status; ++i ) {
+            command.push_back(cmdToken[i]);
+        }
+
+        status = do_command( command, _vm );
+        if ( status < 0 ) {
+            break;
+        }
+    }
+
     return 0;
 }
 
-/*
- Detect a 'l' in a '-' option and if present, set a mode flag and
- remove it from the string (to simplify other processing).
- */
-void
-handleMinusL( char *token ) {
-    char *cptr, *cptr2;
-    if ( *token != '-' ) {
-        return;
+int do_command( 
+    std::vector< std::string >              _input,
+    boost::program_options::variables_map&  _vm ) {
+    namespace po = boost::program_options;
+
+    if ( _input.size() >= MAX_CMD_TOKENS ) {
+        std::cout << "Unrecognized input, too many input tokens\n";
+        exit( 4 );
     }
-    for ( cptr = token++; *cptr != '\0'; cptr++ ) {
-        if ( *cptr == 'l' ) {
+
+    int status;
+
+    std::string cmd = _input.at(0);
+
+    if ( cmd == "add" ||
+         cmd == "adda" ||
+         cmd == "addw" ) {
+        // Add new AVU triple
+        std::string units = "";
+
+        po::options_description add_desc( "add options" );
+        add_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),        "Object name")
+            ("attribute", po::value<std::string>(),   "AVU attribute")
+            ("value", po::value<std::string>(),       "AVU value")
+            ("units", po::value<std::string>(),       "AVU units [optional]");
+
+        po::positional_options_description add_pos;
+        add_pos.add("object_type", 1).
+            add("name", 1).
+            add("attribute", 1).
+            add("value", 1).
+            add("units", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( add_desc ).
+                    positional( add_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        
+        if ( !_vm.count( "value" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        if ( _vm.count( "units" ) ) {
+            units = _vm["units"].as<std::string>();
+        }
+
+        status = modAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type"].as<std::string>().c_str(),
+                        (char*) _vm["name"].as<std::string>().c_str(),
+                        (char*) _vm["attribute"].as<std::string>().c_str(),
+                        (char*) _vm["value"].as<std::string>().c_str(),
+                        (char*) units.c_str(),
+                        "",
+                        "",
+                        "" );
+
+        if ( cmd == "addw" ) {
+            std::cout << "AVU added to " << status << " data-objects\n";
+        }
+
+        return 0;
+    } else if ( cmd == "rm" ||
+                cmd == "rmw" ) {
+        // Remove AVU triple
+        std::string units = "";
+
+        po::options_description rm_desc( "rm options" );
+        rm_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),      "Object name")
+            ("attribute", po::value<std::string>(), "AVU attribute")
+            ("value", po::value<std::string>(),     "AVU value")
+            ("units", po::value<std::string>(),     "AVU units [optional]");
+
+        po::positional_options_description rm_pos;
+        rm_pos.add("object_type", 1).
+            add("name", 1).
+            add("attribute", 1).
+            add("value", 1).
+            add("units", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( rm_desc ).
+                    positional( rm_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "value" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        if ( _vm.count( "units" ) ) {
+            units = _vm["units"].as<std::string>();
+        }
+
+        status = modAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type"].as<std::string>().c_str(),
+                        (char*) _vm["name"].as<std::string>().c_str(),
+                        (char*) _vm["attribute"].as<std::string>().c_str(),
+                        (char*) _vm["value"].as<std::string>().c_str(),
+                        (char*) units.c_str(),
+                        "",
+                        "",
+                        "" );
+
+        return 0;
+    } else if ( cmd == "rmi" ) {
+        // Remove AVU triple by metadata ID
+        po::options_description rmi_desc( "rm options" );
+        rmi_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),        "Object name")
+            ("metadata_id", po::value<std::string>(), "Metadata ID");
+
+        po::positional_options_description rmi_pos;
+        rmi_pos.add("object_type", 1).
+            add("name", 1).
+            add("metadata_id", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( rmi_desc ).
+                    positional( rmi_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "metadata_id" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        status = modAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type"].as<std::string>().c_str(),
+                        (char*) _vm["name"].as<std::string>().c_str(),
+                        (char*) _vm["metadata_id"].as<std::string>().c_str(),
+                        "",
+                        "",
+                        "",
+                        "",
+                        "" );
+
+        return 0;
+    } else if ( cmd == "mod" ) {
+        // Modify existing AVU triple
+        std::string units = "";
+        std::string new_attribute = "";
+        std::string new_value = "";
+        std::string new_units = "";
+
+        po::options_description mod_desc( "mod options" );
+        mod_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),      "Object name")
+            ("attribute", po::value<std::string>(), "AVU attribute")
+            ("value", po::value<std::string>(),     "AVU value")
+            ("opt_1", po::value<std::string>(),     "AVU units [optional]")
+            ("opt_2", po::value<std::string>(),     "New AVU attribute [optional]")
+            ("opt_3", po::value<std::string>(),     "New AVU value [optional]")
+            ("opt_4", po::value<std::string>(),     "New AVU units [optional]");
+
+        po::positional_options_description mod_pos;
+        mod_pos.add("object_type", 1).
+            add("name", 1).
+            add("attribute", 1).
+            add("value", 1).
+            add("opt_1", 1).
+            add("opt_2", 1).
+            add("opt_3", 1).
+            add("opt_4", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( mod_desc ).
+                    positional( mod_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "opt_1" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        } else {
+            // Need to check optional arguments to see if the string represents
+            //  units, new_attribute, new_value, or new_units
+            std::string temp = _vm["opt_1"].as<std::string>();
+
+            if ( temp.substr(2) == "n:" ) {
+                new_attribute = temp;
+            } else if (temp.substr(2) == "v:" ) {
+                new_value = temp;
+            } else if (temp.substr(2) == "u:" ) {
+                new_value = temp;
+            } else {
+                units = temp;
+            }
+        }
+
+        if ( _vm.count( "opt_2" ) ) {
+            std::string temp = _vm["opt_2"].as<std::string>();
+
+            if ( temp.substr(2) == "n:" ) {
+                new_attribute = temp;
+            } else if (temp.substr(2) == "v:" ) {
+                new_value = temp;
+            } else if (temp.substr(2) == "u:" ) {
+                new_value = temp;
+            } else {
+                units = temp;
+            }
+        }
+        
+        if ( _vm.count( "opt_3" ) ) {
+            std::string temp = _vm["opt_3"].as<std::string>();
+
+            if ( temp.substr(2) == "n:" ) {
+                new_attribute = temp;
+            } else if (temp.substr(2) == "v:" ) {
+                new_value = temp;
+            } else if (temp.substr(2) == "u:" ) {
+                new_value = temp;
+            } else {
+                units = temp;
+            }
+        }
+
+        if ( _vm.count( "opt_4" ) ) {
+            std::string temp = _vm["opt_4"].as<std::string>();
+
+            if ( temp.substr(2) == "n:" ) {
+                new_attribute = temp;
+            } else if (temp.substr(2) == "v:" ) {
+                new_value = temp;
+            } else if (temp.substr(2) == "u:" ) {
+                new_value = temp;
+            } else {
+                units = temp;
+            }
+        }
+
+        status = modAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type"].as<std::string>().c_str(),
+                        (char*) _vm["name"].as<std::string>().c_str(),
+                        (char*) _vm["attribute"].as<std::string>().c_str(),
+                        (char*) _vm["value"].as<std::string>().c_str(),
+                        (char*) units.c_str(),
+                        (char*) new_attribute.c_str(),
+                        (char*) new_value.c_str(),
+                        (char*) new_units.c_str() );
+
+        return 0;
+    } else if ( cmd == "set" ) {
+        // Assign a new value to an existing AVU triple
+        std::string new_units = "";
+
+        po::options_description set_desc( "set options" );
+        set_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),      "Object name")
+            ("attribute", po::value<std::string>(), "Attribute name")
+            ("new_value", po::value<std::string>(), "New attribute value")
+            ("new_units", po::value<std::string>(), "New attribute units [optional]");
+
+        po::positional_options_description set_pos;
+        set_pos.add("object_type", 1).
+            add("name", 1).
+            add("attribute", 1).
+            add("new_value", 1).
+            add("new_units", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( set_desc ).
+                    positional( set_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "new_value" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        if ( _vm.count( "new_units" ) ) {
+            new_units = _vm["new_units"].as<std::string>();
+        }
+
+        status = modAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type"].as<std::string>().c_str(),
+                        (char*) _vm["name"].as<std::string>().c_str(),
+                        (char*) _vm["attribute"].as<std::string>().c_str(),
+                        (char*) _vm["new_value"].as<std::string>().c_str(),
+                        (char*) new_units.c_str(),
+                        "",
+                        "",
+                        "" );
+
+        return 0;
+    } else if ( cmd == "ls" ||
+                cmd == "lsw" ) {
+        // List existing AVUs on an iRODS object
+        std::string attribute = "";
+        int wild = ( cmd == "lsw" ) ? 1 : 0;
+
+        po::options_description ls_desc( "ls options" );
+        ls_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("name", po::value<std::string>(),      "Object name")
+            ("attribute", po::value<std::string>(), "Attribute name");
+
+        po::positional_options_description ls_pos;
+        ls_pos.add("object_type", 1).
+            add("name", 1).
+            add("attribute", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( ls_desc ).
+                    positional( ls_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-ld" &&
+             _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "name" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        if ( _vm.count( "attribute" ) ) {
+            attribute = _vm["attribute"].as<std::string>();
+        }
+
+        std::string obj_type = _vm["object_type"].as<std::string>();
+
+        if ( obj_type == "-ld") {
             longMode = 1;
-            for ( cptr2 = cptr; *cptr2 != '\0'; cptr2++ ) {
-                *cptr2 = *( cptr2 + 1 );
+
+            showDataObj( (char*) _vm["name"].as<std::string>().c_str(),
+                         (char*) attribute.c_str(),
+                         wild );
+        } else if ( obj_type == "-d" ) {
+            showDataObj( (char*) _vm["name"].as<std::string>().c_str(),
+                         (char*) attribute.c_str(),
+                         wild );
+        } else if ( obj_type == "-C" ) {
+            showColl( (char*) _vm["name"].as<std::string>().c_str(),
+                      (char*) attribute.c_str(),
+                      wild );
+        } else if ( obj_type == "-R" ) {
+            showResc( (char*) _vm["name"].as<std::string>().c_str(),
+                      (char*) attribute.c_str(),
+                      wild );
+        } else {
+            showUser( (char*) _vm["name"].as<std::string>().c_str(),
+                      (char*) attribute.c_str(),
+                      wild );
+        }
+
+        return 0;
+    } else if ( cmd == "qu" ) {
+        // Query objects with matching AVUs
+        po::options_description qu_desc( "qu options" );
+        qu_desc.add_options()
+            ("object_type", po::value<std::string>(), "Object type (-d/-C/-R/-u)")
+            ("attribute", po::value<std::string>(),              "Attribute name")
+            ("operator", po::value<std::string>(),               "Operator")
+            ("value", po::value<std::string>(),                  "Value to compare against")
+            ("more_args", po::value<std::vector<std::string>>(), "Additional arguments");
+
+        po::positional_options_description qu_pos;
+        qu_pos.add("object_type", 1).
+            add("attribute", 1).
+            add("operator", 1).
+            add("value", 1).
+            add("more_args", -1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( qu_desc ).
+                    positional( qu_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type" ) ||
+            ( _vm["object_type"].as<std::string>() != "-d" &&
+             _vm["object_type"].as<std::string>() != "-C" &&
+             _vm["object_type"].as<std::string>() != "-R" &&
+             _vm["object_type"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "value" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        std::string obj_type = _vm["object_type"].as<std::string>();
+
+        if ( obj_type == "-d" ) {
+            char *tempCmdToken[40];
+            int i = 0;
+            for ( int j = 0; j < MAX_CMD_TOKENS; ++j ) {
+                tempCmdToken[j] = "";
             }
-            return;
-        }
-    }
-    longMode = 0;
-}
 
-/* handle a command,
-   return code is 0 if the command was (at least partially) valid,
-   -1 for quitting,
-   -2 for if invalid
-   -3 if empty.
- */
-int
-doCommand( char *cmdToken[] ) {
-    int wild, doLs;
-    if ( strcmp( cmdToken[0], "help" ) == 0 ||
-            strcmp( cmdToken[0], "h" ) == 0 ) {
-        usage( cmdToken[1] );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "quit" ) == 0 ||
-            strcmp( cmdToken[0], "q" ) == 0 ) {
-        return -1;
-    }
-    if ( strcmp( cmdToken[0], "-v" ) == 0 ||
-            strcmp( cmdToken[0], "-V" ) == 0 ) {
-        return -3;
-    }
+            /* Need to put first element (command) back on to satisfy queryDataObj */
+            _input.insert( _input.begin(), "qu" );
 
-    handleMinusL( cmdToken[1] );
-    handleMinusL( cmdToken[2] );
-
-    if ( strcmp( cmdToken[1], "-C" ) == 0 ) {
-        cmdToken[1][1] = 'c';
-    }
-    if ( strcmp( cmdToken[1], "-D" ) == 0 ) {
-        cmdToken[1][1] = 'd';
-    }
-    if ( strcmp( cmdToken[1], "-R" ) == 0 ) {
-        cmdToken[1][1] = 'r';
-    }
-    if ( strcmp( cmdToken[2], "-C" ) == 0 ) {
-        cmdToken[2][1] = 'c';
-    }
-    if ( strcmp( cmdToken[2], "-D" ) == 0 ) {
-        cmdToken[2][1] = 'd';
-    }
-    if ( strcmp( cmdToken[2], "-R" ) == 0 ) {
-        cmdToken[2][1] = 'r';
-    }
-
-    if ( strcmp( cmdToken[0], "adda" ) == 0 ) {
-        modAVUMetadata( "adda", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], "" );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "add" ) == 0 ) {
-        modAVUMetadata( "add", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], "" );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "addw" ) == 0 ) {
-        int myStat;
-        myStat = modAVUMetadata( "addw", cmdToken[1], cmdToken[2],
-                                 cmdToken[3], cmdToken[4], cmdToken[5],
-                                 cmdToken[6], cmdToken[7], "" );
-        if ( myStat > 0 ) {
-            printf( "AVU added to %d data-objects\n", myStat );
-            lastCommandStatus = 0;
-        }
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "rmw" ) == 0 ) {
-        modAVUMetadata( "rmw", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], "" );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "rm" ) == 0 ) {
-        modAVUMetadata( "rm", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], "" );
-        return 0;
-    }
-    if ( testMode ) {
-        if ( strcmp( cmdToken[0], "rmi" ) == 0 ) {
-            modAVUMetadata( "rmi", cmdToken[1], cmdToken[2],
-                            cmdToken[3], cmdToken[4], cmdToken[5],
-                            cmdToken[6], cmdToken[7], "" );
-            return 0;
-        }
-    }
-    if ( strcmp( cmdToken[0], "mod" ) == 0 ) {
-        modAVUMetadata( "mod", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], cmdToken[8] );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "set" ) == 0 ) {
-        modAVUMetadata( "set", cmdToken[1], cmdToken[2],
-                        cmdToken[3], cmdToken[4], cmdToken[5],
-                        cmdToken[6], cmdToken[7], "" );
-        return 0;
-    }
-
-    doLs = 0;
-    if ( strcmp( cmdToken[0], "lsw" ) == 0 ) {
-        doLs = 1;
-        wild = 1;
-    }
-    if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
-        doLs = 1;
-        wild = 0;
-    }
-    if ( doLs ) {
-        if ( strcmp( cmdToken[1], "-d" ) == 0 ) {
-            showDataObj( cmdToken[2], cmdToken[3], wild );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-C" ) == 0 || strcmp( cmdToken[1], "-c" ) == 0 ) {
-            showColl( cmdToken[2], cmdToken[3], wild );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-R" ) == 0 || strcmp( cmdToken[1], "-r" ) == 0 ) {
-            showResc( cmdToken[2], cmdToken[3], wild );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-u" ) == 0 ) {
-            showUser( cmdToken[2], cmdToken[3], wild );
-            return 0;
-        }
-    }
-
-    if ( strcmp( cmdToken[0], "qu" ) == 0 ) {
-        int status;
-        if ( strcmp( cmdToken[1], "-d" ) == 0 ) {
-            status = queryDataObj( cmdToken );
-            if ( status < 0 ) {
-                return -2;
+            for ( const auto& s : _input ) {
+                tempCmdToken[i++] = (char*) s.c_str();
             }
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-C" ) == 0 || strcmp( cmdToken[1], "-c" ) == 0 ) {
-            status = queryCollection( cmdToken );
-            if ( status < 0 ) {
-                return -2;
-            }
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-R" ) == 0 || strcmp( cmdToken[1], "-r" ) == 0 ) {
-            if ( *cmdToken[5] != '\0' ) {
-                printf( "Unrecognized input\n" );
-                return -2;
-            }
-            queryResc( cmdToken[2], cmdToken[3], cmdToken[4] );
-            return 0;
-        }
-        if ( strcmp( cmdToken[1], "-u" ) == 0 ) {
-            queryUser( cmdToken[2], cmdToken[3], cmdToken[4] );
-            return 0;
-        }
-    }
 
-    if ( strcmp( cmdToken[0], "cp" ) == 0 ) {
-        modCopyAVUMetadata( "cp", cmdToken[1], cmdToken[2],
-                            cmdToken[3], cmdToken[4], cmdToken[5],
-                            cmdToken[6], cmdToken[7] );
+            status = queryDataObj( tempCmdToken );
+        } else if ( obj_type == "-C" ) {
+            char *tempCmdToken[40];
+            int i = 0;
+            for ( int j = 0; j < MAX_CMD_TOKENS; ++j ) {
+                tempCmdToken[j] = "";
+            }
+
+            /* Need to put first element (command) back on to satisfy queryCollection */
+            _input.insert( _input.begin(), "qu" );
+
+            for ( const auto& s : _input ) {
+                tempCmdToken[i++] = (char*) s.c_str();
+            }
+
+            status = queryCollection( tempCmdToken );
+        } else if ( obj_type == "-R" ) {
+            status = queryResc( (char*) _vm["attribute"].as<std::string>().c_str(),
+                                (char*) _vm["operator"].as<std::string>().c_str(),
+                                (char*) _vm["value"].as<std::string>().c_str() );
+        } else {
+            status = queryUser( (char*) _vm["attribute"].as<std::string>().c_str(),
+                                (char*) _vm["operator"].as<std::string>().c_str(),
+                                (char*) _vm["value"].as<std::string>().c_str() );
+        }
+
         return 0;
-    }
+    } else if ( cmd == "cp" ) {
+        // Copy AVUs from one iRODS object to another
+        po::options_description cp_desc( "cp options" );
+        cp_desc.add_options()
+            ("object_type_1", po::value<std::string>(), "First object type (-d/-C/-R/-u)")
+            ("object_type_2", po::value<std::string>(), "Second object type (-d/-C/-R/-u")
+            ("name_1", po::value<std::string>(),        "First object name")
+            ("name_2", po::value<std::string>(),        "Second object name");
 
-    if ( strcmp( cmdToken[0], "upper" ) == 0 ) {
-        if ( upperCaseFlag == 1 ) {
+        po::positional_options_description cp_pos;
+        cp_pos.add("object_type_1", 1).
+            add("object_type_2", 1).
+            add("name_1", 1).
+            add("name_2", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( cp_desc ).
+                    positional( cp_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type_1" ) ||
+            ( _vm["object_type_1"].as<std::string>() != "-d" &&
+             _vm["object_type_1"].as<std::string>() != "-C" &&
+             _vm["object_type_1"].as<std::string>() != "-R" &&
+             _vm["object_type_1"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No first object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "object_type_2" ) ||
+            ( _vm["object_type_2"].as<std::string>() != "-d" &&
+             _vm["object_type_2"].as<std::string>() != "-C" &&
+             _vm["object_type_2"].as<std::string>() != "-R" &&
+             _vm["object_type_2"].as<std::string>() != "-u" ) ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << "No second object type descriptor (-d/C/R/u) specified"
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( !_vm.count( "name_2" ) ) {
+            std::cout << std::endl
+                      << "Error: Not enough arguments provided to "
+                      << cmd
+                      << std::endl
+                      << std::endl;
+        }
+
+        status = modCopyAVUMetadata( (char*) cmd.c_str(),
+                        (char*) _vm["object_type_1"].as<std::string>().c_str(),
+                        (char*) _vm["object_type_2"].as<std::string>().c_str(),
+                        (char*) _vm["name_1"].as<std::string>().c_str(),
+                        (char*) _vm["name_2"].as<std::string>().c_str(),
+                        "",
+                        "",
+                        "" );
+
+        return 0;
+    } else if ( cmd == "upper" ) {
+        // Toggle between upper case mode for queries
+        if ( upperCaseFlag ) {
             upperCaseFlag = 0;
-            printf( "upper case mode disabled\n" );
-        }
-        else {
+            std::cout << "upper case mode disabled\n";
+        } else {
             upperCaseFlag = 1;
-            printf( "upper case mode for 'qu' command enabled\n" );
+            std::cout << "upper case mode for 'qu' command enabled\n";
         }
-        return 0;
-    }
 
-    if ( strcmp( cmdToken[0], "test" ) == 0 ) {
-        if ( testMode ) {
-            testMode = 0;
-            printf( "testMode is now off\n" );
-        }
-        else {
-            testMode = 1;
-            printf( "testMode is now on\n" );
-        }
         return 0;
-    }
+    } else if ( cmd == "help" ||
+                cmd == "h" ) {
+        // Display help for a specified command
+        std::string help_command = "";
+        po::options_description help_desc( "help options" );
+        help_desc.add_options()
+            ("help_command", po::value<std::string>(), "Which command is help for");
 
-    if ( *cmdToken[0] != '\0' ) {
-        printf( "unrecognized subcommand '%s', try 'imeta help'\n", cmdToken[0] );
+        po::positional_options_description help_pos;
+        help_pos.add("help_command", 1);
+
+        try {
+            /*
+            The unrecognized options from parse_program_options contain the
+            first positional argument, the command name. Need to delete it
+            before we continue parsing
+            */
+            _input.erase(_input.begin());
+
+            po::store(
+                po::command_line_parser(_input).
+                    options( help_desc ).
+                    positional( help_pos ).
+                    style(po::command_line_style::unix_style ^ 
+                        po::command_line_style::allow_short).
+                    allow_unregistered().
+                    run(), _vm );
+            po::notify( _vm );
+        } catch ( po::error& _e ) {
+            std::cout << std::endl
+                      << "Error: "
+                      << _e.what()
+                      << std::endl
+                      << std::endl;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        if ( _vm.count( "help_command" ) ) {
+            help_command = _vm["help_command"].as<std::string>();
+        }
+
+        usage( (char*) help_command.c_str() );
+        exit( 0 );
+    } else if ( cmd == "quit" ||
+                cmd == "q" ) {
+        return -1;
+    } else if ( cmd.empty() ) {
+        return -3;
+    } else {
+        std::cout << "unrecognized subcommand '"
+                  << cmd
+                  << "', try 'imeta help'"
+                  << std::endl;
         return -2;
     }
-    return -3;
+
+    return 0;
 }
 
 int
@@ -1403,59 +2111,21 @@ main( int argc, char **argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
-    int status, i, j;
+    int status;
     rErrMsg_t errMsg;
 
     rodsArguments_t myRodsArgs;
 
-
-    int argOffset;
-
-    int maxCmdTokens = 40;
-    char *cmdToken[40];
-    int keepGoing;
-    int firstTime;
-
     rodsLogLevel( LOG_ERROR );
 
-    status = parseCmdLineOpt( argc, argv, "vVhgrcGRCdulz:", 0, &myRodsArgs );
+
+    boost::program_options::variables_map _vm;
+    boost::program_options::parsed_options _parsed(NULL, 0);
+    status = parse_program_options( argc, argv, myRodsArgs, _parsed, _vm );
+
     if ( status ) {
-        printf( "Use -h for help.\n" );
+        std::cout << "Use -h for help\n";
         exit( 1 );
-    }
-    if ( myRodsArgs.help == True ) {
-        usage( "" );
-        exit( 0 );
-    }
-
-    if ( myRodsArgs.zone == True ) {
-        strncpy( zoneArgument, myRodsArgs.zoneName, MAX_NAME_LEN );
-    }
-
-    if ( myRodsArgs.longOption ) {
-        longMode = 1;
-    }
-
-    argOffset = myRodsArgs.optind;
-    if ( argOffset > 1 ) {
-        if ( argOffset > 2 ) {
-            if ( *argv[1] == '-' && *( argv[1] + 1 ) == 'z' ) {
-                if ( *( argv[1] + 2 ) == '\0' ) {
-                    argOffset = 3; /* skip -z zone */
-                }
-                else {
-                    argOffset = 2; /* skip -zzone */
-                }
-            }
-            else {
-                argOffset = 1; /* Ignore the parseCmdLineOpt parsing
-                as -d etc handled  below*/
-            }
-        }
-        else {
-            argOffset = 1; /* Ignore the parseCmdLineOpt parsing
-             as -d etc handled  below*/
-        }
     }
 
     status = getRodsEnv( &myEnv );
@@ -1464,73 +2134,10 @@ main( int argc, char **argv ) {
                  status );
         exit( 1 );
     }
+
     strncpy( cwd, myEnv.rodsCwd, BIG_STR );
     if ( strlen( cwd ) == 0 ) {
         strcpy( cwd, "/" );
-    }
-
-    for ( i = 0; i < maxCmdTokens; i++ ) {
-        cmdToken[i] = "";
-    }
-    j = 0;
-    for ( i = argOffset; i < argc; i++ ) {
-        if ( j >= maxCmdTokens ) {
-            printf( "Unrecognized input, too many input tokens\n" );
-            exit( 4 );
-        }
-        cmdToken[j++] = argv[i];
-    }
-
-#if defined(linux_platform)
-    /*
-      imeta cp -d TestFile1 -d TestFile3
-      comes in as:     -d -d cp TestFile1 TestFile3
-      so switch it to: cp -d -d TestFile1 TestFile3
-    */
-    if ( cmdToken[0] != NULL && *cmdToken[0] == '-' ) {
-        /* args were toggled, switch them back */
-        if ( cmdToken[1] != NULL && *cmdToken[1] == '-' ) {
-            if ( argv[argOffset + 2] ) { cmdToken[0] = argv[argOffset + 2]; }
-            if ( argv[argOffset] ) { cmdToken[1] = argv[argOffset]; }
-            if ( argv[argOffset + 1] ) { cmdToken[2] = argv[argOffset + 1]; }
-        }
-        else {
-            if ( argv[argOffset + 1] ) { cmdToken[0] = argv[argOffset + 1]; }
-            if ( argv[argOffset] ) { cmdToken[1] = argv[argOffset]; }
-        }
-    }
-#else
-    /* tested on Solaris, not sure other than Linux/Solaris */
-    /*
-      imeta cp -d TestFile1 -d TestFile3
-      comes in as:     cp -d TestFile1 -d TestFile3
-      so switch it to: cp -d -d TestFile1 TestFile3
-    */
-    if ( cmdToken[0] != NULL && cmdToken[1] != NULL && *cmdToken[1] == '-' &&
-            cmdToken[2] != NULL && cmdToken[3] != NULL && *cmdToken[3] == '-' ) {
-        /* two args */
-        cmdToken[2] = argv[argOffset + 3];
-        cmdToken[3] = argv[argOffset + 2];
-    }
-
-#endif
-
-    if ( strcmp( cmdToken[0], "help" ) == 0 ||
-            strcmp( cmdToken[0], "h" ) == 0 ) {
-        usage( cmdToken[1] );
-        exit( 0 );
-    }
-
-    if ( strcmp( cmdToken[0], "spass" ) == 0 ) {
-        char scrambled[MAX_PASSWORD_LEN + 100];
-        if ( strlen( cmdToken[1] ) > MAX_PASSWORD_LEN - 2 ) {
-            printf( "Password exceeds maximum length\n" );
-        }
-        else {
-            obfEncodeByKey( cmdToken[1], cmdToken[2], scrambled );
-            printf( "Scrambled form is:%s\n", scrambled );
-        }
-        exit( 0 );
     }
 
     // =-=-=-=-=-=-=-
@@ -1557,36 +2164,18 @@ main( int argc, char **argv ) {
 
     status = clientLogin( Conn );
     if ( status != 0 ) {
-        if ( !debug ) {
-            exit( 3 );
-        }
+        exit( 3 );
     }
 
-    keepGoing = 1;
-    firstTime = 1;
-    while ( keepGoing ) {
-        int status;
-        status = doCommand( cmdToken );
-        if ( status == -1 ) {
-            keepGoing = 0;
-        }
-        if ( firstTime ) {
-            if ( status == 0 ) {
-                keepGoing = 0;
-            }
-            if ( status == -2 ) {
-                keepGoing = 0;
-                lastCommandStatus = -1;
-            }
-            firstTime = 0;
-        }
-        if ( keepGoing ) {
-            status = getInput( cmdToken, maxCmdTokens );
-            if ( status < 0 ) {
-                lastCommandStatus = status;
-                break;
-            }
-        }
+    if ( !_vm.count( "command" ) ) {
+        // No command entered; run in interactive mode
+        do_interactive( _vm );
+    } else {
+        std::vector< std::string > command_to_be_parsed = 
+            boost::program_options::collect_unrecognized( _parsed.options, 
+                                                          boost::program_options::include_positional );
+
+        do_command( command_to_be_parsed, _vm );
     }
 
     printErrorStack( Conn->rError );
