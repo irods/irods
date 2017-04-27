@@ -3793,6 +3793,21 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         output = commands.getstatusoutput('rm ' + filepath)
 
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing, checks vault")
+    def test_ifsck_checksum_mismatch_print_error__3501(self):
+        filename = 'test_ifsck_checksum_mismatch_print_error__3501'
+        filesize = 500
+        lib.make_file(filename, filesize)
+        self.admin.assert_icommand(['iput', '-K', filename])
+        vault_path = lib.get_vault_path(self.admin, resource='unix1Resc')
+        self.admin.assert_icommand(['ifsck', '-rR', 'demoResc;unix1Resc', vault_path])
+        session_vault_path = lib.get_vault_session_path(self.admin, resource='unix1Resc')
+        with open(os.path.join(session_vault_path, filename), 'w') as f:
+            f.write('i'*filesize)
+        rc, _, _ = self.admin.assert_icommand(['ifsck', '-KrR', 'demoResc;unix1Resc', vault_path], 'STDOUT_SINGLELINE', ['CORRUPTION', filename, 'checksum'])
+        self.assertNotEqual(rc, 0, 'ifsck should have non-zero error code on checksum mismatch')
+        os.unlink(filename)
+
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
