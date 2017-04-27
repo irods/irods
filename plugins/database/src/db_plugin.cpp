@@ -503,18 +503,29 @@ _canConnectToCatalog(
     return result;
 }
 
-int
-_resolveHostName(
-    rsComm_t* _rsComm,
-    const char* _hostAddress,
-    struct hostent *& _hostEnt ) {
+static
+int hostname_resolves_to_ipv4(const char* _hostname) {
+    struct addrinfo hint;
+    memset(&hint, 0, sizeof(hint));
+    hint.ai_family = AF_INET;
+    struct addrinfo *p_addrinfo;
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    if (ret_getaddrinfo_with_retry) {
+        return ret_getaddrinfo_with_retry;
+    }
+    freeaddrinfo(p_addrinfo);
+    return 0;
+}
 
-    const int status = gethostbyname_with_retry( _hostAddress, &_hostEnt );
+
+int
+_resolveHostName(rsComm_t* _rsComm, const char* _hostAddress) {
+    const int status = hostname_resolves_to_ipv4(_hostAddress);
 
     if ( status != 0 ) {
         char errMsg[155];
         snprintf( errMsg, 150,
-                  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.",
+                  "Warning, resource host address '%s' is not a valid DNS entry, hostname_resolves_to_ipv4 failed.",
                   _hostAddress );
         addRErrorMsg( &_rsComm->rError, 0, errMsg );
     }
@@ -1779,17 +1790,31 @@ icatGetTicketGroupId( irods::plugin_property_map& _prop_map, const char *groupNa
     return 0;
 }
 
+
+static
+int convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer(const char* _hostname, char* _buf) {
+    struct addrinfo hint;
+    memset(&hint, 0, sizeof(hint));
+    hint.ai_family = AF_INET;
+    struct addrinfo *p_addrinfo;
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    if (ret_getaddrinfo_with_retry) {
+        return ret_getaddrinfo_with_retry;
+    }
+    sprintf(_buf, "%s", inet_ntoa(reinterpret_cast<struct sockaddr_in*>(p_addrinfo->ai_addr)->sin_addr));
+    freeaddrinfo(p_addrinfo);
+    return 0;
+}
+
+
 char *
 convertHostToIp( const char *inputName ) {
-    struct hostent *myHostent;
     static char ipAddr[50];
-    const int status = gethostbyname_with_retry( inputName, &myHostent );
-    if ( status != 0 ) {
-        rodsLog( LOG_ERROR, "convertHostToIp gethostbyname_with_retry error. status [%d]", status );
+    const int status = convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer(inputName, ipAddr);
+    if (status != 0) {
+        rodsLog( LOG_ERROR, "convertHostToIp convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer error. status [%d]", status );
         return NULL;
     }
-    snprintf( ipAddr, sizeof( ipAddr ), "%s",
-              ( char * )inet_ntoa( *( struct in_addr* )( myHostent->h_addr_list[0] ) ) );
     return ipAddr;
 }
 
@@ -3914,7 +3939,6 @@ irods::error db_reg_resc_op(
     char idNum[MAX_SQL_SIZE];
     int status;
     char myTime[50];
-    struct hostent *myHostEnt; // JMC - backport 4597
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegResc" );
@@ -3992,7 +4016,7 @@ irods::error db_reg_resc_op(
     if ( resc_input[irods::RESOURCE_LOCATION] != irods::EMPTY_RESC_HOST ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
-        _resolveHostName( _ctx.comm(), resc_input[irods::RESOURCE_LOCATION].c_str(), myHostEnt );
+        _resolveHostName( _ctx.comm(), resc_input[irods::RESOURCE_LOCATION].c_str());
     }
 
     getNowStr( myTime );
@@ -8163,7 +8187,6 @@ irods::error db_mod_resc_op(
     char rescPath[MAX_NAME_LEN] = "";
     char rescPathMsg[MAX_NAME_LEN + 100];
     char commentStr[200];
-    struct hostent *myHostEnt; // JMC - backport 4597
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModResc" );
@@ -8336,7 +8359,7 @@ irods::error db_mod_resc_op(
     if ( strcmp( _option, "host" ) == 0 ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
-        _resolveHostName( _ctx.comm(), _option_value, myHostEnt );
+        _resolveHostName( _ctx.comm(), _option_value);
 
         // =-=-=-=-=-=-=-
         cllBindVars[cllBindVarCount++] = _option_value;

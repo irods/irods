@@ -79,7 +79,6 @@ void checkbuf( int udpSockfd, int sockbufsize, int verbose ) {
 
 int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
     struct sockaddr_in cliaddr;
-    struct hostent *phe;
 
     // Create a UDP sink
     if ( ( rbudpBase->udpSockfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ) {
@@ -102,11 +101,8 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
 
     // Use connected UDP to receive only from a specific host and port.
     bzero( &cliaddr, sizeof( cliaddr ) );
-    const int status = gethostbyname_with_retry( host, &phe );
-    if ( status == 0 ) {
-        memcpy( &cliaddr.sin_addr, phe->h_addr, phe->h_length );
-    }
-    else if ( ( int )( cliaddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
+    const int status = load_in_addr_from_hostname(host, &cliaddr.sin_addr);
+    if (status != 0 && (( int )( cliaddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
         perror( "can't get host entry" );
         return errno ? ( -1 * errno ) : -1;
     }
@@ -127,17 +123,13 @@ int passiveUDP( rbudpBase_t *rbudpBase, char *host ) {
 int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
     static struct sockaddr_in tcpServerAddr;
     int retval = 0;
-    struct hostent *phe;
     struct timeval start, now;
 
     /*Create a TCP connection */
     bzero( ( char * )&tcpServerAddr, sizeof( tcpServerAddr ) );
     tcpServerAddr.sin_family = AF_INET;
-    const int status = gethostbyname_with_retry( host, &phe );
-    if ( status == 0 ) {
-        memcpy( &tcpServerAddr.sin_addr, phe->h_addr, phe->h_length );
-    }
-    else if ( ( int )( tcpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
+    const int status = load_in_addr_from_hostname(host, &tcpServerAddr.sin_addr);
+    if (status != 0 && ( ( int )( tcpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
         perror( "can't get host entry" );
         return errno ? ( -1 * errno ) : -1;
     }
@@ -160,17 +152,13 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
 
 int connectUDP( rbudpBase_t *rbudpBase, char *host ) {
     static struct sockaddr_in udpClientAddr;
-    struct hostent *phe;
 
     // Fill in the structure whith the address of the server that we want to send to
     // udpServerAddr is class global variable, will be used to send data
     bzero( &rbudpBase->udpServerAddr, sizeof( rbudpBase->udpServerAddr ) );
     rbudpBase->udpServerAddr.sin_family = AF_INET;
-    const int status = gethostbyname_with_retry( host, &phe );
-    if ( status == 0 ) {
-        memcpy( &rbudpBase->udpServerAddr.sin_addr, phe->h_addr, phe->h_length );
-    }
-    else if ( ( int )( rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 ) {
+    const int status = load_in_addr_from_hostname(host, &rbudpBase->udpServerAddr.sin_addr);
+    if (status != 0 && ( ( int )( rbudpBase->udpServerAddr.sin_addr.s_addr = inet_addr( host ) ) == -1 )) {
         perror( "can't get host entry" );
         return errno ? ( -1 * errno ) : -1;
     }

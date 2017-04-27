@@ -82,7 +82,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
 
     def test_status_with_invalid_host(self):
         try:
-            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'not a valid DNS entry')
             _, stdout, _ = assert_command(['irods-grid', 'status', '--all'], 'STDOUT_SINGLELINE')
             assert {'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts']
         finally:
@@ -91,7 +91,7 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Skip for Topology Testing: No way to restart grid')
     def test_shutdown_with_invalid_host(self):
         try:
-            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'gethostbyname failed')
+            assert_command('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'not a valid DNS entry')
             try:
                 _, stdout, _ = assert_command(['irods-grid', 'shutdown', '--all'], 'STDOUT_SINGLELINE', 'shutting down')
                 assert {'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts']

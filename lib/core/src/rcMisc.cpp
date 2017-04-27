@@ -4421,42 +4421,87 @@ hasSymlinkInPath( const char * myPath ) {
 }
 
 
+static std::string stringify_addrinfo_hints(const struct addrinfo *_hints) {
+    std::string ret;
+    if (!_hints) {
+        ret = "null hint pointer";
+    } else {
+        std::stringstream stream;
+        stream << "ai_flags: [" << _hints->ai_flags << "] ai_family: [" << _hints->ai_family << "] ai_socktype: [" << _hints->ai_socktype << "] ai_protocol: [" << _hints->ai_protocol << "]";
+        ret = stream.str();
+    }
+    return ret;
+}
 
 int
-gethostbyname_with_retry(const char *_hostname, struct hostent **_hostent) {
-    *_hostent = 0;
+getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res) {
+    *_res = 0;
     const int max_retry = 300;
     for (int i=0; i<max_retry; ++i) {
-        struct hostent *hostent = gethostbyname( _hostname );
-        if ( hostent == NULL ) {
-            const int h_errno_copy = h_errno;
-            if ( h_errno_copy != TRY_AGAIN ) {
-                rodsLog( LOG_ERROR, "gethostbyname unrecoverable NULL return. retry count: [%d] hostname: [%s] h_errno [%d] hstrerror [%s]", i, _hostname , h_errno_copy, hstrerror(h_errno_copy) );
-                return USER_RODS_HOSTNAME_ERR;
-            }
+        const int ret_getaddrinfo = getaddrinfo(_node, _service, _hints, _res);
+        if (   ret_getaddrinfo == EAI_AGAIN
+            || ret_getaddrinfo == EAI_NONAME
+            || ret_getaddrinfo == EAI_NODATA) { // retryable errors
 
             struct timespec ts_requested;
             ts_requested.tv_sec = 0;
-            ts_requested.tv_nsec = 100000000; // 100 milliseconds
-            while ( 0 != nanosleep( &ts_requested, &ts_requested ) ) {
+            ts_requested.tv_nsec = 100 * 1000 * 1000; // 100 milliseconds
+            while (0 != nanosleep(&ts_requested, &ts_requested)) {
                 const int errno_copy = errno;
-                if ( errno_copy != EINTR ) {
-                    rodsLog( LOG_ERROR, "nanosleep error: errno [%d]", errno_copy );
+                if (errno_copy != EINTR) {
+                    rodsLog(LOG_ERROR, "getaddrinfo_with_retry: nanosleep error: errno [%d]", errno_copy);
                     return USER_RODS_HOSTNAME_ERR - errno_copy;
                 }
             }
-        } else if ( hostent->h_addrtype != AF_INET ) {
-            rodsLog( LOG_ERROR, "gethostbyname h_addrtype not AF_INET. hostname [%s], h_addrtype [%d]", _hostname, hostent->h_addrtype );
+        } else if (ret_getaddrinfo != 0) { // non-retryable error
+            if (ret_getaddrinfo == EAI_SYSTEM) {
+                const int errno_copy = errno;
+                std::string hint_str = stringify_addrinfo_hints(_hints);
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable system error [%d] [%s] [%d] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), errno_copy, _node, hint_str.c_str());
+            } else {
+                std::string hint_str = stringify_addrinfo_hints(_hints);
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable error [%d] [%s] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), _node, hint_str.c_str());
+            }
             return USER_RODS_HOSTNAME_ERR;
         } else {
-            *_hostent = hostent;
             return 0;
         }
-        rodsLog( LOG_DEBUG, "gethostbyname_with_retry retrying gethostbyname. retry count [%d] hostname [%s]", i, _hostname );
+        rodsLog(LOG_DEBUG, "getaddrinfo_with_retry retrying getaddrinfo. retry count [%d] hostname [%s]", i, _node);
     }
-    rodsLog( LOG_ERROR, "gethostbyname_with_retry address resolution timeout [%s]", _hostname );
+    std::string hint_str = stringify_addrinfo_hints(_hints);
+    rodsLog(LOG_ERROR, "getaddrinfo_with_retry address resolution timeout [%s] [%s]", _node, hint_str.c_str());
     return USER_RODS_HOSTNAME_ERR;
 }
+
+
+int get_canonical_name(const char *_hostname, char* _buf, size_t _len) {
+    struct addrinfo hint;
+    memset(&hint, 0, sizeof(hint));
+    hint.ai_flags = AI_CANONNAME;
+    struct addrinfo *p_addrinfo;
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    if (ret_getaddrinfo_with_retry ) {
+        return ret_getaddrinfo_with_retry;
+    }
+    snprintf(_buf, _len, "%s", p_addrinfo->ai_canonname);
+    freeaddrinfo(p_addrinfo);
+    return 0;
+}
+
+int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out) {
+    struct addrinfo hint;
+    memset(&hint, 0, sizeof(hint));
+    hint.ai_family = AF_INET;
+    struct addrinfo *p_addrinfo;
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    if (ret_getaddrinfo_with_retry) {
+        return ret_getaddrinfo_with_retry;
+    }
+    *_out = reinterpret_cast<struct sockaddr_in*>(p_addrinfo->ai_addr)->sin_addr;
+    freeaddrinfo(p_addrinfo);
+    return 0;
+}
+
 
 int
 myWrite( int sock, void *buf, int len,

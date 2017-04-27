@@ -141,38 +141,32 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
 
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
-    struct hostent *hostEnt;
-    time_t beforeTime, afterTime;
-    int status;
-
     if ( rodsServerHost == NULL || myHostName == NULL ) {
         return 0;
     }
 
-    /* gethostbyname could hang for some address */
-    // =-=-=-=-=-=-=-
     // JMC :: consider empty host for coordinating nodes
     if ( irods::EMPTY_RESC_HOST != myHostName ) {
-        beforeTime = time( 0 );
-        status = gethostbyname_with_retry( myHostName, &hostEnt );
-        if ( status != 0 ) {
-            status = SYS_GET_HOSTNAME_ERR;
+        time_t beforeTime = time( 0 );
+        char canonicalName[260]; // DNS specification limits hostnames to 255-ish bytes
+        const int ret_get_canonical_name = get_canonical_name(myHostName, canonicalName, sizeof(canonicalName));
+        if (ret_get_canonical_name != 0) {
             if ( ProcessType == SERVER_PT ) {
                 rodsLog( LOG_NOTICE,
-                         "queAddr: gethostbyname error for %s ,errno = %d\n",
-                         myHostName, errno );
+                         "queAddr: get_canonical_name error for [%s], status [%d]",
+                         myHostName, ret_get_canonical_name);
             }
-            return status;
+            return SYS_GET_HOSTNAME_ERR;
         }
-        afterTime = time( 0 );
+        time_t afterTime = time( 0 );
         if ( afterTime - beforeTime >= 2 ) {
             rodsLog( LOG_NOTICE,
-                     "WARNING WARNING: gethostbyname of %s is taking %d sec. This could severely affect interactivity of your iRODS system",
+                     "WARNING WARNING: get_canonical_name of %s is taking %d sec. This could severely affect interactivity of your Rods system",
                      myHostName, afterTime - beforeTime );
             /* XXXXXX may want to mark resource down later */
         }
-        if ( strcasecmp( myHostName, hostEnt->h_name ) != 0 ) {
-            queHostName( rodsServerHost, hostEnt->h_name, 0 );
+        if ( strcasecmp( myHostName, canonicalName ) != 0 ) {
+            queHostName( rodsServerHost, canonicalName, 0 );
         }
     }
 

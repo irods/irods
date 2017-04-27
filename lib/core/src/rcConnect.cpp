@@ -226,14 +226,11 @@ setRhostInfo( rcComm_t *conn, const char *rodsHost, int rodsPort ) {
 
 int
 setSockAddr( struct sockaddr_in *remoteAddr, const char *rodsHost, int rodsPort ) {
-    struct hostent *myHostent;
-    const int status = gethostbyname_with_retry( rodsHost, &myHostent );
+    const int status = load_in_addr_from_hostname(rodsHost, &remoteAddr->sin_addr);
     if ( status != 0 ) {
         return status;
     }
 
-    memcpy( &remoteAddr->sin_addr, myHostent->h_addr,
-                    myHostent->h_length );
     remoteAddr->sin_family = AF_INET;
     remoteAddr->sin_port = htons( ( unsigned short )( rodsPort ) );
     return 0;
@@ -375,7 +372,6 @@ rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg ) {
 void
 cliReconnManager( rcComm_t *conn ) {
     struct sockaddr_in remoteAddr;
-    struct hostent *myHostent;
     reconnMsg_t reconnMsg;
     reconnMsg_t *reconnMsgOut = NULL;
     if ( conn == NULL || conn->svrVersion == NULL ||
@@ -420,19 +416,15 @@ cliReconnManager( rcComm_t *conn ) {
         conn->reconnThrState = PROCESSING_STATE;
         /* connect to server's reconn thread */
 
-        const int status = gethostbyname_with_retry( conn->svrVersion->reconnAddr, &myHostent );
-
-        if ( status != 0 ) {
-            rodsLog( LOG_ERROR, "cliReconnManager: unknown hostname: %s",
+        const int status = load_in_addr_from_hostname(conn->svrVersion->reconnAddr, &remoteAddr.sin_addr);
+        if (status != 0) {
+            rodsLog(LOG_ERROR, "cliReconnManager: unknown hostname: %s",
                      conn->svrVersion->reconnAddr );
             return;
         }
 
-        memcpy( &remoteAddr.sin_addr, myHostent->h_addr,
-                myHostent->h_length );
         remoteAddr.sin_family = AF_INET;
-        remoteAddr.sin_port =
-            htons( ( unsigned short ) conn->svrVersion->reconnPort );
+        remoteAddr.sin_port = htons((unsigned short)conn->svrVersion->reconnPort);
 
         conn->reconnectedSock =
             connectToRhostWithRaddr( &remoteAddr, conn->windowSize, 0 );
