@@ -4004,6 +4004,18 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    def test_rebalance_different_sized_replicas__3486(self):
+        filename = 'test_rebalance_different_sized_replicas__3486'
+        large_file_size = 40000000
+        lib.make_file(filename, large_file_size)
+        self.admin.assert_icommand(['iput', filename])
+        small_file_size = 20000
+        lib.make_file(filename, small_file_size)
+        self.admin.assert_icommand(['iput', '-f', '-n', '0', filename])
+        self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [filename, str(large_file_size)])
+        self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [filename, str(small_file_size)])
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        self.admin.assert_icommand_fail(['ils', '-l'], 'STDOUT_SINGLELINE', str(large_file_size))
 
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
