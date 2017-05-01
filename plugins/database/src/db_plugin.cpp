@@ -15429,25 +15429,6 @@ irods::error db_general_update_op(
 // =-=-=-=-=-=-=-
 //
 irods::error db_start_operation( irods::plugin_property_map& _props ) {
-#ifdef MY_ICAT
-    char cml_res[ 100 ];
-    const char sql[] = "select PREG_REPLACE('/failed/i', 'succeeded', 'Call to PREG_REPLACE() failed.')";
-    std::vector<std::string> bindVars;
-    int status = cmlGetStringValueFromSql( sql, cml_res, sizeof( cml_res ), bindVars, &icss );
-    if ( status < 0 ) {
-        return ERROR( status, "Failed to call PREG_REPLACE(). See section \"Installing lib_mysqludf_preg\" of iRODS Manual." );
-    }
-
-    if ( strcmp( "Call to PREG_REPLACE() succeeded.", cml_res ) ) {
-        std::stringstream ss;
-        ss << "Call to PREG_REPLACE() returned incorrect result: ["
-           << cml_res
-           << "].";
-        return ERROR( PLUGIN_ERROR, ss.str().c_str() );
-    }
-    rodsLog( LOG_DEBUG, "db_start_operation :: Call to PREG_REPLACE() succeeded" );
-#endif
-
     return SUCCESS();
 
 } // db_start_operation
