@@ -4018,6 +4018,20 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         self.admin.assert_icommand_fail(['ils', '-l'], 'STDOUT_SINGLELINE', str(large_file_size))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing, checks vault")
+    def test_ifsck_with_resource_hierarchy__3512(self):
+        filename = 'test_ifsck_with_resource_hierarchy__3512'
+        lib.make_file(filename, 500)
+        self.admin.assert_icommand(['iput', filename])
+        vault_path = self.admin.get_vault_path(resource='unix1Resc')
+        self.admin.assert_icommand(['ifsck', '-rR', 'demoResc;unix1Resc', vault_path])
+        session_vault_path = self.admin.get_vault_session_path(resource='unix1Resc')
+        with open(os.path.join(session_vault_path, filename), 'a') as f:
+            f.write('additional file contents to trigger ifsck file size error')
+        _, _, rc = self.admin.assert_icommand(['ifsck', '-rR', 'demoResc;unix1Resc', vault_path], 'STDOUT_SINGLELINE', ['CORRUPTION', filename, 'size'])
+        self.assertNotEqual(rc, 0, 'ifsck should have non-zero error code on size mismatch')
+        os.unlink(filename)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing, checks vault")
     def test_ifsck_checksum_mismatch_print_error__3501(self):
         filename = 'test_ifsck_checksum_mismatch_print_error__3501'
         filesize = 500
