@@ -73,6 +73,7 @@ set(
   ireg
   irepl
   irm
+  irmdir
   irmtrash
   irods-grid
   irsync
