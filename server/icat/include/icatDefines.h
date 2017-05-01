@@ -14,7 +14,7 @@
 #define   MAX_NUM_OF_CONCURRENT_STMTS              50
 #define   MAX_NUM_OF_COLS_IN_TABLE                 50
 #define   MAX_SQL_SIZE                             4000
-#define   MAX_SQL_SIZE_GENERAL_QUERY               12000
+#define   MAX_SQL_SIZE_GENERAL_QUERY               16000
 
 #define MAX_INTEGER_SIZE 40  /* ??, for now */
 
