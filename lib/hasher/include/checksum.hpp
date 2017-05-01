@@ -15,10 +15,10 @@ extern "C" {
 #endif
 
 #define SHA256_CHKSUM_PREFIX "sha2:"
-int verifyChksumLocFile( char *fileName, char *myChksum, char *chksumStr );
+int verifyChksumLocFile( char *fileName, const char *myChksum, char *chksumStr );
 
 int
-chksumLocFile( char *fileName, char *chksumStr, const char* );
+chksumLocFile( const char *fileName, char *chksumStr, const char* );
 int
 hashToStr( unsigned char *digest, char *digestStr );
 int
