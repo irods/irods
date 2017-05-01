@@ -9,6 +9,39 @@
 #include "fsckUtil.h"
 void usage();
 
+static int set_genquery_inp_from_physical_path_using_hostname(genQueryInp_t* genquery_inp, const char* physical_path, const char* hostname) {
+    char condStr[MAX_NAME_LEN];
+    memset(genquery_inp, 0, sizeof(*genquery_inp));
+    addInxIval(&genquery_inp->selectInp, COL_DATA_NAME, 1);
+    addInxIval(&genquery_inp->selectInp, COL_COLL_NAME, 1);
+    addInxIval(&genquery_inp->selectInp, COL_DATA_SIZE, 1);
+    addInxIval(&genquery_inp->selectInp, COL_D_DATA_CHECKSUM, 1);
+    genquery_inp->maxRows = MAX_SQL_ROWS;
+
+    snprintf(condStr, sizeof(condStr), "='%s'", physical_path);
+    addInxVal(&genquery_inp->sqlCondInp, COL_D_DATA_PATH, condStr);
+    snprintf(condStr, sizeof(condStr), "like '%s%s' || ='%s'", hostname, "%", hostname);
+    addInxVal(&genquery_inp->sqlCondInp, COL_R_LOC, condStr);
+    return 0;
+}
+
+static int set_genquery_inp_from_physical_path_using_resource_hierarchy(genQueryInp_t* genquery_inp, const char* physical_path, const char* resource_hierarcy) {
+    char condStr[MAX_NAME_LEN];
+    memset(genquery_inp, 0, sizeof(*genquery_inp));
+    addInxIval(&genquery_inp->selectInp, COL_DATA_NAME, 1);
+    addInxIval(&genquery_inp->selectInp, COL_COLL_NAME, 1);
+    addInxIval(&genquery_inp->selectInp, COL_DATA_SIZE, 1);
+    addInxIval(&genquery_inp->selectInp, COL_D_DATA_CHECKSUM, 1);
+    genquery_inp->maxRows = MAX_SQL_ROWS;
+
+    snprintf(condStr, sizeof(condStr), "='%s'", physical_path);
+    addInxVal(&genquery_inp->sqlCondInp, COL_D_DATA_PATH, condStr);
+    snprintf(condStr, sizeof(condStr), "='%s'", resource_hierarcy);
+    addInxVal(&genquery_inp->sqlCondInp, COL_D_RESC_HIER, condStr);
+    return 0;
+}
+
+
 int
 main( int argc, char **argv ) {
 
@@ -19,28 +52,26 @@ main( int argc, char **argv ) {
     rErrMsg_t errMsg;
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
-    char *optStr, hostname[LONG_NAME_LEN];
     rodsPathInp_t rodsPathInp;
 
-
-    optStr = "hrK";
+    const char *optStr = "hrKR:";
 
     status = parseCmdLineOpt( argc, argv, optStr, 0, &myRodsArgs );
 
     if ( status < 0 ) {
         printf( "Use -h for help\n" );
-        exit( 1 );
+        return 1;
     }
     if ( myRodsArgs.help == True ) {
         usage();
-        exit( 0 );
+        return 0;
     }
 
     status = getRodsEnv( &myEnv );
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
-        exit( 1 );
+        return 1;
     }
 
     status = parseCmdLinePath( argc, argv, optind, &myEnv,
@@ -49,7 +80,7 @@ main( int argc, char **argv ) {
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: parseCmdLinePath error. " );
         usage();
-        exit( 1 );
+        return 1;
     }
 
     // =-=-=-=-=-=-=-
@@ -62,30 +93,34 @@ main( int argc, char **argv ) {
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( conn == NULL ) {
-        exit( 2 );
+        return 2;
     }
 
     if ( strcmp( myEnv.rodsUserName, PUBLIC_USER_NAME ) != 0 ) {
         status = clientLogin( conn );
         if ( status != 0 ) {
             rcDisconnect( conn );
-            exit( 7 );
+            return 7;
         }
     }
 
-    status = gethostname( hostname, LONG_NAME_LEN );
-    if ( status < 0 ) {
-        printf( "cannot resolve server name, aborting!\n" );
-        exit( 4 );
+    if (myRodsArgs.resource) {
+        status = fsckObj( conn, &myRodsArgs, &rodsPathInp, set_genquery_inp_from_physical_path_using_resource_hierarchy, myRodsArgs.resourceString);
+    } else {
+        char hostname[LONG_NAME_LEN];
+        status = gethostname(hostname, sizeof(hostname));
+        if (status != 0) {
+            printf("cannot resolve server name, aborting! errno [%d]\n", errno);
+            return 4;
+        }
+        status = fsckObj( conn, &myRodsArgs, &rodsPathInp, set_genquery_inp_from_physical_path_using_hostname, hostname);
     }
-
-    status = fsckObj( conn, &myRodsArgs, &rodsPathInp, hostname );
 
     printErrorStack( conn->rError );
 
     rcDisconnect( conn );
 
-    exit( status );
+    return status;
 
 }
 
