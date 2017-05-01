@@ -143,6 +143,8 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
                     status = verifyChksumLocFile( inpPath, objChksum, NULL );
                     if ( status == USER_CHKSUM_MISMATCH ) {
                         printf( "CORRUPTION: local file %s checksum not consistent with iRODS object %s/%s checksum.\n", inpPath, objPath, objName );
+                    } else if (status != 0) {
+                        printf("ERROR chkObjConsistency: verifyChksumLocFile failed: status [%d] file [%s] objPath [%s] objName [%s] objChksum [%s]\n", status, inpPath, objPath, objName, objChksum);
                     }
                 }
                 else {
@@ -153,7 +155,10 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
         else {
             printf( "CORRUPTION: local file %s size not consistent with iRODS object %s/%s size.\n", inpPath, objPath, objName );
         }
+    } else {
+        printf("ERROR chkObjConsistency: rcGenQuery failed: status [%d] genQueryOut [%p] file [%s]\n", status, genQueryOut, inpPath);
     }
+
 
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
