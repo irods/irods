@@ -793,7 +793,7 @@ acPostProcForParallelTransferReceived(*leaf_resource) {msi_update_unixfilesystem
         # change size in vault
         lib.cat(file_vault_full_path, 'extra letters')
         new_digest = lib.file_digest(file_vault_full_path, 'sha256', encoding='base64')
-        self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION', 'size not consistent with iRODS object'])  # ifsck
+        self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION', 'not consistent with iRODS object'])  # ifsck
         # unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
         self.admin.assert_icommand('irm -U ' + full_logical_path)
         self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)

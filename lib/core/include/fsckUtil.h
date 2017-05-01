@@ -12,12 +12,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef int (*SetGenQueryInpFromPhysicalPath)(genQueryInp_t* out, const char* physical_path, const char* generic_function_argument);
+
 int
-fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN] );
+fsckObj( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, SetGenQueryInpFromPhysicalPath, const char* argument_for_SetGenQueryInpFromPhysicalPath);
 int
-fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
+fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, SetGenQueryInpFromPhysicalPath, const char* argument_for_SetGenQueryInpFromPhysicalPath);
 int
-chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname );
+chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, SetGenQueryInpFromPhysicalPath, const char* argument_for_SetGenQueryInpFromPhysicalPath);
 
 #ifdef __cplusplus
 }

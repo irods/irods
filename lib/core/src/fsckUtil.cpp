@@ -19,7 +19,7 @@ int
 fsckObj( rcComm_t *conn,
          rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp,
-         char hostname[LONG_NAME_LEN] ) {
+         SetGenQueryInpFromPhysicalPath strategy, const char* argument_for_SetGenQueryInpFromPhysicalPath) {
 
     if ( rodsPathInp->numSrc != 1 ) {
         rodsLog( LOG_ERROR, "fsckObj: gave %i input source path, "
@@ -62,24 +62,20 @@ fsckObj( rcComm_t *conn,
             return status;
         }
     }
-    return fsckObjDir( conn, myRodsArgs, inpPath, hostname );
+    return fsckObjDir( conn, myRodsArgs, inpPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
 }
 
 int
-fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname ) {
+fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, SetGenQueryInpFromPhysicalPath strategy, const char* argument_for_SetGenQueryInpFromPhysicalPath) {
     int status = 0;
     char fullPath[MAX_PATH_ALLOWED] = "\0";
 
-    /* check if it is a directory */
     path srcDirPath( inpPath );
     if ( is_symlink( srcDirPath ) ) {
-        /* don't do anything if it is symlink */
         return 0;
-    }
-    else if ( is_directory( srcDirPath ) ) {
-    }
-    else {
-        status = chkObjConsistency( conn, myRodsArgs, inpPath, hostname );
+    } else if ( is_directory( srcDirPath ) ) {
+    } else {
+        status = chkObjConsistency( conn, myRodsArgs, inpPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
         return status;
     }
     directory_iterator end_itr; // default construction yields past-the-end
@@ -93,11 +89,11 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
         }
         else if ( is_directory( cp ) ) {
             if ( myRodsArgs->recursive == True ) {
-                status = fsckObjDir( conn, myRodsArgs, fullPath, hostname );
+                status = fsckObjDir( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
             }
         }
         else {
-            status = chkObjConsistency( conn, myRodsArgs, fullPath, hostname );
+            status = chkObjConsistency( conn, myRodsArgs, fullPath, strategy, argument_for_SetGenQueryInpFromPhysicalPath );
         }
     }
     return status;
@@ -105,55 +101,37 @@ fsckObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 }
 
 int
-chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname ) {
-    int objSize, srcSize, status;
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char condStr[MAX_NAME_LEN], *objChksum, *objName, *objPath;
-    /* retrieve the local file size */
-    path p( inpPath );
-    /* don't do anything if it is symlink */
+chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, SetGenQueryInpFromPhysicalPath strategy, const char* argument_for_SetGenQueryInpFromPhysicalPath ) {
+    const path p(inpPath);
     if ( is_symlink( p ) ) {
         return 0;
     }
-    srcSize = file_size( p );
+    const intmax_t srcSize = file_size(p);
+    genQueryInp_t genQueryInp;
+    strategy(&genQueryInp, inpPath, argument_for_SetGenQueryInpFromPhysicalPath);
 
-    /* retrieve object size and checksum in iRODS */
-    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    addInxIval( &genQueryInp.selectInp, COL_DATA_NAME, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_COLL_NAME, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_DATA_SIZE, 1 );
-    addInxIval( &genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1 );
-    genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", inpPath );
-    addInxVal( &genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr );
-    snprintf( condStr, MAX_NAME_LEN, "like '%s%s' || ='%s'", hostname, "%", hostname );
-    addInxVal( &genQueryInp.sqlCondInp, COL_R_LOC, condStr );
-
-    status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
+    genQueryOut_t *genQueryOut = NULL;
+    int status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
     if ( status != CAT_NO_ROWS_FOUND && NULL != genQueryOut ) {
-        objName = genQueryOut->sqlResult[0].value;
-        objPath = genQueryOut->sqlResult[1].value;
-        objSize = atoi( genQueryOut->sqlResult[2].value );
-        objChksum = genQueryOut->sqlResult[3].value;
+        const char *objName = genQueryOut->sqlResult[0].value;
+        const char *objPath = genQueryOut->sqlResult[1].value;
+        const intmax_t objSize = atoi( genQueryOut->sqlResult[2].value );
+        const char *objChksum = genQueryOut->sqlResult[3].value;
         if ( srcSize == objSize ) {
             if ( myRodsArgs->verifyChecksum == True ) {
                 if ( strcmp( objChksum, "" ) != 0 ) {
                     status = verifyChksumLocFile( inpPath, objChksum, NULL );
                     if ( status == USER_CHKSUM_MISMATCH ) {
-                        printf( "CORRUPTION: local file %s checksum not consistent with iRODS object %s/%s checksum.\n", inpPath, objPath, objName );
+                        printf( "CORRUPTION: local file [%s] checksum not consistent with iRODS object [%s/%s] checksum.\n", inpPath, objPath, objName );
                     } else if (status != 0) {
                         printf("ERROR chkObjConsistency: verifyChksumLocFile failed: status [%d] file [%s] objPath [%s] objName [%s] objChksum [%s]\n", status, inpPath, objPath, objName, objChksum);
                     }
-                }
-                else {
-                    printf( "WARNING: checksum not available for iRODS object %s/%s, no checksum comparison possible with local file %s .\n", objPath, objName, inpPath );
+                } else {
+                    printf( "WARNING: checksum not available for iRODS object [%s/%s], no checksum comparison possible with local file [%s] .\n", objPath, objName, inpPath );
                 }
             }
-        }
-        else {
-            printf( "CORRUPTION: local file %s size not consistent with iRODS object %s/%s size.\n", inpPath, objPath, objName );
+        } else {
+            printf( "CORRUPTION: local file [%s] size [%ji] not consistent with iRODS object [%s/%s] size [%ji].\n", inpPath, srcSize, objPath, objName, objSize );
         }
     } else {
         printf("ERROR chkObjConsistency: rcGenQuery failed: status [%d] genQueryOut [%p] file [%s]\n", status, genQueryOut, inpPath);
