@@ -625,7 +625,7 @@ _rsDataObjReplS(
         status = l3DataStageSync( rsComm, l1descInx );
     }
     else if ( L1desc[l1descInx].dataObjInp->numThreads == 0 &&
-              L1desc[l1descInx].dataObjInfo->dataSize  <= single_buff_sz ) {
+              L1desc[L1desc[l1descInx].srcL1descInx].dataObjInfo->dataSize  <= single_buff_sz ) {
         status = l3DataCopySingleBuf( rsComm, l1descInx );
     }
     else {
