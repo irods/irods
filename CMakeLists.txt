@@ -382,6 +382,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcPortalOpr.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/regUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/replUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/rmdirUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rmUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rmtrashUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rsyncUtil.cpp
@@ -1046,6 +1047,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/regUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/region.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/replUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/rmdirUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rmUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rmtrashUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsLog.cpp
