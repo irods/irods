@@ -104,6 +104,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/regUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/region.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/replUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/rmdirUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rmUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rmtrashUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rods.h
