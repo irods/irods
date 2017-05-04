@@ -12,14 +12,12 @@
 
 // =-=-=-=-=-=-=-
 // work around for SSL Macro version issues
-#ifdef sk_GENERAL_NAMES_num
-#define GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
-#define GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
-#define GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
-#else
-#define GENERAL_NAMES_NUM sk_GENERAL_NAME_num
-#define GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
-#define GENERAL_NAMES_FREE sk_GENERAL_NAME_free
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+#define ASN1_STRING_get0_data ASN1_STRING_data
+#define DH_set0_pqg(dh_, p_, q_, g_) \
+    dh_->p = p_; \
+    dh_->q = q_; \
+    dh_->g = g_;
 #endif
 
 
@@ -750,17 +748,18 @@ get_dh2048() {
     static unsigned char dh2048_g[] = {
         0x02,
     };
-    DH *dh;
+    auto *dh = DH_new();
 
-    if ( ( dh = DH_new() ) == NULL ) {
+    if ( !dh ) {
         return NULL;
     }
-    dh->p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
-    dh->g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
-    if ( ( dh->p == NULL ) || ( dh->g == NULL ) ) {
+    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
+    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
+    if ( !p || !g ) {
         DH_free( dh );
         return NULL;
     }
+    DH_set0_pqg(dh, p, nullptr, g);
     return dh;
 }
 
@@ -799,7 +798,7 @@ sslVerifyCallback( int ok, X509_STORE_CTX *store ) {
 
     /* log any verification problems, even if we'll still accept the cert */
     if ( !ok ) {
-        X509 *cert = X509_STORE_CTX_get_current_cert( store );
+        auto *cert = X509_STORE_CTX_get_current_cert( store );
         int  depth = X509_STORE_CTX_get_error_depth( store );
         int  err = X509_STORE_CTX_get_error( store );
 
@@ -828,12 +827,7 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
 
     }
 
-    X509 *cert;
     int match = 0;
-    STACK_OF( GENERAL_NAMES ) *names;
-    GENERAL_NAME *name;
-    int num_names, i;
-    char *namestr;
     char cn[256];
 
     const char* verify_server = env.irodsSSLVerifyServer;
@@ -843,7 +837,7 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
         return 1;
     }
 
-    cert = SSL_get_peer_certificate( ssl );
+    auto* cert = SSL_get_peer_certificate( ssl );
     if ( cert == NULL ) {
         /* no certificate presented */
         return 0;
@@ -857,19 +851,18 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
 
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
-    names = ( STACK_OF( GENERAL_NAMES )* )X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL );
-    num_names = GENERAL_NAMES_NUM( names );
-    for ( i = 0; i < num_names; i++ ) {
-        name = ( GENERAL_NAME* )GENERAL_NAMES_VALUE( names, i );
+    auto names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL ));
+    std::size_t num_names = sk_GENERAL_NAME_num( names );
+    for ( std::size_t i = 0; i < num_names; i++ ) {
+        auto* name = sk_GENERAL_NAME_value( names, i );
         if ( name->type == GEN_DNS ) {
-            namestr = ( char* )ASN1_STRING_data( name->d.dNSName );
-            if ( !strcasecmp( namestr, peer ) ) {
+            if ( !strcasecmp( reinterpret_cast<const char*>(ASN1_STRING_get0_data( name->d.dNSName )), peer ) ) {
                 match = 1;
                 break;
             }
         }
     }
-    GENERAL_NAMES_FREE( names );
+    sk_GENERAL_NAME_free( names );
 
     /* if no match above, check the common name in the certificate */
     if ( !match &&
