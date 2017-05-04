@@ -1214,3 +1214,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
         self.admin.assert_icommand(["iadmin", "rfg", "g1", self.user1.username])
         self.admin.assert_icommand(["iadmin", "rmgroup", "g1"])
+
+    def test_idempotent_aua__issue_3104(self):
+        username = 'issue_3104_user'
+        authentication_name = '3104_user@TEST.AUTHENTICATION'
+        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        out, _, _ = self.admin.run_icommand(['iadmin', 'lua', username])
+        self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
