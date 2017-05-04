@@ -173,10 +173,9 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // create an encryption context
-        EVP_CIPHER_CTX context;
-        EVP_CIPHER_CTX_init( &context );
+        auto* context = EVP_CIPHER_CTX_new();
 
-        const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
+        auto* algo = EVP_get_cipherbyname( algorithm_.c_str() );
         if ( !algo ) {
             rodsLog(
                 LOG_NOTICE,
@@ -187,7 +186,7 @@ namespace irods {
         }
 
         int ret = EVP_EncryptInit_ex(
-                      &context,
+                      context,
                       algo,
                       NULL,
                       &_key[0],
@@ -208,7 +207,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // update ciphertext, cipher_len is filled with the length of ciphertext generated,
         ret = EVP_EncryptUpdate(
-                  &context,
+                  context,
                   cipher_text,
                   &cipher_len,
                   &_in_buf[0],
@@ -226,7 +225,7 @@ namespace irods {
         // update ciphertext with the final remaining bytes
         int final_len = 0;
         ret = EVP_EncryptFinal_ex(
-                  &context,
+                  context,
                   cipher_text + cipher_len,
                   &final_len );
         if ( 0 == ret ) {
@@ -250,9 +249,7 @@ namespace irods {
 
         delete [] cipher_text;
 
-        if ( 0 == EVP_CIPHER_CTX_cleanup( &context ) ) {
-            return ERROR( ERR_get_error(), "EVP_CIPHER_CTX_cleanup failed" );
-        }
+        EVP_CIPHER_CTX_free( context );
 
         return SUCCESS();
 
@@ -267,10 +264,9 @@ namespace irods {
         array_t&       _out_buf ) {
         // =-=-=-=-=-=-=-
         // create an decryption context
-        EVP_CIPHER_CTX context;
-        EVP_CIPHER_CTX_init( &context );
+        auto* context = EVP_CIPHER_CTX_new();
 
-        const EVP_CIPHER* algo = EVP_get_cipherbyname( algorithm_.c_str() );
+        auto* algo = EVP_get_cipherbyname( algorithm_.c_str() );
         if ( !algo ) {
             rodsLog(
                 LOG_NOTICE,
@@ -281,7 +277,7 @@ namespace irods {
         }
 
         int ret = EVP_DecryptInit_ex(
-                      &context,
+                      context,
                       algo,
                       NULL,
                       &_key[0],
@@ -303,7 +299,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // update the plain text, plain_len is filled with the length of the plain text
         ret = EVP_DecryptUpdate(
-                  &context,
+                  context,
                   plain_text.get(),
                   &plain_len,
                   &_in_buf[0],
@@ -320,7 +316,7 @@ namespace irods {
         // finalize the plain text, final_len is filled with the resulting length of the plain text
         int final_len = 0;
         ret = EVP_DecryptFinal_ex(
-                  &context,
+                  context,
                   plain_text.get() + plain_len,
                   &final_len );
         if ( 0 == ret ) {
@@ -341,9 +337,7 @@ namespace irods {
             plain_text.get(),
             plain_text.get() + plain_len + final_len );
 
-        if ( 0 == EVP_CIPHER_CTX_cleanup( &context ) ) {
-            return ERROR( ERR_get_error(), "EVP_CIPHER_CTX_cleanup failed" );
-        }
+        EVP_CIPHER_CTX_free( context );
 
         return SUCCESS();
 
