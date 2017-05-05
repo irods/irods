@@ -81,14 +81,14 @@ typedef struct packItem {
     packTypeInx_t typeInx;
     char *name;
     int pointerType;	/* see definition */
-    void *pointer;	/* the value of a pointer */
+    const void *pointer;	/* the value of a pointer */
     int intValue;	/* for int type only */
     char strValue[NAME_LEN];	/* for str type only */
     int dim;		/* the dimension if it is an array */
     int dimSize[MAX_PACK_DIM];	/* the size of each dimension */
     int hintDim;		/* the Hint dimension */
     int hintDimSize[MAX_PACK_DIM];	/* the size of each Hint dimension */
-    struct packItem *parent;
+    const struct packItem *parent;
     struct packItem *prev;
     struct packItem *next;
 } packItem_t;
@@ -109,195 +109,188 @@ extern "C" {
 #endif
 
 int
-packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
+packStruct( const void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
             const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 
 int
-unpackStruct( void *inPackStr, void **outStruct, const char *packInstName,
+unpackStruct( const void *inPackStr, void **outStruct, const char *packInstName,
               const packInstruct_t *myPackTable, irodsProt_t irodsProt );
 int
-parsePackInstruct( const char *packInstruct, packItem_t **packItemHead );
+parsePackInstruct( const char *packInstruct, packItem_t &packItemHead );
 int
-copyStrFromPiBuf( const char **inBuf, char *outBuf, int dependentFlag );
+copyStrFromPiBuf( const char *&inBuf, char *outBuf, int dependentFlag );
 int
-packTypeLookup( char *typeName );
+packTypeLookup( const char *typeName );
 
-void *alignAddrToBoundary( void *ptr, int boundary );
-void *alignInt( void *ptr );
-void *alignInt16( void *ptr );
-void *alignDouble( void *ptr );
-void *ialignAddr( void *ptr );
+packedOutput_t
+initPackedOutput( const int len );
+packedOutput_t
+initPackedOutputWithBuf( void *buf, const int len );
 int
-initPackedOutput( packedOutput_t *packedOutput, int len );
-int
-initPackedOutputWithBuf( packedOutput_t *packedOutput, void *buf, int len );
-int
-resolvePackedItem( packItem_t *myPackedItem, void **inPtr,
+resolvePackedItem( packItem_t &myPackedItem, const void *&inPtr,
                    packOpr_t packOpr );
 int
-resolveIntDepItem( packItem_t *myPackedItem );
+resolveIntDepItem( packItem_t &myPackedItem );
 int
-resolveIntInItem( const char *name, packItem_t *myPackedItem );
-const void *
-matchPackInstruct( char *name, const packInstruct_t *myPackTable );
+resolveIntInItem( const char *name, const packItem_t &myPackedItem );
+const char *
+matchPackInstruct( const char *name, const packInstruct_t *myPackTable );
 int
-resolveDepInArray( packItem_t *myPackedItem );
+resolveDepInArray( packItem_t &myPackedItem );
 int
-getNumElement( packItem_t *myPackedItem );
+getNumElement( const packItem_t &myPackedItem );
 int
-getNumHintElement( packItem_t *myPackedItem );
+getNumHintElement( const packItem_t &myPackedItem );
 int
-extendPackedOutput( packedOutput_t *packedOutput, int extLen, void **outPtr );
+extendPackedOutput( packedOutput_t &packedOutput, int extLen, void *&outPtr );
 int
-packItem( packItem_t *myPackedItem, void **inPtr,
-          packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
+packItem( packItem_t &myPackedItem, const void *&inPtr,
+          packedOutput_t &packedOutput, const packInstruct_t *myPackTable,
           int packFlag, irodsProt_t irodsProt );
 int
-packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+packPointerItem( packItem_t &myPackedItem, packedOutput_t &packedOutput,
                  const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 int
-packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                    packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
+packNonpointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                    packedOutput_t &packedOutput, const packInstruct_t *myPackTable,
                     int packFlag, irodsProt_t irodsProt );
 int
-packChar( void **inPtr, packedOutput_t *packedOutput, int len,
-          packItem_t *myPackedItem, irodsProt_t irodsProt );
+packChar( const void *&inPtr, packedOutput_t &packedOutput, int len,
+          const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt );
 int
-packString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-            packItem_t *myPackedItem, irodsProt_t irodsProt );
+packString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
+            const char *name, irodsProt_t irodsProt );
 int
-packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen );
+packNatString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen );
 int
-packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-               packItem_t *myPackedItem );
+packXmlString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
+               const char *name );
 int
-strToXmlStr( char *inStr, char **outXmlStr );
+strToXmlStr( const char *inStr, char *&outXmlStr );
 int
-xmlStrToStr( char *inStr, int myLen );
+xmlStrToStr( const char *inStr, int myLen, char*& outStr );
 int
-packInt( void **inPtr, packedOutput_t *packedOutput, int numElement,
-         packItem_t *myPackedItem, irodsProt_t irodsProt );
+packInt( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+         const char *name, irodsProt_t irodsProt );
 int
-packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
-           packItem_t *myPackedItem, irodsProt_t irodsProt );
+packInt16( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+           const char *name, irodsProt_t irodsProt );
 int
-packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
-            packItem_t *myPackedItem, irodsProt_t irodsProt );
+packDouble( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+            const char *name, irodsProt_t irodsProt );
 int
-packChildStruct( void **inPtr, packedOutput_t *packedOutput,
-                 packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
-                 int packFlag, irodsProt_t irodsProt, char *packInstruct );
+packChildStruct( const void *&inPtr, packedOutput_t &packedOutput,
+                 const packItem_t &myPackedItem, const packInstruct_t *myPackTable, int numElement,
+                 int packFlag, irodsProt_t irodsProt, const char *packInstruct );
 int
-freePackedItem( packItem_t *packItemHead );
+freePackedItem( packItem_t &packItemHead );
 int
-unpackItem( packItem_t *myPackedItem, void **inPtr,
-            packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackItem( packItem_t &myPackedItem, const void *&inPtr,
+            packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
             irodsProt_t irodsProt );
 int
-unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                      packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackNonpointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                      packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
                       irodsProt_t irodsProt );
 int
-unpackChar( void **inPtr, packedOutput_t *packedOutput, int len,
-            packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackChar( const void *&inPtr, packedOutput_t &packedOutput, int len,
+            const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt );
 int
-unpackCharToOutPtr( void **inPtr, void **outPtr, int len,
-                    packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackCharToOutPtr( const void *&inPtr, void *&outPtr, int len,
+                    const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt );
 int
-unpackNatCharToOutPtr( void **inPtr, void **outPtr, int len );
+unpackNatCharToOutPtr( const void *&inPtr, void *&outPtr, int len );
 int
-unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
-                       packItem_t *myPackedItem );
+unpackXmlCharToOutPtr( const void *&inPtr, void *&outPtr, int len,
+                       const char* name, const packTypeInx_t typeInx );
 int
-unpackString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
-              packItem_t *myPackedItem, irodsProt_t irodsProt, char **outStr );
+unpackString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
+              const char *name, irodsProt_t irodsProt, char *&outStr );
 int
-unpackNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-                 char **outStr );
+unpackNatString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
+                 char *&outStr );
 int
-unpackXmlString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
-                 packItem_t *myPackedItem, char **outStr );
+unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
+                 const char *name, char *&outStr );
 int
-unpackInt( void **inPtr, packedOutput_t *packedOutput, int numElement,
-           packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackInt( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+           const char *name, irodsProt_t irodsProt );
 int
-unpackIntToOutPtr( void **inPtr, void **outPtr, int numElement,
-                   packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                   const char *name, irodsProt_t irodsProt );
 int
-unpackXmlIntToOutPtr( void **inPtr, void **outPtr, int numElement,
-                      packItem_t *myPackedItem );
+unpackXmlIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                      const char *name );
 int
-unpackNatIntToOutPtr( void **inPtr, void **outPtr, int numElement );
+unpackNatIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement );
 int
-unpackInt16( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
-             packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackInt16( const void *&inPtr, packedOutput_t &unpackedOutput, int numElement,
+             const char *name, irodsProt_t irodsProt );
 int
-unpackInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
-                     packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                     const char *name, irodsProt_t irodsProt );
 int
-unpackNatInt16ToOutPtr( void **inPtr, void **outPtr, int numElement );
+unpackNatInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement );
 int
-unpackXmlInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
-                        packItem_t *myPackedItem );
+unpackXmlInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                        const char *name );
 int
-unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
-                         packItem_t *myPackedItem );
+unpackXmlDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                         const char *name );
 int
-unpackDouble( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
-              packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackDouble( const void *&inPtr, packedOutput_t &unpackedOutput, int numElement,
+              const char *name, irodsProt_t irodsProt );
 int
-unpackDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
-                      packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                      const char *name, irodsProt_t irodsProt );
 int
-unpackNatDoubleToOutPtr( void **inPtr, void **outPtr, int numElement );
+unpackNatDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement );
 int
-unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
-                   packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
-                   irodsProt_t irodsProt, char *packInstructInp );
+unpackChildStruct( const void *&inPtr, packedOutput_t &unpackedOutput,
+                   const packItem_t &myPackedItem, const packInstruct_t *myPackTable, int numElement,
+                   irodsProt_t irodsProt, const char *packInstructInp );
 int
-unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
-                   packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                   packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
                    irodsProt_t irodsProt );
 void *
-addPointerToPackedOut( packedOutput_t *packedOutput, int len, void *pointer );
+addPointerToPackedOut( packedOutput_t &packedOutput, int len, void *pointer );
 int
-getStrLen( void *inPtr, int maxStrLen );
+unpackStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen,
+                      const char *name, irodsProt_t irodsProt );
 int
-unpackStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
-                      packItem_t *myPackedItem, irodsProt_t irodsProt );
+unpackNatStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen );
 int
-unpackNatStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen );
+unpackXmlStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen,
+                         const char *name );
 int
-unpackXmlStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
-                         packItem_t *myPackedItem );
+iparseDependent( packItem_t &myPackedItem );
 int
-iparseDependent( packItem_t *myPackedItem );
+resolveStrInItem( packItem_t &myPackedItem );
 int
-resolveStrInItem( packItem_t *myPackedItem );
+packNullString( packedOutput_t &packedOutput );
 int
-packNullString( packedOutput_t *packedOutput );
+unpackNullString( const void *&inPtr, packedOutput_t &unpackedOutput,
+                  const packItem_t &myPackedItem, irodsProt_t irodsProt );
 int
-unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
-                  packItem_t *myPackedItem, irodsProt_t irodsProt );
+getNumStrAndStrLen( const packItem_t &myPackedItem, int &numStr, int &maxStrLen );
 int
-getNumStrAndStrLen( packItem_t *myPackedItem, int *numStr, int *maxStrLen );
-int
-getAllocLenForStr( packItem_t *myPackedItem, void **inPtr, int numStr,
+getAllocLenForStr( const packItem_t &myPackedItem, const void *inPtr, int numStr,
                    int maxStrLen );
 int
-packXmlTag( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+packXmlTag( const char *name, packedOutput_t &packedOutput,
             int endFlag );
 int
-parseXmlValue( void **inPtr, packItem_t *myPackedItem, int *endTagLen );
+parseXmlValue( const void *&inPtr, const char *name, int &endTagLen );
 int
-parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen );
+parseXmlTag( const void *inPtr, const char *name, int flag, int &skipLen );
 int
-alignPackedOutput64( packedOutput_t *packedOutput );
+alignPackedOutput64( packedOutput_t &packedOutput );
 int
-packNopackPointer( void **inPtr, packedOutput_t *packedOutput, int len,
-                   packItem_t *myPackedItem, irodsProt_t irodsProt );
+packNopackPointer( void *inPtr, packedOutput_t &packedOutput, int len,
+                   const char *name, irodsProt_t irodsProt );
 int
-ovStrcpy( char *outStr, char *inStr );
+ovStrcpy( char *outStr, const char *inStr );
 #ifdef __cplusplus
 }
 #endif

@@ -6,6 +6,7 @@
 
 
 #include "packStruct.h"
+#include "alignPointer.hpp"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
 #include "base64.h"
@@ -13,10 +14,11 @@
 
 #include "irods_pack_table.hpp"
 #include <iostream>
+#include <sstream>
 #include <string>
 
 int
-packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
+packStruct( const void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
             const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     if ( inStruct == NULL || packedResult == NULL || packInstName == NULL ) {
         rodsLog( LOG_ERROR,
@@ -25,13 +27,11 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
     }
 
     /* Initialize the packedOutput */
-    packedOutput_t packedOutput;
-    initPackedOutput( &packedOutput, MAX_PACKED_OUT_ALLOC_SZ );
+    packedOutput_t packedOutput = initPackedOutput(MAX_PACKED_OUT_ALLOC_SZ);
 
-    packItem_t rootPackedItem;
-    memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
+    packItem_t rootPackedItem{};
     rootPackedItem.name = strdup( packInstName );
-    int status = packChildStruct( &inStruct, &packedOutput, &rootPackedItem,
+    int status = packChildStruct( inStruct, packedOutput, rootPackedItem,
                               myPackTable, 1, packFlag, irodsProt, NULL );
     free( rootPackedItem.name );
 
@@ -41,10 +41,10 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
     }
 
     if ( irodsProt == XML_PROT ) {
-        char *outPtr;
+        void *outPtr;
         /* add a NULL termination */
-        extendPackedOutput( &packedOutput, 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
-        *outPtr = '\0';
+        extendPackedOutput( packedOutput, 1, outPtr );
+        *static_cast<char*>(outPtr) = '\0';
         if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
             printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
         }
@@ -56,22 +56,20 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
 }
 
 int
-unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
+unpackStruct( const void *inPackedStr, void **outStruct, const char *packInstName,
               const packInstruct_t *myPackTable, irodsProt_t irodsProt ) {
-    if ( inPackedStr == NULL || outStruct == NULL || packInstName == NULL ) {
+    if ( inPackedStr == NULL || packInstName == NULL ) {
         rodsLog( LOG_ERROR,
                  "unpackStruct: Input error. One of the input is NULL" );
         return USER_PACKSTRUCT_INPUT_ERR;
     }
 
     /* Initialize the unpackedOutput */
-    packedOutput_t unpackedOutput;
-    initPackedOutput( &unpackedOutput, PACKED_OUT_ALLOC_SZ );
+    packedOutput_t unpackedOutput = initPackedOutput(PACKED_OUT_ALLOC_SZ);
 
-    packItem_t rootPackedItem;
-    memset( &rootPackedItem, 0, sizeof( rootPackedItem ) );
+    packItem_t rootPackedItem{};
     rootPackedItem.name = strdup( packInstName );
-    int status = unpackChildStruct( &inPackedStr, &unpackedOutput, &rootPackedItem,
+    int status = unpackChildStruct( inPackedStr, unpackedOutput, rootPackedItem,
                                 myPackTable, 1, irodsProt, NULL );
     free( rootPackedItem.name );
 
@@ -86,17 +84,16 @@ unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
 }
 
 int
-parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
+parsePackInstruct( const char *packInstruct, packItem_t &packItemHead ) {
     char buf[MAX_PI_LEN];
-    packItem_t *myPackItem = NULL;
+    packItem_t *myPackItem = &packItemHead;
     packItem_t *prevPackItem = NULL;
     const char *inptr = packInstruct;
     int gotTypeCast = 0;
     int gotItemName = 0;
-    int outLen = 0;
 
-    while ( ( outLen = copyStrFromPiBuf( &inptr, buf, 0 ) ) > 0 ) {
-        if ( myPackItem == NULL ) {
+    while ( copyStrFromPiBuf( inptr, buf, 0 ) > 0 ) {
+        if ( !myPackItem ) {
             myPackItem = ( packItem_t* )malloc( sizeof( packItem_t ) );
             memset( myPackItem, 0, sizeof( packItem_t ) );
         }
@@ -109,19 +106,17 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             else if ( gotTypeCast > 0 && gotItemName == 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: No varName for %s", packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             /* queue it */
-            outLen = 0;
             gotTypeCast = 0;
             gotItemName = 0;
             if ( prevPackItem != NULL ) {
                 prevPackItem->next = myPackItem;
                 myPackItem->prev = prevPackItem;
-            }
-            else {
-                *packItemHead = myPackItem;
             }
             prevPackItem = myPackItem;
             myPackItem = NULL;
@@ -132,23 +127,29 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast > 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: % position error for %s", packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->typeInx = ( packTypeInx_t )packTypeLookup( buf );
             if ( myPackItem->typeInx < 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s", buf );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
-            outLen = copyStrFromPiBuf( &inptr, buf, 1 );
+            int outLen = copyStrFromPiBuf( inptr, buf, 1 );
             if ( outLen <= 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? No variable following ? for %s",
                          packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->name = strdup( buf );
@@ -160,23 +161,29 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast > 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? position error for %s", packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             myPackItem->typeInx = ( packTypeInx_t )packTypeLookup( buf );
             if ( myPackItem->typeInx < 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s", buf );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
-            outLen = copyStrFromPiBuf( &inptr, buf, 0 );
+            int outLen = copyStrFromPiBuf( inptr, buf, 0 );
             if ( outLen <= 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: ? No variable following ? for %s",
                          packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             rstrcpy( myPackItem->strValue, buf, NAME_LEN );
@@ -187,7 +194,9 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: * position error for %s", packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -196,8 +205,10 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             myPackItem->pointerType = NO_PACK_POINTER;
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
-                         "parsePackInstruct: * position error for %s", packInstruct );
-                free( myPackItem );
+                         "parsePackInstruct: # position error for %s", packInstruct );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -206,8 +217,10 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             myPackItem->pointerType = NO_FREE_POINTER;
             if ( gotTypeCast == 0 || gotItemName > 0 ) {
                 rodsLog( LOG_ERROR,
-                         "parsePackInstruct: * position error for %s", packInstruct );
-                free( myPackItem );
+                         "parsePackInstruct: $ position error for %s", packInstruct );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             continue;
@@ -218,7 +231,9 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
                 rodsLog( LOG_ERROR,
                          "parsePackInstruct: packTypeLookup failed for %s in %s",
                          buf, packInstruct );
-                free( myPackItem );
+                if ( myPackItem != &packItemHead ) {
+                    free( myPackItem );
+                }
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             gotTypeCast = 1;
@@ -233,7 +248,9 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
             rodsLog( LOG_ERROR,
                      "parsePackInstruct: too many string around %s in %s",
                      buf, packInstruct );
-            free( myPackItem );
+            if ( myPackItem != &packItemHead ) {
+                free( myPackItem );
+            }
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
     }
@@ -241,7 +258,9 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
         rodsLog( LOG_ERROR,
                  "parsePackInstruct: Pack Instruction %s not properly terminated",
                  packInstruct );
-        free( myPackItem );
+        if ( myPackItem != &packItemHead ) {
+            free( myPackItem );
+        }
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
     return 0;
@@ -251,8 +270,8 @@ parsePackInstruct( const char *packInstruct, packItem_t **packItemHead ) {
  * special char '*', ';' and '?' will be returned as a string.
  */
 int
-copyStrFromPiBuf( const char **inBuf, char *outBuf, int dependentFlag ) {
-    const char *inPtr = *inBuf;
+copyStrFromPiBuf( const char *&inBuf, char *outBuf, int dependentFlag ) {
+    const char *inPtr = inBuf;
     char *outPtr = outBuf;
     int outLen = 0;
     int c;
@@ -303,18 +322,16 @@ copyStrFromPiBuf( const char **inBuf, char *outBuf, int dependentFlag ) {
     }
 
     *outPtr = '\0';
-    *inBuf = inPtr;
+    inBuf = inPtr;
 
     return outLen;
 }
 
 int
-packTypeLookup( char *typeName ) {
+packTypeLookup( const char *typeName ) {
     /*TODO: i and return type should be reconsidered as of
       packTypeInx_t */
-    int i;
-
-    for ( i = 0; i < NumOfPackTypes; i++ ) {
+    for ( int i = 0; i < NumOfPackTypes; i++ ) {
         if ( strcmp( typeName, packTypeTable[i].name ) == 0 ) {
             return i;
         }
@@ -322,110 +339,32 @@ packTypeLookup( char *typeName ) {
     return -1;
 }
 
-void *
-alignAddrToBoundary( void *ptr, int boundary ) {
-#if defined(_LP64) || defined(__LP64__)
-    rodsLong_t b, m;
-    b = ( rodsLong_t ) ptr;
-
-    m = b % boundary;
-
-    if ( m == 0 ) {
-        return ptr;
-    }
-
-    /* rodsLong_t is signed */
-    if ( m < 0 ) {
-        m = boundary + m;
-    }
-
-    return ( void* )( ( char * ) ptr + boundary - m );
-
-#else
-    uint b, m;
-    b = ( uint ) ptr;
-
-    m = b % boundary;
-
-    if ( m == 0 ) {
-        return ptr;
-    }
-
-    return ( void* )( ( char * ) ptr + boundary - m );
-
-#endif
+packedOutput_t
+initPackedOutput( const int len ) {
+    return {
+        .bBuf={
+            .buf=malloc(len),
+            .len=0
+        },
+        .bufSize=len,
+        .nopackBufArray={}
+    };
 }
 
-/* alignInt - align the inout pointer ptr to an int, char or void
- * boundary in a struct */
-
-void *
-alignInt( void *ptr ) {
-    return alignAddrToBoundary( ptr, 4 );
-}
-
-/* alignInt16 - align the inout pointer ptr to an int16
- * boundary in a struct */
-
-void *
-alignInt16( void *ptr ) {
-    return alignAddrToBoundary( ptr, 2 );
-}
-
-/* alignDoubleAddr - align the inout pointer ptr to a longlong ,
- * boundary in a struct */
-
-void *
-alignDouble( void *ptr ) {
-#if defined(linux_platform) || defined(windows_platform)
-    // no need align at 64 bit boundary for linux
-    // Windows 32-bit OS is aligned with 4.
-
-#if defined(_LP64) || defined(__LP64__)
-    return alignAddrToBoundary( ptr, 8 );
-#else
-    return alignAddrToBoundary( ptr, 4 );
-#endif // LP64
-
-#else   /* non-linux_platform || non-windows*/
-    return alignAddrToBoundary( ptr, 8 );
-#endif  /* linux_platform | windows */
-}
-
-/* align pointer address in a struct */
-
-void *ialignAddr( void *ptr ) {
-#if defined(_LP64) || defined(__LP64__)
-    return alignDouble( ptr );
-#else
-    return alignInt( ptr );
-#endif
+packedOutput_t
+initPackedOutputWithBuf( void *buf, const int len ) {
+    return {
+        .bBuf={
+            .buf=buf,
+            .len=0
+        },
+        .bufSize=len,
+        .nopackBufArray={}
+    };
 }
 
 int
-initPackedOutput( packedOutput_t *packedOutput, int len ) {
-    memset( packedOutput, 0, sizeof( packedOutput_t ) );
-
-    packedOutput->bBuf.buf = malloc( len );
-    packedOutput->bBuf.len = 0;
-    packedOutput->bufSize = len;
-
-    return 0;
-}
-
-int
-initPackedOutputWithBuf( packedOutput_t *packedOutput, void *buf, int len ) {
-    memset( packedOutput, 0, sizeof( packedOutput_t ) );
-
-    packedOutput->bBuf.buf = buf;
-    packedOutput->bBuf.len = 0;
-    packedOutput->bufSize = len;
-
-    return 0;
-}
-
-int
-resolvePackedItem( packItem_t *myPackedItem, void **inPtr, packOpr_t packOpr ) {
+resolvePackedItem( packItem_t &myPackedItem, const void *&inPtr, packOpr_t packOpr ) {
     int status;
 
     status = iparseDependent( myPackedItem );
@@ -441,17 +380,17 @@ resolvePackedItem( packItem_t *myPackedItem, void **inPtr, packOpr_t packOpr ) {
 
     /* set up the pointer */
 
-    if ( myPackedItem->pointerType > 0 ) {
+    if ( myPackedItem.pointerType > 0 ) {
         if ( packOpr == PACK_OPR ) {
             /* align the address */
-            *inPtr = ialignAddr( *inPtr );
-            if ( *inPtr != NULL ) {
-                myPackedItem->pointer = ( **( void *** )inPtr );
+            inPtr = ialignAddr( inPtr );
+            if ( inPtr != NULL ) {
+                myPackedItem.pointer = *static_cast<const void *const *>(inPtr);
                 /* advance the pointer */
-                *inPtr = ( void * )( ( char * ) * inPtr + sizeof( void * ) );
+                inPtr = static_cast<const char *>(inPtr) + sizeof(void *);
             }
             else {
-                myPackedItem->pointer = NULL;
+                myPackedItem.pointer = NULL;
             }
         }
     }
@@ -459,13 +398,13 @@ resolvePackedItem( packItem_t *myPackedItem, void **inPtr, packOpr_t packOpr ) {
 }
 
 int
-iparseDependent( packItem_t *myPackedItem ) {
+iparseDependent( packItem_t &myPackedItem ) {
     int status;
 
-    if ( myPackedItem->typeInx == PACK_DEPENDENT_TYPE ) {
+    if ( myPackedItem.typeInx == PACK_DEPENDENT_TYPE ) {
         status =  resolveStrInItem( myPackedItem );
     }
-    else if ( myPackedItem->typeInx == PACK_INT_DEPENDENT_TYPE ) {
+    else if ( myPackedItem.typeInx == PACK_INT_DEPENDENT_TYPE ) {
         status =  resolveIntDepItem( myPackedItem );
     }
     else {
@@ -475,19 +414,14 @@ iparseDependent( packItem_t *myPackedItem ) {
 }
 
 int
-resolveIntDepItem( packItem_t *myPackedItem ) {
-    const char *tmpPtr = 0;
-    char *bufPtr = 0;
+resolveIntDepItem( packItem_t &myPackedItem ) {
     char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
     int endReached = 0, c = 0;
     int outLen = 0;
     int keyVal = 0, status = 0;
-    packItem_t *newPackedItem = 0, *tmpPackedItem = 0, *lastPackedItem = 0;
 
-    tmpPtr = myPackedItem->name;
-    bufPtr = buf;
-    outLen = 0;
-    endReached = 0;
+    const char* tmpPtr = myPackedItem.name;
+    char* bufPtr = buf;
 
     /* get the key */
 
@@ -510,7 +444,7 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
         else if ( c == ';' ) {
             rodsLog( LOG_ERROR,
                      "resolveIntDepItem: end reached while parsing for key: %s",
-                     myPackedItem->name );
+                     myPackedItem.name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
         else {      /* just normal char */
@@ -545,7 +479,7 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
                         else if ( c == ';' || c == ':' || c == '\0' ) {
                             rodsLog( LOG_ERROR,
                                      "resolveIntDepItem: end reached with no PI%s",
-                                     myPackedItem->name );
+                                     myPackedItem.name );
                             return SYS_PACK_INSTRUCT_FORMAT_ERR;
                         }
                         tmpPtr++;
@@ -582,7 +516,7 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
                     if ( c == '\0' || c == ';' ) {
                         rodsLog( LOG_ERROR,
                                  "resolveIntDepItem: end reached with no PI%s",
-                                 myPackedItem->name );
+                                 myPackedItem.name );
                         return SYS_PACK_INSTRUCT_FORMAT_ERR;
                     }
                     tmpPtr++;
@@ -596,8 +530,8 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
         tmpPtr++;
     }
 
-    newPackedItem = NULL;
-    status = parsePackInstruct( myPI, &newPackedItem );
+    packItem_t newPackedItem{};
+    status = parsePackInstruct( myPI, newPackedItem );
 
     if ( status < 0 ) {
         freePackedItem( newPackedItem );
@@ -606,33 +540,30 @@ resolveIntDepItem( packItem_t *myPackedItem ) {
         return status;
     }
 
-    /* reset the link and switch myPackedItem<->newType */
-    free( myPackedItem->name );
-    tmpPackedItem = newPackedItem;
-    while ( tmpPackedItem != NULL ) {
-        lastPackedItem = tmpPackedItem;
-        tmpPackedItem = tmpPackedItem->next;
+    /* reset the link and switch myPackedItem<->newPackedItem */
+    free( myPackedItem.name );
+
+    packItem_t *lastPackedItem = &newPackedItem;
+    while (lastPackedItem->next) {
+        lastPackedItem = lastPackedItem->next;
     }
 
-    if ( newPackedItem != lastPackedItem ) {
-        newPackedItem->next->prev = myPackedItem;
-        if ( myPackedItem->next != NULL ) {
-            myPackedItem->next->prev = lastPackedItem;
-        }
+    if ( newPackedItem.next ) {
+        newPackedItem.next->prev = &myPackedItem;
     }
-    newPackedItem->prev = myPackedItem->prev;
-    lastPackedItem->next = myPackedItem->next;
+    newPackedItem.prev = myPackedItem.prev;
+    lastPackedItem->next = myPackedItem.next;
+    if ( myPackedItem.next ) {
+        myPackedItem.next->prev = lastPackedItem;
+    }
 
-    *myPackedItem = *newPackedItem;
-
-    free( newPackedItem );
+    myPackedItem = newPackedItem;
 
     return 0;
 }
 
 int
-resolveIntInItem( const char *name, packItem_t *myPackedItem ) {
-    packItem_t *tmpPackedItem;
+resolveIntInItem( const char *name, const packItem_t &myPackedItem ) {
     int i;
 
     if ( isAllDigit( name ) ) {
@@ -641,7 +572,7 @@ resolveIntInItem( const char *name, packItem_t *myPackedItem ) {
 
     /* check the current item chain first */
 
-    tmpPackedItem = myPackedItem->prev;
+    const packItem_t *tmpPackedItem = myPackedItem.prev;
 
     while ( tmpPackedItem != NULL ) {
         if ( strcmp( name, tmpPackedItem->name ) == 0 &&
@@ -671,14 +602,11 @@ resolveIntInItem( const char *name, packItem_t *myPackedItem ) {
 }
 
 int
-resolveStrInItem( packItem_t *myPackedItem ) {
-    packItem_t *tmpPackedItem;
-    char *name;
-
-    name = myPackedItem->strValue;
+resolveStrInItem( packItem_t &myPackedItem ) {
+    const char *name = myPackedItem.strValue;
     /* check the current item chain first */
 
-    tmpPackedItem = myPackedItem->prev;
+    const packItem_t* tmpPackedItem = myPackedItem.prev;
 
     while ( tmpPackedItem != NULL ) {
         if ( strcmp( name, tmpPackedItem->name ) == 0 &&
@@ -696,48 +624,41 @@ resolveStrInItem( packItem_t *myPackedItem ) {
     if ( tmpPackedItem == NULL || strlen( tmpPackedItem->strValue ) == 0 ) {
         rodsLog( LOG_ERROR,
                  "resolveStrInItem: Cannot resolve %s in %s",
-                 name, myPackedItem->name );
+                 name, myPackedItem.name );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
 
-    myPackedItem->typeInx = PACK_STRUCT_TYPE;
-    free( myPackedItem->name );
-    myPackedItem->name = strdup( tmpPackedItem->strValue );
+    myPackedItem.typeInx = PACK_STRUCT_TYPE;
+    free( myPackedItem.name );
+    myPackedItem.name = strdup( tmpPackedItem->strValue );
 
     return 0;
 }
 
-const void *
-matchPackInstruct( char *name, const packInstruct_t *myPackTable ) {
-    int i;
+const char *
+matchPackInstruct( const char *name, const packInstruct_t *myPackTable ) {
 
     if ( myPackTable != NULL ) {
-        i = 0;
-        while ( strcmp( myPackTable[i].name, PACK_TABLE_END_PI ) != 0 ) {
-            /* not the end */
+        for (int i = 0; strcmp( myPackTable[i].name, PACK_TABLE_END_PI ) != 0; ++i) {
             if ( strcmp( myPackTable[i].name, name ) == 0 ) {
                 return myPackTable[i].packInstruct;
             }
-            i++;
         }
     }
 
     /* Try the Rods Global table */
 
-    i = 0;
-    while ( strcmp( RodsPackTable[i].name, PACK_TABLE_END_PI ) != 0 ) {
-        /* not the end */
+    for(int i = 0; strcmp( RodsPackTable[i].name, PACK_TABLE_END_PI ) != 0; ++i ) {
         if ( strcmp( RodsPackTable[i].name, name ) == 0 ) {
             return RodsPackTable[i].packInstruct;
         }
-        i++;
     }
 
     /* Try the API table */
     irods::pack_entry_table& pk_tbl =  irods::get_pack_table();
     irods::pack_entry_table::iterator itr = pk_tbl.find( name );
     if ( itr != pk_tbl.end() ) {
-        return ( void* )itr->second.packInstruct.c_str();
+        return itr->second.packInstruct.c_str();
     }
 
     rodsLog( LOG_ERROR,
@@ -748,50 +669,50 @@ matchPackInstruct( char *name, const packInstruct_t *myPackTable ) {
 }
 
 int
-resolveDepInArray( packItem_t *myPackedItem ) {
-    myPackedItem->dim = myPackedItem->hintDim = 0;
+resolveDepInArray( packItem_t &myPackedItem ) {
+    myPackedItem.dim = myPackedItem.hintDim = 0;
     char openSymbol = '\0';         // either '(', '[', or '\0' depending on whether we are
     // in a parenthetical or bracketed expression, or not
 
     std::string buffer;
-    for ( size_t nameIndex = 0; '\0' != myPackedItem->name[ nameIndex ]; nameIndex++ ) {
-        char c = myPackedItem->name[ nameIndex ];
+    for ( size_t nameIndex = 0; '\0' != myPackedItem.name[ nameIndex ]; nameIndex++ ) {
+        char c = myPackedItem.name[ nameIndex ];
         if ( '[' == c || '(' == c ) {
             if ( openSymbol ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: got %c inside %c for %s",
-                         c, openSymbol, myPackedItem->name );
+                         c, openSymbol, myPackedItem.name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
-            else if ( ( '[' == c && myPackedItem->dim >= MAX_PACK_DIM ) ||
-                      ( '(' == c && myPackedItem->hintDim >= MAX_PACK_DIM ) ) {
+            else if ( ( '[' == c && myPackedItem.dim >= MAX_PACK_DIM ) ||
+                      ( '(' == c && myPackedItem.hintDim >= MAX_PACK_DIM ) ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: dimension of %s larger than %d",
-                         myPackedItem->name, MAX_PACK_DIM );
+                         myPackedItem.name, MAX_PACK_DIM );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             openSymbol = c;
-            myPackedItem->name[ nameIndex ] = '\0';  // isolate the name. may be used later
+            myPackedItem.name[ nameIndex ] = '\0';  // isolate the name. may be used later
             buffer.clear();
         }
         else if ( ']' == c || ')' == c ) {
             if ( ( ']' == c && '[' != openSymbol ) ||
                     ( ')' == c && '(' != openSymbol ) ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: Got %c without %c for %s",
-                         c, ( ']' == c ) ? '[' : '(', myPackedItem->name );
+                         c, ( ']' == c ) ? '[' : '(', myPackedItem.name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             else if ( buffer.empty() ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray: Empty %c%c in %s",
-                         ( ']' == c ) ? '[' : '(', c, myPackedItem->name );
+                         ( ']' == c ) ? '[' : '(', c, myPackedItem.name );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
             openSymbol = '\0';
 
             int& dimSize = ( ']' == c ) ?
-                           myPackedItem->dimSize[myPackedItem->dim++] :
-                           myPackedItem->hintDimSize[myPackedItem->hintDim++];
+                           myPackedItem.dimSize[myPackedItem.dim++] :
+                           myPackedItem.hintDimSize[myPackedItem.hintDim++];
             if ( ( dimSize = resolveIntInItem( buffer.c_str(), myPackedItem ) ) < 0 ) {
                 rodsLog( LOG_ERROR, "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
-                         myPackedItem->name, buffer.c_str() );
+                         myPackedItem.name, buffer.c_str() );
                 return SYS_PACK_INSTRUCT_FORMAT_ERR;
             }
         }
@@ -803,19 +724,15 @@ resolveDepInArray( packItem_t *myPackedItem ) {
 }
 
 int
-packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                    packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
+packNonpointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                    packedOutput_t &packedOutput, const packInstruct_t *myPackTable,
                     int packFlag, irodsProt_t irodsProt ) {
-    int numElement;
-    int elementSz;
-    int typeInx;
-    int myTypeNum;
     int i, status;
 
-    typeInx = myPackedItem->typeInx;
-    numElement = getNumElement( myPackedItem );
-    elementSz = packTypeTable[typeInx].size;
-    myTypeNum = packTypeTable[typeInx].number;
+    int typeInx = myPackedItem.typeInx;
+    int numElement = getNumElement( myPackedItem );
+    int elementSz = packTypeTable[typeInx].size;
+    int myTypeNum = packTypeTable[typeInx].number;
 
     switch ( myTypeNum ) {
     case PACK_CHAR_TYPE:
@@ -823,7 +740,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
         /* no need to align inPtr */
 
         status = packChar( inPtr, packedOutput, numElement * elementSz,
-                           myPackedItem, irodsProt );
+                           myPackedItem.name, myPackedItem.typeInx, irodsProt );
         if ( status < 0 ) {
             return status;
         }
@@ -837,29 +754,29 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
          */
         int maxStrLen, numStr, myDim;
 
-        myDim = myPackedItem->dim;
+        myDim = myPackedItem.dim;
         if ( myDim <= 0 ) {
             /* NULL pterminated */
             maxStrLen = -1;
             numStr = 1;
         }
         else {
-            maxStrLen = myPackedItem->dimSize[myDim - 1];
+            maxStrLen = myPackedItem.dimSize[myDim - 1];
             numStr = numElement / maxStrLen;
         }
 
         /* save the str */
         if ( numStr == 1 && myTypeNum == PACK_PI_STR_TYPE ) {
-            snprintf( myPackedItem->strValue, sizeof( myPackedItem->strValue ), "%s", ( char* )*inPtr );
+            snprintf( myPackedItem.strValue, sizeof( myPackedItem.strValue ), "%s", static_cast<const char*>(inPtr) );
         }
 
         for ( i = 0; i < numStr; i++ ) {
-            status = packString( inPtr, packedOutput, maxStrLen, myPackedItem,
+            status = packString( inPtr, packedOutput, maxStrLen, myPackedItem.name,
                                  irodsProt );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "packNonpointerItem:strlen %d of %s > dim size %d,content:%s",
-                         strlen( ( char* )*inPtr ), myPackedItem->name, maxStrLen, *inPtr );
+                         strlen( ( const char* )inPtr ), myPackedItem.name, maxStrLen, inPtr );
                 return status;
             }
         }
@@ -868,39 +785,39 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
     case PACK_INT_TYPE:
         /* align inPtr to 4 bytes boundary. Will not align outPtr */
 
-        *inPtr = alignInt( *inPtr );
+        inPtr = alignInt( inPtr );
 
-        status = packInt( inPtr, packedOutput, numElement, myPackedItem,
+        status = packInt( inPtr, packedOutput, numElement, myPackedItem.name,
                           irodsProt );
         if ( status < 0 ) {
             return status;
         }
-        myPackedItem->intValue = status;
+        myPackedItem.intValue = status;
         break;
 
     case PACK_INT16_TYPE:
         /* align inPtr to 2 bytes boundary. Will not align outPtr */
 
-        *inPtr = alignInt16( *inPtr );
+        inPtr = alignInt16( inPtr );
 
-        status = packInt16( inPtr, packedOutput, numElement, myPackedItem,
+        status = packInt16( inPtr, packedOutput, numElement, myPackedItem.name,
                             irodsProt );
         if ( status < 0 ) {
             return status;
         }
-        myPackedItem->intValue = status;
+        myPackedItem.intValue = status;
         break;
 
     case PACK_DOUBLE_TYPE:
         /* align inPtr to 8 bytes boundary. Will not align outPtr */
 #if defined(osx_platform)
         /* osx does not align */
-        *inPtr = alignInt( *inPtr );
+        inPtr = alignInt( inPtr );
 #else
-        *inPtr = alignDouble( *inPtr );
+        inPtr = alignDouble( inPtr );
 #endif
 
-        status = packDouble( inPtr, packedOutput, numElement, myPackedItem,
+        status = packDouble( inPtr, packedOutput, numElement, myPackedItem.name,
                              irodsProt );
         if ( status < 0 ) {
             return status;
@@ -922,7 +839,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
     default:
         rodsLog( LOG_ERROR,
                  "packNonpointerItem: Unknow type %d - %s ",
-                 myTypeNum, myPackedItem->name );
+                 myTypeNum, myPackedItem.name );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
 
@@ -930,47 +847,37 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 }
 
 int
-packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+packPointerItem( packItem_t &myPackedItem, packedOutput_t &packedOutput,
                  const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
-    int numElement;     /* number of elements pointed to by one pointer */
-    int numPointer;     /* number of pointers in the array of pointer */
-    int elementSz;
-    int typeInx;
-    int myTypeNum;
     int i, j, status;
-    void **pointerArray;
-    void* singletonArray[1];
-    void *pointer;      /* working pointer */
-    void *origPtr;      /* for the purpose of freeing the original ptr */
-    int myDim;
+    const void* singletonArray[1];
+    const void *pointer;      /* working pointer */
+    const void *origPtr;      /* for the purpose of freeing the original ptr */
 
     /* if it is a NULL pointer, just pack a NULL_PTR_PACK_STR string */
-    if ( myPackedItem->pointer == NULL ) {
+    if ( myPackedItem.pointer == NULL ) {
         if ( irodsProt == NATIVE_PROT ) {
             packNullString( packedOutput );
         }
         return 0;
     }
 
-    numElement = getNumHintElement( myPackedItem );
-    myDim = myPackedItem->dim;
-    typeInx = myPackedItem->typeInx;
-    numPointer = getNumElement( myPackedItem );
-    elementSz = packTypeTable[typeInx].size;
-    myTypeNum = packTypeTable[typeInx].number;
+    int numElement = getNumHintElement( myPackedItem ); /* number of elements pointed to by one pointer */
+    int myDim = myPackedItem.dim;
+    int typeInx = myPackedItem.typeInx;
+    int numPointer = getNumElement( myPackedItem );     /* number of pointers in the array of pointer */
+    int elementSz = packTypeTable[typeInx].size;
+    int myTypeNum = packTypeTable[typeInx].number;
 
     /* pointer is already aligned */
+    const void *const *  pointerArray = (myDim == 0) ? singletonArray : static_cast<const void *const*>(myPackedItem.pointer);
     if ( myDim == 0 ) {
-        pointerArray = singletonArray;
-        pointerArray[0] = myPackedItem->pointer;
+        singletonArray[0] = myPackedItem.pointer;
         if ( myTypeNum == PACK_PI_STR_TYPE ) {
             /* save the str */
-            snprintf( myPackedItem->strValue, sizeof( myPackedItem->strValue ),
-                      "%s", ( char* )myPackedItem->pointer );
+            snprintf( myPackedItem.strValue, sizeof( myPackedItem.strValue ),
+                      "%s", static_cast<const char*>(myPackedItem.pointer) );
         }
-    }
-    else {
-        pointerArray = ( void ** ) myPackedItem->pointer;
     }
 
     switch ( myTypeNum ) {
@@ -979,27 +886,27 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         for ( i = 0; i < numPointer; i++ ) {
             origPtr = pointer = pointerArray[i];
 
-            if ( myPackedItem->pointerType == NO_PACK_POINTER ) {
-                status = packNopackPointer( &pointer, packedOutput,
-                                            numElement * elementSz, myPackedItem, irodsProt );
+            if ( myPackedItem.pointerType == NO_PACK_POINTER ) {
+                status = packNopackPointer( const_cast<void *>(pointer), packedOutput,
+                                            numElement * elementSz, myPackedItem.name, irodsProt );
             }
             else {
-                status = packChar( &pointer, packedOutput,
-                                   numElement * elementSz, myPackedItem, irodsProt );
+                status = packChar( pointer, packedOutput,
+                                   numElement * elementSz, myPackedItem.name, myPackedItem.typeInx, irodsProt );
             }
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
             if ( status < 0 ) {
                 return status;
             }
         }
         if ( ( packFlag & FREE_POINTER )  &&
-                myPackedItem->pointerType == A_POINTER &&
+                myPackedItem.pointerType == A_POINTER &&
                 numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
     case PACK_STR_TYPE:
@@ -1009,14 +916,14 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
          * the NULL.
          */
         int maxStrLen, numStr, myHintDim;
-        myHintDim = myPackedItem->hintDim;
+        myHintDim = myPackedItem.hintDim;
         if ( myHintDim <= 0 ) {   /* just a pointer to a null terminated str */
             maxStrLen = -1;
             numStr = 1;
         }
         else {
             /* the size of the last hint dimension */
-            maxStrLen = myPackedItem->hintDimSize[myHintDim - 1];
+            maxStrLen = myPackedItem.hintDimSize[myHintDim - 1];
             if ( numElement <= 0 || maxStrLen <= 0 ) {
                 return 0;
             }
@@ -1027,25 +934,25 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
             origPtr = pointer = pointerArray[j];
 
             for ( i = 0; i < numStr; i++ ) {
-                status = packString( &pointer, packedOutput, maxStrLen,
-                                     myPackedItem, irodsProt );
+                status = packString( pointer, packedOutput, maxStrLen,
+                                     myPackedItem.name, irodsProt );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
                              "packPointerItem: strlen of %s > dim size, content: %s ",
-                             myPackedItem->name, pointer );
+                             myPackedItem.name, pointer );
                     return status;
                 }
             }
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
         }
         if ( ( packFlag & FREE_POINTER ) &&
-                myPackedItem->pointerType == A_POINTER &&
+                myPackedItem.pointerType == A_POINTER &&
                 numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
     }
@@ -1053,11 +960,11 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         for ( i = 0; i < numPointer; i++ ) {
             origPtr = pointer = pointerArray[i];
 
-            status = packInt( &pointer, packedOutput, numElement,
-                              myPackedItem, irodsProt );
+            status = packInt( pointer, packedOutput, numElement,
+                              myPackedItem.name, irodsProt );
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
             if ( status < 0 ) {
                 return status;
@@ -1065,10 +972,10 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         }
 
         if ( ( packFlag & FREE_POINTER ) &&
-                myPackedItem->pointerType == A_POINTER &&
+                myPackedItem.pointerType == A_POINTER &&
                 numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
 
@@ -1076,11 +983,11 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         for ( i = 0; i < numPointer; i++ ) {
             origPtr = pointer = pointerArray[i];
 
-            status = packInt16( &pointer, packedOutput, numElement,
-                                myPackedItem, irodsProt );
+            status = packInt16( pointer, packedOutput, numElement,
+                                myPackedItem.name, irodsProt );
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
             if ( status < 0 ) {
                 return status;
@@ -1088,10 +995,10 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         }
 
         if ( ( packFlag & FREE_POINTER ) &&
-                myPackedItem->pointerType == A_POINTER &&
+                myPackedItem.pointerType == A_POINTER &&
                 numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
 
@@ -1099,11 +1006,11 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         for ( i = 0; i < numPointer; i++ ) {
             origPtr = pointer = pointerArray[i];
 
-            status = packDouble( &pointer, packedOutput, numElement,
-                                 myPackedItem, irodsProt );
+            status = packDouble( pointer, packedOutput, numElement,
+                                 myPackedItem.name, irodsProt );
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
             if ( status < 0 ) {
                 return status;
@@ -1111,10 +1018,10 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
         }
 
         if ( ( packFlag & FREE_POINTER ) &&
-                myPackedItem->pointerType == A_POINTER &&
+                myPackedItem.pointerType == A_POINTER &&
                 numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
 
@@ -1123,103 +1030,86 @@ packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
 
         for ( i = 0; i < numPointer; i++ ) {
             origPtr = pointer = pointerArray[i];
-            status = packChildStruct( &pointer, packedOutput, myPackedItem,
+            status = packChildStruct( pointer, packedOutput, myPackedItem,
                                       myPackTable, numElement, packFlag, irodsProt, NULL );
             if ( ( packFlag & FREE_POINTER ) &&
-                    myPackedItem->pointerType == A_POINTER ) {
-                free( origPtr );
+                    myPackedItem.pointerType == A_POINTER ) {
+                free( const_cast<void*>(origPtr) );
             }
             if ( status < 0 ) {
                 return status;
             }
         }
         if ( ( packFlag & FREE_POINTER ) &&
-                myPackedItem->pointerType == A_POINTER
+                myPackedItem.pointerType == A_POINTER
                 && numPointer > 0 && myDim > 0 ) {
             /* Array of pointers */
-            free( pointerArray );
+            free( const_cast<void**>(pointerArray) );
         }
         break;
 
     default:
         rodsLog( LOG_ERROR,
-                 "packNonpointerItem: Unknow type %d - %s ",
-                 myTypeNum, myPackedItem->name );
+                 "packNonpointerItem: Unknown type %d - %s ",
+                 myTypeNum, myPackedItem.name );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
     return 0;
 }
 
 int
-getNumElement( packItem_t *myPackedItem ) {
-    int i;
+getNumElement( const packItem_t &myPackedItem ) {
     int numElement = 1;
-
-    for ( i = 0; i < myPackedItem->dim; i++ ) {
-        numElement *= myPackedItem->dimSize[i];
+    for ( int i = 0; i < myPackedItem.dim; i++ ) {
+        numElement *= myPackedItem.dimSize[i];
     }
     return numElement;
 }
 
 int
-getNumHintElement( packItem_t *myPackedItem ) {
-    int i;
+getNumHintElement( const packItem_t &myPackedItem ) {
     int numElement = 1;
-
-    for ( i = 0; i < myPackedItem->hintDim; i++ ) {
-        numElement *= myPackedItem->hintDimSize[i];
+    for ( int i = 0; i < myPackedItem.hintDim; i++ ) {
+        numElement *= myPackedItem.hintDimSize[i];
     }
     return numElement;
 }
 
 int
-extendPackedOutput( packedOutput_t *packedOutput, int extLen, void **outPtr ) {
-    int newOutLen;
-    int newBufSize;
-    void *oldBuf;
+extendPackedOutput( packedOutput_t &packedOutput, int extLen, void *&outPtr ) {
 
-    newOutLen = packedOutput->bBuf.len + extLen;
-    if ( newOutLen <= packedOutput->bufSize ) {
-        *outPtr = ( void * )( ( char * ) packedOutput->bBuf.buf +
-                              packedOutput->bBuf.len );
+    int newOutLen = packedOutput.bBuf.len + extLen;
+    if ( newOutLen <= packedOutput.bufSize ) {
+        outPtr = ( char * ) packedOutput.bBuf.buf + packedOutput.bBuf.len;
         return 0;
     }
 
     /* double the size */
-    newBufSize = packedOutput->bufSize + packedOutput->bufSize;
+    int newBufSize = packedOutput.bufSize + packedOutput.bufSize;
     if ( newBufSize <= newOutLen ||
-            packedOutput->bufSize > MAX_PACKED_OUT_ALLOC_SZ ) {
+            packedOutput.bufSize > MAX_PACKED_OUT_ALLOC_SZ ) {
         newBufSize = newOutLen + PACKED_OUT_ALLOC_SZ;
     }
 
-    oldBuf = packedOutput->bBuf.buf;
+    packedOutput.bBuf.buf = realloc( packedOutput.bBuf.buf, newBufSize );
+    packedOutput.bufSize = newBufSize;
 
-    packedOutput->bBuf.buf = malloc( newBufSize );
-    packedOutput->bufSize = newBufSize;
-
-    if ( packedOutput->bBuf.buf == NULL ) {
+    if ( packedOutput.bBuf.buf == NULL ) {
         rodsLog( LOG_ERROR,
                  "extendPackedOutput: error malloc of size %d", newBufSize );
-        *outPtr = NULL;
+        outPtr = NULL;
         return SYS_MALLOC_ERR;
     }
-    if ( packedOutput->bBuf.len > 0 ) {
-        memcpy( packedOutput->bBuf.buf, oldBuf, packedOutput->bBuf.len );
-    }
-    *outPtr = ( void * )( ( char * ) packedOutput->bBuf.buf +
-                          packedOutput->bBuf.len );
+    outPtr = static_cast<char*>(packedOutput.bBuf.buf) + packedOutput.bBuf.len;
 
-    free( oldBuf );
-
-    /* set the remaing to 0 */
-
-    memset( *outPtr, 0, newBufSize - packedOutput->bBuf.len );
+    /* set the remaining to 0 */
+    memset( outPtr, 0, newBufSize - packedOutput.bBuf.len );
 
     return 0;
 }
 
 int
-packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
+packItem( packItem_t &myPackedItem, const void *&inPtr, packedOutput_t &packedOutput,
           const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int status;
 
@@ -1227,7 +1117,7 @@ packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
     if ( status < 0 ) {
         return status;
     }
-    if ( myPackedItem->pointerType > 0 ) {
+    if ( myPackedItem.pointerType > 0 ) {
         /* a pointer type */
         status = packPointerItem( myPackedItem, packedOutput,
                                   myPackTable, packFlag, irodsProt );
@@ -1241,68 +1131,69 @@ packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
 }
 
 int
-packChar( void **inPtr, packedOutput_t *packedOutput, int len,
-          packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    void *outPtr;
+packChar( const void *&inPtr, packedOutput_t &packedOutput, int len,
+          const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt ) {
 
     if ( len <= 0 ) {
         return 0;
     }
 
     if ( irodsProt == XML_PROT ) {
-        packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
+        packXmlTag( name, packedOutput, START_TAG_FL );
     }
 
     if ( irodsProt == XML_PROT &&
-            packTypeTable[myPackedItem->typeInx].number == PACK_BIN_TYPE ) {
+            packTypeTable[typeInx].number == PACK_BIN_TYPE ) {
         /* a bin pack type. encode it */
         unsigned long outlen;
         int status;
 
         outlen = 2 * len + 10;
-        extendPackedOutput( packedOutput, outlen, &outPtr );
-        if ( *inPtr == NULL ) { /* A NULL pointer */
+        void *outPtr;
+        extendPackedOutput( packedOutput, outlen, outPtr );
+        if ( inPtr == NULL ) { /* A NULL pointer */
             /* Don't think we'll have this condition. just fill it with 0 */
             memset( outPtr, 0, len );
-            packedOutput->bBuf.len += len;
+            packedOutput.bBuf.len += len;
         }
         else {
-            status = base64_encode( ( const unsigned char * ) * inPtr, len,
-                                    ( unsigned char * ) outPtr, &outlen );
+            status = base64_encode( static_cast<const unsigned char *>(inPtr), len,
+                                    static_cast<unsigned char *>(outPtr), &outlen );
             if ( status < 0 ) {
                 return status;
             }
-            *inPtr = ( void * )( ( char * ) * inPtr + len );
-            packedOutput->bBuf.len += outlen;
+            inPtr = static_cast<const char*>(inPtr) + len;
+            packedOutput.bBuf.len += outlen;
         }
     }
     else {
-        extendPackedOutput( packedOutput, len, &outPtr );
-        if ( *inPtr == NULL ) { /* A NULL pointer */
+        void *outPtr;
+        extendPackedOutput( packedOutput, len, outPtr );
+        if ( inPtr == NULL ) { /* A NULL pointer */
             /* Don't think we'll have this condition. just fill it with 0 */
             memset( outPtr, 0, len );
         }
         else {
-            memcpy( outPtr, *inPtr, len );
-            *inPtr = ( void * )( ( char * ) * inPtr + len );
+            memcpy( outPtr, inPtr, len );
+            inPtr = static_cast<const char *>(inPtr) + len;
         }
-        packedOutput->bBuf.len += len;
+        packedOutput.bBuf.len += len;
     }
 
     if ( irodsProt == XML_PROT ) {
-        packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
+        packXmlTag( name, packedOutput, END_TAG_FL );
     }
 
     return 0;
 }
 
 int
-packString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-            packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+packString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
+            const char* name, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
-        status = packXmlString( inPtr, packedOutput, maxStrLen, myPackedItem );
+        status = packXmlString( inPtr, packedOutput, maxStrLen, name );
     }
     else {
         status = packNatString( inPtr, packedOutput, maxStrLen );
@@ -1312,323 +1203,234 @@ packString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
 }
 
 int
-packNatString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen ) {
+packNatString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen ) {
     int myStrlen;
-    char *outPtr;
 
-    if ( *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         myStrlen = 0;
     }
     else {
-        myStrlen = strlen( ( char* ) * inPtr );
+        myStrlen = strlen( ( const char* )inPtr );
     }
     if ( maxStrLen >= 0 && myStrlen >= maxStrLen ) {
         return USER_PACKSTRUCT_INPUT_ERR;
     }
 
-    extendPackedOutput( packedOutput, myStrlen + 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
+    void *outPtr;
+    extendPackedOutput( packedOutput, myStrlen + 1, outPtr );
     if ( myStrlen == 0 ) {
         memset( outPtr, 0, 1 );
     }
     else {
-        strncpy( ( char* )outPtr, ( char* )*inPtr, myStrlen + 1 );
+        strncpy( static_cast<char*>(outPtr), static_cast<const char*>(inPtr), myStrlen + 1 );
     }
 
     if ( maxStrLen > 0 ) {
-        *inPtr = ( void * )( ( char * ) * inPtr + maxStrLen );
+        inPtr = ( const char * )inPtr + maxStrLen;
     }
     else {
-        *inPtr = ( void * )( ( char * ) * inPtr + myStrlen + 1 );
+        inPtr = ( const char * )inPtr + myStrlen + 1;
     }
 
-    packedOutput->bBuf.len += ( myStrlen + 1 );
+    packedOutput.bBuf.len += ( myStrlen + 1 );
 
     return 0;
 }
 
 int
-packXmlString( void **inPtr, packedOutput_t *packedOutput, int maxStrLen,
-               packItem_t *myPackedItem ) {
-    int myStrlen;
-    char *outPtr;
-    char *xmlStr = NULL;
-    int xmlLen;
-    char *myInPtr;
+packXmlString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
+               const char* name ) {
 
-    if ( *inPtr == NULL ) {
-        myStrlen = 0;
-        xmlLen = 0;
+    if ( !inPtr ) {
+        rodsLog( LOG_ERROR, "packXmlString :: null inPtr" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    else {
-        myStrlen = strlen( ( char* ) * inPtr );
-        myInPtr = ( char * ) * inPtr;
-        xmlLen = strToXmlStr( ( char * ) myInPtr, &xmlStr );
-    }
+
+    int myStrlen = strlen( static_cast<const char*>(inPtr) );
+    char *xmlStr = nullptr;
+    int xmlLen = strToXmlStr( static_cast<const char*>(inPtr), xmlStr );
     if ( NULL == xmlStr ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "packXmlString :: null xmlStr" );
         return -1;
     }
 
     if ( maxStrLen >= 0 && myStrlen >= maxStrLen ) {
-        if ( xmlStr != myInPtr ) {
-            free( xmlStr );
-        }
+        free( xmlStr );
         return USER_PACKSTRUCT_INPUT_ERR;
     }
-    packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
+    packXmlTag( name, packedOutput, START_TAG_FL );
 
-    extendPackedOutput( packedOutput, xmlLen + 1, ( void ** )( static_cast< void * >( &outPtr ) ) );
+    void *outPtr;
+    extendPackedOutput( packedOutput, xmlLen + 1, outPtr );
     if ( xmlLen == 0 ) {
         memset( outPtr, 0, 1 );
     }
     else {
-        strncpy( ( char* )outPtr, xmlStr, xmlLen + 1 );
+        strncpy( static_cast<char*>(outPtr), xmlStr, xmlLen + 1 );
     }
 
     if ( maxStrLen > 0 ) {
-        *inPtr = ( void * )( ( char * ) * inPtr + maxStrLen );
+        inPtr = ( const char * )inPtr + maxStrLen;
     }
     else {
-        *inPtr = ( void * )( ( char * ) * inPtr + xmlLen + 1 );
+        inPtr = ( const char * )inPtr + xmlLen + 1;
     }
 
-    packedOutput->bBuf.len += ( xmlLen );
-    packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
-    if ( xmlStr != myInPtr ) {
-        free( xmlStr );
-    }
+    packedOutput.bBuf.len += ( xmlLen );
+    packXmlTag( name, packedOutput, END_TAG_FL );
+    free( xmlStr );
     return 0;
 }
 
 int
-strToXmlStr( char *inStr, char **outXmlStr ) {
-    char *tmpPtr = 0;
-    char *inPtr = 0;
-    char *outPtr = 0;
-    int cpLen = 0;
-
-    *outXmlStr = NULL;
+strToXmlStr( const char *inStr, char *&outXmlStr ) {
+    outXmlStr = NULL;
     if ( inStr == NULL ) {
         return 0;
     }
 
-    inPtr = tmpPtr = inStr;
-
-    while ( 1 ) {
-        if ( *tmpPtr == '&' ) {
-            if ( *outXmlStr == NULL ) {
-                *outXmlStr = outPtr = ( char* )malloc( 5 * strlen( inPtr ) + 6 );
-            }
-            cpLen = tmpPtr - inPtr;
-            strncpy( outPtr, inPtr, cpLen );
-            outPtr += cpLen;
-            /* strcat (outPtr, "&amp;"); */
-            rstrcpy( outPtr, "&amp;", 6 );
-            outPtr += 5;
-            inPtr += cpLen + 1;
+    std::size_t copy_from = 0;
+    std::stringstream xml{};
+    std::size_t i;
+    for ( i = 0; inStr[i] != '\0'; ++i ) {
+        switch(inStr[i]) {
+            case '&':
+                xml.write(inStr + copy_from, i - copy_from);
+                copy_from = i + 1;
+                xml << "&amp;";
+                break;
+            case '<':
+                xml.write(inStr + copy_from, i - copy_from);
+                copy_from = i + 1;
+                xml << "&lt;";
+                break;
+            case '>':
+                xml.write(inStr + copy_from, i - copy_from);
+                copy_from = i + 1;
+                xml << "&gt;";
+                break;
+            case '"':
+                xml.write(inStr + copy_from, i - copy_from);
+                copy_from = i + 1;
+                xml << "&quot;";
+                break;
+            case '`':
+                xml.write(inStr + copy_from, i - copy_from);
+                copy_from = i + 1;
+                xml << "&apos;";
+                break;
         }
-        else if ( *tmpPtr == '<' ) {
-            if ( *outXmlStr == NULL ) {
-                *outXmlStr = outPtr = ( char* )malloc( 5 * strlen( inPtr ) + 6 );
-            }
-            cpLen = tmpPtr - inPtr;
-            strncpy( outPtr, inPtr, cpLen );
-            outPtr += cpLen;
-            /* strcat (outPtr, "&lt;"); */
-            rstrcpy( outPtr, "&lt;", 5 );
-            outPtr += 4;
-            inPtr += cpLen + 1;
-        }
-        else if ( *tmpPtr == '>' ) {
-            if ( *outXmlStr == NULL ) {
-                *outXmlStr = outPtr = ( char* )malloc( 5 * strlen( inPtr ) + 6 );
-            }
-            cpLen = tmpPtr - inPtr;
-            strncpy( outPtr, inPtr, cpLen );
-            outPtr += cpLen;
-            rstrcpy( outPtr, "&gt;", 5 );
-            /* strcat (outPtr, "&gt;"); */
-            outPtr += 4;
-            inPtr += cpLen + 1;
-        }
-        else if ( *tmpPtr == '"' ) {
-            if ( *outXmlStr == NULL ) {
-                *outXmlStr = outPtr = ( char* )malloc( 5 * strlen( inPtr ) + 6 );
-            }
-            cpLen = tmpPtr - inPtr;
-            strncpy( outPtr, inPtr, cpLen );
-            outPtr += cpLen;
-            rstrcpy( outPtr, "&quot;", 7 );
-            outPtr += 6;
-            inPtr += cpLen + 1;
-        }
-        else if ( *tmpPtr == '`' ) {
-            if ( *outXmlStr == NULL ) {
-                *outXmlStr = outPtr = ( char* )malloc( 5 * strlen( inPtr ) + 6 );
-            }
-            cpLen = tmpPtr - inPtr;
-            strncpy( outPtr, inPtr, cpLen );
-            outPtr += cpLen;
-            /* strcat (outPtr, "&apos;"); */
-            rstrcpy( outPtr, "&apos;", 7 );
-            outPtr += 6;
-            inPtr += cpLen + 1;
-        }
-        else if ( *tmpPtr == '\0' ) {
-            break;
-        }
-        tmpPtr++;
     }
+    xml.write(inStr + copy_from, i - copy_from);
+    outXmlStr = strdup(xml.str().c_str());
 
-    if ( *outXmlStr != NULL ) {
-        /* copy the remaining */
-        strcpy( outPtr, inPtr );
-    }
-    else {
-        /* no predeclared char. just use the inStr */
-        *outXmlStr = inStr;
-    }
+    return strlen( outXmlStr );
 
-    return strlen( *outXmlStr );
 }
 
 int
-xmlStrToStr( char *inStr, int myLen ) {
-    int savedChar;
-    char *tmpPtr;
-    char *inPtr;
-    int len;
-
-    if ( inStr == NULL || myLen == 0 ) {
+xmlStrToStr( const char *inStr, int len, char *&outStr ) {
+    outStr = nullptr;
+    if ( inStr == NULL || len <= 0 ) {
         return 0;
     }
 
-    /* put a null at the end of the str because it is not null terminated */
-    savedChar = inStr[myLen];
-    inStr[myLen] = '\0';
-
-    /* do a quick scan for & */
-
-    if ( strchr( inStr, '&' ) == NULL ) {
-        inStr[myLen] = savedChar;
-        return myLen;
-    }
-
-    inPtr = inStr;
-
-    while ( 1 ) {
-        if ( ( tmpPtr = strchr( inPtr, '&' ) ) == NULL ) {
-            break;
-        }
-
-        if ( strncmp( tmpPtr, "&amp;", 5 ) == 0 ) {
-            inPtr = tmpPtr;
-            *inPtr = '&';
-            inPtr ++;
-            ovStrcpy( inPtr, tmpPtr + 5 );
-        }
-        else if ( strncmp( tmpPtr, "&lt;", 4 ) == 0 ) {
-            inPtr = tmpPtr;
-            *inPtr = '<';
-            inPtr ++;
-            ovStrcpy( inPtr, tmpPtr + 4 );
-        }
-        else if ( strncmp( tmpPtr, "&gt;", 4 ) == 0 ) {
-            inPtr = tmpPtr;
-            *inPtr = '>';
-            inPtr ++;
-            ovStrcpy( inPtr, tmpPtr + 4 );
-        }
-        else if ( strncmp( tmpPtr, "&quot;", 6 ) == 0 ) {
-            inPtr = tmpPtr;
-            *inPtr = '"';
-            inPtr ++;
-            ovStrcpy( inPtr, tmpPtr + 6 );
-        }
-        else if ( strncmp( tmpPtr, "&apos;", 6 ) == 0 ) {
-            inPtr = tmpPtr;
-            *inPtr = '`';
-            inPtr ++;
-            ovStrcpy( inPtr, tmpPtr + 6 );
-        }
-        else {
-            break;
+    std::size_t copy_from = 0;
+    std::stringstream s{};
+    for (std::size_t i = 0; i < static_cast<std::size_t>(len); ++i ) {
+        if (inStr[i] == '&') {
+            s.write(inStr + copy_from, i - copy_from);
+            if ( strncmp( inStr + i + 1, "amp;", 4 ) == 0 ) {
+                s << '&';
+                i += 4;
+            } else if ( strncmp( inStr + i + 1, "lt;", 3 ) == 0 ) {
+                s << '<';
+                i += 3;
+            } else if ( strncmp( inStr + i + 1, "gt;", 3 ) == 0 ) {
+                s << '>';
+                i += 3;
+            } else if ( strncmp( inStr + i + 1, "quot;", 5 ) == 0 ) {
+                s << '"';
+                i += 5;
+            } else if ( strncmp( inStr + i + 1, "apos;", 5 ) == 0 ) {
+                s << '`';
+                i += 5;
+            } else {
+                break;
+            }
+            copy_from = i + 1;
         }
     }
+    s.write(inStr + copy_from, len - copy_from);
+    outStr = strdup(s.str().c_str());
 
-    len = strlen( inStr );
-    /* put the char back */
-    inStr[myLen] = savedChar;
-
-    return len;
+    return strlen( outStr );
 }
 
 int
-packNullString( packedOutput_t *packedOutput ) {
-    int myStrlen;
-    void *outPtr;
+packNullString( packedOutput_t &packedOutput ) {
 
-    myStrlen = strlen( NULL_PTR_PACK_STR );
-    extendPackedOutput( packedOutput, myStrlen + 1, &outPtr );
-    strncpy( ( char* )outPtr, NULL_PTR_PACK_STR, myStrlen + 1 );
-    packedOutput->bBuf.len += ( myStrlen + 1 );
+    int myStrlen = strlen( NULL_PTR_PACK_STR );
+    void *outPtr;
+    extendPackedOutput( packedOutput, myStrlen + 1, outPtr );
+    strncpy( static_cast<char*>(outPtr), NULL_PTR_PACK_STR, myStrlen + 1 );
+    packedOutput.bBuf.len += ( myStrlen + 1 );
     return 0;
 }
 
 int
-packInt( void **inPtr, packedOutput_t *packedOutput, int numElement,
-         packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    int *tmpIntPtr, *origIntPtr, *inIntPtr;
-    int i;
-    void *outPtr;
-    int intValue = 0;
+packInt( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+         const char* name, irodsProt_t irodsProt ) {
 
     if ( numElement == 0 ) {
         return 0;
     }
 
-    inIntPtr = ( int * ) * inPtr;
-
-    if ( inIntPtr != NULL ) {
-        /* save this and return later */
-        intValue = *inIntPtr;
-    }
+    int intValue = 0;
 
     if ( irodsProt == XML_PROT ) {
-        if ( inIntPtr == NULL ) {
+        if ( inPtr == NULL ) {
             /* pack nothing */
             return 0;
         }
-        for ( i = 0; i < numElement; i++ ) {
-            packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
-            extendPackedOutput( packedOutput, 12, &outPtr );
-            snprintf( ( char* )outPtr, 12, "%d", *inIntPtr );
-            packedOutput->bBuf.len += ( strlen( ( char* )outPtr ) );
-            packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
+        const int* inIntPtr = ( const int * )inPtr;
+        intValue = *inIntPtr;
+        for ( int i = 0; i < numElement; i++ ) {
+            packXmlTag( name, packedOutput, START_TAG_FL );
+            void *outPtr;
+            extendPackedOutput( packedOutput, 12, outPtr );
+            snprintf( static_cast<char*>(outPtr), 12, "%d", *inIntPtr );
+            packedOutput.bBuf.len += ( strlen( static_cast<char*>(outPtr) ) );
+            packXmlTag( name, packedOutput, END_TAG_FL );
             inIntPtr++;
         }
-        *inPtr = inIntPtr;
+        inPtr = inIntPtr;
     }
     else {
-        origIntPtr = tmpIntPtr = ( int * ) malloc( sizeof( int ) * numElement );
+        int* origIntPtr = ( int * ) malloc( sizeof( int ) * numElement );
 
-        if ( inIntPtr == NULL ) {
+        if ( inPtr == NULL ) {
             /* a NULL pointer, fill the array with 0 */
             memset( origIntPtr, 0, sizeof( int ) * numElement );
         }
         else {
-            for ( i = 0; i < numElement; i++ ) {
+            const int* inIntPtr = ( const int * )inPtr;
+            intValue = *inIntPtr;
+            int* tmpIntPtr = origIntPtr;
+            for ( int i = 0; i < numElement; i++ ) {
                 *tmpIntPtr = htonl( *inIntPtr );
                 tmpIntPtr ++;
                 inIntPtr ++;
             }
-            *inPtr = inIntPtr;
+            inPtr = inIntPtr;
         }
 
-        extendPackedOutput( packedOutput, sizeof( int ) * numElement, &outPtr );
-        memcpy( outPtr, ( void * ) origIntPtr, sizeof( int ) * numElement );
+        void *outPtr;
+
+        extendPackedOutput( packedOutput, sizeof( int ) * numElement, outPtr );
+        memcpy( outPtr, origIntPtr, sizeof( int ) * numElement );
         free( origIntPtr );
-        packedOutput->bBuf.len += ( sizeof( int ) * numElement );
+        packedOutput.bBuf.len += ( sizeof( int ) * numElement );
 
     }
     if ( intValue < 0 ) {
@@ -1640,9 +1442,9 @@ packInt( void **inPtr, packedOutput_t *packedOutput, int numElement,
 }
 
 int
-packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
-           packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    short *tmpIntPtr, *origIntPtr, *inIntPtr;
+packInt16( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+           const char* name, irodsProt_t irodsProt ) {
+    short *tmpIntPtr, *origIntPtr;
     int i;
     void *outPtr;
     short intValue = 0;
@@ -1651,7 +1453,7 @@ packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
         return 0;
     }
 
-    inIntPtr = ( short * ) * inPtr;
+    const short* inIntPtr = ( const short * )inPtr;
 
     if ( inIntPtr != NULL ) {
         /* save this and return later */
@@ -1664,14 +1466,14 @@ packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
             return 0;
         }
         for ( i = 0; i < numElement; i++ ) {
-            packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
-            extendPackedOutput( packedOutput, 12, &outPtr );
-            snprintf( ( char* )outPtr, 12, "%hi", *inIntPtr );
-            packedOutput->bBuf.len += ( strlen( ( char* )outPtr ) );
-            packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
+            packXmlTag( name, packedOutput, START_TAG_FL );
+            extendPackedOutput( packedOutput, 12, outPtr );
+            snprintf( static_cast<char*>(outPtr), 12, "%hi", *inIntPtr );
+            packedOutput.bBuf.len += ( strlen( static_cast<char*>(outPtr) ) );
+            packXmlTag( name, packedOutput, END_TAG_FL );
             inIntPtr++;
         }
-        *inPtr = inIntPtr;
+        inPtr = inIntPtr;
     }
     else {
         origIntPtr = tmpIntPtr = ( short * ) malloc( sizeof( short ) * numElement );
@@ -1686,13 +1488,13 @@ packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
                 tmpIntPtr ++;
                 inIntPtr ++;
             }
-            *inPtr = inIntPtr;
+            inPtr = inIntPtr;
         }
 
-        extendPackedOutput( packedOutput, sizeof( short ) * numElement, &outPtr );
-        memcpy( outPtr, ( void * ) origIntPtr, sizeof( short ) * numElement );
+        extendPackedOutput( packedOutput, sizeof( short ) * numElement, outPtr );
+        memcpy( outPtr, origIntPtr, sizeof( short ) * numElement );
         free( origIntPtr );
-        packedOutput->bBuf.len += ( sizeof( short ) * numElement );
+        packedOutput.bBuf.len += ( sizeof( short ) * numElement );
 
     }
     if ( intValue < 0 ) {
@@ -1704,9 +1506,9 @@ packInt16( void **inPtr, packedOutput_t *packedOutput, int numElement,
 }
 
 int
-packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
-            packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    rodsLong_t *tmpDoublePtr, *origDoublePtr, *inDoublePtr;
+packDouble( const void *&inPtr, packedOutput_t &packedOutput, int numElement,
+            const char* name, irodsProt_t irodsProt ) {
+    rodsLong_t *tmpDoublePtr, *origDoublePtr;
     int i;
     void *outPtr;
 
@@ -1714,7 +1516,7 @@ packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
         return 0;
     }
 
-    inDoublePtr = ( rodsLong_t * ) * inPtr;
+    const rodsLong_t* inDoublePtr = ( const rodsLong_t * )inPtr;
 
     if ( irodsProt == XML_PROT ) {
         if ( inDoublePtr == NULL ) {
@@ -1722,14 +1524,14 @@ packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
             return 0;
         }
         for ( i = 0; i < numElement; i++ ) {
-            packXmlTag( myPackedItem, packedOutput, START_TAG_FL );
-            extendPackedOutput( packedOutput, 20, &outPtr );
-            snprintf( ( char* )outPtr, 20, "%lld", *inDoublePtr );
-            packedOutput->bBuf.len += ( strlen( ( char* )outPtr ) );
-            packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
+            packXmlTag( name, packedOutput, START_TAG_FL );
+            extendPackedOutput( packedOutput, 20, outPtr );
+            snprintf( static_cast<char*>(outPtr), 20, "%lld", *inDoublePtr );
+            packedOutput.bBuf.len += ( strlen( static_cast<char*>(outPtr) ) );
+            packXmlTag( name, packedOutput, END_TAG_FL );
             inDoublePtr++;
         }
-        *inPtr = inDoublePtr;
+        inPtr = inDoublePtr;
     }
     else {
         origDoublePtr = tmpDoublePtr = ( rodsLong_t * ) malloc(
@@ -1745,64 +1547,55 @@ packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
                 tmpDoublePtr ++;
                 inDoublePtr ++;
             }
-            *inPtr = inDoublePtr;
+            inPtr = inDoublePtr;
         }
         extendPackedOutput( packedOutput, sizeof( rodsLong_t ) * numElement,
-                            &outPtr );
-        memcpy( outPtr, ( void * ) origDoublePtr,
-                sizeof( rodsLong_t ) * numElement );
+                            outPtr );
+        memcpy( outPtr, origDoublePtr, sizeof( rodsLong_t ) * numElement );
         free( origDoublePtr );
-        packedOutput->bBuf.len += ( sizeof( rodsLong_t ) * numElement );
+        packedOutput.bBuf.len += ( sizeof( rodsLong_t ) * numElement );
     }
 
     return 0;
 }
 
 int
-packChildStruct( void **inPtr, packedOutput_t *packedOutput,
-                 packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
-                 int packFlag, irodsProt_t irodsProt, char *packInstructInp ) {
-    const void *packInstruct;
-    int i = 0, status = 0;
-    packItem_t *packItemHead, *tmpItem;
+packChildStruct( const void *&inPtr, packedOutput_t &packedOutput,
+                 const packItem_t &myPackedItem, const packInstruct_t *myPackTable, int numElement,
+                 int packFlag, irodsProt_t irodsProt, const char *packInstructInp ) {
 
     if ( numElement == 0 ) {
         return 0;
     }
 
     if ( packInstructInp == NULL ) {
-        packInstruct = matchPackInstruct( myPackedItem->name, myPackTable );
-    }
-    else {
-        packInstruct = packInstructInp;
+        packInstructInp = matchPackInstruct( myPackedItem.name, myPackTable );
     }
 
-    if ( packInstruct == NULL ) {
+    if ( packInstructInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "packChildStruct: matchPackInstruct failed for %s",
-                 myPackedItem->name );
+                 myPackedItem.name );
         return SYS_UNMATCH_PACK_INSTRUCTI_NAME;
     }
 
-    for ( i = 0; i < numElement; i++ ) {
-        packItemHead = NULL;
+    for ( int i = 0; i < numElement; i++ ) {
+        packItem_t packItemHead{};
 
-        status = parsePackInstruct( ( const char* )packInstruct, &packItemHead );
+        int status = parsePackInstruct(packInstructInp, packItemHead );
         if ( status < 0 ) {
             freePackedItem( packItemHead );
             return status;
         }
         /* link it */
-        if ( packItemHead != NULL ) {
-            packItemHead->parent = myPackedItem;
-        }
+        packItemHead.parent = &myPackedItem;
 
         if ( irodsProt == XML_PROT ) {
-            packXmlTag( myPackedItem, packedOutput, START_TAG_FL | LF_FL );
+            packXmlTag( myPackedItem.name, packedOutput, START_TAG_FL | LF_FL );
         }
 
         /* now pack each child item */
-        tmpItem = packItemHead;
+        packItem_t* tmpItem = &packItemHead;
         while ( tmpItem != NULL ) {
 #if defined(solaris_platform)
             if ( tmpItem->pointerType == 0 &&
@@ -1810,7 +1603,7 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
                 doubleInStruct = 1;
             }
 #endif
-            status = packItem( tmpItem, inPtr, packedOutput,
+            int status = packItem( *tmpItem, inPtr, packedOutput,
                                myPackTable, packFlag, irodsProt );
             if ( status < 0 ) {
                 return status;
@@ -1822,27 +1615,23 @@ packChildStruct( void **inPtr, packedOutput_t *packedOutput,
         /* seems that solaris align to 64 bit boundary if there is any
          * double in struct */
         if ( doubleInStruct > 0 ) {
-            *inPtr = ( void * ) alignDouble( *inPtr );
+            inPtr = alignDouble( inPtr );
         }
 #endif
         if ( irodsProt == XML_PROT ) {
-            packXmlTag( myPackedItem, packedOutput, END_TAG_FL );
+            packXmlTag( myPackedItem.name, packedOutput, END_TAG_FL );
         }
     }
-    return status;
+    return 0;
 }
 
 int
-freePackedItem( packItem_t *packItemHead ) {
-    packItem_t *tmpItem, *nextItem;
-
-    tmpItem = packItemHead;
-
-    while ( tmpItem != NULL ) {
-        nextItem = tmpItem->next;
-        if ( tmpItem->name != NULL ) {
-            free( tmpItem->name );
-        }
+freePackedItem( packItem_t &packItemHead ) {
+    free( packItemHead.name );
+    packItem_t *tmpItem = packItemHead.next;
+    while ( tmpItem ) {
+        packItem_t* nextItem = tmpItem->next;
+        free( tmpItem->name );
         free( tmpItem );
         tmpItem = nextItem;
     }
@@ -1851,8 +1640,8 @@ freePackedItem( packItem_t *packItemHead ) {
 }
 
 int
-unpackItem( packItem_t *myPackedItem, void **inPtr,
-            packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackItem( packItem_t &myPackedItem, const void *&inPtr,
+            packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
             irodsProt_t irodsProt ) {
     int status;
 
@@ -1860,7 +1649,7 @@ unpackItem( packItem_t *myPackedItem, void **inPtr,
     if ( status < 0 ) {
         return status;
     }
-    if ( myPackedItem->pointerType > 0 ) {
+    if ( myPackedItem.pointerType > 0 ) {
         /* a pointer type */
         status = unpackPointerItem( myPackedItem, inPtr, unpackedOutput,
                                     myPackTable, irodsProt );
@@ -1874,25 +1663,21 @@ unpackItem( packItem_t *myPackedItem, void **inPtr,
 }
 
 int
-unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                      packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackNonpointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                      packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
                       irodsProt_t irodsProt ) {
-    int numElement;
-    int elementSz;
-    int typeInx;
-    int myTypeNum;
     int i, status = 0;
 
-    typeInx = myPackedItem->typeInx;
-    numElement = getNumElement( myPackedItem );
-    elementSz = packTypeTable[typeInx].size;
-    myTypeNum = packTypeTable[typeInx].number;
+    int typeInx = myPackedItem.typeInx;
+    int numElement = getNumElement( myPackedItem );
+    int elementSz = packTypeTable[typeInx].size;
+    int myTypeNum = packTypeTable[typeInx].number;
 
     switch ( myTypeNum ) {
     case PACK_CHAR_TYPE:
     case PACK_BIN_TYPE:
         status = unpackChar( inPtr, unpackedOutput, numElement * elementSz,
-                             myPackedItem, irodsProt );
+                             myPackedItem.name, myPackedItem.typeInx, irodsProt );
         if ( status < 0 ) {
             return status;
         }
@@ -1906,52 +1691,52 @@ unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
          */
         int maxStrLen, numStr, myDim;
 
-        myDim = myPackedItem->dim;
+        myDim = myPackedItem.dim;
         if ( myDim <= 0 ) {
             /* null terminated */
             maxStrLen = -1;
             numStr = 1;
         }
         else {
-            maxStrLen = myPackedItem->dimSize[myDim - 1];
+            maxStrLen = myPackedItem.dimSize[myDim - 1];
             numStr = numElement / maxStrLen;
         }
 
         for ( i = 0; i < numStr; i++ ) {
             char *outStr = NULL;
             status = unpackString( inPtr, unpackedOutput, maxStrLen,
-                                   myPackedItem, irodsProt, &outStr );
+                                   myPackedItem.name, irodsProt, outStr );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
                          "unpackNonpointerItem: strlen of %s > dim size, content: %s ",
-                         myPackedItem->name, *inPtr );
+                         myPackedItem.name, inPtr );
                 return status;
             }
             if ( myTypeNum == PACK_PI_STR_TYPE && i == 0 && outStr != NULL ) {
-                strncpy( myPackedItem->strValue, outStr, NAME_LEN );
+                strncpy( myPackedItem.strValue, outStr, NAME_LEN );
             }
         }
         break;
     }
     case PACK_INT_TYPE:
         status = unpackInt( inPtr, unpackedOutput, numElement,
-                            myPackedItem, irodsProt );
+                            myPackedItem.name, irodsProt );
         if ( status < 0 ) {
             return status;
         }
-        myPackedItem->intValue = status;
+        myPackedItem.intValue = status;
         break;
     case PACK_INT16_TYPE:
         status = unpackInt16( inPtr, unpackedOutput, numElement,
-                              myPackedItem, irodsProt );
+                              myPackedItem.name, irodsProt );
         if ( status < 0 ) {
             return status;
         }
-        myPackedItem->intValue = status;
+        myPackedItem.intValue = status;
         break;
     case PACK_DOUBLE_TYPE:
         status = unpackDouble( inPtr, unpackedOutput, numElement,
-                               myPackedItem, irodsProt );
+                               myPackedItem.name, irodsProt );
         if ( status < 0 ) {
             return status;
         }
@@ -1967,7 +1752,7 @@ unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
     default:
         rodsLog( LOG_ERROR,
                  "unpackNonpointerItem: Unknow type %d - %s ",
-                 myTypeNum, myPackedItem->name );
+                 myTypeNum, myPackedItem.name );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
     return status;
@@ -1975,8 +1760,8 @@ unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 /* unpackChar - This routine functionally is the same as packChar */
 
 int
-unpackChar( void **inPtr, packedOutput_t *unpackedOutput, int len,
-            packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackChar( const void *&inPtr, packedOutput_t &unpackedOutput, int len,
+            const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt ) {
     void *outPtr;
 
     if ( len <= 0 ) {
@@ -1985,26 +1770,26 @@ unpackChar( void **inPtr, packedOutput_t *unpackedOutput, int len,
 
     /* no need to align address */
 
-    extendPackedOutput( unpackedOutput, len, &outPtr );
-    if ( *inPtr == NULL ) {     /* A NULL pointer */
+    extendPackedOutput( unpackedOutput, len, outPtr );
+    if ( inPtr == NULL ) {     /* A NULL pointer */
         /* just fill it with 0 */
         memset( outPtr, 0, len );
     }
     else {
-        unpackCharToOutPtr( inPtr, &outPtr, len, myPackedItem, irodsProt );
+        unpackCharToOutPtr( inPtr, outPtr, len, name, typeInx, irodsProt );
     }
-    unpackedOutput->bBuf.len += len;
+    unpackedOutput.bBuf.len += len;
 
     return 0;
 }
 
 int
-unpackCharToOutPtr( void **inPtr, void **outPtr, int len,
-                    packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackCharToOutPtr( const void *&inPtr, void *&outPtr, int len,
+                    const char* name, const packTypeInx_t typeInx, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
-        status = unpackXmlCharToOutPtr( inPtr, outPtr, len, myPackedItem );
+        status = unpackXmlCharToOutPtr( inPtr, outPtr, len, name, typeInx );
     }
     else {
         status = unpackNatCharToOutPtr( inPtr, outPtr, len );
@@ -2013,31 +1798,31 @@ unpackCharToOutPtr( void **inPtr, void **outPtr, int len,
 }
 
 int
-unpackNatCharToOutPtr( void **inPtr, void **outPtr, int len ) {
-    memcpy( *outPtr, *inPtr, len );
-    *inPtr = ( void * )( ( char * ) * inPtr + len );
-    *outPtr = ( void * )( ( char * ) * outPtr + len );
+unpackNatCharToOutPtr( const void *&inPtr, void *&outPtr, int len ) {
+    memcpy( outPtr, inPtr, len );
+    inPtr = static_cast<const char*>(inPtr) + len;
+    outPtr = static_cast<char*>(outPtr) + len;
 
     return 0;
 }
 
 int
-unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
-                       packItem_t *myPackedItem ) {
-    int endTagLen;
-    int inLen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+unpackXmlCharToOutPtr( const void *&inPtr, void *&outPtr, int len,
+                       const char* name, const packTypeInx_t typeInx ) {
+    int endTagLen = 0;
+    int inLen = parseXmlValue( inPtr, name, endTagLen );
     if ( inLen < 0 ) {
         return inLen;
     }
 
-    if ( packTypeTable[myPackedItem->typeInx].number == PACK_BIN_TYPE ) {
+    if ( packTypeTable[typeInx].number == PACK_BIN_TYPE ) {
         /* bin type. need to decode */
         unsigned long outLen = len;
-        if ( int status = base64_decode( ( const unsigned char * ) * inPtr,
-                                         inLen, ( unsigned char * ) * outPtr, &outLen ) ) {
+        if ( int status = base64_decode( static_cast<const unsigned char *>(inPtr), inLen,
+                    static_cast<unsigned char *>(outPtr), &outLen ) ) {
             return status;
         }
-        if ( ( int ) outLen != len ) {
+        if ( static_cast<int>(outLen) != len ) {
             rodsLog( LOG_NOTICE,
                      "unpackXmlCharToOutPtr: required len %d != %d from base64_decode",
                      len, outLen );
@@ -2052,22 +1837,22 @@ unpackXmlCharToOutPtr( void **inPtr, void **outPtr, int len,
                 return USER_PACKSTRUCT_INPUT_ERR;
             }
         }
-        memcpy( *outPtr, *inPtr, inLen );
+        memcpy( outPtr, inPtr, inLen );
     }
-    *inPtr = ( void * )( ( char * ) * inPtr + inLen + endTagLen );
-    *outPtr = ( void * )( ( char * ) * outPtr + len );
+    inPtr = static_cast<const char*>(inPtr) + inLen + endTagLen;
+    outPtr = static_cast<char*>(outPtr) + len;
 
     return 0;
 }
 
 int
-unpackString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
-              packItem_t *myPackedItem, irodsProt_t irodsProt, char **outStr ) {
+unpackString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
+              const char* name, irodsProt_t irodsProt, char *&outStr ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
         status = unpackXmlString( inPtr, unpackedOutput, maxStrLen,
-                                  myPackedItem, outStr );
+                                  name, outStr );
     }
     else {
         status = unpackNatString( inPtr, unpackedOutput, maxStrLen, outStr );
@@ -2076,102 +1861,95 @@ unpackString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
 }
 
 int
-unpackNatString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
-                 char **outStr ) {
-    int myStrlen;
+unpackNatString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
+                 char *&outStr ) {
+    int myStrlen = inPtr ? strlen( static_cast<const char*>(inPtr) ) : 0;
     void *outPtr;
-
-    if ( *inPtr == NULL ) {
-        myStrlen = 0;
-    }
-    else {
-        myStrlen = strlen( ( char* ) * inPtr );
-    }
     if ( myStrlen + 1 >= maxStrLen ) {
         if ( maxStrLen >= 0 ) {
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen + 1, &outPtr );
+            extendPackedOutput( unpackedOutput, myStrlen + 1, outPtr );
         }
     }
     else {
-        extendPackedOutput( unpackedOutput, maxStrLen, &outPtr );
+        extendPackedOutput( unpackedOutput, maxStrLen, outPtr );
     }
 
     if ( myStrlen == 0 ) {
         memset( outPtr, 0, 1 );
     }
     else {
-        strncpy( ( char* )outPtr, ( char* )*inPtr, myStrlen + 1 );
-        *outStr = ( char * ) outPtr;
+        strncpy( static_cast<char*>(outPtr), static_cast<const char*>(inPtr), myStrlen + 1 );
+        outStr = static_cast<char*>(outPtr);
     }
 
     if ( maxStrLen > 0 ) {
-        *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + 1 ) );
-        unpackedOutput->bBuf.len += maxStrLen;
+        inPtr = static_cast<const char*>(inPtr) + ( myStrlen + 1 );
+        unpackedOutput.bBuf.len += maxStrLen;
     }
     else {
-        *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + 1 ) );
-        unpackedOutput->bBuf.len += myStrlen + 1;
+        inPtr = static_cast<const char*>(inPtr) + ( myStrlen + 1 );
+        unpackedOutput.bBuf.len += myStrlen + 1;
     }
 
     return 0;
 }
 
 int
-unpackXmlString( void **inPtr, packedOutput_t *unpackedOutput, int maxStrLen,
-                 packItem_t *myPackedItem, char **outStr ) {
+unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
+                 const char* name, char *&outStr ) {
     int myStrlen;
-    char *outPtr;
-    int endTagLen;      /* the length of end tag */
-    int origStrLen;
+    void *outPtr;
 
-    origStrLen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+    int endTagLen;
+    int origStrLen = parseXmlValue( inPtr, name, endTagLen );
     if ( origStrLen < 0 ) {
         return origStrLen;
     }
 
-    myStrlen = xmlStrToStr( ( char * ) * inPtr, origStrLen );
+    char* strBuf;
+    myStrlen = xmlStrToStr( ( const char * )inPtr, origStrLen, strBuf );
 
     if ( myStrlen >= maxStrLen ) {
         if ( maxStrLen >= 0 ) {
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen, ( void ** )( static_cast< void * >( &outPtr ) ) );
+            extendPackedOutput( unpackedOutput, myStrlen, outPtr );
         }
     }
     else {
-        extendPackedOutput( unpackedOutput, maxStrLen, ( void ** )( static_cast< void * >( &outPtr ) ) );
+        extendPackedOutput( unpackedOutput, maxStrLen, outPtr );
     }
 
     if ( myStrlen > 0 ) {
-        strncpy( ( char* )outPtr, ( char* )*inPtr, myStrlen );
-        *outStr = ( char * ) outPtr;
-        outPtr += myStrlen;
+        strncpy( static_cast<char*>(outPtr), strBuf, myStrlen );
+        outStr = static_cast<char*>(outPtr);
+        outPtr = static_cast<char*>(outPtr) + myStrlen;
     }
-    *outPtr = '\0';
+    *static_cast<char*>(outPtr) = '\0';
 
-    *inPtr = ( void * )( ( char * ) * inPtr + ( origStrLen + 1 ) );
+    inPtr = static_cast<const char*>(inPtr) + ( origStrLen + 1 );
     if ( maxStrLen > 0 ) {
-        unpackedOutput->bBuf.len += maxStrLen;
+        unpackedOutput.bBuf.len += maxStrLen;
     }
     else {
-        unpackedOutput->bBuf.len += myStrlen + 1;
+        unpackedOutput.bBuf.len += myStrlen + 1;
     }
 
     return 0;
 }
 
 int
-unpackStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
-                      packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen,
+                      const char* name, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
         status = unpackXmlStringToOutPtr( inPtr, outPtr, maxStrLen,
-                                          myPackedItem );
+                                          name );
     }
     else {
         status = unpackNatStringToOutPtr( inPtr, outPtr, maxStrLen );
@@ -2185,26 +1963,22 @@ unpackStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
  */
 
 int
-unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
-                  packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    int myStrlen;
-    int numElement, numPointer;
-    int myDim;
-    int tagLen;
+unpackNullString( const void *&inPtr, packedOutput_t &unpackedOutput,
+                  const packItem_t &myPackedItem, irodsProt_t irodsProt ) {
 
-    if ( *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         /* add a null pointer */
         addPointerToPackedOut( unpackedOutput, 0, NULL );
         return 0;
     }
 
-    char *myPtr = ( char* ) * inPtr;
+    const char *myPtr = ( const char* )inPtr;
     if ( irodsProt == XML_PROT ) {
 
         /* check if tag exists */
-        int skipLen;
-        tagLen = parseXmlTag( ( void ** )( static_cast< void * >( &myPtr ) ), myPackedItem, START_TAG_FL,
-                              &skipLen );
+        int skipLen = 0;
+        int tagLen = parseXmlTag( inPtr, myPackedItem.name, START_TAG_FL,
+                              skipLen );
         if ( tagLen < 0 ) {
             addPointerToPackedOut( unpackedOutput, 0, NULL );
             return 0;
@@ -2214,17 +1988,17 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
         }
     }
     else {
-        if ( strcmp( ( char* )*inPtr, NULL_PTR_PACK_STR ) == 0 ) {
-            myStrlen = strlen( NULL_PTR_PACK_STR );
+        if ( strcmp( ( const char* )inPtr, NULL_PTR_PACK_STR ) == 0 ) {
+            int myStrlen = strlen( NULL_PTR_PACK_STR );
             addPointerToPackedOut( unpackedOutput, 0, NULL );
-            *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + 1 ) );
+            inPtr = ( const char * )inPtr + ( myStrlen + 1 );
             return 0;
         }
     }
     /* need to do more checking for null */
-    myDim = myPackedItem->dim;
-    numPointer = getNumElement( myPackedItem );
-    numElement = getNumHintElement( myPackedItem );
+    int myDim = myPackedItem.dim;
+    int numPointer = getNumElement( myPackedItem );
+    int numElement = getNumHintElement( myPackedItem );
 
     if ( numElement <= 0 || ( myDim > 0 && numPointer <= 0 ) ) {
         /* add a null pointer */
@@ -2232,13 +2006,13 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
         if ( irodsProt == XML_PROT ) {
             if ( strncmp( myPtr, "</", 2 ) == 0 ) {
                 myPtr += 2;
-                int nameLen = strlen( myPackedItem->name );
-                if ( strncmp( myPtr, myPackedItem->name, nameLen ) == 0 ) {
+                int nameLen = strlen( myPackedItem.name );
+                if ( strncmp( myPtr, myPackedItem.name, nameLen ) == 0 ) {
                     myPtr += ( nameLen + 1 );
                     if ( *myPtr == '\n' ) {
                         myPtr++;
                     }
-                    *inPtr = myPtr;
+                    inPtr = myPtr;
                 }
             }
         }
@@ -2250,24 +2024,19 @@ unpackNullString( void **inPtr, packedOutput_t *unpackedOutput,
 }
 
 int
-unpackInt( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
-           packItem_t *myPackedItem, irodsProt_t irodsProt ) {
-    void *outPtr;
-    int intValue = 0;
-
+unpackInt( const void *&inPtr, packedOutput_t &unpackedOutput, int numElement,
+           const char* name, irodsProt_t irodsProt ) {
     if ( numElement == 0 ) {
         return 0;
     }
 
-    extendPackedOutput( unpackedOutput, sizeof( int ) * ( numElement + 1 ),
-                        &outPtr );
+    void *outPtr;
+    extendPackedOutput( unpackedOutput, sizeof( int ) * ( numElement + 1 ), outPtr );
 
-    intValue = unpackIntToOutPtr( inPtr, &outPtr, numElement, myPackedItem,
-                                  irodsProt );
+    int intValue = unpackIntToOutPtr( inPtr, outPtr, numElement, name, irodsProt );
 
     /* adjust len */
-    unpackedOutput->bBuf.len = ( int )( ( char * ) outPtr -
-                                         ( char * ) unpackedOutput->bBuf.buf ) + ( sizeof( int ) * numElement );
+    unpackedOutput.bBuf.len = static_cast<int>(static_cast<char*>(outPtr) - static_cast<char*>(unpackedOutput.bBuf.buf)) + (sizeof(int) * numElement);
 
     if ( intValue < 0 ) {
         /* prevent error exit */
@@ -2278,13 +2047,12 @@ unpackInt( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
 }
 
 int
-unpackIntToOutPtr( void **inPtr, void **outPtr, int numElement,
-                   packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                   const char* name, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
-        status = unpackXmlIntToOutPtr( inPtr, outPtr, numElement,
-                                       myPackedItem );
+        status = unpackXmlIntToOutPtr( inPtr, outPtr, numElement, name );
     }
     else {
         status = unpackNatIntToOutPtr( inPtr, outPtr, numElement );
@@ -2293,9 +2061,8 @@ unpackIntToOutPtr( void **inPtr, void **outPtr, int numElement,
 }
 
 int
-unpackNatIntToOutPtr( void **inPtr, void **outPtr, int numElement ) {
+unpackNatIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement ) {
     int *tmpIntPtr, *origIntPtr;
-    void *inIntPtr;
     int i;
     int intValue = 0;
 
@@ -2303,7 +2070,7 @@ unpackNatIntToOutPtr( void **inPtr, void **outPtr, int numElement ) {
         return 0;
     }
 
-    inIntPtr = *inPtr;
+    const void* inIntPtr = inPtr;
 
     origIntPtr = tmpIntPtr = ( int * ) malloc( sizeof( int ) * numElement );
 
@@ -2322,28 +2089,27 @@ unpackNatIntToOutPtr( void **inPtr, void **outPtr, int numElement ) {
                 intValue = *tmpIntPtr;
             }
             tmpIntPtr ++;
-            inIntPtr = ( void * )( ( char * ) inIntPtr + sizeof( int ) );
+            inIntPtr = ( const char * )inIntPtr + sizeof( int );
         }
-        *inPtr = inIntPtr;
+        inPtr = inIntPtr;
     }
 
     /* align unpackedOutput to 4 bytes boundary. Will not align inPtr */
 
-    *outPtr = alignInt( *outPtr );
+    outPtr = alignInt( outPtr );
 
-    memcpy( *outPtr, ( void * ) origIntPtr, sizeof( int ) * numElement );
+    memcpy( outPtr, origIntPtr, sizeof( int ) * numElement );
     free( origIntPtr );
 
     return intValue;
 }
 
 int
-unpackXmlIntToOutPtr( void **inPtr, void **outPtr, int numElement,
-                      packItem_t *myPackedItem ) {
+unpackXmlIntToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                      const char* name ) {
     int *tmpIntPtr;
     int i;
     int myStrlen;
-    int endTagLen;      /* the length of end tag */
     int intValue = 0;
 
     if ( numElement == 0 ) {
@@ -2352,27 +2118,28 @@ unpackXmlIntToOutPtr( void **inPtr, void **outPtr, int numElement,
 
     /* align outPtr to 4 bytes boundary. Will not align inPtr */
 
-    *outPtr = tmpIntPtr = ( int* )alignInt( *outPtr );
+    outPtr = tmpIntPtr = ( int* )alignInt( outPtr );
 
-    if ( *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         /* a NULL pointer, fill the array with 0 */
-        memset( *outPtr, 0, sizeof( int ) * numElement );
+        memset( outPtr, 0, sizeof( int ) * numElement );
     }
     else {
         char tmpStr[NAME_LEN];
 
         for ( i = 0; i < numElement; i++ ) {
-            myStrlen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+            int endTagLen = 0;
+            myStrlen = parseXmlValue( inPtr, name, endTagLen );
             if ( myStrlen < 0 ) {
                 return myStrlen;
             }
             else if ( myStrlen >= NAME_LEN ) {
                 rodsLog( LOG_ERROR,
                          "unpackXmlIntToOutPtr: input %s with value %s too long",
-                         myPackedItem->name, *inPtr );
+                         name, inPtr );
                 return USER_PACKSTRUCT_INPUT_ERR;
             }
-            strncpy( tmpStr, ( char* )*inPtr, myStrlen );
+            strncpy( tmpStr, ( const char* )inPtr, myStrlen );
             tmpStr[myStrlen] = '\0';
 
             *tmpIntPtr = atoi( tmpStr );
@@ -2381,15 +2148,15 @@ unpackXmlIntToOutPtr( void **inPtr, void **outPtr, int numElement,
                 intValue = *tmpIntPtr;
             }
             tmpIntPtr ++;
-            *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + endTagLen ) );
+            inPtr = ( const char * )inPtr + ( myStrlen + endTagLen );
         }
     }
     return intValue;
 }
 
 int
-unpackInt16( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
-             packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackInt16( const void *&inPtr, packedOutput_t &unpackedOutput, int numElement,
+             const char* name, irodsProt_t irodsProt ) {
     void *outPtr;
     short intValue = 0;
 
@@ -2398,14 +2165,13 @@ unpackInt16( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
     }
 
     extendPackedOutput( unpackedOutput, sizeof( short ) * ( numElement + 1 ),
-                        &outPtr );
+                        outPtr );
 
-    intValue = unpackInt16ToOutPtr( inPtr, &outPtr, numElement, myPackedItem,
+    intValue = unpackInt16ToOutPtr( inPtr, outPtr, numElement, name,
                                     irodsProt );
 
     /* adjust len */
-    unpackedOutput->bBuf.len = ( int )( ( char * ) outPtr -
-                                         ( char * ) unpackedOutput->bBuf.buf ) + ( sizeof( short ) * numElement );
+    unpackedOutput.bBuf.len = static_cast<int>(static_cast<char*>(outPtr) - static_cast<char*>(unpackedOutput.bBuf.buf)) + (sizeof( short ) * numElement);
 
     if ( intValue < 0 ) {
         /* prevent error exit */
@@ -2416,13 +2182,12 @@ unpackInt16( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
 }
 
 int
-unpackInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
-                     packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                     const char* name, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
-        status = unpackXmlInt16ToOutPtr( inPtr, outPtr, numElement,
-                                         myPackedItem );
+        status = unpackXmlInt16ToOutPtr( inPtr, outPtr, numElement, name );
     }
     else {
         status = unpackNatInt16ToOutPtr( inPtr, outPtr, numElement );
@@ -2431,9 +2196,8 @@ unpackInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
 }
 
 int
-unpackNatInt16ToOutPtr( void **inPtr, void **outPtr, int numElement ) {
+unpackNatInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement ) {
     short *tmpIntPtr, *origIntPtr;
-    void *inIntPtr;
     int i;
     short intValue = 0;
 
@@ -2441,7 +2205,7 @@ unpackNatInt16ToOutPtr( void **inPtr, void **outPtr, int numElement ) {
         return 0;
     }
 
-    inIntPtr = *inPtr;
+    const void* inIntPtr = inPtr;
 
     origIntPtr = tmpIntPtr = ( short * ) malloc( sizeof( short ) * numElement );
 
@@ -2460,28 +2224,27 @@ unpackNatInt16ToOutPtr( void **inPtr, void **outPtr, int numElement ) {
                 intValue = *tmpIntPtr;
             }
             tmpIntPtr ++;
-            inIntPtr = ( void * )( ( char * ) inIntPtr + sizeof( short ) );
+            inIntPtr = ( char * ) inIntPtr + sizeof( short );
         }
-        *inPtr = inIntPtr;
+        inPtr = inIntPtr;
     }
 
     /* align unpackedOutput to 4 bytes boundary. Will not align inPtr */
 
-    *outPtr = alignInt16( *outPtr );
+    outPtr = alignInt16( outPtr );
 
-    memcpy( *outPtr, ( void * ) origIntPtr, sizeof( short ) * numElement );
+    memcpy( outPtr, origIntPtr, sizeof( short ) * numElement );
     free( origIntPtr );
 
     return intValue;
 }
 
 int
-unpackXmlInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
-                        packItem_t *myPackedItem ) {
+unpackXmlInt16ToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                        const char* name ) {
     short *tmpIntPtr;
     int i;
     int myStrlen;
-    int endTagLen;      /* the length of end tag */
     short intValue = 0;
 
     if ( numElement == 0 ) {
@@ -2490,27 +2253,28 @@ unpackXmlInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
 
     /* align outPtr to 4 bytes boundary. Will not align inPtr */
 
-    *outPtr = tmpIntPtr = ( short* )alignInt16( *outPtr );
+    outPtr = tmpIntPtr = ( short* )alignInt16( outPtr );
 
-    if ( *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         /* a NULL pointer, fill the array with 0 */
-        memset( *outPtr, 0, sizeof( short ) * numElement );
+        memset( outPtr, 0, sizeof( short ) * numElement );
     }
     else {
         char tmpStr[NAME_LEN];
 
         for ( i = 0; i < numElement; i++ ) {
-            myStrlen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+            int endTagLen = 0;
+            myStrlen = parseXmlValue( inPtr, name, endTagLen );
             if ( myStrlen < 0 ) {
                 return myStrlen;
             }
             else if ( myStrlen >= NAME_LEN ) {
                 rodsLog( LOG_ERROR,
                          "unpackXmlIntToOutPtr: input %s with value %s too long",
-                         myPackedItem->name, *inPtr );
+                         name, inPtr );
                 return USER_PACKSTRUCT_INPUT_ERR;
             }
-            strncpy( tmpStr, ( char* )*inPtr, myStrlen );
+            strncpy( tmpStr, ( const char* )inPtr, myStrlen );
             tmpStr[myStrlen] = '\0';
 
             *tmpIntPtr = atoi( tmpStr );
@@ -2519,15 +2283,15 @@ unpackXmlInt16ToOutPtr( void **inPtr, void **outPtr, int numElement,
                 intValue = *tmpIntPtr;
             }
             tmpIntPtr ++;
-            *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + endTagLen ) );
+            inPtr = ( const char * )inPtr + ( myStrlen + endTagLen );
         }
     }
     return intValue;
 }
 
 int
-unpackDouble( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
-              packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackDouble( const void *&inPtr, packedOutput_t &unpackedOutput, int numElement,
+              const char* name, irodsProt_t irodsProt ) {
     void *outPtr;
 
     if ( numElement == 0 ) {
@@ -2535,25 +2299,24 @@ unpackDouble( void **inPtr, packedOutput_t *unpackedOutput, int numElement,
     }
 
     extendPackedOutput( unpackedOutput, sizeof( rodsLong_t ) * ( numElement + 1 ),
-                        &outPtr );
+                        outPtr );
 
-    unpackDoubleToOutPtr( inPtr, &outPtr, numElement, myPackedItem, irodsProt );
+    unpackDoubleToOutPtr( inPtr, outPtr, numElement, name, irodsProt );
 
     /* adjust len */
-    unpackedOutput->bBuf.len = ( int )( ( char * ) outPtr -
-                                         ( char * ) unpackedOutput->bBuf.buf ) + ( sizeof( rodsLong_t ) * numElement );
+    unpackedOutput.bBuf.len = static_cast<int>(static_cast<char*>(outPtr) - static_cast<char*>(unpackedOutput.bBuf.buf)) + (sizeof(rodsLong_t) * numElement);
 
     return 0;
 }
 
 int
-unpackDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
-                      packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+unpackDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                      const char* name, irodsProt_t irodsProt ) {
     int status;
 
     if ( irodsProt == XML_PROT ) {
         status = unpackXmlDoubleToOutPtr( inPtr, outPtr, numElement,
-                                          myPackedItem );
+                                          name );
     }
     else {
         status = unpackNatDoubleToOutPtr( inPtr, outPtr, numElement );
@@ -2562,16 +2325,15 @@ unpackDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
 }
 
 int
-unpackNatDoubleToOutPtr( void **inPtr, void **outPtr, int numElement ) {
+unpackNatDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement ) {
     rodsLong_t *tmpDoublePtr, *origDoublePtr;
-    void *inDoublePtr;
     int i;
 
     if ( numElement == 0 ) {
         return 0;
     }
 
-    inDoublePtr = *inPtr;
+    const void* inDoublePtr = inPtr;
 
     origDoublePtr = tmpDoublePtr = ( rodsLong_t * ) malloc(
                                        sizeof( rodsLong_t ) * numElement );
@@ -2588,32 +2350,31 @@ unpackNatDoubleToOutPtr( void **inPtr, void **outPtr, int numElement ) {
 
             myNtohll( tmpDouble, tmpDoublePtr );
             tmpDoublePtr ++;
-            inDoublePtr = ( void * )( ( char * ) inDoublePtr + sizeof( rodsLong_t ) );
+            inDoublePtr = ( const char * ) inDoublePtr + sizeof( rodsLong_t );
         }
-        *inPtr = inDoublePtr;
+        inPtr = inDoublePtr;
     }
     /* align inPtr to 8 bytes boundary. Will not align outPtr */
 
 #if defined(osx_platform)
     /* osx does not align */
-    *outPtr = alignInt( *outPtr );
+    outPtr = alignInt( outPtr );
 #else
-    *outPtr = alignDouble( *outPtr );
+    outPtr = alignDouble( outPtr );
 #endif
 
-    memcpy( *outPtr, ( void * ) origDoublePtr, sizeof( rodsLong_t ) * numElement );
+    memcpy( outPtr, origDoublePtr, sizeof( rodsLong_t ) * numElement );
     free( origDoublePtr );
 
     return 0;
 }
 
 int
-unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
-                         packItem_t *myPackedItem ) {
+unpackXmlDoubleToOutPtr( const void *&inPtr, void *&outPtr, int numElement,
+                         const char* name ) {
     rodsLong_t *tmpDoublePtr;
     int i;
     int myStrlen;
-    int endTagLen;      /* the length of end tag */
 
     if ( numElement == 0 ) {
         return 0;
@@ -2623,35 +2384,36 @@ unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
 
 #if defined(osx_platform)
     /* osx does not align */
-    *outPtr = tmpDoublePtr = ( rodsLong_t* )alignInt( *outPtr );
+    outPtr = tmpDoublePtr = ( rodsLong_t* )alignInt( outPtr );
 #else
-    *outPtr = tmpDoublePtr = ( rodsLong_t* )alignDouble( *outPtr );
+    outPtr = tmpDoublePtr = ( rodsLong_t* )alignDouble( outPtr );
 #endif
 
-    if ( *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         /* a NULL pointer, fill the array with 0 */
-        memset( *outPtr, 0, sizeof( rodsLong_t ) * numElement );
+        memset( outPtr, 0, sizeof( rodsLong_t ) * numElement );
     }
     else {
         for ( i = 0; i < numElement; i++ ) {
             char tmpStr[NAME_LEN];
 
-            myStrlen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+            int endTagLen = 0;
+            myStrlen = parseXmlValue( inPtr, name, endTagLen );
             if ( myStrlen < 0 ) {
                 return myStrlen;
             }
             else if ( myStrlen >= NAME_LEN ) {
                 rodsLog( LOG_ERROR,
                          "unpackXmlDoubleToOutPtr: input %s with value %s too long",
-                         myPackedItem->name, *inPtr );
+                         name, inPtr );
                 return USER_PACKSTRUCT_INPUT_ERR;
             }
-            strncpy( tmpStr, ( char* )*inPtr, myStrlen );
+            strncpy( tmpStr, ( const char* )inPtr, myStrlen );
             tmpStr[myStrlen] = '\0';
 
             *tmpDoublePtr = strtoll( tmpStr, 0, 0 );
             tmpDoublePtr ++;
-            *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + endTagLen ) );
+            inPtr = ( const char * )inPtr + ( myStrlen + endTagLen );
         }
     }
 
@@ -2659,13 +2421,9 @@ unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
 }
 
 int
-unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
-                   packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
-                   irodsProt_t irodsProt, char *packInstructInp ) {
-    const void *packInstruct = NULL;
-    int i = 0, status = 0;
-    packItem_t *unpackItemHead, *tmpItem;
-    int skipLen = 0;
+unpackChildStruct( const void *&inPtr, packedOutput_t &unpackedOutput,
+                   const packItem_t &myPackedItem, const packInstruct_t *myPackTable, int numElement,
+                   irodsProt_t irodsProt, const char *packInstructInp ) {
 #if defined(solaris_platform)
     int doubleInStruct = 0;
 #endif
@@ -2678,43 +2436,38 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
     }
 
     if ( packInstructInp == NULL ) {
-        packInstruct = matchPackInstruct( myPackedItem->name, myPackTable );
-    }
-    else {
-        packInstruct = packInstructInp;
+        packInstructInp = matchPackInstruct( myPackedItem.name, myPackTable );
     }
 
-    if ( packInstruct == NULL ) {
+    if ( packInstructInp == NULL ) {
         rodsLog( LOG_ERROR,
                  "unpackChildStruct: matchPackInstruct failed for %s",
-                 myPackedItem->name );
+                 myPackedItem.name );
         return SYS_UNMATCH_PACK_INSTRUCTI_NAME;
     }
 
-    for ( i = 0; i < numElement; i++ ) {
-        unpackItemHead = NULL;
+    for ( int i = 0; i < numElement; i++ ) {
+        packItem_t unpackItemHead{};
 
-        status = parsePackInstruct( static_cast<const char*>( packInstruct ), &unpackItemHead );
+        int status = parsePackInstruct( packInstructInp, unpackItemHead );
         if ( status < 0 ) {
             freePackedItem( unpackItemHead );
             return status;
         }
         /* link it */
-        if ( unpackItemHead != NULL ) {
-            unpackItemHead->parent = myPackedItem;
-        }
+        unpackItemHead.parent = &myPackedItem;
 
         if ( irodsProt == XML_PROT ) {
-            status = parseXmlTag( inPtr, myPackedItem, START_TAG_FL | LF_FL,
-                                  &skipLen );
+            int skipLen = 0;
+            int status = parseXmlTag( inPtr, myPackedItem.name, START_TAG_FL | LF_FL,
+                                  skipLen );
             if ( status >= 0 ) {
-                *inPtr = ( char * ) * inPtr + status + skipLen;
+                inPtr = ( const char * )inPtr + status + skipLen;
             }
             else {
-                if ( myPackedItem->pointerType > 0 ) {
+                if ( myPackedItem.pointerType > 0 ) {
                     /* a null pointer */
                     addPointerToPackedOut( unpackedOutput, 0, NULL );
-                    status = 0;
                     continue;
                 }
                 else {
@@ -2728,7 +2481,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
 #if defined(solaris_platform)
         doubleInStruct = 0;
 #endif
-        tmpItem = unpackItemHead;
+        packItem_t* tmpItem = &unpackItemHead;
         while ( tmpItem != NULL ) {
 #if defined(solaris_platform)
             if ( tmpItem->pointerType == 0 &&
@@ -2736,7 +2489,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
                 doubleInStruct = 1;
             }
 #endif
-            status = unpackItem( tmpItem, inPtr, unpackedOutput,
+            int status = unpackItem( *tmpItem, inPtr, unpackedOutput,
                                  myPackTable, irodsProt );
             if ( status < 0 ) {
                 return status;
@@ -2750,35 +2503,31 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
         if ( doubleInStruct > 0 ) {
             extendPackedOutput( unpackedOutput, sizeof( rodsLong_t ), &outPtr1 );
             outPtr2 = alignDouble( outPtr1 );
-            unpackedOutput->bBuf.len += ( ( int ) outPtr2 - ( int ) outPtr1 );
+            unpackedOutput.bBuf.len += ( ( int ) outPtr2 - ( int ) outPtr1 );
         }
 #endif
         if ( irodsProt == XML_PROT ) {
-            status = parseXmlTag( inPtr, myPackedItem, END_TAG_FL | LF_FL,
-                                  &skipLen );
+            int skipLen = 0;
+            int status = parseXmlTag( inPtr, myPackedItem.name, END_TAG_FL | LF_FL,
+                                  skipLen );
             if ( status >= 0 ) {
-                *inPtr = ( char * ) * inPtr + status + skipLen;
+                inPtr = ( const char * )inPtr + status + skipLen;
             }
             else {
                 return status;
             }
         }
     }
-    return status;
+    return 0;
 }
 
 int
-unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
-                   packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
+unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
+                   packedOutput_t &unpackedOutput, const packInstruct_t *myPackTable,
                    irodsProt_t irodsProt ) {
-    int numElement = 0, numPointer = 0;
-    int elementSz = 0;
-    int typeInx = 0;
-    int myTypeNum = 0;
     int i = 0, j = 0, status = 0;
-    void **pointerArray = 0;
-    void *outPtr = 0;
-    int myDim = 0;
+    void **pointerArray = nullptr;
+    void *outPtr = nullptr;
 
     if ( unpackNullString( inPtr, unpackedOutput, myPackedItem, irodsProt )
             <= 0 ) {
@@ -2786,12 +2535,12 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         return 0;
     }
 
-    myDim = myPackedItem->dim;
-    typeInx = myPackedItem->typeInx;
-    numPointer = getNumElement( myPackedItem );
-    numElement = getNumHintElement( myPackedItem );
-    elementSz = packTypeTable[typeInx].size;
-    myTypeNum = packTypeTable[typeInx].number;
+    int myDim = myPackedItem.dim;
+    int typeInx = myPackedItem.typeInx;
+    int numPointer = getNumElement( myPackedItem );
+    int numElement = getNumHintElement( myPackedItem );
+    int elementSz = packTypeTable[typeInx].size;
+    int myTypeNum = packTypeTable[typeInx].number;
 
     /* alloc pointer to an array of pointers if myDim > 0 */
     if ( myDim > 0 ) {
@@ -2808,12 +2557,10 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
             if ( myTypeNum == PACK_DOUBLE_TYPE || myTypeNum == PACK_INT_TYPE ||
                     myTypeNum == PACK_INT16_TYPE ) {
                 /* pointer to an array of int or double */
-                pointerArray = ( void ** ) addPointerToPackedOut( unpackedOutput,
-                               allocLen * elementSz, NULL );
+                pointerArray = static_cast<void**>(addPointerToPackedOut(unpackedOutput, allocLen * elementSz, NULL));
             }
             else {
-                pointerArray = ( void ** ) addPointerToPackedOut( unpackedOutput,
-                               allocLen * sizeof( void * ), NULL );
+                pointerArray = static_cast<void**>(addPointerToPackedOut(unpackedOutput, allocLen * sizeof(void*), NULL));
             }
         }
         else {
@@ -2828,13 +2575,13 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
     case PACK_CHAR_TYPE:
     case PACK_BIN_TYPE:
         if ( myDim == 0 ) {
-            if ( myPackedItem->pointerType == NO_PACK_POINTER ) {
+            if ( myPackedItem.pointerType == NO_PACK_POINTER ) {
             }
             else {
                 outPtr = addPointerToPackedOut( unpackedOutput,
                                                 numElement * elementSz, NULL );
-                status = unpackCharToOutPtr( inPtr, &outPtr,
-                                             numElement * elementSz, myPackedItem, irodsProt );
+                status = unpackCharToOutPtr( inPtr, outPtr,
+                                             numElement * elementSz, myPackedItem.name, myPackedItem.typeInx, irodsProt );
             }
 
             if ( status < 0 ) {
@@ -2844,10 +2591,10 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         else {
             /* pointer to an array of pointers */
             for ( i = 0; i < numPointer; i++ ) {
-                if ( myPackedItem->pointerType != NO_PACK_POINTER ) {
+                if ( myPackedItem.pointerType != NO_PACK_POINTER ) {
                     outPtr = pointerArray[i] = malloc( numElement * elementSz );
-                    status = unpackCharToOutPtr( inPtr, &outPtr,
-                                                 numElement * elementSz, myPackedItem, irodsProt );
+                    status = unpackCharToOutPtr( inPtr, outPtr,
+                                                 numElement * elementSz, myPackedItem.name, myPackedItem.typeInx, irodsProt );
                 }
                 if ( status < 0 ) {
                     return status;
@@ -2863,7 +2610,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
          */
         int maxStrLen = 0, numStr = 0, myLen = 0;
 
-        getNumStrAndStrLen( myPackedItem, &numStr, &maxStrLen );
+        getNumStrAndStrLen( myPackedItem, numStr, maxStrLen );
 
         if ( maxStrLen == 0 ) {
             /* add a null pointer mw. 9/15/06 */
@@ -2882,16 +2629,16 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
             }
 
             outPtr = addPointerToPackedOut( unpackedOutput, myLen, NULL );
-            myOutStr = ( char * )outPtr;
+            myOutStr = static_cast<char*>(outPtr);
             for ( i = 0; i < numStr; i++ ) {
                 status = unpackStringToOutPtr(
-                             inPtr, &outPtr, maxStrLen, myPackedItem, irodsProt );
+                             inPtr, outPtr, maxStrLen, myPackedItem.name, irodsProt );
                 if ( status < 0 ) {
                     return status;
                 }
                 if ( myTypeNum == PACK_PI_STR_TYPE && i == 0 &&
                         myOutStr != NULL ) {
-                    strncpy( myPackedItem->strValue, myOutStr, NAME_LEN );
+                    strncpy( myPackedItem.strValue, myOutStr, NAME_LEN );
                 }
             }
         }
@@ -2905,7 +2652,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
                 outPtr = pointerArray[j] = malloc( myLen );
                 for ( i = 0; i < numStr; i++ ) {
                     status = unpackStringToOutPtr(
-                                 inPtr, &outPtr, maxStrLen, myPackedItem, irodsProt );
+                                 inPtr, outPtr, maxStrLen, myPackedItem.name, irodsProt );
                     if ( status < 0 ) {
                         return status;
                     }
@@ -2918,16 +2665,16 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackIntToOutPtr( inPtr, &outPtr, numElement,
-                                        myPackedItem, irodsProt );
+            status = unpackIntToOutPtr( inPtr, outPtr, numElement,
+                                        myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }
         else {
             /* pointer to an array of pointers */
             for ( i = 0; i < numPointer; i++ ) {
                 outPtr = pointerArray[i] = malloc( numElement * elementSz );
-                status = unpackIntToOutPtr( inPtr, &outPtr,
-                                            numElement * elementSz, myPackedItem, irodsProt );
+                status = unpackIntToOutPtr( inPtr, outPtr,
+                                            numElement * elementSz, myPackedItem.name, irodsProt );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -2938,16 +2685,16 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackInt16ToOutPtr( inPtr, &outPtr, numElement,
-                                          myPackedItem, irodsProt );
+            status = unpackInt16ToOutPtr( inPtr, outPtr, numElement,
+                                          myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }
         else {
             /* pointer to an array of pointers */
             for ( i = 0; i < numPointer; i++ ) {
                 outPtr = pointerArray[i] = malloc( numElement * elementSz );
-                status = unpackInt16ToOutPtr( inPtr, &outPtr,
-                                              numElement * elementSz, myPackedItem, irodsProt );
+                status = unpackInt16ToOutPtr( inPtr, outPtr,
+                                              numElement * elementSz, myPackedItem.name, irodsProt );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -2958,16 +2705,16 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackDoubleToOutPtr( inPtr, &outPtr, numElement,
-                                           myPackedItem, irodsProt );
+            status = unpackDoubleToOutPtr( inPtr, outPtr, numElement,
+                                           myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }
         else {
             /* pointer to an array of pointers */
             for ( i = 0; i < numPointer; i++ ) {
                 outPtr = pointerArray[i] = malloc( numElement * elementSz );
-                status = unpackDoubleToOutPtr( inPtr, &outPtr,
-                                               numElement * elementSz, myPackedItem, irodsProt );
+                status = unpackDoubleToOutPtr( inPtr, outPtr,
+                                               numElement * elementSz, myPackedItem.name, irodsProt );
                 if ( status < 0 ) {
                     return status;
                 }
@@ -2978,19 +2725,15 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
 
     case PACK_STRUCT_TYPE: {
         /* no need to align boundary for struct */
-        packedOutput_t subPackedOutput;
 
         if ( myDim == 0 ) {
             /* we really don't know the size of each struct. */
             /* outPtr = addPointerToPackedOut (unpackedOutput,
                numElement * SUB_STRUCT_ALLOC_SZ); */
             outPtr = malloc( numElement * SUB_STRUCT_ALLOC_SZ );
-            initPackedOutputWithBuf( &subPackedOutput, outPtr,
-                                     numElement * SUB_STRUCT_ALLOC_SZ );
-            status = unpackChildStruct( inPtr, &subPackedOutput, myPackedItem,
-                                        myPackTable, numElement, irodsProt, NULL );
-            addPointerToPackedOut( unpackedOutput,
-                                    numElement * SUB_STRUCT_ALLOC_SZ, subPackedOutput.bBuf.buf );
+            packedOutput_t subPackedOutput = initPackedOutputWithBuf( outPtr, numElement * SUB_STRUCT_ALLOC_SZ );
+            status = unpackChildStruct( inPtr, subPackedOutput, myPackedItem, myPackTable, numElement, irodsProt, NULL );
+            addPointerToPackedOut( unpackedOutput, numElement * SUB_STRUCT_ALLOC_SZ, subPackedOutput.bBuf.buf );
             subPackedOutput.bBuf.buf = NULL;
             if ( status < 0 ) {
                 return status;
@@ -3002,10 +2745,8 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
                 /* outPtr = pointerArray[i] = malloc ( */
                 outPtr = malloc(
                              numElement * SUB_STRUCT_ALLOC_SZ );
-                initPackedOutputWithBuf( &subPackedOutput, outPtr,
-                                         numElement * SUB_STRUCT_ALLOC_SZ );
-                status = unpackChildStruct( inPtr, &subPackedOutput,
-                                            myPackedItem, myPackTable, numElement, irodsProt, NULL );
+                packedOutput_t subPackedOutput = initPackedOutputWithBuf( outPtr, numElement * SUB_STRUCT_ALLOC_SZ );
+                status = unpackChildStruct( inPtr, subPackedOutput, myPackedItem, myPackTable, numElement, irodsProt, NULL );
                 pointerArray[i] = subPackedOutput.bBuf.buf;
                 subPackedOutput.bBuf.buf = NULL;
                 if ( status < 0 ) {
@@ -3018,7 +2759,7 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
     default:
         rodsLog( LOG_ERROR,
                  "unpackPointerItem: Unknown type %d - %s ",
-                 myTypeNum, myPackedItem->name );
+                 myTypeNum, myPackedItem.name );
 
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
@@ -3027,14 +2768,12 @@ unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
 }
 
 void *
-addPointerToPackedOut( packedOutput_t *packedOutput, int len, void *pointer ) {
+addPointerToPackedOut( packedOutput_t &packedOutput, int len, void *pointer ) {
     void *outPtr;
-    void **tmpPtr;
-
-
-    extendPackedOutput( packedOutput, sizeof( void * ), &outPtr );
+    extendPackedOutput( packedOutput, sizeof(void*), outPtr );
     outPtr = ialignAddr( outPtr );
-    tmpPtr = ( void ** ) outPtr;
+
+    void** tmpPtr = static_cast<void**>(outPtr);
 
     if ( pointer != NULL ) {
         *tmpPtr = pointer;
@@ -3047,62 +2786,59 @@ addPointerToPackedOut( packedOutput_t *packedOutput, int len, void *pointer ) {
         *tmpPtr = NULL;
     }
 
-    packedOutput->bBuf.len = ( int )( ( char * ) outPtr -
-                                       ( char * ) packedOutput->bBuf.buf ) + sizeof( void * );
+    packedOutput.bBuf.len = static_cast<int>( static_cast<char*>(outPtr) - static_cast<char*>(packedOutput.bBuf.buf)) + sizeof(void*);
 
     return *tmpPtr;
 }
 
 int
-unpackNatStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen ) {
+unpackNatStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen ) {
     int myStrlen;
 
-    if ( inPtr == NULL || *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         rodsLog( LOG_ERROR,
                  "unpackStringToOutPtr: NULL inPtr" );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
-    myStrlen = strlen( ( char* ) * inPtr );
+    myStrlen = strlen( ( const char* )inPtr );
 
     /* maxStrLen = -1 means null terminated */
     if ( maxStrLen >= 0 && myStrlen >= maxStrLen ) {
         return USER_PACKSTRUCT_INPUT_ERR;
     }
 
-    rstrcpy( ( char* )*outPtr, ( char* )*inPtr, myStrlen + 1 );
+    rstrcpy( static_cast<char*>(outPtr), static_cast<const char*>(inPtr), myStrlen + 1 );
 
-    *inPtr = ( void * )( ( char * ) * inPtr + ( myStrlen + 1 ) );
+    inPtr = static_cast<const char*>(inPtr) + ( myStrlen + 1 );
 
     if ( maxStrLen >= 0 ) {
-        *outPtr = ( void * )( ( char * ) * outPtr + maxStrLen );
+        outPtr = static_cast<char*>(outPtr) + maxStrLen;
     }
     else {
-        *outPtr = ( void * )( ( char * ) * outPtr + ( myStrlen + 1 ) );
+        outPtr = static_cast<char*>(outPtr) + ( myStrlen + 1 );
     }
 
     return 0;
 }
 
 int
-unpackXmlStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
-                         packItem_t *myPackedItem ) {
-    int myStrlen;
-    int endTagLen;      /* the length of end tag */
-    char *myStrPtr;
-    int origStrLen;
+unpackXmlStringToOutPtr( const void *&inPtr, void *&outPtr, int maxStrLen,
+                         const char* name ) {
 
-    if ( inPtr == NULL || *inPtr == NULL ) {
+    if ( inPtr == NULL ) {
         rodsLog( LOG_ERROR,
                  "unpackXmlStringToOutPtr: NULL inPtr" );
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
 
-    origStrLen = parseXmlValue( inPtr, myPackedItem, &endTagLen );
+    int endTagLen = 0;
+    int origStrLen = parseXmlValue( inPtr, name, endTagLen );
     if ( origStrLen < 0 ) {
         return origStrLen;
     }
 
-    myStrlen = xmlStrToStr( ( char * ) * inPtr, origStrLen );
+    char *myStrPtr;
+    int myStrlen = xmlStrToStr( ( const char * )inPtr, origStrLen, myStrPtr );
 
     /* maxStrLen = -1 means null terminated */
     if ( maxStrLen >= 0 && myStrlen >= maxStrLen ) {
@@ -3110,34 +2846,22 @@ unpackXmlStringToOutPtr( void **inPtr, void **outPtr, int maxStrLen,
     }
 
     if ( myStrlen == 0 ) {
-        memset( *outPtr, 0, 1 );
+        memset( outPtr, 0, 1 );
     }
     else {
-        myStrPtr = ( char* ) * outPtr;
-        strncpy( myStrPtr, ( char* )*inPtr, myStrlen );
-        myStrPtr[myStrlen] = '\0';
+        strncpy( static_cast<char*>(outPtr), myStrPtr, myStrlen + 1 );
     }
 
-    *inPtr = ( void * )( ( char * ) * inPtr + ( origStrLen + endTagLen ) );
+    inPtr = static_cast<const char*>(inPtr) + ( origStrLen + endTagLen );
 
     if ( maxStrLen >= 0 ) {
-        *outPtr = ( void * )( ( char * ) * outPtr + maxStrLen );
+        outPtr = static_cast<char*>(outPtr) + maxStrLen;
     }
     else {
-        *outPtr = ( void * )( ( char * ) * outPtr + ( myStrlen + 1 ) );
+        outPtr = static_cast<char*>(outPtr) + ( myStrlen + 1 );
     }
 
     return 0;
-}
-
-int
-getStrLen( void *inPtr, int maxStrLen ) {
-    if ( maxStrLen <= 0 ) {
-        return strlen( ( char* )inPtr ) + 1;
-    }
-    else {
-        return maxStrLen;
-    }
 }
 
 /*
@@ -3145,23 +2869,20 @@ getStrLen( void *inPtr, int maxStrLen ) {
  */
 
 int
-getNumStrAndStrLen( packItem_t *myPackedItem, int *numStr, int *maxStrLen ) {
-    int myHintDim;
+getNumStrAndStrLen( const packItem_t &myPackedItem, int& numStr, int& maxStrLen ) {
 
-    myHintDim = myPackedItem->hintDim;
+    int myHintDim = myPackedItem.hintDim;
     if ( myHintDim <= 0 ) {  /* just a pointer to a null terminated str */
-        *maxStrLen = -1;
-        *numStr = 1;
+        maxStrLen = -1;
+        numStr = 1;
     }
     else {
-        *maxStrLen = myPackedItem->hintDimSize[myHintDim - 1];
-        if ( *maxStrLen <= 0 ) {
-            *numStr = 0;
+        maxStrLen = myPackedItem.hintDimSize[myHintDim - 1];
+        if ( maxStrLen <= 0 ) {
+            numStr = 0;
         }
         else {
-            int numElement;
-            numElement = getNumHintElement( myPackedItem );
-            *numStr = numElement / *maxStrLen;
+            numStr = getNumHintElement( myPackedItem ) / maxStrLen;
         }
     }
 
@@ -3174,18 +2895,18 @@ getNumStrAndStrLen( packItem_t *myPackedItem, int *numStr, int *maxStrLen ) {
  */
 
 int
-getAllocLenForStr( packItem_t *myPackedItem, void **inPtr, int numStr,
+getAllocLenForStr( const packItem_t &myPackedItem, const void *inPtr, int numStr,
                    int maxStrLen ) {
     int myLen;
 
     if ( numStr <= 1 ) {
-        myLen = getStrLen( *inPtr, maxStrLen );
+        myLen = maxStrLen > 0 ? maxStrLen : strlen( (const char* ) inPtr ) + 1;
     }
     else {
         if ( maxStrLen < 0 ) {
             rodsLog( LOG_ERROR,
                      "unpackPointerItem: maxStrLen < 0 with numStr > 1 for %s",
-                     myPackedItem->name );
+                     myPackedItem.name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
         myLen = numStr * maxStrLen;
@@ -3194,52 +2915,52 @@ getAllocLenForStr( packItem_t *myPackedItem, void **inPtr, int numStr,
 }
 
 int
-packXmlTag( packItem_t *myPackedItem, packedOutput_t *packedOutput,
+packXmlTag( const char* name, packedOutput_t &packedOutput,
             int flag ) {
     int myStrlen;
     void *outPtr;
 
-    myStrlen = strlen( myPackedItem->name );
+    myStrlen = strlen( name );
 
     /* include <>, '/', \n  and NULL */
-    extendPackedOutput( packedOutput, myStrlen + 5, &outPtr );
+    extendPackedOutput( packedOutput, myStrlen + 5, outPtr );
     if ( flag & END_TAG_FL ) {
-        snprintf( ( char* )outPtr, myStrlen + 5, "</%s>\n", myPackedItem->name );
+        snprintf( static_cast<char*>(outPtr), myStrlen + 5, "</%s>\n", name );
     }
     else {
         if ( flag & LF_FL ) {
-            snprintf( ( char* )outPtr, myStrlen + 5, "<%s>\n", myPackedItem->name );
+            snprintf( static_cast<char*>(outPtr), myStrlen + 5, "<%s>\n", name );
         }
         else {
-            snprintf( ( char* )outPtr, myStrlen + 5, "<%s>", myPackedItem->name );
+            snprintf( static_cast<char*>(outPtr), myStrlen + 5, "<%s>", name );
         }
     }
-    packedOutput->bBuf.len += strlen( ( char* )outPtr );
+    packedOutput.bBuf.len += strlen( static_cast<char*>(outPtr) );
 
     return 0;
 }
 
 int
-parseXmlValue( void **inPtr, packItem_t *myPackedItem, int *endTagLen ) {
-    int status;
-    int strLen = 0;
+parseXmlValue( const void *&inPtr, const char* name, int &endTagLen ) {
 
-    if ( inPtr == NULL || *inPtr == NULL || myPackedItem == NULL ) {
+    if ( inPtr == NULL ) {
         return 0;
     }
 
-    status = parseXmlTag( inPtr, myPackedItem, START_TAG_FL, &strLen );
+    int strLen = 0;
+    int status = parseXmlTag( inPtr, name, START_TAG_FL, strLen );
     if ( status >= 0 ) {
-        /* set *inPtr to the beginning of the string value */
-        *inPtr = ( char * ) * inPtr + status + strLen;
+        /* set inPtr to the beginning of the string value */
+        inPtr = ( const char * ) inPtr + status + strLen;
     }
     else {
         return status;
     }
 
-    status = parseXmlTag( inPtr, myPackedItem, END_TAG_FL | LF_FL, &strLen );
+    strLen = 0;
+    status = parseXmlTag( inPtr, name, END_TAG_FL | LF_FL, strLen );
     if ( status >= 0 ) {
-        *endTagLen = status;
+        endTagLen = status;
     }
     else {
         return status;
@@ -3249,7 +2970,7 @@ parseXmlValue( void **inPtr, packItem_t *myPackedItem, int *endTagLen ) {
 }
 
 /* parseXmlTag - Parse the str given in *inPtr for the tag given in
- * myPackedItem->name.
+ * name.
  * The flag can be
  *    START_TAG_FL - look for <name>
  *    END_TAG_FL - look for </name>
@@ -3259,28 +2980,28 @@ parseXmlValue( void **inPtr, packItem_t *myPackedItem, int *endTagLen ) {
  * reach the beginning og the tag in *skipLen
  */
 int
-parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
-    char *inStrPtr, *tmpPtr;
+parseXmlTag( const void *inPtr, const char* name, int flag, int &skipLen ) {
+    const char *tmpPtr;
     int nameLen;
     int myLen = 0;
 
-    inStrPtr = ( char * ) * inPtr;
+    const char* inStrPtr = ( const char * )inPtr;
 
-    nameLen = strlen( myPackedItem->name );
+    nameLen = strlen( name );
 
     if ( flag & END_TAG_FL ) {
         /* end tag */
         char endTag[MAX_NAME_LEN];
 
-        snprintf( endTag, MAX_NAME_LEN, "</%s>", myPackedItem->name );
+        snprintf( endTag, MAX_NAME_LEN, "</%s>", name );
         if ( ( tmpPtr = strstr( inStrPtr, endTag ) ) == NULL ) {
             rodsLog( LOG_ERROR,
                      "parseXmlTag: XML end tag error for %s, expect </%s>",
-                     *inPtr, myPackedItem->name );
+                     inPtr, name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
 
-        *skipLen = tmpPtr - inStrPtr;
+        skipLen = tmpPtr - inStrPtr;
 
         myLen = nameLen + 3;
         inStrPtr = tmpPtr + nameLen + 3;
@@ -3293,15 +3014,15 @@ parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
         if ( ( tmpPtr = strstr( inStrPtr, "<" ) ) == NULL ) {
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
-        *skipLen = tmpPtr - inStrPtr;
+        skipLen = tmpPtr - inStrPtr;
         inStrPtr = tmpPtr + 1;
         myLen++;
 
-        if ( strncmp( inStrPtr, myPackedItem->name, nameLen ) != 0 ) {
+        if ( strncmp( inStrPtr, name, nameLen ) != 0 ) {
             /* this can be normal */
             rodsLog( LOG_DEBUG10,
                      "parseXmlValue: XML start tag error for %s, expect <%s>",
-                     *inPtr, myPackedItem->name );
+                     inPtr, name );
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
         inStrPtr += nameLen;
@@ -3310,7 +3031,7 @@ parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
         if ( *inStrPtr != '>' ) {
             rodsLog( LOG_DEBUG10,
                      "parseXmlValue: XML start tag error for %s, expect <%s>",
-                     *inPtr, myPackedItem->name );
+                     inPtr, name );
 
             return SYS_PACK_INSTRUCT_FORMAT_ERR;
         }
@@ -3327,15 +3048,14 @@ parseXmlTag( void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen ) {
 }
 
 int
-alignPackedOutput64( packedOutput_t *packedOutput ) {
+alignPackedOutput64( packedOutput_t &packedOutput ) {
     void *outPtr, *alignedOutPtr;
 
-    if ( packedOutput->bBuf.buf == NULL || packedOutput->bBuf.len == 0 ) {
+    if ( packedOutput.bBuf.buf == NULL || packedOutput.bBuf.len == 0 ) {
         return 0;
     }
 
-    outPtr = ( void * )( ( char * ) packedOutput->bBuf.buf +
-                         packedOutput->bBuf.len );
+    outPtr = static_cast<char*>(packedOutput.bBuf.buf) + packedOutput.bBuf.len;
 
     alignedOutPtr = alignDouble( outPtr );
 
@@ -3343,11 +3063,10 @@ alignPackedOutput64( packedOutput_t *packedOutput ) {
         return 0;
     }
 
-    if ( packedOutput->bBuf.len + 8 > packedOutput->bufSize ) {
-        extendPackedOutput( packedOutput, 8, &outPtr );
+    if ( packedOutput.bBuf.len + 8 > packedOutput.bufSize ) {
+        extendPackedOutput( packedOutput, 8, outPtr );
     }
-    packedOutput->bBuf.len = packedOutput->bBuf.len + 8 -
-                              ( int )( ( char * ) alignedOutPtr - ( char * ) outPtr );
+    packedOutput.bBuf.len = packedOutput.bBuf.len + 8 - static_cast<int>(static_cast<char*>(alignedOutPtr) - static_cast<char*>(outPtr));
 
     return 0;
 }
@@ -3358,59 +3077,39 @@ alignPackedOutput64( packedOutput_t *packedOutput ) {
  */
 
 int
-packNopackPointer( void **inPtr, packedOutput_t *packedOutput, int len,
-                   packItem_t *myPackedItem, irodsProt_t irodsProt ) {
+packNopackPointer( void *inPtr, packedOutput_t &packedOutput, int len,
+                   const char* name, irodsProt_t irodsProt ) {
     int newNumBuf;
-    int curNumBuf, *intPtr;
+    int curNumBuf;
     bytesBuf_t *newBBufArray;
     int i;
     int status;
 
-    curNumBuf = packedOutput->nopackBufArray.numBuf;
+    curNumBuf = packedOutput.nopackBufArray.numBuf;
     if ( ( curNumBuf % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newNumBuf = curNumBuf + PTR_ARRAY_MALLOC_LEN;
 
         newBBufArray = ( bytesBuf_t * ) malloc( newNumBuf * sizeof( bytesBuf_t ) );
         memset( newBBufArray, 0, newNumBuf * sizeof( bytesBuf_t ) );
         for ( i = 0; i < curNumBuf; i++ ) {
-            newBBufArray[i].len = packedOutput->nopackBufArray.bBufArray[i].len;
-            newBBufArray[i].buf = packedOutput->nopackBufArray.bBufArray[i].buf;
+            newBBufArray[i].len = packedOutput.nopackBufArray.bBufArray[i].len;
+            newBBufArray[i].buf = packedOutput.nopackBufArray.bBufArray[i].buf;
         }
-        if ( packedOutput->nopackBufArray.bBufArray != NULL ) {
-            free( packedOutput->nopackBufArray.bBufArray );
+        if ( packedOutput.nopackBufArray.bBufArray != NULL ) {
+            free( packedOutput.nopackBufArray.bBufArray );
         }
-        packedOutput->nopackBufArray.bBufArray = newBBufArray;
+        packedOutput.nopackBufArray.bBufArray = newBBufArray;
     }
-    packedOutput->nopackBufArray.bBufArray[curNumBuf].len = len;
-    packedOutput->nopackBufArray.bBufArray[curNumBuf].buf = *inPtr;
-    packedOutput->nopackBufArray.numBuf++;
+    packedOutput.nopackBufArray.bBufArray[curNumBuf].len = len;
+    packedOutput.nopackBufArray.bBufArray[curNumBuf].buf = inPtr;
+    packedOutput.nopackBufArray.numBuf++;
 
-    intPtr = ( int * )malloc( sizeof( int ) );
-    *intPtr = curNumBuf;
-    status = packInt( ( void ** )( static_cast< void * >( &intPtr ) ), packedOutput, 1, myPackedItem,
+    const void* intPtr = &curNumBuf;
+    status = packInt( intPtr, packedOutput, 1, name,
                       irodsProt );
 
-    free( intPtr );
     if ( status < 0 ) {
         return status;
-    }
-
-    return 0;
-}
-
-/* ovStrcpy - overwrite outStr with inStr. inStr can be
- * part of outStr.
- */
-
-int
-ovStrcpy( char *outStr, char *inStr ) {
-    int i;
-    int len = strlen( inStr );
-
-    for ( i = 0; i < len + 1; i++ ) {
-        *outStr = *inStr;
-        inStr++;
-        outStr++;
     }
 
     return 0;
