@@ -400,8 +400,10 @@ int reIterable_genQuery_hasNext( ReIterableData *itrData, Region* r ) {
         int status = msiGetMoreRows( &( data->genQInpParam ), &( data->genQOutParam ), &contInxParam, itrData->rei );
         clearMsParam( &contInxParam, 1 );
         if ( status < 0 ) {
-            generateAndAddErrMsg( "msiGetMoreRows error", itrData->node, status, itrData->errmsg );
-            itrData->errorRes = newErrorRes( r, status );
+            if (status != CAT_NO_ROWS_FOUND) {
+                generateAndAddErrMsg( "msiGetMoreRows error", itrData->node, status, itrData->errmsg );
+                itrData->errorRes = newErrorRes( r, status );
+            }
             return 0;
         }
         data->genQueryOut = ( genQueryOut_t * ) data->genQOutParam.inOutStruct;

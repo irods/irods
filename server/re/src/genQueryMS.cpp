@@ -347,11 +347,10 @@ msiGetMoreRows( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_
     /* query */
     rei->status = rsGenQuery( rei->rsComm, genQueryInp, &genQueryOut );
 
+    /* return query results */
+    genQueryOut_msp->inOutStruct = genQueryOut;
 
-    if ( rei->status == 0 ) {
-        /* return query results */
-        genQueryOut_msp->inOutStruct = genQueryOut;
-
+    if ( rei->status == 0 || rei->status == CAT_NO_ROWS_FOUND) {
         /* return continuation index separately in case it is needed in conditional expressions */
         resetMsParam( continueInx );
         fillIntInMsParam( continueInx, genQueryOut->continueInx );
