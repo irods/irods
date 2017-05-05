@@ -94,6 +94,22 @@ _addChildToResource(
 
     std::string rescChild( _generalAdminInp->arg3 );
     std::string rescContext( _generalAdminInp->arg4 );
+
+    if (rescContext.find(';') != std::string::npos) {
+        rodsLog(LOG_ERROR, "_addChildToResource: semicolon ';' not allowed in child context string [%s]", rescContext.c_str());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (rescContext.find('{') != std::string::npos) {
+        rodsLog(LOG_ERROR, "_addChildToResource: open curly bracket '{' not allowed in child context string [%s]", rescContext.c_str());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if (rescContext.find('}') != std::string::npos) {
+        rodsLog(LOG_ERROR, "_addChildToResource: close curly bracket '}' not allowed in child context string [%s]", rescContext.c_str());
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     irods::children_parser parser;
     parser.add_child( rescChild, rescContext );
     std::string rescChildren;
