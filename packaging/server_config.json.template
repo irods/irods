@@ -54,9 +54,7 @@
         ]
     },
     "rule_engine_namespaces": [
-        "",
-        "audit_",
-        "indexing_"
+        ""
     ],
     "server_control_plane_encryption_algorithm": "AES-256-CBC",
     "server_control_plane_encryption_num_hash_rounds": 16,
