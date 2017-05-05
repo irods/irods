@@ -1226,3 +1226,12 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
         out, _, _ = self.admin.run_icommand(['iadmin', 'lua', username])
         self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
+
+    def test_addchildtoresc_forbidden_characters_3449(self):
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'parent', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'child', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', ';'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '}'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '{'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'parent'])
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'child'])
