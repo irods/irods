@@ -523,3 +523,28 @@ OUTPUT ruleExecOut
         user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
         os.unlink(test_re)
 
+    def test_genquery_foreach_MAX_SQL_ROWS_multiple__3489(self):
+        MAX_SQL_ROWS = 256 # needs to be the same as constant in server code
+        filename = 'test_genquery_foreach_MAX_SQL_ROWS_multiple__3489_dummy_file'
+        lib.make_file(filename, 1)
+        data_object_prefix = 'loiuaxnlaskdfpiewrnsliuserd'
+        for i in range(MAX_SQL_ROWS):
+            self.admin.assert_icommand(['iput', filename, '{0}_file_{1}'.format(data_object_prefix, i)])
+
+        rule_file = 'test_genquery_foreach_MAX_SQL_ROWS_multiple__3489.r'
+        rule_string = '''
+test_genquery_foreach_MAX_SQL_ROWS_multiple__3489 {{
+    foreach(*rows in select DATA_ID where DATA_NAME like '{0}%') {{
+        *id = *rows.DATA_ID;
+        writeLine("serverLog", "GGGGGGGGGGGGGGG *id");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''.format(data_object_prefix)
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        self.admin.assert_icommand(['irule', '-F', rule_file])
+        os.unlink(rule_file)
