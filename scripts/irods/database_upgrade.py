@@ -31,11 +31,11 @@ def run_update(irods_config, cursor):
 
     elif new_schema_version == 5:
         if irods_config.catalog_database_type == 'oracle':
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID integer;")
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT varchar2(4000);") # max oracle varchar2 for sql is 4000, 32767 pl/sql
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD resc_id integer;")
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD resc_parent_context varchar2(4000);") # max oracle varchar2 for sql is 4000, 32767 pl/sql
         else:
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD RESC_ID BIGINT;")
-            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD RESC_PARENT_CONTEXT varchar(4000);")
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_DATA_MAIN ADD resc_id bigint;")
+            database_connect.execute_sql_statement(cursor, "ALTER TABLE R_RESC_MAIN ADD resc_parent_context varchar(4000);")
 
         database_connect.execute_sql_statement(cursor, "UPDATE R_SPECIFIC_QUERY SET sqlstr='WITH coll AS (SELECT coll_id, coll_name FROM R_COLL_MAIN WHERE R_COLL_MAIN.coll_name = ? OR R_COLL_MAIN.coll_name LIKE ?) SELECT DISTINCT d.data_id, (SELECT coll_name FROM coll WHERE coll.coll_id = d.coll_id) coll_name, d.data_name, d.data_repl_num, d.resc_name, d.data_path, d.resc_id FROM R_DATA_MAIN d WHERE d.coll_id = ANY(ARRAY(SELECT coll_id FROM coll)) ORDER BY coll_name, d.data_name, d.data_repl_num' where alias='DataObjInCollReCur';")
 
@@ -57,7 +57,7 @@ def run_update(irods_config, cursor):
             resc_id = row[0]
             child_contexts = [(m.group(1), m.group(2)) for m in [context_expression.match(s) for s in row[1].split(';')] if m]
             for child_name, context in child_contexts:
-                database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN set RESC_PARENT_CONTEXT=? where RESC_NAME=?", context, child_name)
+                database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN set resc_parent_context=? where resc_name=?", context, child_name)
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
