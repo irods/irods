@@ -1235,3 +1235,15 @@ acSetNumThreads() {
         self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '{'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
         self.admin.assert_icommand(['iadmin', 'rmresc', 'parent'])
         self.admin.assert_icommand(['iadmin', 'rmresc', 'child'])
+
+    def test_idempotent_aua__issue_3104(self):
+        username = 'issue_3104_user'
+        authentication_name = '3104_user@TEST.AUTHENTICATION'
+        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
+        _, out, _ = self.admin.run_icommand(['iadmin', 'lua', username])
+        self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
