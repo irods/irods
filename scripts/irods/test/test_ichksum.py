@@ -13,13 +13,13 @@ from . import resource_suite
 from .. import lib
 from .. import test
 
-class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
+class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
-        super(Test_Ils, self).setUp()
+        super(Test_Ichksum, self).setUp()
 
     def tearDown(self):
-        super(Test_Ils, self).tearDown()
+        super(Test_Ichksum, self).tearDown()
 
     def test_ichksum_data_obj(self):
         filename = 'test_ichksum_data_obj'
