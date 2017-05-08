@@ -57,19 +57,7 @@ def optparse_callback_federation(option, opt_str, value, parser):
 
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
-    for name in names:
-        package_path = name.split('.')
-        for i in range(0, len(package_path)):
-            package = '.'.join(itertools.chain(['irods', 'test'], package_path[0:i]))
-            module = ''.join(['.', package_path[i]])
-            try:
-                if 'importlib' in globals():
-                    importlib.import_module(module, package=package)
-                else:
-                    __import__(''.join([package, module]))
-            except ImportError:
-                break
-    suites = [loader.loadTestsFromName(name, module=irods.test) for name in names]
+    suites = [loader.loadTestsFromName('irods.test.' + name) for name in names] # test files used to be standalone python packages, now that they are in the irods python module, they cannot be loaded directly, but must be loaded with the full module path
     super_suite = unittest.TestSuite(suites)
     if xml_output:
         import xmlrunner
