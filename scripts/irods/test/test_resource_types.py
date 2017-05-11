@@ -2741,8 +2741,8 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
         # manually update the replicas in archive vaults
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-        archivereplica1phypath = out.split()[-19]  # split into tokens, get the 19th from the end
-        archivereplica2phypath = out.split()[-1]  # split into tokens, get the last one
+        archivereplica1phypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]  # split into tokens, get the 19th from the end
+        archivereplica2phypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]  # split into tokens, get the last one
         print(archive1replicaphypath)
         print(archive2replicaphypath)
         with open(archivereplica1phypath, 'wt') as f:
