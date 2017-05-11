@@ -17,7 +17,11 @@ rmdirUtil( rcComm_t        *conn,
            int             treatAsPathname,
            int             numColls,
            rodsPath_t      collPaths[] ) {
-    int status;
+    if ( numColls <= 0 ) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    int status = 0;
 
     for ( int i = 0; i < numColls; ++i ) {
         status = rmdirCollUtil( conn, myRodsArgs, treatAsPathname, collPaths[i] );
@@ -31,7 +35,8 @@ int rmdirCollUtil( rcComm_t        *conn,
                int                 treatAsPathname, 
                rodsPath_t          collPath ) {
     int status;
-    rodsPathInp_t rodsPathInp;
+    collInp_t collInp;
+    dataObjInp_t dataObjInp;
 
     if ( !checkCollExists( conn, myRodsArgs, collPath.outPath ) ) {
         std::cout << "Failed to remove ["
@@ -51,19 +56,13 @@ int rmdirCollUtil( rcComm_t        *conn,
                   << std::endl;
         return 0;
     } else {
-        memset( &rodsPathInp, 0, sizeof( rodsPathInp_t ) );
-        addSrcInPath( &rodsPathInp, collPath.outPath );
-        rstrcpy( rodsPathInp.srcPath->outPath, rodsPathInp.srcPath->inPath, MAX_NAME_LEN );
+        initCondForRm( myRodsArgs, &dataObjInp, &collInp );
+        rstrcpy( collInp.collName, collPath.outPath, MAX_NAME_LEN );
 
-        /*
-            rmUtil will only work on a collection if the recursive flag is set to True
-            Shouldn't be a problem since we check to make sure collection is empty
-        */
-        myRodsArgs->recursive = True;
-        status = rmUtil( conn, myRodsArgs, &rodsPathInp );
+        status = rcRmColl( conn, &collInp, myRodsArgs->verbose );
 
         if ( status < 0 ) {
-            std::cout << "rmdirColl: rmUtil failed with error "
+            std::cout << "rmdirColl: rcRmColl failed with error "
                       << status
                       << std::endl;
             return status;
