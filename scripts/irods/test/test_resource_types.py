@@ -2008,7 +2008,7 @@ OUTPUT ruleExecOut
 
         # manually update the replica in archive vault
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-        archivereplicaphypath = out.split()[-1]  # split into tokens, get the last one
+        archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
         with open(archivereplicaphypath, 'wt') as f:
             print('MANUALLY UPDATED ON ARCHIVE\n', file=f, end='')
         # get file
@@ -2032,7 +2032,7 @@ OUTPUT ruleExecOut
 
             # manually update the replica in archive vault
             out, _, _ = self.admin.run_icommand('ils -L ' + filename)
-            archivereplicaphypath = out.split()[-1]  # split into tokens, get the last one
+            archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
             with open(archivereplicaphypath, 'wt') as f:
                 print('MANUALLY UPDATED ON ARCHIVE **AGAIN**\n', file=f, end='')
 
@@ -2714,8 +2714,8 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # manually update the replicas in archive vaults
         out, _, _ = self.admin.run_icommand('ils -L ' + filename)
         print(out)
-        archive1replicaphypath = out.split()[-19]  # split into tokens, get the 19th from the end
-        archive2replicaphypath = out.split()[-1]  # split into tokens, get the last one
+        archive1replicaphypath = filter(lambda x : "archiveResc1Vault" in x, out.split())[0]
+        archive2replicaphypath = filter(lambda x : "archiveResc2Vault" in x, out.split())[0]
         print(archive1replicaphypath)
         print(archive2replicaphypath)
         with open(archive1replicaphypath, 'wt') as f:
