@@ -114,9 +114,21 @@ int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *r
     char recoveryActionCall[MAX_ACTION_SIZE];
     char delayCondition[MAX_ACTION_SIZE];
 
-    rstrcpy( delayCondition, ( char * ) mPA->inOutStruct, MAX_ACTION_SIZE );
-    rstrcpy( actionCall, ( char * ) mPB->inOutStruct, MAX_ACTION_SIZE );
-    rstrcpy( recoveryActionCall, ( char * ) mPC->inOutStruct, MAX_ACTION_SIZE );
+    if ( mPA && mPA->inOutStruct ) {
+        rstrcpy( delayCondition, ( char * ) mPA->inOutStruct, MAX_ACTION_SIZE );
+    } else {
+        delayCondition[0] = '\0';
+    }
+    if ( mPB && mPB->inOutStruct ) {
+        rstrcpy( actionCall, ( char * ) mPB->inOutStruct, MAX_ACTION_SIZE );
+    } else {
+        actionCall[0] = '\0';
+    }
+    if ( mPC && mPC->inOutStruct ) {
+        rstrcpy( recoveryActionCall, ( char * ) mPC->inOutStruct, MAX_ACTION_SIZE );
+    } else {
+        recoveryActionCall[0] = '\0';
+    }
     i = _delayExec( actionCall, recoveryActionCall, delayCondition, rei );
     return i;
 }
@@ -125,24 +137,21 @@ int _delayExec( const char *inActionCall, const char *recoveryActionCall,
                 const char *delayCondition,  ruleExecInfo_t *rei ) {
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i, argc;
-    ruleExecSubmitInp_t *ruleSubmitInfo;
+    int i;
     /* char action[MAX_ACTION_SIZE]; */
-    char tmpStr[NAME_LEN];
     bytesBuf_t *packedReiAndArgBBuf = NULL;
-    char *ruleExecId;
 
     RE_TEST_MACRO( "    Calling _delayExec" );
 
+    args[0] = NULL;
     args[1] = NULL;
-    argc = 0;
     /* Pack Rei and Args */
-    i = packReiAndArg( rei, args, argc, &packedReiAndArgBBuf );
+    i = packReiAndArg( rei, args, 0, &packedReiAndArgBBuf );
     if ( i < 0 ) {
         return i;
     }
     /* fill Conditions into Submit Struct */
-    ruleSubmitInfo = ( ruleExecSubmitInp_t * ) malloc( sizeof( ruleExecSubmitInp_t ) );
+    ruleExecSubmitInp_t * ruleSubmitInfo = ( ruleExecSubmitInp_t * ) malloc( sizeof( ruleExecSubmitInp_t ) );
     memset(ruleSubmitInfo, 0, sizeof(ruleExecSubmitInp_t));
     i  = fillSubmitConditions( inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei );
     if ( i < 0 ) {
@@ -151,20 +160,18 @@ int _delayExec( const char *inActionCall, const char *recoveryActionCall,
     }
 
     /* Store ReiArgs Struct in a File */
+    char *ruleExecId = nullptr;
     i = rsRuleExecSubmit( rei->rsComm, ruleSubmitInfo, &ruleExecId );
-    if ( packedReiAndArgBBuf != NULL ) {
+    if ( packedReiAndArgBBuf ) {
         clearBBuf( packedReiAndArgBBuf );
         free( packedReiAndArgBBuf );
     }
-
     free( ruleSubmitInfo );
-    if ( i < 0 ) {
-        return i;
-    }
     free( ruleExecId );
-    snprintf( tmpStr, NAME_LEN, "%d", i );
 
-    GlobalDelayExecStack.push_back(tmpStr);
+    if ( i >= 0 ) {
+        GlobalDelayExecStack.push_back(std::to_string(i));
+    }
 
     return i;
 }
@@ -493,7 +500,6 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
         memoryParam->inpOutBuf->len = 0;
         memoryParam->inpOutBuf->buf = nullptr;
     }
-    memoryParam->inpOutBuf = NULL;
     return 0;
 
 }

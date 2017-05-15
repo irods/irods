@@ -1872,7 +1872,16 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
     rstrcpy( tmpStr, params[0]->text, LONG_NAME_LEN );
     parseHostAddrStr( tmpStr, &execMyRuleInp.addr );
 
-    i = copyTaggedValue( params[1]->text, "ZONE", execMyRuleInp.addr.zoneName, NAME_LEN );
+    try {
+        auto taggedValues = getTaggedValues(params[1]->text);
+        auto it = taggedValues.find("ZONE");
+        if ( it != taggedValues.end() ) {
+            strncpy(execMyRuleInp.addr.zoneName, it->second.front().c_str(), NAME_LEN);
+            taggedValues.erase(it);
+        }
+    } catch ( const irods::exception& e) {
+        irods::log( irods::error(e) );
+    }
 
     if ( strlen( params[3]->text ) == 0 ) {
         snprintf( execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", params[2]->text );

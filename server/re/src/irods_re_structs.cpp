@@ -389,10 +389,14 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
 int
 packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
                int myArgc, bytesBuf_t **packedReiAndArgBBuf ) {
-    int status;
-    ruleExecInfoAndArg_t reiAndArg;
 
-    if ( packedReiAndArgBBuf == NULL ) {
+    if (!rei) {
+        rodsLog( LOG_ERROR,
+                 "packReiAndArg: NULL rei input" );
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    if ( !packedReiAndArgBBuf ) {
         rodsLog( LOG_ERROR,
                  "packReiAndArg: NULL packedReiAndArgBBuf input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -404,16 +408,17 @@ packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    memset( &reiAndArg, 0, sizeof( reiAndArg ) );
-
-    reiAndArg.rei = rei;
-
-    reiAndArg.reArg.myArgc = myArgc;
-    reiAndArg.reArg.myArgv = myArgv;
+    ruleExecInfoAndArg_t reiAndArg{
+        .rei=rei,
+        .reArg={
+            .myArgc=myArgc,
+            .myArgv=myArgv
+        }
+    };
 
     /* pack the reiAndArg */
 
-    status = packStruct( ( void * ) &reiAndArg, packedReiAndArgBBuf,
+    int status = packStruct( ( void * ) &reiAndArg, packedReiAndArgBBuf,
                          "ReiAndArg_PI", RodsPackTable, 0, NATIVE_PROT );
 
     if ( status < 0 ) {
@@ -453,148 +458,143 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
     return status;
 }
 
-int
-copyTaggedValue( char *str, char *tag, char *buf, int bufLen ) {
-    /*int i;*/
-    char tVal[NAME_LEN];
-    char *t, *s, *u;
-
-    snprintf( tVal, NAME_LEN, "<%s>", tag );
-    if ( ( t = strstr( str, tVal ) ) == NULL ) {
-        if ( strcmp( tag, "KVALPR" ) ) {
-            return UNMATCHED_KEY_OR_INDEX;
-        }
-        else {
-            while ( ( t = strstr( str, "<_____X>" ) ) != NULL ) {
-                memcpy( t + 1, tag, 6 );
+std::map<std::string, std::vector<std::string>>
+getTaggedValues(const char *str) {
+    std::map<std::string, std::vector<std::string>> ret_map{};
+    if (!str) {
+        return ret_map;
+    }
+    std::vector<std::tuple<std::string, const char*>> tag_stack;
+    while ((str = strchr(str, '<'))) {
+        const char * tag_end = strchr(str, '>');
+        if (str[1] == '/') {
+            std::string& last_tag = std::get<0>(tag_stack.back());
+            if ( last_tag.size() != static_cast<std::size_t>(tag_end - str - 2) || strncmp(last_tag.c_str(), str + 2, last_tag.size())  != 0 ) {
+                THROW( INPUT_ARG_NOT_WELL_FORMED_ERR, boost::format("unterminated tag: [%s]") % last_tag);
             }
+            ret_map[last_tag].emplace_back(std::get<1>(tag_stack.back()), str);
+            tag_stack.pop_back();
+        } else {
+            tag_stack.emplace_back(std::string{str + 1, tag_end}, tag_end + 1);
         }
-        return -1;
+        str = tag_end;
     }
-    s = t + strlen( tVal );
-    snprintf( tVal, NAME_LEN, "</%s>", tag );
-    if ( ( u = strstr( str, tVal ) ) == NULL ) {
-        return INPUT_ARG_NOT_WELL_FORMED_ERR;
+    if ( !tag_stack.empty() ) {
+        std::string& last_tag = std::get<0>(tag_stack.back());
+        THROW( INPUT_ARG_NOT_WELL_FORMED_ERR, boost::format("unterminated tag: [%s]") % last_tag);
     }
-    *u = '\0';
-    strncpy( buf, s, bufLen );
-    *u = '<';
-    if ( !strcmp( tag, "KVALPR" ) ) {
-        memcpy( t + 1, "_____X", 6 );
-    }
-    return 0;
-
+    return ret_map;
 }
 
 int
 fillSubmitConditions( const char *action, const char *inDelayCondition,
                       bytesBuf_t *packedReiAndArgBBuf, ruleExecSubmitInp_t *ruleSubmitInfo,
                       ruleExecInfo_t *rei ) {
-    int i;
-    int j = 0;
-    char kwp[NAME_LEN * 2];
-    char *t, *s;
-    char *delayCondition;
 
-    delayCondition = strdup( inDelayCondition );
     snprintf( ruleSubmitInfo->ruleName, sizeof( ruleSubmitInfo->ruleName ), "%s", action );
 
-    char inst_name[MAX_NAME_LEN];
-    i = copyTaggedValue( delayCondition, "INST_NAME", inst_name, MAX_NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX )  {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+    boost::optional<std::map<std::string, std::vector<std::string>>> taggedValues;
+    try {
+        taggedValues = getTaggedValues(inDelayCondition);
+    } catch ( const irods::exception& e) {
+        irods::log( irods::error(e) );
+        return e.code();
     }
-    addKeyVal( &ruleSubmitInfo->condInput, INSTANCE_NAME_KW, inst_name );
 
-    /*
-      i= copyTaggedValue(delayCondition,"UN", ruleSubmitInfo->userName,NAME_LEN);
-      if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);
-    */
-    i = copyTaggedValue( delayCondition, "EA", ruleSubmitInfo->exeAddress, NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX )  {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+    auto it = taggedValues->find("INST_NAME");
+    if ( it != taggedValues->end() ) {
+        addKeyVal( &ruleSubmitInfo->condInput, INSTANCE_NAME_KW, it->second.front().c_str() );
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "ET", ruleSubmitInfo->exeTime, TIME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+
+    it = taggedValues->find("EA");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->exeAddress, it->second.front().c_str(), NAME_LEN);
+        taggedValues->erase(it);
     }
-    else if ( i == 0 ) {
-        i  = checkDateFormat( ruleSubmitInfo->exeTime );
-        if ( i != 0 ) {
-            free( delayCondition ); // JMC cppcheck - leak
+
+    it = taggedValues->find("ET");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->exeTime, it->second.front().c_str(), TIME_LEN);
+        if ( int i = checkDateFormat( ruleSubmitInfo->exeTime ) ) {
             return i;
         }
+        taggedValues->erase(it);
+    }
 
+    it = taggedValues->find("EF");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->exeFrequency, it->second.front().c_str(), NAME_LEN);
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "EF", ruleSubmitInfo->exeFrequency, NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+
+    it = taggedValues->find("PRI");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->priority, it->second.front().c_str(), NAME_LEN);
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "PRI", ruleSubmitInfo->priority, NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+
+    it = taggedValues->find("EET");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->estimateExeTime, it->second.front().c_str(), NAME_LEN);
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "EET", ruleSubmitInfo->estimateExeTime, NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
+
+    it = taggedValues->find("NA");
+    if ( it != taggedValues->end() ) {
+        strncpy(ruleSubmitInfo->notificationAddr, it->second.front().c_str(), NAME_LEN);
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "NA", ruleSubmitInfo->notificationAddr, NAME_LEN );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
-    }
-    i = copyTaggedValue( delayCondition, "PLUSET", kwp, NAME_LEN * 2 );
-    if ( i != 0 && i != UNMATCHED_KEY_OR_INDEX ) {
-        free( delayCondition ); // JMC cppcheck - leak
-        return i;
-    }
-    else if ( i == 0 ) {
-        i  = checkDateFormat( kwp );
-        if ( i != 0 ) {
-            free( delayCondition );
+
+    it = taggedValues->find("PLUSET");
+    if ( it != taggedValues->end() ) {
+        getOffsetTimeStr( ruleSubmitInfo->exeTime, it->second.front().c_str() );
+        if ( int i = checkDateFormat( ruleSubmitInfo->exeTime ) ) {
             return i;
         }
-        getOffsetTimeStr( ruleSubmitInfo->exeTime, kwp );
+        taggedValues->erase(it);
     }
-    i = copyTaggedValue( delayCondition, "KVALPR", kwp, NAME_LEN * 2 );
-    while ( i >= 0 ) {
-        if ( ( t = strstr( kwp, "=" ) ) == NULL ) {
-            free( delayCondition );
-            return INPUT_ARG_NOT_WELL_FORMED_ERR;
+
+    it = taggedValues->find("KVALPR");
+    std::size_t i = 0;
+    if ( it != taggedValues->end() ) {
+        for ( const auto& kvp : it->second ) {
+            std::size_t equals_index = kvp.find('=');
+            if ( equals_index == std::string::npos ) {
+                return INPUT_ARG_NOT_WELL_FORMED_ERR;
+            }
+
+            std::size_t end_key_index = equals_index;
+            do {
+                if ( end_key_index == 0 ) {
+                    return INPUT_ARG_NOT_WELL_FORMED_ERR;
+                }
+            } while ( kvp[--end_key_index] == ' '  );
+            ruleSubmitInfo->condInput.keyWord[i] = strndup( kvp.c_str(), end_key_index + 1 );
+
+            std::size_t start_val_index = equals_index;
+            do {
+                if ( start_val_index == kvp.size() - 1 ) {
+                    return INPUT_ARG_NOT_WELL_FORMED_ERR;
+                }
+            } while ( kvp[++start_val_index] == ' ' );
+
+            ruleSubmitInfo->condInput.value[i] = strdup(kvp.c_str() + start_val_index);
+            ++i;
         }
-        *t = '\0';
-        s = t - 1;
-        while ( *s == ' ' ) {
-            s--;
-        }
-        *( s + 1 ) = '\0';
-        ruleSubmitInfo->condInput.keyWord[j] = strdup( kwp );
-        t++;
-        while ( *t == ' ' ) {
-            t++;
-        }
-        ruleSubmitInfo->condInput.value[j] = t;
-        j++;
-        i = copyTaggedValue( delayCondition, "KWVAL", kwp, NAME_LEN * 2 );
     }
-    ruleSubmitInfo->condInput.len = j;
+
+    ruleSubmitInfo->condInput.len = i;
     ruleSubmitInfo->packedReiAndArgBBuf = packedReiAndArgBBuf;
     if ( strlen( ruleSubmitInfo->userName ) == 0 ) {
         if ( strlen( rei->uoic->userName ) != 0 ) {
             snprintf( ruleSubmitInfo->userName, sizeof( ruleSubmitInfo->userName ),
-                      "%s", rei->uoic->userName );
+                    "%s", rei->uoic->userName );
         }
         else if ( strlen( rei->rsComm->clientUser.userName ) != 0 ) {
             snprintf( rei->rsComm->clientUser.userName, sizeof( rei->rsComm->clientUser.userName ),
-                      "%s", rei->uoic->userName );
+                    "%s", rei->uoic->userName );
         }
     }
-    free( delayCondition );
     return 0;
 }

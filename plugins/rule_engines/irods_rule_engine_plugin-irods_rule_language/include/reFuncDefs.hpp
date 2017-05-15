@@ -142,7 +142,7 @@ int unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 
 int pushStack( strArray_t *strArray, char *value );
 int popStack( strArray_t *strArray, char *value );
-int copyTaggedValue( char *str, char *tag, char *buf, int bufLen );
+std::map<std::string, std::vector<std::string>> getTaggedValues(const char *str);
 /***  causing trouble in compiling clientLogin.c
 int
 fillSubmitConditions (const char *action, const char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,   ruleExecSubmitInp_t *ruleSubmitInfo);
