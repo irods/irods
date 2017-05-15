@@ -461,13 +461,10 @@ initZone( rsComm_t *rsComm ) {
 
 int
 initAgent( int processType, rsComm_t *rsComm ) {
-    int status;
-    rsComm_t myComm;
-    ruleExecInfo_t rei;
 
     initProcLog();
 
-    status = initServerInfo( 1, rsComm );
+    int status = initServerInfo( 1, rsComm );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "initAgent: initServerInfo error, status = %d",
@@ -485,6 +482,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
         return status;
     }
 
+    ruleExecInfo_t rei;
     memset( &rei, 0, sizeof( rei ) );
     rei.rsComm = rsComm;
 
@@ -532,7 +530,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
     ThisComm = rsComm;
 
     /* use a tmp myComm is needed to get the permission right for the call */
-    myComm = *rsComm;
+    rsComm_t myComm = *rsComm;
     myComm.clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     rei.rsComm = &myComm;
 
