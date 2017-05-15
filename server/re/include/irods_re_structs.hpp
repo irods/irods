@@ -34,7 +34,7 @@ typedef struct RuleExecInfo {
     keyValPair_t *condInputData;
     /****        IF YOU ARE MAKING CHANGES CHECK BELOW
                  OR ABOVE FOR IMPORTANT INFORMATION  ****/
-    char ruleSet[MAX_NAME_LEN];
+    char ruleSet[RULE_SET_DEF_LENGTH];
     struct RuleExecInfo *next;
 } ruleExecInfo_t;
 
