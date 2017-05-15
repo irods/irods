@@ -465,9 +465,6 @@ checkFilePerms( char *fileName ) {
 int
 msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
 
-    msParamArray_t *inMsParamArray;
-    msParam_t *mP;
-    execCmdOut_t *myExecCmdOut;
 
     RE_TEST_MACRO( "Loopback on msiFreeBuffer" );
 
@@ -476,11 +473,12 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
               !strcmp( ( char* )memoryParam->inOutStruct, "stderr" )
             )
        ) {
-        mP = NULL;
+        msParam_t *mP = nullptr;
+        msParamArray_t *inMsParamArray;
         inMsParamArray = rei->msParamArray;
         if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
                 ( mP->inOutStruct != NULL ) ) {
-            myExecCmdOut = ( execCmdOut_t * ) mP->inOutStruct;
+            execCmdOut_t *myExecCmdOut = ( execCmdOut_t * ) mP->inOutStruct;
             if ( !strcmp( ( char* )memoryParam->inOutStruct, "stdout" ) ) {
                 if ( myExecCmdOut->stdoutBuf.buf != NULL ) {
                     free( myExecCmdOut->stdoutBuf.buf );
@@ -499,8 +497,10 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
         return 0;
     }
 
-    if ( memoryParam->inpOutBuf != NULL ) {
-        free( memoryParam->inpOutBuf );
+    if ( memoryParam->inpOutBuf ) {
+        free( memoryParam->inpOutBuf->buf );
+        memoryParam->inpOutBuf->len = 0;
+        memoryParam->inpOutBuf->buf = nullptr;
     }
     memoryParam->inpOutBuf = NULL;
     return 0;
