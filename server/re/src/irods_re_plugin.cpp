@@ -64,20 +64,10 @@ namespace irods{
             if(itr.type() == typeid(std::string *)) {
                 *(boost::any_cast<std::string *>(itr)) = std::string(reinterpret_cast<char*>( t->inOutStruct) );
             }
-        } else if (std::string(t->type).compare(RodsObjStat_MS_T) == 0) {
-            replMsParam(t, boost::any_cast<msParam_t*>(itr));
-        } else if (std::string(t->type).compare(INT_MS_T) == 0) {
-            replMsParam(t, boost::any_cast<msParam_t*>(itr));
-        } else if (std::string(t->type).compare(DOUBLE_MS_T) == 0) {
-            replMsParam(t, boost::any_cast<msParam_t*>(itr));
-        } else if (std::string(t->type).compare(GenQueryInp_MS_T) == 0) {
-            replMsParam(t, boost::any_cast<msParam_t*>(itr));
-        } else if (std::string(t->type).compare(GenQueryOut_MS_T) == 0) {
-            replMsParam(t, boost::any_cast<msParam_t*>(itr));
-        } else if (std::string(t->type).compare(BUF_LEN_MS_T) == 0) {
+        } else if (t->type) {
             replMsParam(t, boost::any_cast<msParam_t*>(itr));
         } else {
-            return ERROR(-1, "cannot convert parameter");
+            return ERROR(-1, "type was null, cannot convert type");
         }
 
         return SUCCESS();
