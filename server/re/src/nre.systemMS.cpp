@@ -30,7 +30,7 @@ static std::vector<std::string> GlobalDelayExecStack;
 int checkFilePerms( char *fileName );
 
 int
-fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
+fillSubmitConditions( const char *action, const char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
                       ruleExecSubmitInp_t *ruleSubmitInfo,  ruleExecInfo_t *rei );
 
 
@@ -107,7 +107,7 @@ fillSubmitConditions( char *action, char *inDelayCondition, bytesBuf_t *packedRe
  * \sa  none
  * \endcond
 **/
-int _delayExec(char*, char*, char*, ruleExecInfo_t*);
+int _delayExec(const char*, const char*, const char*, ruleExecInfo_t*);
 int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
     int i;
     char actionCall[MAX_ACTION_SIZE];
@@ -121,8 +121,8 @@ int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *r
     return i;
 }
 
-int _delayExec( char *inActionCall, char *recoveryActionCall,
-                char *delayCondition,  ruleExecInfo_t *rei ) {
+int _delayExec( const char *inActionCall, const char *recoveryActionCall,
+                const char *delayCondition,  ruleExecInfo_t *rei ) {
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
@@ -131,29 +131,20 @@ int _delayExec( char *inActionCall, char *recoveryActionCall,
     char tmpStr[NAME_LEN];
     bytesBuf_t *packedReiAndArgBBuf = NULL;
     char *ruleExecId;
-    char *actionCall;
 
     RE_TEST_MACRO( "    Calling _delayExec" );
-
-    actionCall = inActionCall;
 
     args[1] = NULL;
     argc = 0;
     /* Pack Rei and Args */
     i = packReiAndArg( rei, args, argc, &packedReiAndArgBBuf );
     if ( i < 0 ) {
-        if ( actionCall != inActionCall ) {
-            free( actionCall );
-        }
         return i;
     }
     /* fill Conditions into Submit Struct */
     ruleSubmitInfo = ( ruleExecSubmitInp_t * ) malloc( sizeof( ruleExecSubmitInp_t ) );
     memset(ruleSubmitInfo, 0, sizeof(ruleExecSubmitInp_t));
-    i  = fillSubmitConditions( actionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei );
-    if ( actionCall != inActionCall ) {
-        free( actionCall );
-    }
+    i  = fillSubmitConditions( inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei );
     if ( i < 0 ) {
         free( ruleSubmitInfo );
         return i;

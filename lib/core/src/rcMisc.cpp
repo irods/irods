@@ -1646,7 +1646,7 @@ getLocalTimeStr( struct tm *mytm, char *timeStr ) {
 /*  offset is a string of the same form  */
 /*                                               0123456789012345678 */
 void
-getOffsetTimeStr( char *timeStr, char *offSet ) {
+getOffsetTimeStr( char *timeStr, const char *offSet ) {
     time_t myTime;
 
     myTime = time( NULL );
@@ -2057,7 +2057,7 @@ localToUnixTime( char * localTime, char * unixTime ) {
 }
 
 int
-isInteger( char * inStr ) {
+isInteger( const char * inStr ) {
     int i;
     int len;
 
