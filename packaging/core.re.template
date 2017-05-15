@@ -62,7 +62,6 @@ acRenameLocalZone(*oldZone,*newZone) {
 # The acGetUserByDN by default is a no-op but can be configured to do some
 # special handling of GSI DNs.  See rsGsiAuthRequest.c.
 #acGetUserByDN(*arg,*OUT) {msiExecCmd("t","*arg","null","null","null",*OUT); }
-acGetUserByDN(*arg,*OUT) { }
 #
 # --------------------------------------------------------------------------
 # The following rule is for setting Access Control List (ACL) policy.
@@ -90,7 +89,6 @@ acGetUserByDN(*arg,*OUT) { }
 # written for this purpose. See 'iadmin h modzonecollacl' for
 # additional details.
 #
-#acAclPolicy { }
 acAclPolicy {msiAclPolicy("STRICT"); }
 #
 # --------------------------------------------------------------------------
@@ -103,7 +101,6 @@ acAclPolicy {msiAclPolicy("STRICT"); }
 # second one.  The default policy is to allow all users.  The rule is
 # executed when the server receives a ticket for use for access and
 # if the rule fails (none found to apply), the ticket is not used.
-acTicketPolicy {}
 #acTicketPolicy {ON($userNameClient != "anonymous") { } }
 #
 # --------------------------------------------------------------------------
@@ -113,7 +110,6 @@ acTicketPolicy {}
 # used to enforce a minimal password length.  Also, microservices
 # could be developed to make other checks, such as requiring both
 # upper and lower case, and/or special characters, etc.
-acCheckPasswordStrength(*password) { }
 #acCheckPasswordStrength(*password) {if(strlen(*password) <7) {msiDeleteDisallowed; }}
 
 #
@@ -197,7 +193,6 @@ acSetRescSchemeForRepl {msiSetDefaultResc("demoResc","null"); }
 # acPreprocForDataObjOpen {ON($writeFlag == "1") { } }
 # acPreprocForDataObjOpen {msiSortDataObj("random"); msiSetDataObjPreferredResc("xyz%demoResc8%abc"); msiStageDataObj("demoResc8"); }
 # acPreprocForDataObjOpen {msiSetDataObjPreferredResc("demoResc7%demoResc8"); }
-acPreprocForDataObjOpen { }
 # acPreprocForDataObjOpen {msiGetSessionVarValue("all","all"); }
 # acPreprocForDataObjOpen {ON($writeFlag == "0") {writeLine("serverLog",$objPath);} }
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
@@ -206,7 +201,6 @@ acPreprocForDataObjOpen { }
 #     msiSetMultiReplPerResc - By default, the system allows one copy per
 #       resource. This micro-service sets the number of copies per resource
 #       to unlimited.
-acSetMultiReplPerResc { }
 # acSetMultiReplPerResc {msiGetSessionVarValue("all","all"); }
 #
 # 4) acPostProcForPut - Rule for post processing the put operation.
@@ -250,15 +244,13 @@ acSetMultiReplPerResc { }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/tg/*") {msiSysReplDataObj("nvoReplResc","null"); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); } }
 #acPostProcForPut {ON($objPath like "/tempZone/home/rods/mytest/*") {writeLine("serverLog","File Path is "++$filePath); msiSplitPath($filePath,*fileDir,*fileName); msiExecCmd("send.sh", "*fileDir *fileName", "null", "null","null",*Junk); writeLine("serverLog","After File Path is *fileDir *fileName"); } }
-#acPostProcForPut { ON($objPath like "\*txt") {writeLine("serverLog","File $objPath"); } }
-acPostProcForPut { }
-acPostProcForCopy { }
-acPostProcForFilePathReg { }
-acPostProcForCreate { }
+# acPostProcForPut { ON($objPath like "\*txt") {writeLine("serverLog","File $objPath"); } }
+# acPostProcForCopy { }
+# acPostProcForFilePathReg { }
+# acPostProcForCreate { }
 # acPostProcForOpen {writeLine("serverLog",$objPath); }
-acPostProcForOpen { }
-acPostProcForPhymv { }
-acPostProcForRepl { }
+# acPostProcForPhymv { }
+# acPostProcForRepl { }
 # 9) acSetNumThreads - Rule to set the number of threads for a data transfer
 # This rule supports condition based on $KVPairs.rescName so that different
 # policies can be set for different resources.
@@ -294,12 +286,11 @@ acSetNumThreads {msiSetNumThreads("default","16","default"); }
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
 #acDataDeletePolicy {ON($objPath like "/tempZone/home/rods/*") {msiDeleteDisallowed; } }
-acDataDeletePolicy { }
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for
 # deleting data objects.  Currently there is no function written specifically
 # for this rule.
-acPostProcForDelete { }
+# acPostProcForDelete { }
 #
 # 12) acSetChkFilePathPerm - This rule replaces acNoChkFilePathPerm.
 # For now, the only safe setting is the default,
@@ -334,7 +325,6 @@ acSetChkFilePathPerm {msiSetChkFilePathPerm("disallowPathReg"); }
 # should be used. The default policy is the trash can will be used. Only
 # one function can be called.
 #    msiNoTrashCan() - Set the policy to no trash can.
-acTrashPolicy { }
 # acTrashPolicy {msiNoTrashCan; }
 #
 # 14) acSetPublicUserPolicy - This rule set the policy for the set of
@@ -346,7 +336,6 @@ acTrashPolicy { }
 #      than one operation can be input using the character "%" as separator.
 #      e.g., read%query.
 # acSetPublicUserPolicy {msiSetPublicUserOpr("read%query"); }
-acSetPublicUserPolicy { }
 # 15) acChkHostAccessControl - This rule checks the access control by host
 # and user based on the the policy given in the HostAccessControl file.
 # The msi is developed by Jean-Yves Nief of IN2P3. Only one function can
@@ -354,7 +343,6 @@ acSetPublicUserPolicy { }
 #   msiCheckHostAccessControl() -  checks the access control by host and user
 #     based on the the policy given in the HostAccessControl file.
 # acChkHostAccessControl {msiCheckHostAccessControl; }
-acChkHostAccessControl { }
 # 16) acSetVaultPathPolicy - This rule set the policy for creating the physical
 # path in the iRODS resource vault. Two functions can be called:
 #    msiSetGraftPathScheme(addUserName,trimDirCnt) - Set the VaultPath scheme
@@ -391,22 +379,20 @@ acSetReServerNumProc {msiSetReServerNumProc("default"); }
 # a collection. Currently there is no function written specifically
 # for this rule.
 # acPreprocForCollCreate {writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName); }
-acPreprocForCollCreate { }
 #
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for
 # creating a collection.  Currently there is no function written specifically
 # for this rule.
-acPostProcForCollCreate { }
+# acPostProcForCollCreate { }
 # 20) acPreprocForRmColl - This is the PreProcessing rule for removing
 # a collection. Currently there is no function written specifically
 # for this rule.
-acPreprocForRmColl { }
+# acPreprocForRmColl { }
 #
 # 21) acPostProcForRmColl - This rule set the post-processing policy for
 # removing a collection. Currently there is no function written specifically
 # for this rule.
 # acPostProcForRmColl {msiGetSessionVarValue("all","all"); }
-acPostProcForRmColl { }
 #
 # 22) acPreProcForModifyUser - This rule set the pre-processing policy for
 # modifying the properties of a user.
@@ -414,15 +400,11 @@ acPostProcForRmColl { }
 #
 #acPreProcForModifyUser(*UserName,*Option,*NewValue) {writeLine("serverLog","TEST:acPreProcForModifyUser: *UserName,*Option,*NewValue"); }
 #
-acPreProcForModifyUser(*UserName,*Option,*NewValue) { }
-#
 # 23) acPostProcForModifyUser - This rule set the post-processing policy for
 # modifying the properties of a user.
 # Option specifies the modifying-action being performed by the administraor
 #
 #acPostProcForModifyUser(*UserName,*Option,*NewValue) {writeLine("serverLog","TEST:acPostProcForModifyUser: *UserName,*Option,*NewValue"); }
-#
-acPostProcForModifyUser(*UserName,*Option,*NewValue) { }
 #
 # 24) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
@@ -430,11 +412,11 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue) { }
 # when option =
 # mod
 # new values have the prefix n:, v:, u:, and "" means that that value remain unchanged
-acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
+# acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
 # add, adda, addw, set, rm, rmw, rmi
-acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
+# acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
 # cp
-acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
+# acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
 #
 # for backward compatibility
 #acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) {
@@ -455,141 +437,127 @@ acPreProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceIte
 # 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
 # See acPreProcForModifyAVUMetadata for which rule to implement and backward compatibility
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
-acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
-acPostProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
+# acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit, *NAName, *NAValue, *NAUnit) { }
+# acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit) { }
+# acPostProcForModifyAVUMetadata(*Option,*SourceItemType,*TargetItemType,*SourceItemName,*TargetItemName) { }
 #
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
 #
-#acPreProcForCreateUser {writeLine("serverLog","TEST:acPreProcForCreateUser"); }
+# acPreProcForCreateUser {writeLine("serverLog","TEST:acPreProcForCreateUser"); }
 #
-acPreProcForCreateUser { }
 # 27) acPostProcForCreateUser - This rule set the post-processing policy for
 # creating a new user.
 #
 #acPostProcForCreateUser {writeLine("serverLog","TEST:acPostProcForCreateUser"); }
 #
-acPostProcForCreateUser { }
-#
 # 28) acPreProcForDeleteUser - This rule set the pre-processing policy for
 # deleting an old user.
 #
 #acPreProcForDeleteUser {writeLine("serverLog","TEST:acPreProcForDeleteUser"); }
-acPreProcForDeleteUser { }
 #
 # 29) acPostProcForDeleteUser - This rule set the post-processing policy for
 # deleting an old user.
 #
 #acPostProcForDeleteUser {writeLine("serverLog","TEST:acPostProcForDeleteUser"); }
-acPostProcForDeleteUser { }
 #
 # 28) acPreProcForCreateResource - This rule set the pre-processing policy for
 # creating a new resource.
 #
-acPreProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
+# acPreProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
 #
 # 29) acPostProcForCreateResource - This rule set the post-processing policy for
 # creating a new resource.
 #
-acPostProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
+# acPostProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
 #
 # 30) acPreProcForCreateToken - This rule set the pre-processing policy for
 # creating a new token.
 #
-acPreProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment) { }
+# acPreProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment) { }
 #
 # 31) acPostProcForCreateToken - This rule set the post-processing policy for
 # creating a new token.
 #
-acPostProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment) { }
+# acPostProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment) { }
 #
 # 32) acPreProcForModifyUserGroup - This rule set the pre-processing policy for
 # modifying membership of a user group.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPreProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName) { }
+# acPreProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName) { }
 #
 # 33) acPostProcForModifyUserGroup - This rule set the post-processing policy for
 # modifying membership of a user group.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPostProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName) { }
+# acPostProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName) { }
 #
 # 34) acPreProcForDeleteResource - This rule set the pre-processing policy for
 # deleting an old resource.
 #
-acPreProcForDeleteResource(*RescName) { }
+# acPreProcForDeleteResource(*RescName) { }
 #
 # 35) acPostProcForDeleteResource - This rule set the post-processing policy for
 # deleting an old resource.
 #
-acPostProcForDeleteResource(*RescName) { }
+# acPostProcForDeleteResource(*RescName) { }
 #
 # 36) acPreProcForDeleteToken - This rule set the pre-processing policy for
 # deleting an old token.
 #
-acPreProcForDeleteToken(*TNameSpace,*TName) { }
+# acPreProcForDeleteToken(*TNameSpace,*TName) { }
 #
 # 37) acPostProcForDeleteToken - This rule set the post-processing policy for
 # deleting an old token.
 #
-acPostProcForDeleteToken(*TNameSpace,*TName) { }
+# acPostProcForDeleteToken(*TNameSpace,*TName) { }
 #
 # 38) acPreProcForModifyResource - This rule set the pre-processing policy for
 # modifying the properties of a resource.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPreProcForModifyResource(*ResourceName,*Option,*NewValue) { }
+# acPreProcForModifyResource(*ResourceName,*Option,*NewValue) { }
 #
 # 39) acPostProcForModifyResource - This rule set the post-processing policy for
 # modifying the properties of a resource.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPostProcForModifyResource(*ResourceName,*Option,*NewValue) { }
+# acPostProcForModifyResource(*ResourceName,*Option,*NewValue) { }
 #
 # 42) acPreProcForModifyCollMeta - This rule set the pre-processing policy for
 # modifying system metadata of a collection.
 #
-acPreProcForModifyCollMeta { }
+# acPreProcForModifyCollMeta { }
 #
 # 43) acPostProcForModifyCollMeta - This rule set the post-processing policy for
 # modifying system metadata of a collection.
 #
-acPostProcForModifyCollMeta { }
+# acPostProcForModifyCollMeta { }
 # 44) acPreProcForModifyDataObjMeta - This rule set the pre-processing policy for
 # modifying system metadata of a data object.
 #
 #acPreProcForModifyDataObjMeta {writeLine("serverLog","TEST:acPreProcForModifyDataObjMeta"); }
-#
-acPreProcForModifyDataObjMeta { }
 #
 # 43) acPostProcForModifyDataObjMeta - This rule set the post-processing policy for
 # modifying system metadata of a data object.
 #
 #acPostProcForModifyDataObjMeta {writeLine("serverLog","TEST:acPostProcForModifyDataObjMeta"); }
 #
-acPostProcForModifyDataObjMeta { }
-#
 # 44) acPreProcForModifyAccessControl - This rule set the pre-processing policy for
 # access control
 #
 #acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) {writeLine("serverLog","TEST:acPreProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path"); }
-#
-acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) { }
 #
 # 45) acPostProcForModifyAccessControl - This rule set the post-processing policy for
 # access control
 #
 #acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) {writeLine("serverLog","TEST:acPostProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path"); }
 #
-acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path) { }
-#
 # 46) acPreProcForObjRename - This rule set the pre-processing policy for
 # renaming (logically moving) data and collections
 #
 #acPreProcForObjRename(*sourceObject,*destObject) {writeLine("serverLog","TEST:acPreProcForObjRename from *sourceObject to *destObject"); }
-acPreProcForObjRename(*sourceObject,*destObject) { }
 #
 # 47) acPostProcForObjRename - This rule set the post-processing policy for
 # renaming (logically moving) data and collections
@@ -599,7 +567,6 @@ acPreProcForObjRename(*sourceObject,*destObject) { }
 #acPostProcForObjRename(*sourceObject,*destObject) {applyAllRules(acPostProcForObjRenameALL(*sourceObject,*destObject),"0","0"); }
 #acPostProcForObjRenameALL(*AA,*BB) {writeLine("serverLog","I was called! *AA *BB"); }
 #acPostProcForObjRenameALL(*AA,*BB) {writeLine("serverLog","DestObject: *AA"); }
-acPostProcForObjRename(*sourceObject,*destObject) { }
 #
 # 48) acPreProcForGenQuery - This rule set the pre-processing policy for
 # general query
@@ -609,7 +576,6 @@ acPostProcForObjRename(*sourceObject,*destObject) { }
 #                                       (char **) NULL,0);
 #acPreProcForGenQuery(*genQueryInpStr) {writeLine("serverLog","TEST:acPreProcForGenQuery from"); }
 #acPreProcForGenQuery(*genQueryInpStr) {msiPrintGenQueryInp("serverLog",*genQueryInpStr); }
-acPreProcForGenQuery(*genQueryInpStr) { }
 #
 # 49) acPostProcForGenQuery - This rule set the post-processing policy for
 # general query
@@ -634,7 +600,6 @@ acPreProcForGenQuery(*genQueryInpStr) { }
 # genQueryStatus = atoi((char *)genQueryStatusStr->inOutStruct);
 #
 #acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr) {writeLine("serverLog","TEST:acPostProcForGenQuery and Status = *genQueryStatusStr"); }
-acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr) { }
 # 50) acRescQuotaPolicy - This rule sets the policy for resource quota.
 # Only one function can be called:
 #    msiSetRescQuotaPolicy() - This microservice sets whether the Resource
@@ -662,27 +627,25 @@ acBulkPutPostProcPolicy {msiSetBulkPutPostProcPolicy("off"); }
 # 52) acPostProcForTarFileReg - Rule for post processing the registration
 # of the extracted tar file (from ibun -x). There is not micro-service
 # associated with this rule.
-acPostProcForTarFileReg { }
+# acPostProcForTarFileReg { }
 # 53) acPostProcForDataObjWrite - Rule for pre processing the write buffer
 # the argument passed is of type BUF_LEN_MS_T
 #acPostProcForDataObjWrite(*WriteBuffer) {writeLine("serverLog","TEST:acPostProcForDataObjWrite"); }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjWrite(*WriteBuffer) {msiCutBufferInHalf(*WriteBuffer); }
-acPostProcForDataObjWrite(*WriteBuffer) { }
 # 54) acPostProcForDataObjRead - Rule for post processing the read buffer
 # the argument passed is of type BUF_LEN_MS_T
 #acPostProcForDataObjRead(*ReadBuffer) {writeLine("serverLog","TEST:acPostProcForDataObjRead"); }
 # rule below used for testing. dont uncomment this....
 # acPostProcForDataObjRead(*ReadBuffer) {msiCutBufferInHalf(*ReadBuffer); }
-acPostProcForDataObjRead(*ReadBuffer) { }
 # 55) acPreProcForExecCmd - Rule for pre processing when remotely executing a command
 #     in msiExecCmd_bin
 #     parameter contains the command to be executed, arguments, execution address, hint path.
 #     if a parameter is not provided, then it is the empty string
-acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
+# acPreProcForExecCmd(*cmd, *args, *addr, *hint) { }
 # Rule for pre and post processing when establishing a parallel connection
-acPreProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
-acPostProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+# acPreProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
+# acPostProcForServerPortal(*oprType, *lAddr, *lPort, *pAddr, *pPort, *load) { }
 acPreProcForWriteSessionVariable(*var) {
 	on(*var == "status") {
 		succeed;
