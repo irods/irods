@@ -487,7 +487,7 @@ copyTaggedValue( char *str, char *tag, char *buf, int bufLen ) {
 }
 
 int
-fillSubmitConditions( char *action, char *inDelayCondition,
+fillSubmitConditions( const char *action, const char *inDelayCondition,
                       bytesBuf_t *packedReiAndArgBBuf, ruleExecSubmitInp_t *ruleSubmitInfo,
                       ruleExecInfo_t *rei ) {
     int i;

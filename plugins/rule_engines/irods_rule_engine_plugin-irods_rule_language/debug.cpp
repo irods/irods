@@ -715,8 +715,8 @@ char * getAttrNameFromAttrId( int id ) {
 int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei ) {
     return 0;
 }
-int _delayExec( char *inActionCall, char *recoveryActionCall,
-                char *delayCondition,  ruleExecInfo_t *rei ) {
+int _delayExec( const char *inActionCall, const char *recoveryActionCall,
+                const char *delayCondition,  ruleExecInfo_t *rei ) {
     return 0;
 }
 

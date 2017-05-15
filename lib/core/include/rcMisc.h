@@ -141,7 +141,7 @@ getLocalTimeFromRodsTime( const char *timeStrIn, char *timeStrOut );
 int
 getLocalTimeStr( struct tm *mytm, char *timeStr );
 void
-getOffsetTimeStr( char *timeStr, char *offSet );
+getOffsetTimeStr( char *timeStr, const char *offSet );
 void
 updateOffsetTimeStr( char *timeStr, int offset );
 int
@@ -193,7 +193,7 @@ clearCollInp( void* );
 void
 clearAuthResponseInp( void * myInStruct );
 int
-isInteger( char *inStr );
+isInteger( const char *inStr );
 int
 addIntArray( intArray_t *intArray, int value );
 int

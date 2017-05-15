@@ -145,7 +145,7 @@ int popStack( strArray_t *strArray, char *value );
 int copyTaggedValue( char *str, char *tag, char *buf, int bufLen );
 /***  causing trouble in compiling clientLogin.c
 int
-fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,   ruleExecSubmitInp_t *ruleSubmitInfo);
+fillSubmitConditions (const char *action, const char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,   ruleExecSubmitInp_t *ruleSubmitInfo);
 ***/
 int print_uoi( userInfo_t *uoi );
 int print_doi( dataObjInfo_t *doi );
@@ -164,8 +164,8 @@ int applyActionCall( char *actionCall,  ruleExecInfo_t *rei, int reiSaveFlag );
 
 int clearMsparamInRei( ruleExecInfo_t *rei );
 
-int _delayExec( char *inActionCall, char *recoveryActionCall,
-                char *delayCondition,  ruleExecInfo_t *rei );
+int _delayExec( const char *inActionCall, const char *recoveryActionCall,
+                const char *delayCondition,  ruleExecInfo_t *rei );
 
 
 int executeRuleActionNew( char *inAction,  msParamArray_t *inMsParamArray,
