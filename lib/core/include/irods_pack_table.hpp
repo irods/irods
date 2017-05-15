@@ -12,7 +12,7 @@ namespace irods {
 
     class pack_entry_table : public lookup_table< pack_entry > {
     public:
-        pack_entry_table( packInstructArray_t[] );
+        pack_entry_table( packInstruct_t[] );
     };
 
     irods::pack_entry_table& get_pack_table();

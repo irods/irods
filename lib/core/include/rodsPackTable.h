@@ -30,7 +30,7 @@ packType_t packTypeTable[] = {
 
 int NumOfPackTypes = ( sizeof( packTypeTable ) / sizeof( packType_t ) );
 
-packConstantArray_t PackConstantTable[] = {
+packConstant_t PackConstantTable[] = {
     {"HEADER_TYPE_LEN", HEADER_TYPE_LEN},
     {"NAME_LEN", NAME_LEN},
     {"CHKSUM_LEN", CHKSUM_LEN},
@@ -58,7 +58,7 @@ packConstantArray_t PackConstantTable[] = {
 };
 
 
-const packInstructArray_t RodsPackTable[] = {
+const packInstruct_t RodsPackTable[] = {
     {"STR_PI", STR_PI, NULL},
     {"IRODS_STR_PI", IRODS_STR_PI, NULL},
     {"STR_PTR_PI", STR_PTR_PI, NULL},

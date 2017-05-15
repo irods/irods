@@ -6,7 +6,7 @@
 
 #include <string>
 
-extern const packInstructArray_t RodsPackTable[];
+extern const packInstruct_t RodsPackTable[];
 
 int rsExecRuleExpression(
     rsComm_t*               _comm,

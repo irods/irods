@@ -3,7 +3,7 @@
 
 namespace irods {
     pack_entry_table::pack_entry_table(
-        packInstructArray_t _defs[] ) {
+        packInstruct_t _defs[] ) {
         int i = 0;
         std::string end_str( PACK_TABLE_END_PI );
         while ( end_str != _defs[ i ].name ) {

@@ -26,7 +26,7 @@
 #include <map>
 #include <vector>
 
-extern const packInstructArray_t RodsPackTable[];
+extern const packInstruct_t RodsPackTable[];
 
 namespace irods {
 /// =-=-=-=-=-=-=-

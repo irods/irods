@@ -23,26 +23,22 @@ struct */
 #define END_TAG_FL	1
 #define LF_FL		2	/* line feed */
 
-typedef const char* packInstruct_t;
-
 /* indicate the end of packing table */
 
 #define PACK_TABLE_END_PI  "PACK_TABLE_END_PI"
 
 #define XML_TAG		"iRODSStruct"
-/* XXXXX should change (packInstruct_t *) to packInstruct_t. Then we don't
-have to use globals */
 
 typedef struct {
     const char *name;
     const char *packInstruct;
     void( *clearInStruct )( void* );
-} packInstructArray_t;
+} packInstruct_t;
 
 typedef struct {
     char *name;
     int value;
-} packConstantArray_t;
+} packConstant_t;
 
 /* packType */
 typedef enum {
@@ -114,11 +110,11 @@ extern "C" {
 
 int
 packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
-            const packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt );
+            const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 
 int
 unpackStruct( void *inPackStr, void **outStruct, const char *packInstName,
-              const packInstructArray_t *myPackTable, irodsProt_t irodsProt );
+              const packInstruct_t *myPackTable, irodsProt_t irodsProt );
 int
 parsePackInstruct( const char *packInstruct, packItem_t **packItemHead );
 int
@@ -143,7 +139,7 @@ resolveIntDepItem( packItem_t *myPackedItem );
 int
 resolveIntInItem( const char *name, packItem_t *myPackedItem );
 const void *
-matchPackInstruct( char *name, const packInstructArray_t *myPackTable );
+matchPackInstruct( char *name, const packInstruct_t *myPackTable );
 int
 resolveDepInArray( packItem_t *myPackedItem );
 int
@@ -154,14 +150,14 @@ int
 extendPackedOutput( packedOutput_t *packedOutput, int extLen, void **outPtr );
 int
 packItem( packItem_t *myPackedItem, void **inPtr,
-          packedOutput_t *packedOutput, const packInstructArray_t *myPackTable,
+          packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
           int packFlag, irodsProt_t irodsProt );
 int
 packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
-                 const packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt );
+                 const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt );
 int
 packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                    packedOutput_t *packedOutput, const packInstructArray_t *myPackTable,
+                    packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
                     int packFlag, irodsProt_t irodsProt );
 int
 packChar( void **inPtr, packedOutput_t *packedOutput, int len,
@@ -189,17 +185,17 @@ packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
             packItem_t *myPackedItem, irodsProt_t irodsProt );
 int
 packChildStruct( void **inPtr, packedOutput_t *packedOutput,
-                 packItem_t *myPackedItem, const packInstructArray_t *myPackTable, int numElement,
+                 packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
                  int packFlag, irodsProt_t irodsProt, char *packInstruct );
 int
 freePackedItem( packItem_t *packItemHead );
 int
 unpackItem( packItem_t *myPackedItem, void **inPtr,
-            packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+            packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
             irodsProt_t irodsProt );
 int
 unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                      packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+                      packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
                       irodsProt_t irodsProt );
 int
 unpackChar( void **inPtr, packedOutput_t *packedOutput, int len,
@@ -256,11 +252,11 @@ int
 unpackNatDoubleToOutPtr( void **inPtr, void **outPtr, int numElement );
 int
 unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
-                   packItem_t *myPackedItem, const packInstructArray_t *myPackTable, int numElement,
+                   packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
                    irodsProt_t irodsProt, char *packInstructInp );
 int
 unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
-                   packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+                   packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
                    irodsProt_t irodsProt );
 void *
 addPointerToPackedOut( packedOutput_t *packedOutput, int len, void *pointer );

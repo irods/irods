@@ -19,7 +19,7 @@
 
 #include <list>
 
-extern const packInstructArray_t RodsPackTable[];
+extern const packInstruct_t RodsPackTable[];
 irods::ms_table& get_microservice_table();
 
 // =-=-=-=-=-=-=-
