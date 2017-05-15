@@ -96,7 +96,8 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
             try:
                 admin_session.assert_icommand('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'not a valid DNS entry')
                 _, stdout, _ = admin_session.assert_icommand(['irods-grid', 'status', '--all'], 'STDOUT_SINGLELINE')
-                assert {'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts']
+                host_responses = json.loads(stdout)['hosts']
+                self.assertTrue(({'failed_to_connect': 'tcp://invalid_host:1248'} in host_responses) or ({'response_message_is_empty_from': 'tcp://invalid_host:1248'} in host_responses))
             finally:
                 admin_session.assert_icommand('iadmin rmresc invalid_resc')
 
@@ -108,7 +109,8 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
                 admin_session.assert_icommand('iadmin mkresc invalid_resc unixfilesystem invalid_host:/tmp/irods/invalid', 'STDOUT_SINGLELINE', 'not a valid DNS entry')
                 try:
                     _, stdout, _ = admin_session.assert_icommand(['irods-grid', 'shutdown', '--wait-forever', '--all'], 'STDOUT_SINGLELINE', 'shutting down')
-                    self.assertTrue({'failed_to_connect': 'tcp://invalid_host:1248'} in json.loads(stdout)['hosts'])
+                    host_responses = json.loads(stdout)['hosts']
+                    self.assertTrue(({'failed_to_connect': 'tcp://invalid_host:1248'} in host_responses) or ({'response_message_is_empty_from': 'tcp://invalid_host:1248'} in host_responses))
                     self.admin_sessions[0].assert_icommand('ils','STDERR_SINGLELINE','connectToRhost error')
                 finally:
                     IrodsController().start()
