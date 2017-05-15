@@ -17,7 +17,7 @@
 
 int
 packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
-            const packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
+            const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     if ( inStruct == NULL || packedResult == NULL || packInstName == NULL ) {
         rodsLog( LOG_ERROR,
                  "packStruct: Input error. One of the input is NULL" );
@@ -57,7 +57,7 @@ packStruct( void *inStruct, bytesBuf_t **packedResult, const char *packInstName,
 
 int
 unpackStruct( void *inPackedStr, void **outStruct, const char *packInstName,
-              const packInstructArray_t *myPackTable, irodsProt_t irodsProt ) {
+              const packInstruct_t *myPackTable, irodsProt_t irodsProt ) {
     if ( inPackedStr == NULL || outStruct == NULL || packInstName == NULL ) {
         rodsLog( LOG_ERROR,
                  "unpackStruct: Input error. One of the input is NULL" );
@@ -708,7 +708,7 @@ resolveStrInItem( packItem_t *myPackedItem ) {
 }
 
 const void *
-matchPackInstruct( char *name, const packInstructArray_t *myPackTable ) {
+matchPackInstruct( char *name, const packInstruct_t *myPackTable ) {
     int i;
 
     if ( myPackTable != NULL ) {
@@ -804,7 +804,7 @@ resolveDepInArray( packItem_t *myPackedItem ) {
 
 int
 packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                    packedOutput_t *packedOutput, const packInstructArray_t *myPackTable,
+                    packedOutput_t *packedOutput, const packInstruct_t *myPackTable,
                     int packFlag, irodsProt_t irodsProt ) {
     int numElement;
     int elementSz;
@@ -931,7 +931,7 @@ packNonpointerItem( packItem_t *myPackedItem, void **inPtr,
 
 int
 packPointerItem( packItem_t *myPackedItem, packedOutput_t *packedOutput,
-                 const packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
+                 const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int numElement;     /* number of elements pointed to by one pointer */
     int numPointer;     /* number of pointers in the array of pointer */
     int elementSz;
@@ -1220,7 +1220,7 @@ extendPackedOutput( packedOutput_t *packedOutput, int extLen, void **outPtr ) {
 
 int
 packItem( packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
-          const packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
+          const packInstruct_t *myPackTable, int packFlag, irodsProt_t irodsProt ) {
     int status;
 
     status = resolvePackedItem( myPackedItem, inPtr, PACK_OPR );
@@ -1760,7 +1760,7 @@ packDouble( void **inPtr, packedOutput_t *packedOutput, int numElement,
 
 int
 packChildStruct( void **inPtr, packedOutput_t *packedOutput,
-                 packItem_t *myPackedItem, const packInstructArray_t *myPackTable, int numElement,
+                 packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
                  int packFlag, irodsProt_t irodsProt, char *packInstructInp ) {
     const void *packInstruct;
     int i = 0, status = 0;
@@ -1852,7 +1852,7 @@ freePackedItem( packItem_t *packItemHead ) {
 
 int
 unpackItem( packItem_t *myPackedItem, void **inPtr,
-            packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+            packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
             irodsProt_t irodsProt ) {
     int status;
 
@@ -1875,7 +1875,7 @@ unpackItem( packItem_t *myPackedItem, void **inPtr,
 
 int
 unpackNonpointerItem( packItem_t *myPackedItem, void **inPtr,
-                      packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+                      packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
                       irodsProt_t irodsProt ) {
     int numElement;
     int elementSz;
@@ -2660,7 +2660,7 @@ unpackXmlDoubleToOutPtr( void **inPtr, void **outPtr, int numElement,
 
 int
 unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
-                   packItem_t *myPackedItem, const packInstructArray_t *myPackTable, int numElement,
+                   packItem_t *myPackedItem, const packInstruct_t *myPackTable, int numElement,
                    irodsProt_t irodsProt, char *packInstructInp ) {
     const void *packInstruct = NULL;
     int i = 0, status = 0;
@@ -2769,7 +2769,7 @@ unpackChildStruct( void **inPtr, packedOutput_t *unpackedOutput,
 
 int
 unpackPointerItem( packItem_t *myPackedItem, void **inPtr,
-                   packedOutput_t *unpackedOutput, const packInstructArray_t *myPackTable,
+                   packedOutput_t *unpackedOutput, const packInstruct_t *myPackTable,
                    irodsProt_t irodsProt ) {
     int numElement = 0, numPointer = 0;
     int elementSz = 0;

@@ -13,9 +13,9 @@
 /* need to include a header for for each API */
 #include "apiHeaderAll.h"
 
-packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
+const char* MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
-packInstructArray_t api_pack_table_init[] = {
+packInstruct_t api_pack_table_init[] = {
     {"DataObjInp_PI", DataObjInp_PI, irods::clearInStruct_noop},
     {"OpenedDataObjInp_PI", OpenedDataObjInp_PI, irods::clearInStruct_noop},
     {"DataCopyInp_PI", DataCopyInp_PI, irods::clearInStruct_noop},

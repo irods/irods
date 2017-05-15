@@ -11,8 +11,8 @@
 #include "msParam.h"
 #include "guiProgressCallback.h"
 
-extern packConstantArray_t PackConstantTable[];
-extern const packInstructArray_t RodsPackTable[];
+extern packConstant_t PackConstantTable[];
+extern const packInstruct_t RodsPackTable[];
 extern int ProcessType;
 extern packType_t packTypeTable[];
 extern int NumOfPackTypes;

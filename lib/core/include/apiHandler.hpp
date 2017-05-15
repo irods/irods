@@ -39,12 +39,12 @@ namespace irods {
                                         * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
                                         * LOCAL_PRIV_USER_AUTH */
         int            proxyUserAuth;                    /* same for proxyUser */
-        packInstruct_t inPackInstruct; /* the packing instruct for the input
+        const char*    inPackInstruct; /* the packing instruct for the input
                                         * struct */
         int inBsFlag;                  /* input bytes stream flag. 0 ==> no input
                                         * byte stream. 1 ==> we have an input byte
                                         * stream */
-        packInstruct_t outPackInstruct;/* the packing instruction for the
+        const char*    outPackInstruct;/* the packing instruction for the
                                         * output struct */
         int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
                                         * stream. 1 ==> we have an output byte stream
@@ -229,12 +229,12 @@ namespace irods {
                                         * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
                                         * LOCAL_PRIV_USER_AUTH */
             int            proxyUserAuth;                    /* same for proxyUser */
-            packInstruct_t inPackInstruct; /* the packing instruct for the input
+            const char*    inPackInstruct; /* the packing instruct for the input
                                         * struct */
             int inBsFlag;                  /* input bytes stream flag. 0 ==> no input
                                         * byte stream. 1 ==> we have an input byte
                                         * stream */
-            packInstruct_t outPackInstruct;/* the packing instruction for the
+            const char*    outPackInstruct;/* the packing instruction for the
                                         * output struct */
             int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
                                         * stream. 1 ==> we have an output byte stream
