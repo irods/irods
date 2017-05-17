@@ -14,6 +14,8 @@
 #include "modAVUMetadata.h"
 #include "sockComm.h"
 #include "reFuncDefs.hpp"
+#include "sslSockComm.h"
+#include "irods_client_server_negotiation.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -667,11 +669,15 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
     }
 
     /* read 4 bytes */
-    status = myRead( rsComm->sock, &myBuf, sizeof( myBuf ), NULL,
-                     NULL );
-    if ( status < 0 ) {
+    if (irods::CS_NEG_USE_SSL == rsComm->negotiation_results) {
+        status = sslRead(rsComm->sock, static_cast<void*>(&myBuf), 4, NULL, NULL, rsComm->ssl);
+    } else {
+        status = myRead(rsComm->sock, static_cast<void*>(&myBuf), 4, NULL, NULL );
+    }
+
+    if (status != 0) {
         rodsLogError( LOG_ERROR, status,
-                      "svrSendCollOprStat: read handshake failed. status = %d", status );
+                      "_svrSendCollOprStat: read handshake failed. status = %d", status );
     }
     return ntohl( myBuf );
 }
@@ -688,7 +694,12 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
         }
         else {
             int myBuf = htonl( status );
-            myWrite( conn->sock, ( void * ) &myBuf, 4, NULL );
+
+            if (irods::CS_NEG_USE_SSL == conn->negotiation_results) {
+                status = sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl);
+            } else {
+                status = myWrite(conn->sock, static_cast<void*>(&myBuf), 4, NULL );
+            }
             break;
         }
     }

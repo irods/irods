@@ -15,6 +15,8 @@
 #include "rcMisc.h"
 #include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
+#include "sslSockComm.h"
+#include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -431,14 +433,14 @@ cliGetCollOprStat( rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
 
 int
 _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
-    int myBuf;
-    int status;
+    int myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
+    // the return values from the *Write functions are purposefully not used, propagating non-zero breaks the way this works
+    if (irods::CS_NEG_USE_SSL == conn->negotiation_results) {
+        sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl);
+    } else {
+        myWrite(conn->sock, static_cast<void*>(&myBuf), 4, NULL );
+    }
 
-    myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
-    status = myWrite( conn->sock, ( void * ) &myBuf, 4, NULL );
-    status = readAndProcApiReply( conn, conn->apiInx,
-                                  ( void ** ) collOprStat, NULL );
-
+    const int status = readAndProcApiReply( conn, conn->apiInx, ( void ** ) collOprStat, NULL );
     return status;
 }
-
