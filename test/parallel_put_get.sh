@@ -16,13 +16,17 @@
 ###############################
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+TIMESTAMPISH=$( date +%s )${RANDOM}
+RELATIVEPATH="scratch_for_parallelputget/${TIMESTAMPISH}"
+
 
 FILESIZE_IN_MB=40
 FILES_TO_CREATE=256
-FILES_DIR=files.dir
-BENCHMARKS_COLL=benchmarks.coll
-TARGET_RESOURCE=demoResc
+FILES_DIR="${RELATIVEPATH}/files.dir"
+BENCHMARKS_COLL="${RELATIVEPATH}/benchmarks.coll"
+TARGET_RESOURCE="demoResc"
 JOBS=30
+
 
 FILES_FULLPATH=${SCRIPTPATH}/${FILES_DIR}
 BENCHMARKS_FULLPATH=${SCRIPTPATH}/${BENCHMARKS_COLL}
