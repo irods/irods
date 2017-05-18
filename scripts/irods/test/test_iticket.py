@@ -293,3 +293,11 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1], 'STDOUT_SINGLELINE', filename_3)
         self.user.assert_icommand(['ils', '-r', self.admin.session_collection + '/' + collname_1, '-t', ticket], 'STDOUT_SINGLELINE', filename_3)
 
+    def test_ticket_create_ticket_with_string_as_number__issue_3553(self):
+        filename = '3553_test_file'
+        lib.make_file(filename, 1024, 'arbitrary')
+        ticketname = '23456'
+        self.admin.assert_icommand('iput '+filename)
+        self.admin.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
+        self.user.assert_icommand('iput '+filename)
+        self.user.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
