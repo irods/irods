@@ -696,9 +696,9 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
             int myBuf = htonl( status );
 
             if (irods::CS_NEG_USE_SSL == conn->negotiation_results) {
-                status = sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl);
+                sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl);
             } else {
-                status = myWrite(conn->sock, static_cast<void*>(&myBuf), 4, NULL );
+                myWrite(conn->sock, static_cast<void*>(&myBuf), 4, NULL );
             }
             break;
         }
