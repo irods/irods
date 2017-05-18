@@ -15,6 +15,8 @@
 #include "rcMisc.h"
 #include "sockComm.h"
 #include "sockCommNetworkInterface.hpp"
+#include "sslSockComm.h"
+#include "irods_client_server_negotiation.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -438,12 +440,19 @@ cliGetCollOprStat( rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
 int
 _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
     int myBuf = htonl( SYS_CLI_TO_SVR_COLL_STAT_REPLY );
-    if (int bytes_left = 4 - myWrite( conn->sock, ( void * ) &myBuf, 4, NULL )) {
-        rodsLogError( LOG_ERROR, SYS_SOCK_WRITE_ERR, "Write exited with %d bytes still left to write in %s.", bytes_left, __PRETTY_FUNCTION__ );
-        return SYS_SOCK_WRITE_ERR;
+    if (irods::CS_NEG_USE_SSL == conn->negotiation_results) {
+        if (int bytes_left = 4 - sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl)) {
+            rodsLogError( LOG_ERROR, SYS_SOCK_WRITE_ERR, "sslWrite exited with %d bytes still left to write in %s.", bytes_left, __PRETTY_FUNCTION__ );
+            return SYS_SOCK_WRITE_ERR;
+        }
+    } else {
+        if (int bytes_left = 4 - myWrite( conn->sock, ( void * ) &myBuf, 4, NULL )) {
+            rodsLogError( LOG_ERROR, SYS_SOCK_WRITE_ERR, "myWrite exited with %d bytes still left to write in %s.", bytes_left, __PRETTY_FUNCTION__ );
+            return SYS_SOCK_WRITE_ERR;
+        }
     }
     return readAndProcApiReply( conn, conn->apiInx,
-                                  ( void ** ) collOprStat, NULL );
+                                ( void ** ) collOprStat, NULL );
 }
 
 int
