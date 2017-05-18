@@ -14594,6 +14594,12 @@ irods::error db_mod_ticket_op(
 
     /* create */
     if ( strcmp( _op_name, "create" ) == 0 ) {
+
+        if (isInteger(const_cast<char*>(_ticket_string))) {
+            rodsLog( LOG_NOTICE, "chlModTicket create ticket, string cannot be a number [%s]", _ticket_string );
+            return ERROR( CAT_TICKET_INVALID, "ticket string cannot be a number" );
+        }
+
         status = splitPathByKey( _arg4,
                                  logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
