@@ -266,3 +266,12 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj, 'STDERR')
         self.admin.assert_icommand('iticket mod ' + ticket + ' write-byte 0')
         self.user.assert_icommand('iput -ft ' + ticket + ' ' + filepath + ' ' + data_obj)
+
+    def test_ticket_create_ticket_with_string_as_number__issue_3553(self):
+        filename = '3553_test_file'
+        lib.make_file(filename, 1024, 'arbitrary')
+        ticketname = '23456'
+        self.admin.assert_icommand('iput '+filename)
+        self.admin.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
+        self.user.assert_icommand('iput '+filename)
+        self.user.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')

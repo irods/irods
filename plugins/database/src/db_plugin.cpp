@@ -957,14 +957,14 @@ _rescHasParentOrChild( char* rescId ) {
 
 }
 
-bool _userInRUserAuth( char* userName, char* zoneName ) { 
+bool _userInRUserAuth( char* userName, char* zoneName ) {
     int status;
     rodsLong_t iVal;
     irods::sql_logger logger( "_userInRUserAuth", logSQL );
 
     logger.log();
     {
-        std::vector<std::string> bindVars; 
+        std::vector<std::string> bindVars;
         bindVars.push_back( userName );
         bindVars.push_back( zoneName );
         status = cmlGetIntegerValueFromSql(
@@ -972,7 +972,7 @@ bool _userInRUserAuth( char* userName, char* zoneName ) {
                     &iVal, bindVars, &icss );
     }
     if ( status != 0 ) {
-        if ( status != CAT_NO_ROWS_FOUND ) { 
+        if ( status != CAT_NO_ROWS_FOUND ) {
             _rollback( "_userInRUserAuth" );
         }
         return false;
@@ -8116,7 +8116,7 @@ checkLevel:
         char form3[] = "update R_USER_PASSWORD set rcat_password=?, modify_ts=? where user_id=?";
         char form4[] = "insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
         char form5a[] = "insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
-        char form5b[] = "update R_USER_AUTH set user_auth_name=? where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)"; 
+        char form5b[] = "update R_USER_AUTH set user_auth_name=? where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
         char form6[] = "delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
 #if MY_ICAT
         char form7[] = "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
@@ -8236,7 +8236,7 @@ checkLevel:
                 cllBindVars[cllBindVarCount++] = _new_value;
                 cllBindVars[cllBindVarCount++] = myTime;
             } else {
-                rstrcpy( tSQL, form5b, MAX_SQL_SIZE ); 
+                rstrcpy( tSQL, form5b, MAX_SQL_SIZE );
                 cllBindVars[cllBindVarCount++] = _new_value;
                 cllBindVars[cllBindVarCount++] = userName2;
                 cllBindVars[cllBindVarCount++] = zoneName;
@@ -15121,6 +15121,12 @@ checkLevel:
 
         /* create */
         if ( strcmp( _op_name, "create" ) == 0 ) {
+
+            if (isInteger(const_cast<char*>(_ticket_string))) {
+                rodsLog( LOG_NOTICE, "chlModTicket create ticket, string cannot be a number [%s]", _ticket_string );
+                return ERROR( CAT_TICKET_INVALID, "ticket string cannot be a number" );
+            }
+
             status = splitPathByKey( _arg4,
                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
             if ( strlen( logicalParentDirName ) == 0 ) {
