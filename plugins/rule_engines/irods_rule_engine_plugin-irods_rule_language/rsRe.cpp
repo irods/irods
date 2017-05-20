@@ -12,16 +12,11 @@
 #include "irods_re_plugin.hpp"
 #include "irods_re_structs.hpp"
 
-static char ruleSetInitialized[NAME_LEN] = "";
-
 /* initialize the Rule Engine if it hasn't been done yet */
 int
 initRuleEngine( const char* inst_name, int processType, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char* fnmSet ) {
     int status;
     status = initRuleStruct( inst_name, processType, svrComm, ruleSet, dvmSet, fnmSet );
-    if ( status == 0 ) {
-        rstrcpy( ruleSetInitialized, ruleSet, NAME_LEN );
-    }
 
     return status;
 }
@@ -50,7 +45,6 @@ clearCoreRule() {
         return i;
     }
     i = clearFuncMapStruct( &coreRuleFuncMapDef );
-    bzero( ruleSetInitialized, sizeof( ruleSetInitialized ) );
 
     if ( i < 0 ) {
         return i;
