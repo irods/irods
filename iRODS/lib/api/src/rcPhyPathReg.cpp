@@ -35,10 +35,10 @@
  * "myRescource" resource:
  * \n dataObjInp_t phyPathRegInp;
  * \n bzero (&phyPathRegInp, sizeof (phyPathRegInp));
- * \n rstrcpy (dataObjInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
- * \n addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, "/data/john/myfile");
- * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
- * \n status = rcPhyPathReg (conn, &dataObjInp);
+ * \n rstrcpy (phyPathRegInp.objPath, "/myZone/home/john/myfile", MAX_NAME_LEN);
+ * \n addKeyVal (&phyPathRegInp.condInput, FILE_PATH_KW, "/data/john/myfile");
+ * \n addKeyVal (&phyPathRegInp.condInput, DEST_RESC_NAME_KW, "myRescource");
+ * \n status = rcPhyPathReg (conn, &phyPathRegInp);
  * \n if (status < 0) {
  * \n .... handle the error
  * \n }
