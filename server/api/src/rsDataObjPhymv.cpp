@@ -26,7 +26,12 @@
 
 irods::error test_source_replica_for_write_permissions(
     rsComm_t*      _comm,
+    std::string    _resc_hier,
     dataObjInfo_t* _data_obj_info ) {
+    
+    while(_data_obj_info != NULL && _data_obj_info->rescHier != _resc_hier) {
+        _data_obj_info = _data_obj_info->next;
+    }
 	if( !_comm || !_data_obj_info ) {
         return ERROR(
 		           SYS_INTERNAL_NULL_INPUT_ERR,
@@ -301,6 +306,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     irods::error ret = test_source_replica_for_write_permissions(
 	                       rsComm,
+                               src_hier,
 	                       dataObjInfoHead );
 	if( !ret.ok() ) {
         irods::log( PASS( ret ) );
