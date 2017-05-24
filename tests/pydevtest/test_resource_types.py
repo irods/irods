@@ -3834,6 +3834,32 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         self.admin.assert_icommand_fail(['ils', '-l'], 'STDOUT_SINGLELINE', str(large_file_size))
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Reads server log')
+    def test_rebalance_logging_replica_update__3463(self):
+        filename = 'test_rebalance_logging_replica_update__3463'
+        file_size = 400
+        lib.make_file(filename, file_size)
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['iput', '-f', '-n', '0', filename])
+        initial_log_size = lib.get_log_size('server')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        data_id = lib.get_data_id(self.admin, self.admin.session_collection, filename)
+        self.assertEquals(2, lib.count_occurrences_of_string_in_log('server', 'updating a replica for data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        os.unlink(filename)
+
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, 'Reads server log')
+    def test_rebalance_logging_replica_creation__3463(self):
+        filename = 'test_rebalance_logging_replica_creation__3463'
+        file_size = 400
+        lib.make_file(filename, file_size)
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename])
+        initial_log_size = lib.get_log_size('server')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        data_id = lib.get_data_id(self.admin, self.admin.session_collection, filename)
+        self.assertEquals(2, lib.count_occurrences_of_string_in_log('server', 'replicating data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        os.unlink(filename)
+
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):

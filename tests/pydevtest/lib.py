@@ -620,6 +620,11 @@ def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_lis
             super(SessionsMixin, self).tearDown()
     return SessionsMixin
 
+def get_data_id(session, collection_name, data_name):
+    _, out, _ = session.assert_icommand(['iquest', "select DATA_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(collection_name, data_name)], 'STDOUT_SINGLELINE', 'DATA_ID')
+    lines = out.split()
+    assert len(lines) == 4, lines # make sure genquery only returned one result
+    return int(lines[2])
 
 class IrodsSession(object):
     def __init__(self, environment_file_contents, password, manage_irods_data):
