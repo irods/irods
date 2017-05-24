@@ -442,14 +442,22 @@ def pep_resource_resolve_hierarchy_post(rule_args, callback, rei):
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_re_serialization'] = '''
 def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
-    callback.writeLine('serverLog', 'pep_resource_resolve_hierarchy_pre - [{}] [{}] [{}] [{}] [{}] [{}] [{}]'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3], rule_args[4], rule_args[5], rule_args[6]))
+    callback.writeLine('serverLog', 'pep_resource_resolve_hierarchy_pre - [{0}] [{1}] [{2}] [{3}] [{4}] [{5}] [{6}]'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3], rule_args[4], rule_args[5], rule_args[6]))
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_api_plugin'] = '''
 def pep_api_rs_hello_world_pre(rule_args, callback, rei):
-    callback.writeLine('serverLog', 'pep_api_rs_hello_world_pre - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
+    hello_inp = rule_args[2]
+    hello_inp_string = ', '.join([k + '=' + hello_inp[k] for k in hello_inp])
+    hello_out = rule_args[3]
+    hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
+    callback.writeLine('serverLog', 'pep_api_rs_hello_world_pre - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
 
 def pep_api_rs_hello_world_post(rule_args, callback, rei):
-    callback.writeLine('serverLog', 'pep_api_rs_hello_world_post - {} {} {}, {}'.format(rule_args[0], rule_args[1], rule_args[2], rule_args[3]))
+    hello_inp = rule_args[2]
+    hello_inp_string = ', '.join([k + '=' + hello_inp[k] for k in hello_inp])
+    hello_out = rule_args[3]
+    hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
+    callback.writeLine('serverLog', 'pep_api_rs_hello_world_post - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
 '''
 # SKIP TEST test_rule_engine_2242 FOR PYTHON RULE LANGUAGE
 #   Python REP can't update session vars
