@@ -98,6 +98,9 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
         rodsLogError( LOG_ERROR, status,
                       "chksumDataObjUtil: rcDataObjChksum error for %s",
                       dataObjInp->objPath );
+        printErrorStack(conn->rError);
+        freeRError(conn->rError);
+        conn->rError = NULL;
         return status;
     }
     else {
@@ -258,4 +261,3 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
         return status;
     }
 }
-
