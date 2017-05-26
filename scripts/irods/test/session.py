@@ -60,6 +60,14 @@ def mkgroup_and_add_users(group_name, usernames):
             admin_session.assert_icommand(
                 ['iadmin', 'atg', group_name, username])
 
+def get_data_id(session, collection_name, data_name):
+    rc, out, err = session.assert_icommand(['iquest', "select DATA_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(collection_name, data_name)], 'STDOUT_SINGLELINE', 'DATA_ID')
+    assert rc == 0, rc
+    assert err == '', err
+    lines = out.split()
+    assert len(lines) == 4, lines # make sure genquery only returned one result
+    return int(lines[2])
+
 def make_sessions_mixin(rodsadmin_name_password_list, rodsuser_name_password_list):
     class SessionsMixin(object):
         def setUp(self):
@@ -313,4 +321,3 @@ def open_and_load_pre410_env_file(filename):
                 irods_env[json_env_map[tokens[0]]] = tokens[1].strip("'")
 
     return irods_env
-
