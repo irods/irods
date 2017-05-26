@@ -202,7 +202,7 @@ def get_database_connection(irods_config):
         else:
             message = 'pypyodbc encountered an error connecting to the database:'
         six.reraise(IrodsError,
-                IrodsError('%s\n%s' % (message, e)),
+                IrodsError('%s\n%s' % (message, str(e))),
             sys.exc_info()[2])
 
 def execute_sql_statement(cursor, statement, *params, **kwargs):
@@ -213,9 +213,9 @@ def execute_sql_statement(cursor, statement, *params, **kwargs):
             pprint.pformat(params) if log_params else '<hidden>')
     try:
         return cursor.execute(statement, params)
-    except pypyodbc.Error:
+    except pypyodbc.Error as e:
         six.reraise(IrodsError,
-            IrodsError('pypyodbc encountered an error executing the query'),
+                IrodsError('pypyodbc encountered an error executing the statement:\n\t%s\n%s' % (statement, str(e))),
             sys.exc_info()[2])
 
 def execute_sql_file(filepath, cursor, by_line=False):
@@ -229,18 +229,18 @@ def execute_sql_file(filepath, cursor, by_line=False):
                 l.debug('Executing SQL statement:\n%s', line)
                 try:
                     cursor.execute(line)
-                except IrodsError:
+                except IrodsError as e:
                     six.reraise(IrodsError,
-                        IrodsError('pypyodbc encountered an error executing '
-                            'the statement:\n\t%s' % (line)),
+                        IrodsError('Error encountered while executing '
+                            'the statement:\n\t%s\n%s' % (line, str(e))),
                         sys.exc_info()[2])
         else:
             try:
                 cursor.execute(f.read())
-            except IrodsError:
+            except IrodsError as e:
                 six.reraise(IrodsError,
-                    IrodsError('pypyodbc encountered an error executing '
-                        'the sql in %s.' % (filepath)),
+                    IrodsError('Error encountered while executing '
+                        'the sql in %s:\n%s' % (filepath, str(e))),
                     sys.exc_info()[2])
 
 def list_database_tables(cursor):
@@ -261,10 +261,10 @@ def get_schema_version_in_database(cursor):
     query = "select option_value from R_GRID_CONFIGURATION where namespace='database' and option_name='schema_version';"
     try:
         rows = execute_sql_statement(cursor, query).fetchall()
-    except IrodsError:
+    except IrodsError as e:
         six.reraise(IrodsError,
-            IrodsError('pypyodbc encountered an error executing '
-                'the query:\n\t%s' % (query)),
+            IrodsError('Error encountered while executing '
+                'the query:\n\t%s\n%s' % (query, str(e))),
             sys.exc_info()[2])
     if len(rows) == 0:
         raise IrodsError('No schema version present, unable to upgrade. '
@@ -325,9 +325,9 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
         for sql_file in sql_files:
             try:
                 execute_sql_file(sql_file, cursor, by_line=True)
-            except IrodsError:
+            except IrodsError as e:
                 six.reraise(IrodsError,
-                        IrodsError('Database setup failed while running %s' % (sql_file)),
+                        IrodsError('Database setup failed while running %s:\n%s' % (sql_file, str(e))),
                         sys.exc_info()[2])
 
 def setup_database_values(irods_config, cursor=None, default_resource_directory=None):
