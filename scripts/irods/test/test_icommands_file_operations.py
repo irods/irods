@@ -788,3 +788,20 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.assert_icommand(['irm', '-rf', 'subdir'])
             os.unlink(badpath)
         os.unlink(localpath)
+
+    def test_ichksum_replica_reporting__3499(self):
+        initial_file_contents = 'a'
+        filename = 'test_ichksum_replica_reporting__3499'
+        with open(filename, 'wb') as f:
+            f.write(initial_file_contents)
+        self.admin.assert_icommand(['iput', '-K', filename])
+        vault_session_path = self.admin.get_vault_session_path()
+        final_file_contents = 'b'
+        with open(os.path.join(vault_session_path, filename), 'wb') as f:
+            f.write(final_file_contents)
+        out, err, rc = self.admin.run_icommand(['ichksum', '-KarR', 'demoResc', self.admin.session_collection])
+        self.assertNotEqual(rc, 0)
+        self.assertTrue(filename in out, out)
+        self.assertTrue('replNum [0]' in out, out)
+        self.assertTrue('USER_CHKSUM_MISMATCH' in err, err)
+        os.unlink(filename)
