@@ -758,3 +758,16 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
         self.assertTrue('replNum [0]' in out, out)
         self.assertTrue('USER_CHKSUM_MISMATCH' in err, err)
         os.unlink(filename)
+
+    def test_irm_colloprstat__3572(self):
+        collection_to_delete = 'collection_to_delete'
+        self.admin.assert_icommand(['imkdir', collection_to_delete])
+        filename = 'test_irm_colloprstat__3572'
+        lib.make_file(filename, 50)
+        for i in range(10):
+            self.admin.assert_icommand(['iput', filename, '{0}/file_{1}'.format(collection_to_delete, str(i))])
+
+        initial_size_of_server_log = lib.get_log_size('server')
+        self.admin.assert_icommand(['irm', '-rf', collection_to_delete])
+        self.assertEqual(0, lib.count_occurrences_of_string_in_log('server', 'ERROR', start_index=initial_size_of_server_log))
+        os.unlink(filename)
