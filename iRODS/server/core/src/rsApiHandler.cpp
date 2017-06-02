@@ -675,7 +675,7 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
         status = myRead(rsComm->sock, static_cast<void*>(&myBuf), 4, NULL, NULL );
     }
 
-    if (status != 0) {
+    if (status < 0) {
         rodsLogError( LOG_ERROR, status,
                       "_svrSendCollOprStat: read handshake failed. status = %d", status );
     }
