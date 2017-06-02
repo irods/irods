@@ -506,40 +506,40 @@ def acRescQuotaPolicy(rule_args, callback, rei):
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
     out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
-    if not out_dict[PYTHON_RE_RET_STATUS]:
-        callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
+    if not out_dict['status']:
+        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiCollRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
     out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
-    if not out_dict[PYTHON_RE_RET_STATUS]:
-        callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
+    if not out_dict['status']:
+        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
 INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjUnlink__2983'] = '''def test_msiDataObjUnlink(rule_args, callback, rei):
     out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
-    if not out_dict[PYTHON_RE_RET_STATUS]:
-        callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
+    if not out_dict['status']:
+        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
 INPUT *SourceFile="{logical_path}"
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRepl_as_admin__2988'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
     out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
-    if not out_dict[PYTHON_RE_RET_STATUS]:
-        callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
+    if not out_dict['status']:
+        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
 
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def test_msisync_to_archive(rule_args, callback, rei):
     out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
-    if not out_dict[PYTHON_RE_RET_STATUS]:
-        callback.writeLine('stdout', 'ERROR: ' + str(out_dict[PYTHON_RE_RET_CODE]))
+    if not out_dict['status']:
+        callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
     
 INPUT *LogicalPath="{logical_path}", *PhysicalPath="{physical_path}",*RescHier="{resc_hier}"
 OUTPUT ruleExecOut
@@ -574,7 +574,7 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'] = {}
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
     out_dict = callback.msiDataObjOpen("{target_obj}", 0)
-    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][1]
+    file_desc = out_dict['arguments'][1]
 
     out_dict = callback.msiDataObjClose(file_desc, 0)
 
@@ -583,7 +583,7 @@ OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
     out_dict = callback.msiDataObjOpen("{target_obj}", 0)
-    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][1]
+    file_desc = out_dict['arguments'][1]
 
     out_dict = callback.msiDataObjClose(file_desc, 0)
 
@@ -609,7 +609,7 @@ def acPreConnect(rule_args, callback, rei):
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def test_msiDataObjWrite__2795(rule_args, callback, rei):
     out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/test_file.txt', 'null', 0)
-    file_desc = out_dict[PYTHON_RE_RET_ARGUMENTS][2]
+    file_desc = out_dict['arguments'][2]
 
     out_dict = callback.msiDataObjWrite(file_desc, 'this_is_a_test_string', 0)
 
@@ -637,13 +637,13 @@ def replicateMultiple(dest_list, callback, rei):
     for dest in dest_list:
         callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
         out_dict = callback.msiSysReplDataObj(dest, 'null')
-        if not out_dict[PYTHON_RE_RET_CODE] == 0:
-            if out_dict[PYTHON_RE_RET_CODE] == -808000:
+        if not out_dict['code'] == 0:
+            if out_dict['code'] == -808000:
                 callback.writeLine('serverLog', obj_path + ' cannot be found')
                 return 0
             else:
-                callback.writeLine('serverLog', 'ERROR: ' + out_dict[PYTHON_RE_RET_CODE])
-                return int(out_dict[PYTHON_RE_RET_CODE])
+                callback.writeLine('serverLog', 'ERROR: ' + out_dict['code'])
+                return int(out_dict['code'])
 def acPostProcForPut(rule_args, callback, rei):
     replicateMultiple(["r1","r2"], callback, rei)
 '''
