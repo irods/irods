@@ -641,6 +641,10 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
 
     if ( status >= 0 && resc_hier_attr_pos >= 0 ) {
+        // restore COL_D_RESC_HIER in select index
+        genQueryInp->selectInp.inx[resc_hier_attr_pos] = COL_D_RESC_HIER;
+
+        // replace resc ids with resc hier strings in output
         irods::error err = add_resc_hier_name_to_query_out( *genQueryOut, resc_hier_attr_pos );
         if ( !err.ok() ) {
             irods::log( PASS( err ) );
