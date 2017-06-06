@@ -102,6 +102,13 @@ pep_api_hello_world_post(*INST, *OUT, *HELLO_IN, *HELLO_OUT) {
     writeLine("serverLog", "pep_api_hello_world_post - *INST *OUT *HELLO_IN, *HELLO_OUT");
 }   
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_out_string'] = '''
+test(*OUT) { *OUT = "this_is_the_out_string"; }
+acPostProcForPut {
+    test(*out_string);
+    writeLine("serverLog", "out_string = *out_string");
+}
+'''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_rule_engine_2242_1'] = '''
 test {  
     $userNameClient = "foobar";
@@ -458,6 +465,12 @@ def pep_api_hello_world_post(rule_args, callback, rei):
     hello_out = rule_args[3]
     hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
     callback.writeLine('serverLog', 'pep_api_hello_world_post - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
+'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_out_string'] = '''
+def test(rule_args, callback, rei):
+    rule_args[0] = 'this_is_the_out_string'
+def acPostProcForPut(rule_args, callback, rei):
+    callback.writeLine("serverLog", callback.test('')['arguments'][0]);
 '''
 # SKIP TEST test_rule_engine_2242 FOR PYTHON RULE LANGUAGE
 #   Python REP can't update session vars
