@@ -228,6 +228,86 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
 
             self.admin.assert_icommand('irule -F ' + f.name, 'STDOUT_SINGLELINE', 'AFTER arg1=abc arg2=def arg3=ghi')
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'Skip for non-rule-language REP')
+    def test_rulebase_update_sixty_four_chars__3560(self):
+        irods_config = IrodsConfig()
+
+        server_config_filename = irods_config.server_config_path
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # inject several new rules into the native rule engine
+        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = [
+            "rulefile1", "rulefile2", "rulefile3", "rulefile4", "rulefile5", "rulefile6", "rulefile7","rulefile8", "core"]
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+        with lib.file_backed_up(irods_config.server_config_path):
+            rulefile1 = os.path.join(irods_config.core_re_directory, 'rulefile1.re')
+            rulefile2 = os.path.join(irods_config.core_re_directory, 'rulefile2.re')
+            rulefile3 = os.path.join(irods_config.core_re_directory, 'rulefile3.re')
+            rulefile4 = os.path.join(irods_config.core_re_directory, 'rulefile4.re')
+            rulefile5 = os.path.join(irods_config.core_re_directory, 'rulefile5.re')
+            rulefile6 = os.path.join(irods_config.core_re_directory, 'rulefile6.re')
+            rulefile7 = os.path.join(irods_config.core_re_directory, 'rulefile7.re')
+            rulefile8 = os.path.join(irods_config.core_re_directory, 'rulefile8.re')
+
+            # write new rule files to config dir
+            with open(rulefile1, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile2, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile3, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile4, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile5, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile6, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile7, 'wt') as f:
+                print('dummyRule{ }', file=f, end='')
+
+            with open(rulefile8, 'wt') as f:
+                print('acPostProcForPut{ writeLine( "serverLog", "TEST_STRING_TO_FIND_DEFECT_3560" ); }', file=f, end='')
+
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            IrodsController().restart()
+            # checkpoint log to know where to look for the string
+            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
+
+            filename = "defect3560.txt"
+            filepath = lib.create_local_testfile(filename)
+            put_resource = self.testresc
+            self.user0.assert_icommand("iput -R {put_resource} {filename}".format(**locals()), "EMPTY")
+
+            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path,
+                                                          "TEST_STRING_TO_FIND_DEFECT_3560", start_index=initial_log_size)
+
+        # cleanup
+        IrodsController().restart()
+        os.unlink(rulefile1)
+        os.unlink(rulefile2)
+        os.unlink(rulefile3)
+        os.unlink(rulefile4)
+        os.unlink(rulefile5)
+        os.unlink(rulefile6)
+        os.unlink(rulefile7)
+        os.unlink(rulefile8)
+ 
+
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
@@ -351,84 +431,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         return '{pep_name} {{ {write_statements};{rule_body} }}'.format(**locals())
 
-    def test_rulebase_update_sixty_four_chars__3560(self):
-        irods_config = IrodsConfig()
-
-        server_config_filename = irods_config.server_config_path
-
-        # load server_config.json to inject a new rule base
-        with open(server_config_filename) as f:
-            svr_cfg = json.load(f)
-
-        # inject several new rules into the native rule engine
-        svr_cfg['plugin_configuration']['rule_engines'][0]['plugin_specific_configuration']['re_rulebase_set'] = [
-            "rulefile1", "rulefile2", "rulefile3", "rulefile4", "rulefile5", "rulefile6", "rulefile7","rulefile8", "core"]
-
-        # dump to a string to repave the existing server_config.json
-        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
-
-        with lib.file_backed_up(irods_config.server_config_path):
-            rulefile1 = os.path.join(irods_config.core_re_directory, 'rulefile1.re')
-            rulefile2 = os.path.join(irods_config.core_re_directory, 'rulefile2.re')
-            rulefile3 = os.path.join(irods_config.core_re_directory, 'rulefile3.re')
-            rulefile4 = os.path.join(irods_config.core_re_directory, 'rulefile4.re')
-            rulefile5 = os.path.join(irods_config.core_re_directory, 'rulefile5.re')
-            rulefile6 = os.path.join(irods_config.core_re_directory, 'rulefile6.re')
-            rulefile7 = os.path.join(irods_config.core_re_directory, 'rulefile7.re')
-            rulefile8 = os.path.join(irods_config.core_re_directory, 'rulefile8.re')
-
-            # write new rule files to config dir
-            with open(rulefile1, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile2, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile3, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile4, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile5, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile6, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile7, 'wt') as f:
-                print('dummyRule{ }', file=f, end='')
-
-            with open(rulefile8, 'wt') as f:
-                print('acPostProcForPut{ writeLine( "serverLog", "TEST_STRING_TO_FIND_DEFECT_3560" ); }', file=f, end='')
-
-            # repave the existing server_config.json
-            with open(server_config_filename, 'w') as f:
-                f.write(new_server_config)
-
-            IrodsController().restart()
-            # checkpoint log to know where to look for the string
-            initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
-
-            filename = "defect3560.txt"
-            filepath = lib.create_local_testfile(filename)
-            put_resource = self.testresc
-            self.user0.assert_icommand("iput -R {put_resource} {filename}".format(**locals()), "EMPTY")
-
-            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path,
-                                                          "TEST_STRING_TO_FIND_DEFECT_3560", start_index=initial_log_size)
-
-        # cleanup
-        IrodsController().restart()
-        os.unlink(rulefile1)
-        os.unlink(rulefile2)
-        os.unlink(rulefile3)
-        os.unlink(rulefile4)
-        os.unlink(rulefile5)
-        os.unlink(rulefile6)
-        os.unlink(rulefile7)
-        os.unlink(rulefile8)
-        
+       
     def make_pep_rule_python(self, pep_name, rule_body):
         # prepare rule
         # rule will write PEP name as well as
