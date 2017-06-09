@@ -22,6 +22,12 @@ from ..controller import IrodsController
 from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
 
+def delayAssert(a, interval=1, maxrep=100):
+            for i in range(maxrep):
+                time.sleep(interval)  # wait for test to fire
+                if a():
+                    break
+            assert a()
 
 class Test_Rulebase(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -148,8 +154,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
-            time.sleep(35)  # wait for test to fire
-            assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size)
+
+            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size))
 
             # repave rule with new string
             os.unlink(test_re)
@@ -159,8 +165,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
-            time.sleep(35)  # wait for test to fire
-            assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size)
+            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size))
 
         # cleanup
         IrodsController().restart()
