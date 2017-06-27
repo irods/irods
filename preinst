@@ -1,32 +1,39 @@
 # determine whether this is an upgrade
 if [ "$1" -eq "$1" ] 2>/dev/null ; then
-  # integer, therefore rpm
-  if [ $1 -gt 1 ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
+    # integer, therefore rpm
+    if [ $1 -gt 1 ] ; then
+        PACKAGEUPGRADE="true"
+    else
+        PACKAGEUPGRADE="false"
+    fi
 else
-  # string, therefore deb
-  if [ "$1" = "upgrade" ] ; then
-    PACKAGEUPGRADE="true"
-  else
-    PACKAGEUPGRADE="false"
-  fi
+    # string, therefore deb
+    if [ "$1" = "upgrade" ] ; then
+        PACKAGEUPGRADE="true"
+    else
+        PACKAGEUPGRADE="false"
+    fi
 fi
 
 if [ "$PACKAGEUPGRADE" = "true" ] ; then
-  # Stop server to prevent db plugin / irods server mismatch
-  HIDE_OUTPUT=`su - $MYACCTNAME -c "/var/lib/irods/irodsctl stop"`
-  # Upgrade
-  echo "Upgrading Existing iRODS Installation"
-  UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"
+    if [ -f /etc/irods/service_account.config ] ; then
+        # get service account information
+        . /etc/irods/service_account.config 2> /dev/null
+    else
+        IRODS_SERVICE_ACCOUNT_NAME=`ls -ld /var/lib/irods | awk '{print $3}'`
+    fi
+
+    # Stop server to prevent db plugin / irods server mismatch
+    HIDE_OUTPUT=`su - ${IRODS_SERVICE_ACCOUNT_NAME:?} -c "/var/lib/irods/irodsctl stop"`
+    # Upgrade
+    echo "Upgrading Existing iRODS Installation"
+    UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"
 fi
 
 if [ -f "/var/lib/irods/VERSION" ] ; then
-  mv /var/lib/irods/VERSION /var/lib/irods/VERSION.previous
+    mv /var/lib/irods/VERSION /var/lib/irods/VERSION.previous
 fi
 
 if [ -f "/var/lib/irods/VERSION.json" ] ; then
-  mv /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
+    mv /var/lib/irods/VERSION.json /var/lib/irods/VERSION.json.previous
 fi
