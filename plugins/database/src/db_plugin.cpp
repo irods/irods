@@ -3086,6 +3086,10 @@ irods::error db_reg_replica_op(
                  "chlRegReplica cmlExecuteNoAnswerSql(insert) failure %d",
                  status );
         _rollback( "chlRegReplica" );
+        const int free_status = cmlFreeStatement( statementNumber, &icss );
+        if (free_status != 0) {
+            rodsLog(LOG_ERROR, "db_reg_replica_op: cmlFreeStatement0 failure [%d]", free_status);
+        }
         return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure" );
     }
 
@@ -3093,6 +3097,10 @@ irods::error db_reg_replica_op(
     ret = getLocalZone( _ctx.prop_map(), &icss, zone );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "chlRegReplica - failed in getLocalZone with status [%d]", status );
+        const int free_status = cmlFreeStatement( statementNumber, &icss );
+        if (free_status != 0) {
+            rodsLog(LOG_ERROR, "db_reg_replica_op: cmlFreeStatement1 failure [%d]", free_status);
+        }
         return PASS( ret );
     }
 
