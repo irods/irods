@@ -1,2 +1,4 @@
 tags
 .dir-locals.el
+*.pyc
+packaging/unattended_setup.json
