@@ -67,7 +67,7 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
     printf(
         "Total size trimmed = %-.3f MB. Number of files trimmed = %d.\n",
-        ( float ) TotalSizeTrimmed / 1048600.0, TotalTrimmed );
+        ( float ) TotalSizeTrimmed / 1048576.0, TotalTrimmed );
     return savedStatus;
 }
 
