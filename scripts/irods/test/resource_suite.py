@@ -1017,9 +1017,26 @@ class ResourceSuite(ResourceBase):
         lib.touch("file.txt")
         for i in range(100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
+
+        filename1 = "itrimadminmode1.txt"
+        filename2 = "itrimadminmode2.txt"
+        filesize = int(pow(2, 20) + pow(10,5))
+
+        filesizeMB = round(float(2 * filesize)/1048576, 3)
+        lib.make_file(filename1, filesize)
+        lib.make_file(filename2, filesize)
+
+        self.user0.assert_icommand("iput {filename1}".format(**locals()), 'EMPTY')
+        self.user0.assert_icommand("iput {filename2}".format(**locals()), 'EMPTY')
+
         homepath = self.user0.session_collection
         self.user0.assert_icommand("irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
-        self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT_SINGLELINE', "Number of files trimmed = 100.")
+        self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT_SINGLELINE', "Total size trimmed = " + str(filesizeMB) +" MB. Number of files trimmed = 102.")
+
+        #local file cleanup
+        os.unlink(os.path.abspath("file.txt"))
+        os.unlink(os.path.abspath(filename1))
+        os.unlink(os.path.abspath(filename2))
 
     def test_itrim_no_op(self):
         collection = self.admin.session_collection
@@ -1039,4 +1056,35 @@ class ResourceSuite(ResourceBase):
         repl_count = self.admin.run_icommand('''iquest "%s" "SELECT count(DATA_ID) where COLL_NAME ='{collection}' and DATA_NAME ='{filename}'"'''.format(**locals()))[0]
 
         # try to trim down to repl_count
-        self.admin.assert_icommand("itrim -N {repl_count} {filename}".format(**locals()), 'STDOUT_SINGLELINE', "Total size trimmed = 0.000 MB. Number of files trimmed = 0.")
+        self.admin.assert_icommand("itrim -N {repl_count} {filename}".format(**locals()), 'STDOUT_SINGLELINE', "Total size trimmed = 0.000 MB. Number of files trimmed = 1.")
+
+    def test_itrim_displays_incorrect_count__ticket_3531(self):
+        filename = "itrimcountwrong.txt"
+        filesize = int(pow(2, 20) + pow(10,5))
+
+        filesizeMB = round(float(filesize)/1048576, 3)
+
+        lib.make_file(filename, filesize)
+        filepath = os.path.abspath(filename)
+
+        put_resource = self.testresc
+        repl_resource = self.anotherresc
+
+        # put file
+        self.user0.assert_icommand("iput -R {put_resource} {filename}".format(**locals()), 'EMPTY')
+
+        # check if file was added
+        self.user0.assert_icommand("ils -L", 'STDOUT_SINGLELINE', filename)
+
+        # replicate test file
+        self.user0.assert_icommand("irepl -R {repl_resource} {filename}".format(**locals()), 'EMPTY')
+
+        # check replication
+        self.user0.assert_icommand("ils -L", 'STDOUT_MULTILINE', [put_resource, repl_resource])
+
+        # trim the file
+        self.user0.assert_icommand("itrim -N 1 -S {put_resource} {filename}".format(**locals()), 'STDOUT_SINGLELINE', "Total size trimmed = " + str(filesizeMB) +" MB. Number of files trimmed = 1.")
+
+        # local cleanup
+        if os.path.exists(filepath):
+           os.unlink(filepath)
