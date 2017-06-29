@@ -145,7 +145,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         # ils is just for debug information
         self.admin.assert_icommand(['ils', '-L', self.admin.session_collection], 'STDOUT_SINGLELINE')
         # trim from l_resc so that resource can be deleted later
-        self.admin.assert_icommand(['itrim', '-n1', '-N1', self.admin.session_collection + '/' + filename])
+        self.admin.assert_icommand(['itrim', '-n1', '-N1', self.admin.session_collection + '/' + filename], 'STDOUT_SINGLELINE', 'trimmed')
         # ils is just for debug information
         self.admin.assert_icommand(['ils', '-L', self.admin.session_collection], 'STDOUT_SINGLELINE')
         os.system('rm -f ' + filename)

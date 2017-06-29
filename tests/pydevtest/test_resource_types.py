@@ -1334,7 +1334,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
 
     def test_irm_with_no_stage__2930(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
-        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile ) # trim cache copy
+        self.admin.assert_icommand("itrim -n0 -N1 " + self.testfile, 'STDOUT_SINGLELINE', "files trimmed") # trim cache copy
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
 
         initial_log_size = lib.get_log_size('server')
@@ -3853,7 +3853,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         file_size = 400
         lib.make_file(filename, file_size)
         self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename])
+        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename], 'STDOUT_SINGLELINE', 'Total size trimmed = 0.000 MB. Number of files trimmed = 1.')
         initial_log_size = lib.get_log_size('server')
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         data_id = lib.get_data_id(self.admin, self.admin.session_collection, filename)
