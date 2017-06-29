@@ -431,7 +431,7 @@ printTiming( rcComm_t *conn, char *objPath, rodsLong_t fileSize,
         sizeInMb = 0.0;
     }
     else {
-        sizeInMb = ( float ) fileSize / 1048600.0;
+        sizeInMb = ( float ) fileSize / 1048576.0;
         if ( timeInSec == 0.0 ) {
             transRate = 0.0;
         }
@@ -500,7 +500,7 @@ printNoSync( char *objPath, rodsLong_t fileSize, char *reason ) {
         sizeInMb = 0.0;
     }
     else {
-        sizeInMb = ( float ) fileSize / 1048600.0;
+        sizeInMb = ( float ) fileSize / 1048576.0;
     }
 
     fprintf( stdout,
@@ -2047,18 +2047,18 @@ iCommandProgStat( operProgress_t *operProgress ) {
             ( operProgress->totalNumFilesDone, operProgress->totalNumFiles ) *
             100.0 );
         printf( "%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
-                ( float ) operProgress->totalFileSizeDone / 1048600.0,
-                ( float ) operProgress->totalFileSize / 1048600.0,
+                ( float ) operProgress->totalFileSizeDone / 1048576.0,
+                ( float ) operProgress->totalFileSize / 1048576.0,
                 VERIFY_DIV
                 ( operProgress->totalFileSizeDone, operProgress->totalFileSize ) *
                 100.0 );
         printf( "Processing %s - %-.3f MB   %s\n", myFile,
-                ( float ) operProgress->curFileSize / 1048600.0, timeStr );
+                ( float ) operProgress->curFileSize / 1048576.0, timeStr );
     }
     else if ( operProgress->flag == 1 ) {
         printf( "%s - %-.3f/%-.3f MB - %5.2f%% done   %s\n", myFile,
-                ( float ) operProgress->curFileSizeDone / 1048600.0,
-                ( float ) operProgress->curFileSize / 1048600.0,
+                ( float ) operProgress->curFileSizeDone / 1048576.0,
+                ( float ) operProgress->curFileSize / 1048576.0,
                 VERIFY_DIV
                 ( operProgress->curFileSizeDone, operProgress->curFileSize ) *
                 100.0, timeStr );
