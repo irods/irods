@@ -78,6 +78,7 @@ int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
+    rodsObjStat_t *rodsObjStatOut = NULL;
 
     if ( srcPath == NULL ) {
         rodsLog( LOG_ERROR,
@@ -100,6 +101,12 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
         }
     }
 
+    status = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
+    if(status > 0) {
+      rodsLog(LOG_DEBUG, "%lld - rods object size\n", rodsObjStatOut->objSize);
+      TotalSizeTrimmed += rodsObjStatOut->objSize;
+      TotalTrimmed++;
+    }
     return status;
 }
 
@@ -203,12 +210,6 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                               srcChildPath, status );
                 /* need to set global error here */
                 savedStatus = status;
-                status = 0;
-            }
-            else if ( status > 0 ) {
-                /* > 0 means the file got trimed */
-                TotalSizeTrimmed += collEnt.dataSize;
-                TotalTrimmed++;
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
