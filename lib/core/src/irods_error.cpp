@@ -128,17 +128,12 @@ namespace irods {
         int          _line,
         std::string  _fcn,
         const error& _rhs ) :
-        status_( _rhs.status() ),
-        code_( _rhs.code() ),
-        message_( _msg ) {
-        // =-=-=-=-=-=-=-
-        // cache RHS vector into our vector first
-        result_stack_ = _rhs.result_stack_;
-
-        // =-=-=-=-=-=-=-
-        // cache message on message stack
-        result_stack_.push_back( build_result_string( _file, _line, _fcn ) );
-
+        error(_rhs) {
+        if (exception_) {
+            exception_->add_message(_msg + ": " + build_result_string( _file, _line, _fcn ));
+            return;
+        }
+        result_stack_.push_back(build_result_string(_file, _line, _fcn));
     } // ctor
 
 // =-=-=-=-=-=-=-
@@ -272,6 +267,3 @@ namespace irods {
     }
 
 }; // namespace irods
-
-
-
