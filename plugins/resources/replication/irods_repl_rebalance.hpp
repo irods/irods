@@ -11,27 +11,19 @@
 
 namespace irods {
     using leaf_bundle_t = resource_manager::leaf_bundle_t;
-/// =-=-=-=-=-=-=-
-/// @brief gather a limit bound result set of all data objects
-///        which need re-replicated
-    error gather_data_objects_for_rebalance(
-        rsComm_t*,                   // comm object
-        const int,                   // query limit
-        size_t,                      // current bundle index
-        std::vector<leaf_bundle_t>&, // all leaf bundles
-        dist_child_result_t& );      // result set
-/// =-=-=-=-=-=-=-
-/// @brief refresh a limit bound result set of all data objects
-///        which need re-replicated
-    irods::error proc_results_for_rebalance(
-        rsComm_t*,                        // comm object
-        const std::string&,               // parent resc name
-        const std::string&,               // child resc name
-        const size_t,                     // current bundle index
-        const std::vector<leaf_bundle_t>, // all leaf bundles
-        const dist_child_result_t& );     // query results
 
-}; // namespace irods
+    // throws irods::exception
+    void update_out_of_date_replicas(
+        rsComm_t* _comm_ptr,
+        const std::vector<leaf_bundle_t>& _leaf_bundles,
+        const int _batch_size,
+        const std::string& resource_name);
 
+    // throws irods::exception
+    void create_missing_replicas(
+        rsComm_t* _comm_ptr,
+        const std::vector<leaf_bundle_t>& _leaf_bundles,
+        const int _batch_size,
+        const std::string& resource_name);
+}
 #endif // _IRODS_REPL_REBALANCE_HPP_
-

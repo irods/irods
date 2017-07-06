@@ -29,6 +29,8 @@
 #include "irods_repl_rebalance.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_random.hpp"
+#include "irods_exception.hpp"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -95,9 +97,7 @@ irods::error replCheckParams(
     return result;
 }
 
-/// =-=-=-=-=-=-=-
-/// @brief limit of the number of repls to operate upon during rebalance
-const int DEFAULT_LIMIT = 500;
+const int DEFAULT_REBALANCE_BATCH_SIZE = 500;
 
 // =-=-=-=-=-=-=-
 // 2. Define operations which will be called by the file*
@@ -1673,180 +1673,63 @@ irods::error repl_file_resolve_hierarchy(
 
 } // repl_file_resolve_hierarchy
 
-static
-irods::error get_child_name_from_bundle(
-    const std::string&   _resc_name,
-    const leaf_bundle_t& _bundle,
-    std::string&         _child_name ) {
-
-    std::string hier;
-    
-    irods::error ret = resc_mgr.leaf_id_to_hier(
-                           _bundle[0],
-                           hier); 
-    if(!ret.ok()) {
-        return PASS(ret);
+irods::error call_rebalance_on_children(irods::plugin_context& _ctx) {
+    irods::resource_child_map *cmap_ptr;
+    _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ptr);
+    for (auto& entry : *cmap_ptr) {
+        irods::error ret = entry.second.second->call(_ctx.comm(), irods::RESOURCE_OP_REBALANCE, _ctx.fco() );
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
     }
-
-    irods::hierarchy_parser parse;
-    ret = parse.set_string(hier);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    ret = parse.next(_resc_name,_child_name);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
     return SUCCESS();
+}
 
-} // get_child_name_from_bundle
+// throws irods::exception
+int get_rebalance_batch_size(irods::plugin_context& _ctx) {
+    if (!_ctx.rule_results().empty()) {
+        irods::kvp_map_t kvp;
+        irods::error kvp_err = irods::parse_kvp_string(_ctx.rule_results(), kvp);
+        if (!kvp_err.ok()) {
+            THROW(kvp_err.code(), kvp_err.result());
+        }
 
-// =-=-=-=-=-=-=-
+        const auto it = kvp.find(irods::REPL_LIMIT_KEY);
+        if (it != kvp.end()) {
+            try {
+                return boost::lexical_cast<int>(it->second);
+            } catch (const boost::bad_lexical_cast&) {
+                THROW(SYS_INVALID_INPUT_PARAM, boost::format("failed to cast string [%s] to integer") % it->second);
+            }
+        }
+    }
+    return DEFAULT_REBALANCE_BATCH_SIZE;
+}
+
 // repl_file_rebalance - code which would rebalance the subtree
 irods::error repl_file_rebalance(
     irods::plugin_context& _ctx ) {
-    using namespace irods;
-
-    // =-=-=-=-=-=-=-
-    // forward request for rebalance to children first, then
-    // rebalance ourselves.
-
-    resource_child_map* cmap_ref;
-    _ctx.prop_map().get< resource_child_map* >(
-            RESC_CHILD_MAP_PROP,
-            cmap_ref );
-
-    error result = SUCCESS();
-    resource_child_map::iterator itr = cmap_ref->begin();
-    for ( ; itr != cmap_ref->end(); ++itr ) {
-        error ret = itr->second.second->call(
-                               _ctx.comm(),
-                               RESOURCE_OP_REBALANCE,
-                               _ctx.fco() );
-        if ( !ret.ok() ) {
-            log( PASS( ret ) );
-            result = ret;
-        }
+    irods::error result = call_rebalance_on_children(_ctx);
+    if (!result.ok()) {
+        return PASS(result);
     }
 
-    // =-=-=-=-=-=-=-
-    // if our children had errors, then we bail
-    if ( !result.ok() ) {
-        return PASS( result );
+    std::string resource_name;
+    result = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
+    if (!result.ok()) {
+        return PASS(result);
     }
 
-    // =-=-=-=-=-=-=-
-    // get the property 'name' of this resource
-    std::string resc_name;
-    error ret = _ctx.prop_map().get< std::string >(
-                           RESOURCE_NAME,
-                           resc_name );
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    try {
+        const int batch_size = get_rebalance_batch_size(_ctx);
+        const std::vector<leaf_bundle_t> leaf_bundles = resc_mgr.gather_leaf_bundles_for_resc(resource_name);
+        irods::update_out_of_date_replicas(_ctx.comm(), leaf_bundles, batch_size, resource_name);
+        irods::create_missing_replicas(_ctx.comm(), leaf_bundles, batch_size, resource_name);
+    } catch (const irods::exception& e) {
+        return irods::error(e);
     }
-
-    // =-=-=-=-=-=-=-
-    // determine limit size
-    int limit = DEFAULT_LIMIT;
-    if ( !_ctx.rule_results().empty() ) {
-        kvp_map_t kvp;
-        error kvp_err = parse_kvp_string(
-                                   _ctx.rule_results(),
-                                   kvp );
-        if ( !kvp_err.ok() ) {
-            return PASS( kvp_err );
-        }
-
-        std::string limit_str = kvp[ REPL_LIMIT_KEY ];
-        if ( !limit_str.empty() ) {
-            try {
-                limit = boost::lexical_cast<int>( limit_str );
-
-            }
-            catch ( const boost::bad_lexical_cast& ) {
-                std::stringstream msg;
-                msg << "failed to cast value ["
-                    << limit_str
-                    << "] to an integer";
-                return ERROR(
-                           SYS_INVALID_INPUT_PARAM,
-                           msg.str() );
-            }
-        }
-
-    } // if rule results not empty
-
-    // =-=-=-=-=-=-=-
-    // determine distinct root count ( may have changed )
-    int status = 0;
-    long long root_count = 0;
-    status = chlGetDistinctDataObjCountOnResource(
-                 resc_name.c_str(),
-                 root_count );
-    if ( status < 0 ) {
-        std::stringstream msg;
-        msg << "failed to get distinct count for ["
-            << resc_name
-            << "]";
-        return ERROR( status, msg.str().c_str() );
-    }
-
-    // =-=-=-=-=-=-=-
-    // gather bundles of leaf ids
-    std::vector<leaf_bundle_t> leaf_bundles;
-    ret = resc_mgr.gather_leaf_bundles_for_resc(
-              resc_name,
-              leaf_bundles);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    // =-=-=-=-=-=-=-
-    // iterate over the leaf bundles
-    for( size_t idx = 0;
-         idx < leaf_bundles.size();
-         ++idx ) {
-        std::string child_name;
-        error get_ret = get_child_name_from_bundle(
-                            resc_name,
-                            leaf_bundles[idx],
-                            child_name );
-        if(!get_ret.ok() ) {
-            irods::log(PASS(get_ret));
-            continue;
-        }
-
-        dist_child_result_t results;
-        error ga_ret = gather_data_objects_for_rebalance(
-                                  _ctx.comm(),
-                                  limit,
-                                  idx,
-                                  leaf_bundles,
-                                  results );
-        if ( !ga_ret.ok() ) {
-            return PASS(ga_ret);
-        }
-
-        if( !results.empty() ) {
-            error proc_ret = proc_results_for_rebalance(
-                                 _ctx.comm(),
-                                 resc_name,
-                                 child_name,
-                                 idx,
-                                 leaf_bundles,
-                                 results );
-            if ( !proc_ret.ok() ) {
-                return PASS( proc_ret );
-            }
-        }
-
-    } // for c_itr
-
     return SUCCESS();
-
-} // repl_file_rebalance
+}
 
 // Called when a files entry is modified in the ICAT
 irods::error repl_file_notify(
@@ -2117,6 +2000,3 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
     return dynamic_cast<irods::resource*>( resc );
 
 } // plugin_factory
-
-
-

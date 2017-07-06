@@ -4718,7 +4718,7 @@ int chlGeneralUpdate(
 int chlGetReplListForLeafBundles(
     rodsLong_t                  _count,
     size_t                      _child_idx,
-    std::vector<leaf_bundle_t>* _bundles,
+    const std::vector<leaf_bundle_t>* _bundles,
     dist_child_result_t*        _results ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4755,7 +4755,7 @@ int chlGetReplListForLeafBundles(
     ret = db->call<
               rodsLong_t,
               size_t,
-              std::vector<leaf_bundle_t>*,
+              const std::vector<leaf_bundle_t>*,
               dist_child_result_t* >(
                   0,
                   irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
@@ -4764,6 +4764,9 @@ int chlGetReplListForLeafBundles(
                   _child_idx,
                   _bundles,
                   _results );
+    if (!ret.ok()) {
+        irods::log(PASS(ret));
+    }
     return ret.code();
 
 } // chlGetReplListForLeafBundles

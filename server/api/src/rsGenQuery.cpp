@@ -12,10 +12,181 @@
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_lexical_cast.hpp"
+#include "rodsGenQueryNames.h"
 
 #include "boost/format.hpp"
 #include <boost/tokenizer.hpp>
 #include <string>
+
+
+
+namespace {
+    std::string
+    get_column_name(int j) {
+        const int n = sizeof(columnNames)/sizeof(columnNames[0]);
+        for (int i=0; i<n; ++i) {
+            if (columnNames[i].columnId == j) {
+                return std::string(columnNames[i].columnName);
+            }
+        }
+
+        std::stringstream ss;
+        ss << j;
+        return std::string("COLUMN_NAME_NOT_FOUND_") + ss.str();
+    }
+
+    struct option_element{
+        int key;
+        const char* cpp_macro;
+        const char* token;
+    };
+
+    option_element queryWideOptionsMap[] = {
+        {RETURN_TOTAL_ROW_COUNT, "RETURN_TOTAL_ROW_COUNT", "return_total_row_count"},
+        {NO_DISTINCT,            "NO_DISTINCT",            "no_distinct"},
+        {QUOTA_QUERY,            "QUOTA_QUERY",            "quota_query"},
+        {AUTO_CLOSE,             "AUTO_CLOSE",             "auto_close"},
+        {UPPER_CASE_WHERE,       "UPPER_CASE_WHERE",       "upper_case_where"}
+    };
+
+    option_element selectInpOptionsMap[] = {
+        {ORDER_BY,      "ORDER_BY",      "order"},
+        {ORDER_BY_DESC, "ORDER_BY_DESC", "order_desc"}
+    };
+
+    option_element selectInpFunctionMap[] = {
+        {SELECT_MIN,   "SELECT_MIN",   "min"},
+        {SELECT_MAX,   "SELECT_MAX",   "max"},
+        {SELECT_SUM,   "SELECT_SUM",   "sum"},
+        {SELECT_AVG,   "SELECT_AVG",   "avg"},
+        {SELECT_COUNT, "SELECT_COUNT", "count"}
+    };
+
+    std::string
+    format_selected_column(int columnIndex, int columnOption) {
+        std::string ret = get_column_name(columnIndex);
+        if (columnOption == 0 || columnOption == 1) {
+            return ret;
+        }
+
+        for (size_t i=0; i<sizeof(selectInpOptionsMap)/sizeof(selectInpOptionsMap[0]); ++i) {
+            if (columnOption == selectInpOptionsMap[i].key) {
+                ret = std::string(selectInpOptionsMap[i].token) + "(" + ret + ")";
+                return ret;
+            }
+        }
+        for (size_t i=0; i<sizeof(selectInpFunctionMap)/sizeof(selectInpFunctionMap[0]); ++i) {
+            if (columnOption == selectInpFunctionMap[i].key) {
+                ret = std::string(selectInpFunctionMap[i].token) + "(" + ret + ")";
+                return ret;
+            }
+        }
+
+        std::stringstream ss;
+        ss << columnOption;
+        ret = std::string("combo_func_") + ss.str() + "(" + ret + ")";
+        return ret;
+    }
+
+    template <typename OutStream>
+    void
+    insert_genquery_inp_into_stream(const genQueryInp_t *genQueryInp, OutStream& f) {
+        f << "maxRows: " << genQueryInp->maxRows << " continueInx: " << genQueryInp->continueInx << " rowOffset: " << genQueryInp->rowOffset << '\n';
+        f << "options: " << genQueryInp->options;
+        for (size_t i=0; i<sizeof(queryWideOptionsMap)/sizeof(queryWideOptionsMap[0]); ++i) {
+            if (genQueryInp->options & queryWideOptionsMap[i].key) {
+                f << " " << queryWideOptionsMap[i].cpp_macro;
+            }
+        }
+        f << '\n';
+
+        f << "selectInp.len: " << genQueryInp->selectInp.len << '\n';
+        for (int i=0; i<genQueryInp->selectInp.len; ++i) {
+            f << "    column: " << genQueryInp->selectInp.inx[i] << " " << get_column_name(genQueryInp->selectInp.inx[i]) << '\n';
+            f << "    options: " << genQueryInp->selectInp.value[i];
+            for (size_t j=0; j<sizeof(selectInpOptionsMap)/sizeof(selectInpOptionsMap[0]); ++j) {
+                if (genQueryInp->selectInp.value[i] & selectInpOptionsMap[j].key) {
+                    f << " " << selectInpOptionsMap[j].cpp_macro;
+                }
+            }
+            for (size_t j=0; j<sizeof(selectInpFunctionMap)/sizeof(selectInpFunctionMap[0]); ++j) {
+                if ((genQueryInp->selectInp.value[i] & 0x7) == selectInpFunctionMap[j].key) {
+                    f << " " << selectInpFunctionMap[j].cpp_macro;
+                }
+            }
+            f << '\n';
+        }
+
+        f << "sqlCondInp.len: " << genQueryInp->sqlCondInp.len << '\n';
+        for (int i=0; i<genQueryInp->sqlCondInp.len; ++i) {
+            f << "    column: " << genQueryInp->sqlCondInp.inx[i] << " " << get_column_name(genQueryInp->sqlCondInp.inx[i]) << '\n';
+            f << "    condition: " << genQueryInp->sqlCondInp.value[i] << '\n';
+        }
+        f << '\n';
+    }
+
+}
+
+std::string
+genquery_inp_to_diagnostic_string(const genQueryInp_t *q) {
+    std::stringstream ss;
+    insert_genquery_inp_into_stream(q, ss);
+    return ss.str();
+}
+
+std::string
+genquery_inp_to_iquest_string(const genQueryInp_t *q) {
+    // TODO: handle queryWideOptionsMap
+    std::stringstream ss;
+    ss << "select ";
+    {
+        const int n = q->selectInp.len;
+        if (n<=0) {
+            ss << "ERROR: 0 columns selected, printing query contents instead of iquest string\n";
+            insert_genquery_inp_into_stream(q, ss);
+            return ss.str();
+        }
+
+        ss << format_selected_column(q->selectInp.inx[0], q->selectInp.value[0]);
+        for (int i=1; i<n; ++i) {
+            ss << ", ";
+            ss << format_selected_column(q->selectInp.inx[i], q->selectInp.value[i]);
+        }
+    }
+
+    {
+        const int n = q->sqlCondInp.len;
+        if (n>0) {
+            ss << " where ";
+            ss << get_column_name(q->sqlCondInp.inx[0]) << " " << q->sqlCondInp.value[0];
+            for (int i=1; i<n; ++i) {
+                ss << " and ";
+                ss << get_column_name(q->sqlCondInp.inx[i]) << " " << q->sqlCondInp.value[i];
+            }
+        }
+    }
+    return ss.str();
+}
+
+irods::GenQueryInpWrapper::GenQueryInpWrapper(void) {
+    memset(&genquery_inp_, 0, sizeof(genquery_inp_));
+}
+irods::GenQueryInpWrapper::~GenQueryInpWrapper(void) {
+    clearGenQueryInp(&genquery_inp_);
+}
+genQueryInp_t& irods::GenQueryInpWrapper::get(void) {
+    return genquery_inp_;
+}
+irods::GenQueryOutPtrWrapper::GenQueryOutPtrWrapper(void) {
+    genquery_out_ptr_ = nullptr;
+}
+irods::GenQueryOutPtrWrapper::~GenQueryOutPtrWrapper(void) {
+    freeGenQueryOut(&genquery_out_ptr_);
+}
+genQueryOut_t*& irods::GenQueryOutPtrWrapper::get(void) {
+    return genquery_out_ptr_;
+}
+
 
 static
 irods::error strip_new_query_terms(
