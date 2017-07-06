@@ -14342,7 +14342,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     irods::plugin_context&      _ctx,
     rodsLong_t                  _count,
     size_t                      _child_index,
-    std::vector<leaf_bundle_t>* _bundles,
+    const std::vector<leaf_bundle_t>* _bundles,
     dist_child_result_t*        _results ) {
 
     // =-=-=-=-=-=-=-
@@ -14352,14 +14352,11 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
         return PASS( ret );
     }
 
-    // =-=-=-=-=-=-=-
-    // check incoming pointers
-    if( _count <= 0      ||
-        _bundles->empty() ||
-        !_results ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "null or invalid input param" );
+    if (_count <= 0) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, boost::format("invalid _count [%d]") % _count);
+    }
+    if (_bundles->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
 
     // capture list of child resc ids
@@ -14367,14 +14364,10 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     for( auto id : (*_bundles)[_child_index] ) {
         child_array_stream << id << ",";
     }
-
-    if(child_array_stream.str().empty()) {
-        return ERROR(
-                  SYS_INVALID_INPUT_PARAM,
-                  "leaf arry is empty");
-    }
-
     std::string child_array = child_array_stream.str();
+    if (child_array.empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf arry is empty");
+    }
     child_array.pop_back(); // trim last ','
 
     std::stringstream not_child_stream;
@@ -14390,44 +14383,38 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     std::string not_child_array = not_child_stream.str();
     not_child_array.pop_back(); // trim last ','
 
-    std::string base_query = "select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s))";
-    char query[ MAX_NAME_LEN ];
-    snprintf(
-        query,
-        MAX_NAME_LEN,
-        base_query.c_str(),
-        not_child_array.c_str(),
-        child_array.c_str());
-    // =-=-=-=-=-=-=-
-    // snag the first row from the resulting query
+#ifdef ORA_ICAT
+    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s))) where rownum <= %d") % not_child_array % child_array % _count).str();
+#else
+    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) limit %d") % not_child_array % child_array % _count).str();
+#endif
+
+    _results->reserve(_count);
+
     int statement_num = 0;
+    const int status_cmlGetFirstRowFromSql = cmlGetFirstRowFromSql(query.c_str(), &statement_num, 0, &icss);
+    if (status_cmlGetFirstRowFromSql == CAT_NO_ROWS_FOUND) {
+        cmlFreeStatement(statement_num, &icss);
+        return SUCCESS();
+    }
+    if (status_cmlGetFirstRowFromSql != 0) {
+        cmlFreeStatement(statement_num, &icss);
+        return ERROR(status_cmlGetFirstRowFromSql, boost::format("failed to get first row from query [%s]") % query);
+    }
+    _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
 
-    // =-=-=-=-=-=-=-
-    // iterate over resulting rows
-    for ( int i = 0; ; i++ ) {
-        // =-=-=-=-=-=-=-
-        // extract either the first or next row
-        int status = 0;
-        if ( 0 == i ) {
-            status = cmlGetFirstRowFromSql(
-                         query,
-                         &statement_num,
-                         0, &icss );
+    for (rodsLong_t i=1; i<_count; ++i) {
+        const int status_cmlGetNextRowFromStatement = cmlGetNextRowFromStatement(statement_num, &icss);
+        if (status_cmlGetNextRowFromStatement == CAT_NO_ROWS_FOUND) {
+            break;
         }
-        else {
-            status = cmlGetNextRowFromStatement( statement_num, &icss );
+        if (status_cmlGetNextRowFromStatement != 0) {
+            cmlFreeStatement(statement_num, &icss);
+            return ERROR(status_cmlGetNextRowFromStatement, boost::format("failed to get row [%d] from query [%s]") % i % query);
         }
-
-        if ( status != 0 ) {
-            return ERROR( status, "failed to get a row" );
-        }
-
-        _results->push_back( atoi( icss.stmtPtr[ statement_num ]->resultValue[0] ) );
-
-    } // for i
-
-    cmlFreeStatement( statement_num, &icss );
-
+        _results->push_back(atoll(icss.stmtPtr[statement_num]->resultValue[0]));
+    }
+    cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
 
 } // db_get_repl_list_for_leaf_bundles_op
@@ -15860,9 +15847,9 @@ irods::database* plugin_factory(
         function<error(plugin_context&,const string*, const string*, int, dist_child_result_t*)>(
             db_get_distinct_data_objs_missing_from_child_given_parent_op ) );
 
-    pg->add_operation<rodsLong_t,size_t,std::vector<leaf_bundle_t>*,dist_child_result_t*>(
+    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*>(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
-        function<error(plugin_context&,rodsLong_t,size_t,std::vector<leaf_bundle_t>*,dist_child_result_t*)>(
+        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
     return pg;
 

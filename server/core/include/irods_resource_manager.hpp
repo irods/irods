@@ -79,9 +79,10 @@ namespace irods {
             error get_hier_to_root_for_resc( const std::string&, std::string& );
 
             // =-=-=-=-=-=-=-
-            /// @brief gather vectors of leaf ids for each child of the given resource
+            /// @brief groups decedent leafs by child
+            // throws irods::exception
             typedef std::vector<rodsLong_t> leaf_bundle_t;
-            error gather_leaf_bundles_for_resc( const std::string&, std::vector<leaf_bundle_t>& );
+            std::vector<leaf_bundle_t> gather_leaf_bundles_for_resc(const std::string& _resource_name);
 
             // =-=-=-=-=-=-=-
             /// @brief print the list of local resources out to stderr

@@ -191,7 +191,7 @@ int chlSubstituteResourceHierarchies( rsComm_t *rsComm, const char *old_hier, co
 
 /// =-=-=-=-=-=-=-
 /// @brief typedefs and prototype for query used for rebalancing operation
-typedef std::vector< int > dist_child_result_t;
+typedef std::vector< rodsLong_t > dist_child_result_t;
 
 /// =-=-=-=-=-=-=-
 /// @brief query which distinct data objects do not existin on a
@@ -224,7 +224,7 @@ int chlGetRcs( icatSessionStruct** );
 int chlGetReplListForLeafBundles(
     rodsLong_t                  _count,
     size_t                      _child_idx,
-    std::vector<leaf_bundle_t>* _bundles,
+    const std::vector<leaf_bundle_t>* _bundles,
     dist_child_result_t*        _results );
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

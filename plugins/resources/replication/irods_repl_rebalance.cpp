@@ -2,22 +2,20 @@
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_resource_redirect.hpp"
 #include "irods_virtual_path.hpp"
+#include "irods_repl_types.hpp"
+#include "icatHighLevelRoutines.hpp"
 #include "rsDataObjRepl.hpp"
 #include "dataObjRepl.h"
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
+#include "boost/format.hpp"
+#include "boost/lexical_cast.hpp"
 
-namespace irods {
 
+namespace {
     const int MAX_ERROR_MESSAGES = 100;
-
-/// =-=-=-=-=-=-=-
-/// @brief local function to replicate a new copy for
-///        proc_results_for_rebalance
-    static
-    error repl_for_rebalance(
+    irods::error repl_for_rebalance(
         rsComm_t*          _comm,
         const std::string& _obj_path,
         const std::string& _current_resc,
@@ -28,7 +26,7 @@ namespace irods {
         int                _mode ) {
         // =-=-=-=-=-=-=-
         // generate a resource hierarchy that ends at this resource for pdmo
-        hierarchy_parser parser;
+        irods::hierarchy_parser parser;
         parser.set_string( _src_hier );
         std::string sub_hier;
         parser.str( sub_hier, _current_resc );
@@ -61,590 +59,468 @@ namespace irods {
         }
 
         return SUCCESS();
+    }
 
-    } // repl_for_rebalance
-
-/// =-=-=-=-=-=-=-
-/// @brief
-    error gather_dirty_replicas_for_child(
-        rsComm_t*                         _comm,
-        const std::vector<leaf_bundle_t>& _bundles,
-        const int                         _limit,
-        dist_child_result_t&              _results ) {
-        // =-=-=-=-=-=-=-
-        // trap bad input
-        if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm pointer" );
+    // throws irods::exception
+    sqlResult_t* extract_sql_result(const genQueryInp_t& genquery_inp, genQueryOut_t* genquery_out_ptr, const int column_number) {
+        if (sqlResult_t *sql_result = getSqlResultByInx(genquery_out_ptr, column_number)) {
+            return sql_result;
         }
-        else if ( _bundles.empty() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "leaf bundle is empty" );
+        THROW(
+            NULL_VALUE_ERR,
+            boost::format("getSqlResultByInx failed. column [%d] genquery_inp contents:\n%s\n\n possible iquest [%s]") %
+            column_number %
+            genquery_inp_to_diagnostic_string(&genquery_inp) %
+            genquery_inp_to_iquest_string(&genquery_inp));
+    };
+
+    struct ReplicationSourceInfo {
+        std::string object_path;
+        std::string resource_hierarchy;
+        int data_mode;
+    };
+
+    // throws irods::exception
+    ReplicationSourceInfo get_source_data_object_attributes(
+        rsComm_t* _comm,
+        const rodsLong_t _data_id,
+        const std::vector<leaf_bundle_t>& _leaf_bundles) {
+
+        if (!_comm) {
+            THROW(SYS_INTERNAL_NULL_INPUT_ERR, "null comm ptr");
         }
-        else if ( _limit <= 0 ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "limit is less than or equal to zero" );
-        }
 
-        // =-=-=-=-=-=-=-
-        // build a general query
-        genQueryOut_t* gen_out = 0;
-        genQueryInp_t  gen_inp;
-        memset( &gen_inp, 0, sizeof( gen_inp ) );
+        irods::GenQueryInpWrapper genquery_inp_wrapped;
+        genquery_inp_wrapped.get().maxRows = MAX_SQL_ROWS;
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_DATA_ID, (boost::format("= '%d'") % _data_id).str().c_str());
 
-        gen_inp.maxRows = _limit;
-
-        // =-=-=-=-=-=-=-
-        // add a condition string for every leaf in the bundle
         std::stringstream cond_ss;
-        for( auto bun : _bundles ) {
-            for( auto id : bun ) {
+        for (auto& bun : _leaf_bundles) {
+            for (auto id : bun) {
                 cond_ss << "= '" << id << "' || ";
             }
         }
-        std::string cond_str = cond_ss.str();
-        cond_str = cond_str.substr(0,cond_str.size()-4);
+        std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
 
-        addInxVal(
-            &gen_inp.sqlCondInp,
-            COL_D_RESC_ID,
-            cond_str.c_str() );
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, "= '1'");
 
-        // =-=-=-=-=-=-=-
-        // add condition string stating dirty status only
-        addInxVal( &gen_inp.sqlCondInp,
-                   COL_D_REPL_STATUS,
-                   "= '0'" );
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_DATA_NAME, 1);
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_COLL_NAME, 1);
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_DATA_MODE, 1);
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_RESC_ID, 1);
 
-        // =-=-=-=-=-=-=-
-        // request the data id as output
-        addInxIval( &gen_inp.selectInp,
-                    COL_D_DATA_ID, 1 );
-
-        // =-=-=-=-=-=-=-
-        // execute the query
-        int status = rsGenQuery( _comm, &gen_inp, &gen_out );
-        clearGenQueryInp( &gen_inp );
-        if ( CAT_NO_ROWS_FOUND == status ) {
-            // =-=-=-=-=-=-=-
-            // hopefully there are no dirty data objects
-            // and this is the typical code path
-			freeGenQueryOut( &gen_out );
-            return SUCCESS();
-
-        }
-        else if ( status < 0 || 0 == gen_out ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR( status, "genQuery failed." );
-
+        irods::GenQueryOutPtrWrapper genquery_out_ptr_wrapped;
+        const int status_rsGenQuery = rsGenQuery(_comm, &genquery_inp_wrapped.get(), &genquery_out_ptr_wrapped.get());
+        if (status_rsGenQuery < 0) {
+            THROW(
+                status_rsGenQuery,
+                boost::format("rsGenQuery failed. genquery_inp contents:\n%s\n\n possible iquest [%s]") %
+                genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
         }
 
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* data_id_results = getSqlResultByInx( gen_out, COL_D_DATA_ID );
-        if ( !data_id_results ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null data id result" );
+        if (!genquery_out_ptr_wrapped.get()) {
+            THROW(
+                SYS_INTERNAL_NULL_INPUT_ERR,
+                boost::format("rsGenQuery failed. genquery_inp contents:\n%s\n\n possible iquest [%s]") %
+                genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
         }
 
-        // =-=-=-=-=-=-=-
-        // iterate over the rows and capture the data ids
-        for ( int i = 0; i < gen_out->rowCnt; i++ ) {
-            // =-=-=-=-=-=-=-
-            // get its value
-            char* data_id_ptr = &data_id_results->value[ data_id_results->len * i ];
-            int data_id = atoi( data_id_ptr );
 
-            // =-=-=-=-=-=-=-
-            // capture the result
-            _results.push_back( data_id );
+        sqlResult_t *data_name_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_DATA_NAME);
+        char *data_name = &data_name_result->value[0];
 
-        } // for i
+        sqlResult_t *coll_name_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_COLL_NAME);
+        char *coll_name = &coll_name_result->value[0];
 
-        freeGenQueryOut( &gen_out );
+        auto cast_genquery_result = [&genquery_inp_wrapped](char *s) -> rodsLong_t {
+            try {
+                return boost::lexical_cast<rodsLong_t>(s);
+            } catch (const boost::bad_lexical_cast&) {
+                THROW(
+                    INVALID_LEXICAL_CAST,
+                    boost::format("boost::lexical_cast failed. tried to cast [%s]. genquery_inp contents:\n%s\n\n possible iquest [%s]") %
+                    s %
+                    genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                    genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
+            }
+        };
 
-        return SUCCESS();
+        sqlResult_t *resc_id_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_D_RESC_ID);
+        const rodsLong_t resc_id = cast_genquery_result(&resc_id_result->value[0]);
 
-    } // gather_dirty_replicas_for_child
+        sqlResult_t *data_mode_result = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_DATA_MODE);
+        const int data_mode = cast_genquery_result(&data_mode_result->value[0]);
 
-/// =-=-=-=-=-=-=-
-/// @brief
-    error get_source_data_object_attributes(
-        const int            _data_id,
+        ReplicationSourceInfo ret;
+        ret.object_path = (boost::format("%s%s%s") % coll_name % irods::get_virtual_path_separator() % data_name).str();
+        irods::error err = resc_mgr.leaf_id_to_hier(resc_id, ret.resource_hierarchy);
+        if (!err.ok()) {
+            THROW(err.code(),
+                  boost::format("leaf_id_to_hier failed. resc id [%d] genquery inp:\n%s") %
+                  resc_id %
+                  genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()));
+        }
+        ret.data_mode = data_mode;
+        return ret;
+    }
+
+    struct ReplicaAndRescId {
+        rodsLong_t data_id;
+        rodsLong_t replica_number;
+        rodsLong_t resource_id;
+    };
+
+    // throws irods::exception
+    std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(
+        rsComm_t* _comm,
         const std::vector<leaf_bundle_t>& _bundles,
-        rsComm_t*            _comm,
-        std::string&         _obj_path,
-        std::string&         _resc_hier,
-        int&                 _data_mode ) {
-        // =-=-=-=-=-=-=-
-        // param check
-        if ( _data_id <= 0 ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "invalid data id" );
+        const int _batch_size) {
+        if (!_comm) {
+            THROW(SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm");
         }
-        else if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm pointer" );
+        if (_bundles.empty()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "empty bundles");
+        }
+        if (_batch_size <= 0) {
+            THROW(SYS_INVALID_INPUT_PARAM, boost::format("invalid batch size [%d]") % _batch_size);
         }
 
-        // =-=-=-=-=-=-=-
-        // gen query objects
-        genQueryOut_t* gen_out = 0;
-        genQueryInp_t  gen_inp;
-        memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
+        irods::GenQueryInpWrapper genquery_inp_wrapped;
+        genquery_inp_wrapped.get().maxRows = _batch_size;
 
-        gen_inp.maxRows = MAX_SQL_ROWS;
-
-        // =-=-=-=-=-=-=-
-        // add condition string matching data id
-        std::stringstream id_str;
-        id_str << _data_id;
-        std::string cond_str = "='" + id_str.str() + "'";
-        addInxVal( &gen_inp.sqlCondInp,
-                   COL_D_DATA_ID,
-                   cond_str.c_str() );
-
-        // =-=-=-=-=-=-=-
-        // add condition string matching leaf ids
         std::stringstream cond_ss;
-        for( auto bun : _bundles ) {
-            for( auto id : bun ) {
-                cond_ss << "='" << id << "' || ";
+        for (auto& bun : _bundles) {
+            for (auto id : bun) {
+                cond_ss << "= '" << id << "' || ";
             }
         }
-        cond_str = cond_ss.str();
-        cond_str = cond_str.substr(0,cond_str.size()-4);
-        addInxVal( &gen_inp.sqlCondInp,
-                   COL_D_RESC_ID,
-                   cond_str.c_str() );
+        const std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, "= '0'");
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_DATA_ID, 1);
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_DATA_REPL_NUM, 1);
+        addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_RESC_ID, 1);
 
-        // =-=-=-=-=-=-=-
-        // add condition string stating clean status only
-        addInxVal( &gen_inp.sqlCondInp,
-                   COL_D_REPL_STATUS,
-                   "= '1'" );
+        irods::GenQueryOutPtrWrapper genquery_out_ptr_wrapped;
+        const int status_rsGenQuery = rsGenQuery(_comm, &genquery_inp_wrapped.get(), &genquery_out_ptr_wrapped.get());
 
-        // =-=-=-=-=-=-=-
-        // request the data name, coll name, resc hier, mode
-        addInxIval( &gen_inp.selectInp,
-                    COL_DATA_NAME, 1 );
-        addInxIval( &gen_inp.selectInp,
-                    COL_COLL_NAME, 1 );
-        addInxIval( &gen_inp.selectInp,
-                    COL_DATA_MODE, 1 );
-        addInxIval( &gen_inp.selectInp,
-                    COL_D_RESC_ID, 1 );
-
-        // =-=-=-=-=-=-=-
-        // execute the query
-        int status = rsGenQuery( _comm, &gen_inp, &gen_out );
-        clearGenQueryInp( &gen_inp );
-        if ( status < 0 || 0 == gen_out ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       status,
-                       "genQuery failed." );
+        std::vector<ReplicaAndRescId> ret;
+        if (CAT_NO_ROWS_FOUND == status_rsGenQuery) {
+            return ret;
+        } else if (status_rsGenQuery < 0) {
+            THROW(
+                status_rsGenQuery,
+                boost::format("rsGenQuery failed. genquery_inp contents:\n%s\npossible iquest [%s]") %
+                genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
+        } else if (nullptr == genquery_out_ptr_wrapped.get()) {
+            THROW(
+                SYS_INTERNAL_NULL_INPUT_ERR,
+                boost::format("rsGenQuery failed. genquery_inp contents:\n%s\npossible iquest [%s]") %
+                genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
         }
 
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* data_name_result = getSqlResultByInx( gen_out, COL_DATA_NAME );
-        if ( !data_name_result ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       UNMATCHED_KEY_OR_INDEX,
-                       "null data_name sql result" );
+        sqlResult_t *data_id_results       = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_D_DATA_ID);
+        sqlResult_t *data_repl_num_results = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_DATA_REPL_NUM);
+        sqlResult_t *data_resc_id_results  = extract_sql_result(genquery_inp_wrapped.get(), genquery_out_ptr_wrapped.get(), COL_D_RESC_ID);
+
+        ret.reserve(genquery_out_ptr_wrapped.get()->rowCnt);
+        for (int i=0; i<genquery_out_ptr_wrapped.get()->rowCnt; ++i) {
+            ReplicaAndRescId repl_and_resc;
+            auto cast_genquery_result = [&genquery_inp_wrapped](int i, char *s) {
+                try {
+                    return boost::lexical_cast<rodsLong_t>(s);
+                } catch (const boost::bad_lexical_cast&) {
+                    THROW(
+                        INVALID_LEXICAL_CAST,
+                        boost::format("boost::lexical_cast failed. index [%d]. tried to cast [%s]. genquery_inp contents:\n%s\npossible iquest [%s]") %
+                        i %
+                        s %
+                        genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()) %
+                        genquery_inp_to_iquest_string(&genquery_inp_wrapped.get()));
+                }
+            };
+            repl_and_resc.data_id        = cast_genquery_result(i, &data_id_results      ->value[data_id_results      ->len * i]);
+            repl_and_resc.replica_number = cast_genquery_result(i, &data_repl_num_results->value[data_repl_num_results->len * i]);
+            repl_and_resc.resource_id    = cast_genquery_result(i, &data_resc_id_results ->value[data_resc_id_results ->len * i]);
+            ret.push_back(repl_and_resc);
+        }
+        return ret;
+    }
+
+    // throws irods::exception
+    std::string get_child_name_that_is_ancestor_of_bundle(
+        const std::string&   _resc_name,
+        const leaf_bundle_t& _bundle) {
+        std::string hier;
+        irods::error err = resc_mgr.leaf_id_to_hier(_bundle[0], hier);
+        if (!err.ok()) {
+            THROW(err.code(), err.result());
         }
 
-        // =-=-=-=-=-=-=-
-        // get its value
-        char* data_name_ptr = &data_name_result->value[ 0 ];
-        if ( !data_name_ptr ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null data_name_ptr result" );
-        }
-        std::string data_name = data_name_ptr;
-
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* coll_name_result = getSqlResultByInx( gen_out, COL_COLL_NAME );
-        if ( !coll_name_result ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       UNMATCHED_KEY_OR_INDEX,
-                       "null coll_name sql result" );
+        irods::hierarchy_parser parse;
+        err = parse.set_string(hier);
+        if (!err.ok()) {
+            THROW(err.code(), err.result());
         }
 
-        // =-=-=-=-=-=-=-
-        // get its value
-        char* coll_name_ptr = &coll_name_result->value[ 0 ];
-        if ( !coll_name_ptr ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null coll_name_ptr result" );
+        std::string ret;
+        err = parse.next(_resc_name, ret);
+        if (!err.ok()) {
+            THROW(err.code(), err.result());
         }
-        std::string coll_name = coll_name_ptr;
+        return ret;
+    }
 
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* resc_id_result = getSqlResultByInx( gen_out, COL_D_RESC_ID );
-        if ( !resc_id_result ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       UNMATCHED_KEY_OR_INDEX,
-                       "null resc_id sql result" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get its value
-        char* resc_id_ptr = &resc_id_result->value[ 0 ];
-        if ( !resc_id_ptr ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null resc_id_ptr result" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* data_mode_result = getSqlResultByInx( gen_out, COL_DATA_MODE );
-        if ( !data_mode_result ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       UNMATCHED_KEY_OR_INDEX,
-                       "null data_mode sql result" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get its value
-        char* data_mode_ptr = &data_mode_result->value[ 0 ];
-        if ( !data_mode_ptr ) {
-			freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null data_mode_ptr result" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // set the out variables
-        _obj_path  = coll_name                    +
-                     get_virtual_path_separator() +
-                     data_name;
-        _data_mode = atoi( data_mode_ptr );
-
-        irods::error ret = resc_mgr.leaf_id_to_hier( strtoll(resc_id_ptr,0,0), _resc_hier );
-        if(!ret.ok()) {
-            return PASS(ret);
-        }
-
-        freeGenQueryOut( &gen_out );
-        return SUCCESS();
-
-    } // get_source_data_object_attributes
-
-/// =-=-=-=-=-=-=-
-/// @brief high level function to gather all of the data objects
-///        which need rereplicated
-    error gather_data_objects_for_rebalance(
-        rsComm_t*                   _comm,
-        const int                   _limit,
-        size_t                      _child_idx,
-        std::vector<leaf_bundle_t>& _leaf_bundles,
-        dist_child_result_t& _results ) {
-        // =-=-=-=-=-=-=-
-        // clear incoming result set
-        _results.clear();
-
-        // =-=-=-=-=-=-=-
-        // check for dirty replicas first
-        error ret = gather_dirty_replicas_for_child(
-                        _comm,
-                        _leaf_bundles,
-                        _limit,
-                        _results );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // compute remaining limit as the difference between the
-        // original limit and the number of results;
-        int mod_limit = _limit - _results.size();
-
-        // =-=-=-=-=-=-=-
-        // query for remaining items which need re-replicated to this child
-        if( mod_limit > 0 ) {
-            int query_status = chlGetReplListForLeafBundles(
-                                   mod_limit,
-                                   _child_idx,
-                                   &_leaf_bundles,
-                                   &_results );
-            if ( CAT_NO_ROWS_FOUND != query_status ) {
-                return ERROR(
-                           query_status,
-                           "chlGetReplListForLeafBundles failed." );
+    std::string leaf_bundles_to_string(
+        const std::vector<leaf_bundle_t>& _leaf_bundles) {
+        std::stringstream ss;
+        for (auto& b : _leaf_bundles) {
+            ss << '[';
+            for (auto d : b) {
+                ss << d << ", ";
             }
+            ss << "], ";
         }
+        return ss.str();
+    }
 
-        return SUCCESS();
-
-    } // gather_data_objects_for_rebalance
-
-    error filter_data_id_for_repl_to_bundle(
-        rsComm_t*            _comm,
-        const rodsLong_t     _data_id,
-        const leaf_bundle_t& _bundle,
-        bool&                _repl_flg ) {
-        _repl_flg = false;
-
-        // =-=-=-=-=-=-=-
-        // build a general query
-        genQueryOut_t* gen_out = 0;
-        genQueryInp_t  gen_inp;
-        memset( &gen_inp, 0, sizeof( gen_inp ) );
-
-        // =-=-=-=-=-=-=-
-        // request the resource id as output
-        addInxIval( &gen_inp.selectInp,
-                    COL_D_RESC_ID, 1 );
-
-        // =-=-=-=-=-=-=-
-        // set the data id as the condition
-        std::stringstream cond_ss;
-        cond_ss << "= " << _data_id;
-        addInxVal(
-            &gen_inp.sqlCondInp,
-            COL_D_DATA_ID,
-            cond_ss.str().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // execute the query
-        int status = rsGenQuery( _comm, &gen_inp, &gen_out );
-        clearGenQueryInp( &gen_inp );
-        if ( CAT_NO_ROWS_FOUND == status ) {
-            // =-=-=-=-=-=-=-
-            // hopefully there are no dirty data objects
-            // and this is the typical code path
-            freeGenQueryOut( &gen_out );
-            return SUCCESS();
-
-        }
-        else if ( status < 0 || 0 == gen_out ) {
-            freeGenQueryOut( &gen_out );
-            return ERROR( status, "genQuery failed." );
-
-        }
-
-        // =-=-=-=-=-=-=-
-        // extract result
-        sqlResult_t* resc_id_results = getSqlResultByInx( gen_out, COL_D_RESC_ID );
-        if ( !resc_id_results ) {
-            freeGenQueryOut( &gen_out );
-            return ERROR(
-                       SYS_INTERNAL_NULL_INPUT_ERR,
-                       "null resc id result" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // iterate over the rows and capture the data ids
-        for ( int i = 0; i < gen_out->rowCnt; i++ ) {
-            // =-=-=-=-=-=-=-
-            // get its value
-            char* resc_id_ptr = &resc_id_results->value[ resc_id_results->len * i ];
-            int resc_id = atoi( resc_id_ptr );
-
-            // =-=-=-=-=-=-=-
-            // filter the result against the leaf bundle
-            auto res = std::find(
-                           std::begin(_bundle),
-                           std::end(_bundle),
-                           resc_id );
-            // we found a match in the leaf bundle so we do
-            // not require a replication to this child
-            if(std::end(_bundle) != res) {
-                _repl_flg = false;
-                break;
-            }
-        } // for i
-
-        freeGenQueryOut( &gen_out );
-
-
-        return SUCCESS();
-
-    } // filter_data_id_for_repl_to_bundle
-
-/// =-=-=-=-=-=-=-
-/// @brief high level function which process a result set from
-///        the above gathering function for a rebalancing operation
-    error proc_results_for_rebalance(
+    // throws irods::exception
+    void proc_results_for_rebalance(
         rsComm_t*                        _comm,
         const std::string&               _parent_resc_name,
         const std::string&               _child_resc_name,
         const size_t                     _bun_idx,
         const std::vector<leaf_bundle_t> _bundles,
-        const dist_child_result_t&       _results ) {
-
-        // =-=-=-=-=-=-=-
-        // check incoming params
-        if ( !_comm ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm pointer" );
-        }
-        else if ( _results.empty() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "empty results vector" );
+        const dist_child_result_t&       _data_ids_to_replicate) {
+        if (!_comm) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  boost::format("null comm pointer. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %
+                  _parent_resc_name %
+                  _child_resc_name %
+                  _bun_idx %
+                  leaf_bundles_to_string(_bundles));
         }
 
-        rError_t repl_errors;
-        memset(&repl_errors,0,sizeof(repl_errors));
-        replErrorStack(&_comm->rError, &repl_errors);
+        if (_data_ids_to_replicate.empty()) {
+            THROW(SYS_INVALID_INPUT_PARAM,
+                  boost::format("empty data id list. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %
+                  _parent_resc_name %
+                  _child_resc_name %
+                  _bun_idx %
+                  leaf_bundles_to_string(_bundles));
+        }
 
-        irods::error final_err = SUCCESS();
+        irods::error first_rebalance_error = SUCCESS();
+        for (auto data_id_to_replicate : _data_ids_to_replicate) {
+            const ReplicationSourceInfo source_info = get_source_data_object_attributes(_comm, data_id_to_replicate, _bundles);
 
-        // =-=-=-=-=-=-=-
-        // iterate over the result set and repl the objects
-        dist_child_result_t::const_iterator r_itr = _results.begin();
-        for ( ; r_itr != _results.end(); ++r_itr ) {
-            // =-=-=-=-=-=-=-
-            // get a valid source object from which to replicate
-            int src_mode = 0;
-            std::string obj_path, src_hier;
-            irods::error ret = get_source_data_object_attributes(
-                                   *r_itr,
-                                   _bundles,
-                                   _comm,
-                                   obj_path,
-                                   src_hier,
-                                   src_mode );
-            if ( !ret.ok() ) {
-                return PASS( ret );
-            }
-
-            // =-=-=-=-=-=-=-
-            // create a file object so we can resolve a valid
-            // hierarchy to which to replicate
-            file_object_ptr f_ptr( new file_object(
-                                       _comm,
-                                       obj_path,
-                                       "",
-                                       "",
-                                       0,
-                                       src_mode,
-                                       0 ) );
-            // =-=-=-=-=-=-=-
+            // create a file object so we can resolve a valid hierarchy to which to replicate
+            irods::file_object_ptr f_ptr(new irods::file_object(_comm, source_info.object_path, "", "", 0, source_info.data_mode, 0));
             // short circuit the magic re-repl
-            hierarchy_parser sub_parser;
-            sub_parser.set_string( src_hier );
-            std::string sub_hier;
-            sub_parser.str( sub_hier, _parent_resc_name );
-            f_ptr->in_pdmo( sub_hier );
-
-            // =-=-=-=-=-=-=-
-            // init the parser with the fragment of the
-            // upstream hierarchy not including the repl
-            // node as it should add itself
-            hierarchy_parser parser;
-            size_t pos = src_hier.find( _parent_resc_name );
-            if ( std::string::npos == pos ) {
-                std::stringstream msg;
-                msg << "missing repl name ["
-                    << _parent_resc_name
-                    << "] in source hier string ["
-                    << src_hier
-                    << "]";
-                return ERROR(
-                           SYS_INVALID_INPUT_PARAM,
-                           msg.str() );
+            {
+                irods::hierarchy_parser sub_parser;
+                sub_parser.set_string(source_info.resource_hierarchy);
+                std::string sub_hier;
+                sub_parser.str(sub_hier, _parent_resc_name);
+                f_ptr->in_pdmo(sub_hier);
             }
 
-            // =-=-=-=-=-=-=-
-            // substring hier from the root to the parent resc
-            std::string src_frag = src_hier.substr(
-                                       0, pos + _parent_resc_name.size() + 1 );
-            parser.set_string( src_frag );
+            // init the parser with the fragment of the upstream hierarchy not including the repl node as it should add itself
+            irods::hierarchy_parser parser;
+            const size_t pos = source_info.resource_hierarchy.find(_parent_resc_name);
+            if (std::string::npos == pos) {
+                THROW(SYS_INVALID_INPUT_PARAM, boost::format("missing repl name [%s] in source hier string [%s]") % _parent_resc_name % source_info.resource_hierarchy);
+            }
 
-            // =-=-=-=-=-=-=-
+            // substring hier from the root to the parent resc
+            std::string src_frag = source_info.resource_hierarchy.substr(0, pos + _parent_resc_name.size() + 1);
+            parser.set_string(src_frag);
+
             // handy reference to root resc name
             std::string root_resc;
-            parser.first_resc( root_resc );
+            parser.first_resc(root_resc);
 
-            // =-=-=-=-=-=-=-
             // resolve the target child resource plugin
-            resource_ptr dst_resc;
-            error r_err = resc_mgr.resolve(
-                              _child_resc_name,
-                              dst_resc );
-            if ( !r_err.ok() ) {
-                return PASS( r_err );
+            irods::resource_ptr dst_resc;
+            const irods::error err_resolve = resc_mgr.resolve(_child_resc_name, dst_resc);
+            if (!err_resolve.ok()) {
+                THROW(err_resolve.code(), boost::format("failed to resolve resource plugin. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%d]. resolve message [%s]") %
+                      _child_resc_name %
+                      _parent_resc_name %
+                      _bun_idx %
+                      leaf_bundles_to_string(_bundles) %
+                      data_id_to_replicate %
+                      err_resolve.result());
             }
 
-            // =-=-=-=-=-=-=-
-            // then we need to query the target resource and ask
-            // it to determine a dest resc hier for the repl
+            // then we need to query the target resource and ask it to determine a dest resc hier for the repl
             std::string host_name;
-            float            vote = 0.0;
-            r_err = dst_resc->call < const std::string*,
-            const std::string*,
-            hierarchy_parser*,
-            float* > (
+            float vote = 0.0;
+            const irods::error err_vote = dst_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
                 _comm,
-                RESOURCE_OP_RESOLVE_RESC_HIER,
+                irods::RESOURCE_OP_RESOLVE_RESC_HIER,
                 f_ptr,
-                &CREATE_OPERATION,
+                &irods::CREATE_OPERATION,
                 &host_name,
                 &parser,
                 &vote );
-            if ( !r_err.ok() ) {
-                return PASS( r_err );
+            if (!err_vote.ok()) {
+                THROW(err_resolve.code(), boost::format("failed to get dest hierarchy. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%d]. vote message [%s]") %
+                      _child_resc_name %
+                      _parent_resc_name %
+                      _bun_idx %
+                      leaf_bundles_to_string(_bundles) %
+                      data_id_to_replicate %
+                      err_vote.result());
             }
 
-            // =-=-=-=-=-=-=-
             // extract the hier from the parser
             std::string dst_hier;
-            parser.str( dst_hier );
-
-            // =-=-=-=-=-=-=-
-            // now that we have all the pieces in place, actually
-            // do the replication
-            r_err = repl_for_rebalance(
-                        _comm,
-                        obj_path,
-                        _parent_resc_name,
-                        src_hier,
-                        dst_hier,
-                        root_resc,
-                        root_resc,
-                        src_mode );
-            if ( !r_err.ok() ) {
-                final_err =  PASS( r_err );
-                irods::log(final_err);
-                if( _comm->rError.len < MAX_ERROR_MESSAGES ) {
-                    addRErrorMsg(
-                        &repl_errors,
-                        final_err.code(),
-                        final_err.result().c_str());
+            parser.str(dst_hier);
+            rodsLog(LOG_NOTICE, "proc_results_for_rebalance: creating new replica for data id [%d] from [%s] on [%s]", data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
+            const irods::error err_rebalance = repl_for_rebalance(
+                _comm,
+                source_info.object_path,
+                _parent_resc_name,
+                source_info.resource_hierarchy,
+                dst_hier,
+                root_resc,
+                root_resc,
+                source_info.data_mode);
+            if (!err_rebalance.ok()) {
+                if (first_rebalance_error.ok()) {
+                    first_rebalance_error = err_rebalance;
+                }
+                rodsLog(LOG_ERROR, "proc_results_for_rebalance: repl_for_rebalance failed. object path [%s] parent resc [%s] source hier [%s] dest hier [%s] root resc [%s] data mode [%d]",
+                        source_info.object_path.c_str(), _parent_resc_name.c_str(), source_info.resource_hierarchy.c_str(), dst_hier.c_str(), root_resc.c_str(), source_info.data_mode);
+                irods::log(PASS(err_rebalance));
+                if (_comm->rError.len < MAX_ERROR_MESSAGES) {
+                    addRErrorMsg(&_comm->rError, err_rebalance.code(), err_rebalance.result().c_str());
                 }
             }
+        }
 
-        } // for r_itr
+        if (!first_rebalance_error.ok()) {
+            THROW(first_rebalance_error.code(),
+                  boost::format("failed to resolve resource plugin. child resc name [%s] parent resc [%s] bundle index [%d] bundles [%s]. rebalance message [%s]") %
+                  _child_resc_name %
+                  _parent_resc_name %
+                  _bun_idx %
+                  leaf_bundles_to_string(_bundles) %
+                  first_rebalance_error.result());
+        }
+    }
+}
 
-        replErrorStack(&repl_errors, &_comm->rError);
+namespace irods {
+    // throws irods::exception
+    void update_out_of_date_replicas(
+        rsComm_t* _comm_ptr,
+        const std::vector<leaf_bundle_t>& _leaf_bundles,
+        const int _batch_size,
+        const std::string& _resource_name) {
 
-        return final_err;
+        while (true) {
+            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_comm_ptr, _leaf_bundles, _batch_size);
+            if (replicas_to_update.empty()) {
+                break;
+            }
 
-    } // proc_results_for_rebalance
+            error first_error = SUCCESS();
+            for (const auto& replica_to_update : replicas_to_update) {
+                std::string destination_hierarchy;
+                const error err_dst_hier = resc_mgr.leaf_id_to_hier(replica_to_update.resource_id, destination_hierarchy);
+                if (!err_dst_hier.ok()) {
+                    THROW(err_dst_hier.code(),
+                          boost::format("leaf_id_to_hier failed. data id [%d]. replica number [%d] resource id [%d]") %
+                          replica_to_update.data_id %
+                          replica_to_update.replica_number %
+                          replica_to_update.resource_id);
+                }
 
-}; // namespace irods
+                ReplicationSourceInfo source_info = get_source_data_object_attributes(_comm_ptr, replica_to_update.data_id, _leaf_bundles);
+                hierarchy_parser hierarchy_parser;
+                const error err_parser = hierarchy_parser.set_string(source_info.resource_hierarchy);
+                if (!err_parser.ok()) {
+                    THROW(
+                        err_parser.code(),
+                        boost::format("set_string failed. resource hierarchy [%s]. object path [%s]") %
+                                      source_info.resource_hierarchy %
+                        source_info.object_path);
+                }
+                std::string root_resc;
+                const error err_first_resc = hierarchy_parser.first_resc(root_resc);
+                if (!err_first_resc.ok()) {
+                    THROW(
+                        err_first_resc.code(),
+                        boost::format("first_resc failed. resource hierarchy [%s]. object path [%s]") %
+                        source_info.resource_hierarchy %
+                        source_info.object_path);
+                }
+
+                rodsLog(LOG_NOTICE, "update_out_of_date_replicas: updating out-of-date replica for data id [%ji] from [%s] to [%s]",
+                        static_cast<intmax_t>(replica_to_update.data_id),
+                        source_info.resource_hierarchy.c_str(),
+                        destination_hierarchy.c_str());
+                const error err_repl = repl_for_rebalance(
+                    _comm_ptr,
+                    source_info.object_path,
+                    _resource_name,
+                    source_info.resource_hierarchy,
+                    destination_hierarchy,
+                    root_resc,
+                    root_resc,
+                    source_info.data_mode);
+
+                if (!err_repl.ok()) {
+                    if (first_error.ok()) {
+                        first_error = err_repl;
+                    }
+                    const error error_to_log = PASS(err_repl);
+                    if (_comm_ptr->rError.len < MAX_ERROR_MESSAGES) {
+                        addRErrorMsg(&_comm_ptr->rError, error_to_log.code(), error_to_log.result().c_str());
+                    }
+                    rodsLog(LOG_ERROR,
+                            "update_out_of_date_replicas: repl_for_rebalance failed with code [%ji] and message [%s]. object [%s] source hierarchy [%s] data id [%ji] destination repl num [%ji] destination hierarchy [%s]",
+                            static_cast<intmax_t>(err_repl.code()), err_repl.result().c_str(), source_info.object_path.c_str(), source_info.resource_hierarchy.c_str(),
+                            static_cast<intmax_t>(replica_to_update.data_id), static_cast<intmax_t>(replica_to_update.replica_number), destination_hierarchy.c_str());
+                }
+            }
+            if (!first_error.ok()) {
+                THROW(first_error.code(), first_error.result());
+            }
+        }
+    }
+
+    // throws irods::exception
+    void create_missing_replicas(
+        rsComm_t* _comm_ptr,
+        const std::vector<leaf_bundle_t>& _leaf_bundles,
+        const int _batch_size,
+        const std::string& _resource_name) {
+        for (size_t i=0; i<_leaf_bundles.size(); ++i) {
+            const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
+            while (true) {
+                dist_child_result_t data_ids_needing_new_replicas;
+                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundles(_batch_size, i, &_leaf_bundles, &data_ids_needing_new_replicas);
+                if (status_chlGetReplListForLeafBundles != 0) {
+                    THROW(status_chlGetReplListForLeafBundles,
+                          boost::format("failed to get data objects needing new replicas for resource [%s] bundle index [%d] bundles [%s]")
+                          % _resource_name
+                          % i
+                          % leaf_bundles_to_string(_leaf_bundles));
+                }
+                if (data_ids_needing_new_replicas.empty()) {
+                    break;
+                }
+
+                proc_results_for_rebalance(_comm_ptr, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas);
+            }
+        }
+    }
+} // namespace irods
