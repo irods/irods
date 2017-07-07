@@ -375,6 +375,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc " + self.testresc + " comment 'none'")
         self.admin.assert_icommand_fail("iadmin lr " + self.testresc, 'STDOUT_SINGLELINE', mycomment)
 
+    def test_modify_resource_data_paths__3598(self):
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "Vault")
+        self.admin.assert_icommand("iadmin modrescdatapaths demoResc /var/lib/irods/Vault/ /var/lib/irods/NEWVAULT/", 'STDOUT_SINGLELINE', 'Warning', input='yes\n')
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', 'NEWVAULT')
+        self.admin.assert_icommand("iadmin modrescdatapaths demoResc /var/lib/irods/NEWVAULT/ /var/lib/irods/Vault/", 'STDOUT_SINGLELINE', 'Warning', input='yes\n')
+        self.admin.assert_icommand("ils -L", 'STDOUT_SINGLELINE', "Vault")
+
     def test_create_and_remove_new_user(self):
         testuser1 = "testaddandremoveuser"
         # should not be listed
