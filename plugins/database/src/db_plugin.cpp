@@ -8755,12 +8755,12 @@ irods::error db_mod_resc_data_paths_op(
         }
         cllBindVars[cllBindVarCount++] = _old_path;
         cllBindVars[cllBindVarCount++] = _new_path;
-        cllBindVars[cllBindVarCount++] = _resc_name;
+        cllBindVars[cllBindVarCount++] = rescId;
         cllBindVars[cllBindVarCount++] = oldPath2;
         cllBindVars[cllBindVarCount++] = userName2;
         cllBindVars[cllBindVarCount++] = zoneToUse;
         status =  cmlExecuteNoAnswerSql(
-                      "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
+                      "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_id=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
                       &icss );
     }
     else {
@@ -8769,10 +8769,10 @@ irods::error db_mod_resc_data_paths_op(
         }
         cllBindVars[cllBindVarCount++] = _old_path;
         cllBindVars[cllBindVarCount++] = _new_path;
-        cllBindVars[cllBindVarCount++] = _resc_name;
+        cllBindVars[cllBindVarCount++] = rescId;
         cllBindVars[cllBindVarCount++] = oldPath2;
         status =  cmlExecuteNoAnswerSql(
-                      "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ?",
+                      "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_id=? and data_path like ?",
                       &icss );
     }
     if ( status != 0 ) {
