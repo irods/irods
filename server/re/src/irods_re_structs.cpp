@@ -132,7 +132,7 @@ int applyRuleWithInOutVars(
     if(!err.ok()) {
         rodsLog(
             LOG_ERROR,
-            "applyRuleWithOutVars: %d, %s",
+            "applyRuleWithInOutVars: %d, %s",
             err.code(),
             err.result().c_str()
         );
