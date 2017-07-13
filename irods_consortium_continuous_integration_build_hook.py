@@ -60,7 +60,7 @@ def install_os_specific_dependencies_apt():
             irods_python_ci_utilities.install_os_packages(['libstdc++6'])
 
     irods_python_ci_utilities.install_os_packages([
-        'fakeroot', 'help2man', 'libbz2-dev', 'libcurl4-gnutls-dev', 'libpam0g-dev',
+        'fakeroot', 'help2man', 'libbz2-dev', 'libcurl4-gnutls-dev', 'libkrb5-dev', 'libpam0g-dev',
         'libssl-dev', 'make', 'python-dev', 'unixodbc', 'unixodbc-dev', 'zlib1g-dev',
     ])
 
