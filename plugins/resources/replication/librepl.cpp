@@ -1619,7 +1619,7 @@ irods::error repl_file_resolve_hierarchy(
     irods::hierarchy_parser* _inout_parser,
     float*                   _out_vote ) {
 
-    // store the operation for later decision making
+    // store the operation for later decision making - issue #3525
     _ctx.prop_map().set<std::string>(OPERATION_KW, *_operation);
 
     irods::error ret;
