@@ -31,15 +31,19 @@ class ResourceBase(lib.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         print "run_resource_setup - BEGIN"
         self.testfile = "pydevtest_testfile.txt"
         self.testdir = "pydevtest_testdir"
-        self.testresc = "pydevtest_TestResc"
-        self.anotherresc = "pydevtest_AnotherResc"
 
         hostname = lib.get_hostname()
         hostuser = getpass.getuser()
+
+        self.testresc = "pydevtest_TestResc"
+        self.testvault = "/tmp/" + hostuser + "/pydevtest_" + self.testresc
+        self.anotherresc = "pydevtest_AnotherResc"
+        self.anothervault = "/tmp/" + hostuser + "/pydevtest_" + self.anotherresc
+
         self.admin.assert_icommand(
-            ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.testresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":" + self.testvault], 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand(
-            ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/pydevtest_" + self.anotherresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":" + self.anothervault], 'STDOUT_SINGLELINE', 'unixfilesystem')
         with open(self.testfile, 'w') as f:
             f.write('I AM A TESTFILE -- [' + self.testfile + ']')
         self.admin.run_icommand(['imkdir', self.testdir])

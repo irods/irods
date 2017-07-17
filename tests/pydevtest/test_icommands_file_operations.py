@@ -42,6 +42,21 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                             "Extra files in vault:\n" + str(vault_files - set(local_files)))
         return (local_dir, local_files)
 
+    def ichksum_with_multiple_bad_replicas(self):
+        filename = 'checksum_test.txt'
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand("iput -K -R " + self.testresc + " " + filename)
+        self.admin.assert_icommand("irepl -R " + self.anotherresc + " " + filename)
+        with open(os.path.join(self.anothervault, "home", self.admin.username, self.admin._session_id, filename), "w") as f:
+            f.write("SHAS FOR THE SHA256 GOD MD5 FOR THE MD5 THRONE")
+        with open(os.path.join(self.testvault, "home", self.admin.username, self.admin._session_id, filename), "w") as f:
+            f.write("SHAS FOR THE SHA256 GOD MD5 FOR THE MD5 THRONE")
+        _, out, _ = self.admin.run_icommand("ichksum -aK " + filename)
+        search_string = 'hierarchy [' + self.testresc + ']'
+        self.assertTrue(search_string in out, 'String missing from ichksum -aK output:\n\t' + search_string)
+        search_string = 'hierarchy [' + self.anotherresc + ']'
+        self.assertTrue(search_string in out, 'String missing from ichksum -aK output:\n\t' + search_string)
+
     def iput_to_root_collection(self):
         filename = 'original.txt'
         filepath = lib.create_local_testfile(filename)
