@@ -36,15 +36,19 @@ class ResourceBase(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         print("run_resource_setup - BEGIN")
         self.testfile = "testfile.txt"
         self.testdir = "testdir"
-        self.testresc = "TestResc"
-        self.anotherresc = "AnotherResc"
 
         hostname = lib.get_hostname()
         hostuser = getpass.getuser()
+
+        self.testresc = "TestResc"
+        self.testvault = "/tmp/" + hostuser + "/" + self.testresc
+        self.anotherresc = "AnotherResc"
+        self.anothervault = "/tmp/" + hostuser + "/" + self.anotherresc
+
         self.admin.assert_icommand(
-            ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/" + self.testresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', "mkresc", self.testresc, 'unixfilesystem', hostname + ":" + self.testvault], 'STDOUT_SINGLELINE', 'unixfilesystem')
         self.admin.assert_icommand(
-            ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":/tmp/" + hostuser + "/" + self.anotherresc], 'STDOUT_SINGLELINE', 'unixfilesystem')
+            ['iadmin', "mkresc", self.anotherresc, 'unixfilesystem', hostname + ":" + self.anothervault], 'STDOUT_SINGLELINE', 'unixfilesystem')
         with open(self.testfile, 'wt') as f:
             print('I AM A TESTFILE -- [' + self.testfile + ']', file=f, end='')
         self.admin.assert_icommand(['imkdir', self.testdir])
