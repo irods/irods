@@ -81,6 +81,7 @@
 const std::string NUM_REPL_KW( "num_repl" );
 const std::string READ_KW( "read" );
 const std::string READ_RANDOM_POLICY( "random" );
+const std::string OPERATION_KW( "operation" );
 
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
@@ -478,6 +479,13 @@ irods::error repl_file_modified(
 
             ret = child->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
             if ( ( result = ASSERT_PASS( ret, "Failed while calling child operation." ) ).ok() ) {
+
+                // only call the replication mechanism on create and write operations
+                std::string operation;
+                _ctx.prop_map().get<std::string>(OPERATION_KW, operation);
+                if(irods::CREATE_OPERATION != operation && irods::WRITE_OPERATION != operation) {
+                    return SUCCESS();
+                }
 
                 irods::hierarchy_parser sub_parser;
                 sub_parser.set_string( file_obj->in_pdmo() );
@@ -1610,6 +1618,10 @@ irods::error repl_file_resolve_hierarchy(
     const std::string*       _curr_host,
     irods::hierarchy_parser* _inout_parser,
     float*                   _out_vote ) {
+
+    // store the operation for later decision making
+    _ctx.prop_map().set<std::string>(OPERATION_KW, *_operation);
+
     irods::error ret;
     if (*_operation != irods::UNLINK_OPERATION) {
         // recreate the child list for a write operation as the
