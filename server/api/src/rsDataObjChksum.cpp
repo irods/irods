@@ -68,146 +68,114 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
 int
 _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                   char **outChksumStr, dataObjInfo_t **dataObjInfoHead ) {
-    int status;
-    dataObjInfo_t *tmpDataObjInfo;
-    int allFlag;
-    int verifyFlag;
-    int forceFlag;
-
-    char* inp_chksum = getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW );
-
-    if ( getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL ) {
-        allFlag = 1;
-    }
-    else {
-        allFlag = 0;
-    }
-
-    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
-        verifyFlag = 1;
-    }
-    else {
-        verifyFlag = 0;
-    }
-
-    if ( getValByKey( &dataObjInp->condInput, FORCE_CHKSUM_KW ) != NULL ) {
-        forceFlag = 1;
-    }
-    else {
-        forceFlag = 0;
-    }
 
     *dataObjInfoHead = NULL;
     *outChksumStr = NULL;
 
-    status = getDataObjInfoIncSpecColl( rsComm, dataObjInp, dataObjInfoHead );
-    if ( status < 0 ) {
-        return status;
+    bool allFlag = getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL;
+    bool verifyFlag = getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL;
+    bool forceFlag = getValByKey( &dataObjInp->condInput, FORCE_CHKSUM_KW ) != NULL;
+
+    int status_getDataObjInfoIncSpecColl = getDataObjInfoIncSpecColl( rsComm, dataObjInp, dataObjInfoHead );
+    if ( status_getDataObjInfoIncSpecColl < 0 ) {
+        return status_getDataObjInfoIncSpecColl;
     }
-    else if ( allFlag == 0 ) {
+
+    int status = 0;
+    if ( !allFlag ) {
         /* screen out any stale copies */
-        status = sortObjInfoForOpen( dataObjInfoHead, &dataObjInp->condInput, 0 );
-        if ( status < 0 ) {
-            return status;
+        int status_sortObjInfoForOpen = sortObjInfoForOpen( dataObjInfoHead, &dataObjInp->condInput, 0 );
+        if ( status_sortObjInfoForOpen < 0 ) {
+            return status_sortObjInfoForOpen;
         }
 
-        tmpDataObjInfo = *dataObjInfoHead;
-        if ( tmpDataObjInfo->next == NULL ) {
-            /* the only copy */
-            if ( strlen( tmpDataObjInfo->chksum ) > 0 ) {
-                if ( verifyFlag == 0 && forceFlag == 0 ) {
+        dataObjInfo_t *tmpDataObjInfo = *dataObjInfoHead;
+        do {
+            if ( ( tmpDataObjInfo->replStatus > 0 || !(*dataObjInfoHead)->next ) && strlen( tmpDataObjInfo->chksum ) > 0 ) {
+                if ( !verifyFlag && !forceFlag ) {
                     *outChksumStr = strdup( tmpDataObjInfo->chksum );
                     return 0;
                 }
-            }
-        }
-        else {
-            while ( tmpDataObjInfo != NULL ) {
-                if ( tmpDataObjInfo->replStatus > 0 && strlen( tmpDataObjInfo->chksum ) > 0 ) {
-                    if ( verifyFlag == 0 && forceFlag == 0 ) {
-                        *outChksumStr = strdup( tmpDataObjInfo->chksum );
-                        return 0;
-                    }
-                    else {
-                        break;
-                    }
+                else {
+                    break;
                 }
-
-                tmpDataObjInfo = tmpDataObjInfo->next;
             }
-        }
-        /* need to compute the chksum */
-        if ( tmpDataObjInfo == NULL ) {
+
+        } while ( (tmpDataObjInfo = tmpDataObjInfo->next) );
+
+        if ( !tmpDataObjInfo ) {
             tmpDataObjInfo = *dataObjInfoHead;
         }
-        if ( verifyFlag > 0 && strlen( tmpDataObjInfo->chksum ) > 0 ) {
+
+        /* need to compute the chksum */
+        if ( verifyFlag && strlen( tmpDataObjInfo->chksum ) > 0 ) {
             status = verifyDatObjChksum( rsComm, tmpDataObjInfo,
                                          outChksumStr );
         }
         else {
-            addKeyVal( &tmpDataObjInfo->condInput, ORIG_CHKSUM_KW, inp_chksum );
+            addKeyVal( &tmpDataObjInfo->condInput, ORIG_CHKSUM_KW, getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW ) );
             status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo, outChksumStr );
         }
-
-        return status;
-
-    }
-
-    /* allFlag == 1 */
-    tmpDataObjInfo = *dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
-        char *tmpChksumStr = 0;
-        //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
-        std::string resc_class;
-        irods::error err = irods::get_resource_property< std::string >(
-                               tmpDataObjInfo->rescId,
-                               irods::RESOURCE_CLASS,
-                               resc_class );
-        if ( !err.ok() ) {
-            irods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
-        }
-
-        if ( resc_class == irods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
-            /* don't do BUNDLE_CL. should be done on the bundle file */
-            tmpDataObjInfo = tmpDataObjInfo->next;
-            status = 0;
-            continue;
-        }
-        if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
-            /* need to chksum no matter what */
-            status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,
-                                              &tmpChksumStr );
-        }
-        else if ( verifyFlag > 0 ) {
-            status = verifyDatObjChksum( rsComm, tmpDataObjInfo,
-                                         &tmpChksumStr );
-        }
-        else if ( forceFlag > 0 ) {
-            status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,
-                                              &tmpChksumStr );
-        }
-        else {
-            tmpChksumStr = strdup( tmpDataObjInfo->chksum );
-            status = 0;
-        }
-
-        if ( status < 0 ) {
-            return status;
-        }
-        if ( tmpDataObjInfo->replStatus > 0 && *outChksumStr == NULL ) {
-            *outChksumStr = tmpChksumStr;
-        }
-        else {
-            /* save it */
-            if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
-                rstrcpy( tmpDataObjInfo->chksum, tmpChksumStr, NAME_LEN );
+    } else {
+        dataObjInfo_t *tmpDataObjInfo = *dataObjInfoHead;
+        int verifyStatus = 0;
+        do {
+            //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+            std::string resc_class;
+            irods::error err = irods::get_resource_property< std::string >(
+                                tmpDataObjInfo->rescId,
+                                irods::RESOURCE_CLASS,
+                                resc_class );
+            if ( !err.ok() ) {
+                irods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
             }
-            free( tmpChksumStr );
+            if ( resc_class == irods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
+                /* don't do BUNDLE_CL. should be done on the bundle file */
+                tmpDataObjInfo = tmpDataObjInfo->next;
+                status = 0;
+                continue;
+            }
+
+            char *tmpChksumStr = 0;
+            if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
+                /* need to chksum no matter what */
+                status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,
+                                                &tmpChksumStr );
+            }
+            else if ( verifyFlag ) {
+                if ( int code = verifyDatObjChksum( rsComm, tmpDataObjInfo, &tmpChksumStr ) ) {
+                    verifyStatus = code;
+                }
+            }
+            else if ( forceFlag ) {
+                status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,
+                                                &tmpChksumStr );
+            }
+            else {
+                tmpChksumStr = strdup( tmpDataObjInfo->chksum );
+                status = 0;
+            }
+
+            if ( status < 0 ) {
+                return status;
+            }
+            if ( tmpDataObjInfo->replStatus > 0 && *outChksumStr == NULL ) {
+                *outChksumStr = tmpChksumStr;
+            }
+            else {
+                /* save it */
+                if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
+                    rstrcpy( tmpDataObjInfo->chksum, tmpChksumStr, NAME_LEN );
+                }
+                free( tmpChksumStr );
+            }
+        } while ( (tmpDataObjInfo = tmpDataObjInfo->next) );
+        if ( *outChksumStr == NULL ) {
+            *outChksumStr = strdup( ( *dataObjInfoHead )->chksum );
         }
-        tmpDataObjInfo = tmpDataObjInfo->next;
-    }
-    if ( *outChksumStr == NULL ) {
-        *outChksumStr = strdup( ( *dataObjInfoHead )->chksum );
+        if (status >= 0 && verifyStatus < 0) {
+            status = verifyStatus;
+        }
     }
 
     return status;
