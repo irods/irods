@@ -4025,6 +4025,80 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         self.assertNotEqual(rc, 0, 'ifsck should have non-zero error code on checksum mismatch')
         os.unlink(filename)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Reads server log')
+    def test_rebalance_logging_replica_update__3463(self):
+        filename = 'test_rebalance_logging_replica_update__3463'
+        file_size = 400
+        lib.make_file(filename, file_size)
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['iput', '-f', '-n', '0', filename])
+        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
+        self.assertEquals(2, lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'updating out-of-date replica for data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        os.unlink(filename)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Reads server log')
+    def test_rebalance_logging_replica_creation__3463(self):
+        filename = 'test_rebalance_logging_replica_creation__3463'
+        file_size = 400
+        lib.make_file(filename, file_size)
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
+        self.assertEquals(2, lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'creating new replica for data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        os.unlink(filename)
+
+    def test_rebalance_batching_replica_creation__3570(self):
+        filename = 'test_rebalance_batching_replica_creation__3570'
+        default_rebalance_batch_size = 500 # from librepl.cpp
+        num_data_objects_to_use = default_rebalance_batch_size + 10
+        file_size = 400
+        lib.make_file(filename, file_size)
+        for i in range(num_data_objects_to_use):
+            self.admin.assert_icommand(['iput', filename, filename + '_' + str(i)])
+            self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename + '_' + str(i)], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
+
+        _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
+        self.assertEqual(len(out.split('\n')), num_data_objects_to_use + 6)
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
+        self.assertEqual(len(out.split('\n')), 3*num_data_objects_to_use + 6)
+        os.unlink(filename)
+
+    def test_rebalance_batching_replica_update__3570(self):
+        filename = 'test_rebalance_batching_replica_update__3570'
+        default_rebalance_batch_size = 500 # from librepl.cpp
+        num_data_objects_to_use = default_rebalance_batch_size + 10
+        file_size = 327
+        lib.make_file(filename, file_size)
+        for i in range(num_data_objects_to_use):
+            self.admin.assert_icommand(['iput', filename, filename + '_' + str(i)])
+            self.admin.assert_icommand(['iput', '-R', 'demoResc', '-f', '-n0', filename, filename + '_' + str(i)])
+
+        _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
+        def count_good_and_bad(ils_l_output):
+            num_up_to_date = 0
+            num_out_of_date = 0
+            for line in ils_l_output.split('\n'):
+                if filename in line:
+                    if '&' in line:
+                        num_up_to_date += 1
+                    else:
+                        num_out_of_date += 1
+            return num_up_to_date, num_out_of_date
+        num_up_to_date, num_out_of_date = count_good_and_bad(out)
+        self.assertEqual(num_up_to_date, num_data_objects_to_use)
+        self.assertEqual(num_out_of_date, 2*num_data_objects_to_use)
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
+        num_up_to_date, num_out_of_date = count_good_and_bad(out)
+        self.assertEqual(num_up_to_date, 3*num_data_objects_to_use)
+        self.assertEqual(num_out_of_date, 0)
+        os.unlink(filename)
+
 class Test_Resource_MultiLayered(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
