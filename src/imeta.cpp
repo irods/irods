@@ -35,11 +35,11 @@ int printCount = 0;
 
 int usage( char *subOpt );
 
-int do_command( 
+int do_command(
     std::vector< std::string >              _input,
     boost::program_options::variables_map&  _vm );
 
-int do_interactive( 
+int do_interactive(
     boost::program_options::variables_map&  _vm );
 /*
  print the results of a general query.
@@ -104,7 +104,7 @@ showDataObj( char *name, char *attrName, int wild ) {
     char myFileName[MAX_NAME_LEN];
     int status;
     /* Fourth 'time set' column is only used in longMode */
-    char *columnNames[] = { "attribute", "value", "units", "time set" };    
+    char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -653,8 +653,6 @@ int queryDataObj( char *cmdToken[] ) {
         genQueryInp.sqlCondInp.len += 2;
     }
 
-    std::cout << "XXXXX cmdToken[cmdIx] = " << *cmdToken[cmdIx] << std::endl;
-
     if ( *cmdToken[cmdIx] != '\0' ) {
         printf( "Unrecognized input\n" );
         return -2;
@@ -1093,7 +1091,7 @@ modAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
                  status, myName, mySubName );
         free( mySubName );
     }
-    
+
     return status;
 }
 
@@ -1204,7 +1202,7 @@ parse_program_options (
         add("subargs", -1);
 
     try {
-        _parsed = 
+        _parsed =
             po::command_line_parser( _argc, _argv ).
             options( global ).
             positional( pos ).
@@ -1271,7 +1269,7 @@ int do_interactive( boost::program_options::variables_map& _vm ) {
     return 0;
 }
 
-int do_command( 
+int do_command(
     std::vector< std::string >              _input,
     boost::program_options::variables_map&  _vm ) {
     namespace po = boost::program_options;
@@ -1318,7 +1316,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( add_desc ).
                     positional( add_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1344,7 +1342,7 @@ int do_command(
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
-        
+
         if ( !_vm.count( "value" ) ) {
             std::cout << std::endl
                       << "Error: Not enough arguments provided to "
@@ -1404,7 +1402,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( rm_desc ).
                     positional( rm_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1479,7 +1477,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( rmi_desc ).
                     positional( rmi_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1565,7 +1563,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( mod_desc ).
                     positional( mod_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1627,7 +1625,7 @@ int do_command(
                 units = temp;
             }
         }
-        
+
         if ( _vm.count( "opt_3" ) ) {
             std::string temp = _vm["opt_3"].as<std::string>();
 
@@ -1698,7 +1696,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( set_desc ).
                     positional( set_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1777,7 +1775,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( ls_desc ).
                     positional( ls_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1873,7 +1871,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( qu_desc ).
                     positional( qu_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -1978,7 +1976,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( cp_desc ).
                     positional( cp_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -2070,7 +2068,7 @@ int do_command(
                 po::command_line_parser(_input).
                     options( help_desc ).
                     positional( help_pos ).
-                    style(po::command_line_style::unix_style ^ 
+                    style(po::command_line_style::unix_style ^
                         po::command_line_style::allow_short).
                     allow_unregistered().
                     run(), _vm );
@@ -2171,8 +2169,8 @@ main( int argc, char **argv ) {
         // No command entered; run in interactive mode
         do_interactive( _vm );
     } else {
-        std::vector< std::string > command_to_be_parsed = 
-            boost::program_options::collect_unrecognized( _parsed.options, 
+        std::vector< std::string > command_to_be_parsed =
+            boost::program_options::collect_unrecognized( _parsed.options,
                                                           boost::program_options::include_positional );
 
         do_command( command_to_be_parsed, _vm );
