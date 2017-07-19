@@ -178,7 +178,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         for i in range(5):
             object_name = base_name + str(i)
             self.admin.assert_icommand(['iput', self.testfile, object_name])
-        
+
         self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
 
         attribute = 'test_imeta_addw_attribute'
@@ -196,7 +196,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         for i in range(5):
             object_name = base_name + str(i)
             self.admin.assert_icommand(['iput', self.testfile, object_name])
-        
+
         self.admin.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
 
         attribute = 'test_imeta_addw_attribute'
@@ -209,7 +209,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         for i in range(5):
             object_name = base_name + str(i)
             self.user0.assert_icommand(['iput', self.testfile, object_name])
-        
+
         self.user0.assert_icommand('ils', 'STDOUT_SINGLELINE', 'file_')
 
         attribute = 'test_imeta_addw_attribute'
@@ -250,3 +250,12 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
     def test_imeta_qu_d_comparison_2748(self):
         self.helper_imeta_qu_comparison_2748('-d')
+
+    def test_imeta_qu_d_no_extra_output(self):
+        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
+        _, out, _ = self.admin.assert_icommand(['imeta', 'qu', '-d', 'a', 'like', 'v'], 'STDOUT_SINGLELINE', self.testfile)
+        split_output = out.split()
+        self.assertEqual(split_output[0], 'collection:', out)
+        self.assertEqual(split_output[1], self.admin.session_collection, out)
+        self.assertEqual(split_output[2], 'dataObj:', out)
+        self.assertEqual(split_output[3], 'testfile.txt', out)
