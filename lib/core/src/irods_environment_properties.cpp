@@ -1,8 +1,3 @@
-/*
- * irods_environment_properties.cpp
- *
- */
-
 #include "irods_environment_properties.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_default_paths.hpp"
@@ -18,15 +13,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
-
-
-#define BUF_LEN 500
 
 
 namespace irods {
-
     error get_json_environment_file(
         std::string& _env_file,
         std::string& _session_file ) {
@@ -85,39 +74,37 @@ namespace irods {
         return instance;
     }
 
-    environment_properties::environment_properties()
-    {
+    environment_properties::environment_properties() {
         capture();
     } // ctor
 
-
-
     void environment_properties::capture() {
         std::string json_file, json_session_file;
-        error ret = get_json_environment_file(
-                        json_file,
-                        json_session_file );
+        error ret = get_json_environment_file(json_file, json_session_file);
+        if (!ret.ok()) {
+            irods::log(PASS(ret));
+            return;
+        }
 
-        if ( ret.ok() && fs::exists( json_file ) ) {
+        if (!boost::filesystem::exists(json_file)) {
+            rodsLog(LOG_ERROR, "environment_properties::capture: missing environment file. should be at [%s]", json_file.c_str());
+            return;
+        }
+
+        try {
+            capture_json( json_file );
+            config_props_.set< std::string >( CFG_IRODS_ENVIRONMENT_FILE_KW, json_file );
             try {
-                capture_json( json_file );
-                config_props_.set< std::string >( CFG_IRODS_ENVIRONMENT_FILE_KW, json_file );
-                try {
-                    capture_json( json_session_file );
-                } catch ( const irods::exception& e ) {
-                    // debug - irods::log( PASS( ret ) );
-                }
-                config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, json_session_file );
-                return;
+                capture_json( json_session_file );
             } catch ( const irods::exception& e ) {
-                irods::log(e);
+                // debug - irods::log( PASS( ret ) );
             }
+            config_props_.set< std::string >( CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW, json_session_file );
+            return;
+        } catch ( const irods::exception& e ) {
+            irods::log(e);
         }
-        else {
-            irods::log( PASS( ret ) );
-        }
-
-    } // capture
+    }
 
     void environment_properties::capture_json(
         const std::string& _fn ) {
