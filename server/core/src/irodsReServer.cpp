@@ -317,11 +317,10 @@ int usage( char *prog ) {
 
 int
 chkLogfileName( const char *logDir, const char *logFileName ) {
-    time_t myTime;
     char *logFile = NULL;
     int i;
 
-    myTime = time( 0 );
+    time_t myTime = time( 0 );
     if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
         /* not time yet */
         return 0;
@@ -333,8 +332,6 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
         free( logFile );
         return 0;
     }
-
-    /* open the logfile */
 
     if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
         fprintf( stderr, "Unable to open logFile %s\n", logFile );
@@ -368,8 +365,6 @@ void
 reServerMain( char* logDir ) {
 
     genQueryOut_t *genQueryOut = NULL;
-    time_t endTime;
-    int runCnt;
     reExec_t reExec;
     int repeatedQueryErrorCount = 0;
 
@@ -398,30 +393,29 @@ reServerMain( char* logDir ) {
                       NO_RECONN, &rcConnect_error_msg );
               if (!rc_comm) {
                   rodsLog(LOG_ERROR, "rcConnect failed %ji, %s", static_cast<intmax_t>(rcConnect_error_msg.status), rcConnect_error_msg.msg);
-                  rodsSleep(1, 0);
+                  reSvrSleep();
                   continue;
               }
 
             int status = clientLogin( rc_comm );
             if (status < 0) {
+                const int status_rcDisconnect = rcDisconnect(rc_comm);
+                if (status_rcDisconnect < 0) {
+                    rodsLog(LOG_ERROR, "reServerMain: rcDisconnect failed [%d]", status_rcDisconnect);
+                }
                 rodsLog(LOG_ERROR, "clientLogin failed %d", status);
-                rodsSleep(1, 0);
+                reSvrSleep();
                 continue;
             }
 
 #ifndef SYSLOG
             chkLogfileName( logDir, RULE_EXEC_LOGFILE );
 #endif
-            rodsLog(
-                LOG_DEBUG,
-                "reServerMain: checking the queue for jobs" );
             status = getReInfo( rc_comm, &genQueryOut );
             if ( status < 0 ) {
                 if ( status != CAT_NO_ROWS_FOUND ) {
-                    rodsLog( LOG_ERROR,
-                             "reServerMain: getReInfo error. status = %d", status );
-                }
-                else {   // JMC - backport 4520
+                    rodsLog(LOG_ERROR, "reServerMain: getReInfo error. status = %d", status );
+                } else {   // JMC - backport 4520
                     repeatedQueryErrorCount++;
                 }
                 rcDisconnect( rc_comm );
@@ -432,8 +426,8 @@ reServerMain( char* logDir ) {
                 repeatedQueryErrorCount = 0;
             }
 
-            endTime = time( NULL ) + RE_SERVER_EXEC_TIME;
-            runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
+            const time_t endTime = time( NULL ) + re_exec_time;
+            int runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
 
             if ( runCnt > 0 ||
                     ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
@@ -460,27 +454,22 @@ reServerMain( char* logDir ) {
             if ( runCnt > 0 ||
                     ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
                 rcDisconnect( rc_comm );
+                reSvrSleep();
                 continue;
-            }
-            else {
+            } else {
                 /* nothing got run */
                 reSvrSleep( );
             }
 
             rcDisconnect( rc_comm );
-
         } // while
 
-        rodsLog(
-            LOG_NOTICE,
-            "rule engine is exiting" );
-
-    }
-    catch ( irods::exception& e_ ) {
+        rodsLog(LOG_NOTICE, "rule engine is exiting");
+    } catch (const irods::exception& e_) {
+        rodsLog(LOG_ERROR, "rule engine is exiting because of irods::exception");
         std::cerr << e_.what() << std::endl;
         return;
     }
-
 } // reServerMain
 
 int reSvrSleep( ) {
