@@ -113,6 +113,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         finally :
             self.admin.assert_icommand(['iadmin', 'rmuser', username])
 
+    def test_quota_actions_3509(self):
+        self.admin.assert_icommand("iadmin suq " + self.user0.username + " " + self.testresc + " 50")
+        self.admin.assert_icommand("iadmin suq " + self.user1.username + " " + self.testresc + " 60")
+        self.admin.assert_icommand("iadmin cu")
+
     # PASSWORDS
 
     def test_iadmin_scrambling_and_descrambling(self):
