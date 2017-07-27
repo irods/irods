@@ -9,10 +9,64 @@
 #include "getRemoteZoneResc.h"
 #include "rsDataObjChksum.hpp"
 #include "rsModDataObjMeta.hpp"
+#include "rsFileStat.hpp"
+#include "boost/lexical_cast.hpp"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
+
+
+namespace {
+    // assumes zone redirection has already occurred, and that the function is being called on a server in the zone the object belongs to
+    int verifyVaultSizeEqualsDatabaseSize( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
+        fileStatInp_t fileStatInp;
+        memset(&fileStatInp, 0, sizeof(fileStatInp));
+        rstrcpy(fileStatInp.objPath, dataObjInfo->objPath, sizeof(fileStatInp.objPath));
+        rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, sizeof(fileStatInp.rescHier));
+        rstrcpy(fileStatInp.fileName, dataObjInfo->filePath, sizeof(fileStatInp.fileName));
+        rodsStat_t *fileStatOut = nullptr;
+        const int status_rsFileStat = rsFileStat(rsComm, &fileStatInp, &fileStatOut);
+        if (status_rsFileStat < 0) {
+            rodsLog(LOG_ERROR, "verifyVaultSizeEqualsDatabaseSize: rsFileStat of objPath [%s] rescHier [%s] fileName [%s] failed with [%d]", fileStatInp.objPath, fileStatInp.rescHier, fileStatInp.fileName, status_rsFileStat);
+            return status_rsFileStat;
+        }
+        const rodsLong_t size_in_vault = fileStatOut->st_size;
+        free(fileStatOut);
+        genQueryInp_t genQueryInp;
+        memset(&genQueryInp, 0, sizeof(genQueryInp));
+        addInxIval(&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+        addInxVal(&genQueryInp.sqlCondInp, COL_D_DATA_PATH, (boost::format(" = '%s'") % dataObjInfo->filePath).str().c_str());
+        genQueryInp.maxRows = 1;
+        genQueryOut_t *genQueryOut = nullptr;
+        const int status_rsGenQuery = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+        clearGenQueryInp(&genQueryInp);
+        if (status_rsGenQuery < 0) {
+            if (status_rsGenQuery == CAT_NO_ROWS_FOUND) {
+                freeGenQueryOut(&genQueryOut);
+            }
+            rodsLog(LOG_ERROR, "_rsFileChksum: rsGenQuery of [%s] [%s] [%s] failed with [%d]", dataObjInfo->filePath, dataObjInfo->rescHier, dataObjInfo->objPath, status_rsGenQuery);
+            return status_rsGenQuery;
+        }
+
+        rodsLong_t size_in_database;
+        try {
+            size_in_database = boost::lexical_cast<rodsLong_t>(genQueryOut->sqlResult[0].value);
+        } catch (const boost::bad_lexical_cast&) {
+            freeGenQueryOut(&genQueryOut);
+            rodsLog(LOG_ERROR, "_rsFileChksum: lexical_cast of [%s] for [%s] [%s] [%s] failed", genQueryOut->sqlResult[0].value, dataObjInfo->filePath, dataObjInfo->rescHier, dataObjInfo->objPath);
+            return INVALID_LEXICAL_CAST;
+        }
+        freeGenQueryOut(&genQueryOut);
+        if (size_in_database != size_in_vault) {
+            rodsLog(LOG_ERROR, "_rsFileChksum: file size mismatch. resource hierarchy [%s] vault path [%s] size [%ji] object path [%s] size [%ji]", dataObjInfo->rescHier, dataObjInfo->filePath,
+                    static_cast<intmax_t>(size_in_vault), dataObjInfo->objPath, static_cast<intmax_t>(size_in_database));
+            return USER_FILE_SIZE_MISMATCH;
+        }
+        return 0;
+    }
+}
 
 int
 rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
@@ -75,6 +129,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     bool allFlag = getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL;
     bool verifyFlag = getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL;
     bool forceFlag = getValByKey( &dataObjInp->condInput, FORCE_CHKSUM_KW ) != NULL;
+    const bool shouldVerifyVaultSizeEqualsDatabaseSize = getValByKey( &dataObjInp->condInput, VERIFY_VAULT_SIZE_EQUALS_DATABASE_SIZE_KW ) != NULL;
 
     int status_getDataObjInfoIncSpecColl = getDataObjInfoIncSpecColl( rsComm, dataObjInp, dataObjInfoHead );
     if ( status_getDataObjInfoIncSpecColl < 0 ) {
@@ -111,6 +166,11 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if ( verifyFlag && strlen( tmpDataObjInfo->chksum ) > 0 ) {
             status = verifyDatObjChksum( rsComm, tmpDataObjInfo,
                                          outChksumStr );
+            if (status == 0 && shouldVerifyVaultSizeEqualsDatabaseSize) {
+                if (int code = verifyVaultSizeEqualsDatabaseSize(rsComm, tmpDataObjInfo)) {
+                    status = code;
+                }
+            }
         }
         else {
             addKeyVal( &tmpDataObjInfo->condInput, ORIG_CHKSUM_KW, getValByKey( &dataObjInp->condInput, ORIG_CHKSUM_KW ) );
@@ -145,6 +205,11 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             else if ( verifyFlag ) {
                 if ( int code = verifyDatObjChksum( rsComm, tmpDataObjInfo, &tmpChksumStr ) ) {
                     verifyStatus = code;
+                }
+                if (verifyStatus == 0 && shouldVerifyVaultSizeEqualsDatabaseSize) {
+                    if (int code = verifyVaultSizeEqualsDatabaseSize(rsComm, tmpDataObjInfo)) {
+                        verifyStatus = code;
+                    }
                 }
             }
             else if ( forceFlag ) {
