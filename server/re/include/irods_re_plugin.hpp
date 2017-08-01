@@ -388,9 +388,6 @@ namespace irods {
         }
 
         ~rule_engine_manager() {
-            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
-                _inp.re_->stop_operation(_inp.re_ctx_);
-            });
         }
 
         error init_rule_engine(re_pack_inp<T>& _inp) {
@@ -402,15 +399,22 @@ namespace irods {
                 return PASS( err );
             }
 
-            pre->start_operation(_inp.re_ctx_);
-            if(!err.ok()) {
-                return PASS( err );
-            }
-
             _inp.re_ = pre;
             re_packs_.push_back(_inp);
 
             return SUCCESS();
+        }
+
+        void call_start_operations() {
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
+                _inp.re_->start_operation(_inp.re_ctx_);
+            });
+        }
+
+        void call_stop_operations() {
+            std::for_each(begin(re_packs_), end(re_packs_), [](re_pack_inp<T> &_inp) {
+                _inp.re_->stop_operation(_inp.re_ctx_);
+            });
         }
 
         microservice_manager<C> &ms_mgr_;

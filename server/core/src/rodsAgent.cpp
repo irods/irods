@@ -481,6 +481,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
+    irods::re_plugin_globals->global_re_mgr.call_start_operations();
 
     status = getRodsEnv( &rsComm.myEnv );
 
@@ -604,6 +605,8 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         irods::log( PASS( ret ) );
         return ret.code();
     }
+
+    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
 
     new_net_obj->to_server( &rsComm );
     cleanup();
