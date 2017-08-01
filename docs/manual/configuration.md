@@ -110,6 +110,76 @@ This file contains the following top level entries:
   - `db_name` (required) - The name of the database used as the iCAT
   - `db_username` (required) - The database user name
 
+## /etc/irods/hosts_config.json
+
+This file serves as an iRODS-owned version of /etc/hosts.  It defines network aliases when you may not have permission to update hostnames on the servers in the Zone.
+
+The order of precedence of hostname resolution in iRODS is `hosts_config.json`, then the local `/etc/hosts` file, then DNS.
+
+The `local` entry can define multiple addresses for the local server.
+
+The `remote` entries each define a remote server with a set of aliases.
+
+The first address in each stanza is the preferred address and will be used for connecting to clients and remote servers.  The additional addresses are the aliases.
+
+An example `hosts_config.json`:
+
+```
+{
+    "host_entries": [
+        {
+            "address_type" : "local",
+            "addresses" : [
+                   {"address" : "xx.yy.nn.zz"},
+                   {"address" : "longname.example.org"}
+             ]
+        },
+        {
+            "address_type" : "remote",
+            "addresses" : [
+                   {"address" : "aa.bb.cc.dd"},
+                   {"address" : "fqdn.example.org"},
+                   {"address" : "morefqdn.example.org"}
+             ]
+        },
+        {
+            "address_type" : "remote",
+            "addresses" : [
+                   {"address" : "ddd.eee.fff.xxx"},
+                   {"address" : "another.example.org"}
+             ]
+        },
+    ]
+}
+```
+
+## /etc/irods/host_access_control_config.json
+
+This file defines an iRODS-specific firewall.
+
+This file allows certain users, groups, and hosts access to iRODS.  It is consulted when `msiCheckHostAccessControl` is invoked by the rule engine (on by default via `acChkHostAccessControl`).
+
+The first entry specifies a user that is allowed to connect to this iRODS server. An entry of "all" means all users are allowed.
+
+The second entry specifies a group name that is allowed to connect. An entry of "all" means, all groups are allowed.
+
+The third and fourth columns specify the host address and the network mask. Together, they define the client IPv4 addresses that are permitted to connect to the iRODS server.  The mask entry specifies which bits will be ignored (i.e. after those bits are ignored, the incoming connection host must match the address entry).
+
+An example `host_access_control.json` file:
+
+```
+{
+    "access_entries": [
+        {
+            "user" : "all",
+            "group" : "all",
+            "address" : "127.0.0.1",
+            "mask" : "255.255.255.255"
+        }
+     ]
+}
+```
+
 ## ~/.irods/irods_environment.json
 
 This is the main iRODS configuration file defining the iRODS environment. Any changes are effective immediately since iCommands reload their environment on every execution.
