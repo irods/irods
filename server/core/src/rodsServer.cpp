@@ -626,7 +626,7 @@ serverExit()
 void
 usage( char *prog ) {
     printf( "Usage: %s [-uvVqs]\n", prog );
-    printf( " -u  user command level, remain attached to the tty\n" );
+    printf( " -u  user command level, remain attached to the tty (foreground)\n" );
     printf( " -v  verbose (LOG_NOTICE)\n" );
     printf( " -V  very verbose (LOG_DEBUG10)\n" );
     printf( " -q  quiet (LOG_ERROR)\n" );
