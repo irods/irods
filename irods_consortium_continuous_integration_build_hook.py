@@ -40,10 +40,9 @@ def install_os_specific_dependencies_apt():
         'make', 'python-dev', 'unixodbc', 'unixodbc-dev', 'zlib1g-dev',
     ])
 
-    if irods_python_ci_utilities.get_distribution_version_major() == '12':
-        extract_dir = extract_oci_tar()
-        irods_python_ci_utilities.install_os_packages(['alien', 'libaio1'])
-        irods_python_ci_utilities.subprocess_get_output('sudo alien -i {0}/*'.format(extract_dir), shell=True, check_rc=True)
+    extract_dir = extract_oci_tar()
+    irods_python_ci_utilities.install_os_packages(['alien', 'libaio1'])
+    irods_python_ci_utilities.subprocess_get_output('sudo alien -i {0}/*'.format(extract_dir), shell=True, check_rc=True)
 
 def install_os_specific_dependencies_yum():
     packages_to_install = [
@@ -83,8 +82,7 @@ def build_irods(debug_build):
 
 def should_build_oracle_plugin():
     if irods_python_ci_utilities.get_distribution() == 'Ubuntu':
-        if irods_python_ci_utilities.get_distribution_version_major() == '12':
-            return True
+        return True
     if irods_python_ci_utilities.get_distribution() == 'Centos':
         return True
     return False
