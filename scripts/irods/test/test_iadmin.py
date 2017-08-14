@@ -1203,6 +1203,20 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         out, _, _ = self.admin.run_icommand(['iadmin', 'lua', username])
         self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
 
+    def test_aua_multiple_distinguished_name__issue_3620(self):
+        username = 'issue_3620_user'
+        authentication_name_1 = '3620_user_1@TEST.AUTHENTICATION'
+        authentication_name_2 = '3620_user_2@TEST.AUTHENTICATION'
+        self.admin.assert_icommand(['iadmin', 'mkuser', username, 'rodsuser'])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_2])
+        self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
+        _, out, _ = self.admin.assert_icommand(['iadmin', 'lua', username], 'STDOUT_MULTILINE', [username + ' ' + authentication_name_1, username + ' ' + authentication_name_2])
+        self.assertEqual(len(out.splitlines()), 2, 'iadmin lua did not return exactly two lines')
+
+
     def test_addchildtoresc_forbidden_characters_3449(self):
         self.admin.assert_icommand(['iadmin', 'mkresc', 'parent', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
         self.admin.assert_icommand(['iadmin', 'mkresc', 'child', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
