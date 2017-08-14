@@ -957,7 +957,7 @@ _rescHasParentOrChild( char* rescId ) {
 
 }
 
-bool _userInRUserAuth( char* userName, char* zoneName ) {
+bool _userInRUserAuth( const char* userName, const char* zoneName, const char* auth_name ) {
     int status;
     rodsLong_t iVal;
     irods::sql_logger logger( "_userInRUserAuth", logSQL );
@@ -967,8 +967,9 @@ bool _userInRUserAuth( char* userName, char* zoneName ) {
         std::vector<std::string> bindVars;
         bindVars.push_back( userName );
         bindVars.push_back( zoneName );
+        bindVars.push_back( auth_name );
         status = cmlGetIntegerValueFromSql(
-                    "select user_id from R_USER_AUTH where user_id=(select user_id from R_USER_MAIN where user_name=? and zone_name=?)",
+                    "select user_id from R_USER_AUTH where user_id=(select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name=?",
                     &iVal, bindVars, &icss );
     }
     if ( status != 0 ) {
@@ -8115,8 +8116,7 @@ checkLevel:
         char form2[] = "update R_USER_MAIN set %s=%s, modify_ts=? where user_name=? and zone_name=?";
         char form3[] = "update R_USER_PASSWORD set rcat_password=?, modify_ts=? where user_id=?";
         char form4[] = "insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
-        char form5a[] = "insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
-        char form5b[] = "update R_USER_AUTH set user_auth_name=? where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+        char form5[] = "insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
         char form6[] = "delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
 #if MY_ICAT
         char form7[] = "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
@@ -8229,17 +8229,14 @@ checkLevel:
         }
         if ( strcmp( _option, "addAuth" ) == 0 ) {
             opType = 4;
-            if ( !_userInRUserAuth( userName2, zoneName ) ) {
-                rstrcpy( tSQL, form5a, MAX_SQL_SIZE );
+            if ( !_userInRUserAuth( userName2, zoneName, _new_value ) ) {
+                rstrcpy( tSQL, form5, MAX_SQL_SIZE );
                 cllBindVars[cllBindVarCount++] = userName2;
                 cllBindVars[cllBindVarCount++] = zoneName;
                 cllBindVars[cllBindVarCount++] = _new_value;
                 cllBindVars[cllBindVarCount++] = myTime;
             } else {
-                rstrcpy( tSQL, form5b, MAX_SQL_SIZE );
-                cllBindVars[cllBindVarCount++] = _new_value;
-                cllBindVars[cllBindVarCount++] = userName2;
-                cllBindVars[cllBindVarCount++] = zoneName;
+                return SUCCESS();
             }
 
             if ( logSQL != 0 ) {
