@@ -805,7 +805,7 @@ runRuleExec( reExecProc_t * reExecProc ) {
     /* execute the rule */
     reExecProc->status = applyRule( myRuleExec->ruleName,
                                     reiAndArg->rei->msParamArray,
-                                    reiAndArg->rei, SAVE_REI );
+                                    reiAndArg->rei, NO_SAVE_REI );
 
     if ( reiAndArg->rei->status < 0 ) {
         reExecProc->status = reiAndArg->rei->status;
