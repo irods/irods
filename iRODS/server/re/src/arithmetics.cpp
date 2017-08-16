@@ -1523,7 +1523,7 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
     }
 error:
     generateErrMsg( localErrorMsg, NODE_EXPR_POS( pattern ), pattern->base, errbuf );
-    addRErrorMsg( errmsg, RE_PATTERN_NOT_MATCHED, errbuf );
+    rodsLog(LOG_DEBUG, errbuf);
     return newErrorRes( r, RE_PATTERN_NOT_MATCHED );
 
 }
