@@ -56,7 +56,99 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
     /* Only input parameters are evaluated here;
      * The original AST node is needed for parameters of other IO types in evaluateFunction3.
      */
-    if ( force || getIOType( expr ) == IO_TYPE_INPUT ) {
+    int discardResult = ( reiSaveFlag & DISCARD_EXPRESSION_RESULT ) != 0;
+    if ( discardResult ) {
+        switch ( getNodeType( expr ) ) {
+        case TK_BOOL:
+            res->exprType = newSimpType( T_UNSPECED, r );
+            break;
+        case TK_INT:
+            res->exprType = newSimpType( T_UNSPECED, r );
+            break;
+        case TK_DOUBLE:
+            res->exprType = newSimpType( T_UNSPECED, r );
+            break;
+        case TK_STRING:
+            res->exprType = newSimpType( T_UNSPECED, r );
+            break;
+        case TK_VAR:
+            res->exprType = newSimpType( T_UNSPECED, r );
+            break;
+        case TK_TEXT:
+            fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
+            if ( fd != NULL && fd->exprType != NULL ) {
+                int nArgs = 0;
+                ExprType *type = fd->exprType;
+                while ( getNodeType( type ) == T_CONS && strcmp( type->text, FUNC ) == 0 ) {
+                    type = type->subtrees[1];
+                    nArgs ++;
+                }
+                if ( nArgs == 0 ) {
+                    Node *appNode = newPartialApplication( expr, newTupleRes( 0, NULL, r ), 0, r );
+                    res = evaluateFunction3( appNode, applyAll, expr, env, rei, reiSaveFlag, errmsg, r );
+                }
+                else {
+                    res->exprType = newSimpType( T_UNSPECED, r );
+                }
+            }
+            else {
+                res->exprType = newSimpType( T_UNSPECED, r );
+            }
+            break;
+
+
+        case N_APPLICATION:
+            /* try to evaluate as a function, */
+            /*
+                                    printf("start execing %s\n", oper1);
+                                    printEnvToStdOut(env);
+
+            */
+            funcRes = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
+            if ( getNodeType( funcRes ) == N_ERROR ) {
+                res = funcRes;
+                break;
+            }
+            /* printTree(expr->subtrees[1], 0); */
+            argRes = evaluateExpression3( expr->subtrees[1], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
+            if ( getNodeType( argRes ) == N_ERROR ) {
+                res = argRes;
+                break;
+            }
+            res = evaluateFunctionApplication( funcRes, argRes, applyAll, expr, rei, reiSaveFlag, env, errmsg, r );
+            /*
+                                    printf("finish execing %s\n", oper1);
+                                    printEnvToStdOut(env);
+            */
+            break;
+        case N_TUPLE:
+            for ( i = 0; i < expr->degree; i++ ) {
+                res = evaluateExpression3( expr->subtrees[i], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
+                if ( getNodeType( res ) == N_ERROR ) {
+                    break;
+                }
+            }
+            break;
+        case N_ACTIONS_RECOVERY:
+            res = evaluateActions( expr->subtrees[0], expr->subtrees[1], applyAll, rei, reiSaveFlag, env, errmsg, r );
+            break;
+
+        case N_ACTIONS:
+            generateErrMsg( "error: evaluate actions using function evaluateExpression3, use function evaluateActions instead.", NODE_EXPR_POS( expr ), expr->base, errbuf );
+            addRErrorMsg( errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf );
+            res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
+            break;
+        case N_EXTERN_DEF:
+            res = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
+            break;
+        default:
+            generateErrMsg( "error: unsupported ast node type.", NODE_EXPR_POS( expr ), expr->base, errbuf );
+            addRErrorMsg( errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf );
+            res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
+            break;
+        }
+    }
+    else if ( force || getIOType( expr ) == IO_TYPE_INPUT ) {
         switch ( getNodeType( expr ) ) {
         case TK_BOOL:
             res->exprType = newSimpType( T_BOOL, r );
@@ -145,6 +237,9 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             generateErrMsg( "error: evaluate actions using function evaluateExpression3, use function evaluateActions instead.", NODE_EXPR_POS( expr ), expr->base, errbuf );
             addRErrorMsg( errmsg, RE_UNSUPPORTED_AST_NODE_TYPE, errbuf );
             res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
+            break;
+        case N_EXTERN_DEF:
+            res = evaluateExpression3( expr->subtrees[0], applyAll > 1 ? applyAll : 0, 0, rei, reiSaveFlag, env, errmsg, r );
             break;
         default:
             generateErrMsg( "error: unsupported ast node type.", NODE_EXPR_POS( expr ), expr->base, errbuf );
@@ -376,7 +471,7 @@ Res* evaluateActions( Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei,
                 cutFlag = 1;
                 continue;
             }
-            res = evaluateExpression3( nodei, applyAll, 0, rei, reiSaveFlag, env, errmsg, r );
+            res = evaluateExpression3( nodei, applyAll, 0, rei, reiSaveFlag | (i == expr->degree - 1? 0 : DISCARD_EXPRESSION_RESULT), env, errmsg, r );
             if ( getNodeType( res ) == N_ERROR ) {
 #ifndef DEBUG
                 char *errAction = getNodeType( nodei ) == N_APPLICATION ? N_APP_FUNC( nodei )->text : nodei->text;
@@ -441,13 +536,15 @@ Res* evaluateActions( Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei,
 Res *evaluateFunctionApplication( Node *func, Node *arg, int applyAll, Node *node, ruleExecInfo_t* rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r ) {
     Res *res;
     char errbuf[ERR_MSG_LEN];
+    int discardResult = ( reiSaveFlag & DISCARD_EXPRESSION_RESULT ) != 0;
     switch ( getNodeType( func ) ) {
     case N_SYM_LINK:
     case N_PARTIAL_APPLICATION:
         res = newPartialApplication( func, arg, RES_FUNC_N_ARGS( func ) - 1, r );
         if ( RES_FUNC_N_ARGS( res ) == 0 ) {
             res = evaluateFunction3( res, applyAll, node, env, rei, reiSaveFlag, errmsg, r );
-        }
+        } else if(discardResult)
+            res = newUnspecifiedRes( r );
         return res;
     default:
         generateErrMsg( "unsupported function node type.", NODE_EXPR_POS( node ), node->base, errbuf );
@@ -464,6 +561,7 @@ Res *evaluateFunctionApplication( Node *func, Node *arg, int applyAll, Node *nod
 Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleExecInfo_t* rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     unsigned int i;
     unsigned int n;
+    int discardResult = ( reiSaveFlag & DISCARD_EXPRESSION_RESULT ) != 0;
     i = 0;
     Node *appFuncRes = appRes;
     while ( getNodeType( appFuncRes ) == N_PARTIAL_APPLICATION ) {
@@ -517,7 +615,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
                 generateAndAddErrMsg( "unsupported output parameter type", appArgs[i], RE_UNSUPPORTED_AST_NODE_TYPE, errmsg );
                 RETURN;
             }
-            args[i] = evaluateExpression3( appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag, env, errmsg, newRegion );
+            args[i] = evaluateExpression3( appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, newRegion );
             if ( getNodeType( args[i] ) == N_ERROR ) {
                 res = ( Res * )args[i];
                 RETURN;
@@ -547,7 +645,7 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
             }
             else {
                 ioParam[i] = IO_TYPE_INPUT;
-                args[i] = evaluateExpression3( appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag, env, errmsg, newRegion );
+                args[i] = evaluateExpression3( appArgs[i], applyAll > 1 ? applyAll : 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, newRegion );
                 if ( getNodeType( args[i] ) == N_ERROR ) {
                     res = ( Res * )args[i];
                     RETURN;
@@ -626,6 +724,39 @@ Res* evaluateFunction3( Node *appRes, int applyAll, Node *node, Env *env, ruleEx
     }
 
     if ( fd != NULL ) {
+      if(discardResult)
+        switch ( getNodeType( fd ) ) {
+        case N_FD_DECONSTRUCTOR:
+            res = newUnspecifiedRes( r );
+            break;
+        case N_FD_CONSTRUCTOR:
+            res = newUnspecifiedRes( r );
+            break;
+        case N_FD_FUNCTION:
+            res = (Res *) FD_SMSI_FUNC_PTR( fd )( &argsProcessed[0], n, node, rei, reiSaveFlag,  env, errmsg, newRegion );
+            if(getNodeType(res) != N_ERROR) {
+                switch ( TYPE( res ) ) {
+                    case T_BREAK:
+                    case T_SUCCESS:
+                        break;
+                    default:
+                        res = newUnspecifiedRes( r );
+                        break;
+                }
+            }
+            break;
+        case N_FD_EXTERNAL:
+            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            break;
+        case N_FD_RULE_INDEX_LIST:
+            res = execAction3( fn, &argsProcessed[0], n, applyAll, node, nEnv, rei, reiSaveFlag, errmsg, newRegion );
+            break;
+        default:
+            res = newErrorRes( r, RE_UNSUPPORTED_AST_NODE_TYPE );
+            generateAndAddErrMsg( "unsupported function descriptor type", node, RE_UNSUPPORTED_AST_NODE_TYPE, errmsg );
+            RETURN;
+        }
+      else
         switch ( getNodeType( fd ) ) {
         case N_FD_DECONSTRUCTOR:
             res = deconstruct( &argsProcessed[0], FD_PROJ( fd ) );
@@ -1101,7 +1232,6 @@ ret:
 
 
 }
-#define SYSTEM_SPACE_RULE 0x100
 /*
  * look up rule node by rulename from index
  * apply rule condition index if possible
@@ -1334,7 +1464,7 @@ Res* execRuleNodeRes( Node *rule, Res** args, unsigned int argc, int applyAll, E
         return newErrorRes( r, statusInitEnv );
     }
     /* printEnvToStdOut(envNew->current); */
-    Res *res = evaluateExpression3( ruleCondition, 0, 0, rei, reiSaveFlag,  envNew, errmsg, rNew );
+    Res *res = evaluateExpression3( ruleCondition, 0, 0, rei, reiSaveFlag & ~ DISCARD_EXPRESSION_RESULT,  envNew, errmsg, rNew );
     /* todo consolidate every error into T_ERROR except OOM */
     if ( getNodeType( res ) != N_ERROR && TYPE( res ) == T_BOOL && RES_BOOL_VAL( res ) != 0 ) {
         if ( getNodeType( ruleAction ) == N_ACTIONS ) {
@@ -1413,7 +1543,7 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
                 key = N_APP_FUNC( N_APP_ARG( pattern, 1 ) )->text;
             }
             else {
-                Res *res = evaluateExpression3( N_APP_ARG( pattern, 1 ), 0, 1, rei, reiSaveFlag, env, errmsg, r );
+                Res *res = evaluateExpression3( N_APP_ARG( pattern, 1 ), 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
                 if ( res->exprType != NULL && TYPE( res ) == T_STRING ) {
                     key = res->text;
                 }
@@ -1443,7 +1573,7 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
                 res = res2;
             }
             else {
-                res = evaluateExpression3( N_APP_ARG( pattern, 0 ), 0, 0, rei, reiSaveFlag, env, errmsg, r ); /* kvp */
+                res = evaluateExpression3( N_APP_ARG( pattern, 0 ), 0, 0, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r ); /* kvp */
                 CASCADE_N_ERROR( res );
                 RE_ERROR2( TYPE( res ) != T_IRODS || strcmp( res->exprType->text, KeyValPair_MS_T ) != 0, "not a KeyValPair." );
             }
@@ -1510,19 +1640,19 @@ Res* matchPattern( Node *pattern, Node *val, Env *env, ruleExecInfo_t *rei, int 
         return newIntRes( r, 0 );
     case TK_BOOL:
         RE_ERROR2( getNodeType( v ) != N_VAL || TYPE( v ) != T_BOOL, "pattern mismatch value is not a boolean." );
-        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r );
+        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
         CASCADE_N_ERROR( res );
         RE_ERROR2( RES_BOOL_VAL( res ) != RES_BOOL_VAL( v ) , "pattern mismatch boolean." );
         return newIntRes( r, 0 );
     case TK_INT:
         RE_ERROR2( getNodeType( v ) != N_VAL || ( TYPE( v ) != T_INT && TYPE( v ) != T_DOUBLE ), "pattern mismatch value is not an integer." );
-        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r );
+        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
         CASCADE_N_ERROR( res );
         RE_ERROR2( RES_INT_VAL( res ) != ( TYPE( v ) == T_INT ? RES_INT_VAL( v ) : RES_DOUBLE_VAL( v ) ) , "pattern mismatch integer." );
         return newIntRes( r, 0 );
     case TK_DOUBLE:
         RE_ERROR2( getNodeType( v ) != N_VAL || ( TYPE( v ) != T_DOUBLE && TYPE( v ) != T_INT ), "pattern mismatch value is not a double." );
-        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag, env, errmsg, r );
+        res = evaluateExpression3( pattern, 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
         CASCADE_N_ERROR( res );
         RE_ERROR2( RES_DOUBLE_VAL( res ) != ( TYPE( v ) == T_DOUBLE ? RES_DOUBLE_VAL( v ) : RES_INT_VAL( v ) ), "pattern mismatch integer." );
         return newIntRes( r, 0 );

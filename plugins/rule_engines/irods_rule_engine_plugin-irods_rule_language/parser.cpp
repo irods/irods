@@ -1263,6 +1263,11 @@ if ( !done ) {
     break;
 }
 END_TRY(term0)
+OPTIONAL_BEGIN(typeascription)
+    TTEXT(":");
+    NT2(_Type, 0, 0);
+    BUILD_NODE( N_EXTERN_DEF, "EXTERN", &start, 2, 2 );
+OPTIONAL_END(typeascription)
 PARSER_FUNC_END( Term )
 
 PARSER_FUNC_BEGIN1( StringExpression, Token *tk )
