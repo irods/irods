@@ -89,6 +89,9 @@
 #define getIOType(n) ((n)->option & OPTION_IO_TYPE_MASK)
 #define setIOType(n, v) (n)->option ^= ((n)->option & OPTION_IO_TYPE_MASK) ^ (v);
 
+#define SYSTEM_SPACE_RULE 0x100
+#define DISCARD_EXPRESSION_RESULT 0x200
+
 typedef struct node Node;
 typedef struct node ExprType;
 typedef struct node Res;

@@ -147,7 +147,7 @@ Node *wrapToActions( Node* node, Region* r ) {
     return node;
 }
 Res *smsi_ifExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+    Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
@@ -160,7 +160,7 @@ Res *smsi_ifExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFla
 }
 
 Res *smsi_if2Exec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+    Res *res = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
@@ -182,7 +182,7 @@ Res *smsi_do( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, E
 
 }
 Res *smsi_letExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+    Res *res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
@@ -198,7 +198,7 @@ Res *smsi_letExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
     return res;
 }
 Res *smsi_matchExec( Node** params, int n, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = evaluateExpression3( params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+    Res *res = evaluateExpression3( params[0], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
@@ -226,7 +226,7 @@ Res *smsi_whileExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSave
     GC_BEGIN
     while ( 1 ) {
 
-        cond = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
+        cond = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, GC_REGION );
         if ( getNodeType( cond ) == N_ERROR ) {
             res = cond;
             break;
@@ -260,7 +260,7 @@ Res *smsi_forExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
 
     Res *init, *cond, *res = NULL, *step;
     Region* rnew = make_region( 0, NULL );
-    init = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, rnew );
+    init = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag | DISCARD_EXPRESSION_RESULT, env, errmsg, rnew );
     if ( getNodeType( init ) == N_ERROR ) {
         res = init;
         cpEnv( env, r );
@@ -271,7 +271,7 @@ Res *smsi_forExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
     GC_BEGIN
     while ( 1 ) {
 
-        cond = evaluateExpression3( ( Node * )params[1], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
+        cond = evaluateExpression3( ( Node * )params[1], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, GC_REGION );
         if ( getNodeType( cond ) == N_ERROR ) {
             res = cond;
             break;
@@ -292,7 +292,7 @@ Res *smsi_forExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
         else if ( TYPE( res ) == T_SUCCESS ) {
             break;
         }
-        step = evaluateExpression3( ( Node * )params[2], 0, 1, rei, reiSaveFlag, env, errmsg, GC_REGION );
+        step = evaluateExpression3( ( Node * )params[2], 0, 1, rei, reiSaveFlag & DISCARD_EXPRESSION_RESULT, env, errmsg, GC_REGION );
         if ( getNodeType( step ) == N_ERROR ) {
             res = step;
             break;
@@ -826,7 +826,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
                 Node* node = subQueNode->subtrees[k];
 
                 /* Make the condition */
-                res0 = evaluateExpression3( node->subtrees[0], 0, 0, rei, reiSaveFlag, env, errmsg, r );
+                res0 = evaluateExpression3( node->subtrees[0], 0, 0, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
                 if ( getNodeType( res0 ) == N_ERROR ) {
                     deleteHashTable( queCondHashTable, nop );
                     return res0;
@@ -848,7 +848,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
                 free( value0 );
 
                 if ( strcmp( node->text, "between" ) == 0 ) {
-                    res1 = evaluateExpression3( node->subtrees[1], 0, 0, rei, reiSaveFlag, env, errmsg, r );
+                    res1 = evaluateExpression3( node->subtrees[1], 0, 0, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
                     if ( getNodeType( res1 ) == N_ERROR ) {
                         deleteHashTable( queCondHashTable, nop );
                         return res1;
@@ -932,7 +932,7 @@ Res *smsi_assign( Node** subtrees, int, Node*, ruleExecInfo_t* rei, int reiSaveF
 
     /* An smsi shares the same env as the enclosing rule. */
     /* Therefore, our modification to the env is reflected to the enclosing rule automatically. */
-    Res *val = evaluateExpression3( ( Node * )subtrees[1], 0, 1, rei, reiSaveFlag,  env, errmsg, r );
+    Res *val = evaluateExpression3( ( Node * )subtrees[1], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT,  env, errmsg, r );
     if ( getNodeType( val ) == N_ERROR ) {
         return val;
     }
@@ -965,7 +965,7 @@ Res *smsi_getValByKey( Node** params, int, Node* node, ruleExecInfo_t* rei, int 
         key = N_APP_FUNC( params[1] )->text;
     }
     else {
-        res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag, env, errmsg, r );
+        res = evaluateExpression3( params[1], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT, env, errmsg, r );
         if ( TYPE( res ) != T_STRING ) {
             snprintf( errbuf, ERR_MSG_LEN, "malformatted key" );
             generateAndAddErrMsg( errbuf, params[1], UNMATCHED_KEY_OR_INDEX, errmsg );
@@ -2242,7 +2242,7 @@ Res *smsi_getstderr( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int r
 }
 
 Res *smsi_assignStr( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *val = evaluateExpression3( ( Node * )subtrees[1], 0, 1, rei, reiSaveFlag,  env, errmsg, r );
+    Res *val = evaluateExpression3( ( Node * )subtrees[1], 0, 1, rei, reiSaveFlag & ~DISCARD_EXPRESSION_RESULT,  env, errmsg, r );
     if ( getNodeType( val ) == N_ERROR ) {
         return val;
     }
