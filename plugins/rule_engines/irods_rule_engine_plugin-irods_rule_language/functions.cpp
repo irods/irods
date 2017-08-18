@@ -1163,13 +1163,13 @@ Res *smsi_tuple( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError
     }
     return res;
 }
-Res *smsi_elem( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
+Res *smsi_elem( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     int index = RES_INT_VAL( params[1] );
     if ( TYPE( params[0] ) == T_CONS ) {
         if ( index < 0 || index >= params[0]->degree ) {
             snprintf( errbuf, ERR_MSG_LEN, "error: index out of range %d.", index );
-            addRErrorMsg( errmsg, RE_RUNTIME_ERROR, errbuf );
+            generateAndAddErrMsg( errbuf, node, RE_RUNTIME_ERROR, errmsg );
             return newErrorRes( r, RE_RUNTIME_ERROR );
         }
         Res *res = params[0]->subtrees[index];
@@ -1179,7 +1179,7 @@ Res *smsi_elem( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*
         if ( index < 0 || index >= getCollectionSize( params[0]->exprType->text,
                 RES_UNINTER_STRUCT( params[0] ) ) ) {
             snprintf( errbuf, ERR_MSG_LEN, "error: index out of range %d. %s", index, ( ( Res * )params[0] )->exprType->text );
-            addRErrorMsg( errmsg, RE_RUNTIME_ERROR, errbuf );
+            generateAndAddErrMsg( errbuf, node, RE_RUNTIME_ERROR, errmsg );
             return newErrorRes( r, RE_RUNTIME_ERROR );
         }
         Res *res2 = getValueFromCollection( params[0]->exprType->text,

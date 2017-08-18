@@ -241,6 +241,7 @@ Satisfiability simplifyR( ExprType *a, ExprType *b, int flex, Node *node, Hashta
         if ( bn == b ) {
             return TAUTOLOGY;
         }
+//        insertIntoHashTable( typingEnv, b->text, bn );
         return createSimpleConstraint( a, bn, flex, node, typingEnv, equivalence, simpleTypingConstraints, r );
     }
 }
@@ -275,6 +276,7 @@ Satisfiability simplifyL( ExprType *a, ExprType *b, int flex, Node *node, Hashta
         if ( an == a ) {
             return TAUTOLOGY;
         }
+//        insertIntoHashTable( typingEnv, a->text, an );
         return createSimpleConstraint( an, b, flex, node, typingEnv, equivalence, simpleTypingConstraints, r );
     }
 
