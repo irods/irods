@@ -1014,6 +1014,205 @@ END_TRY( var )
 PARSER_FUNC_END( ActionArgumentBackwardCompatible )
 
 PARSER_FUNC_BEGIN2( Term, int rulegen, int prec )
+TRY(term0)
+    int n = 0;
+    TTEXT2( "SELECT", "select" );
+    LOOP_BEGIN( columns )
+        NT( Column );
+        n++;
+        TRY( columnDelim )
+            TTEXT( "," );
+        OR( columnDelim )
+            DONE( columns )
+        END_TRY( columnDelim )
+    LOOP_END( columns )
+    OPTIONAL_BEGIN( where )
+        TTEXT2( "WHERE", "where" );
+        LOOP_BEGIN( queryConds )
+            NT( QueryCond );
+            n++;
+            TRY( queryCondDelim )
+                TTEXT2( "AND", "and" );
+            OR( queryCondDelim )
+                DONE( queryConds )
+            END_TRY( queryCondDelim )
+        LOOP_END( queryConds )
+    OPTIONAL_END( where )
+    BUILD_NODE( N_QUERY, "QUERY", &start, n, n );
+    BUILD_APP_NODE( "query", &start, 1 );
+OR( term0 )
+    TRY( func ) 
+        ABORT( !rulegen ); 
+        TRY( funcIf ) 
+            TTEXT( "if" ); 
+            TTEXT( "(" ); 
+            NT2( Term, 1, MIN_PREC ); 
+            TTEXT( ")" ); 
+            OPTIONAL_BEGIN( ifThen ) 
+                TTEXT( "then" ); 
+            OPTIONAL_END( ifThen ) 
+            TTEXT( "{" ); 
+            NT2( Actions, 1, 0 ); 
+            TTEXT( "}" ); 
+            TRY( ifElse ) 
+                TTEXT( "else" ); 
+                TTEXT_LOOKAHEAD( "if" ); 
+                NT2( Term, 1, MIN_PREC ); 
+                BUILD_NODE( N_ACTIONS, "ACTIONS", &pos, 1, 1 ); 
+                BUILD_APP_NODE( "nop", FPOS, 0 ); 
+                BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 ); 
+            OR( ifElse ) 
+                TTEXT( "else" ); 
+                TTEXT( "{" ); 
+                NT2( Actions, 1, 0 ); 
+                TTEXT( "}" ); 
+            OR( ifElse ) 
+                BUILD_APP_NODE( "nop", FPOS, 0 ); 
+                BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 ); 
+                BUILD_APP_NODE( "nop", FPOS, 0 ); 
+                BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 ); 
+            END_TRY( ifElse ) 
+            UNZIP( 2 ); 
+            BUILD_APP_NODE( "if", &start, 5 ); 
+        OR( funcIf ) 
+            TTEXT( "if" ); 
+            NT2( Term, rulegen, MIN_PREC ); 
+            TTEXT( "then" ); 
+            NT2( Term, 1, MIN_PREC ); 
+            BUILD_APP_NODE( "nop", FPOS, 0 ); 
+            TTEXT( "else" ) 
+            NT2( Term, 1, MIN_PREC ); 
+            BUILD_APP_NODE( "nop", FPOS, 0 ); 
+            UNZIP( 2 ); 
+            BUILD_APP_NODE( "if2", &start, 5 ); 
+        END_TRY( funcIf ) 
+    OR( func ) 
+        ABORT( !rulegen ); 
+        TRY( whil ) 
+            TTEXT( "while" ); 
+        OR( whil ) 
+            TTEXT( "whileExec" ); 
+        END_TRY( whil ) 
+        TTEXT( "(" ); 
+        NT2( Term, 1, MIN_PREC ); 
+        TTEXT( ")" ); 
+        TTEXT( "{" ); 
+        NT2( Actions, 1, 0 ); 
+        TTEXT( "}" ); 
+        BUILD_APP_NODE( "while", &start, 3 ); 
+    OR( func ) 
+        ABORT( !rulegen ); 
+        TRY( foreach ) 
+            TTEXT( "foreach" ); 
+        OR( foreach ) 
+            TTEXT( "forEachExec" ); 
+        END_TRY( foreach ) 
+        TTEXT( "(" ); 
+        TTYPE( TK_LOCAL_VAR ); 
+        BUILD_NODE( TK_VAR, token->text, &pos, 0, 0 ); 
+        TRY( foreach2 ) 
+            TTEXT( ")" ); 
+            TTEXT( "{" ); 
+            NT2( Actions, 1, 0 ); 
+            TTEXT( "}" ); 
+            BUILD_APP_NODE( "foreach", &start, 3 ); 
+        OR( foreach2 ) 
+            TTEXT( "in" ); 
+            NT2( Term, 1, MIN_PREC ); 
+            TTEXT( ")" ); 
+            TTEXT( "{" ); 
+            NT2( Actions, 1, 0 ); TTEXT( "}" ); 
+            BUILD_APP_NODE( "foreach2", &start, 4 ); END_TRY( foreach2 )
+    OR( func )
+        ABORT( !rulegen );
+        TRY( fo )
+            TTEXT( "for" );
+        OR( fo )
+            TTEXT( "forExec" );
+        END_TRY( fo )
+        TTEXT( "(" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( ";" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( ";" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( ")" );
+        TTEXT( "{" );
+        NT2( Actions, 1, 0 );
+        TTEXT( "}" );
+        BUILD_APP_NODE( "for", &start, 5 );
+    OR( func )
+        ABORT( !rulegen );
+        TTEXT( "remote" );
+        TTEXT( "(" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( "," );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( ")" );
+        TTEXT( "{" );
+        char buf[10000];
+        Label actionsStart = *FPOS;
+        NT2( Actions, 1, 0 );
+        ( void ) POP;
+        ( void ) POP;
+        Label actionsFinish = *FPOS;
+        TTEXT( "}" );
+        dupString( e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf );
+        BUILD_NODE( TK_STRING, buf, &actionsStart, 0, 0 );
+        BUILD_NODE( TK_STRING, "", &actionsFinish, 0, 0 );
+        BUILD_APP_NODE( "remoteExec", &start, 4 );
+    OR( func )
+        ABORT( !rulegen );
+        TTEXT( "delay" );
+        TTEXT( "(" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( ")" );
+        TTEXT( "{" );
+        char buf[10000];
+        Label actionsStart = *FPOS;
+        NT2( Actions, 1, 0 );
+        ( void ) POP;
+        ( void ) POP;
+        Label actionsFinish = *FPOS;
+        TTEXT( "}" );
+        dupString( e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf );
+        BUILD_NODE( TK_STRING, buf, &actionsStart, 0, 0 );
+        BUILD_NODE( TK_STRING, "", &actionsFinish, 0, 0 );
+        BUILD_APP_NODE( "delayExec", &start, 3 );
+    OR( func )
+        ABORT( !rulegen );
+        TTEXT( "let" );
+        NT2( Term, 1, 2 );
+        TTEXT( "=" );
+        NT2( Term, 1, MIN_PREC );
+        TTEXT( "in" );
+        NT2( Term, 1, MIN_PREC );
+        BUILD_APP_NODE( "let", &start, 3 );
+    OR( func )
+        ABORT( !rulegen );
+        TTEXT( "match" );
+        NT2( Term, 1, 2 );
+        TTEXT( "with" );
+        int n = 0;
+        OPTIONAL_BEGIN( semicolon )
+            TTEXT( "|" );
+        OPTIONAL_END( semicolon )
+        LOOP_BEGIN( cases )
+            Label cpos = *FPOS;
+            NT2( Term, 1, MIN_PREC );
+            TTEXT( "=>" );
+            NT2( Term, 1, MIN_PREC );
+            BUILD_NODE( N_TUPLE, TUPLE, &cpos, 2, 2 );
+            n++;
+            TRY( vbar )
+                TTEXT( "|" );
+            OR( vbar )
+                DONE( cases )
+            END_TRY( vbar );
+        LOOP_END( cases )
+        BUILD_APP_NODE( "match", &start, n + 1 );
+    END_TRY( func )
+OR(term0)
 NT1( Value, rulegen );
 int done = 0;
 while ( !done && NO_SYNTAX_ERROR ) {
@@ -1063,6 +1262,7 @@ while ( !done && NO_SYNTAX_ERROR ) {
 if ( !done ) {
     break;
 }
+END_TRY(term0)
 PARSER_FUNC_END( Term )
 
 PARSER_FUNC_BEGIN1( StringExpression, Token *tk )
@@ -1214,209 +1414,9 @@ else {
 BUILD_APP_NODE( fn, &start, 1 );
 
 OR( value )
-int n = 0;
-TTEXT2( "SELECT", "select" );
-LOOP_BEGIN( columns )
-NT( Column );
-n++;
-TRY( columnDelim )
-TTEXT( "," );
-OR( columnDelim )
-DONE( columns )
-END_TRY( columnDelim )
-LOOP_END( columns )
-OPTIONAL_BEGIN( where )
-TTEXT2( "WHERE", "where" );
-LOOP_BEGIN( queryConds )
-NT( QueryCond );
-n++;
-TRY( queryCondDelim )
-TTEXT2( "AND", "and" );
-OR( queryCondDelim )
-DONE( queryConds )
-END_TRY( queryCondDelim )
-LOOP_END( queryConds )
-OPTIONAL_END( where )
-BUILD_NODE( N_QUERY, "QUERY", &start, n, n );
-BUILD_APP_NODE( "query", &start, 1 );
-OR( value )
 NT( PathExpression );
 OR( value )
 TRY( func )
-ABORT( !rulegen );
-TRY( funcIf )
-TTEXT( "if" );
-TTEXT( "(" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-OPTIONAL_BEGIN( ifThen )
-TTEXT( "then" );
-OPTIONAL_END( ifThen )
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-TRY( ifElse )
-TTEXT( "else" );
-TTEXT_LOOKAHEAD( "if" );
-NT2( Term, 1, MIN_PREC );
-BUILD_NODE( N_ACTIONS, "ACTIONS", &pos, 1, 1 );
-BUILD_APP_NODE( "nop", FPOS, 0 );
-BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 );
-OR( ifElse )
-TTEXT( "else" );
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-OR( ifElse )
-BUILD_APP_NODE( "nop", FPOS, 0 );
-BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 );
-BUILD_APP_NODE( "nop", FPOS, 0 );
-BUILD_NODE( N_ACTIONS, "ACTIONS", FPOS, 1, 1 );
-END_TRY( ifElse )
-UNZIP( 2 );
-BUILD_APP_NODE( "if", &start, 5 );
-OR( funcIf )
-TTEXT( "if" );
-NT2( Term, rulegen, MIN_PREC );
-TTEXT( "then" );
-NT2( Term, 1, MIN_PREC );
-BUILD_APP_NODE( "nop", FPOS, 0 );
-TTEXT( "else" )
-NT2( Term, 1, MIN_PREC );
-BUILD_APP_NODE( "nop", FPOS, 0 );
-UNZIP( 2 );
-BUILD_APP_NODE( "if2", &start, 5 );
-END_TRY( funcIf )
-OR( func )
-ABORT( !rulegen );
-TRY( whil )
-TTEXT( "while" );
-OR( whil )
-TTEXT( "whileExec" );
-END_TRY( whil )
-TTEXT( "(" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-BUILD_APP_NODE( "while", &start, 3 );
-OR( func )
-ABORT( !rulegen );
-TRY( foreach )
-TTEXT( "foreach" );
-OR( foreach )
-TTEXT( "forEachExec" );
-END_TRY( foreach )
-TTEXT( "(" );
-TTYPE( TK_LOCAL_VAR );
-BUILD_NODE( TK_VAR, token->text, &pos, 0, 0 );
-TRY( foreach2 )
-TTEXT( ")" );
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-BUILD_APP_NODE( "foreach", &start, 3 );
-OR( foreach2 )
-TTEXT( "in" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-BUILD_APP_NODE( "foreach2", &start, 4 );
-END_TRY( foreach2 )
-
-OR( func )
-ABORT( !rulegen );
-TRY( fo )
-TTEXT( "for" );
-OR( fo )
-TTEXT( "forExec" );
-END_TRY( fo )
-TTEXT( "(" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ";" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ";" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-TTEXT( "{" );
-NT2( Actions, 1, 0 );
-TTEXT( "}" );
-BUILD_APP_NODE( "for", &start, 5 );
-OR( func )
-ABORT( !rulegen );
-TTEXT( "remote" );
-TTEXT( "(" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( "," );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-TTEXT( "{" );
-char buf[10000];
-Label actionsStart = *FPOS;
-NT2( Actions, 1, 0 );
-( void ) POP;
-( void ) POP;
-Label actionsFinish = *FPOS;
-TTEXT( "}" );
-dupString( e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf );
-BUILD_NODE( TK_STRING, buf, &actionsStart, 0, 0 );
-BUILD_NODE( TK_STRING, "", &actionsFinish, 0, 0 );
-BUILD_APP_NODE( "remoteExec", &start, 4 );
-OR( func )
-ABORT( !rulegen );
-TTEXT( "delay" );
-TTEXT( "(" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( ")" );
-TTEXT( "{" );
-char buf[10000];
-Label actionsStart = *FPOS;
-NT2( Actions, 1, 0 );
-( void ) POP;
-( void ) POP;
-Label actionsFinish = *FPOS;
-TTEXT( "}" );
-dupString( e, &actionsStart, actionsFinish.exprloc - actionsStart.exprloc, buf );
-BUILD_NODE( TK_STRING, buf, &actionsStart, 0, 0 );
-BUILD_NODE( TK_STRING, "", &actionsFinish, 0, 0 );
-BUILD_APP_NODE( "delayExec", &start, 3 );
-OR( func )
-ABORT( !rulegen );
-TTEXT( "let" );
-NT2( Term, 1, 2 );
-TTEXT( "=" );
-NT2( Term, 1, MIN_PREC );
-TTEXT( "in" );
-NT2( Term, 1, MIN_PREC );
-BUILD_APP_NODE( "let", &start, 3 );
-OR( func )
-ABORT( !rulegen );
-TTEXT( "match" );
-NT2( Term, 1, 2 );
-TTEXT( "with" );
-int n = 0;
-OPTIONAL_BEGIN( semicolon )
-TTEXT( "|" );
-OPTIONAL_END( semicolon )
-LOOP_BEGIN( cases )
-Label cpos = *FPOS;
-NT2( Term, 1, MIN_PREC );
-TTEXT( "=>" );
-NT2( Term, 1, MIN_PREC );
-BUILD_NODE( N_TUPLE, TUPLE, &cpos, 2, 2 );
-n++;
-TRY( vbar )
-TTEXT( "|" );
-OR( vbar )
-DONE( cases )
-
-END_TRY( vbar );
-LOOP_END( cases )
-BUILD_APP_NODE( "match", &start, n + 1 );
-OR( func )
 ABORT( rulegen );
 NT1( TermSystemBackwardCompatible, 0 );
 OR( func )
