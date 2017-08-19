@@ -151,3 +151,57 @@ Adding the following two empty static PEP definitions to `core.re` will satisfy 
 
     acPostProcForParallelTransferReceived(*leaf_resource) {}
     acPostProcForDataCopyReceived(*leaf_resource) {}
+
+
+## Orphan file behavior
+
+The orphan file behavior of iRODS occurs during two differing scenarios:
+
+1. An attempt to delete a file from a resource that is not currently available
+2. An attempt to write a file where there is already a file in the Vault (on disk)
+
+The following cases document the current behavior:
+
+1. Removing a Data Object, without the force flag, consisting of a single replica, on a resource currently marked down:
+
+    - results in a `HIERARCHY_ERROR`
+    - no catalog movement
+    - no data movement on disk
+
+2. Removing a Data Object, with the force flag, consisting of a single replica, on a resource currently marked down:
+
+    - results in a `SYS_RESC_IS_DOWN` error
+    - the Data Object is moved to `/[myZone]/trash/orphan/[myUser]#[myZone]/[filename].[10digitrandomsuffix]`
+    - no data movement on disk
+
+3. Removing a Data Object, without the force flag, consisting of one replica on a resource marked up, and the other on a resource marked down:
+
+    - results in a `SYS_RESC_IS_DOWN` error
+    - catalog is updated, Data Object now in the trash, as expected
+    - replica on up resource, phypath updated, file moved on disk accordingly
+    - replica on down resource, phypath untouched, file on disk untouched
+
+4. Removing a Data Object, with the force flag, consisting of one replica on a resource marked up, and the other on a resource marked down:
+
+    - results in a `SYS_RESC_IS_DOWN` error
+    - catalog is updated, Data Object now at `/[myZone]/trash/orphan/[myUser]#[myZone]/[filename].[10digitrandomsuffix]`
+    - replica on up resource is gone
+    - replica on down resource, phypath untouched, file on disk untouched
+
+5. Putting a Data Object, with or without the force flag, onto a resource where a file already resides where the new Data Object's replica will reside
+
+    - results in `SUCCESS`
+    - new data is where it is expected, catalog and disk
+    - old/existing data is not in catalog (as expected), but has been moved aside in the vault area to `[physicalvaultpath]/orphan/home/[myUser]/[filename].[10digitrandomsuffix]`
+
+6. Replicating a Data Object onto a resource where a file already resides where the new replica will reside
+
+    - results in `SUCCESS`
+    - new replica data is where it is expected, catalog and disk
+    - old/existing data is not in catalog (as expected), but has been moved aside in the vault area to `[physicalvaultpath]/orphan/home/[myUser]/[filename].[10digitrandomsuffix]`
+
+Turning off the trash can in iRODS has no effect on any of the above behavior in 4.1 or 4.2:
+```
+acTrashPolicy {msiNoTrashCan; }
+```
+
