@@ -460,6 +460,44 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     def test_str_2528(self):
         self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT_SINGLELINE', "a=A++++b=B")
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_type_3575(self):
+        rule_file = "test_rule_file.r"
+        rule_string = '''
+main{
+  *a:string;
+  *a="0";
+  func1(*a);
+  *a == "-1";
+  int(*a);
+}
+func1(*i) {
+}
+input null
+output ruleExecOut
+'''
+        with open(rule_file, 'wt') as f:
+            print(rule_string, file=f, end='')
+
+        self.admin.assert_icommand('irule -F ' + rule_file)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_pattern_3575(self):
+        rule_file = "test_rule_file.r"
+        rule_string = '''
+main {
+  *a."a" = "a";
+  asdf("a");
+}
+asdf(*a) {}
+input null
+output ruleExecOut
+'''
+        with open(rule_file, 'wt') as f:
+            print(rule_string, file=f, end='')
+
+        self.admin.assert_icommand('irule -F ' + rule_file)
+
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'msiGetStderrInExecCmdOut not available in Python yet - RTS')
     def test_return_data_structure_non_null_2604(self):
         self.rods_session.assert_icommand(
