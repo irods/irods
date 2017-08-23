@@ -116,6 +116,12 @@ usage() {
         " -K  verify the checksum value in iCAT. If the checksum value does not exist,",
         "     compute and register one. If the catalog checksum exists and the file checksum",
         "     differs, returns USER_CHKSUM_MISMATCH and does not update in the catalog.",
+        " --verify  - Requires -K. Verifies that the size in the vault is equal to the size",
+        "     in the catalog. When verifying checksums with -K, the checksum of the entire",
+        "     file in the vault is computed, even if the vault size is larger than the",
+        "     database size. This causes -K to return success if e.g. the full file is",
+        "     present in the vault, but the catalog thinks the file is empty. Using",
+        "     --verify adds an explicit size check after the checksum check.",
         " -n  replNum  - the replica to checksum; use -a to checksum all replicas.",
         "     Return CAT_NO_ROWS_FOUND if the given replica number does not exist.",
         "     If used in combination with -R, the replica number will take precedence.",
@@ -140,4 +146,3 @@ usage() {
     }
     printReleaseInfo( "ichksum" );
 }
-
