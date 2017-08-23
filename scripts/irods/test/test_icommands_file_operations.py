@@ -833,3 +833,25 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.admin.assert_icommand(['irm', '-rf', collection_to_delete])
         self.assertEqual(0, lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'ERROR', start_index=initial_size_of_server_log))
         os.unlink(filename)
+
+    def test_ichksum_file_size_verification__3537(self):
+        cfg = IrodsConfig()
+        if cfg.catalog_database_type == "postgres":
+            filename = 'test_ichksum_file_size_verification__3537'
+            file_size = 50
+            lib.make_file(filename, file_size)
+            self.admin.assert_icommand(['iput', '-K', filename])
+            self.admin.assert_icommand(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
+            self.admin.assert_icommand(['ichksum', '-K', '--verify', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
+            from .. import database_connect
+            with contextlib.closing(database_connect.get_database_connection(cfg)) as connection:
+                with contextlib.closing(connection.cursor()) as cursor:
+                    cursor.execute("update r_data_main set data_size = {0} where data_name = '{1}';".format(file_size-1, filename))
+                    cursor.commit()
+
+            self.admin.assert_icommand(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
+            rc, _, _ = self.admin.assert_icommand(['ichksum', '-K', '--verify', filename], 'STDERR_SINGLELINE', 'USER_FILE_SIZE_MISMATCH')
+            self.assertNotEqual(rc, 0)
+            os.unlink(filename)
+        else:
+            print('skipping test_ichksum_file_size_verification__3537 due to unsupported database for this test.')
