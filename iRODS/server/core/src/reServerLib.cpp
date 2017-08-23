@@ -807,9 +807,9 @@ runRuleExec( reExecProc_t * reExecProc ) {
                                     reiAndArg->rei->msParamArray,
                                     reiAndArg->rei, NO_SAVE_REI );
 
-    if ( reiAndArg->rei->status < 0 ) {
-        reExecProc->status = reiAndArg->rei->status;
-    }
+//    if ( reiAndArg->rei->status < 0 ) {
+//        reExecProc->status = reiAndArg->rei->status;
+//    }
     freeRuleExecInfoStruct( reiAndArg->rei, FREE_MS_PARAM | FREE_DOINP );
     free( reiAndArg );
 
