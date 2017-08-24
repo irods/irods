@@ -330,8 +330,6 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
         i++;
     }
 
-    rmMsParamByLabel(&(ar.msParamArray), "ruleExecOut", 0);
-
     rodsLog(
         LOG_DEBUG,
         "rule engine return %d", ret);

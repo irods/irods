@@ -1915,91 +1915,6 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
     }
 #endif
 }
-int writeStringNew( char *writeId, char *writeStr, Env* env, Region* r, ruleExecInfo_t* rei ) {
-    execCmdOut_t *myExecCmdOut;
-    Res *execOutRes;
-#ifndef DEBUG
-    dataObjInp_t dataObjInp;
-    openedDataObjInp_t openedDataObjInp;
-    bytesBuf_t tmpBBuf;
-    int fd, i;
-#endif
-
-    if ( writeId != NULL && strcmp( writeId, "serverLog" ) == 0 ) {
-        rodsLog( LOG_NOTICE, "writeString: inString = %s", writeStr );
-        return 0;
-    }
-#ifndef DEBUG
-    if ( writeId != NULL && writeId[0] == '/' ) {
-        /* writing to an existing iRODS file */
-
-        if ( rei == NULL || rei->rsComm == NULL ) {
-            rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
-            return SYS_INTERNAL_NULL_INPUT_ERR;
-        }
-
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
-        dataObjInp.openFlags = O_RDWR;
-        snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s", writeId );
-        fd = rsDataObjOpen( rei->rsComm, &dataObjInp );
-        if ( fd < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd );
-            return fd;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        openedDataObjInp.offset = 0;
-        openedDataObjInp.whence = SEEK_END;
-        fileLseekOut_t *dataObjLseekOut = NULL;
-        i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
-        free( dataObjLseekOut );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr );
-        tmpBBuf.buf =  writeStr;
-        i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        i = rsDataObjClose( rei->rsComm, &openedDataObjInp );
-        return i;
-    }
-
-#endif
-
-
-    if ( ( execOutRes = ( Res * )lookupFromEnv( env, "ruleExecOut" ) ) != NULL ) {
-        myExecCmdOut = ( execCmdOut_t * )RES_UNINTER_STRUCT( execOutRes );
-    }
-    else {
-        Env *global = env;
-        while ( global->previous != NULL ) {
-            global = global->previous;
-        }
-        myExecCmdOut = ( execCmdOut_t * )malloc( sizeof( execCmdOut_t ) );
-        memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-        execOutRes = newUninterpretedRes( r, ExecCmdOut_MS_T, myExecCmdOut, NULL );
-        insertIntoHashTable( global->current, "ruleExecOut", execOutRes );
-    }
-
-    if ( writeId && !strcmp( writeId, "stdout" ) ) {
-        appendToByteBuf( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
-    }
-    else if ( writeId && !strcmp( writeId, "stderr" ) ) {
-        appendToByteBuf( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
-    }
-    return 0;
-}
 
 Res *smsi_writeLine( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* env, rError_t*, Region* r ) {
     char *inString = convertResToString( paramsr[1] );
@@ -2011,7 +1926,7 @@ Res *smsi_writeLine( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* 
         free( inString );
         return newIntRes( r, 0 );
     }
-    int i = writeStringNew( whereId, inString, env, r, rei );
+    int i = _writeString( whereId, inString, rei );
 #ifdef DEBUG
     printf( "%s\n", inString );
 #endif
@@ -2020,7 +1935,7 @@ Res *smsi_writeLine( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env* 
     if ( i < 0 ) {
         return newErrorRes( r, i );
     }
-    i = writeStringNew( whereId, "\n", env, r, rei );
+    i = _writeString( whereId, "\n", rei );
 
     if ( i < 0 ) {
         return newErrorRes( r, i );
@@ -2035,7 +1950,7 @@ Res *smsi_writeString( Node** paramsr, int, Node*, ruleExecInfo_t* rei, int, Env
     Res *where = ( Res * )paramsr[0];
     char *whereId = where->text;
 
-    int i = writeStringNew( whereId, inString, env, r, rei );
+    int i = _writeString( whereId, inString, rei );
 
     free( inString );
     if ( i < 0 ) {
@@ -2213,13 +2128,18 @@ Res *smsi_setReLogging( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, in
 
 
 Res *smsi_getstdout( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = ( Res * )lookupFromEnv( env, "ruleExecOut" );
-    if ( res == NULL ) {
+    msParam_t * mP = NULL;
+    msParamArray_t * inMsParamArray = rei->msParamArray;
+    execCmdOut_t *out;
+    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
+            ( mP->inOutStruct != NULL ) &&
+            strcmp(mP->type, ExecCmdOut_MS_T) == 0  ) {
+            out = ( execCmdOut_t* )mP->inOutStruct;
+    } else {
         generateAndAddErrMsg( "ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg );
         return newErrorRes( r, RE_RUNTIME_ERROR );
     }
 
-    execCmdOut_t *out = ( execCmdOut_t * )RES_UNINTER_STRUCT( res );
     int start = strlen( ( char * )out->stdoutBuf.buf );
     Res *ret = smsi_do( paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r );
     /* int fin = strlen((char *)out->stdoutBuf.buf); */
@@ -2228,13 +2148,18 @@ Res *smsi_getstdout( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int r
 }
 
 Res *smsi_getstderr( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    Res *res = ( Res * )lookupFromEnv( env, "ruleExecOut" );
-    if ( res == NULL ) {
+    msParam_t * mP = NULL;
+    msParamArray_t * inMsParamArray = rei->msParamArray;
+    execCmdOut_t *out;
+    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
+            ( mP->inOutStruct != NULL ) &&
+            strcmp(mP->type, ExecCmdOut_MS_T) == 0  ) {
+            out = ( execCmdOut_t* )mP->inOutStruct;
+    } else {
         generateAndAddErrMsg( "ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg );
         return newErrorRes( r, RE_RUNTIME_ERROR );
     }
 
-    execCmdOut_t *out = ( execCmdOut_t * )RES_UNINTER_STRUCT( res );
     int start = strlen( ( char * )out->stderrBuf.buf );
     Res *ret = smsi_do( paramsr, 1, node, rei, reiSaveFlag, env, errmsg, r );
     paramsr[1] = newStringRes( r, ( ( char * )out->stderrBuf.buf + start ) );
