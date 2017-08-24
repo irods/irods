@@ -59,18 +59,6 @@ int readRuleSetFromLocalFile( char *ruleBaseName, char *rulesFileName, RuleSet *
 
     return 0;
 }
-execCmdOut_t *addCmdExecOutToEnv( Env *global, Region *r ) {
-    execCmdOut_t *ruleExecOut = ( execCmdOut_t * )malloc( sizeof( execCmdOut_t ) );
-    memset( ruleExecOut, 0, sizeof( execCmdOut_t ) );
-    ruleExecOut->stdoutBuf.buf = strdup( "" );
-    ruleExecOut->stdoutBuf.len = 0;
-    ruleExecOut->stderrBuf.buf = strdup( "" );
-    ruleExecOut->stderrBuf.len = 0;
-    Res *execOutRes = newUninterpretedRes( r, ExecCmdOut_MS_T, ruleExecOut, NULL );
-    insertIntoHashTable( global->current, "ruleExecOut", execOutRes );
-    return ruleExecOut;
-
-}
 
 int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
     int i;
@@ -123,10 +111,6 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
 
     rei->status = 0;
 
-    msParamArray_t *orig = NULL;
-
-    Res *execOutRes;
-
     int rescode = 0;
     if ( msParamArray != NULL ) {
         if ( strncmp( rule, "@external\n", 10 ) == 0 ) {
@@ -140,25 +124,12 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
         }
     }
 
-    if ( ( execOutRes = ( Res * )lookupFromEnv( env, "ruleExecOut" ) ) == NULL || TYPE( execOutRes ) == T_UNSPECED ) {
-        /* add cmdExecOut only if ruleExecOut is an output parameter */
-        deleteFromHashTable( globalEnv( env )->current, "ruleExecOut" );
-        addCmdExecOutToEnv( globalEnv( env ), r );
-    }
-
-    orig = rei->msParamArray;
-    rei->msParamArray = NULL;
+    deleteFromHashTable(globalEnv(env)->current, "ruleExecOut");
 
     rei->msParamArray = msParamArray;
 
     rescode = parseAndComputeRule( rule, env, rei, reiSaveFlag, &errmsgBuf, r );
 
-    if ( orig == NULL ) {
-        rei->msParamArray = newMsParamArray();
-    }
-    else {
-        rei->msParamArray = orig;
-    }
     convertEnvToMsParamArray( rei->msParamArray, env, &errmsgBuf, r );
 
     RE_ERROR( rescode < 0 );
@@ -183,28 +154,18 @@ error:
 
 int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r ) {
     Env *env = defaultEnv( r );
-    addCmdExecOutToEnv( globalEnv( env ), r );
 
     int rescode = 0;
-    msParamArray_t *orig = NULL;
 
     if ( msParamArray != NULL ) {
         rescode = convertMsParamArrayToEnv( msParamArray, env->previous, r );
         RE_ERROR( rescode < 0 );
+        deleteFromHashTable(env->previous->current, "ruleExecOut");
     }
-
-    orig = rei->msParamArray;
-    rei->msParamArray = NULL;
 
     rescode = parseAndComputeRule( rule, env, rei, reiSaveFlag, errmsg, r );
     RE_ERROR( rescode < 0 );
 
-    if ( orig == NULL ) {
-        rei->msParamArray = newMsParamArray();
-    }
-    else {
-        rei->msParamArray = orig;
-    }
     rescode = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
     RE_ERROR( rescode < 0 );
     /* deleteEnv(env, 3); */
@@ -337,6 +298,7 @@ Res *computeExpressionWithParams( const char *actionName, const char **params, i
     Env *env = newEnv( newHashTable2( 10, r ), global, NULL, r );
     if ( msParamArray != NULL ) {
         convertMsParamArrayToEnv( msParamArray, global, r );
+        deleteFromHashTable(global->current, "ruleExecOut");
     }
     Res *res = computeNode( node, NULL, env, rei, reiSaveFlag, errmsg, r );
     /* deleteEnv(env, 3); */
@@ -653,17 +615,14 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     rei->status = 0;
     Env *env = defaultEnv( r );
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
-    execCmdOut_t *execOut = addCmdExecOutToEnv( globalEnv( env ), r );
     Res *res;
     rError_t errmsgBuf;
     errmsgBuf.errMsg = NULL;
     errmsgBuf.len = 0;
 
-    msParamArray_t *orig = rei->msParamArray;
-    rei->msParamArray = NULL;
-
     if ( inMsParamArray != NULL ) {
         convertMsParamArrayToEnv( inMsParamArray, env, r );
+        deleteFromHashTable(env->current, "ruleExecOut");
     }
 
     res = parseAndComputeExpression( inAction, env, rei, reiSaveFlag, &errmsgBuf, r );
@@ -673,9 +632,7 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
             convertEnvToMsParamArray( inMsParamArray, env, &errmsgBuf, r );
         }
     }
-    rei->msParamArray = orig;
 
-    freeCmdExecOut( execOut );
     /* deleteEnv(env, 3); */
     if ( getNodeType( res ) == N_ERROR && !freeRei ) {
         logErrMsg( &errmsgBuf, &rei->rsComm->rError );

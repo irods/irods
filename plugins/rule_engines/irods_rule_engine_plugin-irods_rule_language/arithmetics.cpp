@@ -1009,7 +1009,6 @@ Res* execAction3( char *actionName, Res** args, unsigned int nargs, int applyAll
  * execute micro service msiName
  */
 Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node, Env *env, ruleExecInfo_t *rei, rError_t *errmsg, Region *r ) {
-    msParamArray_t *origMsParamArray = rei->msParamArray;
     Res *res = NULL;
 
     /* look up the micro service */
@@ -1067,15 +1066,6 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         /* myArgv[i]->label = strdup(buf); */
     }
     int ii = 0;
-    /* convert env to msparam array */
-    rei->msParamArray = newMsParamArray();
-    int ret = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
-    if ( ret != 0 ) {
-        generateErrMsg( "execMicroService3: error converting env to MsParamArray", NODE_EXPR_POS( node ), node->base, errbuf );
-        addRErrorMsg( errmsg, ret, errbuf );
-        res = newErrorRes( r, ret );
-        RETURN;
-    }
 
     if ( GlobalREAuditFlag > 0 ) {
         RuleEngineEventParam param;
@@ -1115,21 +1105,13 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
         reDebug( EXEC_MICRO_SERVICE_END, -4, &param, node, env, rei );
     }
 
-    /* converts back env */
-    ret = updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, r );
-    if ( ret != 0 ) {
-        generateErrMsg( "execMicroService3: error env from MsParamArray", NODE_EXPR_POS( node ), node->base, errbuf );
-        addRErrorMsg( errmsg, ret, errbuf );
-        res = newErrorRes( r, ret );
-        RETURN;
-    }
     /* params */
     for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
         if ( myArgv[i] != NULL ) {
             res = convertMsParamToRes( myArgv[i], r );
             if ( res != NULL && getNodeType( res ) == N_ERROR ) {
                 generateErrMsg( "execMicroService3: error converting arguments from MsParam", NODE_EXPR_POS( node ), node->base, errbuf );
-                addRErrorMsg( errmsg, ret, errbuf );
+                addRErrorMsg( errmsg, RES_ERR_CODE(res), errbuf );
                 RETURN;
             }
             args[i] = res;
@@ -1148,10 +1130,6 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     */
     res = newIntRes( r, ii );
 ret:
-    if ( rei->msParamArray != NULL ) {
-        deleteMsParamArray( rei->msParamArray );
-    }
-    rei->msParamArray = origMsParamArray;
     for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
         int freeStruct = TYPE( args[i] ) != T_IRODS  ? 1 : 0;
         clearMsParam( myArgv[i], freeStruct );
