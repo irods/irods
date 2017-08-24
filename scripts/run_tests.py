@@ -111,7 +111,7 @@ if __name__ == '__main__':
                                  'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
                                  'test_iticket', 'test_irodsctl', 'test_resource_configuration', 'test_control_plane',
-                                 'test_native_rule_engine_plugin', 'test_quotas', 'test_ils', 'test_irmdir', 'test_ichksum', 'test_iquest'])
+                                 'test_native_rule_engine_plugin', 'test_quotas', 'test_ils', 'test_irmdir', 'test_ichksum', 'test_iquest', 'test_imeta_help'])
 
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
