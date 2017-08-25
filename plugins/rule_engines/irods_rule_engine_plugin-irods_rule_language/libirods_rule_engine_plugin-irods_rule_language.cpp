@@ -285,16 +285,16 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
 
         if(!ret.ok()) {
              rodsLog(LOG_ERROR, "unsupported argument for calling re rules from the rule language");
-             addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup("<unconvertible>"), NULL);
+             addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", NULL);
         }
         else {
             if( 0 == param.size() ) {
                 rodsLog( LOG_DEBUG, "empty serialized map for parameter %s", arg );
-                addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup("<unconvertible>"), NULL);
+                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", NULL);
             }
             else if( 1 == param.size() ) {
                 // only one key-value in them map, bind it as a string
-                addMsParam(&(ar.msParamArray), strdup(arg), STR_MS_T, strdup(param.begin()->second.c_str()), NULL);
+                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) param.begin()->second.c_str(), NULL);
             }
             else {
                 keyValPair_t* kvp = (keyValPair_t*)malloc(sizeof(keyValPair_t));
@@ -302,7 +302,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
                 for( auto i : param ) {
                     addKeyVal( kvp, i.first.c_str(), i.second.c_str() );
                 }
-                addMsParam(&(ar.msParamArray), strdup(arg), KeyValPair_MS_T, kvp, NULL );
+                addMsParam(&(ar.msParamArray), arg, KeyValPair_MS_T, kvp, NULL );
             }
         }
 
