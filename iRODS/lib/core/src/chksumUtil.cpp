@@ -173,6 +173,15 @@ initCondForChksum( rodsArguments_t *rodsArgs,
                    rodsArgs->resourceString );
     }
 
+    if (rodsArgs->verify == True) {
+        if (rodsArgs->verifyChecksum == True) {
+            addKeyVal( &dataObjInp->condInput, VERIFY_VAULT_SIZE_EQUALS_DATABASE_SIZE_KW, "" );
+        } else {
+            rodsLog(LOG_ERROR, "initCondForChksum: if --verify is used, -K must also be used");
+            return USER_OPTION_INPUT_ERR;
+        }
+    }
+
     /* XXXXX need to add -u register cond */
 
     dataObjInp->openFlags = O_RDONLY;
