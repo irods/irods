@@ -434,6 +434,7 @@ Res *reIterable_genQuery_next( ReIterableData *itrData, Region* r ) {
 void reIterable_genQuery_finalize( ReIterableData *itrData, Region* r ) {
     ReIterable_genQuery_data *data = ( ReIterable_genQuery_data * ) itrData->itrSpecData;
     int status = msiCloseGenQuery( &( data->genQInpParam ), &( data->genQOutParam ), itrData->rei );
+    freeGenQueryInp((genQueryInp_t **) &( data->genQInpParam.inOutStruct ));
     clearMsParam( &( data->genQInpParam ), 0 );
     clearMsParam( &( data->genQOutParam ), 0 );
     free( data );
@@ -764,6 +765,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
     msParam_t genQInpParam;
+    memset( &genQInpParam, 0, sizeof( msParam_t ) );
     genQInpParam.inOutStruct = ( void* )genQueryInp;
     genQInpParam.type = strdup( GenQueryInp_MS_T );
 
@@ -891,13 +893,21 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
     int status = msiExecGenQuery( &genQInpParam, &genQOutParam, rei );
     if ( status < 0 ) {
         region_free( rNew );
+        freeGenQueryInp(&genQueryInp);
+        clearMsParam(&genQInpParam, 0);
+        if (genQOutParam.inOutStruct) {
+            freeGenQueryOut((genQueryOut_t **) &genQOutParam.inOutStruct);
+        }
+        clearMsParam(&genQOutParam, 0);
         generateAndAddErrMsg( "msiExecGenQuery error", node, status, errmsg );
         return newErrorRes( r, status );
     }
     Res *res = newRes( r );
     convertMsParamToResAndFreeNonIRODSType( &genQInpParam, res, r );
+    clearMsParam(&genQInpParam, 0);
     Res *res2 = newRes( r );
     convertMsParamToResAndFreeNonIRODSType( &genQOutParam, res2, r );
+    clearMsParam(&genQOutParam, 0);
     region_free( rNew );
 
     Res **comps = ( Res ** ) region_alloc( r, sizeof( Res * ) * 2 );
