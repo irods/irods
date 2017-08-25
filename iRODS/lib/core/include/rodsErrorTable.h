@@ -254,6 +254,7 @@
 #define USER_HASH_TYPE_MISMATCH                     -380000
 #define USER_INVALID_CLIENT_ENVIRONMENT             -390000
 #define USER_INSUFFICIENT_FREE_INODES               -400000
+#define USER_FILE_SIZE_MISMATCH                     -401000
 /** @} */
 
 /* 500,000 to 800,000 - file driver error */
