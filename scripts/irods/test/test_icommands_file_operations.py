@@ -854,4 +854,4 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.assertNotEqual(rc, 0)
             os.unlink(filename)
         else:
-            print('skipping test_load_balanced due to unsupported database for this test.')
+            print('skipping test_ichksum_file_size_verification__3537 due to unsupported database for this test.')
