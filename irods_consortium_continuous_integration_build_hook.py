@@ -16,8 +16,9 @@ import irods_python_ci_utilities
 
 def build(debug_build, output_root_directory):
     install_os_specific_dependencies()
+    irods_source_dir = os.path.dirname(os.path.realpath(__file__))
     try:
-        irods_source_dir = build_irods(debug_build)
+        build_irods(irods_source_dir, debug_build)
     finally:
         if output_root_directory:
             copy_output_packages(irods_source_dir, output_root_directory)
@@ -66,8 +67,7 @@ def extract_oci_tar():
         irods_python_ci_utilities.subprocess_get_output(['tar', '-xf', f.name, '-C', extract_dir], check_rc=True)
     return extract_dir
 
-def build_irods(debug_build):
-    irods_source_dir = os.path.dirname(os.path.realpath(__file__))
+def build_irods(irods_source_dir, debug_build):
     os.makedirs(os.path.join(irods_source_dir, 'build'))
     build_flags = '' if debug_build else '-r'
     irods_python_ci_utilities.subprocess_get_output(
@@ -78,7 +78,6 @@ def build_irods(debug_build):
         'sudo ./packaging/build.sh {0} icat mysql 2>&1 | tee ./build/build_icat_mysql.out; exit $PIPESTATUS'.format(build_flags), cwd=irods_source_dir, shell=True, check_rc=True)
     if should_build_oracle_plugin():
         build_oracle_plugin(irods_source_dir, build_flags)
-    return irods_source_dir
 
 def should_build_oracle_plugin():
     if irods_python_ci_utilities.get_distribution() == 'Ubuntu':
