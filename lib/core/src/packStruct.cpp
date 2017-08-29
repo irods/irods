@@ -1930,6 +1930,7 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
         outPtr = static_cast<char*>(outPtr) + myStrlen;
     }
     *static_cast<char*>(outPtr) = '\0';
+    free(strBuf);
 
     inPtr = static_cast<const char*>(inPtr) + ( origStrLen + 1 );
     if ( maxStrLen > 0 ) {
