@@ -11,6 +11,7 @@ import os
 import socket
 import tempfile
 import time  # remove once file hash fix is commited #2279
+import subprocess
 
 from .. import lib
 from .. import paths
@@ -172,6 +173,23 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.unlink(test_re)
         os.unlink(rule_file)
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
+    def test_update_core_multiple_agents__3184(self):
+        with temporary_core_file() as core:
+            for l in range(100):
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                core.add_rule("multiple_agents {}")
+                time.sleep(1)  # remove once file hash fix is committed #2279
+
+                processes = []
+                initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+                for i in range(100):
+                    processes.append(subprocess.Popen(["ils"]))
+                for p in processes:
+                    p.wait()
+                assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'stack trace', start_index=initial_log_size) == 0
+	
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
         my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_1']
