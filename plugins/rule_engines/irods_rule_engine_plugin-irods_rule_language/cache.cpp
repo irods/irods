@@ -79,8 +79,13 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
  * It first create a local copy of buf's data section and pointer pointers section. This part needs synchronization.
  * Then it works on its local copy, which does not need synchronization.
  */
-Cache *restoreCache( const char* _inst_name, unsigned char *buf ) {
+Cache *restoreCache( const char* _inst_name ) {
     mutex_type *mutex;
+    lockReadMutex(_inst_name, &mutex);
+    unsigned char *buf = prepareNonServerSharedMemory( _inst_name );
+    if (buf == NULL) {
+        return NULL;
+    }
     Cache *cache = ( Cache * ) buf;
     unsigned char *bufCopy;
     unsigned char *pointers;
@@ -90,49 +95,29 @@ Cache *restoreCache( const char* _inst_name, unsigned char *buf ) {
     unsigned char *pointersCopy;
     unsigned char *pointersMapped;
     size_t dataSize;
-    unsigned int version, version2;
-    while ( true ) {
-        if ( lockMutex( _inst_name, &mutex ) != 0 ) {
-            return NULL;
-        }
-        version = cache->version;
-        unlockMutex( _inst_name, &mutex );
-        dataSize = cache->dataSize;
-        pointersMapped = cache->pointers;
-        bufMapped = cache->address;
-        if ( pointersMapped < bufMapped || pointersMapped - bufMapped > SHMMAX || dataSize > SHMMAX ) {
-            sleep( 1 );
-            continue;
-        }
-        bufCopy = ( unsigned char * )malloc( dataSize );
-        if ( bufCopy == NULL ) {
-            return NULL;
-        }
-        memcpy( bufCopy, buf, cache->dataSize );
-        pointersSize = bufMapped + SHMMAX - pointersMapped;
-        pointersCopy = ( unsigned char * )malloc( pointersSize );
-        if ( pointersCopy == NULL ) {
-            free( bufCopy );
-            return NULL;
-        }
-        memcpy( pointersCopy, pointersMapped + ( buf - bufMapped ), pointersSize );
-        if ( lockMutex( _inst_name, &mutex ) != 0 ) {
-            free( pointersCopy );
-            free( bufCopy );
-            return NULL;
-        }
-        version2 = cache->version;
-        unlockMutex( _inst_name, &mutex );
-        if ( version2 != version ) {
-            free( bufCopy );
-            free( pointersCopy );
-            sleep( 1 );
-            continue;
-        }
-        else {
-            break;
-        }
+    dataSize = cache->dataSize;
+    bufCopy = ( unsigned char * )malloc( dataSize );
+    if ( bufCopy == NULL ) {
+        rodsLog( LOG_ERROR, "Cannot allocate object buffer of size %lld" , dataSize);
+        unlockReadMutex(_inst_name, &mutex);
+        return NULL;
     }
+    memcpy( bufCopy, buf, cache->dataSize );
+    Cache *cacheCopy = ( Cache * ) bufCopy;
+    pointersMapped = cacheCopy->pointers;
+    bufMapped = cacheCopy->address;
+    pointersSize = bufMapped + SHMMAX - pointersMapped;
+    pointersCopy = ( unsigned char * )malloc( pointersSize );
+    if ( pointersCopy == NULL ) {
+        free( bufCopy );
+        rodsLog( LOG_ERROR, "Cannot allocate pointer pointer buffer of size %lld", pointersSize);
+        detachSharedMemory( _inst_name );
+        unlockReadMutex(_inst_name, &mutex);
+        return NULL;
+    }
+    memcpy( pointersCopy, pointersMapped + ( buf - bufMapped ), pointersSize );
+    detachSharedMemory( _inst_name );
+    unlockReadMutex(_inst_name, &mutex);
     pointers = pointersCopy;
     /*    bufCopy = (unsigned char *)malloc(cache->dataSize);
 
@@ -150,14 +135,13 @@ Cache *restoreCache( const char* _inst_name, unsigned char *buf ) {
     long pointerDiff = diff;
     applyDiff( pointers, pointersSize, diff, pointerDiff );
     free( pointersCopy );
-    cache = ( Cache * ) bufCopy;
 
 #ifdef RE_CACHE_CHECK
     Hashtable *objectMap = newHashTable( 100 );
-    cacheChkEnv( cache->coreFuncDescIndex, cache, ( CacheChkFuncType * ) cacheChkNode, objectMap );
-    cacheChkRuleSet( cache->coreRuleSet, cache, objectMap );
+    cacheChkEnv( cacheCopy->coreFuncDescIndex, cacheCopy, ( CacheChkFuncType * ) cacheChkNode, objectMap );
+    cacheChkRuleSet( cacheCopy->coreRuleSet, cacheCopy, objectMap );
 #endif
-    return cache;
+    return cacheCopy;
 }
 void applyDiff( unsigned char *pointers, long pointersSize, long diff, long pointerDiff ) {
     unsigned char *p;
@@ -204,19 +188,7 @@ void applyDiffToPointers( unsigned char *pointers, long pointersSize, long point
  * It prepares the data in the new cache for copying into the shared cache.
  * It checks the timestamp again and does the actually copying.
  */
-int updateCache( const char* _inst_name, unsigned char *shared, size_t size, Cache *cache, int processType ) {
-    mutex_type *mutex;
-    time_type timestamp;
-    time_type_set( timestamp, cache->timestamp );
-
-    if ( lockMutex( _inst_name, &mutex ) != 0 ) {
-        rodsLog( LOG_ERROR, "Failed to update cache, lock mutex 1." );
-        return -1;
-    }
-    if ( processType == RULE_ENGINE_INIT_CACHE || processType == RULE_ENGINE_REFRESH_CACHE || time_type_gt( timestamp, ( ( Cache * )shared )->updateTS ) ) {
-        time_type_set( ( ( Cache * )shared )->updateTS, timestamp );
-        unlockMutex( _inst_name, &mutex );
-
+int updateCache( const char* _inst_name, size_t size, Cache *cache ) {
         unsigned char *buf = ( unsigned char * ) malloc( size );
         if ( buf != NULL ) {
             int ret;
@@ -227,34 +199,27 @@ int updateCache( const char* _inst_name, unsigned char *shared, size_t size, Cac
                 printf( "Buffer usage: %fM\n", ( ( double )( cacheCopy->dataSize ) ) / ( 1024 * 1024 ) );
 #endif
                 size_t pointersSize = ( cacheCopy->address + cacheCopy->cacheSize ) - cacheCopy->pointers;
-                long diff = shared - cacheCopy->address;
-                unsigned char *pointers = cacheCopy->pointers;
+                mutex_type *mutex;
+                lockWriteMutex(_inst_name, &mutex);
+                unsigned char *shared = prepareServerSharedMemory( _inst_name );
+                if (shared == NULL) {
+                    ret = -1;
+                } else {
+                    long diff = shared - cacheCopy->address;
+                    unsigned char *pointers = cacheCopy->pointers;
 
-                applyDiff( pointers, pointersSize, diff, 0 );
-                applyDiffToPointers( pointers, pointersSize, diff );
+                    applyDiff( pointers, pointersSize, diff, 0 );
+                    applyDiffToPointers( pointers, pointersSize, diff );
 
-                if ( lockMutex( _inst_name, &mutex ) != 0 ) {
-                    rodsLog( LOG_ERROR, "Failed to update cache, lock mutex 2." );
-                    free( buf );
-                    return -1;
-                }
-                if ( processType == RULE_ENGINE_INIT_CACHE || processType == RULE_ENGINE_REFRESH_CACHE || !time_type_gt( ( ( Cache * )shared )->updateTS, timestamp ) ) {
-
-                    switch ( processType ) {
-                    case RULE_ENGINE_INIT_CACHE:
-                        cacheCopy->version = 0;
-                        break;
-                    default:
-                        cacheCopy->version = ( ( Cache * )shared )->version;
-                        INC_MOD( cacheCopy->version, UINT_MAX );
-                    }
+                    memset( shared, 0, SHMMAX );
                     /* copy data */
                     memcpy( shared, buf, cacheCopy->dataSize );
                     /* copy pointers */
                     memcpy( cacheCopy->pointers, pointers, pointersSize );
+                    ret = 0;
+                    detachSharedMemory( _inst_name );
                 }
-                unlockMutex( _inst_name, &mutex );
-                ret = 0;
+                unlockWriteMutex(_inst_name, &mutex);
             }
             else {
                 rodsLog( LOG_ERROR, "Error updating cache." );
@@ -267,12 +232,6 @@ int updateCache( const char* _inst_name, unsigned char *shared, size_t size, Cac
             rodsLog( LOG_ERROR, "Cannot update cache because of out of memory error, let some other process update it later when memory is available." );
             return -1;
         }
-    }
-    else {
-        unlockMutex( _inst_name, &mutex );
-        rodsLog( LOG_DEBUG, "Cache has been updated by some other process." );
-        return 0;
-    }
 
 }
 

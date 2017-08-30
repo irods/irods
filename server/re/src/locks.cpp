@@ -7,7 +7,7 @@
 #include "irods_log.hpp"
 #include "irods_server_properties.hpp"
 
-int lockMutex( const char* _inst_name, mutex_type **mutex ) {
+int lockWriteMutex( const char* _inst_name, mutex_type **mutex ) {
     std::string mutex_name;
     irods::error ret = getMutexName( _inst_name, mutex_name );
     if ( !ret.ok() ) {
@@ -16,7 +16,7 @@ int lockMutex( const char* _inst_name, mutex_type **mutex ) {
     }
 
     try {
-        *mutex = new boost::interprocess::named_mutex( boost::interprocess::open_or_create, mutex_name.c_str() );
+        *mutex = new mutex_type( boost::interprocess::open_or_create, mutex_name.c_str() );
     }
     catch ( const boost::interprocess::interprocess_exception& ) {
         rodsLog( LOG_ERROR, "boost::interprocess::named_mutex threw a boost::interprocess::interprocess_exception." );
@@ -32,9 +32,44 @@ int lockMutex( const char* _inst_name, mutex_type **mutex ) {
     return 0;
 }
 
-void unlockMutex( const char* _inst_name, mutex_type **mutex ) {
+int lockReadMutex( const char* _inst_name, mutex_type **mutex ) {
+    std::string mutex_name;
+    irods::error ret = getMutexName( _inst_name, mutex_name );
+    if ( !ret.ok() ) {
+        rodsLog( LOG_ERROR, "lockMutex: call to getMutexName failed" );
+        return -1;
+    }
+
+    try {
+        *mutex = new mutex_type( boost::interprocess::open_or_create, mutex_name.c_str() );
+    }
+    catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "boost::interprocess::named_mutex threw a boost::interprocess::interprocess_exception." );
+        return -1;
+    }
+    try {
+        ( *mutex )->lock_sharable();
+    }
+    catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "lock threw a boost::interprocess::interprocess_exception." );
+        return -1;
+    }
+    return 0;
+}
+
+void unlockWriteMutex( const char* _inst_name, mutex_type **mutex ) {
     try {
         ( *mutex )->unlock();
+    }
+    catch ( const boost::interprocess::interprocess_exception& ) {
+        rodsLog( LOG_ERROR, "unlock threw a boost::interprocess::interprocess_exception." );
+    }
+    delete *mutex;
+}
+
+void unlockReadMutex( const char* _inst_name, mutex_type **mutex ) {
+    try {
+        ( *mutex )->unlock_sharable();
     }
     catch ( const boost::interprocess::interprocess_exception& ) {
         rodsLog( LOG_ERROR, "unlock threw a boost::interprocess::interprocess_exception." );
@@ -51,7 +86,7 @@ void resetMutex(const char* _inst_name) {
         rodsLog( LOG_ERROR, "resetMutex: call to getMutexName failed" );
     }
 
-    boost::interprocess::named_mutex::remove( mutex_name.c_str() );
+    mutex_type::remove( mutex_name.c_str() );
 }
 
 irods::error getMutexName( const char* _inst_name, std::string &mutex_name ) {

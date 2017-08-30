@@ -7,6 +7,7 @@
 #include "rules.hpp"
 #include "index.hpp"
 #include "cache.hpp"
+#include "locks.hpp"
 #include "region.h"
 #include "functions.hpp"
 #include "filesystem.hpp"
@@ -57,8 +58,6 @@ Cache ruleEngineConfig = {
     0, /* int tvarNumber */
     0, /* int clearDelayed */
     time_type_initializer, /* time_type timestamp */
-    time_type_initializer, /* time_type updateTS */
-    0, /* int version */
     0, /* int logging */
     "", /* char ruleBase[RULE_SET_DEF_LENGTH] */
 };
@@ -359,11 +358,18 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
     unsigned char *buf = NULL;
     /* try to find shared memory cache */
     if ( processType == RULE_ENGINE_TRY_CACHE && inRuleStruct == &coreRuleStrct ) {
+        mutex_type *mutex;
+        lockReadMutex(inst_name, &mutex);
+        int cmp = 0;
         buf = prepareNonServerSharedMemory( inst_name );
         if ( buf != NULL ) {
-            if(strcmp((char*)buf, "UNINITIALIZED") == 0) {
-                detachSharedMemory( inst_name );
-                unsigned char *shared = prepareServerSharedMemory( inst_name );
+            cmp = strcmp((char*)buf, "UNINITIALIZED");
+            detachSharedMemory( inst_name );
+        } else {
+            rodsLog( LOG_DEBUG, "Cannot open shared memory." );
+        }
+        unlockReadMutex(inst_name, &mutex);
+            if(cmp == 0) {
                 generateRegions();
                 generateRuleSets();
                 generateFunctionDescriptionTables();
@@ -391,11 +397,8 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
                 time_type_set( ruleEngineConfig.timestamp, timestamp );
                 snprintf( ruleEngineConfig.ruleBase, sizeof( ruleEngineConfig.ruleBase ), "%s", irbSet );
 
-                memset( shared, 0, SHMMAX );
-                int ret = updateCache( inst_name, shared, SHMMAX, &ruleEngineConfig, RULE_ENGINE_INIT_CACHE );
-                detachSharedMemory( inst_name );
+                int ret = updateCache( inst_name, SHMMAX, &ruleEngineConfig);
                 if ( ret != 0 ) {
-                    removeSharedMemory( inst_name );
                     return ret;
                 }
 
@@ -405,45 +408,41 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
 
             }
             else {
-                Cache * cache = restoreCache( inst_name, buf );
-                detachSharedMemory( inst_name );
+                Cache * cache = restoreCache( inst_name );
 
 
                 if ( cache == NULL ) {
                     rodsLog( LOG_ERROR, "Failed to restore cache." );
                 }
-
-                int diffIrbSet = strcmp( cache->ruleBase, irbSet ) != 0;
-                if ( diffIrbSet ) {
-                    rodsLog( LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase );
-                }
-
-                if ( diffIrbSet || time_type_gt( timestamp, cache->timestamp ) ) {
-                    update = 1;
-                    free( cache->address );
-                    rodsLog( LOG_DEBUG, "Rule base set or rule files modified, force refresh." );
-                }
                 else {
-                    cache->cacheStatus = INITIALIZED;
-                    ruleEngineConfig = *cache;
-
-                    /* generate extRuleSet */
-                    generateRegions();
-                    generateRuleSets();
-                    generateFunctionDescriptionTables();
-                    if ( inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED ) {
-                        getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
+                    int diffIrbSet = strcmp( cache->ruleBase, irbSet ) != 0;
+                    if ( diffIrbSet ) {
+                        rodsLog( LOG_DEBUG, "Rule base set changed, old value is %s", cache->ruleBase );
                     }
 
-                    ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+                    if ( diffIrbSet || time_type_gt( timestamp, cache->timestamp ) ) {
+                        update = 1;
+                        free( cache->address );
+                        rodsLog( LOG_DEBUG, "Rule base set or rule files modified, force refresh." );
+                    }
+                    else {
+                        cache->cacheStatus = INITIALIZED;
+                        ruleEngineConfig = *cache;
 
-                    return res;
+                        /* generate extRuleSet */
+                        generateRegions();
+                        generateRuleSets();
+                        generateFunctionDescriptionTables();
+                        if ( inRuleStruct == &coreRuleStrct && ruleEngineConfig.ruleEngineStatus == UNINITIALIZED ) {
+                            getSystemFunctions( ruleEngineConfig.sysFuncDescIndex->current, ruleEngineConfig.sysRegion );
+                        }
+
+                        ruleEngineConfig.ruleEngineStatus = INITIALIZED;
+
+                        return res;
+                    }
                 }
             }
-        }
-        else {
-            rodsLog( LOG_DEBUG, "Cannot open shared memory." );
-        }
     }
 
     if ( ruleEngineConfig.ruleEngineStatus == INITIALIZED ) {
@@ -479,19 +478,11 @@ int loadRuleFromCacheOrFile( const char* inst_name, int processType, const char 
     snprintf( ruleEngineConfig.ruleBase, sizeof( ruleEngineConfig.ruleBase ), "%s", irbSet );
 
     if ( ( processType == RULE_ENGINE_INIT_CACHE || update ) && inRuleStruct == &coreRuleStrct ) {
-        unsigned char *shared = prepareServerSharedMemory( inst_name );
 
-        if ( shared != NULL ) {
-            int ret = updateCache( inst_name, shared, SHMMAX, &ruleEngineConfig, processType );
-            detachSharedMemory( inst_name );
+            int ret = updateCache( inst_name, SHMMAX, &ruleEngineConfig );
             if ( ret != 0 ) {
-                removeSharedMemory( inst_name );
                 res = ret;
             }
-        }
-        else {
-            rodsLog( LOG_ERROR, "Cannot open shared memory." );
-        }
     }
 
     ruleEngineConfig.ruleEngineStatus = INITIALIZED;
