@@ -62,8 +62,6 @@ typedef struct cache {
     int tvarNumber; /* counter for tvar generator */
     int clearDelayed;
     time_type timestamp;
-    time_type updateTS;
-    unsigned int version;
     int logging;
     char ruleBase[RULE_SET_DEF_LENGTH];
 } Cache;
