@@ -322,7 +322,7 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const ch
 }
 
 int
-initRuleStruct( const char* inst_name, int processType, rsComm_t *svrComm, const char *irbSet, const char *dvmSet, const char *fnmSet ) {
+initRuleStruct( const char* inst_name, rsComm_t *svrComm, const char *irbSet, const char *dvmSet, const char *fnmSet ) {
     int i;
     char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
 
@@ -331,12 +331,7 @@ initRuleStruct( const char* inst_name, int processType, rsComm_t *svrComm, const
     appRuleStrct.MaxNumOfRules = 0;
     GlobalAllRuleExecFlag = 0;
 
-    if ( processType == RULE_ENGINE_INIT_CACHE ) {
-        resetMutex( inst_name );
-    }
-
-
-    i = readRuleStructFromFile( inst_name, processType, irbSet, &coreRuleStrct );
+    i = readRuleStructFromFile( inst_name, irbSet );
     if ( i < 0 ) {
         return i;
     }
@@ -725,8 +720,8 @@ readMsrvcStructFromDB( int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t
 }
 
 int
-readRuleStructFromFile( const char* inst_name, int processType, const char *ruleBaseName, ruleStruct_t *inRuleStrct ) {
-    return loadRuleFromCacheOrFile( inst_name, processType, ruleBaseName, inRuleStrct );
+readRuleStructFromFile( const char* inst_name, const char *ruleBaseName ) {
+    return loadRuleFromCacheOrFile( inst_name, ruleBaseName );
 }
 
 int

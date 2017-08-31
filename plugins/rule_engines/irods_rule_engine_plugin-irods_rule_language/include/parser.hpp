@@ -369,9 +369,9 @@ Node *parseRuleRuleGen( Pointer *expr, int backwardCompatible, ParserContext *pc
 Node *parseTermRuleGen( Pointer *expr, int rulegn, ParserContext *pc );
 Node *parseActionsRuleGen( Pointer *expr, int rulegn, int backwardCompatible, ParserContext *pc );
 void pushback( Token *token, ParserContext *pc );
-void initPointer( Pointer *p, FILE* fp, char* ruleBaseName );
+void initPointer( Pointer *p, FILE* fp, const char* ruleBaseName );
 void initPointer2( Pointer *p, char* buf );
-Pointer *newPointer( FILE* buf, char *ruleBaseName );
+Pointer *newPointer( FILE* buf, const char *ruleBaseName );
 Pointer *newPointer2( char* buf );
 void deletePointer( Pointer* buf );
 

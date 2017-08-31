@@ -14,9 +14,9 @@
 
 /* initialize the Rule Engine if it hasn't been done yet */
 int
-initRuleEngine( const char* inst_name, int processType, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char* fnmSet ) {
+initRuleEngine( const char* inst_name, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char* fnmSet ) {
     int status;
-    status = initRuleStruct( inst_name, processType, svrComm, ruleSet, dvmSet, fnmSet );
+    status = initRuleStruct( inst_name, svrComm, ruleSet, dvmSet, fnmSet );
 
     return status;
 }
