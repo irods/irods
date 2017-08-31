@@ -25,13 +25,13 @@ extern int GlobalAllRuleExecFlag;
  *        otherwise error code
  */
 
-int readRuleSetFromFile( char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r ) {
+int readRuleSetFromFile( const char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r ) {
     char rulesFileName[MAX_NAME_LEN];
     getRuleBasePath( ruleBaseName, rulesFileName );
 
     return readRuleSetFromLocalFile( ruleBaseName, rulesFileName, ruleSet, funcDesc, errloc, errmsg, r );
 }
-int readRuleSetFromLocalFile( char *ruleBaseName, char *rulesFileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r ) {
+int readRuleSetFromLocalFile( const char *ruleBaseName, const char *rulesFileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r ) {
 
     FILE *file;
     char errbuf[ERR_MSG_LEN];

@@ -67,7 +67,7 @@ const std::string DYNAMIC_PEP_RULE_REGEX = "[^ ]*pep_[^ ]*_(pre|post)";
 const std::string MICROSERVICE_RULE_REGEX = "msi[^ ]*";
 static std::string local_instance_name;
 
-int initRuleEngine( const char*, int, rsComm_t*, const char*, const char*, const char*);
+int initRuleEngine( const char*, rsComm_t*, const char*, const char*, const char *);
 
 static std::string get_string_array_from_array( const boost::any& _array ) {
     std::string str_array;
@@ -152,7 +152,6 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
                 std::string core_dvm = get_string_array_from_array(plugin_spec_cfg.at(irods::CFG_RE_DATA_VARIABLE_MAPPING_SET_KW));
                 int status = initRuleEngine(
                         shmem_value.c_str(),
-                        RULE_ENGINE_TRY_CACHE,
                         nullptr,
                         core_re.c_str(),
                         core_dvm.c_str(),

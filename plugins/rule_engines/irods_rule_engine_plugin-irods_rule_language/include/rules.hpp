@@ -12,8 +12,8 @@
 //extern irods::ms_table MicrosTable;
 
 int setLocalVarValue( char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r );
-int readRuleSetFromFile( char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r );
-int readRuleSetFromLocalFile( char *ruleBaseName, char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r );
+int readRuleSetFromFile( const char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r );
+int readRuleSetFromLocalFile( const char *ruleBaseName, const char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r );
 int parseAndComputeMsParamArrayToEnv( msParamArray_t *msParamArray, Env *global, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 int parseAndComputeRule( char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r );
 int parseAndComputeRuleNewEnv( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r );

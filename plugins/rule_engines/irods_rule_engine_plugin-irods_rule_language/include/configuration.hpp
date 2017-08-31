@@ -7,6 +7,7 @@
 #include "irods_hashtable.h"
 #include "parser.hpp"
 #include "datetime.hpp"
+#include "checksum.hpp"
 
 #define RESC_CORE_RULE_SET 0x1
 #define RESC_APP_RULE_SET 0x2
@@ -30,7 +31,8 @@ typedef enum ruleEngineStatus {
     DISABLED*/
 } RuleEngineStatus;
 
-typedef struct cache {
+struct Cache {
+    Cache(); 
     unsigned char *address;
     unsigned char *pointers;
     size_t dataSize;
@@ -64,7 +66,8 @@ typedef struct cache {
     time_type timestamp;
     int logging;
     char ruleBase[RULE_SET_DEF_LENGTH];
-} Cache;
+    char hash[CHKSUM_LEN];
+};
 
 #define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED)
 #define isComponentAllocated(x) ((x)==INITIALIZED)
@@ -137,10 +140,12 @@ extern Cache ruleEngineConfig;
 RuleEngineStatus getRuleEngineStatus();
 int unlinkFuncDescIndex();
 int clearResources( int resources );
-int clearRuleIndex( ruleStruct_t *inRuleStruct );
-int readRuleStructAndRuleSetFromFile( char *ruleBaseName, ruleStruct_t *inRuleStrct );
-int loadRuleFromCacheOrFile( const char*, int processType, const char *irbSet, ruleStruct_t *inRuleStruct );
-int createRuleIndex( ruleStruct_t *inRuleStruct );
+int clearCoreRuleIndex( );
+int clearAppRuleIndex( );
+int readRuleStructAndRuleSetFromFile( const char *ruleBaseName, const char *rulesFileName );
+int loadRuleFromCacheOrFile( const char*, const char *irbSet );
+int createCoreRuleIndex( );
+int createAppRuleIndex( );
 int availableRules();
 void removeRuleFromExtIndex( char *ruleName, int i );
 void appendRuleIntoExtIndex( RuleDesc *rule, int i, Region *r );

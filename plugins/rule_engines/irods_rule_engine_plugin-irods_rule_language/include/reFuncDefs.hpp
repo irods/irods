@@ -10,9 +10,9 @@
 #include "restructs.hpp"
 #include "reGlobalsExtern.hpp"
 #include "irods_re_structs.hpp"
-int initRuleStruct( const char* inst_name, int processType, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char *fnmSet );
+int initRuleStruct( const char* inst_name, rsComm_t *svrComm, const char *ruleSet, const char *dvmSet, const char *fnmSet );
 
-int readRuleStructFromFile( const char* inst_name, int processType, const char *ruleBaseName, ruleStruct_t *inRuleStrct );
+int readRuleStructFromFile( const char* inst_name, const char *ruleBaseName );
 int computeExpression( char *expr, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, char *res );
 
 int clearRuleStruct( ruleStruct_t *inRuleStrct );

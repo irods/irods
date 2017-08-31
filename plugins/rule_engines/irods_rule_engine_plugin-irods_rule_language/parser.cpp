@@ -2416,7 +2416,7 @@ int nextChar( Pointer *p ) {
     }
 }
 
-Pointer *newPointer( FILE *fp, char *ruleBaseName ) {
+Pointer *newPointer( FILE *fp, const char *ruleBaseName ) {
     Pointer *e = ( Pointer * )malloc( sizeof( Pointer ) );
     initPointer( e, fp, ruleBaseName );
     return e;
@@ -2438,7 +2438,7 @@ void deletePointer( Pointer* buf ) {
 
 }
 
-void initPointer( Pointer *p, FILE* fp, char* ruleBaseName /* = NULL */ ) {
+void initPointer( Pointer *p, FILE* fp, const char* ruleBaseName /* = NULL */ ) {
     fseek( fp, 0, SEEK_SET );
     p->fp = fp;
     p->fpos = 0;

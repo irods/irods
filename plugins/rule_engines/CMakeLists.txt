@@ -50,6 +50,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
+    ${CMAKE_SOURCE_DIR}/lib/hasher/include
     ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/include
     ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include

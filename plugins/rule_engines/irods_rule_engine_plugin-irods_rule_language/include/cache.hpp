@@ -6,6 +6,7 @@
 #include "index.hpp"
 #include "configuration.hpp"
 #include "region.h"
+#include "checksum.hpp"
 
 #include "cache.proto.hpp"
 #include "proto.hpp"
