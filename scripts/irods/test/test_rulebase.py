@@ -190,6 +190,12 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                     p.wait()
                 assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'stack trace', start_index=initial_log_size) == 0
 	
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
+    def test_fast_updates__2279(self):
+            rc, _, _ = self.admin.assert_icommand("bash rulebase_fastswap_test_2276.sh", 'STDOUT_SINGLELINE', 'etc')
+            assert rc == 0
+	
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_rulebase_update_without_delay(self):
         my_rule = rule_texts[self.plugin_name][self.class_name]['test_rulebase_update_without_delay_1']
