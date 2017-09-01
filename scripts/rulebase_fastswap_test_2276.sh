@@ -1,5 +1,6 @@
 LOOPTOTAL=10
 CORERE=/etc/irods/core.re
+listcore="writeLine('stdout', listcorerules)"
 
 echo -n "Swapping $CORERE $LOOPTOTAL times: "
 for i in $(eval echo {1..$LOOPTOTAL}) ; do
@@ -11,17 +12,17 @@ for i in $(eval echo {1..$LOOPTOTAL}) ; do
     # save original core.re
     cp $CORERE $CORERE.orig
     # get initial state
-    irule "msiAdmShowIRB" null ruleExecOut > 1
+    irule "$listcore" null ruleExecOut > 1
     # wait to cross a 1-second boundary
     sleep 1
     # update core.re
     echo "firstupdate{}" >> $CORERE
     # get second state
-    irule "msiAdmShowIRB" null ruleExecOut > 2
+    irule "$listcore" null ruleExecOut > 2
     # update core.re again
     echo "secondupdate{}" >> $CORERE
     # get third state
-    irule "msiAdmShowIRB" null ruleExecOut > 3
+    irule "$listcore" null ruleExecOut > 3
     # diff 1 and 2 -- should be different
     diff 1 2 > /dev/null
     if [ $? -eq 0 ] ; then
