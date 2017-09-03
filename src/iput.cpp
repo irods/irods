@@ -210,7 +210,7 @@ usage( FILE* _fout ) {
         "       on and the lfRestartFile input specifies a local file that contains",
         "       the restart information.",
         " --wlock - use advisory write (exclusive) lock for the upload",
-        " --kv_pass - pass quoted key-value strings throught to the resource hierarchy,",
+        " --kv_pass - pass quoted key-value strings through to the resource hierarchy,",
         "             of the form key1=value1;key2=value2",
         " --metadata - atomically assign metadata after a data object is registered in",
         "              the catalog. Metadata is encoded into a quoted string of the",
