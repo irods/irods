@@ -78,6 +78,7 @@ int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
+
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     if ( srcPath == NULL ) {
@@ -89,6 +90,9 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
 
     status = rcDataObjTrim( conn, dataObjInp );
+    if ( status < 0 ) {
+        return status;
+    }
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
         char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
@@ -101,11 +105,18 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
         }
     }
 
-    status = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
-    if(status > 0) {
-      rodsLog(LOG_DEBUG, "%lld - rods object size\n", rodsObjStatOut->objSize);
-      TotalSizeTrimmed += rodsObjStatOut->objSize;
-      TotalTrimmed++;
+    if ( status > 0 ) {
+        const int objStatus = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
+        if ( objStatus < 0 ) {
+            return objStatus;
+        }
+        if( objStatus > 0 == DATA_OBJ_T ) {
+            TotalSizeTrimmed += rodsObjStatOut->objSize;
+            TotalTrimmed++;
+        } else {
+            rodsLog( LOG_ERROR, "trimDataObjUtil: invalid object");
+            return INVALID_OBJECT_TYPE;
+        }
     }
     return status;
 }
