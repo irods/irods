@@ -983,7 +983,7 @@ class ResourceSuite(ResourceBase):
         self.user0.assert_icommand("irepl -R " + self.testresc + " -r " + homepath, "EMPTY")  # creates replica
         self.admin.assert_icommand("itrim -M -N1 -r " + homepath, 'STDOUT_SINGLELINE', "Number of files trimmed = 100.")
 
-    def test_itrim_displays_correct_count__ticket_3531(self):
+    def test_itrim_displays_incorrect_count__ticket_3531(self):
         filename = "itrimcountwrong.txt"
         filesize = int(pow(2, 20) + pow(10,5))
 
@@ -1011,5 +1011,39 @@ class ResourceSuite(ResourceBase):
         self.user0.assert_icommand("itrim -N 1 -S {put_resource} {filename}".format(**locals()), 'STDOUT_SINGLELINE', "Total size trimmed = " + str(filesizeMB) +" MB. Number of files trimmed = 1.")
 
         # local cleanup
+        if os.path.exists(filepath):
+            os.unlink(filepath)
+
+    def test_itrim_returns_on_negative_status__ticket_3531(self):
+        # local setup
+        filename = "filetotesterror.txt"
+        filepath = lib.create_local_testfile(filename)
+
+        itrimReplResc = "itrimReplResc"
+        self.admin.assert_icommand("iadmin mkresc {itrimReplResc} replication".format(**locals()), 'STDOUT_SINGLELINE', "replication")
+        resc1 = self.testresc
+        resc2 = self.anotherresc
+
+        self.user0.assert_icommand("iput -R {resc1} {filename}".format(**locals()), 'EMPTY')
+
+        # check if file was added
+        self.user0.assert_icommand("ils -L", 'STDOUT_SINGLELINE', filename)
+
+        # add resources to the replNode
+        self.admin.assert_icommand("iadmin addchildtoresc {itrimReplResc} {resc1}".format(**locals()), 'EMPTY')
+        self.admin.assert_icommand("iadmin addchildtoresc {itrimReplResc} {resc2}".format(**locals()), 'EMPTY')
+
+        # rebalance
+        self.admin.assert_icommand("iadmin modresc {itrimReplResc} rebalance".format(**locals()), 'EMPTY')
+
+        # trim the file
+        rc, _, _ = self.user0.assert_icommand("itrim -S {resc2} {filename}".format(**locals()), 'STDERR_SINGLELINE', "ERROR: trimUtil: trim error")
+        self.assertNotEqual(rc, 0, 'itrim should have non-zero error code on trim failure')
+
+        #local cleanup
+        self.admin.assert_icommand("iadmin rmchildfromresc {itrimReplResc} {resc1}".format(**locals()), 'EMPTY')
+        self.admin.assert_icommand("iadmin rmchildfromresc {itrimReplResc} {resc2}".format(**locals()), 'EMPTY')
+        self.admin.assert_icommand("iadmin rmresc {itrimReplResc}".format(**locals()), 'EMPTY')
+        self.user0.assert_icommand("irm -f {filename}".format(**locals()), 'EMPTY')
         if os.path.exists(filepath):
             os.unlink(filepath)
