@@ -392,8 +392,7 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
     } // for i
 
     // cleanup
-    if ( tmpV.inx ) { free( tmpV.inx ); }
-    if ( tmpV.value ) { free( tmpV.value ); }
+    clearInxVal(&tmpV);
 
     return SUCCESS();
 
