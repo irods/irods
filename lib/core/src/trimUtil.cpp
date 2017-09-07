@@ -87,6 +87,9 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
 
     status = rcDataObjTrim( conn, dataObjInp );
 
+    if ( status < 0 ) {
+        return status;
+    }
     if ( status >= 0 && rodsArgs->verbose == True ) {
         char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
         splitPathByKey( srcPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
@@ -97,14 +100,19 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
             printf( "%s - No copy trimmed\n", myFile );
         }
     }
-    
-    status = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
-    if(status > 0) {
-      rodsLog(LOG_DEBUG, "%lld - rods object size\n", rodsObjStatOut->objSize);
-      TotalSizeTrimmed += rodsObjStatOut->objSize;
-      TotalTrimmed++;
-      rodsLog(LOG_DEBUG, "%d - TotalTrimmed\n", TotalTrimmed);
-      rodsLog(LOG_DEBUG, "%lld - in function trimObjUtil the value of total size trimmed is\n", TotalSizeTrimmed);
+
+    if ( status > 0 ) {
+        const int objStatus = rcObjStat(conn, dataObjInp, &rodsObjStatOut);
+        if ( objStatus < 0 ) {
+            return objStatus;
+        } 
+        if ( objStatus == DATA_OBJ_T ) {
+            TotalSizeTrimmed += rodsObjStatOut->objSize;
+            TotalTrimmed++;
+        } else {
+            rodsLog( LOG_ERROR, "trimDataObjUtil: invalid object");
+            return INVALID_OBJECT_TYPE;
+        }
     }
 
     return status;
