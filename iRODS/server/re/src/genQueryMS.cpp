@@ -139,12 +139,11 @@ int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ru
     if ( i < 0 ) {
         if ( i == CAT_NO_ROWS_FOUND ) {
             genQueryOutParam->type = strdup( GenQueryOut_MS_T );
-            genQueryOut = ( genQueryOut_t * ) malloc( sizeof( genQueryOut_t ) );
-            memset( genQueryOut, 0, sizeof( genQueryOut_t ) );
             genQueryOutParam->inOutStruct = genQueryOut;
             return 0;
         }
         else {
+            freeGenQueryOut(&genQueryOut);
             return i;
         }
     }
