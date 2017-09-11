@@ -86,8 +86,7 @@ irods::error strip_resc_grp_name_from_query_inp( genQueryInp_t* _inp, int& _pos 
     } // for i
 
     // cleanup
-    if ( tmp.inx ) { free( tmp.inx ); }
-    if ( tmp.value ) { free( tmp.value ); }
+    clearInxIval(&tmp);
 
     return SUCCESS();
 
