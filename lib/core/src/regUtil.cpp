@@ -58,7 +58,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "regUtil: rcChksumLocFile error for %s, status = %d",
-                              srcPath, status );
+                              srcPath->outPath, status );
                 return status;
             }
         }
