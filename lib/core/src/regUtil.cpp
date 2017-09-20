@@ -41,7 +41,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return ret;
         }
         int status = 0;
-        if ( myRodsArgs->collection == False && myRodsArgs->checksum == True ) {
+        if ( myRodsArgs->checksum == True ) {
             rodsEnv env;
             int ret = getRodsEnv( &env );
             if ( ret < 0 ) {
@@ -62,7 +62,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 return status;
             }
         }
-        else if ( myRodsArgs->collection == False && myRodsArgs->verifyChecksum == True ) {
+        else if ( myRodsArgs->verifyChecksum == True ) {
             addKeyVal( &dataObjOprInp.condInput, VERIFY_CHKSUM_KW, "" );
         }
 
