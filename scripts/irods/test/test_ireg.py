@@ -144,3 +144,22 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ils', '-L', self.admin.session_collection], 'STDOUT_SINGLELINE')
         os.system('rm -f ' + filename)
         os.system('rm -f ' + filename_2)
+
+    def test_ireg_recursively_with_checksums__issue_3662(self):
+        thedirname = 'ingestme'
+        lib.create_directory_of_small_files(thedirname,3)
+        # lowercase k
+        self.admin.assert_icommand('ireg -k -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_MULTILINE', ['sha2:', os.path.abspath(thedirname)])
+        self.admin.assert_icommand('irm -rU {0}'.format(thedirname))
+        # uppercase K
+        self.admin.assert_icommand('ireg -K -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_MULTILINE', ['sha2:', os.path.abspath(thedirname)])
+        self.admin.assert_icommand('irm -rU {0}'.format(thedirname))
+        # both
+        self.admin.assert_icommand('ireg -Kk -C {0} {1}'.format(os.path.abspath(thedirname), self.admin.session_collection+'/'+thedirname))
+        self.admin.assert_icommand('ils -L {0}'.format(thedirname), 'STDOUT_MULTILINE', ['sha2:', os.path.abspath(thedirname)])
+        self.admin.assert_icommand('irm -rU {0}'.format(thedirname))
+        # cleanup
+        os.system('rm -rf {0}'.format(thedirname))
+        
