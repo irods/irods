@@ -204,7 +204,7 @@ queryAndShowStrCond( rcComm_t *conn, char *hint, char *format,
 
 int
 execAndShowSpecificQuery( rcComm_t *conn, char *sql,
-                          char *args[], int argsOffset, int noPageFlag ) {
+                          char *args[], int argsOffset, int noPageFlag, char* zoneArgument ) {
     specificQueryInp_t specificQueryInp;
     int status, i;
     genQueryOut_t *genQueryOut = NULL;
@@ -217,6 +217,14 @@ execAndShowSpecificQuery( rcComm_t *conn, char *sql,
     specificQueryInp.maxRows = MAX_SQL_ROWS;
     specificQueryInp.continueInx = 0;
     specificQueryInp.sql = sql;
+
+    if ( zoneArgument != 0 && zoneArgument[0] != '\0' ) {
+        addKeyVal( &specificQueryInp.condInput, ZONE_KW, zoneArgument );
+        printf( "Zone is %s\n", zoneArgument );
+    }
+
+
+
     /* To differentiate format from args, count the ? in the SQL and the
        arguments */
     cp = specificQueryInp.sql;
@@ -369,7 +377,8 @@ main( int argc, char **argv ) {
         status = execAndShowSpecificQuery( conn, argv[myRodsArgs.optind],
                                            argv,
                                            myRodsArgs.optind + 1,
-                                           myRodsArgs.noPage );
+                                           myRodsArgs.noPage,
+                                           myRodsArgs.zoneName );
         rcDisconnect( conn );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status, "iquest Error: specificQuery (sql-query) failed" );
