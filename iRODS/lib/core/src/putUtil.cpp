@@ -131,6 +131,10 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                                   myRodsArgs, &dataObjOprInp );
         }
         else if ( targPath->objType == COLL_OBJ_T ) {
+
+            // send recursive flag in case the resource plugin needs it
+            addKeyVal(&dataObjOprInp.condInput, RECURSIVE_OPR__KW, "1"); // value doesn't matter, other than for testing
+
             setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             if ( myRodsArgs->bulk == True ) {
                 status = bulkPutDirUtil( myConn,
@@ -595,124 +599,139 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     int savedStatus = 0;
-    boost::filesystem::directory_iterator end_itr; // default construction yields past-the-end
-    for ( boost::filesystem::directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
-        boost::filesystem::path p = itr->path();
-        snprintf( srcChildPath, MAX_NAME_LEN, "%s",
-                  p.c_str() );
-
-        if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) {
-            continue;
-        }
-        if ( !exists( p ) ) {
-            rodsLog( LOG_ERROR,
-                     "putDirUtil: stat error for %s, errno = %d\n",
-                     srcChildPath, errno );
-            return USER_INPUT_PATH_ERR;
-        }
-
-        if ( is_symlink( p ) ) {
-            boost::filesystem::path cp = read_symlink( p );
-            snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
-                      srcDir, cp.c_str() );
-            p = boost::filesystem::path( srcChildPath );
-        }
-        rodsLong_t dataSize = 0;
-        dataObjOprInp->createMode = getPathStMode( p.c_str() );
-        objType_t childObjType;
-        if ( is_regular_file( p ) ) {
-            childObjType = DATA_OBJ_T;
-            dataSize = file_size( p );
-        }
-        else if ( is_directory( p ) ) {
-            childObjType = COLL_OBJ_T;
-        }
-        else {
-            rodsLog( LOG_ERROR,
-                     "putDirUtil: unknown local path type for %s",
-                     srcChildPath );
-            savedStatus = USER_INPUT_PATH_ERR;
-            continue;
-        }
-        boost::filesystem::path childPath = p.filename();
-        snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
-                  targColl, childPath.c_str() );
-        if ( childObjType == DATA_OBJ_T ) {
-            if ( bulkFlag == BULK_OPR_SMALL_FILES &&
-                    file_size( p ) > MAX_BULK_OPR_FILE_SIZE ) {
+    boost::system::error_code ec;
+    boost::filesystem::directory_iterator it(srcDirPath, ec), end;
+    if (ec && it == end) {
+        rodsLog( LOG_ERROR, "Error ecountered when processing directory %s for put: %s", srcDirPath.c_str(), ec.message().c_str());
+        savedStatus = ec.value();
+    } else {
+        for ( ; it != end; it.increment(ec) ) {
+            if (ec) {
+                rodsLog( LOG_ERROR, "Error ecountered when processing directory %s for put: %s", srcDirPath.c_str(), ec.message().c_str());
                 continue;
             }
-            else if ( bulkFlag == BULK_OPR_LARGE_FILES &&
-                      file_size( p ) <= MAX_BULK_OPR_FILE_SIZE ) {
+            boost::filesystem::path p = it->path();
+            snprintf( srcChildPath, MAX_NAME_LEN, "%s",
+                    p.c_str() );
+
+            if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) {
                 continue;
             }
-        }
-
-        int status = chkStateForResume( conn, rodsRestart, targChildPath,
-                                        rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
-
-        if ( status < 0 ) {
-            /* restart failed */
-            return status;
-        }
-        else if ( status == 0 ) {
-            if ( bulkFlag == BULK_OPR_SMALL_FILES &&
-                    ( rodsRestart->restartState & LAST_PATH_MATCHED ) != 0 ) {
-                /* enable foreFlag one time */
-                setForceFlagForRestart( bulkOprInp, bulkOprInfo );
+            if ( !exists( p ) ) {
+                rodsLog( LOG_ERROR,
+                        "putDirUtil: stat error for %s, errno = %d\n",
+                        srcChildPath, errno );
+                return USER_INPUT_PATH_ERR;
             }
-            continue;
-        }
 
-        if ( childObjType == DATA_OBJ_T ) {   /* a file */
-            if ( bulkFlag == BULK_OPR_SMALL_FILES ) {
-                status = bulkPutFileUtil( conn, srcChildPath, targChildPath,
-                                          dataSize,  dataObjOprInp->createMode, rodsArgs,
-                                          bulkOprInp, bulkOprInfo );
+            if ( is_symlink( p ) ) {
+                boost::filesystem::path cp = read_symlink( p );
+                snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
+                        srcDir, cp.c_str() );
+                p = boost::filesystem::path( srcChildPath );
+            }
+            rodsLong_t dataSize = 0;
+            dataObjOprInp->createMode = getPathStMode( p.c_str() );
+            objType_t childObjType;
+            if ( is_regular_file( p ) ) {
+                childObjType = DATA_OBJ_T;
+                dataSize = file_size( p );
+            }
+            else if ( is_directory( p ) ) {
+                childObjType = COLL_OBJ_T;
             }
             else {
-                /* normal put */
-                status = putFileUtil( conn, srcChildPath, targChildPath,
-                                      dataSize, rodsArgs, dataObjOprInp );
+                rodsLog( LOG_ERROR,
+                        "putDirUtil: unknown local path type for %s",
+                        srcChildPath );
+                savedStatus = USER_INPUT_PATH_ERR;
+                continue;
             }
-            if ( rodsRestart->fd > 0 ) {
-                if ( status >= 0 ) {
-                    if ( bulkFlag == BULK_OPR_SMALL_FILES ) {
-                        if ( status > 0 ) {
-                            /* status is the number of files bulk loaded */
-                            rodsRestart->curCnt += status;
-                            status = writeRestartFile( rodsRestart,
-                                                       targChildPath );
-                        }
+            boost::filesystem::path childPath = p.filename();
+            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
+                    targColl, childPath.c_str() );
+            if ( childObjType == DATA_OBJ_T ) {
+                if ( bulkFlag == BULK_OPR_SMALL_FILES &&
+                        file_size( p ) > MAX_BULK_OPR_FILE_SIZE ) {
+                    continue;
+                }
+                else if ( bulkFlag == BULK_OPR_LARGE_FILES &&
+                        file_size( p ) <= MAX_BULK_OPR_FILE_SIZE ) {
+                    continue;
+                }
+            }
+
+            int status = chkStateForResume( conn, rodsRestart, targChildPath,
+                                            rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
+
+            if ( status < 0 ) {
+                /* restart failed */
+                return status;
+            }
+            else if ( status == 0 ) {
+                if ( bulkFlag == BULK_OPR_SMALL_FILES &&
+                        ( rodsRestart->restartState & LAST_PATH_MATCHED ) != 0 ) {
+                    /* enable foreFlag one time */
+                    setForceFlagForRestart( bulkOprInp, bulkOprInfo );
+                }
+                continue;
+            }
+
+            if ( childObjType == DATA_OBJ_T ) {   /* a file */
+                if ( bulkFlag == BULK_OPR_SMALL_FILES ) {
+                    status = bulkPutFileUtil( conn, srcChildPath, targChildPath,
+                                            dataSize,  dataObjOprInp->createMode, rodsArgs,
+                                            bulkOprInp, bulkOprInfo );
+                }
+                else {
+                    /* normal put */
+                    try {
+                        status = putFileUtil( conn, srcChildPath, targChildPath,
+                                            dataSize, rodsArgs, dataObjOprInp );
+                    } catch ( const boost::filesystem::filesystem_error& e ) {
+                        rodsLog( LOG_ERROR, e.what() );
+                        status = e.code().value();
                     }
-                    else {
-                        /* write the restart file */
-                        rodsRestart->curCnt ++;
-                        status = writeRestartFile( rodsRestart, targChildPath );
+                }
+                if ( rodsRestart->fd > 0 ) {
+                    if ( status >= 0 ) {
+                        if ( bulkFlag == BULK_OPR_SMALL_FILES ) {
+                            if ( status > 0 ) {
+                                /* status is the number of files bulk loaded */
+                                rodsRestart->curCnt += status;
+                                status = writeRestartFile( rodsRestart,
+                                                        targChildPath );
+                            }
+                        }
+                        else {
+                            /* write the restart file */
+                            rodsRestart->curCnt ++;
+                            status = writeRestartFile( rodsRestart, targChildPath );
+                        }
                     }
                 }
             }
-        }
-        else {        /* a directory */
-            status = mkColl( conn, targChildPath );
-            if ( status < 0 ) {
-                rodsLogError( LOG_ERROR, status,
-                              "putDirUtil: mkColl error for %s", targChildPath );
+            else {        /* a directory */
+                status = mkColl( conn, targChildPath );
+                if ( status < 0 ) {
+                    rodsLogError( LOG_ERROR, status,
+                                "putDirUtil: mkColl error for %s", targChildPath );
+                }
+                status = putDirUtil( myConn, srcChildPath, targChildPath,
+                                    myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
+                                    rodsRestart, bulkOprInfo );
+
             }
-            status = putDirUtil( myConn, srcChildPath, targChildPath,
-                                 myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
-                                 rodsRestart, bulkOprInfo );
 
-        }
-
-        if ( status < 0 &&
-                status != CAT_NO_ROWS_FOUND ) {
-            rodsLogError( LOG_ERROR, status,
-                          "putDirUtil: put %s failed. status = %d",
-                          srcChildPath, status );
-            savedStatus = status;
-            if ( rodsRestart->fd > 0 ) {
-                break;
+            if ( status < 0 &&
+                    status != CAT_NO_ROWS_FOUND ) {
+                rodsLogError( LOG_ERROR, status,
+                            "putDirUtil: put %s failed. status = %d",
+                            srcChildPath, status );
+                savedStatus = status;
+                if ( rodsRestart->fd > 0 ) {
+                    break;
+                }
             }
         }
     }
