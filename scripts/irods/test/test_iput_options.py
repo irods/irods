@@ -1,5 +1,6 @@
 import os
 import re
+import stat
 import sys
 
 if sys.version_info < (2, 7):
@@ -74,3 +75,41 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput --metadata "a;v;u" ' + filepath)
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/foo/' + filename, 'STDOUT_SINGLELINE', 'value: v')
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/foo/' + filename, 'STDOUT_SINGLELINE', 'units: u')
+    def test_iput_r_bad_permissions__issue_3583(self):
+        test_dir = os.path.join(self.user1.local_session_dir, "test_dir")
+        good_sub_dir = os.path.join(self.user1.local_session_dir, "test_dir", "good_sub_dir")
+        bad_sub_dir = os.path.join(self.user1.local_session_dir, "test_dir", "bad_sub_dir")
+
+        os.mkdir(test_dir)
+        try:
+            lib.make_file(os.path.join(test_dir, "a.txt"), 5)
+            lib.make_file(os.path.join(test_dir, "b.txt"), 5)
+            lib.make_file(os.path.join(test_dir, "c.txt"), 5)
+            lib.make_file(os.path.join(test_dir, "bad_file"), 5)
+            os.chmod(os.path.join(test_dir, "bad_file"), 0)
+
+            os.mkdir(good_sub_dir)
+            lib.make_file(os.path.join(good_sub_dir, "a.txt"), 5)
+            lib.make_file(os.path.join(good_sub_dir, "b.txt"), 5)
+            lib.make_file(os.path.join(good_sub_dir, "c.txt"), 5)
+            lib.make_file(os.path.join(good_sub_dir, "bad_file"), 5)
+            os.chmod(os.path.join(good_sub_dir, "bad_file"), 0)
+
+            os.mkdir(bad_sub_dir)
+            lib.make_file(os.path.join(bad_sub_dir, "a.txt"), 5)
+            lib.make_file(os.path.join(bad_sub_dir, "b.txt"), 5)
+            lib.make_file(os.path.join(bad_sub_dir, "c.txt"), 5)
+            lib.make_file(os.path.join(bad_sub_dir, "bad_file"), 5)
+            os.chmod(os.path.join(bad_sub_dir, "bad_file"), 0)
+
+            os.chmod(os.path.join(bad_sub_dir), 0)
+
+            self.admin.assert_icommand('iput -r ' + test_dir, 'STDERR_SINGLELINE', 'Permission denied')
+            self.admin.assert_icommand('ils test_dir', 'STDOUT_SINGLELINE', 'good_sub_dir')
+            self.admin.assert_icommand('ils test_dir/good_sub_dir', 'STDOUT_SINGLELINE', 'a.txt')
+        finally:
+            os.chmod(bad_sub_dir, stat.S_IRWXU)
+            os.chmod(os.path.join(test_dir, "bad_file"), stat.S_IWRITE)
+            os.chmod(os.path.join(bad_sub_dir, "bad_file"), stat.S_IWRITE)
+            os.chmod(os.path.join(good_sub_dir, "bad_file"), stat.S_IWRITE)
+
