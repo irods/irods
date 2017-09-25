@@ -154,7 +154,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         file_size = 5
 
         # make local nested dirs
-        coll_name = "test_iput_r_with_kw_and_obj_count"
+        coll_name = "test_iput_r_with_kw"
         local_dir = os.path.join(self.testing_tmp_dir, coll_name)
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
@@ -171,11 +171,9 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         # look for occurences of debug sequences in the log
         rec_op_kw_string = 'DEBUG: unix_file_resolve_hierarchy: recursiveOpr = [1]'
-        obj_count_string_count = lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, obj_count_string, start_index=initial_size_of_server_log)
         rec_op_kw_string_count = lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, rec_op_kw_string, start_index=initial_size_of_server_log)
 
         # assertions
-        self.assertEqual(obj_count_string_count, files_per_level * depth)
         self.assertEqual(rec_op_kw_string_count, files_per_level * depth)
 
         # restart server with original environment
