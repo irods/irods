@@ -110,7 +110,7 @@ trimDataObjUtil( rcComm_t *conn, char *srcPath,
         if ( objStatus < 0 ) {
             return objStatus;
         }
-        if( objStatus > 0 == DATA_OBJ_T ) {
+        if( objStatus == DATA_OBJ_T ) {
             TotalSizeTrimmed += rodsObjStatOut->objSize;
             TotalTrimmed++;
         } else {
