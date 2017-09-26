@@ -1260,6 +1260,28 @@ int do_interactive() {
     }
 }
 
+std::vector<std::string> reorder_arguments(
+    const std::string& _attribute,
+    const std::string& _value,
+    const std::string& _unit) {
+    std::vector<std::string> args;
+    if(!_attribute.empty()) {
+        args.push_back(_attribute);
+    }
+    if(!_value.empty()) {
+        args.push_back(_value);
+    }
+    if(!_unit.empty()) {
+        args.push_back(_unit);
+    }
+
+    while(args.size() < 3) {
+        args.push_back("");
+    }
+
+    return args;
+}
+
 int do_command(
     const std::string& _cmd,
     const std::vector<std::string>& _sub_args) {
@@ -1510,13 +1532,14 @@ int do_command(
             // Need to check optional arguments to see if the string represents
             //  units, new_attribute, new_value, or new_units
             std::string temp = sub_vm["opt_1"].as<std::string>();
+            std::string label = temp.substr(0,2);
 
-            if ( temp.substr(2) == "n:" ) {
+            if("n:" == label) {
                 new_attribute = temp;
-            } else if (temp.substr(2) == "v:" ) {
+            } else if("v:" == label) {
                 new_value = temp;
-            } else if (temp.substr(2) == "u:" ) {
-                new_value = temp;
+            } else if("u:" == label) {
+                new_units = temp;
             } else {
                 units = temp;
             }
@@ -1524,13 +1547,14 @@ int do_command(
 
         if ( sub_vm.count( "opt_2" ) ) {
             std::string temp = sub_vm["opt_2"].as<std::string>();
+            std::string label = temp.substr(0,2);
 
-            if ( temp.substr(2) == "n:" ) {
+            if("n:" == label) {
                 new_attribute = temp;
-            } else if (temp.substr(2) == "v:" ) {
+            } else if("v:" == label) {
                 new_value = temp;
-            } else if (temp.substr(2) == "u:" ) {
-                new_value = temp;
+            } else if("u:" == label) {
+                new_units = temp;
             } else {
                 units = temp;
             }
@@ -1538,13 +1562,14 @@ int do_command(
 
         if ( sub_vm.count( "opt_3" ) ) {
             std::string temp = sub_vm["opt_3"].as<std::string>();
+            std::string label = temp.substr(0,2);
 
-            if ( temp.substr(2) == "n:" ) {
+            if("n:" == label) {
                 new_attribute = temp;
-            } else if (temp.substr(2) == "v:" ) {
+            } else if("v:" == label) {
                 new_value = temp;
-            } else if (temp.substr(2) == "u:" ) {
-                new_value = temp;
+            } else if("u:" == label) {
+                new_units = temp;
             } else {
                 units = temp;
             }
@@ -1552,27 +1577,29 @@ int do_command(
 
         if ( sub_vm.count( "opt_4" ) ) {
             std::string temp = sub_vm["opt_4"].as<std::string>();
+            std::string label = temp.substr(0,2);
 
-            if ( temp.substr(2) == "n:" ) {
+            if("n:" == label) {
                 new_attribute = temp;
-            } else if (temp.substr(2) == "v:" ) {
+            } else if("v:" == label) {
                 new_value = temp;
-            } else if (temp.substr(2) == "u:" ) {
-                new_value = temp;
+            } else if("u:" == label) {
+                new_units = temp;
             } else {
                 units = temp;
             }
         }
 
+        std::vector<std::string> new_args = reorder_arguments(new_attribute, new_value, new_units);
         int status = modAVUMetadata( (char*) _cmd.c_str(),
                         (char*) sub_vm["object_type"].as<std::string>().c_str(),
                         (char*) sub_vm["name"].as<std::string>().c_str(),
                         (char*) sub_vm["attribute"].as<std::string>().c_str(),
                         (char*) sub_vm["value"].as<std::string>().c_str(),
                         (char*) units.c_str(),
-                        (char*) new_attribute.c_str(),
-                        (char*) new_value.c_str(),
-                        (char*) new_units.c_str() );
+                        (char*) new_args[0].c_str(),
+                        (char*) new_args[1].c_str(),
+                        (char*) new_args[2].c_str() );
 
         return status < 0 ? status : 0;
     } else if ( _cmd == "set" ) {
