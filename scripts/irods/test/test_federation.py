@@ -40,6 +40,10 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         shutil.rmtree(self.local_test_dir_path, ignore_errors=True)
         super(Test_ICommands, self).tearDown()
 
+    def test_iquest__3466(self):
+        if 'otherZone' == test.settings.FEDERATION.REMOTE_ZONE:
+            self.admin_sessions[0].assert_icommand('iquest -z otherZone --sql bug_3466_query', 'STDOUT_SINGLELINE', 'bug_3466_query')
+
     def test_ils_l(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
