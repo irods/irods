@@ -1519,7 +1519,6 @@ irods::error unix_file_resolve_hierarchy(
             // =-=-=-=-=-=-=-
             // check that additional info made it
             rodsLog(LOG_DEBUG, "%s: %s = [%s]", __FUNCTION__, RECURSIVE_OPR__KW, getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW));
-            rodsLog(LOG_DEBUG, "%s: %s = [%s]", __FUNCTION__, OBJ_COUNT_KW, getValByKey(&file_obj->cond_input(), OBJ_COUNT_KW));
 
             // =-=-=-=-=-=-=-
             // get the name of this resource

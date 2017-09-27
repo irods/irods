@@ -147,7 +147,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         out, _ = lib.execute_command('find {user_vault_dir} -type f'.format(**locals()))
         self.assertEqual(out, '')
 
-    def test_iput_r_with_kw_and_obj_count(self):
+    def test_iput_r_with_kw(self):
         # test settings
         depth = 50
         files_per_level = 5
@@ -170,7 +170,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
 
         # look for occurences of debug sequences in the log
-        obj_count_string = 'DEBUG: unix_file_resolve_hierarchy: object_count = [{0}]'.format(files_per_level * depth)
         rec_op_kw_string = 'DEBUG: unix_file_resolve_hierarchy: recursiveOpr = [1]'
         obj_count_string_count = lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, obj_count_string, start_index=initial_size_of_server_log)
         rec_op_kw_string_count = lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, rec_op_kw_string, start_index=initial_size_of_server_log)
