@@ -3487,6 +3487,25 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix3RescVault", ignore_errors=True)
 
+    @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
+    def test_recursive_descent__ticket_3672(self):
+        # default behavior - do the recursive descent
+        initial_log_size = lib.get_log_size('server')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        self.assertEquals(3, lib.count_occurrences_of_string_in_log('server', 'matching old count', start_index=initial_log_size))
+
+        # default behavior with flag set - do the recursive descent
+        initial_log_size = lib.get_log_size('server')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'context', 'recursive_rebalance=true'])
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        self.assertEquals(3, lib.count_occurrences_of_string_in_log('server', 'matching old count', start_index=initial_log_size))
+
+        # disable recursive descent
+        initial_log_size = lib.get_log_size('server')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'context', 'recursive_rebalance=false'])
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        self.assertEquals(0, lib.count_occurrences_of_string_in_log('server', 'matching old count', start_index=initial_log_size))
+
     def test_irm_specific_replica(self):
         # not allowed here - this is a managed replication resource
         # should be listed 3x

@@ -39,6 +39,7 @@
 #include <map>
 #include <list>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -94,6 +95,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief limit of the number of repls to operate upon during rebalance
     const int DEFAULT_LIMIT = 500;
+
+    const std::string RECURSIVE_REBALANCE_FLAG("recursive_rebalance");
 
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
@@ -1556,19 +1559,27 @@ extern "C" {
     // replRebalance - code which would rebalance the subtree
     irods::error replRebalance(
         irods::resource_plugin_context& _ctx ) {
-        // =-=-=-=-=-=-=-
-        // forward request for rebalance to children first, then
-        // rebalance ourselves.
         irods::error result = SUCCESS();
-        irods::resource_child_map::iterator itr = _ctx.child_map().begin();
-        for ( ; itr != _ctx.child_map().end(); ++itr ) {
-            irods::error ret = itr->second.second->call(
-                                   _ctx.comm(),
-                                   irods::RESOURCE_OP_REBALANCE,
-                                   _ctx.fco() );
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
-                result = ret;
+
+        std::string recurse_flag;
+        irods::error ret = _ctx.prop_map().get<std::string>(
+                               RECURSIVE_REBALANCE_FLAG,
+                               recurse_flag );
+        std::string lower_recurse_flag = boost::algorithm::to_lower_copy( recurse_flag );
+        if(!ret.ok() || "false" != lower_recurse_flag) {
+            // =-=-=-=-=-=-=-
+            // forward request for rebalance to children first, then
+            // rebalance ourselves.
+            irods::resource_child_map::iterator itr = _ctx.child_map().begin();
+            for ( ; itr != _ctx.child_map().end(); ++itr ) {
+                irods::error ret = itr->second.second->call(
+                                       _ctx.comm(),
+                                       irods::RESOURCE_OP_REBALANCE,
+                                       _ctx.fco() );
+                if ( !ret.ok() ) {
+                    irods::log( PASS( ret ) );
+                    result = ret;
+                }
             }
         }
 
@@ -1581,9 +1592,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the property 'name' of this resource
         std::string resc_name;
-        irods::error ret = _ctx.prop_map().get< std::string >(
-                               irods::RESOURCE_NAME,
-                               resc_name );
+        ret = _ctx.prop_map().get< std::string >(
+                  irods::RESOURCE_NAME,
+                  resc_name );
         if ( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1738,6 +1749,23 @@ extern "C" {
                 const std::string& _inst_name,
                 const std::string& _context ) :
                 irods::resource( _inst_name, _context ) {
+                // =-=-=-=-=-=-=-
+                // parse context string into property pairs assuming a ; as a separator
+                std::vector< std::string > props;
+                irods::kvp_map_t kvp;
+                irods::parse_kvp_string(
+                    _context,
+                    kvp );
+
+                // =-=-=-=-=-=-=-
+                // copy the properties from the context to the prop map
+                irods::kvp_map_t::iterator itr = kvp.begin();
+                for( ; itr != kvp.end(); ++itr ) {
+                    properties_.set< std::string >(
+                        itr->first,
+                        itr->second );
+                } // for itr
+
             } // ctor
 
             irods::error post_disconnect_maintenance_operation(
