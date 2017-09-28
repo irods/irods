@@ -804,7 +804,7 @@ procChksumForClose(
                 rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
                 if ( strcmp( srcDataObjInfo->chksum, *chksumStr ) != 0 ) {
                     rodsLog( LOG_NOTICE,
-                             "procChksumForClose: chksum mismatch for for %s src [%s] new [%s]",
+                             "procChksumForClose: chksum mismatch for %s src [%s] new [%s]",
                              dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr );
                     free( *chksumStr );
                     *chksumStr = NULL;
