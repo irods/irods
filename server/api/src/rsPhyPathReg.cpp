@@ -233,7 +233,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         } // if dst_resc
         else {
             // =-=-=-=-=-=-=-
-            // no resc is specificied, request a hierarchy given the default resource
+            // no resc is specified, request a hierarchy given the default resource
             irods::file_object_ptr file_obj( new irods::file_object() );
             irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::CREATE_OPERATION,
@@ -556,12 +556,8 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         return status;
     }
 
-    if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
-                                 REG_CHKSUM_KW ) ) != NULL ) {
-        rstrcpy( dataObjInfo.chksum, chksum, NAME_LEN );
-    }
-    else if ( ( chksum = getValByKey( &phyPathRegInp->condInput,
-                                      VERIFY_CHKSUM_KW ) ) != NULL ) {
+    if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
+         ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) ) {
         chksum = 0;
         status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
         if ( status < 0 ) {
