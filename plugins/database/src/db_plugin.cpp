@@ -7550,7 +7550,7 @@ irods::error db_update_pam_password_op(
 
         }
         else {
-            rodsLog( LOG_STATUS, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+            rodsLog( LOG_DEBUG, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
 
         }
 
