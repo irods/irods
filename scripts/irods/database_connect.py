@@ -58,7 +58,7 @@ def dump_odbc_ini(odbc_dict, f):
         print('', file=f)
 
 def get_odbc_entry(db_config, catalog_database_type):
-    if catalog_database_type == 'postgres':
+    if catalog_database_type == 'postgres' or catalog_database_type == 'cockroachdb':
         return {
             'Description': 'iRODS Catalog',
             'Driver': db_config['db_odbc_driver'],
@@ -99,10 +99,12 @@ def get_installed_odbc_drivers():
     return [] if code else [s[1:-1] for s in out.splitlines() if s]
 
 def get_odbc_drivers_for_db_type(db_type):
+    if db_type == "cockroachdb":
+        db_type = "postgres"
     return [d for d in get_installed_odbc_drivers() if db_type in d.lower()]
 
 def get_odbc_driver_paths(db_type, oracle_home=None):
-    if db_type == 'postgres':
+    if db_type == 'postgres' or db_type == 'cockroachdb':
         return sorted(unique_list(itertools.chain(
                 lib.find_shared_object('psqlodbcw.so'),
                 lib.find_shared_object('libodbcpsql.so'),
@@ -149,6 +151,8 @@ def is_64_bit_ELF(path):
 def get_default_port_for_database_type(catalog_database_type):
     if catalog_database_type == 'postgres':
         return 5432
+    elif catalog_database_type == 'cockroachdb':
+        return 26257
     elif catalog_database_type == 'mysql':
         return 3306
     elif catalog_database_type == 'oracle':
@@ -186,7 +190,10 @@ def get_database_connection(irods_config):
     os.environ['ODBCSYSINI'] = '/etc'
 
     try:
-        return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
+        if irods_config.catalog_database_type == 'cockroachdb':
+            return pypyodbc.connect(connection_string.encode('ascii'), ansi=True, autocommit = True)
+        else:
+            return pypyodbc.connect(connection_string.encode('ascii'), ansi=True)
     except pypyodbc.Error as e:
         if 'file not found' in str(e):
             message = (
@@ -337,6 +344,8 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
     def get_next_object_id():
         if irods_config.catalog_database_type == 'postgres':
             return execute_sql_statement(cursor, "select nextval('R_OBJECTID');").fetchone()[0]
+        elif irods_config.catalog_database_type == 'cockroachdb':
+            return execute_sql_statement(cursor, "insert into r_objectid default values returning object_id;").fetchone()[0]
         elif irods_config.catalog_database_type == 'mysql':
             return execute_sql_statement(cursor, "select R_OBJECTID_nextval();").fetchone()[0]
         elif irods_config.catalog_database_type == 'oracle':

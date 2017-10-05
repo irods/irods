@@ -46,6 +46,12 @@ def run_update(irods_config, cursor):
             database_connect.execute_sql_statement(cursor, "update R_DATA_MAIN set resc_id=? where resc_hier=? or resc_hier like ?", resc_id, resc_name, ''.join(['%;', resc_name]))
         if irods_config.catalog_database_type == 'postgres':
             database_connect.execute_sql_statement(cursor, "update r_resc_main as rdm set resc_parent = am.resc_id from ( select resc_name, resc_id from r_resc_main ) as am where am.resc_name = rdm.resc_parent;")
+        elif irods_config.catalog_database_type == 'cockroachdb':
+            rows = database_connect.execute_sql_statement(cursor, "select rdm.resc_id, am.resc_id from r_resc_main rdm, r_resc_main am where am.resc_name = rdm.resc_parent;").fetchall()
+            for row in rows:
+                resc_id = row[0]
+                resc_id2 = row[1]
+                database_connect.execute_sql_statement(cursor, "update r_resc_main set resc_parent = ? where resc_id = ?;", resc_id2, resc_id)
         elif irods_config.catalog_database_type == 'mysql':
             database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN as rdm, ( select resc_name, resc_id from R_RESC_MAIN ) as am set rdm.resc_parent = am.resc_id where am.resc_name = rdm.resc_parent;")
         else:
