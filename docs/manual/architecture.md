@@ -774,7 +774,7 @@ By default, the rebalance operation issued to a replication resource will be iss
 irods@hostname:~/ $ iadmin modresc myReplResc context 'recursive_rebalance=false'
 ~~~
 
-A side effect is that the object count will no longer be correct in each unixfilesystem resource (however, the object counts have been removed in 4.2+).
+A side effect is that the object count will no longer be updated in each unixfilesystem resource (however, the object counts have been removed in 4.2+).
 
 ## Pluggable Authentication
 
