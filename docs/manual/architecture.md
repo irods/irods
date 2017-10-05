@@ -768,6 +768,14 @@ A new subcommand for iadmin allows an administrator to rebalance a coordinating 
 
 For other coordinating resource types, rebalance can be defined as appropriate.  For coordinating resources with no concept of "balanced", the rebalance operation is a "no op" and performs no work.
 
+By default, the rebalance operation issued to a replication resource will be issued to each of its children, recursively.  A unixfilesystem leaf resource will update its object count when issued a rebalance operation, which will result in a relatively slow database query if run against a large database.  A hierarchy with many unixfilesystem resources will take some time to perform those queries, and will block any rebalancing of replicas until they return.  The replication resource's context string can be set to avoid this recursive behavior:
+
+~~~
+irods@hostname:~/ $ iadmin modresc myReplResc context 'recursive_rebalance=false'
+~~~
+
+A side effect is that the object count will no longer be correct in each unixfilesystem resource (however, the object counts have been removed in 4.2+).
+
 ## Pluggable Authentication
 
 The authentication methods are now contained in plugins.  By default, similar to iRODS 3.3 and prior, iRODS comes with native iRODS challenge/response (password) enabled.  However, enabling an additional authentication mechanism is as simple as adding a file to the proper directory.  The server does not need to be restarted.
