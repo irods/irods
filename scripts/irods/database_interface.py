@@ -17,7 +17,10 @@ def setup_catalog(irods_config, default_resource_directory=None):
     l = logging.getLogger(__name__)
 
     with contextlib.closing(database_connect.get_database_connection(irods_config)) as connection:
-        connection.autocommit = False
+        if irods_config.catalog_database_type == "cockroachdb":
+            connection.autocommit = True
+        else:
+            connection.autocommit = False
         with contextlib.closing(connection.cursor()) as cursor:
             try:
                 database_connect.create_database_tables(irods_config, cursor)
@@ -79,6 +82,8 @@ def setup_database_config(irods_config):
 
     if os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libpostgres.so')):
         db_type = 'postgres'
+    elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libcockroachdb.so')):
+        db_type = 'cockroachdb'
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libmysql.so')):
         db_type = 'mysql'
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'liboracle.so')):
