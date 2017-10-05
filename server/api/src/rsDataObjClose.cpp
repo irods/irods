@@ -49,6 +49,7 @@
 #include "irods_exception.hpp"
 #include "irods_serialization.hpp"
 #include "irods_server_api_call.hpp"
+#include "irods_server_properties.hpp"
 
 
 int
@@ -249,7 +250,8 @@ irsDataObjClose(
 }
 
 int _modDataObjSize(
-    rsComm_t* _comm,
+    rsComm_t*      _comm,
+    int            _l1descInx,
     dataObjInfo_t* _info ) {
 
     keyValPair_t regParam;
@@ -259,6 +261,12 @@ int _modDataObjSize(
     snprintf( tmpStr, sizeof( tmpStr ), "%ji", ( intmax_t ) _info->dataSize );
     addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
     addKeyVal( &regParam, IN_PDMO_KW, _info->rescHier ); // to stop resource hierarchy recursion
+    if ( getValByKey(
+            &L1desc[_l1descInx].dataObjInp->condInput,
+            ADMIN_KW ) != NULL ) {
+        addKeyVal( &regParam, ADMIN_KW, "" );
+    }
+
     modDataObjMetaInp.dataObjInfo = _info;
     modDataObjMetaInp.regParam = &regParam;
     int status = rsModDataObjMeta( _comm, &modDataObjMetaInp );
@@ -303,6 +311,15 @@ _rsDataObjClose(
     }
 
     if ( L1desc[l1descInx].oprStatus < 0 ) {
+        // #3674 - elide any additional errors for catalog update if this is a newly created replica
+        if(L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
+            if( L1desc[l1descInx].oprType == REPLICATE_OPR ||
+                L1desc[l1descInx].oprType == REPLICATE_DEST ||
+                L1desc[l1descInx].oprType == REPLICATE_SRC ) {
+                return L1desc[l1descInx].oprStatus;
+            }
+        }
+
         const rodsLong_t vault_size = getSizeInVault(
                                           rsComm,
                                           L1desc[l1descInx].dataObjInfo );
@@ -317,6 +334,7 @@ _rsDataObjClose(
             L1desc[l1descInx].dataObjInfo->dataSize = vault_size;
             int status = _modDataObjSize(
                              rsComm,
+                             l1descInx,
                              L1desc[l1descInx].dataObjInfo );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -566,7 +584,7 @@ _rsDataObjClose(
             // what is expected and what was actually written to the resource
             if ( srcDataObjInfo->dataSize != newSize ) {
                 srcDataObjInfo->dataSize = newSize;
-                status = _modDataObjSize( rsComm, srcDataObjInfo );
+                status = _modDataObjSize( rsComm, l1descInx, srcDataObjInfo );
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize srcDataObjInfo failed, status = [%d]", status );
@@ -575,7 +593,7 @@ _rsDataObjClose(
             }
             if ( destDataObjInfo->dataSize != newSize ) {
                 destDataObjInfo->dataSize = newSize;
-                status = _modDataObjSize( rsComm, destDataObjInfo );
+                status = _modDataObjSize( rsComm, l1descInx, destDataObjInfo );
                 if ( status < 0 ) {
                     rodsLog( LOG_NOTICE,
                              "_rsDataObjClose: _modDataObjSize destDataObjInfo failed, status = [%d]", status );
