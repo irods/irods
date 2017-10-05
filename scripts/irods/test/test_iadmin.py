@@ -878,6 +878,66 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("irm -rf " + dir_path)
         self.admin.assert_icommand("irm -rf " + tar_path)
 
+    @unittest.skip( "configuration requires sudo to create the environment")
+    def test_rebalance_for_repl_node_with_different_users_with_write_failure__issue_3674(self):
+        #  sudo truncate -s 3M /tmp/irods/badfs_file
+        #  sudo mkfs -t ext3 /tmp/irods/badfs_file
+        #  sudo mount -t ext3 /tmp/irods/badfs_file /tmp/irods/bad_fs/
+        #  sudo chmod 777 /tmp/irods/bad_fs/
+
+
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
+                                   ":/tmp/irods/pydevtest_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
+                                   ":/tmp/irods/bad_fs/pydevtest_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
+        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
+
+        # =-=-=-=-=-=-=-
+        # place data into the resource
+        test_file = "rebalance_test_file"
+        # test for single buffer put
+        #lib.make_file(test_file, 2000000)
+
+        # test for parallel transfer
+        lib.make_file(test_file, 40000000)
+
+        self.admin.assert_icommand("iadmin modresc leaf_b status down")
+
+        self.user0.assert_icommand("iput -R repl %s foo" % (test_file))
+
+        self.admin.assert_icommand("ils -Lr /", 'STDOUT_SINGLELINE', self.admin.username)
+
+        self.admin.assert_icommand("iadmin modresc leaf_b status up")
+
+        # =-=-=-=-=-=-=-
+        # call rebalance function - the thing were actually testing... finally.
+        # test for single buffer put
+        #self.admin.assert_icommand("iadmin modresc repl rebalance", 'STDERR_SINGLELINE', 'SYS_COPY_LEN_ERR')
+
+        # test for parallel transfer
+        self.admin.assert_icommand("iadmin modresc repl rebalance", 'STDERR_SINGLELINE', 'UNIX_FILE_WRITE_ERR')
+
+        # =-=-=-=-=-=-=-
+        # visualize our rebalance
+        self.admin.assert_icommand("ils -Lr /", 'STDOUT_SINGLELINE', self.admin.username)
+
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        self.user0.assert_icommand("irm -f foo")
+
+        self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_b")
+        self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
+        self.admin.assert_icommand("iadmin rmresc leaf_b")
+        self.admin.assert_icommand("iadmin rmresc leaf_a")
+        self.admin.assert_icommand("iadmin rmresc repl")
+
     def test_rebalance_for_repl_node_with_different_users(self):
         hostname = lib.get_hostname()
 
