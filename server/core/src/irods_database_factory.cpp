@@ -29,12 +29,7 @@ namespace irods {
             _ptr.reset( new irods::oracle_object );
         }
         else {
-            std::string msg( "database type not recognized [" );
-            msg += _type;
-            msg += "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+	    _ptr.reset( new irods::generic_database_object(_type) );
 
         }
 

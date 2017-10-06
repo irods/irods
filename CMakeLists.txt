@@ -593,6 +593,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_oracle_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_physical_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_postgres_object.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_generic_database_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_backport.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_manager.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin.cpp
