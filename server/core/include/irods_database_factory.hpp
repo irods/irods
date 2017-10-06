@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_postgres_object.hpp"
+#include "irods_generic_database_object.hpp"
 #include "irods_mysql_object.hpp"
 #include "irods_oracle_object.hpp"
 #include "irods_stacktrace.hpp"
