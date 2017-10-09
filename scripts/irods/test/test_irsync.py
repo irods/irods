@@ -288,3 +288,27 @@ class Test_iRsync(ResourceBase, unittest.TestCase):
             self.assertTrue(local_files == rods_files,
                             msg="Files missing:\n" + str(local_files - rods_files) + "\n\n" +
                             "Extra files:\n" + str(rods_files - local_files))
+
+    def test_irsync_r_symlink(self):
+
+        # make local dir
+
+        base_name = "test_irsync_r_symlink"
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+        lib.make_dir_p(local_dir)
+
+        # make file
+        file_name = os.path.join(local_dir, 'the_file')
+        lib.make_file(file_name, 10)
+
+        # make symlink with relative path
+        link_path_1 = os.path.join(local_dir, 'link1')
+        lib.execute_command(['ln', '-s', 'the_file', link_path_1])
+
+        # make symlink with fully qualified path
+        link_path_2 = os.path.join(local_dir, 'link2')
+        lib.execute_command(['ln', '-s', file_name, link_path_2])
+
+        # sync dir to coll
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+
