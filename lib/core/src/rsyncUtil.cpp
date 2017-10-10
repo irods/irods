@@ -802,8 +802,14 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                   targColl, childPath.c_str() );
         if ( is_symlink( p ) ) {
             path cp = read_symlink( p );
-            snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-                      srcDir, cp.c_str() );
+            // Issue 3663 - If the path is FQDN, do not add srcDir on path
+            if (cp.is_relative()) {
+                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
+                        srcDir, cp.c_str() );
+            } else {
+                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", 
+                        cp.c_str() );
+            } 
             p = path( mySrcPath.outPath );
         }
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
