@@ -93,7 +93,7 @@ if [ "$UPGRADE_FLAG" == "true" ] ; then
 
     # make sure the service acount owns everything except the PAM executable, once again
     chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME /etc/irods
-    chown -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME_DIR
+    chown -H -R $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME_DIR
     if [ "$DETECTEDOS" == "MacOSX" ] ; then
         chown root:wheel $IRODS_HOME_DIR/iRODS/server/bin/PamAuthCheck
     else
