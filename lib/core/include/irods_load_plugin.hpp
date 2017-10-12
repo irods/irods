@@ -96,7 +96,7 @@ namespace irods {
     } // resolve_plugin_path
 
     /**
-     * \fn PluginType* load_plugin( PluginType*& _plugin, const std::string& _plugin_name, const std::string& _interface, const std::string& _instance_name, const std::string& _context );
+     * \fn PluginType* load_plugin( PluginType*& _plugin, const std::string& _plugin_name, const std::string& _interface, const std::string& _instance_name, const Ts&... _args );
      *
      * \brief load a plugin object from a given shared object / dll name
      *
@@ -117,17 +117,17 @@ namespace irods {
      *                                  a file named "lib" clean_plugin_name + ".so"
      * \param[in] _interface       - plugin interface: resource, network, auth, etc.
      * \param[in] _instance_name   - the name of the plugin after it is loaded
-     * \param[in] _context         - context to pass to the loaded plugin
+     * \param[in] _args            - arguments to pass to the loaded plugin
      *
      * \return PluginType*
      * \retval non-null on success
      **/
-    template< typename PluginType >
+    template< typename PluginType, typename ...Ts >
     error load_plugin( PluginType*&       _plugin,
                        const std::string& _plugin_name,
                        const std::string& _interface,
                        const std::string& _instance_name,
-                       const std::string& _context ) {
+                       const Ts&... _args ) {
         namespace fs = boost::filesystem;
 
         // resolve the plugin path
@@ -182,7 +182,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // attempt to load the plugin factory function from the shared object
-        typedef PluginType* ( *factory_type )( const std::string& , const std::string& );
+        typedef PluginType* ( *factory_type )( const std::string& , const Ts&... );
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
         char* err = dlerror();
         if ( 0 != err || !factory ) {
@@ -197,7 +197,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
-        _plugin = factory( _instance_name, _context );
+        _plugin = factory( _instance_name, _args... );
         if ( !_plugin ) {
             std::stringstream msg;
             msg << "failed to create plugin object for [" << _plugin_name << "]";
