@@ -1910,6 +1910,7 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
         return origStrLen;
     }
 
+    int extLen = maxStrLen;
     char* strBuf;
     myStrlen = xmlStrToStr( ( const char * )inPtr, origStrLen, strBuf );
 
@@ -1918,19 +1919,18 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen, outPtr );
+            extLen = myStrlen;
         }
     }
-    else {
-        extendPackedOutput( unpackedOutput, maxStrLen, outPtr );
-    }
 
-    if ( myStrlen > 0 ) {
-        strncpy( static_cast<char*>(outPtr), strBuf, myStrlen );
-        outStr = static_cast<char*>(outPtr);
-        outPtr = static_cast<char*>(outPtr) + myStrlen;
+    if ( SYS_MALLOC_ERR != extendPackedOutput( unpackedOutput, extLen, outPtr ) ) {
+        if ( myStrlen > 0 ) {
+            strncpy( static_cast<char*>(outPtr), strBuf, myStrlen );
+            outStr = static_cast<char*>(outPtr);
+            outPtr = static_cast<char*>(outPtr) + myStrlen;
+        }
+        *static_cast<char*>(outPtr) = '\0';
     }
-    *static_cast<char*>(outPtr) = '\0';
     free(strBuf);
 
     inPtr = static_cast<const char*>(inPtr) + ( origStrLen + 1 );
