@@ -42,12 +42,13 @@ packStruct( const void *inStruct, bytesBuf_t **packedResult, const char *packIns
 
     if ( irodsProt == XML_PROT ) {
         void *outPtr;
-        /* add a NULL termination */
-        extendPackedOutput( packedOutput, 1, outPtr );
-        *static_cast<char*>(outPtr) = '\0';
-        if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
-            printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
-        }
+        if ( SYS_MALLOC_ERR != extendPackedOutput( packedOutput, 1, outPtr ) ) {
+            /* add a NULL termination */
+            *static_cast<char*>(outPtr) = '\0';
+            if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
+                printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
+                }
+            }
     }
 
     *packedResult = (bytesBuf_t*)malloc(sizeof(**packedResult));
