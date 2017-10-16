@@ -42,8 +42,12 @@ packStruct( const void *inStruct, bytesBuf_t **packedResult, const char *packIns
 
     if ( irodsProt == XML_PROT ) {
         void *outPtr;
+        status = extendPackedOutput( packedOutput, 1, outPtr ); 
+        if ( SYS_MALLOC_ERR == status ) {
+            return status;
+        }
+
         /* add a NULL termination */
-        extendPackedOutput( packedOutput, 1, outPtr );
         *static_cast<char*>(outPtr) = '\0';
         if ( getRodsLogLevel() >= LOG_DEBUG9 ) {
             printf( "packed XML: \n%s\n", ( char * ) packedOutput.bBuf.buf );
@@ -1909,6 +1913,7 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
         return origStrLen;
     }
 
+    int extLen = maxStrLen;
     char* strBuf;
     myStrlen = xmlStrToStr( ( const char * )inPtr, origStrLen, strBuf );
 
@@ -1918,11 +1923,14 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen, outPtr );
+            extLen = myStrlen;
         }
     }
-    else {
-        extendPackedOutput( unpackedOutput, maxStrLen, outPtr );
+
+    int status = extendPackedOutput( unpackedOutput, extLen, outPtr ); 
+    if ( SYS_MALLOC_ERR == status ) {
+        free( strBuf );
+        return status;
     }
 
     if ( myStrlen > 0 ) {
