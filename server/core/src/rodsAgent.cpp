@@ -327,7 +327,26 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         return SYS_SOCK_ACCEPT_ERR;
     }
 
+    // [#3563] reproduce serverize log behavior
+    char* logFile = NULL;
+    getLogfileName( &logFile, NULL, RODS_LOGFILE );
+    LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
+    if ( LogFd < 0 ) {
+        rodsLog( LOG_NOTICE, "runIrodsAgent: Unable to open %s. errno = %d",
+                 logFile, errno );
+        free( logFile );
+        return -1;
+    }
+    ( void ) dup2( LogFd, 0 );
+    ( void ) dup2( LogFd, 1 );
+    ( void ) dup2( LogFd, 2 );
+    close( LogFd );
+    LogFd = 2;
+
     while ( true ) {
+        // [#3563] check for log file roll over
+        chkLogfileName( NULL, RODS_LOGFILE );
+
         // Reap any zombie processes from completed agents
         int reaped_pid, child_status;
         while ( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
