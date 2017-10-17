@@ -214,9 +214,13 @@ namespace irods {
 
         } // if result strlen > 0
 
-        // =-=-=-=-=-=-=-
-        // if the response is favorable, return success
-        if ( CS_NEG_STATUS_SUCCESS == read_cs_neg->status_ ) {
+        if ( CS_NEG_REQUIRE == rule_result &&
+             CS_NEG_USE_TCP == _result ) {
+            return ERROR(
+                       SERVER_NEGOTIATION_ERROR,
+                       "request to use TCP refused");
+        }
+        else if ( CS_NEG_STATUS_SUCCESS == read_cs_neg->status_ ) {
             return SUCCESS();
         }
 
