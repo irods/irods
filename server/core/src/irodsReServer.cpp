@@ -333,7 +333,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
         return 0;
     }
 
-    if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
+    if ( ( i = open( logFile, O_CREAT | O_RDWR | O_APPEND, 0644 ) ) < 0 ) {
         fprintf( stderr, "Unable to open logFile %s\n", logFile );
         free( logFile );
         return -1;

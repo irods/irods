@@ -288,7 +288,8 @@ int
 serverize( char *logDir ) {
     char *logFile = NULL;
 
-    getLogfileName( &logFile, logDir, RODS_LOGFILE );
+    // [#3563] server process gets unique log
+    getLogfileName( &logFile, logDir, RODS_SERVER_LOGFILE );
 
 #ifdef SYSLOG
     LogFd = 0;
@@ -564,7 +565,8 @@ serverMain( char *logDir ) {
 
             loopCnt++;
             if ( loopCnt >= LOGFILE_CHK_CNT ) {
-                chkLogfileName( logDir, RODS_LOGFILE );
+                // [#3563] server process gets unique log
+                chkLogfileName( logDir, RODS_SERVER_LOGFILE );
                 loopCnt = 0;
             }
         }
