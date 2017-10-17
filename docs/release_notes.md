@@ -2,7 +2,7 @@
 
 ## 4.1.11
 
-Release Date 2017-10-17
+Release Date 2017-10-18
 
 ### Feature
 
@@ -69,6 +69,8 @@ Release Date 2017-10-17
  - Fix iRODS Rule Language error code [#3636] [#3637]
 
  - Fix for postinstall.sh script, chown will now de-reference symlinks [#3677]
+
+ - Fix for checking negotiation results [#3684]
 
  [Full GitHub Listing](https://github.com/irods/irods/issues?q=milestone%3A4.1.11)
 
