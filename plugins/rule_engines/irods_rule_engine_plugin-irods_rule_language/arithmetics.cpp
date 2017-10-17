@@ -1047,9 +1047,11 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
             if ( ret != 0 ) {
                 generateErrMsg( "execMicroService3: error converting arguments to MsParam", NODE_EXPR_POS( node->subtrees[1]->subtrees[i] ), node->subtrees[1]->subtrees[i]->base, errbuf );
                 addRErrorMsg( errmsg, ret, errbuf );
-                int j;
-                for ( j = i - 1; j >= 0; j-- ) {
-                    int freeStruct = TYPE( args[j] ) != T_IRODS  ? 1 : 0;
+                for ( int j = i - 1; j >= 0; j-- ) {
+                    int freeStruct = 1;
+                    if ( NULL != args[j] && NULL != args[j]->exprType ) {
+                        freeStruct = ( T_IRODS != TYPE( args[j] ) ) ? 1 : 0;
+                    }
                     clearMsParam( myArgv[j], freeStruct );
                     free( myArgv[j] );
                 }
@@ -1131,7 +1133,10 @@ Res* execMicroService3( char *msName, Res **args, unsigned int nargs, Node *node
     res = newIntRes( r, ii );
 ret:
     for ( unsigned int i = 0; i < numOfStrArgs; i++ ) {
-        int freeStruct = TYPE( args[i] ) != T_IRODS  ? 1 : 0;
+        int freeStruct = 1;
+        if ( NULL != args[i] && NULL != args[i]->exprType ) {
+            freeStruct = ( T_IRODS != TYPE( args[i] ) ) ? 1 : 0;
+        }
         clearMsParam( myArgv[i], freeStruct );
         free( myArgv[i] );
     }
