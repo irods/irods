@@ -819,16 +819,18 @@ const void *lookupFromEnv( Env *env, const char *key ) {
 }
 
 void updateInEnv( Env *env, char *varName, Res *res ) {
-    Env *defined = env;
+    if ( NULL != env ) {
+        Env *defined = env;
 
-    while ( defined  != NULL && lookupFromHashTable( defined->current, varName ) == NULL ) {
-        defined  = defined ->previous;
-    }
-    if ( defined != NULL ) {
-        updateInHashTable( defined->current, varName, res );
-    }
-    else {
-        insertIntoHashTable( env->current, varName, res );
+        while ( NULL != defined && NULL == lookupFromHashTable( defined->current, varName ) ) {
+            defined = defined->previous;
+        }
+        if ( NULL != defined ) {
+            updateInHashTable( defined->current, varName, res );
+        }
+        else {
+            insertIntoHashTable( env->current, varName, res );
+        }
     }
 }
 
