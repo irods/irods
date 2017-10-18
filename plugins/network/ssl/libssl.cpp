@@ -1056,7 +1056,7 @@ irods::error ssl_send_rods_msg(
                 // =-=-=-=-=-=-=-
                 // send the message buffer
                 int bytes_written = 0;
-                if ( _msg_buf != NULL &&
+                if ( NULL != _msg_buf &&
                         msg_header.msgLen > 0 ) {
                     if ( XML_PROT == _protocol &&
                             getRodsLogLevel() >= LOG_DEBUG8 ) {
@@ -1070,7 +1070,7 @@ irods::error ssl_send_rods_msg(
 
                     // =-=-=-=-=-=-=-
                     // send the error buffer
-                    if ( _error_buf != NULL &&
+                    if ( NULL != _error_buf &&
                             msg_header.errorLen > 0 ) {
                         if ( XML_PROT == _protocol &&
                                 getRodsLogLevel() >= LOG_DEBUG8 ) {
@@ -1086,7 +1086,7 @@ irods::error ssl_send_rods_msg(
 
                         // =-=-=-=-=-=-=-
                         // send the stream buffer
-                        if ( _stream_bbuf != NULL &&
+                        if ( NULL != _stream_bbuf &&
                                 msg_header.bsLen > 0 ) {
                             if ( XML_PROT == _protocol &&
                                     getRodsLogLevel() >= LOG_DEBUG8 ) {
