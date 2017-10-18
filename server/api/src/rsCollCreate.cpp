@@ -147,6 +147,10 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
 int
 l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
+    if ( NULL == dataObjInfo ) {
+        return SYS_NULL_INPUT;
+    }
+
     //int rescTypeInx;
     fileMkdirInp_t fileMkdirInp;
     int status;
