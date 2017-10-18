@@ -1776,22 +1776,21 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 *dataObjInfo = NULL;
             }
         }
-        if ( status2 >= 0 ) {
+        else {
             status = 0;
         }
     }
-    if ( status >= 0 ) {
-        if ( ( *dataObjInfo )->specColl != NULL ) {
-            if ( ( *dataObjInfo )->specColl->collClass == LINKED_COLL ) {
-                /* already been translated */
-                rstrcpy( dataObjInp->objPath, ( *dataObjInfo )->objPath,
-                         MAX_NAME_LEN );
-                free( ( *dataObjInfo )->specColl );
-                ( *dataObjInfo )->specColl = NULL;
-            }
-            else if ( getStructFileType( ( *dataObjInfo )->specColl ) >= 0 ) {
-                dataObjInp->numThreads = NO_THREADING;
-            }
+    if ( status >= 0 &&
+         NULL != dataObjInfo && NULL != ( *dataObjInfo )->specColl ) {
+        if ( LINKED_COLL == ( *dataObjInfo )->specColl->collClass ) {
+            /* already been translated */
+            rstrcpy( dataObjInp->objPath, ( *dataObjInfo )->objPath,
+                     MAX_NAME_LEN );
+            free( ( *dataObjInfo )->specColl );
+            ( *dataObjInfo )->specColl = NULL;
+        }
+        else if ( getStructFileType( ( *dataObjInfo )->specColl ) >= 0 ) {
+            dataObjInp->numThreads = NO_THREADING;
         }
     }
     return status;

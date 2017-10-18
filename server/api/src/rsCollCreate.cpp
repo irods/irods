@@ -100,13 +100,15 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
             else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
                 /* for STRUCT_FILE_COLL to make a directory in the structFile, the
                  * COLLECTION_TYPE_KW must be set */
-                if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
-                        dataObjInfo->specColl->collClass == LINKED_COLL ) {
-                    /*  should not be here because if has been translated */
-                    return SYS_COLL_LINK_PATH_ERR;
-                }
-                else {
-                    status = l3Mkdir( rsComm, dataObjInfo );
+                if ( NULL != dataObjInfo ) {
+                    if ( NULL != dataObjInfo->specColl &&
+                         LINKED_COLL == dataObjInfo->specColl->collClass ) {
+                        /*  should not be here because if has been translated */
+                        return SYS_COLL_LINK_PATH_ERR;
+                    }
+                    else {
+                        status = l3Mkdir( rsComm, dataObjInfo );
+                    }
                 }
                 freeDataObjInfo( dataObjInfo );
                 return status;
