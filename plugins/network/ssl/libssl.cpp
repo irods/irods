@@ -1056,7 +1056,8 @@ irods::error ssl_send_rods_msg(
                 // =-=-=-=-=-=-=-
                 // send the message buffer
                 int bytes_written = 0;
-                if ( msg_header.msgLen > 0 ) {
+                if ( _msg_buf != NULL &&
+                        msg_header.msgLen > 0 ) {
                     if ( XML_PROT == _protocol &&
                             getRodsLogLevel() >= LOG_DEBUG8 ) {
                         printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
@@ -1069,7 +1070,8 @@ irods::error ssl_send_rods_msg(
 
                     // =-=-=-=-=-=-=-
                     // send the error buffer
-                    if ( msg_header.errorLen > 0 ) {
+                    if ( _error_buf != NULL &&
+                            msg_header.errorLen > 0 ) {
                         if ( XML_PROT == _protocol &&
                                 getRodsLogLevel() >= LOG_DEBUG8 ) {
                             printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
@@ -1084,7 +1086,8 @@ irods::error ssl_send_rods_msg(
 
                         // =-=-=-=-=-=-=-
                         // send the stream buffer
-                        if ( msg_header.bsLen > 0 ) {
+                        if ( _stream_bbuf != NULL &&
+                                msg_header.bsLen > 0 ) {
                             if ( XML_PROT == _protocol &&
                                     getRodsLogLevel() >= LOG_DEBUG8 ) {
                                 printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
