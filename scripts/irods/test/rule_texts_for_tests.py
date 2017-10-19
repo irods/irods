@@ -296,7 +296,7 @@ acPostProcForPut {
     call_with_wrong_number_of_string_arguments("a", "b");
 }
 
-acPostProcForPut { )
+acPostProcForPut { }
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_acPostProcForPut_replicate_to_multiple_resources'] = '''
 # multiple replication rule
