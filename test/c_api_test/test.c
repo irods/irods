@@ -14,7 +14,7 @@
 #include "dataObjChksum.h"
 #include "dataObjClose.h"
 
-#if IRODS_VERSION_INTEGER != 4002001
+#if IRODS_VERSION_INTEGER != 4002002
     #error "IRODS_VERSION_INTEGER needs attention"
 #endif
 
