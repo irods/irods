@@ -107,26 +107,22 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         return SYS_DEST_SPEC_COLL_SUB_EXIST;
     }
 
-    if ( srcType >= 0 ) { /* specColl of some sort */
-        if ( srcDataObjInfo && destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-            status = specCollObjRename( rsComm, srcDataObjInfo,
-                                        destDataObjInfo );
+    if ( srcType >= 0 ) {
+        /* src is a specColl of some sort. dest must also be a specColl in
+         * order to rename, except in the special case where src is in a
+         * mounted collection. Otherwise, bail out with specColl conflict error. */
+        if ( NULL != srcDataObjInfo && SYS_SPEC_COLL_OBJ_NOT_EXIST == destType ) {
+            status = specCollObjRename( rsComm, srcDataObjInfo, destDataObjInfo );
+        }
+        else if ( NULL != srcDataObjInfo && NULL != srcDataObjInfo->specColl &&
+                  MOUNTED_COLL == srcDataObjInfo->specColl->collClass ) {
+            status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType, destDataObjInp );
         }
         else {
-            /* dest is regular obj. Allow special case where the src
-             * is in a MOUNTED_COLL */
-            if ( srcDataObjInfo && srcDataObjInfo->specColl->collClass == MOUNTED_COLL ) {
-                /* a special case for moving obj from mounted collection to
-                 * regular collection */
-                status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType,
-                                             destDataObjInp );
-            }
-            else {
-                rodsLog( LOG_ERROR,
-                         "rsDataObjRename: src %s is in spec coll but dest %s is not",
-                         srcDataObjInp->objPath, destDataObjInp->objPath );
-                status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
-            }
+            rodsLog( LOG_ERROR,
+                     "rsDataObjRename: src %s is in spec coll but dest %s is not",
+                     srcDataObjInp->objPath, destDataObjInp->objPath );
+            status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
         }
         freeDataObjInfo( srcDataObjInfo );
         freeDataObjInfo( destDataObjInfo );
