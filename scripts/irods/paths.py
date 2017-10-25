@@ -95,6 +95,12 @@ def server_test_directory():
         'test',
         'bin')
 
+def server_parent_log_path():
+    return sorted([os.path.join(log_directory(), name)
+            for name in os.listdir(log_directory())
+            if name.startswith('rodsServerLog')],
+        key=lambda path: os.path.getctime(path))[-1]
+
 def server_log_path():
     return sorted([os.path.join(log_directory(), name)
             for name in os.listdir(log_directory())
