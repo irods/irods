@@ -377,6 +377,10 @@ class IrodsConfig(object):
         return paths.server_test_directory()
 
     @property
+    def server_parent_log_path(self):
+        return paths.server_parent_log_path()
+
+    @property
     def server_log_path(self):
         return paths.server_log_path()
 
