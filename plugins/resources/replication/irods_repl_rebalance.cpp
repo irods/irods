@@ -92,7 +92,7 @@ namespace {
 
         irods::GenQueryInpWrapper genquery_inp_wrapped;
         genquery_inp_wrapped.get().maxRows = MAX_SQL_ROWS;
-        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_DATA_ID, (boost::format("= '%d'") % _data_id).str().c_str());
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_DATA_ID, (boost::format("= '%lld'") % _data_id).str().c_str());
 
         std::stringstream cond_ss;
         for (auto& bun : _leaf_bundles) {
@@ -159,7 +159,7 @@ namespace {
         irods::error err = resc_mgr.leaf_id_to_hier(resc_id, ret.resource_hierarchy);
         if (!err.ok()) {
             THROW(err.code(),
-                  boost::format("leaf_id_to_hier failed. resc id [%d] genquery inp:\n%s") %
+                  boost::format("leaf_id_to_hier failed. resc id [%lld] genquery inp:\n%s") %
                   resc_id %
                   genquery_inp_to_diagnostic_string(&genquery_inp_wrapped.get()));
         }
@@ -349,7 +349,7 @@ namespace {
             irods::resource_ptr dst_resc;
             const irods::error err_resolve = resc_mgr.resolve(_child_resc_name, dst_resc);
             if (!err_resolve.ok()) {
-                THROW(err_resolve.code(), boost::format("failed to resolve resource plugin. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%d]. resolve message [%s]") %
+                THROW(err_resolve.code(), boost::format("failed to resolve resource plugin. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%lld]. resolve message [%s]") %
                       _child_resc_name %
                       _parent_resc_name %
                       _bun_idx %
@@ -370,7 +370,7 @@ namespace {
                 &parser,
                 &vote );
             if (!err_vote.ok()) {
-                THROW(err_resolve.code(), boost::format("failed to get dest hierarchy. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%d]. vote message [%s]") %
+                THROW(err_resolve.code(), boost::format("failed to get dest hierarchy. child resc [%s] parent resc [%s] bundle index [%d] bundles [%s] data id [%lld]. vote message [%s]") %
                       _child_resc_name %
                       _parent_resc_name %
                       _bun_idx %
@@ -382,7 +382,7 @@ namespace {
             // extract the hier from the parser
             std::string dst_hier;
             parser.str(dst_hier);
-            rodsLog(LOG_NOTICE, "proc_results_for_rebalance: creating new replica for data id [%d] from [%s] on [%s]", data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
+            rodsLog(LOG_NOTICE, "proc_results_for_rebalance: creating new replica for data id [%lld] from [%s] on [%s]", data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
             const irods::error err_rebalance = repl_for_rebalance(
                 _comm,
                 source_info.object_path,
@@ -437,7 +437,7 @@ namespace irods {
                 const error err_dst_hier = resc_mgr.leaf_id_to_hier(replica_to_update.resource_id, destination_hierarchy);
                 if (!err_dst_hier.ok()) {
                     THROW(err_dst_hier.code(),
-                          boost::format("leaf_id_to_hier failed. data id [%d]. replica number [%d] resource id [%d]") %
+                          boost::format("leaf_id_to_hier failed. data id [%lld]. replica number [%d] resource id [%lld]") %
                           replica_to_update.data_id %
                           replica_to_update.replica_number %
                           replica_to_update.resource_id);
