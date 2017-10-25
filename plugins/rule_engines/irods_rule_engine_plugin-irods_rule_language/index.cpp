@@ -25,15 +25,16 @@ int createRuleStructIndex( ruleStruct_t *inRuleStrct, Hashtable *ruleIndex ) {
     if ( ruleIndex == NULL ) {
         return 0;
     }
-    int i;
-    for ( i = 0; i < inRuleStrct->MaxNumOfRules; i++ ) {
+    for ( int i = 0; i < inRuleStrct->MaxNumOfRules; i++ ) {
         char *key = inRuleStrct->action[i];
         int *value = ( int * )malloc( sizeof( int ) );
         *value = i;
 
-        if ( insertIntoHashTable( ruleIndex, key, value ) == 0 ) {
+        if ( 0 == insertIntoHashTable( ruleIndex, key, value ) ) {
+            free( value );
             return 0;
         }
+        free( value );
     }
     return 1;
 }
@@ -269,17 +270,18 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
     if ( *ruleIndex == NULL ) {
         return 0;
     }
-    int i;
-    for ( i = 0; i < inFuncStrct->MaxNumOfFMaps; i++ ) {
+    for ( int i = 0; i < inFuncStrct->MaxNumOfFMaps; i++ ) {
         char *key = inFuncStrct->funcName[i];
         int *value = ( int * )malloc( sizeof( int ) );
         *value = i;
 
-        if ( insertIntoHashTable( *ruleIndex, key, value ) == 0 ) {
+        if ( 0 == insertIntoHashTable( *ruleIndex, key, value ) ) {
             deleteHashTable( *ruleIndex, free_const );
             *ruleIndex = NULL;
+            free( value );
             return 0;
         }
+        free( value );
     }
     return 1;
 }

@@ -1914,6 +1914,7 @@ unpackXmlString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrL
 
     if ( myStrlen >= maxStrLen ) {
         if ( maxStrLen >= 0 ) {
+            free(strBuf);
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
