@@ -82,8 +82,8 @@ def setup_server(irods_config, json_configuration_file=None):
         irods_config.commit(version_json, irods.paths.version_path())
 
     if json_configuration_dict is not None:
-        irods_user = json_configuration_dict['host_system_information']['service_account_user']
-        irods_group = json_configuration_dict['host_system_information']['service_account_group']
+        irods_user = json_configuration_dict['host_system_information']['service_account_user_name']
+        irods_group = json_configuration_dict['host_system_information']['service_account_group_name']
     else:
         irods_user, irods_group = get_irods_user_and_group(irods_config)
 
