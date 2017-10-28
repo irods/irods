@@ -73,14 +73,14 @@ int get_log_file_rotation_time() {
     char* rotation_time_str = getenv(LOGFILE_INT);
     if ( rotation_time_str ) {
         const int rotation_time = atoi(rotation_time_str);
-        if( rotation_time > 1 ) {
+        if( rotation_time >= 1 ) {
             return rotation_time;
         }
     }
 
     try {
         const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
-        if(rotation_time > 1) {
+        if(rotation_time >= 1) {
             return rotation_time;
         }
 
