@@ -16,7 +16,7 @@ const char * const icmds[] = {
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv",
     "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
-    "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
+    "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
     "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "ixmsg", "izonereport"
 };
 
@@ -63,6 +63,7 @@ printMainHelp() {
         "ireg         - register a file or directory/files/subdirectories into iRODS.",
         "irepl        - replicate a file in iRODS to another storage resource.",
         "irm          - remove one or more Data Objects or Collections.",
+        "irmdir       - removes an empty Collection",
         "irmtrash     - remove Data Objects from the trash bin.",
         "irsync       - synchronize Collections between a local/iRODS or iRODS/iRODS.",
         "irule        - submit a rule to be executed by the iRODS server.",
