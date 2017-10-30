@@ -25,7 +25,7 @@ iRODS has a 20+ year history of funded projects.
 
 Funders have included DARPA, NSF, DOD, DOE, LC, NARA, NASA, NOAA, USPTO, and LLNL.
 
-[https://irods.org/about/history](https://irods.org/about/history)
+[https://irods.org/history](https://irods.org/history)
 
 ## License
 
