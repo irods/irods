@@ -601,8 +601,8 @@ checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId 
 int
 checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper ) {
     int i;
-    int operId;
-    int userId;
+    rodsLong_t operId;
+    rodsLong_t userId;
     operId = getTokenId( rsComm, "access_type", oper );
     if ( operId < 0 ) {
         return operId;
