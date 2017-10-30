@@ -431,14 +431,14 @@ removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
     return 0;
 }
 
-int
+rodsLong_t
 getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
 
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char tmpStr[MAX_NAME_LEN];
     char tmpStr2[MAX_NAME_LEN];
-    int status;
+    rodsLong_t status;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     snprintf( tmpStr, NAME_LEN, "='%s'", tokenNameSpace );
@@ -459,20 +459,20 @@ getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
             freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
-        status = atoi( tokenIdRes->value );
+        status = atoll( tokenIdRes->value );
     }
     freeGenQueryOut( &genQueryOut );
     return status;
 }
 
-int
+rodsLong_t
 getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
 
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char tmpStr[MAX_NAME_LEN];
     char tmpStr2[MAX_NAME_LEN];
-    int status;
+    rodsLong_t status;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     snprintf( tmpStr, NAME_LEN, "='%s'", userName );
@@ -493,7 +493,7 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
             freeGenQueryOut( &genQueryOut );
             return UNMATCHED_KEY_OR_INDEX;
         }
-        status = atoi( userIdRes->value );
+        status = atoll( userIdRes->value );
     }
     freeGenQueryOut( &genQueryOut );
     return status;
@@ -601,8 +601,8 @@ checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId 
 int
 checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper ) {
     int i;
-    int operId;
-    int userId;
+    rodsLong_t operId;
+    rodsLong_t userId;
     operId = getTokenId( rsComm, "access_type", oper );
     if ( operId < 0 ) {
         return operId;
