@@ -66,11 +66,11 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
     def test_shutdown_local_server(self):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.environment_file_contents = IrodsConfig().client_environment
-            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_parent_log_path)
             try:
                 admin_session.assert_icommand(['irods-grid', 'shutdown', '--hosts', lib.get_hostname()], 'STDOUT_SINGLELINE', 'shutting down')
                 time.sleep(10) # server gives control plane the all-clear before printing done message
-                self.assertEqual(1, lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'iRODS Server is done', initial_size_of_server_log))
+                self.assertEqual(1, lib.count_occurrences_of_string_in_log(IrodsConfig().server_parent_log_path, 'iRODS Server is done', initial_size_of_server_log))
             finally:
                 IrodsController().start()
 

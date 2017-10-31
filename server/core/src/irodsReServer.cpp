@@ -73,14 +73,14 @@ int get_log_file_rotation_time() {
     char* rotation_time_str = getenv(LOGFILE_INT);
     if ( rotation_time_str ) {
         const int rotation_time = atoi(rotation_time_str);
-        if( rotation_time > 1 ) {
+        if( rotation_time >= 1 ) {
             return rotation_time;
         }
     }
 
     try {
         const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
-        if(rotation_time > 1) {
+        if(rotation_time >= 1) {
             return rotation_time;
         }
 
@@ -333,7 +333,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
         return 0;
     }
 
-    if ( ( i = open( logFile, O_CREAT | O_RDWR, 0644 ) ) < 0 ) {
+    if ( ( i = open( logFile, O_CREAT | O_RDWR | O_APPEND, 0644 ) ) < 0 ) {
         fprintf( stderr, "Unable to open logFile %s\n", logFile );
         free( logFile );
         return -1;
