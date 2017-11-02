@@ -21,6 +21,7 @@
 #include <openssl/md5.h>
 
 #include <boost/thread/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <iomanip>
@@ -135,7 +136,6 @@ int
 putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                  char *locFilePath, char *objPath, rodsLong_t dataSize ) {
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
 
     if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
@@ -164,7 +164,6 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
 
     initFileRestart( conn, locFilePath, objPath, dataSize,
                      portalOprOut->numThreads );
-    memset( tid, 0, sizeof( tid ) );
     memset( myInput, 0, sizeof( myInput ) );
 
     if ( numThreads == 1 ) {
@@ -206,6 +205,8 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     }
     else {
         rodsLong_t totalWritten = 0;
+        std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
+        memset( tid, 0, sizeof( tid ) );
 
         for ( int i = 0; i < numThreads; i++ ) {
             const int sock = connectToRhostPortal( myPortList->hostAddr,
@@ -223,7 +224,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             }
             fillRcPortalTransferInp( conn, &myInput[i], sock, in_fd, i );
             try {
-                tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
+                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( rcPartialDataPut, &myInput[i] ) );
             }
             catch ( const boost::thread_resource_error& ) {
                 rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
@@ -240,7 +241,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                     tid[i]->join();
                 }
                 catch ( const boost::thread_resource_error& ) {
-                    rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
+                    rodsLog( LOG_ERROR, "boost encountered thread_resource_error on joining thread." );
                     return SYS_THREAD_RESOURCE_ERR;
                 }
             }
@@ -832,7 +833,6 @@ int
 getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                    char *locFilePath, char *objPath, rodsLong_t dataSize ) {
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
 
     if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
@@ -858,7 +858,6 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         return SYS_INVALID_PORTAL_OPR;
     }
 
-    memset( tid, 0, sizeof( tid ) );
     memset( myInput, 0, sizeof( myInput ) );
 
     initFileRestart( conn, locFilePath, objPath, dataSize,
@@ -901,6 +900,8 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     }
     else {
         rodsLong_t totalWritten = 0;
+        std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
+        memset( tid, 0, sizeof( tid ) );
 
         for ( int i = 0; i < numThreads; i++ ) {
             const int sock = connectToRhostPortal( myPortList->hostAddr,
@@ -924,7 +925,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
             }
             fillRcPortalTransferInp( conn, &myInput[i], out_fd, sock, i );
             try {
-                tid[i] = new boost::thread( rcPartialDataGet, &myInput[i] );
+                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( rcPartialDataGet, &myInput[i] ) );
             }
             catch ( const boost::thread_resource_error& ) {
                 rodsLog( LOG_ERROR, "boost encountered thread_resource_error on constructing thread." );
@@ -942,7 +943,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
                     tid[i]->join();
                 }
                 catch ( const boost::thread_resource_error& ) {
-                    rodsLog( LOG_ERROR, "boost encountered thread_resource_error on join." );
+                    rodsLog( LOG_ERROR, "boost encountered thread_resource_error on joining thread." );
                     return SYS_THREAD_RESOURCE_ERR;
                 }
             }
