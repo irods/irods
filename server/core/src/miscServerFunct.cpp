@@ -36,6 +36,7 @@
 #include <string>
 #include <vector>
 #include <boost/thread/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <openssl/md5.h>
 
@@ -1324,7 +1325,6 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int i, sock, myFd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
     rodsLong_t dataSize;
     int oprType;
@@ -1362,7 +1362,6 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     myPortList = &portalOprOut->portList;
 
-    memset( tid, 0, sizeof( tid ) );
     memset( myInput, 0, sizeof( myInput ) );
 
     sock = connectToRhostPortal( myPortList->hostAddr,
@@ -1410,6 +1409,8 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     else {
         rodsLong_t totalWritten = 0;
+        std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
+        memset( tid, 0, sizeof( tid ) );
 
         for ( i = 1; i < numThreads; i++ ) {
             sock = connectToRhostPortal( myPortList->hostAddr,
@@ -1432,7 +1433,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                                        sock, myFd, 0, dataOprInp->destRescTypeInx,
                                        i, 0, 0, 0 );
 
-                tid[i] = new boost::thread( remToLocPartialCopy, &myInput[i] );
+                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[i] ) );
             }
             else {
                 myFd = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
@@ -1449,15 +1450,15 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                                        myFd, sock, dataOprInp->destRescTypeInx, 0,
                                        i, 0, 0, 0 );
 
-                tid[i] = new boost::thread( locToRemPartialCopy, &myInput[i] );
+                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[i] ) );
             }
         }
 
         if ( oprType == COPY_TO_LOCAL_OPR ) {
-            tid[0] = new boost::thread( remToLocPartialCopy, &myInput[0] );
+            tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[0] ) );
         }
         else {
-            tid[0] = new boost::thread( locToRemPartialCopy, &myInput[0] );
+            tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[0] ) );
         }
 
 
@@ -1497,7 +1498,6 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int i, out_fd, in_fd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
     rodsLong_t dataSize;
     rodsLong_t size0, size1, offset0;
@@ -1524,7 +1524,6 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         return SYS_INVALID_PORTAL_OPR;
     }
 
-    memset( tid, 0, sizeof( tid ) );
     memset( myInput, 0, sizeof( myInput ) );
 
     size0 = dataOprInp->dataSize / numThreads;
@@ -1552,6 +1551,8 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         rodsLong_t totalWritten = 0;
         rodsLong_t mySize = 0;
         rodsLong_t myOffset = 0;
+        std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
+        memset( tid, 0, sizeof( tid ) );
 
         for ( i = 1; i < numThreads; i++ ) {
             myOffset += size0;
@@ -1585,10 +1586,10 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 dataOprInp->destRescTypeInx,
                 i, mySize, myOffset, 0 );
 
-            tid[i] = new boost::thread( sameHostPartialCopy, &myInput[i] );
+            tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( sameHostPartialCopy, &myInput[i] ) );
         }
 
-        tid[0] = new boost::thread( sameHostPartialCopy, &myInput[0] );
+        tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( sameHostPartialCopy, &myInput[0] ) );
 
         if ( retVal < 0 ) {
             return retVal;
