@@ -476,10 +476,10 @@ irods::error ssl_socket_read(
 // =-=-=-=-=-=-=-
 // local function to write a buffer to a socket
 irods::error ssl_socket_write(
-    void* _buffer,
-    int   _length,
-    int&  _bytes_written,
-    SSL*  _ssl ) {
+    const void* _buffer,
+    int         _length,
+    int&        _bytes_written,
+    SSL*        _ssl ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -489,7 +489,7 @@ irods::error ssl_socket_write(
         // =-=-=-=-=-=-=-
         // local variables for write
         int   len_to_write = _length;
-        char* write_ptr    = static_cast<char*>( _buffer );
+        const char* write_ptr    = static_cast<const char*>( _buffer );
 
         // =-=-=-=-=-=-=-
         // reset bytes written
@@ -498,7 +498,7 @@ irods::error ssl_socket_write(
         // =-=-=-=-=-=-=-
         // loop while there is data to read
         while ( result.ok() && len_to_write > 0 ) {
-            int num_bytes = SSL_write( _ssl, static_cast<void*>( write_ptr ), len_to_write );
+            int num_bytes = SSL_write( _ssl, static_cast<const void*>( write_ptr ), len_to_write );
 
             // =-=-=-=-=-=-=-
             // error trapping the write
@@ -959,7 +959,7 @@ irods::error ssl_agent_stop(
 //
 irods::error ssl_write_msg_header(
     irods::plugin_context& _ctx,
-    bytesBuf_t*             _header ) {
+    const bytesBuf_t*      _header ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -970,7 +970,7 @@ irods::error ssl_write_msg_header(
         // =-=-=-=-=-=-=-
         // log debug information if appropriate
         if ( getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending header: len = %d\n%s\n", _header->len, ( char * ) _header->buf );
+            printf( "sending header: len = %d\n%s\n", _header->len, ( const char * ) _header->buf );
         }
 
         // =-=-=-=-=-=-=-
@@ -1006,12 +1006,12 @@ irods::error ssl_write_msg_header(
 //
 irods::error ssl_send_rods_msg(
     irods::plugin_context& _ctx,
-    const char*             _msg_type,
-    bytesBuf_t*             _msg_buf,
-    bytesBuf_t*             _stream_bbuf,
-    bytesBuf_t*             _error_buf,
-    int                     _int_info,
-    irodsProt_t             _protocol ) {
+    const char*            _msg_type,
+    const bytesBuf_t*      _msg_buf,
+    const bytesBuf_t*      _stream_bbuf,
+    const bytesBuf_t*      _error_buf,
+    int                    _int_info,
+    irodsProt_t            _protocol ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1060,7 +1060,7 @@ irods::error ssl_send_rods_msg(
                         msg_header.msgLen > 0 ) {
                     if ( XML_PROT == _protocol &&
                             getRodsLogLevel() >= LOG_DEBUG8 ) {
-                        printf( "sending msg: \n%s\n", ( char* ) _msg_buf->buf );
+                        printf( "sending msg: \n%s\n", ( const char* ) _msg_buf->buf );
                     }
                     ret = ssl_socket_write( _msg_buf->buf, _msg_buf->len, bytes_written, ssl_obj->ssl() );
                     result = ASSERT_PASS( ret, "Failed writing SSL message to socket." );
@@ -1074,7 +1074,7 @@ irods::error ssl_send_rods_msg(
                             msg_header.errorLen > 0 ) {
                         if ( XML_PROT == _protocol &&
                                 getRodsLogLevel() >= LOG_DEBUG8 ) {
-                            printf( "sending msg: \n%s\n", ( char* ) _error_buf->buf );
+                            printf( "sending msg: \n%s\n", ( const char* ) _error_buf->buf );
 
                         }
 
@@ -1090,7 +1090,7 @@ irods::error ssl_send_rods_msg(
                                 msg_header.bsLen > 0 ) {
                             if ( XML_PROT == _protocol &&
                                     getRodsLogLevel() >= LOG_DEBUG8 ) {
-                                printf( "sending msg: \n%s\n", ( char* ) _stream_bbuf->buf );
+                                printf( "sending msg: \n%s\n", ( const char* ) _stream_bbuf->buf );
                             }
 
                             ret = ssl_socket_write( _stream_bbuf->buf, _stream_bbuf->len, bytes_written, ssl_obj->ssl() );
@@ -1327,13 +1327,13 @@ irods::network* plugin_factory(
         NETWORK_OP_READ_BODY,
         function<error(plugin_context&,msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*)>(
             ssl_read_msg_body ) );
-    ssl->add_operation<bytesBuf_t*>(
+    ssl->add_operation<const bytesBuf_t*>(
         NETWORK_OP_WRITE_HEADER,
-        function<error(plugin_context&,bytesBuf_t*)>(
+        function<error(plugin_context&,const bytesBuf_t*)>(
             ssl_write_msg_header ) );
-    ssl->add_operation<const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t>(
+    ssl->add_operation<const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t>(
         NETWORK_OP_WRITE_BODY,
-        function<error(plugin_context&,const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t)>(
+        function<error(plugin_context&,const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t)>(
             ssl_send_rods_msg ) );
 
     irods::network* net = dynamic_cast< irods::network* >( ssl );

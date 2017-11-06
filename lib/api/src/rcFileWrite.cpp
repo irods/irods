@@ -21,8 +21,8 @@
  * \sa none
 **/
 int
-rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp,
-             bytesBuf_t *fileWriteInpBBuf ) {
+rcFileWrite( rcComm_t *conn, const fileWriteInp_t *fileWriteInp,
+             const bytesBuf_t *fileWriteInpBBuf ) {
     int status;
 
     status = procApiRequest( conn, FILE_WRITE_AN, fileWriteInp,

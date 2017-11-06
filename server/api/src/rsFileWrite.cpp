@@ -17,8 +17,8 @@
 #include "irods_stacktrace.hpp"
 
 int
-rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
-             bytesBuf_t *fileWriteInpBBuf ) {
+rsFileWrite( rsComm_t *rsComm, const fileWriteInp_t *fileWriteInp,
+             const bytesBuf_t *fileWriteInpBBuf ) {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int retVal;
@@ -53,8 +53,8 @@ rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 }
 
 int
-remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
-                 bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost ) {
+remoteFileWrite( rsComm_t *rsComm, const fileWriteInp_t *fileWriteInp,
+                 const bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost ) {
     int retVal;
 
     if ( rodsServerHost == NULL ) {
@@ -67,14 +67,17 @@ remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
         return retVal;
     }
 
-    fileWriteInp->fileInx = convL3descInx( fileWriteInp->fileInx );
-    retVal = rcFileWrite( rodsServerHost->conn, fileWriteInp,
+    const fileWriteInp_t remoteFileWriteInp{
+        .fileInx = convL3descInx( fileWriteInp->fileInx ),
+        .len = fileWriteInp->len
+    };
+    retVal = rcFileWrite( rodsServerHost->conn, &remoteFileWriteInp,
                           fileWriteInpBBuf );
 
     if ( retVal < 0 ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileWrite: rcFileWrite failed for %s",
-                 FileDesc[fileWriteInp->fileInx].fileName );
+                 FileDesc[remoteFileWriteInp.fileInx].fileName );
     }
 
     return retVal;
@@ -84,8 +87,8 @@ remoteFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 // _rsFileWrite - this the local version of rsFileWrite.
 int _rsFileWrite(
     rsComm_t*       _comm,
-    fileWriteInp_t* _write_inp,
-    bytesBuf_t*     _write_bbuf ) {
+    const fileWriteInp_t* _write_inp,
+    const bytesBuf_t*     _write_bbuf ) {
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available

@@ -14,6 +14,6 @@ typedef struct {
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcFileWrite( rcComm_t *conn, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf );
+int rcFileWrite( rcComm_t *conn, const fileWriteInp_t *fileWriteInp, const bytesBuf_t *fileWriteInpBBuf );
 
 #endif

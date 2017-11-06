@@ -501,8 +501,8 @@ irods::error round_robin_file_open(
 /// @brief interface for POSIX Read
 irods::error round_robin_file_read(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    void*                  _buf,
+    const int              _len ) {
     // =-=-=-=-=-=-=-
     // get the child resc to call
     irods::resource_ptr resc;
@@ -516,7 +516,7 @@ irods::error round_robin_file_read(
 
     // =-=-=-=-=-=-=-
     // call read on the child
-    return resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
+    return resc->call< void*, const int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
 
 } // round_robin_file_read
 
@@ -524,8 +524,8 @@ irods::error round_robin_file_read(
 /// @brief interface for POSIX Write
 irods::error round_robin_file_write(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    const void*            _buf,
+    const int              _len ) {
     // =-=-=-=-=-=-=-
     // get the child resc to call
     irods::resource_ptr resc;
@@ -539,7 +539,7 @@ irods::error round_robin_file_write(
 
     // =-=-=-=-=-=-=-
     // call write on the child
-    return resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
+    return resc->call< const void*, const int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
 
 } // round_robin_file_write
 
@@ -611,8 +611,8 @@ irods::error round_robin_file_stat(
 /// @brief interface for POSIX lseek
 irods::error round_robin_file_lseek(
     irods::plugin_context& _ctx,
-    long long                        _offset,
-    int                              _whence ) {
+    const long long        _offset,
+    const int              _whence ) {
     // =-=-=-=-=-=-=-
     // get the child resc to call
     irods::resource_ptr resc;
@@ -626,7 +626,7 @@ irods::error round_robin_file_lseek(
 
     // =-=-=-=-=-=-=-
     // call lseek on the child
-    return resc->call< long long, int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+    return resc->call< const long long, const int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
 
 } // round_robin_file_lseek
 
@@ -1315,15 +1315,15 @@ irods::resource* plugin_factory( const std::string& _inst_name,
         function<error(plugin_context&)>(
             round_robin_file_open ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<void*,const int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,const int)>(
                 round_robin_file_read ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<const void*,const int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(plugin_context&,void*,int)>(
+        function<error(plugin_context&,const void*,const int)>(
             round_robin_file_write ) );
 
     resc->add_operation(
@@ -1366,9 +1366,9 @@ irods::resource* plugin_factory( const std::string& _inst_name,
         function<error(plugin_context&)>(
             round_robin_file_getfs_freespace ) );
 
-    resc->add_operation<long long, int>(
+    resc->add_operation<const long long, const int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(plugin_context&, long long, int)>(
+        function<error(plugin_context&, const long long, const int)>(
             round_robin_file_lseek ) );
 
     resc->add_operation(

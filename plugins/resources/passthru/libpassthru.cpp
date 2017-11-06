@@ -182,8 +182,8 @@ irods::error passthru_file_open(
 // interface for POSIX Read
 irods::error passthru_file_read(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    void*                  _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -198,7 +198,7 @@ irods::error passthru_file_read(
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
         else {
-            ret = resc->call<void*, int>( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
+            ret = resc->call<void*, const int>( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
             result = PASSMSG( "passthru_file_read_plugin - failed calling child read.", ret );
         }
     }
@@ -209,8 +209,8 @@ irods::error passthru_file_read(
 // interface for POSIX Write
 irods::error passthru_file_write(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    const void*            _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -225,7 +225,7 @@ irods::error passthru_file_write(
             result = PASSMSG( "failed getting the first child resource pointer.", ret );
         }
         else {
-            ret = resc->call<void*, int>( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
+            ret = resc->call<const void*, const int>( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
             result = PASSMSG( "passthru_file_write_plugin - failed calling child write.", ret );
         }
     }
@@ -313,8 +313,8 @@ irods::error passthru_file_stat(
 // interface for POSIX lseek
 irods::error passthru_file_lseek(
     irods::plugin_context& _ctx,
-    long long                        _offset,
-    int                              _whence ) {
+    const long long        _offset,
+    const int              _whence ) {
     irods::error result = SUCCESS();
     irods::error ret;
 
@@ -329,7 +329,7 @@ irods::error passthru_file_lseek(
             result = PASSMSG( "passthru_file_lseek_plugin - failed getting the first child resource pointer.", ret );
         }
         else {
-            ret = resc->call<long long, int>( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+            ret = resc->call<const long long, const int>( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
             result = PASSMSG( "passthru_file_lseek_plugin - failed calling child lseek.", ret );
         }
     }
@@ -975,15 +975,15 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             passthru_file_open ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<void*,const int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,const int)>(
                 passthru_file_read ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<const void*,const int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(plugin_context&,void*,int)>(
+        function<error(plugin_context&,const void*,const int)>(
             passthru_file_write ) );
 
     resc->add_operation(
@@ -1026,9 +1026,9 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             passthru_file_getfs_freespace ) );
 
-    resc->add_operation<long long, int>(
+    resc->add_operation<const long long, const int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(plugin_context&, long long, int)>(
+        function<error(plugin_context&, const long long, const int)>(
             passthru_file_lseek ) );
 
     resc->add_operation(

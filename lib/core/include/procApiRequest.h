@@ -16,12 +16,12 @@ extern "C" {
 #endif
 
 int
-procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
-                bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf );
+procApiRequest( rcComm_t *conn, int apiNumber, const void *inputStruct,
+                const bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf );
 
 int
-sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
-                bytesBuf_t *inputBsBBuf );
+sendApiRequest( rcComm_t *conn, int apiInx, const void *inputStruct,
+                const bytesBuf_t *inputBsBBuf );
 int
 procApiReply( rcComm_t *conn, int apiInx, void **outStruct,
               bytesBuf_t *outBsBBuf,

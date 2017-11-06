@@ -434,12 +434,12 @@ rsAcceptConn( rsComm_t *svrComm ) {
 //
 irods::error writeMsgHeader(
     irods::network_object_ptr _ptr,
-    msgHeader_t*               _header ) {
+    const msgHeader_t*        _header ) {
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header
     bytesBuf_t* header_buf = 0;
     int status = packStruct(
-                     static_cast<void *>( _header ),
+                     static_cast<const void *>( _header ),
                      &header_buf,
                      "MsgHeader_PI",
                      RodsPackTable,
@@ -463,7 +463,7 @@ irods::error writeMsgHeader(
     // make the call to the plugin interface
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret = net->call< bytesBuf_t* >(
+    ret = net->call< const bytesBuf_t* >(
               nullptr,
               irods::NETWORK_OP_WRITE_HEADER,
               ptr,
@@ -1222,9 +1222,9 @@ irods::error sendVersion(
 irods::error sendRodsMsg(
     irods::network_object_ptr _ptr,
     const char*         _msg_type,
-    bytesBuf_t*         _msg_buf,
-    bytesBuf_t*         _bs_buf,
-    bytesBuf_t*         _error_buf,
+    const bytesBuf_t*   _msg_buf,
+    const bytesBuf_t*   _bs_buf,
+    const bytesBuf_t*   _error_buf,
     int                 _int_info,
     irodsProt_t         _protocol ) {
     // =-=-=-=-=-=-=-
@@ -1241,7 +1241,7 @@ irods::error sendRodsMsg(
     // make the call to the "write body" interface
     irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< irods::first_class_object >( _ptr );
     irods::network_ptr            net = boost::dynamic_pointer_cast< irods::network >( p_ptr );
-    ret_err = net->call< const char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >(
+    ret_err = net->call< const char*, const bytesBuf_t*, const bytesBuf_t*, const bytesBuf_t*, int, irodsProt_t >(
                   nullptr,
                   irods::NETWORK_OP_WRITE_BODY,
                   ptr,

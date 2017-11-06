@@ -23,12 +23,12 @@
 #include "irods_first_class_object.hpp"
 irods::error fileCreate( rsComm_t*, irods::first_class_object_ptr );
 irods::error fileOpen( rsComm_t*, irods::first_class_object_ptr );
-irods::error fileRead( rsComm_t*, irods::first_class_object_ptr, void*, int );
-irods::error fileWrite( rsComm_t*, irods::first_class_object_ptr, void*, int );
+irods::error fileRead( rsComm_t*, irods::first_class_object_ptr, void*, const int );
+irods::error fileWrite( rsComm_t*, irods::first_class_object_ptr, const void*, const int );
 irods::error fileClose( rsComm_t*, irods::first_class_object_ptr );
 irods::error fileUnlink( rsComm_t*, irods::first_class_object_ptr );
 irods::error fileStat( rsComm_t*, irods::first_class_object_ptr, struct stat* );
-irods::error fileLseek( rsComm_t*, irods::first_class_object_ptr, long long, int );
+irods::error fileLseek( rsComm_t*, irods::first_class_object_ptr, const long long, const int );
 irods::error fileMkdir( rsComm_t*, irods::first_class_object_ptr );
 irods::error fileChmod( rsComm_t*, irods::first_class_object_ptr, int );
 irods::error fileRmdir( rsComm_t*, irods::first_class_object_ptr );

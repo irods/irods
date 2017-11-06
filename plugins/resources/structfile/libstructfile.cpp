@@ -1017,8 +1017,8 @@ irods::error tar_file_open(
 // interface for POSIX Read
 irods::error tar_file_read(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    void*                  _buf,
+    const int              _len ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1068,8 +1068,8 @@ irods::error tar_file_read(
 // interface for POSIX Write
 irods::error tar_file_write(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    const void*            _buf,
+    const int              _len ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -1095,17 +1095,18 @@ irods::error tar_file_write(
 
     // =-=-=-=-=-=-=-
     // build a write structure and make the rs call
-    fileWriteInp_t fileWriteInp;
-    bytesBuf_t     fileWriteOutBBuf;
-    memset( &fileWriteInp,     0, sizeof( fileWriteInp ) );
-    memset( &fileWriteOutBBuf, 0, sizeof( fileWriteOutBBuf ) );
-    fileWriteInp.len     = fileWriteOutBBuf.len = _len;
-    fileWriteInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
-    fileWriteOutBBuf.buf = _buf;
+    const fileWriteInp_t fileWriteInp{
+        .len = _len,
+        .fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd
+    };
+    const bytesBuf_t fileWriteInpBBuf{
+        .len = _len,
+        .buf = const_cast<void*>(_buf)
+    };
 
     // =-=-=-=-=-=-=-
     // make the write api call
-    int status = rsFileWrite( fco->comm(), &fileWriteInp, &fileWriteOutBBuf );
+    int status = rsFileWrite( fco->comm(), &fileWriteInp, &fileWriteInpBBuf );
     if ( status > 0 ) {
         // =-=-=-=-=-=-=-
         // cache has been written
@@ -1350,8 +1351,8 @@ irods::error tar_file_stat(
 // interface for POSIX lseek
 irods::error tar_file_lseek(
     irods::plugin_context& _ctx,
-    long long                        _offset,
-    int                              _whence ) {
+    const long long        _offset,
+    const int              _whence ) {
     // =-=-=-=-=-=-=-
     // check incoming parameters
     irods::error chk_err = tar_check_params( _ctx );
@@ -2706,15 +2707,15 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_open ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<void*,const int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,const int)>(
                 tar_file_read ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<const void*,const int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(plugin_context&,void*,int)>(
+        function<error(plugin_context&,const void*,const int)>(
             tar_file_write ) );
 
     resc->add_operation(
@@ -2757,9 +2758,9 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             tar_file_getfs_freespace ) );
 
-    resc->add_operation<long long, int>(
+    resc->add_operation<const long long, const int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(plugin_context&, long long, int)>(
+        function<error(plugin_context&, const long long, const int)>(
             tar_file_lseek ) );
 
     resc->add_operation(

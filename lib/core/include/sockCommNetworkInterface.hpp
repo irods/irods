@@ -23,13 +23,13 @@ irods::error readMsgBody(
     struct timeval* );              // time value
 irods::error writeMsgHeader(
     irods::network_object_ptr, // network object
-    msgHeader_t* );                 // header structure
+    const msgHeader_t* );           // header structure
 irods::error sendRodsMsg(
     irods::network_object_ptr, // network object,
     const char*,                    // message type
-    bytesBuf_t*,                    // message buffer
-    bytesBuf_t*,                    // stream buffer
-    bytesBuf_t*,                    // error buffer
+    const bytesBuf_t*,              // message buffer
+    const bytesBuf_t*,              // stream buffer
+    const bytesBuf_t*,              // error buffer
     int,                            // internal info?
     irodsProt_t );                  // protocol
 irods::error readReconMsg(

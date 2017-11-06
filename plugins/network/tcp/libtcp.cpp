@@ -85,14 +85,14 @@ irods::error tcp_socket_read(
 // =-=-=-=-=-=-=-
 // local function to write a buffer to a socket
 irods::error tcp_socket_write(
-    int   _socket,
-    void* _buffer,
-    int   _length,
-    int&  _bytes_written ) {
+    int         _socket,
+    const void* _buffer,
+    int         _length,
+    int&        _bytes_written ) {
     // =-=-=-=-=-=-=-
     // local variables for write
     int   len_to_write = _length;
-    char* write_ptr    = static_cast<char*>( _buffer );
+    const char* write_ptr    = static_cast<const char*>( _buffer );
 
     // =-=-=-=-=-=-=-
     // reset bytes written
@@ -102,7 +102,7 @@ irods::error tcp_socket_write(
     // loop while there is data to read
     while ( len_to_write > 0 ) {
         int num_bytes = write( _socket,
-                               static_cast<void*>( write_ptr ),
+                               static_cast<const void*>( write_ptr ),
                                len_to_write );
         // =-=-=-=-=-=-=-
         // error trapping the write
@@ -162,8 +162,8 @@ irods::error tcp_shutdown(
 //
 irods::error tcp_read_msg_header(
     irods::plugin_context& _ctx,
-    void*                   _buffer,
-    struct timeval*         _time_val ) {
+    void*                  _buffer,
+    struct timeval*        _time_val ) {
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid< irods::tcp_object >();
@@ -223,7 +223,7 @@ irods::error tcp_read_msg_header(
         return ERROR(SYS_HEADER_READ_LEN_ERR, boost::format("only read [%d] of [%d]") % bytes_read % header_length);
     }
 
-    rodsLog(LOG_DEBUG8, "received header: len = %d\n%.*s\n", header_length, bytes_read, static_cast<char*>( _buffer ) );
+    rodsLog(LOG_DEBUG8, "received header: len = %d\n%.*s\n", header_length, bytes_read, static_cast<const char*>( _buffer ) );
 
     return SUCCESS();
 } // tcp_read_msg_header
@@ -232,7 +232,7 @@ irods::error tcp_read_msg_header(
 //
 irods::error tcp_write_msg_header(
     irods::plugin_context& _ctx,
-    bytesBuf_t*             _header ) {
+    const bytesBuf_t*      _header ) {
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid< irods::tcp_object >();
@@ -246,7 +246,7 @@ irods::error tcp_write_msg_header(
         printf( "sending header: len = %d\n%.*s\n",
                 _header->len,
                 _header->len,
-                ( char * ) _header->buf );
+                ( const char * ) _header->buf );
     }
 
     // =-=-=-=-=-=-=-
@@ -301,12 +301,12 @@ irods::error tcp_write_msg_header(
 //
 irods::error tcp_send_rods_msg(
     irods::plugin_context& _ctx,
-    const char*             _msg_type,
-    bytesBuf_t*             _msg_buf,
-    bytesBuf_t*             _stream_bbuf,
-    bytesBuf_t*             _error_buf,
-    int                     _int_info,
-    irodsProt_t             _protocol ) {
+    const char*            _msg_type,
+    const bytesBuf_t*      _msg_buf,
+    const bytesBuf_t*      _stream_bbuf,
+    const bytesBuf_t*      _error_buf,
+    int                    _int_info,
+    irodsProt_t            _protocol ) {
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid< irods::tcp_object >();
@@ -361,7 +361,7 @@ irods::error tcp_send_rods_msg(
     if ( _msg_buf && _msg_buf->len > 0 ) {
         if ( XML_PROT == _protocol &&
                 getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending msg: \n%.*s\n", _msg_buf->len, ( char* ) _msg_buf->buf );
+            printf( "sending msg: \n%.*s\n", _msg_buf->len, ( const char* ) _msg_buf->buf );
         }
         ret = tcp_socket_write(
                   socket_handle,
@@ -379,7 +379,7 @@ irods::error tcp_send_rods_msg(
     if ( _error_buf && _error_buf->len > 0 ) {
         if ( XML_PROT == _protocol &&
                 getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending msg: \n%.*s\n", _error_buf->len, ( char* ) _error_buf->buf );
+            printf( "sending msg: \n%.*s\n", _error_buf->len, ( const char* ) _error_buf->buf );
 
         }
 
@@ -399,7 +399,7 @@ irods::error tcp_send_rods_msg(
     if ( _stream_bbuf && _stream_bbuf->len > 0 ) {
         if ( XML_PROT == _protocol &&
                 getRodsLogLevel() >= LOG_DEBUG8 ) {
-            printf( "sending msg: \n%.*s\n", _stream_bbuf->len, ( char* ) _stream_bbuf->buf );
+            printf( "sending msg: \n%.*s\n", _stream_bbuf->len, ( const char* ) _stream_bbuf->buf );
         }
 
         ret = tcp_socket_write(
@@ -683,13 +683,13 @@ irods::network* plugin_factory(
         NETWORK_OP_READ_BODY,
         function<error(plugin_context&,msgHeader_t*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,irodsProt_t,struct timeval*)>(
             tcp_read_msg_body ) );
-    tcp->add_operation<bytesBuf_t*>(
+    tcp->add_operation<const bytesBuf_t*>(
         NETWORK_OP_WRITE_HEADER,
-        function<error(plugin_context&,bytesBuf_t*)>(
+        function<error(plugin_context&,const bytesBuf_t*)>(
             tcp_write_msg_header ) );
-    tcp->add_operation<const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t>(
+    tcp->add_operation<const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t>(
         NETWORK_OP_WRITE_BODY,
-        function<error(plugin_context&,const char*,bytesBuf_t*,bytesBuf_t*,bytesBuf_t*,int,irodsProt_t)>(
+        function<error(plugin_context&,const char*,const bytesBuf_t*,const bytesBuf_t*,const bytesBuf_t*,int,irodsProt_t)>(
             tcp_send_rods_msg ) );
 
     irods::network* net = dynamic_cast< irods::network* >( tcp );

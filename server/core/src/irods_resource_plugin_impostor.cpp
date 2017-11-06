@@ -55,14 +55,14 @@ irods::error impostor_file_open(
 irods::error impostor_file_read(
     irods::plugin_context& _ctx,
     void*,
-    int ) {
+    const int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_read
 
 irods::error impostor_file_write(
     irods::plugin_context& _ctx,
-    void*,
-    int ) {
+    const void*,
+    const int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_write
 
@@ -84,8 +84,8 @@ irods::error impostor_file_stat(
 
 irods::error impostor_file_lseek(
     irods::plugin_context& _ctx,
-    long long ,
-    int ) {
+    const long long ,
+    const int ) {
     return irods::impostor_resource::report_error( _ctx );
 } // impostor_file_lseek
 
@@ -410,15 +410,15 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_open ) );
 
-        add_operation<void*,int>(
+        add_operation<void*,const int>(
             irods::RESOURCE_OP_READ,
             std::function<
-                error(irods::plugin_context&,void*,int)>(
+                error(irods::plugin_context&,void*,const int)>(
                     impostor_file_read ) );
 
-        add_operation<void*,int>(
+        add_operation<const void*,const int>(
             irods::RESOURCE_OP_WRITE,
-            function<error(plugin_context&,void*,int)>(
+            function<error(plugin_context&,const void*,const int)>(
                 impostor_file_write ) );
 
         add_operation(
@@ -461,7 +461,7 @@ namespace irods {
             function<error(plugin_context&)>(
                 impostor_file_getfs_freespace ) );
 
-        add_operation<long long, int>(
+        add_operation<const long long, const int>(
             irods::RESOURCE_OP_LSEEK,
             function<error(plugin_context&, long long, int)>(
                 impostor_file_lseek ) );

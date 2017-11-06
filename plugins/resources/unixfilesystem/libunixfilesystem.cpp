@@ -87,7 +87,7 @@ const std::string MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES("minimum_free_space_for
 //       the file object's physical path with the full path
 
 static irods::error unix_file_copy(
-    int mode,
+    const int mode,
     const char* srcFileName,
     const char* destFileName ) {
 
@@ -741,8 +741,8 @@ irods::error unix_file_open(
 // interface for POSIX Read
 irods::error unix_file_read(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    void*                  _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -780,8 +780,8 @@ irods::error unix_file_read(
 // interface for POSIX Write
 irods::error unix_file_write(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    const void*            _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -890,7 +890,7 @@ irods::error unix_file_unlink(
 // interface for POSIX Stat
 irods::error unix_file_stat(
     irods::plugin_context& _ctx,
-    struct stat*                        _statbuf ) {
+    struct stat*           _statbuf ) {
     irods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // NOTE:: this function assumes the object's physical path is
@@ -925,8 +925,8 @@ irods::error unix_file_stat(
 // interface for POSIX lseek
 irods::error unix_file_lseek(
     irods::plugin_context& _ctx,
-    long long                           _offset,
-    int                                 _whence ) {
+    const long long        _offset,
+    const int              _whence ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1105,7 +1105,7 @@ irods::error unix_file_closedir(
 // interface for POSIX readdir
 irods::error unix_file_readdir(
     irods::plugin_context& _ctx,
-    struct rodsDirent**                 _dirent_ptr ) {
+    struct rodsDirent**    _dirent_ptr ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1166,7 +1166,7 @@ irods::error unix_file_readdir(
 // interface for POSIX readdir
 irods::error unix_file_rename(
     irods::plugin_context& _ctx,
-    const char*                         _new_file_name ) {
+    const char*            _new_file_name ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1261,7 +1261,7 @@ irods::error unix_file_truncate(
 // is not used.
 irods::error unix_file_stage_to_cache(
     irods::plugin_context& _ctx,
-    const char*                      _cache_file_name ) {
+    const char*            _cache_file_name ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1285,7 +1285,7 @@ irods::error unix_file_stage_to_cache(
 // is not used.
 irods::error unix_file_sync_to_arch(
     irods::plugin_context& _ctx,
-    const char*                     _cache_file_name ) {
+    const char*            _cache_file_name ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -1497,11 +1497,11 @@ irods::error unix_resolve_hierarchy_open(
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error unix_file_resolve_hierarchy(
-    irods::plugin_context& _ctx,
-    const std::string*                  _opr,
-    const std::string*                  _curr_host,
-    irods::hierarchy_parser*           _out_parser,
-    float*                              _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string*       _opr,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote ) {
 
     // =-=-=-=-=-=-=-
     // check the context validity
@@ -1680,15 +1680,15 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_open ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<void*,const int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,const int)>(
                 unix_file_read ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<const void*,const int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(plugin_context&,void*,int)>(
+        function<error(plugin_context&,const void*,const int)>(
             unix_file_write ) );
 
     resc->add_operation(
@@ -1731,9 +1731,9 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
         function<error(plugin_context&)>(
             unix_file_getfs_freespace ) );
 
-    resc->add_operation<long long, int>(
+    resc->add_operation<const long long, const int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(plugin_context&, long long, int)>(
+        function<error(plugin_context&, const long long, const int)>(
             unix_file_lseek ) );
 
     resc->add_operation(

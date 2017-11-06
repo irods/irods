@@ -79,10 +79,10 @@ irods::error fileOpen(
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX read
 irods::error fileRead(
-    rsComm_t*                      _comm,
+    rsComm_t*                     _comm,
     irods::first_class_object_ptr _object,
-    void*                          _buf,
-    int                            _len ) {
+    void*                         _buf,
+    const int                     _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
@@ -95,7 +95,7 @@ irods::error fileRead(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
-    ret_err = resc->call< void*, int >( _comm, irods::RESOURCE_OP_READ, _object, _buf, _len );
+    ret_err = resc->call< void*, const int >( _comm, irods::RESOURCE_OP_READ, _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -111,10 +111,10 @@ irods::error fileRead(
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX write
 irods::error fileWrite(
-    rsComm_t*                      _comm,
+    rsComm_t*                     _comm,
     irods::first_class_object_ptr _object,
-    void*                          _buf,
-    int                            _len ) {
+    const void*                   _buf,
+    const int                     _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     irods::plugin_ptr   ptr;
@@ -127,7 +127,7 @@ irods::error fileWrite(
     // =-=-=-=-=-=-=-
     // make the call to the "write" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
-    ret_err = resc->call< void*, int >( _comm, irods::RESOURCE_OP_WRITE, _object, _buf, _len );
+    ret_err = resc->call< const void*, const int >( _comm, irods::RESOURCE_OP_WRITE, _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -236,10 +236,10 @@ irods::error fileStat(
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
 irods::error fileLseek(
-    rsComm_t*                      _comm,
+    rsComm_t*                     _comm,
     irods::first_class_object_ptr _object,
-    long long                      _offset,
-    int                            _whence ) {
+    const long long               _offset,
+    const int                     _whence ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     irods::plugin_ptr   ptr;
@@ -252,7 +252,7 @@ irods::error fileLseek(
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
     resc    = boost::dynamic_pointer_cast< irods::resource >( ptr );
-    ret_err = resc->call< long long, int >( _comm, irods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
+    ret_err = resc->call< const long long, const int >( _comm, irods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS

@@ -48,8 +48,8 @@
  */
 
 int
-procApiRequest( rcComm_t *conn, int apiNumber, void *inputStruct,
-                bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf ) {
+procApiRequest( rcComm_t *conn, int apiNumber, const void *inputStruct,
+                const bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf ) {
     int status = 0;
     int apiInx = 0;
 
@@ -116,8 +116,8 @@ branchReadAndProcApiReply( rcComm_t *conn, int apiNumber,
 }
 
 int
-sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
-                bytesBuf_t *inputBsBBuf ) {
+sendApiRequest( rcComm_t *conn, int apiInx, const void *inputStruct,
+                const bytesBuf_t *inputBsBBuf ) {
     int status = 0;
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf = NULL;
@@ -138,7 +138,7 @@ sendApiRequest( rcComm_t *conn, int apiInx, void *inputStruct,
             cliChkReconnAtSendEnd( conn );
             return USER_API_INPUT_ERR;
         }
-        status = packStruct( ( void * ) inputStruct, &inputStructBBuf,
+        status = packStruct( inputStruct, &inputStructBBuf,
                              ( char* )RcApiTable[apiInx]->inPackInstruct, RodsPackTable, 0, conn->irodsProt );
         if ( status < 0 ) {
             rodsLogError( LOG_ERROR, status,

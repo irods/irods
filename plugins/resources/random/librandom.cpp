@@ -258,8 +258,8 @@ irods::error random_file_open(
 /// @brief interface for POSIX Read
 irods::error random_file_read(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    void*                  _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -270,7 +270,7 @@ irods::error random_file_read(
 
         // =-=-=-=-=-=-=-
         // call read on the child
-        err = resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
+        err = resc->call< void*, const int >( _ctx.comm(), irods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len );
         result = ASSERT_PASS( err, "Failed calling operation on child resource." );
     }
 
@@ -282,8 +282,8 @@ irods::error random_file_read(
 /// @brief interface for POSIX Write
 irods::error random_file_write(
     irods::plugin_context& _ctx,
-    void*                               _buf,
-    int                                 _len ) {
+    const void*            _buf,
+    const int              _len ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -294,7 +294,7 @@ irods::error random_file_write(
 
         // =-=-=-=-=-=-=-
         // call write on the child
-        err = resc->call< void*, int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
+        err = resc->call< const void*, const int >( _ctx.comm(), irods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
         result = ASSERT_PASS( err, "Failed calling operation on child resource." );
     }
 
@@ -369,8 +369,8 @@ irods::error random_file_stat(
 /// @brief interface for POSIX lseek
 irods::error random_file_lseek(
     irods::plugin_context& _ctx,
-    long long                        _offset,
-    int                              _whence ) {
+    const long long        _offset,
+    const int              _whence ) {
     irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
@@ -381,7 +381,7 @@ irods::error random_file_lseek(
 
         // =-=-=-=-=-=-=-
         // call lseek on the child
-        err = resc->call< long long, int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+        err = resc->call< const long long, const int >( _ctx.comm(), irods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
         result = ASSERT_PASS( err, "Failed calling child operation." );
     }
 
@@ -931,15 +931,15 @@ irods::resource* plugin_factory( const std::string& _inst_name,
         function<error(plugin_context&)>(
             random_file_open ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<void*,const int>(
         irods::RESOURCE_OP_READ,
         std::function<
-            error(irods::plugin_context&,void*,int)>(
+            error(irods::plugin_context&,void*,const int)>(
                 random_file_read ) );
 
-    resc->add_operation<void*,int>(
+    resc->add_operation<const void*,const int>(
         irods::RESOURCE_OP_WRITE,
-        function<error(plugin_context&,void*,int)>(
+        function<error(plugin_context&,const void*,const int)>(
             random_file_write ) );
 
     resc->add_operation(
@@ -982,9 +982,9 @@ irods::resource* plugin_factory( const std::string& _inst_name,
         function<error(plugin_context&)>(
             random_file_getfs_freespace ) );
 
-    resc->add_operation<long long, int>(
+    resc->add_operation<const long long, const int>(
         irods::RESOURCE_OP_LSEEK,
-        function<error(plugin_context&, long long, int)>(
+        function<error(plugin_context&, const long long, const int)>(
             random_file_lseek ) );
 
     resc->add_operation(
