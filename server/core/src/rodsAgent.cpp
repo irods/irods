@@ -625,10 +625,9 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         return ret.code();
     }
 
-    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
-
     new_net_obj->to_server( &rsComm );
     cleanup();
+    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );
 
