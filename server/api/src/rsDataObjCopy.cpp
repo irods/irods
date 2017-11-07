@@ -196,7 +196,7 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
                 splitPathByKey( destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
-                status = svrRegDataObj( rsComm, destDataObjInfo );
+                svrRegDataObj( rsComm, destDataObjInfo );
                 rsMkCollR( rsComm, "/", parColl );
                 status = svrRegDataObj( rsComm, destDataObjInfo );
             }

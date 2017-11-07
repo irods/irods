@@ -439,7 +439,6 @@ irods::error determine_user_has_modify_metadata_access(
  */
 void removeMetaMapAndAVU( char *dataObjNumber ) {
     char tSQL[MAX_SQL_SIZE];
-    int status;
     cllBindVars[0] = dataObjNumber;
     cllBindVarCount = 1;
     if ( logSQL != 0 ) {
@@ -447,8 +446,7 @@ void removeMetaMapAndAVU( char *dataObjNumber ) {
     }
     snprintf( tSQL, MAX_SQL_SIZE,
               "delete from R_OBJT_METAMAP where object_id=?" );
-    status =  cmlExecuteNoAnswerSql( tSQL, &icss );
-
+    cmlExecuteNoAnswerSql( tSQL, &icss );
     /* Note, the status will be CAT_SUCCESS_BUT_WITH_NO_INFO (not 0) if
        there were no rows deleted from R_OBJT_METAMAP, in which case there
        is no need to do the SQL below.
@@ -792,8 +790,7 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
         return CATALOG_NOT_CONNECTED;
     }
 
-    status = splitPathByKey( collInfo->collName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( collInfo->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -1226,8 +1223,7 @@ rodsLong_t checkAndGetObjectId(
     }
 
     if ( itype == 1 ) {
-        status = splitPathByKey( name,
-                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        splitPathByKey( name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", name );
@@ -2333,8 +2329,7 @@ irods::error db_mod_data_obj_meta_op(
 
     if ( _data_obj_info->dataId <= 0 ) {
 
-        status = splitPathByKey( _data_obj_info->objPath,
-                                 logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+        splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModDataObjMeta SQL 1 " );
@@ -2550,7 +2545,6 @@ irods::error db_mod_data_obj_meta_op(
     }
     else {
         /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
-        j = upCols;
         updateCols.push_back( "data_is_dirty" );
         snprintf( newCopy, NAME_LEN, "%d", NEWLY_CREATED_COPY );
         updateVals.push_back( newCopy );
@@ -2693,9 +2687,7 @@ irods::error db_reg_data_obj_op(
     snprintf( dataIdNum, MAX_NAME_LEN, "%lld", seqNum );
     _data_obj_info->dataId = seqNum; /* store as output parameter */
 
-    status = splitPathByKey( _data_obj_info->objPath,
-                             logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
-
+    splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
     /* Check that collection exists and user has write permission.
        At the same time, also get the inherit flag */
@@ -2985,8 +2977,7 @@ irods::error db_reg_replica_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    status = splitPathByKey( _src_data_obj_info->objPath,
-                             logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _src_data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
     if ( adminMode ) {
         if ( _ctx.comm()->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
@@ -3208,8 +3199,7 @@ irods::error db_unreg_replica_op(
         }
     }
 
-    status = splitPathByKey( _data_obj_info->objPath,
-                             logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _data_obj_info->objPath, logicalDirName, MAX_NAME_LEN, logicalFileName, MAX_NAME_LEN, '/' );
 
 
     if ( adminMode == 0 ) {
@@ -4725,8 +4715,7 @@ irods::error db_reg_coll_by_admin_op(
         // =-=-=-=-=-=-=-
     }
 
-    status = splitPathByKey( _coll_info->collName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -4921,8 +4910,7 @@ irods::error db_reg_coll_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    status = splitPathByKey( _coll_info->collName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -6370,8 +6358,7 @@ irods::error db_del_coll_by_admin_op(
         return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
     }
 
-    status = splitPathByKey( _coll_info->collName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _coll_info->collName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
 
     if ( strlen( logicalParentDirName ) == 0 ) {
         snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
@@ -6793,7 +6780,6 @@ irods::error db_check_auth_op(
 
     expireTime = atoll( goodPwExpiry );
     getNowStr( myTime );
-    nowTime = atoll( myTime );
 
     /* Check for PAM_AUTH type passwords */
     pamMaxTime = atoll( irods_pam_password_max_time );
@@ -7344,10 +7330,10 @@ irods::error db_make_limited_pw_op(
     cllBindVars[cllBindVarCount++] = irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++] = myTime;
 #if MY_ICAT
-    status =  cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
                                      &icss );
 #else
-    status =  cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
                                      &icss );
 #endif
 
@@ -7469,9 +7455,9 @@ irods::error db_update_pam_password_op(
     cllBindVars[cllBindVarCount++] = irods_pam_password_max_time;
     cllBindVars[cllBindVarCount++] = myTime;
 #if MY_ICAT
-    status =  cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
 #else
-    status =  cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+    cmlExecuteNoAnswerSql( "delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
 #endif
                                      & icss );
     if ( logSQL != 0 ) rodsLog( LOG_SQL, "chlUpdateIrodsPamPassword SQL 3" );
@@ -7643,7 +7629,6 @@ irods::error db_mod_user_op(
     int auditId;
     char auditComment[110];
     char auditUserName[110];
-    int userSettingOwnPassword;
     int groupAdminSettingPassword; // JMC - backport 4772
 
     char userName2[NAME_LEN];
@@ -7665,7 +7650,6 @@ irods::error db_mod_user_op(
         return ERROR( CAT_INVALID_ARGUMENT, "new value is empty" );
     }
 
-    userSettingOwnPassword = 0;
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
     groupAdminSettingPassword = 0;
@@ -7679,12 +7663,8 @@ irods::error db_mod_user_op(
             /* only password (in cases below) is allowed */
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
-        if ( strcmp( _user_name, _ctx.comm()->clientUser.userName ) == 0 )  {
-            userSettingOwnPassword = 1;
-        }
-        else {
-            int status2;
-            status2  = cmlCheckGroupAdminAccess(
+        if ( 0 != strcmp( _user_name, _ctx.comm()->clientUser.userName ) )  {
+            int status2 = cmlCheckGroupAdminAccess(
                            _ctx.comm()->clientUser.userName,
                            _ctx.comm()->clientUser.rodsZone,
                            "", &icss );
@@ -7826,9 +7806,7 @@ irods::error db_mod_user_op(
         i = decodePw( _ctx.comm(), _new_value, decoded );
         int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
         if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
-            int status3;
-            status3 = addRErrorMsg( &_ctx.comm()->rError, 0,
-                                    "acCheckPasswordStrength rule not found" );
+            addRErrorMsg( &_ctx.comm()->rError, 0, "acCheckPasswordStrength rule not found" );
         }
 
         if ( status2 ) {
@@ -8794,7 +8772,7 @@ irods::error db_mod_resc_data_paths_op(
         char rowsMsg[100];
         snprintf( rowsMsg, 100, "%d rows updated",
                   rows );
-        status = addRErrorMsg( &_ctx.comm()->rError, 0, rowsMsg );
+        addRErrorMsg( &_ctx.comm()->rError, 0, rowsMsg );
     }
 
     return SUCCESS();
@@ -9397,7 +9375,7 @@ irods::error db_add_avu_metadata_wild_op(
     char myTime[50];
     char seqNumStr[MAX_NAME_LEN];
 
-    status = splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
+    splitPathByKey( _name, collection, MAX_NAME_LEN, objectName, MAX_NAME_LEN, '/' );
 
     if ( strlen( collection ) == 0 ) {
         snprintf( collection, sizeof( collection ), "%s", PATH_SEPARATOR );
@@ -9568,8 +9546,7 @@ irods::error db_add_avu_metadata_op(
     }
 
     if ( itype == 1 ) {
-        status = splitPathByKey( _name,
-                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        splitPathByKey( _name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
@@ -10022,8 +9999,7 @@ irods::error db_del_avu_metadata_op(
     }
 
     if ( itype == 1 ) {
-        status = splitPathByKey( _name,
-                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        splitPathByKey( _name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _name );
@@ -10730,8 +10706,8 @@ irods::error db_mod_access_control_op(
     if ( status1 < 0 ) {
         char logicalEndName[MAX_NAME_LEN];
         char logicalParentDirName[MAX_NAME_LEN];
-        int status2 = splitPathByKey( _path_name,
-                                      logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        int status2;
+        splitPathByKey( _path_name, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _path_name + 1 );
@@ -12597,7 +12573,6 @@ irods::error db_calc_usage_and_quota_op(
     int status;
     char myTime[50];
 
-    status = 0;
     if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
     }
@@ -13742,7 +13717,7 @@ irods::error db_add_specific_query_op(
                          tsCreateTime, 50, bindVars, &icss );
         }
         if ( status == 0 ) {
-            i = addRErrorMsg( &_ctx.comm()->rError, 0, "Alias is not unique" );
+            addRErrorMsg( &_ctx.comm()->rError, 0, "Alias is not unique" );
             return ERROR( CAT_INVALID_ARGUMENT, "alias is not unique" );
         }
         i = 0;
@@ -14559,19 +14534,17 @@ irods::error db_mod_ticket_op(
     int i;
     char myTime[50];
 
-    status = 0;
-
     /* session ticket */
     if ( strcmp( _op_name, "session" ) == 0 ) {
         if ( strlen( _arg3 ) > 0 ) {
             /* for 2 server hops, arg3 is the original client addr */
-            status = chlGenQueryTicketSetup( _ticket_string, _arg3 );
+            chlGenQueryTicketSetup( _ticket_string, _arg3 );
             snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
             snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _arg3 );
         }
         else {
             /* for direct connections, rsComm has the original client addr */
-            status = chlGenQueryTicketSetup( _ticket_string, _ctx.comm()->clientAddr );
+            chlGenQueryTicketSetup( _ticket_string, _ctx.comm()->clientAddr );
             snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
             snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _ctx.comm()->clientAddr );
         }
@@ -14592,8 +14565,7 @@ irods::error db_mod_ticket_op(
             return ERROR( CAT_TICKET_INVALID, "ticket string cannot be a number" );
         }
 
-        status = splitPathByKey( _arg4,
-                                 logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+        splitPathByKey( _arg4, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
         if ( strlen( logicalParentDirName ) == 0 ) {
             snprintf( logicalParentDirName, sizeof( logicalParentDirName ), "%s", PATH_SEPARATOR );
             snprintf( logicalEndName, sizeof( logicalEndName ), "%s", _arg4 + 1 );

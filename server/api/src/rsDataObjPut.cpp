@@ -237,7 +237,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
     else if ( allFlag == 1 ) {
-        status = rsDataObjRepl( rsComm, &replDataObjInp, &transStat );
+        rsDataObjRepl( rsComm, &replDataObjInp, &transStat );
         if ( transStat != NULL ) {
             free( transStat );
         }
@@ -332,7 +332,6 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
 int
 _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                      bytesBuf_t *dataObjInpBBuf ) {
-    int status = 0;
     dataObjInfo_t *myDataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     int bytesWritten = l3FilePutSingleBuf( rsComm, l1descInx, dataObjInpBBuf );
@@ -345,7 +344,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
              * the put would have done in the remote zone. But it make
              * the code easier to read (similar ro copy).
              */
-            status = svrRegDataObj( rsComm, myDataObjInfo );
+            int status = svrRegDataObj( rsComm, myDataObjInfo );
             if ( status < 0 ) {
                 rodsLog( LOG_NOTICE,
                          "l3DataPutSingleBuf: rsRegDataObj for %s failed, status = %d",
@@ -389,7 +388,6 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                 msg << "]";
                 ret = PASSMSG( msg.str(), ret );
                 irods::log( ret );
-                status = ret.code();
             }
         }
     }

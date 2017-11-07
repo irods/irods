@@ -563,7 +563,6 @@ irods::error non_blocking_file_read(
                     return ERROR( UNIX_FILE_READ_ERR - errno, "file read error" );
                 }
                 else {
-                    nbytes = 0;
                     break;
                 }
             }

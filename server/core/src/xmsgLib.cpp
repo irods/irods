@@ -678,7 +678,6 @@ _rsRcvXmsg( irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut ) {
     /* rodsLog (LOG_NOTICE,
          "_rsRcvXmsg: SEQNum=%d, numRcv=%d", irodsXmsg->seqNumber,
          sendXmsgInfo->numRcv); */
-    sendXmsgInfo = irodsXmsg->sendXmsgInfo;
 
     sendXmsgInfo->numRcv--;
 

@@ -413,9 +413,6 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
             return status;
         }
     }
-    else {
-        status = 0;
-    }
 
     if ( getValByKey( &phyPathRegInp->condInput, COLLECTION_KW ) != NULL ) {
         excludePatternFile = getValByKey( &phyPathRegInp->condInput, EXCLUDE_FILE_KW );
@@ -753,18 +750,15 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             }
             subPhyPathRegInp.dataSize = myStat->st_size;
             if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
-                status = filePathRegRepl( rsComm, &subPhyPathRegInp,
-                                          fileStatInp.fileName, _resc_name );
+                filePathRegRepl( rsComm, &subPhyPathRegInp, fileStatInp.fileName, _resc_name );
             }
             else {
-                addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW,
-                           fileStatInp.fileName );
-                status = filePathReg( rsComm, &subPhyPathRegInp, _resc_name );
+                addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW, fileStatInp.fileName );
+                filePathReg( rsComm, &subPhyPathRegInp, _resc_name );
             }
         }
         else if ( ( myStat->st_mode & S_IFDIR ) != 0 ) {    /* a directory */
-            status = dirPathReg( rsComm, &subPhyPathRegInp,
-                                 fileStatInp.fileName, _resc_name );
+            dirPathReg( rsComm, &subPhyPathRegInp, fileStatInp.fileName, _resc_name );
         }
         free( myStat );
         free( rodsDirent ); // JMC - backport 4835

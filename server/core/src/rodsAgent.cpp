@@ -90,7 +90,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     bool data_complete = false;
 
     char ack_buffer[256];
-    unsigned int len = snprintf( ack_buffer, 256, "OK" );
+    snprintf( ack_buffer, 256, "OK" );
 
     while (!data_complete) {
         memset( in_buf, 0, 1024 );
@@ -138,7 +138,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
             std::string lhs = tmpStr.substr(0, i);
             std::string rhs = tmpStr.substr(i+1, tmpStr.size());
 
-            status = setenv( lhs.c_str(), rhs.c_str(), 1 );
+            setenv( lhs.c_str(), rhs.c_str(), 1 );
 
             tokenized_strings = strtok(NULL, ";");
         }
@@ -157,15 +157,14 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     char socket_buf[16];
     snprintf(socket_buf, 16, "%d", newSocket);
 
-    len = snprintf( ack_buffer, 256, "%d", getpid() );
+    unsigned int len = snprintf( ack_buffer, 256, "%d", getpid() );
     num_bytes = send ( conn_tmp_socket, ack_buffer, len, 0 );
     if ( num_bytes < 0 ) {
         rodsLog( LOG_ERROR, "Error sending agent pid to rodsServer, errno = [%d]", errno, strerror( errno ) );
         return SYS_SOCK_READ_ERR;
     }
 
-    status = setenv( SP_NEW_SOCK, socket_buf, 1 );
-
+    setenv( SP_NEW_SOCK, socket_buf, 1 );
     status = close( conn_tmp_socket );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
@@ -343,7 +342,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 // Child process - reload properties and receive data from server process
                 irods::environment_properties::instance().capture();
 
-                status = receiveDataFromServer( conn_tmp_socket );
+                receiveDataFromServer( conn_tmp_socket );
 
                 irods::server_properties::instance().capture();
 

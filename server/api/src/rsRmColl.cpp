@@ -145,7 +145,6 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
                 collOprStat_t **collOprStat ) {
     int status;
     ruleExecInfo_t rei;
-    int trashPolicy;
     dataObjInfo_t *dataObjInfo = NULL;
     /* check for specColl and permission */
     status = resolvePathInSpecColl( rsComm, rmCollInp->collName,
@@ -168,9 +167,8 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
                 getValByKey( &rmCollInp->condInput, RMTRASH_KW ) == NULL &&
                 getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) == NULL ) {
             initReiWithDataObjInp( &rei, rsComm, NULL );
-            status = applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
-            trashPolicy = rei.status;
-            if ( trashPolicy != NO_TRASH_CAN ) {
+            applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+            if ( NO_TRASH_CAN != rei.status ) {
                 status = rsMvCollToTrash( rsComm, rmCollInp );
                 if ( status >= 0 && collOprStat != NULL ) {
                     if ( *collOprStat == NULL ) {

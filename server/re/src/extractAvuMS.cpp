@@ -337,7 +337,6 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     memcpy( t, metaObjBuf->buf, metaObjBuf->len );
     metaDataPairs = ( keyValPair_t* )malloc( sizeof( keyValPair_t ) );
     memset(metaDataPairs,0,sizeof(keyValPair_t));
-    t1 = t;
     for ( i = 0; i  < tagValues->len ; i++ ) {
         t1 = t;
         j = regcomp( &preg[0], tagValues->preTag[i], REG_EXTENDED );

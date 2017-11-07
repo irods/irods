@@ -827,10 +827,10 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjInp_t myDdataObjInp;
         memset( &myDdataObjInp, 0, sizeof( myDdataObjInp ) );
         rstrcpy( myDdataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
-        status = getFilePathName( rsComm, dataObjInfo, &myDdataObjInp );
+        getFilePathName( rsComm, dataObjInfo, &myDdataObjInp );
     }
     else {
-        status = getFilePathName( rsComm, dataObjInfo, dataObjInp );
+        getFilePathName( rsComm, dataObjInfo, dataObjInp );
     }
 
     if ( strcmp( fileRenameInp.oldFileName, dataObjInfo->filePath ) == 0 ) {

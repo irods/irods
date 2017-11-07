@@ -149,11 +149,11 @@ initLocalServerHost() {
     LocalServerHost->localFlag = LOCAL_HOST;
     LocalServerHost->zoneInfo = ZoneInfoHead;
 
-    int status = matchHostConfig( LocalServerHost );
+    matchHostConfig( LocalServerHost );
 
     queHostName( ServerHostHead, "localhost", 0 );
     char myHostName[MAX_NAME_LEN];
-    status = gethostname( myHostName, MAX_NAME_LEN );
+    int status = gethostname( myHostName, MAX_NAME_LEN );
     if ( status < 0 ) {
         status = SYS_GET_HOSTNAME_ERR - errno;
         rodsLog( LOG_NOTICE,

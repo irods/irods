@@ -3206,7 +3206,6 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
         return SYS_COLLINFO_2_FORMAT_ERR;
     }
 
-    len = ( int )( tmpPtr2 - tmpPtr1 );
     *tmpPtr2 = '\0';
 
     irods::hierarchy_parser parse;
@@ -3921,7 +3920,6 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
         else {
             if ( nbytes > 0 ) {
                 bytesBuf->len += nbytes;
-                bufptr += nbytes;
             }
             if ( bytesBuf->len <= 0 ) {
                 free( bytesBuf->buf );

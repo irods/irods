@@ -187,7 +187,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
                 "Note: DataObjInCollReCur specific-Query failed (not defined?), running standard query, status=%d",
                 status );
             /* remove the level 0 error msg added by the specific-query failure */
-            status = freeRErrorContent( &rsComm->rError );
+            freeRErrorContent( &rsComm->rError );
             /* fall back to the general-query call which used before this
                specific-query was added (post 3.3.1) */
             genQueryInp->maxRows = MAX_SQL_ROWS;
