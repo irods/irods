@@ -277,11 +277,11 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 	    &rei,
 		rsComm,
 		dataObjInp );
-    status = applyRule(
-	             "acSetMultiReplPerResc",
-				 NULL,
-				 &rei,
-				 NO_SAVE_REI );
+    applyRule(
+        "acSetMultiReplPerResc",
+        NULL,
+        &rei,
+        NO_SAVE_REI );
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
         multiCopyFlag = 1;
     }
@@ -383,14 +383,7 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         transStat->numThreads = dataObjInp->numThreads;
     }
 
-
-    if ( srcDataObjInfo != NULL ) {
-        /* not everything got moved */
-        if ( savedStatus == 0 ) {
-            status = SYS_COPY_ALREADY_IN_RESC;
-        }
-    }
-    else {
+    if ( NULL == srcDataObjInfo ) {
         savedStatus = 0;
     }
 

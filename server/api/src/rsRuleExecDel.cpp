@@ -135,7 +135,6 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                 LOG_ERROR,
                 "role not supported [%s]",
                 svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
     }
 
@@ -204,7 +203,6 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                 LOG_ERROR,
                 "role not supported [%s]",
                 svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
         }
     }
     status = unlink( reiFilePath->value );
@@ -242,11 +240,11 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             snprintf( errMsg, sizeof errMsg,
                       "rei file: %s",
                       reiFilePath->value );
-            i = addRErrorMsg( &rsComm->rError, 1, errMsg );
+            addRErrorMsg( &rsComm->rError, 1, errMsg );
             if ( status == 0 ) {
+                /* return this error if no other error occurred */
                 status = unlinkStatus;
-            }  /* return this error if
-                                  no other error occurred */
+            }
 
         }
         freeGenQueryOut( &genQueryOut );

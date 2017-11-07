@@ -505,9 +505,6 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
         subFile_t subStructFileOpendirInp;
-        status = 0;
-
-
         memset( &subStructFileOpendirInp, 0, sizeof( subStructFileOpendirInp ) );
         rstrcpy( subStructFileOpendirInp.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
         //rstrcpy( subStructFileOpendirInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );

@@ -2626,7 +2626,7 @@ unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
             /* add a null pointer mw. 9/15/06 */
             /* this check is probably not needed since it has been handled
                by numElement == 0 */
-            outPtr = addPointerToPackedOut( unpackedOutput, 0, NULL );
+            addPointerToPackedOut( unpackedOutput, 0, NULL );
             return 0;
         }
 
@@ -2675,7 +2675,7 @@ unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackIntToOutPtr( inPtr, outPtr, numElement,
+            unpackIntToOutPtr( inPtr, outPtr, numElement,
                                         myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }
@@ -2695,7 +2695,7 @@ unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackInt16ToOutPtr( inPtr, outPtr, numElement,
+            unpackInt16ToOutPtr( inPtr, outPtr, numElement,
                                           myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }
@@ -2715,7 +2715,7 @@ unpackPointerItem( packItem_t &myPackedItem, const void *&inPtr,
         if ( myDim == 0 ) {
             outPtr = addPointerToPackedOut( unpackedOutput,
                                             numElement * elementSz, NULL );
-            status = unpackDoubleToOutPtr( inPtr, outPtr, numElement,
+            unpackDoubleToOutPtr( inPtr, outPtr, numElement,
                                            myPackedItem.name, irodsProt );
             /* don't chk status. It could be a -ive int */
         }

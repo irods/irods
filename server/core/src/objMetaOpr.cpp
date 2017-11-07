@@ -52,8 +52,7 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
     char logicalParentDirName[MAX_NAME_LEN];
     int status;
 
-    status = splitPathByKey( objName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
     snprintf( tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName );
     addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr );
@@ -127,10 +126,9 @@ getPhyPath(
 
     // =-=-=-=-=-=-=-
     // split the object path by the last delimiter /
-    int status = splitPathByKey(
-                     _obj_name,
-                     logical_parent_dir_name, MAX_NAME_LEN,
-                     logical_end_name, MAX_NAME_LEN, '/' );
+    splitPathByKey( _obj_name,
+                    logical_parent_dir_name, MAX_NAME_LEN,
+                    logical_end_name, MAX_NAME_LEN, '/' );
 
     genQueryInp_t  gen_inp;
     memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
@@ -157,7 +155,7 @@ getPhyPath(
     // =-=-=-=-=-=-=-
     // request only 2 results in the set
     gen_inp.maxRows = 2;
-    status = rsGenQuery( _comm, &gen_inp, &gen_out );
+    int status = rsGenQuery( _comm, &gen_inp, &gen_out );
     if ( status >= 0 ) {
         // =-=-=-=-=-=-=-
         // extract the physical path from the query
@@ -512,8 +510,7 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
     char logicalParentDirName[MAX_NAME_LEN];
     int status;
 
-    status = splitPathByKey( objName,
-                             logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
+    splitPathByKey( objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
     snprintf( t1, MAX_NAME_LEN, " = '%s'", logicalEndName );
     snprintf( t11, MAX_NAME_LEN, " = '%s'", logicalParentDirName );
     snprintf( t2, MAX_NAME_LEN, " = '%i'", userId );
@@ -727,7 +724,7 @@ getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     freeGenQueryOut( &genQueryOut );
     /* clear result */
     genQueryInp.maxRows = 0;
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+    rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
     clearGenQueryInp( &genQueryInp );
 
     return totalRowCount;

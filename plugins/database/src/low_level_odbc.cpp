@@ -339,12 +339,10 @@ cllCheckPending( const char *sql, int option, int dbType ) {
 int
 cllDisconnect( icatSessionStruct *icss ) {
 
-    int i = cllCheckPending( "", 1, icss->databaseType );
-    if ( i == 1 ) {
-        i = cllExecSqlNoResult( icss, "commit" ); /* auto commit any
-                                                   pending SQLs, including
-                                                   the Audit ones */
+    if ( 1 == cllCheckPending( "", 1, icss->databaseType ) ) {
+        /* auto commit any pending SQLs, including the audit ones */
         /* Nothing to do if it fails */
+        cllExecSqlNoResult( icss, "commit" ); 
     }
 
     SQLRETURN stat = SQLDisconnect( icss->connectPtr );

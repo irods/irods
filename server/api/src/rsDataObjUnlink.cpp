@@ -42,7 +42,6 @@ int
 rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     int status;
     ruleExecInfo_t rei;
-    int trashPolicy;
     dataObjInfo_t *dataObjInfoHead = NULL;
     rodsServerHost_t *rodsServerHost = NULL;
     int rmTrashFlag = 0;
@@ -138,18 +137,15 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     }
     else {
         initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
-        status = applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
-        trashPolicy = rei.status;
+        applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
 
-        if ( trashPolicy != NO_TRASH_CAN ) {
-            status = rsMvDataObjToTrash( rsComm, dataObjUnlinkInp,
-                                         &dataObjInfoHead );
+        if ( NO_TRASH_CAN != rei.status ) {
+            status = rsMvDataObjToTrash( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
             freeAllDataObjInfo( dataObjInfoHead );
             return status;
         }
         else {
-            status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp,
-                                       &dataObjInfoHead );
+            status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
         }
     }
 

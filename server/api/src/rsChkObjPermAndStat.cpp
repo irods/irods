@@ -265,15 +265,11 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                     rodsLog( LOG_ERROR,
                              "chkCollForBundleOpr:%s does not have a good copy in %s",
                              chkObjPermAndStatInp->objPath, resource );
-                    status = SYS_COPY_NOT_EXIST_IN_RESC;
                 }
             }
             else {
                 freeCollEntForChkColl( curCollEnt );
             }
-        }
-        else {
-            status = 0;
         }
 
         rsCloseCollection( rsComm, &handleInx );

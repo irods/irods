@@ -108,29 +108,20 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
 
 rodsServerHost_t *
 mkServerHost( char *myHostAddr, char *zoneName ) {
-    rodsServerHost_t *tmpRodsServerHost;
-    int status;
-
-    tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
+    rodsServerHost_t* tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
     memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
 
     /* XXXXX need to lookup the zone table when availiable */
-    status = queHostName( tmpRodsServerHost, myHostAddr, 0 );
-    if ( status < 0 ) {
+    if ( queHostName( tmpRodsServerHost, myHostAddr, 0 ) < 0 ) {
         free( tmpRodsServerHost );
         return NULL;
     }
 
     tmpRodsServerHost->localFlag = UNKNOWN_HOST_LOC;
 
-    status = queAddr( tmpRodsServerHost, myHostAddr );
-
-    status = matchHostConfig( tmpRodsServerHost );
-
-    status = getZoneInfo( zoneName,
-                          ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) );
-
-    if ( status < 0 ) {
+    if( queAddr( tmpRodsServerHost, myHostAddr ) < 0 ||
+        matchHostConfig( tmpRodsServerHost ) < 0 ||
+        getZoneInfo( zoneName, ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) ) < 0 ) {
         free( tmpRodsServerHost );
         return NULL;
     }
@@ -333,10 +324,8 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
                 tmpHostName = myRodsServerHost->hostName;
                 while ( tmpHostName != NULL ) {
                     if ( strcmp( tmpHostName->name, tmpConfigName->name ) == 0 ) {
-                        myRodsServerHost->localFlag =
-                            tmpRodsServerHost->localFlag;
-                        status = queConfigName( tmpRodsServerHost,
-                                                myRodsServerHost );
+                        myRodsServerHost->localFlag = tmpRodsServerHost->localFlag;
+                        queConfigName( tmpRodsServerHost, myRodsServerHost );
                         return 0;
                     }
                     tmpHostName = tmpHostName->next;

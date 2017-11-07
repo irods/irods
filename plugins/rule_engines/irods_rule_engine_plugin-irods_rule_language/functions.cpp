@@ -1268,9 +1268,10 @@ Res *smsi_time( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Regio
 }
 Res *smsi_timestr( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
-    Res *res = newRes( r );
+    Res *res;
     Res* dtime = params[0];
     char* format;
+    newRes( r );
     if ( TYPE( params[0] ) != T_DATETIME ||
             ( n == 2 && TYPE( params[1] ) != T_STRING ) ) {
         res = newErrorRes( r, RE_UNSUPPORTED_OP_OR_TYPE );
@@ -1763,7 +1764,6 @@ Res *smsi_like_regex( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rE
     Res **params = paramsr;
     char *pattern;
     char *bufstr;
-    pattern = params[1]->text;
     Res *res;
 
     bufstr = strdup( params[0]->text );

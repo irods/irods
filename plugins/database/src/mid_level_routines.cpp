@@ -254,7 +254,7 @@ int cmlGetOneRowFromSql( const char *sql,
         rstrcpy( cVal[j], icss->stmtPtr[stmtNum]->resultValue[j], cValSize[j] );
     }
 
-    i = cllFreeStatement( icss, stmtNum );
+    cllFreeStatement( icss, stmtNum );
     return j;
 
 }
@@ -358,7 +358,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
         rstrcpy( cVal[j], icss->stmtPtr[stmtNum]->resultValue[j], cValSize[j] );
     }
 
-    i = cllFreeStatement( icss, stmtNum );
+    cllFreeStatement( icss, stmtNum );
     return j;
 
 }
@@ -396,7 +396,7 @@ int cmlGetFirstRowFromSql( const char *sql,
                 return CAT_GET_ROW_ERR;
             }
             if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
-                i = cllFreeStatement( icss, *statement );
+                cllFreeStatement( icss, *statement );
                 *statement = 0;
                 return CAT_NO_ROWS_FOUND;
             }
@@ -411,7 +411,7 @@ int cmlGetFirstRowFromSql( const char *sql,
         return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
-        i = cllFreeStatement( icss, *statement );
+        cllFreeStatement( icss, *statement );
         *statement = 0;
         return CAT_NO_ROWS_FOUND;
     }
@@ -446,15 +446,13 @@ int cmlGetFirstRowFromSqlBV( const char *sql,
 
 int cmlGetNextRowFromStatement( int stmtNum,
                                 icatSessionStruct *icss ) {
-    int i;
 
-    i = cllGetRow( icss, stmtNum );
-    if ( i != 0 )  {
+    if ( 0 != cllGetRow( icss, stmtNum ) )  {
         cllFreeStatement( icss, stmtNum );
         return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[stmtNum]->numOfCols == 0 ) {
-        i = cllFreeStatement( icss, stmtNum );
+        cllFreeStatement( icss, stmtNum );
         return CAT_NO_ROWS_FOUND;
     }
     return 0;
@@ -547,7 +545,7 @@ int cmlGetMultiRowStringValuesFromSql( const char *sql,
             tsg++;
             pString += maxStringLen;
             if ( tsg >= maxNumberOfStringsToGet ) {
-                i = cllFreeStatement( icss, stmtNum );
+                cllFreeStatement( icss, stmtNum );
                 return tsg;
             }
         }
@@ -774,7 +772,6 @@ int cmlTest( icatSessionStruct *icss ) {
     i = cmlGetOneRowFromSql( sql, cVal, &cValSize, 1, icss );
     if ( i == 1 ) {
         printf( "result = %s\n", cValStr );
-        i = 0;
     }
     else {
         return i;

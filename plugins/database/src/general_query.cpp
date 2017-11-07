@@ -313,7 +313,6 @@ tScan( int table, int link ) {
         if ( debug > 1 ) {
             printf( "nToFind decremented, now=%d\n", nToFind );
         }
-        thisKeep = 1;
         if ( nToFind <= 0 ) {
             return thisKeep;
         }
@@ -2103,11 +2102,11 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
         }
-        status = cmlCheckDirId(
-                     icss->stmtPtr[statementNum]->resultValue[collIx],
-                     genQueryInp.condInput.value[userIx],
-                     ( char* )zoneName.c_str(),
-                     genQueryInp.condInput.value[accessIx], icss );
+        cmlCheckDirId(
+            icss->stmtPtr[statementNum]->resultValue[collIx],
+            genQueryInp.condInput.value[userIx],
+            ( char* )zoneName.c_str(),
+            genQueryInp.condInput.value[accessIx], icss );
     }
     return 0;
 }

@@ -484,16 +484,14 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN] = "";
-    status = splitPathByKey( dataObjInfoHead->objPath,
-                             logicalCollName, sizeof( logicalCollName ), logicalFileName, sizeof( logicalFileName ), '/' );
+    splitPathByKey( dataObjInfoHead->objPath, logicalCollName, sizeof( logicalCollName ), logicalFileName, sizeof( logicalFileName ), '/' );
     if ( strlen( logicalFileName ) <= 0 ) {
         return 0;
     }
 
     char logicalFileNameNoExtension[MAX_NAME_LEN] = "";
     char logicalFileNameExt[MAX_NAME_LEN] = "";
-    status = splitPathByKey( logicalFileName,
-                             logicalFileNameNoExtension, sizeof( logicalFileNameNoExtension ), logicalFileNameExt, sizeof( logicalFileNameExt ), '.' );
+    splitPathByKey( logicalFileName, logicalFileNameNoExtension, sizeof( logicalFileNameNoExtension ), logicalFileNameExt, sizeof( logicalFileNameExt ), '.' );
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return 0;
     }
@@ -527,7 +525,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
         return 0;
     }
 
-    status = svrCloseQueryOut( rei->rsComm, genQueryOut );
+    svrCloseQueryOut( rei->rsComm, genQueryOut );
 
     /* register it */
     keyValPair_t regParam;
@@ -542,7 +540,7 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     modDataObjMetaInp.dataObjInfo = dataObjInfoHead;
     modDataObjMetaInp.regParam = &regParam;
 
-    status = rsModDataObjMeta( rei->rsComm, &modDataObjMetaInp );
+    rsModDataObjMeta( rei->rsComm, &modDataObjMetaInp );
 
     return 0;
 }
