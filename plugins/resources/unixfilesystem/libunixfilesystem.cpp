@@ -1502,63 +1502,68 @@ irods::error unix_file_resolve_hierarchy(
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
     float*                              _out_vote ) {
-    irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // check the context validity
     irods::error ret = _ctx.valid< irods::file_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid resource context." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if ( ( result = ASSERT_ERROR( _opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM, "Invalid input parameter." ) ).ok() ) {
-            // =-=-=-=-=-=-=-
-            // cast down the chain to our understood object type
-            irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // check that additional info made it
-            rodsLog(LOG_DEBUG, "%s: %s = [%s]", __FUNCTION__, RECURSIVE_OPR__KW, getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW));
-
-            // =-=-=-=-=-=-=-
-            // get the name of this resource
-            std::string resc_name;
-            ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-            if ( ( result = ASSERT_PASS( ret, "Failed in get property for name." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // test the operation to determine which choices to make
-                if ( irods::OPEN_OPERATION  == ( *_opr ) ||
-                        irods::WRITE_OPERATION == ( *_opr ) ||
-                        irods::UNLINK_OPERATION == ( *_opr )) {
-                    // =-=-=-=-=-=-=-
-                    // call redirect determination for 'get' operation
-                    ret = unix_resolve_hierarchy_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-                    result = ASSERT_PASS( ret, "Failed redirecting for open." );
-
-                }
-                else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
-                    // =-=-=-=-=-=-=-
-                    // call redirect determination for 'create' operation
-                    ret = unix_resolve_hierarchy_create( _ctx, resc_name, ( *_curr_host ), ( *_out_vote ) );
-                    result = ASSERT_PASS( ret, "Failed redirecting for create." );
-                }
-
-                else {
-                    // =-=-=-=-=-=-=-
-                    // must have been passed a bad operation
-                    result = ASSERT_ERROR( false, INVALID_OPERATION, "Operation not supported." );
-                }
-
-                // add ourselves to the hierarchy if we have any vote
-                if( *_out_vote > 0 && result.ok() ) {
-                    _out_parser->add_child( resc_name );
-                }
-            }
-        }
+    if ( !ret.ok() ) {
+        return PASSMSG( "Invalid resource context.", ret );
     }
 
-    return result;
+    // =-=-=-=-=-=-=-
+    // check incoming parameters
+    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameter." );
+    }
+
+    // =-=-=-=-=-=-=-
+    // cast down the chain to our understood object type
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+    // =-=-=-=-=-=-=-
+    // check that additional info made it
+    rodsLog(LOG_DEBUG, "%s: %s = [%s]", __FUNCTION__, RECURSIVE_OPR__KW, getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW));
+
+    // =-=-=-=-=-=-=-
+    // get the name of this resource
+    std::string resc_name;
+    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
+    if ( !ret.ok() ) {
+        return PASSMSG( "Failed in get property for name.", ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // test the operation to determine which choices to make
+    if ( irods::OPEN_OPERATION  == ( *_opr ) ||
+            irods::WRITE_OPERATION == ( *_opr ) ||
+            irods::UNLINK_OPERATION == ( *_opr )) {
+        // =-=-=-=-=-=-=-
+        // call redirect determination for 'open' operation
+        ret = unix_resolve_hierarchy_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+        if ( !ret.ok() ) {
+            ret = PASSMSG( "Failed redirecting for open.", ret );
+        }
+    }
+    else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
+        // =-=-=-=-=-=-=-
+        // call redirect determination for 'create' operation
+        ret = unix_resolve_hierarchy_create( _ctx, resc_name, ( *_curr_host ), ( *_out_vote ) );
+        if ( !ret.ok() ) {
+            ret = PASSMSG( "Failed redirecting for create.", ret );
+        }
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // must have been passed a bad operation
+        ret = ERROR( INVALID_OPERATION, "Operation not supported." );
+    }
+
+    // add ourselves to the hierarchy if we have any vote
+    if( *_out_vote > 0 && ret.ok() ) {
+        _out_parser->add_child( resc_name );
+    }
+
+    return ret;
 
 } // unix_file_resolve_hierarchy
 

@@ -668,55 +668,52 @@ irods::error mock_archive_file_resolve_hierarchy(
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
     float*                              _out_vote ) {
-    irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // check the context validity
     irods::error ret = _ctx.valid< irods::file_object >();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-
-        if ( ( result = ASSERT_ERROR( _opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM,
-                                      "Invalid input parameters." ) ).ok() ) {
-
-            // =-=-=-=-=-=-=-
-            // cast down the chain to our understood object type
-            irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-            // =-=-=-=-=-=-=-
-            // get the name of this resource
-            std::string resc_name;
-            ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-            if ( ( result = ASSERT_PASS( ret, "Failed to get property for resource name." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // add ourselves to the hierarchy parser by default
-                _out_parser->add_child( resc_name );
-
-                // =-=-=-=-=-=-=-
-                // test the operation to determine which choices to make
-                if ( irods::OPEN_OPERATION == ( *_opr ) || irods::UNLINK_OPERATION == ( *_opr )) {
-                    // =-=-=-=-=-=-=-
-                    // call redirect determination for 'get' operation
-                    result = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-
-                }
-                else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
-                    // =-=-=-=-=-=-=-
-                    // call redirect determination for 'create' operation
-                    result = ASSERT_ERROR( false, SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive" );
-                }
-                else {
-
-                    // =-=-=-=-=-=-=-
-                    // must have been passed a bad operation
-                    result = ASSERT_ERROR( false, SYS_INVALID_INPUT_PARAM, "Operation not supported: \"%s\".",
-                                           _opr->c_str() );
-                }
-            }
-        }
+    if ( !ret.ok() ) {
+        return PASSMSG( "Invalid plugin context.", ret );
     }
 
-    return result;
+    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameters." );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the name of this resource
+    std::string resc_name;
+    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
+    if ( !ret.ok() ) {
+        return PASSMSG( "Failed to get property for resource name.", ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // add ourselves to the hierarchy parser by default
+    _out_parser->add_child( resc_name );
+
+    // =-=-=-=-=-=-=-
+    // test the operation to determine which choices to make
+    if ( irods::OPEN_OPERATION == ( *_opr ) || irods::UNLINK_OPERATION == ( *_opr )) {
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // call redirect determination for 'open' operation
+        ret = mock_archive_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
+    }
+    else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
+        ret = ERROR( SYS_INVALID_INPUT_PARAM, "Create operation not supported for an archive" );
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // must have been passed a bad operation
+        ret = ERROR( SYS_INVALID_INPUT_PARAM, std::string( "Operation not supported: \"" + ( *_opr ) + "\"." ) );
+    }
+
+    return ret;
+
 } // mock_archive_file_resolve_hierarchy
 
 // =-=-=-=-=-=-=-
