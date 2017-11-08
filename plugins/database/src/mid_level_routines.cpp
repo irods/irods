@@ -656,7 +656,7 @@ cmlGetNextSeqVal( icatSessionStruct *icss ) {
     char nextStr[STR_LEN];
     char sql[STR_LEN];
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal{};
 
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlGetNextSeqVal SQL 1 " );
@@ -802,7 +802,7 @@ rodsLong_t
 cmlCheckResc( const char *rescName, const char *userName, const char *userZone, const char *accessLevel,
               icatSessionStruct *icss ) {
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal{};
 
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckResc SQL 1 " );
@@ -848,7 +848,7 @@ rodsLong_t
 cmlCheckDir( const char *dirName, const char *userName, const char *userZone, const char *accessLevel,
              icatSessionStruct *icss ) {
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal{};
 
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckDir SQL 1 " );
@@ -1031,7 +1031,7 @@ rodsLong_t
 cmlCheckDirOwn( const char *dirName, const char *userName, const char *userZone,
                 icatSessionStruct *icss ) {
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal{};
 
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckDirOwn SQL 1 " );
@@ -1061,7 +1061,7 @@ cmlCheckDataObjOnly( const char *dirName, const char *dataName,
                      const char *userName, const char *userZone,
                      const char *accessLevel, icatSessionStruct *icss ) {
     int status;
-    rodsLong_t iVal;
+    rodsLong_t iVal{};
 
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlCheckDataObjOnly SQL 1 " );
