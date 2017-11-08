@@ -632,7 +632,7 @@ _rescHasData(
     const std::string& _resc_name,
     bool&              _has_data ) {
     irods::sql_logger logger( "_rescHasData", logSQL );
-    rodsLong_t obj_count;
+    rodsLong_t obj_count{};
 
     logger.log();
 
