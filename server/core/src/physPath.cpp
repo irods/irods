@@ -1271,11 +1271,10 @@ executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
  */
 int
 fsDataObjLock( char *objPath, int cmd, int type ) {
-    int status;
     int fd;
-
     char *path = NULL;
-    if ( ( status = getDataObjLockPath( objPath, &path ) ) < 0 ) {
+    int status = getDataObjLockPath( objPath, &path ); 
+    if ( status < 0 || NULL == path ) {
         rodsLogError( LOG_ERROR, status,
                       "fsDataObjLock: getDataObjLockPath error for %s", objPath );
         free( path );
