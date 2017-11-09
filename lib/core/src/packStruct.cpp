@@ -1217,7 +1217,11 @@ packNatString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen )
     }
 
     void *outPtr;
-    extendPackedOutput( packedOutput, myStrlen + 1, outPtr );
+    int status = extendPackedOutput( packedOutput, myStrlen + 1, outPtr ); 
+    if ( SYS_MALLOC_ERR == status ) {
+        return status;
+    }
+
     if ( myStrlen == 0 ) {
         memset( outPtr, 0, 1 );
     }
@@ -1261,7 +1265,12 @@ packXmlString( const void *&inPtr, packedOutput_t &packedOutput, int maxStrLen,
     packXmlTag( name, packedOutput, START_TAG_FL );
 
     void *outPtr;
-    extendPackedOutput( packedOutput, xmlLen + 1, outPtr );
+    int status = extendPackedOutput( packedOutput, xmlLen + 1, outPtr ); 
+    if ( SYS_MALLOC_ERR == status ) {
+        free( xmlStr );
+        return status;
+    }
+
     if ( xmlLen == 0 ) {
         memset( outPtr, 0, 1 );
     }
@@ -1372,7 +1381,10 @@ packNullString( packedOutput_t &packedOutput ) {
 
     int myStrlen = strlen( NULL_PTR_PACK_STR );
     void *outPtr;
-    extendPackedOutput( packedOutput, myStrlen + 1, outPtr );
+    int status = extendPackedOutput( packedOutput, myStrlen + 1, outPtr );
+    if ( SYS_MALLOC_ERR == status ) {
+        return status;
+    }
     strncpy( static_cast<char*>(outPtr), NULL_PTR_PACK_STR, myStrlen + 1 );
     packedOutput.bBuf.len += ( myStrlen + 1 );
     return 0;
@@ -1864,17 +1876,20 @@ int
 unpackNatString( const void *&inPtr, packedOutput_t &unpackedOutput, int maxStrLen,
                  char *&outStr ) {
     int myStrlen = inPtr ? strlen( static_cast<const char*>(inPtr) ) : 0;
+    int extLen = maxStrLen;
     void *outPtr;
     if ( myStrlen + 1 >= maxStrLen ) {
         if ( maxStrLen >= 0 ) {
             return USER_PACKSTRUCT_INPUT_ERR;
         }
         else {
-            extendPackedOutput( unpackedOutput, myStrlen + 1, outPtr );
+            extLen = myStrlen + 1;
         }
     }
-    else {
-        extendPackedOutput( unpackedOutput, maxStrLen, outPtr );
+
+    int status = extendPackedOutput( unpackedOutput, extLen, outPtr );
+    if ( SYS_MALLOC_ERR == status ) {
+        return status;
     }
 
     if ( myStrlen == 0 ) {
@@ -2919,22 +2934,24 @@ getAllocLenForStr( const packItem_t &myPackedItem, const void *inPtr, int numStr
 int
 packXmlTag( const char* name, packedOutput_t &packedOutput,
             int flag ) {
-    int myStrlen;
     void *outPtr;
 
-    myStrlen = strlen( name );
+    /* +5 to include <>, '/', \n  and NULL */
+    int myStrlen = strlen( name ) + 5;
+    int status = extendPackedOutput( packedOutput, myStrlen, outPtr );
+    if ( SYS_MALLOC_ERR == status ) {
+        return status;
+    }
 
-    /* include <>, '/', \n  and NULL */
-    extendPackedOutput( packedOutput, myStrlen + 5, outPtr );
     if ( flag & END_TAG_FL ) {
-        snprintf( static_cast<char*>(outPtr), myStrlen + 5, "</%s>\n", name );
+        snprintf( static_cast<char*>(outPtr), myStrlen, "</%s>\n", name );
     }
     else {
         if ( flag & LF_FL ) {
-            snprintf( static_cast<char*>(outPtr), myStrlen + 5, "<%s>\n", name );
+            snprintf( static_cast<char*>(outPtr), myStrlen, "<%s>\n", name );
         }
         else {
-            snprintf( static_cast<char*>(outPtr), myStrlen + 5, "<%s>", name );
+            snprintf( static_cast<char*>(outPtr), myStrlen, "<%s>", name );
         }
     }
     packedOutput.bBuf.len += strlen( static_cast<char*>(outPtr) );
@@ -2946,7 +2963,7 @@ int
 parseXmlValue( const void *&inPtr, const char* name, int &endTagLen ) {
 
     if ( inPtr == NULL ) {
-        return 0;
+        return USER__NULL_INPUT_ERR;
     }
 
     int strLen = 0;
