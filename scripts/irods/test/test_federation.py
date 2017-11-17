@@ -9,6 +9,7 @@ import os
 import tempfile
 import time
 import shutil
+import socket
 
 from .. import test
 from . import settings
@@ -996,6 +997,52 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         test_session.assert_icommand(
             "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
 
+    def test_remote_writeLine_localzone_3722(self):
+        parameters = self.config.copy()
+        parameters['local_host'] = socket.gethostname()
+        rule_file = "test_rule_file.r"
+
+        # Write a line to the serverLog in the local zone using remote execution
+        rule_string = '''
+myTestRule {{
+    remote("{local_host}", "<ZONE>{local_zone}</ZONE>") {{
+        writeLine("serverLog", "test_remote_writeLine_localzone_3722");
+    }}
+}}
+INPUT *myvar="hello"
+OUTPUT ruleExecOut
+            '''.format( **parameters )
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        # Execute rule and ensure that output is empty (success)
+        test_session = self.user_sessions[0]
+        test_session.assert_icommand('irule -F ' + rule_file)
+        os.remove(rule_file)
+
+    def test_remote_writeLine_remotezone_3722(self):
+        parameters = self.config.copy()
+        rule_file = "test_rule_file.r"
+
+        # Write a line to the serverLog in the remote zone using remote execution
+        rule_string = '''
+myTestRule {{
+    remote("{remote_host}", "<ZONE>{remote_zone}</ZONE>") {{
+        writeLine("serverLog", "test_remote_writeLine_remotezone_3722");
+    }}
+}}
+INPUT *myvar="hello"
+OUTPUT ruleExecOut
+            '''.format( **parameters )
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        # Execute rule and ensure that output is empty (success)
+        test_session = self.user_sessions[0]
+        test_session.assert_icommand('irule -F ' + rule_file)
+        os.remove(rule_file)
 
 class Test_Admin_Commands(unittest.TestCase):
 
