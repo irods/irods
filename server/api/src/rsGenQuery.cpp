@@ -384,7 +384,6 @@ irods::error strip_resc_hier_name_from_query_inp( genQueryInp_t* _inp, int& _pos
             }
 
             addInxVal( &_inp->sqlCondInp, COL_D_RESC_ID, new_cond.c_str() );
-            _pos = i;
         }
         else {
             addInxVal( &_inp->sqlCondInp, tmpV.inx[i], tmpV.value[i] );
