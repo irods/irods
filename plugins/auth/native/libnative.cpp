@@ -354,201 +354,218 @@ irods::error native_auth_client_response(
 irods::error native_auth_agent_response(
     irods::plugin_context& _ctx,
     authResponseInp_t*           _resp ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
+    irods::error ret = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // validate incoming parameters
     ret = _ctx.valid();
-    if ( ( result = ASSERT_PASS( ret, "Invalid plugin context." ) ).ok() ) {
-        if ( ( result = ASSERT_ERROR( _resp, SYS_INVALID_INPUT_PARAM, "Invalid response or comm pointers." ) ).ok() ) {
+    if ( !ret.ok() ) {
+        return PASSMSG( "Invalid plugin context.", ret );
+    }
 
-            int status;
-            char *bufp;
-            authCheckInp_t authCheckInp;
-            authCheckOut_t *authCheckOut = NULL;
-            rodsServerHost_t *rodsServerHost;
+    if ( NULL == _resp ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid response or comm pointers." );
+    }
 
-            char digest[RESPONSE_LEN + 2];
-            char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
-            char serverId[MAX_PASSWORD_LEN + 2];
+    int status;
+    char *bufp;
+    authCheckInp_t authCheckInp;
+    authCheckOut_t *authCheckOut = NULL;
+    rodsServerHost_t *rodsServerHost;
 
-            bufp = _rsAuthRequestGetChallenge();
+    char digest[RESPONSE_LEN + 2];
+    char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
+    char serverId[MAX_PASSWORD_LEN + 2];
 
-            /* need to do NoLogin because it could get into inf loop for cross
-             * zone auth */
+    bufp = _rsAuthRequestGetChallenge();
 
-            status = getAndConnRcatHostNoLogin( _ctx.comm(), MASTER_RCAT,
-                                                _ctx.comm()->proxyUser.rodsZone, &rodsServerHost );
-            if ( ( result = ASSERT_ERROR( status >= 0, status, "Connecting to rcat host failed." ) ).ok() ) {
-                memset( &authCheckInp, 0, sizeof( authCheckInp ) );
-                authCheckInp.challenge = bufp;
-                //null-terminate the response for rsAuthCheck
-                _resp->response = ( char * )realloc( _resp->response, RESPONSE_LEN + 1 );
-                _resp->response[ RESPONSE_LEN ] = 0;
-                authCheckInp.response = _resp->response;
-                authCheckInp.username = _resp->username;
+    /* need to do NoLogin because it could get into inf loop for cross
+     * zone auth */
 
-                if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-                    status = rsAuthCheck( _ctx.comm(), &authCheckInp, &authCheckOut );
+    status = getAndConnRcatHostNoLogin( _ctx.comm(), MASTER_RCAT,
+                                        _ctx.comm()->proxyUser.rodsZone, &rodsServerHost );
+    if ( status < 0 ) {
+        return ERROR( status, "Connecting to rcat host failed." );
+    }
+    memset( &authCheckInp, 0, sizeof( authCheckInp ) );
+    authCheckInp.challenge = bufp;
+    //null-terminate the response for rsAuthCheck
+    _resp->response = ( char * )realloc( _resp->response, RESPONSE_LEN + 1 );
+    _resp->response[ RESPONSE_LEN ] = 0;
+    authCheckInp.response = _resp->response;
+    authCheckInp.username = _resp->username;
+
+    if ( LOCAL_HOST == rodsServerHost->localFlag ) {
+        status = rsAuthCheck( _ctx.comm(), &authCheckInp, &authCheckOut );
+    }
+    else {
+        status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
+        /* not likely we need this connection again */
+        rcDisconnect( rodsServerHost->conn );
+        rodsServerHost->conn = NULL;
+    }
+
+    if ( status < 0 || NULL == authCheckOut ) {
+        ret = ERROR( status, "rcAuthCheck failed." );
+    }
+
+    if ( ret.ok() ) {
+        if ( rodsServerHost->localFlag != LOCAL_HOST ) {
+            if ( authCheckOut->serverResponse == NULL ) {
+                rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
+                if ( requireServerAuth ) {
+                    ret = ERROR( REMOTE_SERVER_AUTH_NOT_PROVIDED, "Authentication disallowed. no serverResponse field." );
+                }
+            }
+            else {
+                char *cp;
+                int OK, len, i;
+                if ( *authCheckOut->serverResponse == '\0' ) {
+                    rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty" );
+                    if ( requireServerAuth ) {
+                        ret = ERROR( REMOTE_SERVER_AUTH_EMPTY, "Authentication disallowed, empty serverResponse." );
+                    }
                 }
                 else {
-                    status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
-                    /* not likely we need this connection again */
-                    rcDisconnect( rodsServerHost->conn );
-                    rodsServerHost->conn = NULL;
-                }
-                if ( ( result = ASSERT_ERROR( status >= 0 && authCheckOut != NULL, status, "rcAuthCheck failed." ) ).ok() ) { // JMC cppcheck
-
-                    if ( rodsServerHost->localFlag != LOCAL_HOST ) {
-                        if ( authCheckOut->serverResponse == NULL ) {
-                            rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
-                            result = ASSERT_ERROR( !requireServerAuth, REMOTE_SERVER_AUTH_NOT_PROVIDED, "Authentication disallowed. no serverResponse field." );
+                    char username2[NAME_LEN + 2];
+                    char userZone[NAME_LEN + 2];
+                    memset( md5Buf, 0, sizeof( md5Buf ) );
+                    strncpy( md5Buf, authCheckInp.challenge, CHALLENGE_LEN );
+                    parseUserName( _resp->username, username2, userZone );
+                    getZoneServerId( userZone, serverId );
+                    len = strlen( serverId );
+                    if ( len <= 0 ) {
+                        rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server_config.json", status );
+                        if ( requireServerAuth ) {
+                            ret = ERROR( REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined" );
                         }
-
-                        else {
-                            char *cp;
-                            int OK, len, i;
-                            if ( *authCheckOut->serverResponse == '\0' ) {
-                                rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty" );
-                                result = ASSERT_ERROR( !requireServerAuth, REMOTE_SERVER_AUTH_EMPTY, "Authentication disallowed, empty serverResponse." );
-                            }
-                            else {
-                                char username2[NAME_LEN + 2];
-                                char userZone[NAME_LEN + 2];
-                                memset( md5Buf, 0, sizeof( md5Buf ) );
-                                strncpy( md5Buf, authCheckInp.challenge, CHALLENGE_LEN );
-                                parseUserName( _resp->username, username2, userZone );
-                                getZoneServerId( userZone, serverId );
-                                len = strlen( serverId );
-                                if ( len <= 0 ) {
-                                    rodsLog( LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server_config.json", status );
-                                    result = ASSERT_ERROR( !requireServerAuth, REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined." );
-                                    if ( requireSIDs ) {
-                                        return ERROR( REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined" );
-                                    }
-                                }
-                                else {
-                                    strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
-                                    obfMakeOneWayHash(
-                                        HASH_TYPE_DEFAULT,
-                                        ( unsigned char* )md5Buf,
-                                        CHALLENGE_LEN + MAX_PASSWORD_LEN,
-                                        ( unsigned char* )digest );
-
-                                    for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                                        if ( digest[i] == '\0' ) {
-                                            digest[i]++;
-                                        }  /* make sure 'string' doesn't end early*/
-
-                                    }
-                                    cp = authCheckOut->serverResponse;
-                                    OK = 1;
-                                    for ( i = 0; i < RESPONSE_LEN; i++ ) {
-                                        if ( *cp++ != digest[i] ) {
-                                            OK = 0;
-                                        }
-                                    }
-                                    rodsLog( LOG_DEBUG, "serverResponse is OK/Not: %d", OK );
-                                    result = ASSERT_ERROR( OK != 0, REMOTE_SERVER_AUTHENTICATION_FAILURE, "Authentication disallowed, server response incorrect." );
-                                }
-                            }
+                        if ( requireSIDs ) {
+                            ret = ERROR( REMOTE_SERVER_SID_NOT_DEFINED, "Authentication disallowed, no RemoteZoneSID defined" );
                         }
                     }
+                    else {
+                        strncpy( md5Buf + CHALLENGE_LEN, serverId, len );
+                        obfMakeOneWayHash(
+                            HASH_TYPE_DEFAULT,
+                            ( unsigned char* )md5Buf,
+                            CHALLENGE_LEN + MAX_PASSWORD_LEN,
+                            ( unsigned char* )digest );
 
-                    /* Set the clientUser zone if it is null. */
-                    if ( result.ok() && strlen( _ctx.comm()->clientUser.rodsZone ) == 0 ) {
-                        zoneInfo_t *tmpZoneInfo;
-                        status = getLocalZoneInfo( &tmpZoneInfo );
-                        if ( ( result = ASSERT_ERROR( status >= 0, status, "getLocalZoneInfo failed." ) ).ok() ) {
-                            strncpy( _ctx.comm()->clientUser.rodsZone, tmpZoneInfo->zoneName, NAME_LEN );
+                        for ( i = 0; i < RESPONSE_LEN; i++ ) {
+                            if ( digest[i] == '\0' ) {
+                                digest[i]++;
+                            }  /* make sure 'string' doesn't end early*/
                         }
-                    }
-
-
-                    /* have to modify privLevel if the icat is a foreign icat because
-                     * a local user in a foreign zone is not a local user in this zone
-                     * and vice versa for a remote user
-                     */
-                    if ( result.ok() && rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
-
-                        /* proxy is easy because rodsServerHost is based on proxy user */
-                        if ( authCheckOut->privLevel == LOCAL_PRIV_USER_AUTH ) {
-                            authCheckOut->privLevel = REMOTE_PRIV_USER_AUTH;
-                        }
-                        else if ( authCheckOut->privLevel == LOCAL_USER_AUTH ) {
-                            authCheckOut->privLevel = REMOTE_USER_AUTH;
-                        }
-
-                        /* adjust client user */
-                        if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) == 0 ) {
-                            authCheckOut->clientPrivLevel = authCheckOut->privLevel;
-                        }
-                        else {
-                            zoneInfo_t *tmpZoneInfo;
-                            status = getLocalZoneInfo( &tmpZoneInfo );
-                            if ( ( result = ASSERT_ERROR( status >= 0, status, "getLocalZoneInfo failed." ) ).ok() ) {
-                                if ( strcmp( tmpZoneInfo->zoneName,  _ctx.comm()->clientUser.rodsZone ) == 0 ) {
-                                    /* client is from local zone */
-                                    if ( authCheckOut->clientPrivLevel == REMOTE_PRIV_USER_AUTH ) {
-                                        authCheckOut->clientPrivLevel = LOCAL_PRIV_USER_AUTH;
-                                    }
-                                    else if ( authCheckOut->clientPrivLevel == REMOTE_USER_AUTH ) {
-                                        authCheckOut->clientPrivLevel = LOCAL_USER_AUTH;
-                                    }
-                                }
-                                else {
-                                    /* client is from remote zone */
-                                    if ( authCheckOut->clientPrivLevel == LOCAL_PRIV_USER_AUTH ) {
-                                        authCheckOut->clientPrivLevel = REMOTE_USER_AUTH;
-                                    }
-                                    else if ( authCheckOut->clientPrivLevel == LOCAL_USER_AUTH ) {
-                                        authCheckOut->clientPrivLevel = REMOTE_USER_AUTH;
-                                    }
-                                }
+                        cp = authCheckOut->serverResponse;
+                        OK = 1;
+                        for ( i = 0; i < RESPONSE_LEN; i++ ) {
+                            if ( *cp++ != digest[i] ) {
+                                OK = 0;
                             }
                         }
-                    }
-                    else if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) == 0 ) {
-                        authCheckOut->clientPrivLevel = authCheckOut->privLevel;
-                    }
-
-                    if ( result.ok() ) {
-                        ret = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
-
-                        if ( ( result = ASSERT_PASS( ret, "Check proxy user priviledges failed." ) ).ok() ) {
-                            rodsLog( LOG_DEBUG,
-                                     "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
-                                     authCheckOut->privLevel,
-                                     authCheckOut->clientPrivLevel,
-                                     authCheckInp.username,
-                                     _ctx.comm()->proxyUser.userName,
-                                     _ctx.comm()->clientUser.userName );
-
-                            if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
-                                _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
-                                _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
-                            }
-                            else {          /* proxyUser and clientUser are the same */
-                                _ctx.comm()->proxyUser.authInfo.authFlag =
-                                    _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
-                            }
-
+                        rodsLog( LOG_DEBUG, "serverResponse is OK/Not: %d", OK );
+                        if ( 0 == OK ) {
+                            ret = ERROR( REMOTE_SERVER_AUTHENTICATION_FAILURE, "Authentication disallowed, server response incorrect." );
                         }
                     }
                 }
             }
-            if ( authCheckOut != NULL ) {
-                if ( authCheckOut->serverResponse != NULL ) {
-                    free( authCheckOut->serverResponse );
-                }
+        }
 
-                free( authCheckOut );
+        /* Set the clientUser zone if it is null. */
+        if ( ret.ok() && 0 == strlen( _ctx.comm()->clientUser.rodsZone ) ) {
+            zoneInfo_t *tmpZoneInfo;
+            status = getLocalZoneInfo( &tmpZoneInfo );
+            if ( status < 0 ) {
+                ret = ERROR( status, "getLocalZoneInfo failed." ); 
+            }
+            else {
+                strncpy( _ctx.comm()->clientUser.rodsZone, tmpZoneInfo->zoneName, NAME_LEN );
+            }
+        }
+
+        /* have to modify privLevel if the icat is a foreign icat because
+         * a local user in a foreign zone is not a local user in this zone
+         * and vice versa for a remote user
+         */
+        if ( ret.ok() && rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
+            /* proxy is easy because rodsServerHost is based on proxy user */
+            if ( authCheckOut->privLevel == LOCAL_PRIV_USER_AUTH ) {
+                authCheckOut->privLevel = REMOTE_PRIV_USER_AUTH;
+            }
+            else if ( authCheckOut->privLevel == LOCAL_USER_AUTH ) {
+                authCheckOut->privLevel = REMOTE_USER_AUTH;
+            }
+
+            /* adjust client user */
+            if ( 0 == strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) ) {
+                authCheckOut->clientPrivLevel = authCheckOut->privLevel;
+            }
+            else {
+                zoneInfo_t *tmpZoneInfo;
+                status = getLocalZoneInfo( &tmpZoneInfo );
+                if ( status < 0 ) {
+                    ret = ERROR( status, "getLocalZoneInfo failed." );
+                }
+                else {
+                    if ( 0 == strcmp( tmpZoneInfo->zoneName,  _ctx.comm()->clientUser.rodsZone ) ) {
+                        /* client is from local zone */
+                        if ( REMOTE_PRIV_USER_AUTH == authCheckOut->clientPrivLevel ) {
+                            authCheckOut->clientPrivLevel = LOCAL_PRIV_USER_AUTH;
+                        }
+                        else if ( REMOTE_USER_AUTH == authCheckOut->clientPrivLevel ) {
+                            authCheckOut->clientPrivLevel = LOCAL_USER_AUTH;
+                        }
+                    }
+                    else {
+                        /* client is from remote zone */
+                        if ( LOCAL_PRIV_USER_AUTH == authCheckOut->clientPrivLevel ) {
+                            authCheckOut->clientPrivLevel = REMOTE_USER_AUTH;
+                        }
+                        else if ( LOCAL_USER_AUTH == authCheckOut->clientPrivLevel ) {
+                            authCheckOut->clientPrivLevel = REMOTE_USER_AUTH;
+                        }
+                    }
+                }
+            }
+        }
+        else if ( 0 == strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) ) {
+            authCheckOut->clientPrivLevel = authCheckOut->privLevel;
+        }
+
+        if ( ret.ok() ) {
+            ret = check_proxy_user_privileges( _ctx.comm(), authCheckOut->privLevel );
+            if ( !ret.ok() ) {
+                ret = PASSMSG( "Check proxy user priviledges failed.", ret );
+            }
+            else {
+                rodsLog( LOG_DEBUG,
+                         "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
+                         authCheckOut->privLevel,
+                         authCheckOut->clientPrivLevel,
+                         authCheckInp.username,
+                         _ctx.comm()->proxyUser.userName,
+                         _ctx.comm()->clientUser.userName );
+
+                if ( strcmp( _ctx.comm()->proxyUser.userName,  _ctx.comm()->clientUser.userName ) != 0 ) {
+                    _ctx.comm()->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
+                    _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
+                }
+                else {          /* proxyUser and clientUser are the same */
+                    _ctx.comm()->proxyUser.authInfo.authFlag =
+                        _ctx.comm()->clientUser.authInfo.authFlag = authCheckOut->privLevel;
+                }
             }
         }
     }
-    return result;
 
+    if ( authCheckOut != NULL ) {
+        if ( authCheckOut->serverResponse != NULL ) {
+            free( authCheckOut->serverResponse );
+        }
+        free( authCheckOut );
+    }
+    return ret;
 } // native_auth_agent_response
 
 // =-=-=-=-=-=-=-

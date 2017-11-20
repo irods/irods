@@ -772,60 +772,48 @@ irods::error deferred_file_resolve_hierarchy(
     const std::string*              _curr_host,
     irods::hierarchy_parser*        _out_parser,
     float*                          _out_vote ) {
-    irods::error result = SUCCESS();
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
-    irods::error err = deferred_check_params< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( err, "Invalid resource context." ) ).ok() ) {
-        if ( ( result = ASSERT_ERROR( _opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM,
-                                      "Invalid parameters." ) ).ok() ) {
-            // =-=-=-=-=-=-=-
-            // get the object's hier string
-            irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-            std::string hier = file_obj->resc_hier( );
-
-            // =-=-=-=-=-=-=-
-            // get the object's hier string
-            std::string name;
-            err = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
-            if ( ( result = ASSERT_PASS( err, "Failed to get property: \"%s\".", irods::RESOURCE_NAME.c_str() ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // add ourselves into the hierarchy before calling child resources
-                _out_parser->add_child( name );
-
-                // =-=-=-=-=-=-=-
-                // test the operation to determine which choices to make
-                if ( irods::OPEN_OPERATION   == ( *_opr )  ||
-                        irods::WRITE_OPERATION  == ( *_opr ) ||
-                        irods::UNLINK_OPERATION == ( *_opr )) {
-                    std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
-                    err = deferred_redirect_for_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
-                    result = ASSERT_PASS( err, err_msg );
-
-                }
-                else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
-
-                    // =-=-=-=-=-=-=-
-                    // get the next_child resource for create
-                    irods::resource_ptr resc;
-                    std::string err_msg = "failed in resolve hierarchy for [" + ( *_opr ) + "]";
-                    err = deferred_redirect_for_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
-                    result = ASSERT_PASS( err, err_msg );
-                }
-                else {
-
-                    // =-=-=-=-=-=-=-
-                    // must have been passed a bad operation
-                    result = ASSERT_ERROR( false, INVALID_OPERATION, "Operation not supported: \"%s\".",
-                                           _opr->c_str() );
-                }
-            }
-        }
+    irods::error ret = deferred_check_params< irods::file_object >( _ctx );
+    if ( !ret.ok() ) {
+        return PASSMSG( "Invalid resource context.", ret );
     }
 
-    return result;
+    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid parameters." );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the name of this resource 
+    std::string name;
+    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, name );
+    if ( !ret.ok() ) {
+        return PASSMSG( std::string( "Failed to get property: \"" + irods::RESOURCE_NAME + "\"." ), ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // add ourselves into the hierarchy before calling child resources
+    _out_parser->add_child( name );
+
+    // =-=-=-=-=-=-=-
+    // test the operation to determine which choices to make
+    if ( irods::OPEN_OPERATION   == ( *_opr )  ||
+            irods::WRITE_OPERATION  == ( *_opr ) ||
+            irods::UNLINK_OPERATION == ( *_opr ) ||
+            irods::CREATE_OPERATION == ( *_opr ) ) {
+        ret = deferred_redirect_for_operation( _ctx, _opr, _curr_host, _out_parser, _out_vote );
+        if ( !ret.ok() ) {
+            ret = PASSMSG( std::string( "failed in resolve hierarchy for [" + ( *_opr ) + "]" ), ret );
+        }
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // must have been passed a bad operation
+        ret = ERROR( INVALID_OPERATION, std::string( "Operation not supported: \"" + ( *_opr ) + "\"." ) );
+    }
+
+    return ret;
 } // deferred_file_resolve_hierarchy
 
 // =-=-=-=-=-=-=-
