@@ -1049,6 +1049,40 @@ namespace irods {
         return result;
     } // call_maintenance_operations
 
+    /*
+     * construct a vector of all resource hierarchies in the system
+     * throws irods::exception
+     */
+    std::vector<std::string> resource_manager::get_all_resc_hierarchies( void ) {
+        /*
+         * Iterate through all the resources in the map and
+         * construct a hierarchy vector for leaf resources.
+         */
+        std::vector<std::string> hier_list;
+        for ( auto itr : resource_name_map_ ) {
+            resource_ptr resc = itr.second;
+            if ( resc->num_children() > 0 ) {
+                continue;
+            }  
+
+            rodsLong_t leaf_id = 0;
+            error err = resc->get_property<rodsLong_t>(
+                            RESOURCE_ID,
+                            leaf_id );
+            if ( !err.ok() ) {
+                THROW( err.code(), err.result() );
+            }
+
+            std::string curr_hier;
+            err = leaf_id_to_hier( leaf_id, curr_hier );
+            if ( !err.ok() ) {
+                THROW( err.code(), err.result() );
+            }
+            hier_list.push_back( curr_hier );
+        }
+        return hier_list;
+    } // get_all_resc_hierarchies
+
     error resource_manager::hier_to_leaf_id(
         const std::string& _hier,
         rodsLong_t&        _id ) {
