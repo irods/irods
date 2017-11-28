@@ -10,11 +10,13 @@
 #include "rsGenQuery.hpp"
 #include "rsGlobalExtern.hpp"
 #include "miscServerFunct.hpp"
+#include "irods_resource_manager.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_lexical_cast.hpp"
 #include "rodsGenQueryNames.h"
 
 #include "boost/format.hpp"
+#include <boost/regex.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
 
@@ -297,28 +299,93 @@ irods::error add_resc_grp_name_to_query_out( genQueryOut_t *_out, int& _pos ) {
 
 static
 irods::error get_resc_id_cond_for_hier_cond(
-        const char* _cond,
-       std::string& _new_cond ) {
-    std::string in_cond( _cond );
-    std::string::size_type p0 = in_cond.find_first_of("'");
-    std::string::size_type p1 = in_cond.find_last_of("'");
-    if (p1==p0) {
-        return ERROR(
-            SYS_INVALID_INPUT_PARAM,
-            _cond );
+        const char*  _cond,
+        std::string& _new_cond ) {
+    const std::string in_cond( _cond );
+    const std::string::size_type p0 = in_cond.find_first_of( "'" );
+    const std::string::size_type p1 = in_cond.find_last_of( "'" );
+    if ( p1 == p0 ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, _cond );
     }
 
-    std::string hier = in_cond.substr(p0+1, p1-p0-1);
+    std::string hier = in_cond.substr( p0 + 1, p1 - p0 - 1);
 
-    rodsLong_t id = 0;
-    irods::error ret = resc_mgr.hier_to_leaf_id(hier,id);
-    if(!ret.ok()) {
-        return PASS(ret);
+    /* 
+     * If query condition uses "=", look for exact matches.
+     * Since % is not allowed in resource names, error out if found.
+     */
+    if ( std::string::npos != in_cond.find( "=" ) &&
+         std::string::npos != hier.find( "%" ) ) {
+        return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
     }
 
-    std::stringstream idstr; idstr << id;
-    _new_cond = "='"+idstr.str()+"'";
+    /*
+     * Construct a list of all hierarchies in the system.
+     */
+    std::vector<std::string> hier_list;
+    try {
+        hier_list = resc_mgr.get_all_resc_hierarchies();
+    }
+    catch ( const irods::exception& e ) {
+        return irods::error( e );
+    }
 
+    std::string::size_type pos = hier.find_first_of( "%" );
+
+    /*
+     * Attempt direct match to leaf node since no wildcards given.
+     * All leaves are unique, so there should be at most one result.
+     */
+    if ( std::string::npos == pos ) {
+        rodsLong_t leaf_id{};
+        irods::error ret = resc_mgr.hier_to_leaf_id( hier, leaf_id );
+        if ( !ret.ok() ) {
+            return PASS( ret );
+        }
+        std::stringstream leaf_id_str;
+        leaf_id_str << leaf_id;
+        _new_cond = "='" + leaf_id_str.str() + "'";
+        return SUCCESS();
+    }
+
+    /* 
+     * Convert input condition to regex syntax and filter list of
+     * hierarchies. For each matching result, get the leaf ID and
+     * add it to the list of results. Generate 'IN' condition with
+     * the resulting leaf IDs. Return early if none found.
+     */
+    std::vector<rodsLong_t> leaf_ids;
+    std::string hierRegex( hier );
+    while ( std::string::npos != pos ) {
+        hierRegex.replace( pos, 1, "(.*)" );
+        pos = hierRegex.find_first_of( "%" );
+    }
+
+    for ( auto hier_ : hier_list ) {
+        if ( boost::regex_match( hier_, boost::regex( hierRegex ) ) ) { 
+            rodsLong_t leaf_id{};
+            irods::error ret = resc_mgr.hier_to_leaf_id( hier_, leaf_id );
+            if ( !ret.ok() ) {
+                return PASS( ret );
+            }
+            leaf_ids.push_back( leaf_id );
+        }
+    }
+
+    if ( leaf_ids.empty() ) {
+        return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
+    }
+
+    _new_cond = "IN (";
+    for ( auto leaf_id : leaf_ids ) {
+        std::stringstream current_cond;
+        current_cond << "'" << leaf_id << "'";
+        if( leaf_id != leaf_ids.back() ) {
+            current_cond << ",";
+        }
+        _new_cond += current_cond.str();
+    }
+    _new_cond += ")";
     return SUCCESS();
 
 } // get_resc_id_cond_for_hier_cond
