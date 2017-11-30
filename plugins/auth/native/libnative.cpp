@@ -405,11 +405,7 @@ irods::error native_auth_agent_response(
         rodsServerHost->conn = NULL;
     }
 
-    if ( status < 0 || NULL == authCheckOut ) {
-        ret = ERROR( status, "rcAuthCheck failed." );
-    }
-
-    if ( ret.ok() ) {
+    if ( status >= 0 && NULL != authCheckOut ) {
         if ( rodsServerHost->localFlag != LOCAL_HOST ) {
             if ( authCheckOut->serverResponse == NULL ) {
                 rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
@@ -557,6 +553,9 @@ irods::error native_auth_agent_response(
                 }
             }
         }
+    }
+    else {
+        ret = ERROR( status, "rcAuthCheck failed." );
     }
 
     if ( authCheckOut != NULL ) {
