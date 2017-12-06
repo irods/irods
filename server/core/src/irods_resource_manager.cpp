@@ -1054,16 +1054,12 @@ namespace irods {
      * throws irods::exception
      */
     std::vector<std::string> resource_manager::get_all_resc_hierarchies( void ) {
-        /*
-         * Iterate through all the resources in the map and
-         * construct a hierarchy vector for leaf resources.
-         */
         std::vector<std::string> hier_list;
-        for ( auto itr : resource_name_map_ ) {
-            resource_ptr resc = itr.second;
+        for ( const auto& entry : resource_name_map_ ) {
+            const resource_ptr resc = entry.second;
             if ( resc->num_children() > 0 ) {
                 continue;
-            }  
+            }
 
             rodsLong_t leaf_id = 0;
             error err = resc->get_property<rodsLong_t>(

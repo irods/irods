@@ -319,17 +319,6 @@ irods::error get_resc_id_cond_for_hier_cond(
         return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
     }
 
-    /*
-     * Construct a list of all hierarchies in the system.
-     */
-    std::vector<std::string> hier_list;
-    try {
-        hier_list = resc_mgr.get_all_resc_hierarchies();
-    }
-    catch ( const irods::exception& e ) {
-        return irods::error( e );
-    }
-
     std::string::size_type pos = hier.find_first_of( "%" );
 
     /*
@@ -354,22 +343,28 @@ irods::error get_resc_id_cond_for_hier_cond(
      * add it to the list of results. Generate 'IN' condition with
      * the resulting leaf IDs. Return early if none found.
      */
-    std::vector<rodsLong_t> leaf_ids;
     std::string hierRegex( hier );
     while ( std::string::npos != pos ) {
         hierRegex.replace( pos, 1, "(.*)" );
         pos = hierRegex.find_first_of( "%" );
     }
 
-    for ( auto hier_ : hier_list ) {
-        if ( boost::regex_match( hier_, boost::regex( hierRegex ) ) ) { 
-            rodsLong_t leaf_id{};
-            irods::error ret = resc_mgr.hier_to_leaf_id( hier_, leaf_id );
-            if ( !ret.ok() ) {
-                return PASS( ret );
+    std::vector<rodsLong_t> leaf_ids;
+    try {
+        const std::vector<std::string> hier_list = resc_mgr.get_all_resc_hierarchies();
+        for ( const auto& hier_ : hier_list ) {
+            if ( boost::regex_match( hier_, boost::regex( hierRegex ) ) ) { 
+                rodsLong_t leaf_id{};
+                irods::error ret = resc_mgr.hier_to_leaf_id( hier_, leaf_id );
+                if ( !ret.ok() ) {
+                    return PASS( ret );
+                }
+                leaf_ids.push_back( leaf_id );
             }
-            leaf_ids.push_back( leaf_id );
         }
+    }
+    catch ( const irods::exception& e ) {
+        return irods::error( e );
     }
 
     if ( leaf_ids.empty() ) {
@@ -377,7 +372,7 @@ irods::error get_resc_id_cond_for_hier_cond(
     }
 
     _new_cond = "IN (";
-    for ( auto leaf_id : leaf_ids ) {
+    for ( const auto& leaf_id : leaf_ids ) {
         std::stringstream current_cond;
         current_cond << "'" << leaf_id << "'";
         if( leaf_id != leaf_ids.back() ) {
