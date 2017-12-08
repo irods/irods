@@ -590,3 +590,18 @@ output ruleExecOut
         irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=True)
 
 
+    def test_msiServerMonPerf_default_3736(self):
+        rule_file="test_msiServerMonPerf.r"
+        rule_string= '''
+msiTestServerMonPerf {{
+    msiServerMonPerf("default", "default");
+}}
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        self.rods_session.assert_icommand("irule -F " + rule_file);
