@@ -89,9 +89,6 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         # Matches leaf resource from full hierarchy
         self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER = '{0}'".format(expected_hier)], 'STDOUT_SINGLELINE', expected_hier)
         self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER like '{0}'".format(expected_hier)], 'STDOUT_SINGLELINE', expected_hier)
-        # Matches leaf resource
-        self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER = 'ufs3'"], 'STDOUT_SINGLELINE', expected_hier)
-        self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER like 'ufs3'"], 'STDOUT_SINGLELINE', expected_hier)
 
         # FAILURE
         # % needed at front - ufs is not a root
@@ -100,6 +97,9 @@ class Test_Iquest(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER like 'repRescPrime'"], 'STDOUT_SINGLELINE', 'CAT_NO_ROWS_FOUND')
         # = with % results in error
         self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER = '%ufs3'"], 'STDOUT_SINGLELINE', 'CAT_NO_ROWS_FOUND')
+        # Results in direct match - must match full hier
+        self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER = 'ufs3'"], 'STDOUT_SINGLELINE', 'CAT_NO_ROWS_FOUND')
+        self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_RESC_HIER like 'ufs3'"], 'STDOUT_SINGLELINE', 'CAT_NO_ROWS_FOUND')
 
         # Clean up
         os.remove(filename)
