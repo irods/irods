@@ -1468,18 +1468,17 @@ irods::error replValidOperation(
     try {
         irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
         // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
-        if ( false && file_obj->repl_requested() >= 0 ) { // For migration we no longer have this restriction but will be added back later - harry
+        if ( file_obj->repl_requested() >= 0 && false ) { // For migration we no longer have this restriction but will be added back later - harry
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Requesting replica: " << file_obj->repl_requested();
             msg << "\tCannot request specific replicas from replicating resource.";
             result = ERROR( INVALID_OPERATION, msg.str() );
         }
-
         else {
             // if the api commands involve replication we have to error out since managing replicas is our job
             char* in_repl = getValByKey( &file_obj->cond_input(), IN_REPL_KW );
-            if ( false && in_repl != NULL ) { // For migration we no longer have this restriction but might be added later. - harry
+            if ( in_repl != NULL && false ) { // For migration we no longer have this restriction but might be added later. - harry
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Using repl or trim commands on a replication resource is not allowed. ";

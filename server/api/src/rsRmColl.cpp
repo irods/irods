@@ -391,11 +391,13 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         }
         else {
             status = svrUnregColl( rsComm, rmCollInp );
-            if ( status < 0 ) {
-                savedStatus = status;
-            }
         }
     }
+
+    if ( status < 0 ) {
+        savedStatus = status;
+    }
+
     clearKeyVal( &tmpCollInp.condInput );
     clearKeyVal( &dataObjInp.condInput );
 
