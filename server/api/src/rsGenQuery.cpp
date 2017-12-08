@@ -319,30 +319,13 @@ irods::error get_resc_id_cond_for_hier_cond(
         return ERROR( SYS_RESC_DOES_NOT_EXIST, hier );
     }
 
-    std::string::size_type pos = hier.find_first_of( "%" );
-
-    /*
-     * Attempt direct match to leaf node since no wildcards given.
-     * All leaves are unique, so there should be at most one result.
-     */
-    if ( std::string::npos == pos ) {
-        rodsLong_t leaf_id{};
-        irods::error ret = resc_mgr.hier_to_leaf_id( hier, leaf_id );
-        if ( !ret.ok() ) {
-            return PASS( ret );
-        }
-        std::stringstream leaf_id_str;
-        leaf_id_str << leaf_id;
-        _new_cond = "='" + leaf_id_str.str() + "'";
-        return SUCCESS();
-    }
-
     /* 
      * Convert input condition to regex syntax and filter list of
      * hierarchies. For each matching result, get the leaf ID and
      * add it to the list of results. Generate 'IN' condition with
      * the resulting leaf IDs. Return early if none found.
      */
+    std::string::size_type pos( hier.find_first_of( "%" ) );
     std::string hierRegex( hier );
     while ( std::string::npos != pos ) {
         hierRegex.replace( pos, 1, "(.*)" );
