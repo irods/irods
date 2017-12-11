@@ -2071,6 +2071,8 @@ void usageMain() {
         "object to work with: dataobjs (iRODS files), collections, resources,",
         "or users.",
         " ",
+        "A user must be a rodsadmin to set or modify AVUs on resources and users.",
+        " ",
         "Fields represented with upper case, such as Name, are entered values.  For",
         "example, 'Name' is the name of a dataobject, collection, resource,",
         "or user.",
