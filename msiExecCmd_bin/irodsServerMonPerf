@@ -131,7 +131,7 @@ foreach my $pth(@sysPathList) {
 ###############################################
 $systype = `/bin/uname`; chomp($systype);
 $rhost = `/bin/uname -n`; chomp($rhost);
-$path = dirname($0)."/../../config/scriptMonPerf.config";
+$path = dirname($0)."/../config/scriptMonPerf.config";
 
 ##################################################
 # Test the existence of the configuration file   #
