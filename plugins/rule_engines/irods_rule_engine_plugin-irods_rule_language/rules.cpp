@@ -50,10 +50,12 @@ int readRuleSetFromLocalFile( const char *ruleBaseName, const char *rulesFileNam
         return ret;
     }
 
-    Node *errnode;
+    Node *errnode{};
     ExprType *restype = typeRuleSet( ruleSet, errmsg, &errnode, r );
     if ( getNodeType( restype ) == T_ERROR ) {
-        *errloc = NODE_EXPR_POS( errnode );
+        if ( NULL != errnode ) {
+            *errloc = NODE_EXPR_POS( errnode );
+        }
         return RE_TYPE_ERROR;
     }
 

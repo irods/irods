@@ -629,6 +629,13 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     }
     getListOfResc( rsComm, serverList, nservers, rescList, &nresc );
 
+    /* If the list of resources is empty, just return early because
+     * there is no work to be done below. */
+    if ( 0 == nresc ) {
+        rodsLog( LOG_NOTICE, "msiServerMonPerf: no resources found\n" );
+        return rei->status;
+    }
+
     strcpy( cmd, MON_PERF_SCRIPT );
 #ifndef windows_platform
     pthread_t *threads = ( pthread_t* )malloc( sizeof( pthread_t ) * nresc );
