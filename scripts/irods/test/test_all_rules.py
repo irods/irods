@@ -461,6 +461,10 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.assert_icommand('''irule "*a.a = 'A'; *a.b = 'B'; writeLine('stdout', str(*a))" null ruleExecOut''', 'STDOUT_SINGLELINE', "a=A++++b=B")
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_datetimef_3767(self):
+        self.rods_session.assert_icommand('''irule "*RetTime = '2018-01-01';writeLine('stdout',datetimef(*RetTime,'%Y-%m-%d'));" null ruleExecOut''', 'STDOUT_SINGLELINE', "Jan 01 2018")
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_type_3575(self):
         rule_file = "test_rule_file.r"
         rule_string = '''
