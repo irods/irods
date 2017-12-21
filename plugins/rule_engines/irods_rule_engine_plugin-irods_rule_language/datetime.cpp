@@ -12,6 +12,7 @@ int strttime( char* timestr, char* timeformat, rodsLong_t* t ) {
         timeformat = defaultformat;
     }
     struct tm tm;
+    memset(&tm, 0, sizeof(struct tm));
     if ( strptime( timestr, timeformat, &tm ) == 0 ) {
         return 0;
     }
