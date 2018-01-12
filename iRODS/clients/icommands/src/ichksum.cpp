@@ -27,7 +27,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hKfarR:vVn:Z";
+    optStr = "hKfarMR:vVn:Z";
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
     if ( status < 0 ) {
@@ -97,7 +97,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: ichksum [-harvV] [-K|f] [-n replNum] [-R resource] [--silent]",
+        "Usage: ichksum [-haMrvV] [-K|f] [-n replNum] [-R resource] [--silent]",
         "           dataObj|collection ... ",
         "Checksum one or more data-object or collection from iRODS space.",
         "Options are:",
@@ -105,6 +105,7 @@ usage() {
         " -a  checksum all replicas. ils -L should be used to list the values of all replicas",
         " -K  verify the checksum value in iCAT. If the checksum value does not exist,",
         "     compute and register one.",
+        " -M  admin - admin user uses this option to checksum other users' files.",
         " -n  replNum  - the replica to checksum; use -a to checksum all replicas.",
         " -R  resource  - the resource of the replica to checksum,",
         " -r  recursive - checksum the whole subtree; the collection, all data-objects",
