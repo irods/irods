@@ -1529,6 +1529,58 @@ int do_command(
                       << std::endl
                       << std::endl;
         } else {
+
+            // Issue 3788 - Reject duplicate new attr, val, or unit
+            bool new_attribute_set = false;
+            bool new_value_set = false;
+            bool new_unit_set = false;
+
+            std::vector<std::string> new_argument_identifier_list = { "opt_1", "opt_2", "opt_3", "opt_4" };
+
+            for (const std::string& option_identifier : new_argument_identifier_list) {
+
+                if ( sub_vm.count( option_identifier ) ) {
+                    std::string temp = sub_vm[option_identifier].as<std::string>();
+                    std::string label = temp.substr(0,2);
+                    if("n:" == label) {
+                        if (new_attribute_set) {
+                            std::cout << std::endl
+                                << "Error: "
+                                << "New attribute specified more than once"
+                                << std::endl
+                                << std::endl;
+                            return SYS_INVALID_INPUT_PARAM;
+
+                        } else {
+                            new_attribute_set = true;
+                        }
+                    } else if("v:" == label) {
+                        if (new_value_set) {
+                            std::cout << std::endl
+                                << "Error: "
+                                << "New value specified more than once"
+                                << std::endl
+                                << std::endl;
+                            return SYS_INVALID_INPUT_PARAM;
+                        } else {
+                            new_value_set = true;
+                        }
+                    } else if("u:" == label) {
+                        if (new_unit_set) {
+                            std::cout << std::endl
+                                << "Error: "
+                                << "New unit specified more than once"
+                                << std::endl
+                                << std::endl;
+                            return SYS_INVALID_INPUT_PARAM;
+                        } else {
+                            new_unit_set = true;
+                        }
+                    }
+                }
+            }
+            // End Issue 3788 changes
+
             // Need to check optional arguments to see if the string represents
             //  units, new_attribute, new_value, or new_units
             std::string temp = sub_vm["opt_1"].as<std::string>();
