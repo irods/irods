@@ -148,6 +148,10 @@ initCondForChksum( rodsArguments_t *rodsArgs,
         return USER_OPTION_INPUT_ERR;
     }
 
+    if ( rodsArgs->admin == True ) {
+        addKeyVal( &dataObjInp->condInput, ADMIN_KW, "" );
+    }
+
     if ( rodsArgs->force == True ) {
         addKeyVal( &dataObjInp->condInput, FORCE_CHKSUM_KW, "" );
         addKeyVal( &collInp->condInput, FORCE_CHKSUM_KW, "" );
