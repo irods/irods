@@ -805,3 +805,22 @@ acSetRescSchemeForCreate { msiSetDefaultResc("demoResc","null"); }
             os.unlink(filename)
         else:
             print('skipping test_ichksum_file_size_verification__3537 due to unsupported database for this test.')
+
+    def test_ichksum_admin_flag__3265(self):
+        filename = 'test_ichksum_admin_flag__3265'
+        file_size = 50
+        lib.make_file(filename, file_size)
+        self.user0.assert_icommand(['iput', filename])
+
+        # Get the current directory
+        rc, data_path, err = self.user0.run_icommand("ipwd")
+        data_path = data_path.rstrip() + '/' + filename
+
+        # Perform checksum as the owner
+        self.user0.assert_icommand(['ichksum', '-K', data_path], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        # Perform checksum as admin user (should fail)
+        self.admin.assert_icommand(['ichksum', '-K', data_path], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
+        # Add admin flag
+        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+
+        os.unlink(filename)
