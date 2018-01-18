@@ -31,16 +31,6 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
     def mod_avu(self, user_name, a, v, u, newv):
         self.admin.assert_icommand('imeta mod -u %s %s %s %s v:%s' % (user_name, a, v, u, newv))
 
-    def mod_avu_dup_attr(self, user_name, a, v, u, newa1, newa2):
-        self.admin.assert_icommand('imeta mod -u %s %s %s n:%s n:%s' % (user_name, a, v, u, newa1, newa2))
-
-    def mod_avu_dup_val(self, user_name, a, v, u, newv1, newv2):
-        self.admin.assert_icommand('imeta mod -u %s %s %s v:%s v:%s' % (user_name, a, v, u, newv1, newv2))
-
-    def mod_avu_dup_val(self, user_name, a, v, u, newu1, newu2):
-        self.admin.assert_icommand('imeta mod -u %s %s %s u:%s u:%s' % (user_name, a, v, u, newu1, newu2))
-
-
     def set_avu(self, user_name, a, v, u):
         self.admin.assert_icommand('imeta set -u %s %s %s %s' % (user_name, a, v, u))
 
