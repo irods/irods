@@ -30,6 +30,4 @@ void
 reServerMain( char* logDir );
 int
 reSvrSleep( );
-int
-chkAndResetRule();
 #endif	/* RE_SERVER_H */
