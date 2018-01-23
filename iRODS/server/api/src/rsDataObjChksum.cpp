@@ -136,6 +136,12 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status_getDataObjInfoIncSpecColl;
     }
 
+    // If admin flag is in play, make sure the client user is allowed to use it
+    const bool admin_flag = getValByKey( &dataObjInp->condInput, ADMIN_KW );
+    if ( admin_flag && rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    }
+
     int status = 0;
     if ( !allFlag ) {
         /* screen out any stale copies */
@@ -160,6 +166,11 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         if ( !tmpDataObjInfo ) {
             tmpDataObjInfo = *dataObjInfoHead;
+        }
+ 
+        // Add the admin flag before running checksum
+        if ( admin_flag ) {
+            addKeyVal( &tmpDataObjInfo->condInput, ADMIN_KW, "" );
         }
 
         /* need to compute the chksum */
@@ -195,6 +206,11 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 tmpDataObjInfo = tmpDataObjInfo->next;
                 status = 0;
                 continue;
+            }
+ 
+            // Add the admin flag before running checksum
+            if ( admin_flag ) {
+                addKeyVal( &tmpDataObjInfo->condInput, ADMIN_KW, "" );
             }
 
             char *tmpChksumStr = 0;
@@ -270,6 +286,13 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     addKeyVal( &regParam, CHKSUM_KW, *outChksumStr );
     // set pdmo flag so that chksum doesn't trigger file operations
     addKeyVal( &regParam, IN_PDMO_KW, "" );
+    // Make sure admin flag is set as appropriate
+    if ( NULL != getValByKey( &dataObjInfo->condInput, ADMIN_KW ) ) {
+        if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+        }
+        addKeyVal( &regParam, ADMIN_KW, "" );
+    }
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
