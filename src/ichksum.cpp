@@ -27,7 +27,7 @@ main( int argc, char **argv ) {
     rodsPathInp_t rodsPathInp;
 
 
-    optStr = "hKfarR:vVn:Z";
+    optStr = "hKfarMR:vVn:Z";
 
     status = parseCmdLineOpt( argc, argv, optStr, 1, &myRodsArgs );
     if ( status < 0 ) {
@@ -97,7 +97,7 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: ichksum [-harvV] [-K|f] [-n replNum] [-R resource] [--silent]",
+        "Usage: ichksum [-haMrvV] [-K|f] [-n replNum] [-R resource] [--silent]",
         "           dataObj|collection ... ",
         "Checksum one or more data-object or collection from iRODS space.",
         " ",
@@ -122,6 +122,7 @@ usage() {
         "     database size. This causes -K to return success if e.g. the full file is",
         "     present in the vault, but the catalog thinks the file is empty. Using",
         "     --verify adds an explicit size check after the checksum check.",
+        " -M  admin - admin user uses this option to checksum other users' files.",
         " -n  replNum  - the replica to checksum; use -a to checksum all replicas.",
         "     Return CAT_NO_ROWS_FOUND if the given replica number does not exist.",
         "     If used in combination with -R, the replica number will take precedence.",
