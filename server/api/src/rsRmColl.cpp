@@ -67,6 +67,8 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         rodsLog( LOG_ERROR,
                  "rsRmColl:acPreprocForRmColl error for %s,stat=%d",
                  rmCollInp->collName, status );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         return status;
     }
 
@@ -88,6 +90,9 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     rei.status = status;
     rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
                             NO_SAVE_REI );
+
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
 
     if ( rei.status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -169,6 +174,8 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
                 getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) == NULL ) {
             initReiWithDataObjInp( &rei, rsComm, NULL );
             status = applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
             trashPolicy = rei.status;
             if ( trashPolicy != NO_TRASH_CAN ) {
                 status = rsMvCollToTrash( rsComm, rmCollInp );
@@ -624,11 +631,12 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         rei.doi = &dataObjInfo;
 
         // make resource properties available as rule session variables
-        rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-        memset(rei.condInputData, 0, sizeof(keyValPair_t));
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
         status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
+
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
 
         if ( status < 0 && status != NO_MORE_RULES_ERR &&
                 status != SYS_DELETE_DISALLOWED ) {

@@ -624,6 +624,8 @@ int getRescForCreate(
     else {
         status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
     }
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
 
     if ( status < 0 ) {
         if ( rei.status < 0 ) {

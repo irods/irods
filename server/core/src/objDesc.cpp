@@ -313,6 +313,8 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {
             irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_string", ret ) );
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
             return -1;
         }
 
@@ -333,13 +335,18 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                          status );
             }
             else {
+
                 numDestThr = rei.status;
                 if ( numDestThr == 0 ) {
+                    clearKeyVal(rei.condInputData);
+                    free(rei.condInputData);
                     return 0;
                 }
                 else if ( numDestThr == 1 && srcRescHier == NULL &&
                           isLocalHost( location.c_str() ) ) {
                     /* one thread and resource on local host */
+                    clearKeyVal(rei.condInputData);
+                    free(rei.condInputData);
                     return 0;
                 }
             }
@@ -348,6 +355,9 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
     if (destRescHier && strlen(destRescHier) && srcRescHier && strlen(srcRescHier)) {
         if ( numDestThr > 0 && strcmp( destRescHier, srcRescHier ) == 0 ) {
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
+
             return numDestThr;
         }
 
@@ -356,6 +366,9 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         irods::error ret = irods::get_loc_for_hier_string( destRescHier, location );
         if ( !ret.ok() ) {
             irods::log( PASSMSG( "getNumThreads - failed in get_loc_for_hier_string", ret ) );
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
+
             return -1;
         }
 
@@ -378,6 +391,9 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             else {
                 numSrcThr = rei.status;
                 if ( numSrcThr == 0 ) {
+                    clearKeyVal(rei.condInputData);
+                    free(rei.condInputData);
+
                     return 0;
                 }
             }
@@ -385,6 +401,8 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     }
 
     if ( numDestThr > 0 ) {
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
             return 1;
         }
@@ -393,6 +411,8 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         }
     }
     if ( numSrcThr > 0 ) {
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
             return 1;
         }
@@ -402,6 +422,8 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     }
     /* should not be here. do one with no resource */
     status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "getNumThreads: acGetNumThreads error, status = %d",
