@@ -342,6 +342,8 @@ int chkRescQuotaPolicy( rsComm_t *rsComm ) {
                          "acRescQuotaPolicy",
                          NULL, &rei,
                          NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         if ( status < 0 ) {
             rodsLog(
                 LOG_ERROR,

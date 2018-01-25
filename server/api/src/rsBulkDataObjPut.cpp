@@ -842,6 +842,8 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
 
     initReiWithDataObjInp( &rei, rsComm, NULL );
     status = applyRule( "acBulkPutPostProcPolicy", NULL, &rei, NO_SAVE_REI );
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "postProcBulkPut: acBulkPutPostProcPolicy error status = %d", status );
@@ -963,11 +965,11 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rei.doi = tmpDataObjInfo;
 
         // make resource properties available as rule session variables
-        rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-        memset(rei.condInputData, 0, sizeof(keyValPair_t));
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
         status = applyRule( "acPostProcForPut", NULL, &rei, NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         if ( status < 0 ) {
             savedStatus = status;
         }

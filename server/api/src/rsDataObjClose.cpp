@@ -137,14 +137,14 @@ irsDataObjClose(
                 rei.status = status;
 
                 // make resource properties available as rule session variables
-                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-                memset(rei.condInputData, 0, sizeof(keyValPair_t));
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
                 rei.status = applyRule( "acPostProcForCreate", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
             }
             else if ( L1desc[l1descInx].openType == OPEN_FOR_READ_TYPE ||
                       L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE ) {
@@ -154,8 +154,6 @@ irsDataObjClose(
                 rei.status = status;
 
                 // make resource properties available as rule session variables
-                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-                memset(rei.condInputData, 0, sizeof(keyValPair_t));
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
                 rei.status = applyRule( "acPostProcForOpen", NULL, &rei,
@@ -164,6 +162,8 @@ irsDataObjClose(
                 L1desc[l1descInx].dataObjInfo = rei.doi;
                 // =-=-=-=-=-=-=-
                 // JMC - bacport 4623
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
             }
             else if ( L1desc[l1descInx].oprType == REPLICATE_DEST ) {
                 initReiWithDataObjInp( &rei, rsComm,
@@ -175,7 +175,9 @@ irsDataObjClose(
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
                 // =-=-=-=-=-=-=-
-            }
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
+           }
 
             if ( L1desc[l1descInx].oprType == COPY_DEST ) {
                 /* have to put copy first because the next test could
@@ -186,14 +188,14 @@ irsDataObjClose(
                 rei.status = status;
 
                 // make resource properties available as rule session variables
-                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-                memset(rei.condInputData, 0, sizeof(keyValPair_t));
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
                 rei.status = applyRule( "acPostProcForCopy", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
             }
             else if ( L1desc[l1descInx].oprType == PUT_OPR ||
                       L1desc[l1descInx].openType == CREATE_TYPE ||
@@ -206,14 +208,14 @@ irsDataObjClose(
                 rei.status = status;
 
                 // make resource properties available as rule session variables
-                rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-                memset(rei.condInputData, 0, sizeof(keyValPair_t));
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
                 rei.status = applyRule( "acPostProcForPut", NULL, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
             }
             else if ( L1desc[l1descInx].dataObjInp != NULL &&
                       L1desc[l1descInx].dataObjInp->oprType == PHYMV_OPR ) {
@@ -225,6 +227,8 @@ irsDataObjClose(
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+                clearKeyVal(rei.condInputData);
+                free(rei.condInputData);
 
             }
         }
