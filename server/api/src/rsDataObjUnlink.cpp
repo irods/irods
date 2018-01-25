@@ -138,6 +138,8 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     else {
         initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
         applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
 
         if ( NO_TRASH_CAN != rei.status ) {
             status = rsMvDataObjToTrash( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
@@ -154,8 +156,6 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     rei.status = status;
 
     // make resource properties available as rule session variables
-    rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-    memset(rei.condInputData, 0, sizeof(keyValPair_t));
     irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
     rei.status = applyRule( "acPostProcForDelete", NULL, &rei, NO_SAVE_REI );
@@ -165,6 +165,9 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
                  "rsDataObjUnlink: acPostProcForDelete error for %s. status = %d",
                  dataObjUnlinkInp->objPath, rei.status );
     }
+
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
 
     /* dataObjInfoHead may be outdated */
     freeAllDataObjInfo( dataObjInfoHead );
@@ -323,11 +326,12 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
 
             // make resource properties available as rule session variables
-            rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-            memset(rei.condInputData, 0, sizeof(keyValPair_t));
             irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
             applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
+
             if ( rei.status != NO_CHK_PATH_PERM ) {
                 // =-=-=-=-=-=-=-
                 // extract the host location from the resource hierarchy
@@ -568,6 +572,8 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     int status = 0;
 
     initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
     tmpDataObjInfo = dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
         /* have to go through the loop to test each copy (resource). */
@@ -579,6 +585,8 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
         status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
 
         if ( status < 0 && status != NO_MORE_RULES_ERR &&
                 status != SYS_DELETE_DISALLOWED ) {

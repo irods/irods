@@ -580,12 +580,13 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         rei.status = status;
 
         // make resource properties available as rule session variables
-        rei.condInputData = (keyValPair_t *)malloc(sizeof(keyValPair_t));
-        memset(rei.condInputData, 0, sizeof(keyValPair_t));
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
         rei.status = applyRule( "acPostProcForFilePathReg", NULL, &rei,
                                 NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
+
     }
 
     clearKeyVal( &dataObjInfo.condInput );
