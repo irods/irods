@@ -245,6 +245,8 @@ _rsDataObjRepl(
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
     applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
+    clearKeyVal(rei.condInputData);
+    free(rei.condInputData);
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
         multiCopyFlag = 1;
     }

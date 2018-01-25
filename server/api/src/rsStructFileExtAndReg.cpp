@@ -546,6 +546,8 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
         rei.doi = &dataObjInfo;
         rei.status = applyRule( "acPostProcForTarFileReg", NULL, &rei,
                                 NO_SAVE_REI );
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
         if ( rei.status < 0 ) {
             rodsLogError( LOG_ERROR, rei.status,
                           "regSubFile: acPostProcForTarFileReg error for %s. status = %d",
