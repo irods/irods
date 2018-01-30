@@ -852,3 +852,37 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             os.unlink(filename)
         else:
             print('skipping test_ichksum_file_size_verification__3537 due to unsupported database for this test.')
+
+    def test_ichksum_admin_flag__3265(self):
+        # Get files set up
+        file_size = 50
+        filename1 = 'test_ichksum_admin_flag__3265_1'
+        filename2 = 'test_ichksum_admin_flag__3265_2'
+        lib.make_file(filename1, file_size)
+        lib.make_file(filename2, file_size)
+        self.user0.assert_icommand(['iput', filename1])
+        self.user0.assert_icommand(['iput', filename2])
+
+        # Get paths to data objects
+        data_path,_,_ = self.user0.run_icommand("ipwd")
+        data_path1 = data_path.rstrip() + '/' + filename1
+        data_path2 = data_path.rstrip() + '/' + filename2
+
+        # Generate checksum as admin (no permissions; fail)
+        self.admin.assert_icommand(['ichksum', '-K', data_path1], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
+        # Generate checksum as rodsuser with admin flag (fail)
+        self.user0.assert_icommand(['ichksum', '-K', '-M', data_path1], 'STDERR_SINGLELINE', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+        # Generate checksum as rodsuser (owner; pass)
+        self.user0.assert_icommand(['ichksum', '-K', data_path1], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        # Verify checksum as admin (no permissions; fail)
+        self.admin.assert_icommand(['ichksum', '-K', data_path1], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
+        # Verify checksum as admin with admin flag (pass)
+        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path1], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+
+        # Generate checksum as admin with admin flag (pass)
+        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path2], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        # Verify checksum as rodsuser (pass)
+        self.user0.assert_icommand(['ichksum', '-K', data_path2], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+
+        os.unlink(filename1)
+        os.unlink(filename2)
