@@ -245,6 +245,12 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         wild = self.user0.session_collection+'/'+base_name+"%"
         self.admin.assert_icommand(['imeta', 'addw', '-d', wild, attribute, value], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
 
+    def test_imeta_duplicate_attr_3787(self):
+        self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a1', 'v1', 'u1'])
+        self.admin.assert_icommand(['imeta', 'mod', '-d', self.testfile, 'a1', 'v1', 'u1', 'n:a2', 'v:v2', 'u:'])
+        self.admin.assert_icommand(['imeta', 'mod', '-d', self.testfile, 'a2', 'v2',       'n:a3', 'v:v3', 'u:u3'])
+        self.check_avu_data_obj(self.testfile, 'a3', 'v3', 'u3')
+
     def test_imeta_duplicate_attr_3788(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a', 'v', 'u'])
         self.admin.assert_icommand('imeta mod -d ' + self.testfile + 'a v u n:newa1 n:newa2', 'STDOUT_SINGLELINE', 'Error: New attribute specified more than once')
