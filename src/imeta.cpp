@@ -1884,10 +1884,30 @@ int do_command(
 
             return queryCollection( tempCmdToken );
         } else if ( obj_type == "-R" ) {
+
+            if (_sub_args.size() > 4) {
+                std::cout << std::endl
+                          << "Error: "
+                          << "Too many arguments provided to imeta qu for the -R option.  Only one KVP pair allowed in search."
+                          << std::endl
+                          << std::endl;
+                return SYS_INVALID_INPUT_PARAM;
+            }
+ 
             return queryResc( (char*) sub_vm["attribute"].as<std::string>().c_str(),
                                 (char*) sub_vm["operator"].as<std::string>().c_str(),
                                 (char*) sub_vm["value"].as<std::string>().c_str() );
         } else {
+
+            if (_sub_args.size() > 4) {
+                std::cout << std::endl
+                          << "Error: "
+                          << "Too many arguments provided to imeta qu for the -u option.  Only one KVP pair allowed in search."
+                          << std::endl
+                          << std::endl;
+                return SYS_INVALID_INPUT_PARAM;
+            }
+ 
             return queryUser( (char*) sub_vm["attribute"].as<std::string>().c_str(),
                                 (char*) sub_vm["operator"].as<std::string>().c_str(),
                                 (char*) sub_vm["value"].as<std::string>().c_str() );
