@@ -44,7 +44,6 @@ namespace irods {
         private:
             std::string type_;
             int sock_;
-
     };
 
     typedef boost::shared_ptr<generic_auth_object> generic_auth_object_ptr;
