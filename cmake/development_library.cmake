@@ -52,6 +52,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_hashtable.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_hierarchy_parser.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_krb_object.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_openid_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_kvp_string_parser.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_lexical_cast.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_list.h
