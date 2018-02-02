@@ -298,11 +298,6 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imeta', 'cp', '-d', '-d', self.testfile], 'STDOUT_MULTILINE', ['$', 'Error: Not enough arguments provided to cp$', '$'],
                                    use_regex=True)
 
-
-
-  
-
-
 class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
     def helper_imeta_qu_comparison_2748(self, irods_object_option_flag):
@@ -345,4 +340,34 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
         self.assertEqual(split_output[1], self.admin.session_collection, out)
         self.assertEqual(split_output[2], 'dataObj:', out)
         self.assertEqual(split_output[3], 'testfile.txt', out)
+
+    def test_imeta_qu_resource_too_man_args_496(self):
+        self.admin.assert_icommand(['imeta', 'qu', '-R', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE', 
+                ['$', 'Error: Too many arguments provided to imeta qu for the -R option.  Only one KVP pair allowed in search.$', '$'],
+                use_regex=True)
+
+    def test_imeta_qu_user_too_man_args_496(self):
+        self.admin.assert_icommand(['imeta', 'qu', '-u', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE', 
+                ['$', 'Error: Too many arguments provided to imeta qu for the -u option.  Only one KVP pair allowed in search.$', '$'],
+                use_regex=True)
+
+    def test_imeta_qu_dataobj_more_than_3_comparisons_3594(self):
+        object_name = 'data_obj_3594'
+        self.admin.assert_icommand(['iput', self.testfile, object_name])
+        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'target', '1'])
+        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'study_id', '4616'])
+        self.admin.assert_icommand(['imeta', 'add', '-d', object_name, 'type', 'fastq'])
+        self.admin.assert_icommand(['imeta', 'qu', '-d', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
+                'STDOUT_MULTILINE', ['collection: .*$', 'dataObj: %s$' % object_name],
+                use_regex=True)
+
+    def test_imeta_qu_collection_more_than_3_comparisons_3594(self):
+        object_name = 'collection_3594'
+        self.admin.assert_icommand(['imkdir', object_name])
+        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'target', '1'])
+        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'study_id', '4616'])
+        self.admin.assert_icommand(['imeta', 'add', '-C', object_name, 'type', 'fastq'])
+        self.admin.assert_icommand(['imeta', 'qu', '-C', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
+                'STDOUT_MULTILINE', ['collection: .*%s$' % object_name],
+                use_regex=True)
 
