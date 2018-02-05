@@ -9837,26 +9837,13 @@ irods::error db_mod_avu_metadata_op(
 
     }
 
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    /*irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }*/
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
     int status, atype;
     const char *dummy = NULL;
     const char *myUnits = "";
     const char *addAttr = "";
     const char *addValue = "";
     const char  *addUnits = NULL;
-    // int newUnits = 0;
+
     if ( _unitsOrArg0 == NULL ) {
         return ERROR( CAT_INVALID_ARGUMENT, "unitsOrArg0 empty or null" );
     }
@@ -9879,21 +9866,6 @@ irods::error db_mod_avu_metadata_op(
     bool new_attr_set = false;
     bool new_val_set = false;
     bool new_unit_set = false;
-
-	/**
-    if ( atype == 1 ) {
-        new_attr_set = true;
-        addAttr = _unitsOrArg0 + 2;
-    }
-    if ( atype == 2 ) {
-        new_val_set = true;
-        addValue = _unitsOrArg0 + 2;
-    }
-    if ( atype == 3 ) {
-        new_unit_set = true;
-        addUnits = _unitsOrArg0 + 2;
-    }
-	**/
 
     for (auto arg : { dummy , _arg1, _arg2, _arg3 } )
     {
