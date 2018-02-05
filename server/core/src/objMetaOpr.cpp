@@ -605,6 +605,10 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
     rodsLong_t userId;
     operId = getTokenId( rsComm, "access_type", oper );
     if ( operId < 0 ) {
+        // jjames - if they provide an invalid oper, give a better return code
+        if ( operId == CAT_NO_ROWS_FOUND ) {
+            return SYS_INVALID_INPUT_PARAM;
+        }
         return operId;
     }
 
@@ -627,8 +631,76 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
       i = checkPermitForMetadata(rsComm, objName, userId, operId);
     */
     else {
-        i = INVALID_OBJECT_TYPE;
+        return INVALID_OBJECT_TYPE;
     }
+
+    if ( i == 0 ) { // not found - check groups
+
+        // Issue 3309 - iterate through user's groups and check for permission
+        genQueryInp_t genQueryInp;
+        genQueryOut_t *genQueryOut = NULL;
+        memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
+        genQueryInp.maxRows = MAX_SQL_ROWS;
+
+        addInxIval( &genQueryInp.selectInp, COL_USER_GROUP_NAME, 1 );
+
+        char condstr[MAX_NAME_LEN];
+        snprintf( condstr, MAX_NAME_LEN, "= '%s'", user);
+        addInxVal( &genQueryInp.sqlCondInp, COL_USER_NAME, condstr);
+
+        sqlResult_t *group_sql_result;
+        
+        int status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
+
+        // note:  if rsGenQuery has an error, just continue to below
+        if ( genQueryOut && status >= 0 ) {
+
+            group_sql_result = getSqlResultByInx(genQueryOut, COL_USER_GROUP_NAME);
+
+            if (group_sql_result != nullptr) {
+
+                char *group_str;
+
+                // iterating over groups
+                for ( int j = 0; j < genQueryOut->rowCnt; j++ ) {
+
+                    group_str = &group_sql_result->value[group_sql_result->len * j];
+
+                    // if group_str is the same as user then we have already checked this
+                    // and don't want to go into an infinite loop
+                    if (strcmp(group_str, user) == 0) {
+                        continue;
+                    }
+
+                    int groupId = getUserId( rsComm, group_str, zone );
+                    if ( groupId < 0 ) {
+                        continue; 
+                    }
+
+                    if ( !strcmp( objType, "-d" ) ) {
+                        i = checkPermitForDataObject( rsComm, objName, groupId, operId );
+                    }
+                    else  if ( !strcmp( objType, "-c" ) ) {
+                        i = checkPermitForCollection( rsComm, objName, groupId, operId );
+                    }
+                    else  if ( !strcmp( objType, "-r" ) ) {
+                        i = checkPermitForResource( rsComm, objName, groupId, operId );
+                    }
+
+                    if (i == 1) {
+                        // break out of loop if this group has permission 
+                        break;
+                    }
+                }   
+            }
+
+            freeGenQueryOut( &genQueryOut );
+            clearGenQueryInp( &genQueryInp );
+
+        }
+
+    }
+
     return i;
 }
 
