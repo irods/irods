@@ -4,7 +4,9 @@ if sys.version_info >= (2, 7):
 else:
     import unittest2 as unittest
 import contextlib
+import copy
 import errno
+import imp
 import os
 import tempfile
 import time
@@ -14,6 +16,12 @@ import configuration
 import lib
 import resource_suite
 
+# path to server_config.py
+pydevtestdir = os.path.dirname(os.path.realpath(__file__))
+topdir = os.path.dirname(os.path.dirname(pydevtestdir))
+packagingdir = os.path.join(topdir, 'packaging')
+module_tuple = imp.find_module('server_config', [packagingdir])
+imp.load_module('server_config', *module_tuple)
 from server_config import ServerConfig
 
 
@@ -617,10 +625,17 @@ acPostProcForPut { writeLine("serverLog", "acPostProcForPut called for $objPath"
         with irods_server_stopped():
             time.sleep(10) # stop can return before socket shutdown, causes different error message
             self.admin.assert_icommand(['ils'], 'STDERR_SINGLELINE', 'Connection refused')
+
+            # Crank up debugging level for this bit to verify failure behavior
+            env_backup = copy.deepcopy(self.admin.environment_file_contents)
+            self.admin.environment_file_contents.update({ 'irods_log_level' : 7 })
+
             _, out, err = self.admin.assert_icommand(['ils', '-V'], 'STDERR_SINGLELINE', 'Connection refused')
-            assert 'errno = {0}'.format(errno.ECONNREFUSED) in out, 'missing ECONNREFUSED errno in\n' + out
-            assert 'errno = {0}'.format(errno.ECONNABORTED) not in out, 'found ECONNABORTED errno in\n' + out
-            assert 'errno = {0}'.format(errno.EINVAL) not in out, 'found EINVAL errno in\n' + out
+            self.assertTrue('errno = {0}'.format(errno.ECONNREFUSED) in out, 'missing ECONNREFUSED errno in\n' + out)
+            self.assertTrue('errno = {0}'.format(errno.ECONNABORTED) not in out, 'found ECONNABORTED errno in\n' + out)
+            self.assertTrue('errno = {0}'.format(errno.EINVAL) not in out, 'found EINVAL errno in\n' + out)
+
+            self.admin.environment_file_contents = env_backup
 
     def test_iput_resc_scheme_forced(self):
         filename = 'test_iput_resc_scheme_forced_test_file.txt'
