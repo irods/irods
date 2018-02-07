@@ -303,7 +303,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
     if ( sock < 0 ) {
         status = SYS_SOCK_OPEN_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
-                      "sockOpenForInConn: open socket error. status = %d", status );
+                      "sockOpenForInConn: open socket error." );
         return status;
     }
 
@@ -410,19 +410,19 @@ rsAcceptConn( rsComm_t *svrComm ) {
     const int saved_socket_flags = fcntl( svrComm->sock, F_GETFL );
     int status = fcntl( svrComm->sock, F_SETFL, saved_socket_flags | O_NONBLOCK );
     if ( status < 0 ) {
-        rodsLogError( LOG_NOTICE, status, "failed to set flags with nonblock on fnctl with status %d", status );
+        rodsLogError( LOG_NOTICE, status, "failed to set flags with nonblock on fnctl" );
     }
     const int newSock = accept( svrComm->sock, ( struct sockaddr * ) &svrComm->remoteAddr, &len );
     status = fcntl( svrComm->sock, F_SETFL, saved_socket_flags );
     if ( status < 0 ) {
-        rodsLogError( LOG_NOTICE, status, "failed to revert flags on fnctl with status %d", status );
+        rodsLogError( LOG_NOTICE, status, "failed to revert flags on fnctl" );
     }
 
     if ( newSock < 0 ) {
         const int status = SYS_SOCK_ACCEPT_ERR - errno;
         rodsLogError( LOG_NOTICE, status,
-                      "rsAcceptConn: accept error for socket %d, status = %d",
-                      svrComm->sock, status );
+                      "rsAcceptConn: accept error for socket %d",
+                      svrComm->sock );
         return newSock;
     }
     rodsSetSockOpt( newSock, svrComm->windowSize );
@@ -563,8 +563,7 @@ irods::error readVersion(
     free( inputStructBBuf.buf );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status,
-                      "readVersion:unpackStruct error. status = %d",
-                      status );
+                      "readVersion:unpackStruct error." );
     }
 
     return CODE( status );
@@ -694,8 +693,8 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
                                           conn->windowSize, 1 );
     if ( conn->sock < 0 ) {
         rodsLogError( LOG_NOTICE, conn->sock,
-                      "connectToRhost: connect to host %s on port %d failed, status = %d",
-                      conn->host, conn->portNum, conn->sock );
+                      "connectToRhost: connect to host %s on port %d failed",
+                      conn->host, conn->portNum );
         return conn->sock;
     }
 
@@ -704,8 +703,8 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
-                      "connectToRhost: sendStartupPack to %s failed, status = %d",
-                      conn->host, status );
+                      "connectToRhost: sendStartupPack to %s failed",
+                      conn->host );
         close( conn->sock );
         return status;
     }
@@ -756,8 +755,8 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
     if ( conn->svrVersion->status < 0 ) {
         rodsLogError( LOG_ERROR, conn->svrVersion->status,
-                      "connectToRhost: error returned from host %s status = %d",
-                      conn->host, conn->svrVersion->status );
+                      "connectToRhost: error returned from host %s",
+                      conn->host );
         if ( conn->svrVersion->status == SYS_EXCEED_CONNECT_CNT )
             rodsLog( LOG_ERROR,
                      "It is likely %s is a localhost but not recognized by this server. A line can be added to the server/config/irodsHost file to fix the problem", conn->host );
@@ -953,7 +952,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
                 }
                 /* Check the returned value */
                 if ( myval ) {
-                    rodsLog( LOG_NOTICE,
+                    rodsLog( LOG_DEBUG,
                              "connectToRhostWithTout: myval error, errno = %d",
                              myval );
                     timeoutCnt++;
@@ -1137,7 +1136,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
                          "StartupPack_PI", RodsPackTable, 0, XML_PROT );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE, status,
-                      "sendStartupPack: packStruct error, status = %d", status );
+                      "sendStartupPack: packStruct error" );
         return status;
     }
 
@@ -1356,8 +1355,7 @@ irods::error readReconMsg(
     clearBBuf( &inputStructBBuf );
     if ( status < 0 ) {
         rodsLogError( LOG_NOTICE,  status,
-                      "readReconMsg:unpackStruct error. status = %d",
-                      status );
+                      "readReconMsg:unpackStruct error." );
     }
 
     return CODE( status );
@@ -1400,8 +1398,7 @@ irods::error sendReconnMsg(
     freeBBuf( recon_buf );
     if ( !ret.ok() ) {
         rodsLogError( LOG_ERROR, status,
-                      "sendReconnMsg: sendRodsMsg of reconnect msg failed, status = %d",
-                      status );
+                      "sendReconnMsg: sendRodsMsg of reconnect msg failed" );
     }
 
     return CODE( status );
