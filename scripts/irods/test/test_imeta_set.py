@@ -28,8 +28,16 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
         super(Test_ImetaSet, self).tearDown()
 
-    def mod_avu(self, user_name, a, v, u, newv):
+    def mod_avu_value(self, user_name, a, v, u, newv):
         self.admin.assert_icommand('imeta mod -u %s %s %s %s v:%s' % (user_name, a, v, u, newv))
+
+    def mod_avu_attr(self, user_name, a, v, u, newa):
+        self.admin.assert_icommand('imeta mod -u %s %s %s %s n:%s' % (user_name, a, v, u, newa))
+
+    def mod_avu_unit(self, user_name, a, v, u, newu):
+        self.admin.assert_icommand('imeta mod -u %s %s %s %s u:%s' % (user_name, a, v, u, newu))
+
+
 
     def set_avu(self, user_name, a, v, u):
         self.admin.assert_icommand('imeta set -u %s %s %s %s' % (user_name, a, v, u))
@@ -73,16 +81,38 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         self.add_avu(user_name, a, v, u)
         self.check_avu(user_name, a, v, u)
 
-    def mod_and_check_avu(self, user_name, a, v, u, newv):
-        self.mod_avu(user_name, a, v, u, newv)
+    def mod_and_check_avu_value(self, user_name, a, v, u, newv):
+        self.mod_avu_value(user_name, a, v, u, newv)
         self.check_avu(user_name, a, newv, u)
+        
+    def mod_and_check_avu_attr(self, user_name, a, v, u, newa):
+        self.mod_avu_attr(user_name, a, v, u, newa)
+        self.check_avu(user_name, newa, v, u)
+
+    def mod_and_check_avu_unit(self, user_name, a, v, u, newu):
+        self.mod_avu_unit(user_name, a, v, u, newu)
+        self.check_avu(user_name, a, v, newu)
+
+    def test_imeta_mod_attr_3667(self, user=None):
+        if user is None:
+            user = self.user0.username
+
+        self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
+        self.mod_and_check_avu_attr(user, 'att0', 'val0', 'unt0', 'newattr')
+
+    def test_imeta_mod_units_3667(self, user=None):
+        if user is None:
+            user = self.user0.username
+
+        self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
+        self.mod_and_check_avu_unit(user, 'att0', 'val0', 'unt0', 'newunit')
 
     def test_imeta_set_and_mod_single_object_triple(self, user=None):
         if user is None:
             user = self.user0.username
 
         self.set_and_check_avu(user, 'att0', 'val0', 'unt0')
-        self.mod_and_check_avu(user, 'att0', 'val0', 'unt0', 'val5')
+        self.mod_and_check_avu_value(user, 'att0', 'val0', 'unt0', 'val5')
 
     def test_imeta_set_single_object_triple(self, user=None):
         if user is None:
