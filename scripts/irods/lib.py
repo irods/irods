@@ -32,10 +32,15 @@ from . import execute
 from . import paths
 
 # get the fully qualified domain name
-#(no, really, getfqdn() is insufficient)
+#(no, really, getfqdn() is insufficient), but some environments (Azure for example) produce
+# hostnames longer than the irods max of 64 characters. If that happens, we revert to the "ordinary"
+# hostname
 def get_hostname():
-    return socket.getaddrinfo(
-        socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
+  host_name = socket.getaddrinfo( socket.gethostname(), 0, 0, 0, 0, socket.AI_CANONNAME)[0][3]
+  if (len(host_name) > 64):
+     return socket.gethostname()
+  else:
+     return host_name
 
 indent = execute.indent
 safe_shlex_split_for_2_6 = execute.safe_shlex_split_for_2_6
