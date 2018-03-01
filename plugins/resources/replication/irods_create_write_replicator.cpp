@@ -1,7 +1,7 @@
 #include "irods_create_write_replicator.hpp"
 
-#include "rsDataObjRepl.hpp"
 #include "dataObjRepl.h"
+#include "irods_repl_retry.hpp"
 #include "irods_stacktrace.hpp"
 
 namespace irods {
@@ -37,9 +37,7 @@ namespace irods {
 
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
-            int sibling_count = 0;
             for ( it = _siblings.begin(); it != _siblings.end(); ++it ) {
-                ++sibling_count;
                 hierarchy_parser sibling = *it;
                 std::string hierarchy_string;
                 error ret = sibling.str( hierarchy_string );
@@ -56,30 +54,29 @@ namespace irods {
                     addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
                     addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
 
-                    transferStat_t* trans_stat = NULL;
-                    int status = rsDataObjRepl( _ctx.comm(), &dataObjInp, &trans_stat );
-                    char* sys_error = NULL;
-                    const char* rods_error = rodsErrorName( status, &sys_error );
-                    result = ASSERT_ERROR( status >= 0, status, "Failed to replicate the data object: \"%s\" from resource: \"%s\" "
-                                           "to sibling: \"%s\" - %s %s.", object.logical_path().c_str(), child_.c_str(),
-                                           hierarchy_string.c_str(), rods_error, sys_error );
-                    free( sys_error );
+                    try { 
+                        const auto status = data_obj_repl_with_retry( _ctx, dataObjInp );
+                        char* sys_error = NULL;
+                        auto rods_error = rodsErrorName( status, &sys_error );
+                        result = ASSERT_ERROR( status >= 0, status, "Failed to replicate the data object: \"%s\" from resource: \"%s\" "
+                                               "to sibling: \"%s\" - %s %s.", object.logical_path().c_str(), child_.c_str(),
+                                               hierarchy_string.c_str(), rods_error, sys_error );
+                        free( sys_error );
 
-                    if ( trans_stat != NULL ) {
-                        free( trans_stat );
+                        // cache last error to return, log it and add it to the
+                        // client side error stack
+                        if ( !result.ok() ) {
+                            last_error = result;
+                            irods::log( result );
+                            addRErrorMsg(
+                                &_ctx.comm()->rError,
+                                result.code(),
+                                result.result().c_str() );
+                            result = SUCCESS();
+                        }
                     }
-
-                    // cache last error to return, log it and add it to the
-                    // client side error stack
-                    if ( !result.ok() ) {
-                        last_error = result;
-                        irods::log( result );
-                        addRErrorMsg(
-                            &_ctx.comm()->rError,
-                            result.code(),
-                            result.result().c_str() );
-                        result = SUCCESS();
-
+                    catch ( const irods::exception& e ) {
+                        irods::log( irods::error( e ) );
                     }
 
                 } // if hier str
