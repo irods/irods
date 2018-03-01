@@ -3,9 +3,9 @@
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_virtual_path.hpp"
+#include "irods_repl_retry.hpp"
 #include "irods_repl_types.hpp"
 #include "icatHighLevelRoutines.hpp"
-#include "rsDataObjRepl.hpp"
 #include "dataObjRepl.h"
 #include "genQuery.h"
 #include "rsGenQuery.hpp"
@@ -15,15 +15,16 @@
 
 namespace {
     const int MAX_ERROR_MESSAGES = 100;
+
     irods::error repl_for_rebalance(
-        rsComm_t*          _comm,
+        irods::plugin_context& _ctx,
         const std::string& _obj_path,
         const std::string& _current_resc,
         const std::string& _src_hier,
         const std::string& _dst_hier,
         const std::string& _src_resc,
         const std::string& _dst_resc,
-        int                _mode ) {
+        const int          _mode ) {
         // =-=-=-=-=-=-=-
         // generate a resource hierarchy that ends at this resource for pdmo
         irods::hierarchy_parser parser;
@@ -34,8 +35,7 @@ namespace {
         // =-=-=-=-=-=-=-
         // create a data obj input struct to call rsDataObjRepl which given
         // the _stage_sync_kw will either stage or sync the data object
-        dataObjInp_t data_obj_inp;
-        bzero( &data_obj_inp, sizeof( data_obj_inp ) );
+        dataObjInp_t data_obj_inp{};
         rstrcpy( data_obj_inp.objPath, _obj_path.c_str(), MAX_NAME_LEN );
         data_obj_inp.createMode = _mode;
         addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      _src_hier.c_str() );
@@ -45,17 +45,18 @@ namespace {
         addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,             sub_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, ADMIN_KW,              "" );
 
-        // =-=-=-=-=-=-=-
-        // process the actual call for replication
-        transferStat_t* trans_stat = NULL;
-        int repl_stat = rsDataObjRepl( _comm, &data_obj_inp, &trans_stat );
-        free( trans_stat );
-        if ( repl_stat < 0 ) {
-            std::stringstream msg;
-            msg << "Failed to replicate the data object ["
-                << _obj_path
-                << "]";
-            return ERROR( repl_stat, msg.str() );
+        try {
+            // =-=-=-=-=-=-=-
+            // process the actual call for replication
+            const auto status = data_obj_repl_with_retry( _ctx, data_obj_inp );
+            if ( status < 0 ) {
+                return ERROR( status,
+                              boost::format( "Failed to replicate the data object [%s]" ) %
+                              _obj_path );
+            }
+        }
+        catch( const irods::exception& e ) {
+            return irods::error( e );
         }
 
         return SUCCESS();
@@ -291,13 +292,13 @@ namespace {
 
     // throws irods::exception
     void proc_results_for_rebalance(
-        rsComm_t*                        _comm,
+        irods::plugin_context&           _ctx,
         const std::string&               _parent_resc_name,
         const std::string&               _child_resc_name,
         const size_t                     _bun_idx,
         const std::vector<leaf_bundle_t> _bundles,
         const dist_child_result_t&       _data_ids_to_replicate) {
-        if (!_comm) {
+        if (!_ctx.comm()) {
             THROW(SYS_INVALID_INPUT_PARAM,
                   boost::format("null comm pointer. resource [%s]. child resource [%s]. bundle index [%d]. bundles [%s]") %
                   _parent_resc_name %
@@ -317,10 +318,10 @@ namespace {
 
         irods::error first_rebalance_error = SUCCESS();
         for (auto data_id_to_replicate : _data_ids_to_replicate) {
-            const ReplicationSourceInfo source_info = get_source_data_object_attributes(_comm, data_id_to_replicate, _bundles);
+            const ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
 
             // create a file object so we can resolve a valid hierarchy to which to replicate
-            irods::file_object_ptr f_ptr(new irods::file_object(_comm, source_info.object_path, "", "", 0, source_info.data_mode, 0));
+            irods::file_object_ptr f_ptr(new irods::file_object(_ctx.comm(), source_info.object_path, "", "", 0, source_info.data_mode, 0));
             // short circuit the magic re-repl
             {
                 irods::hierarchy_parser sub_parser;
@@ -362,7 +363,7 @@ namespace {
             std::string host_name;
             float vote = 0.0;
             const irods::error err_vote = dst_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
-                _comm,
+                _ctx.comm(),
                 irods::RESOURCE_OP_RESOLVE_RESC_HIER,
                 f_ptr,
                 &irods::CREATE_OPERATION,
@@ -384,7 +385,7 @@ namespace {
             parser.str(dst_hier);
             rodsLog(LOG_NOTICE, "proc_results_for_rebalance: creating new replica for data id [%lld] from [%s] on [%s]", data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
             const irods::error err_rebalance = repl_for_rebalance(
-                _comm,
+                _ctx,
                 source_info.object_path,
                 _parent_resc_name,
                 source_info.resource_hierarchy,
@@ -399,19 +400,17 @@ namespace {
                 rodsLog(LOG_ERROR, "proc_results_for_rebalance: repl_for_rebalance failed. object path [%s] parent resc [%s] source hier [%s] dest hier [%s] root resc [%s] data mode [%d]",
                         source_info.object_path.c_str(), _parent_resc_name.c_str(), source_info.resource_hierarchy.c_str(), dst_hier.c_str(), root_resc.c_str(), source_info.data_mode);
                 irods::log(PASS(err_rebalance));
-                if (_comm->rError.len < MAX_ERROR_MESSAGES) {
-                    addRErrorMsg(&_comm->rError, err_rebalance.code(), err_rebalance.result().c_str());
+                if (_ctx.comm()->rError.len < MAX_ERROR_MESSAGES) {
+                    addRErrorMsg(&_ctx.comm()->rError, err_rebalance.code(), err_rebalance.result().c_str());
                 }
             }
         }
 
         if (!first_rebalance_error.ok()) {
             THROW(first_rebalance_error.code(),
-                  boost::format("failed to resolve resource plugin. child resc name [%s] parent resc [%s] bundle index [%d] bundles [%s]. rebalance message [%s]") %
+                  boost::format("proc_results_for_rebalance: repl_for_rebalance failed. child_resc [%s] parent resc [%s]. rebalance message [%s]") %
                   _child_resc_name %
                   _parent_resc_name %
-                  _bun_idx %
-                  leaf_bundles_to_string(_bundles) %
                   first_rebalance_error.result());
         }
     }
@@ -420,13 +419,13 @@ namespace {
 namespace irods {
     // throws irods::exception
     void update_out_of_date_replicas(
-        rsComm_t* _comm_ptr,
+        irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
         const std::string& _resource_name) {
 
         while (true) {
-            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_comm_ptr, _leaf_bundles, _batch_size);
+            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_ctx.comm(), _leaf_bundles, _batch_size);
             if (replicas_to_update.empty()) {
                 break;
             }
@@ -443,7 +442,7 @@ namespace irods {
                           replica_to_update.resource_id);
                 }
 
-                ReplicationSourceInfo source_info = get_source_data_object_attributes(_comm_ptr, replica_to_update.data_id, _leaf_bundles);
+                ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), replica_to_update.data_id, _leaf_bundles);
                 hierarchy_parser hierarchy_parser;
                 const error err_parser = hierarchy_parser.set_string(source_info.resource_hierarchy);
                 if (!err_parser.ok()) {
@@ -468,7 +467,7 @@ namespace irods {
                         source_info.resource_hierarchy.c_str(),
                         destination_hierarchy.c_str());
                 const error err_repl = repl_for_rebalance(
-                    _comm_ptr,
+                    _ctx,
                     source_info.object_path,
                     _resource_name,
                     source_info.resource_hierarchy,
@@ -482,8 +481,8 @@ namespace irods {
                         first_error = err_repl;
                     }
                     const error error_to_log = PASS(err_repl);
-                    if (_comm_ptr->rError.len < MAX_ERROR_MESSAGES) {
-                        addRErrorMsg(&_comm_ptr->rError, error_to_log.code(), error_to_log.result().c_str());
+                    if (_ctx.comm()->rError.len < MAX_ERROR_MESSAGES) {
+                        addRErrorMsg(&_ctx.comm()->rError, error_to_log.code(), error_to_log.result().c_str());
                     }
                     rodsLog(LOG_ERROR,
                             "update_out_of_date_replicas: repl_for_rebalance failed with code [%ji] and message [%s]. object [%s] source hierarchy [%s] data id [%ji] destination repl num [%ji] destination hierarchy [%s]",
@@ -499,7 +498,7 @@ namespace irods {
 
     // throws irods::exception
     void create_missing_replicas(
-        rsComm_t* _comm_ptr,
+        irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
         const std::string& _resource_name) {
@@ -519,7 +518,7 @@ namespace irods {
                     break;
                 }
 
-                proc_results_for_rebalance(_comm_ptr, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas);
+                proc_results_for_rebalance(_ctx, _resource_name, child_name, i, _leaf_bundles, data_ids_needing_new_replicas);
             }
         }
     }
