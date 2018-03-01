@@ -1,13 +1,14 @@
 // =-=-=-=-=-=-=-
+// irods includes
 #include "irods_repl_rebalance.hpp"
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_repl_retry.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_virtual_path.hpp"
 
 // =-=-=-=-=-=-=-
-// irods includes
 #include "dataObjRepl.h"
 #include "genQuery.h"
 #include "boost/format.hpp"
@@ -21,14 +22,14 @@ namespace irods {
 ///        proc_results_for_rebalance
     static
     error repl_for_rebalance(
-        rsComm_t*          _comm,
+        irods::resource_plugin_context& _ctx,
         const std::string& _obj_path,
         const std::string& _current_resc,
         const std::string& _src_hier,
         const std::string& _dst_hier,
         const std::string& _src_resc,
         const std::string& _dst_resc,
-        int                _mode ) {
+        const int          _mode ) {
         // =-=-=-=-=-=-=-
         // generate a resource hierarchy that ends at this resource for pdmo
         hierarchy_parser parser;
@@ -50,17 +51,18 @@ namespace irods {
         addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,             sub_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, ADMIN_KW,              "" );
 
-        // =-=-=-=-=-=-=-
-        // process the actual call for replication
-        transferStat_t* trans_stat = NULL;
-        int repl_stat = rsDataObjRepl( _comm, &data_obj_inp, &trans_stat );
-        free( trans_stat );
-        if ( repl_stat < 0 ) {
-            std::stringstream msg;
-            msg << "Failed to replicate the data object ["
-                << _obj_path
-                << "]";
-            return ERROR( repl_stat, msg.str() );
+        try {
+            // =-=-=-=-=-=-=-
+            // process the actual call for replication
+            const int status = data_obj_repl_with_retry( _ctx, data_obj_inp );
+            if ( status < 0 ) {
+                return ERROR( status,
+                              ( boost::format( "Failed to replicate the data object [%s]" ) %
+                                _obj_path ).str().c_str() );
+            }
+        }
+        catch( const irods::exception& e ) {
+            return irods::error( e );
         }
 
         return SUCCESS();
@@ -411,14 +413,14 @@ namespace irods {
 /// @brief high level function which process a result set from
 ///        the above gathering function for a rebalancing operation
     error proc_results_for_rebalance(
-        rsComm_t*                  _comm,
+        irods::resource_plugin_context&     _ctx,
         const std::string&         _parent_resc_name,
         const std::string&         _child_resc_name,
         const dist_child_result_t& _results,
         const ReasonForReplication& _reason_for_replication) {
         // =-=-=-=-=-=-=-
         // check incoming params
-        if ( !_comm ) {
+        if ( !_ctx.comm() ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null comm pointer" );
@@ -441,7 +443,7 @@ namespace irods {
 
         rError_t repl_errors;
         memset(&repl_errors,0,sizeof(repl_errors));
-        replErrorStack(&_comm->rError, &repl_errors);
+        replErrorStack(&_ctx.comm()->rError, &repl_errors);
 
         irods::error final_err = SUCCESS();
 
@@ -456,7 +458,7 @@ namespace irods {
             error ret = get_source_data_object_attributes(
                             *r_itr,
                             _parent_resc_name,
-                            _comm,
+                            _ctx.comm(),
                             obj_path,
                             src_hier,
                             src_mode );
@@ -468,7 +470,7 @@ namespace irods {
             // create a file object so we can resolve a valid
             // hierarchy to which to replicate
             file_object_ptr f_ptr( new file_object(
-                                       _comm,
+                                       _ctx.comm(),
                                        obj_path,
                                        "",
                                        "",
@@ -531,7 +533,7 @@ namespace irods {
             const std::string*,
             hierarchy_parser*,
             float* > (
-                _comm,
+                _ctx.comm(),
                 RESOURCE_OP_RESOLVE_RESC_HIER,
                 f_ptr,
                 &CREATE_OPERATION,
@@ -559,7 +561,7 @@ namespace irods {
             // now that we have all the pieces in place, actually
             // do the replication
             r_err = repl_for_rebalance(
-                        _comm,
+                        _ctx,
                         obj_path,
                         _parent_resc_name,
                         src_hier,
@@ -570,7 +572,7 @@ namespace irods {
             if ( !r_err.ok() ) {
                 final_err =  PASS( r_err );
                 irods::log(final_err);
-                if( _comm->rError.len < MAX_ERROR_MESSAGES ) {
+                if( _ctx.comm()->rError.len < MAX_ERROR_MESSAGES ) {
                     addRErrorMsg(
                         &repl_errors,
                         final_err.code(),
@@ -580,7 +582,7 @@ namespace irods {
 
         } // for r_itr
 
-        replErrorStack(&repl_errors, &_comm->rError);
+        replErrorStack(&repl_errors, &_ctx.comm()->rError);
 
         return final_err;
 

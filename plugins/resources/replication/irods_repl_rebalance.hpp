@@ -3,6 +3,7 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_error.hpp"
+#include "irods_resource_plugin_context.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -34,7 +35,7 @@ namespace irods {
 /// @brief refresh a limit bound result set of all data objects
 ///        which need re-replicated
     irods::error proc_results_for_rebalance(
-        rsComm_t*,                        // comm object
+        irods::resource_plugin_context&,  // context for repl node
         const std::string&,               // parent resc name
         const std::string&,               // child resc name
         const dist_child_result_t&,       // query results
