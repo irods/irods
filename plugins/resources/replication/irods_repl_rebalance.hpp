@@ -14,14 +14,14 @@ namespace irods {
 
     // throws irods::exception
     void update_out_of_date_replicas(
-        rsComm_t* _comm_ptr,
+        irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
         const std::string& resource_name);
 
     // throws irods::exception
     void create_missing_replicas(
-        rsComm_t* _comm_ptr,
+        irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
         const std::string& resource_name);
