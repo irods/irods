@@ -4,20 +4,174 @@
  */
 
 #include "regReplica.h"
+
 #include "objMetaOpr.hpp"
-#include "icatHighLevelRoutines.hpp"
+#include "rsFileStat.hpp"
 #include "miscServerFunct.hpp"
 #include "rsRegReplica.hpp"
+#include "rsFileChksum.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "icatHighLevelRoutines.hpp"
 
 #include "irods_file_object.hpp"
+#include "irods_hierarchy_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+
+#include "boost/lexical_cast.hpp"
 
 int _call_file_modified_for_replica(
     rsComm_t*     rsComm,
     regReplica_t* regReplicaInp );
 
+namespace irods {
+    namespace reg_repl {
+
+        void get_object_and_collection_from_path(
+            const std::string& _object_path,
+            std::string&       _collection_name,
+            std::string&       _object_name ) {
+            namespace bfs = boost::filesystem;
+
+            try {
+                bfs::path p(_object_path);
+                _collection_name = p.parent_path().string();
+                _object_name     = p.filename().string();
+            }
+            catch(const bfs::filesystem_error& _e) {
+                THROW(SYS_INVALID_FILE_PATH, _e.what());
+            }
+        } // get_object_and_collection_from_path
+
+        std::string compute_checksum_for_resc(
+            rsComm_t*          _comm,
+            const std::string& _logical_path,
+            const std::string& _physical_path,
+            const std::string& _resc_hier ) {
+           
+            fileChksumInp_t chk_inp{}; 
+            rstrcpy(
+                chk_inp.objPath,
+                _logical_path.c_str(),
+                MAX_NAME_LEN);
+            rstrcpy(
+                chk_inp.fileName,
+                _physical_path.c_str(),
+                MAX_NAME_LEN);
+            rstrcpy(
+                chk_inp.rescHier,
+                _resc_hier.c_str(),
+                MAX_NAME_LEN);
+
+            char* chksum{};
+            const auto chksum_err = rsFileChksum(
+                                        _comm,
+                                        &chk_inp,
+                                        &chksum);
+            if(chksum_err < 0) {
+                THROW(
+                    chksum_err,
+                    boost::format("rsDataObjChksum failed for [%s] on [%s]") %
+                    _logical_path %
+                    _resc_hier);
+            }
+
+            return chksum;
+        } // compute_checksum_for_resc
+
+        rodsLong_t get_file_size_from_filesystem(
+            rsComm_t*          _comm,
+            const std::string& _object_path,
+            const std::string& _resource_hierarchy,
+            const std::string& _file_path ) {
+            fileStatInp_t stat_inp{};
+            rstrcpy(stat_inp.objPath,  _object_path.c_str(),  sizeof(stat_inp.objPath));
+            rstrcpy(stat_inp.rescHier, _resource_hierarchy.c_str(), sizeof(stat_inp.rescHier));
+            rstrcpy(stat_inp.fileName, _file_path.c_str(), sizeof(stat_inp.fileName));
+            rodsStat_t *stat_out{};
+            const auto status_rsFileStat = rsFileStat(_comm, &stat_inp, &stat_out);
+            if(status_rsFileStat < 0) {
+                THROW(
+                    status_rsFileStat,
+                    boost::format("rsFileStat of objPath [%s] rescHier [%s] fileName [%s] failed with [%d]") %
+                    stat_inp.objPath %
+                    stat_inp.rescHier %
+                    stat_inp.fileName %
+                    status_rsFileStat);
+                return status_rsFileStat;
+            }
+
+            const auto size_in_vault = stat_out->st_size;
+            free(stat_out);
+            return size_in_vault;
+        } // get_file_size_from_filesystem
+
+        void verify_and_update_replica(
+            rsComm_t*     _comm,
+            regReplica_t* _reg_inp) {
+            dataObjInfo_t* src_info = _reg_inp->srcDataObjInfo;
+            dataObjInfo_t* dst_info = _reg_inp->destDataObjInfo;
+
+            const auto dst_size = get_file_size_from_filesystem(
+                                      _comm,
+                                      dst_info->objPath,
+                                      dst_info->rescHier,
+                                      dst_info->filePath);
+
+            keyValPair_t reg_param{};
+            std::string dst_size_str; 
+            if(dst_size != src_info->dataSize) {
+                dst_info->dataSize = dst_size;
+                dst_size_str = boost::lexical_cast<std::string>(dst_size);
+                addKeyVal(
+                   &reg_param,
+                   DATA_SIZE_KW,
+                   dst_size_str.c_str());
+            }
+            
+            // optional checksum verification, should one exist 
+            // on the source replica
+            std::string dst_checksum;
+            if(strlen(src_info->chksum) > 0) {
+                dst_checksum = compute_checksum_for_resc(
+                                   _comm,
+                                   dst_info->objPath,
+                                   dst_info->filePath,
+                                   dst_info->rescHier);
+                rstrcpy(
+                   dst_info->chksum,
+                   dst_checksum.c_str(),
+                   sizeof(dst_info->chksum));
+                addKeyVal(
+                   &reg_param,
+                   CHKSUM_KW,
+                   dst_checksum.c_str());
+            } // checksum
+
+            if(reg_param.len > 0) {
+                addKeyVal(
+                    &reg_param,
+                    ALL_REPL_STATUS_KW,
+                    "TRUE" );
+
+                modDataObjMeta_t mod_inp{};
+                mod_inp.dataObjInfo = dst_info;
+                mod_inp.regParam    = &reg_param;
+                const auto mod_err = rsModDataObjMeta(_comm, &mod_inp);
+                if(mod_err < 0) {
+                    THROW(
+                        mod_err,
+                        boost::format("rsModDataObjMeta failed for [%s] on resc [%s]") %
+                        dst_info->objPath %
+                        dst_info->rescHier);
+                }
+            } // if reg_params
+        } // verify_and_update_replica
+    } // namespace reg_repl
+} // namespace irods
+
 int
 rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
+rodsLog(LOG_NOTICE, "XXXX - %s:%d", __FUNCTION__, __LINE__);
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *srcDataObjInfo;
@@ -57,10 +211,16 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
         if ( status >= 0 ) {
             regReplicaInp->destDataObjInfo->replNum = status;
         }
-
     }
 
     if ( status >= 0 ) {
+        try {
+            irods::reg_repl::verify_and_update_replica(rsComm, regReplicaInp);
+        }
+        catch(const irods::exception& _e) {
+             irods::log(_e);
+             return _e.code();
+        } 
         status = _call_file_modified_for_replica( rsComm, regReplicaInp );
     }
 
