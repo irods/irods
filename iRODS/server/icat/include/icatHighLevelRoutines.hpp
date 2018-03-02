@@ -202,6 +202,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     const std::string&   _parent,
     const std::string&   _child,
     int                  _limit,
+    const std::string&   _invocation_timestamp,
     dist_child_result_t& _results );
 
 /// =-=-=-=-=-=-=-

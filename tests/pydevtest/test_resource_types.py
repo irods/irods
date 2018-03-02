@@ -3937,6 +3937,39 @@ OUTPUT ruleExecOut
         self.assertNotEqual(rc, 0, 'ifsck should have non-zero error code on checksum mismatch')
         os.unlink(filename)
 
+    def test_rebalance_invocation_timestamp__3665(self):
+        # prepare out of balance tree with enough objects to trigger rebalance paging (>500)
+        localdir = '3665_tmpdir'
+        shutil.rmtree(localdir, ignore_errors=True)
+        lib.make_large_local_tmp_dir(dir_name=localdir, file_count=600, file_size=5)
+        self.admin.assert_icommand(['iput', '-r', localdir])
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'newchild', 'unixfilesystem', configuration.HOSTNAME_1+':/tmp/newchildVault'], 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand(['iadmin','addchildtoresc','demoResc','newchild'])
+        # run rebalance with concurrent, interleaved put/trim of new file
+        self.admin.assert_icommand(['ichmod','-r','own','rods',self.admin.session_collection])
+        self.admin.assert_icommand(['ichmod','-r','inherit',self.admin.session_collection])
+        laterfilesize = 300
+        laterfile = '3665_laterfile'
+        lib.make_file(laterfile, laterfilesize)
+        put_thread = Timer(2, subprocess.check_call, [('iput', '-R', 'demoResc', laterfile, self.admin.session_collection)])
+        trim_thread = Timer(3, subprocess.check_call, [('itrim', '-n3', self.admin.session_collection + '/' + laterfile)])
+        put_thread.start()
+        trim_thread.start()
+        self.admin.assert_icommand(['iadmin','modresc','demoResc','rebalance'])
+        put_thread.join()
+        trim_thread.join()
+        # new file should not be balanced (rebalance should have skipped it due to it being newer)
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 0 ', laterfile])
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 1 ', laterfile])
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 2 ', laterfile])
+        self.admin.assert_icommand_fail(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 3 ', laterfile])
+        # cleanup
+        os.unlink(laterfile)
+        shutil.rmtree(localdir, ignore_errors=True)
+        self.admin.assert_icommand(['iadmin','rmchildfromresc','demoResc','newchild'])
+        self.admin.assert_icommand(['itrim', '-Snewchild', '-r', '/tempZone'], 'STDOUT_SINGLELINE', 'Total size trimmed')
+        self.admin.assert_icommand(['iadmin','rmresc','newchild'])
+
     def test_rebalance_different_sized_replicas__3486(self):
         filename = 'test_rebalance_different_sized_replicas__3486'
         large_file_size = 40000000

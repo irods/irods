@@ -29,6 +29,7 @@ namespace irods {
         const std::string&,     // parent name
         const std::string&,     // child name
         const int,              // query limit
+        const std::string&,     // invocation timestamp
         dist_child_result_t&,   // result set
         ReasonForReplication& );
 /// =-=-=-=-=-=-=-

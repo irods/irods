@@ -1503,6 +1503,13 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
+        // get invocation timestamp
+        // only replicas at rest prior to this invocation timestamp will be rebalanced
+        // prevents race condition of new/inflight data being 'over'-rebalanced
+        char invocation_timestamp[50];
+        getNowStr(invocation_timestamp);
+
+        // =-=-=-=-=-=-=-
         // iterate over the children, if one does not have a matching
         // distinct count then we need to rebalance
         irods::resource_child_map::iterator c_itr;
@@ -1520,6 +1527,7 @@ extern "C" {
                                           resc_name,
                                           c_itr->first,
                                           limit,
+                                          invocation_timestamp,
                                           results,
                                           reason_for_replication);
                 if ( ga_ret.ok() ) {

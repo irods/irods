@@ -76,6 +76,7 @@ namespace irods {
         const std::string& _parent_resc,
         const std::string& _child_resc,
         const int          _limit,
+        const std::string& _invocation_timestamp,
         dist_child_result_t& _results ) {
         // =-=-=-=-=-=-=-
         // trap bad input
@@ -98,6 +99,11 @@ namespace irods {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "limit is less than or equal to zero" );
+        }
+        else if ( _invocation_timestamp.empty() ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "invocation timestamp string is empty" );
         }
 
         // =-=-=-=-=-=-=-
@@ -143,6 +149,14 @@ namespace irods {
         addInxVal( &gen_inp.sqlCondInp,
                    COL_D_REPL_STATUS,
                    "= '0'" );
+
+
+        // =-=-=-=-=-=-=-
+        // add condition string for invocation timestamp
+        std::string timestamp_str = "<= '" + _invocation_timestamp + "'";
+        addInxVal( &gen_inp.sqlCondInp,
+                   COL_D_MODIFY_TIME,
+                   timestamp_str.c_str() );
 
         // =-=-=-=-=-=-=-
         // request the resc hier
@@ -372,6 +386,7 @@ namespace irods {
         const std::string&   _parent_resc,
         const std::string&   _child_resc,
         const int            _limit,
+        const std::string&   _invocation_timestamp,
         dist_child_result_t& _results,
         ReasonForReplication& _reason_for_replication) {
 
@@ -382,6 +397,7 @@ namespace irods {
                         _parent_resc,
                         _child_resc,
                         _limit,
+                        _invocation_timestamp,
                         _results );
         if ( !ret.ok() ) {
             return PASS( ret );
@@ -397,6 +413,7 @@ namespace irods {
             _parent_resc,
             _child_resc,
             _limit,
+            _invocation_timestamp,
             _results );
         if ( CAT_NO_ROWS_FOUND != query_status ) {
             return ERROR(

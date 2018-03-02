@@ -4359,6 +4359,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     const std::string&   _parent,
     const std::string&   _child,
     int                  _limit,
+    const std::string&   _invocation_timestamp,
     dist_child_result_t& _results ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4398,12 +4399,14 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
           const std::string*,
           const std::string*,
           int,
+          const std::string*,
           dist_child_result_t* > ( 0,
                                    irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                                    ptr,
                                    &_parent,
                                    &_child,
                                    _limit,
+                                   &_invocation_timestamp,
                                    &_results );
 
     return ret.code();

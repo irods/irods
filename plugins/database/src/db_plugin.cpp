@@ -14880,6 +14880,7 @@ checkLevel:
         const std::string*     _parent,
         const std::string*     _child,
         int                    _limit,
+        const std::string*     _invocation_timestamp,
         dist_child_result_t*   _results ) {
         // =-=-=-=-=-=-=-
         // check the context
@@ -14893,6 +14894,8 @@ checkLevel:
         if ( !_parent    ||
                 !_child     ||
                 _limit <= 0 ||
+                !_invocation_timestamp ||
+                _invocation_timestamp->empty() ||
                 !_results ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
@@ -14917,18 +14920,19 @@ checkLevel:
         // the basic query string
         char query[ MAX_NAME_LEN ];
 #ifdef ORA_ICAT
-        std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and rownum < %d";
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where modify_ts <= '%s' and ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and rownum < %d";
 
 #elif MY_ICAT
-        std::string base_query = "select distinct data_id from R_DATA_MAIN where ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where modify_ts <= '%s' and ( resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) and data_id not in ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
 
 #else
-        std::string base_query = "select distinct data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d";
+        std::string base_query = "select distinct data_id from R_DATA_MAIN where modify_ts <= '%s' and resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select data_id from R_DATA_MAIN where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d";
 
 #endif
         sprintf(
             query,
             base_query.c_str(),
+            _invocation_timestamp->c_str(),
             _parent->c_str(), "%",      // root
             "%", _parent->c_str(), "%", // mid tier
             "%", _parent->c_str(),      // leaf
