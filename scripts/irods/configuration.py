@@ -147,6 +147,9 @@ class IrodsConfig(object):
     def server_environment(self):
         return self.server_config.get('environment_variables', {})
 
+    def print_execution_environment(self):
+        pprint.pprint(self.execution_environment)
+
     @property
     def execution_environment(self):
         if self._execution_environment is None:
