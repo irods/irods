@@ -67,6 +67,10 @@ namespace irods {
                                         _comm,
                                         &chk_inp,
                                         &chksum);
+            if(DIRECT_ARCHIVE_ACCESS == chksum_err) {
+                return "";
+            }
+
             if(chksum_err < 0) {
                 THROW(
                     chksum_err,
@@ -108,6 +112,7 @@ namespace irods {
         void verify_and_update_replica(
             rsComm_t*     _comm,
             regReplica_t* _reg_inp) {
+
             dataObjInfo_t* src_info = _reg_inp->srcDataObjInfo;
             dataObjInfo_t* dst_info = _reg_inp->destDataObjInfo;
 
@@ -137,14 +142,16 @@ namespace irods {
                                    dst_info->objPath,
                                    dst_info->filePath,
                                    dst_info->rescHier);
-                rstrcpy(
-                   dst_info->chksum,
-                   dst_checksum.c_str(),
-                   sizeof(dst_info->chksum));
-                addKeyVal(
-                   &reg_param,
-                   CHKSUM_KW,
-                   dst_checksum.c_str());
+                if(!dst_checksum.empty()) {
+                    rstrcpy(
+                       dst_info->chksum,
+                       dst_checksum.c_str(),
+                       sizeof(dst_info->chksum));
+                    addKeyVal(
+                       &reg_param,
+                       CHKSUM_KW,
+                       dst_checksum.c_str());
+                }
             } // checksum
 
             if(reg_param.len > 0) {
@@ -171,7 +178,6 @@ namespace irods {
 
 int
 rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
-rodsLog(LOG_NOTICE, "XXXX - %s:%d", __FUNCTION__, __LINE__);
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *srcDataObjInfo;
@@ -220,7 +226,8 @@ rodsLog(LOG_NOTICE, "XXXX - %s:%d", __FUNCTION__, __LINE__);
         catch(const irods::exception& _e) {
              irods::log(_e);
              return _e.code();
-        } 
+        }
+
         status = _call_file_modified_for_replica( rsComm, regReplicaInp );
     }
 
