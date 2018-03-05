@@ -454,8 +454,11 @@ bundleAndRegSubFiles( rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     bzero( regReplicaInp.destDataObjInfo, sizeof( dataObjInfo_t ) );
     addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     rstrcpy( regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN );
-    rstrcpy( regReplicaInp.destDataObjInfo->filePath,
+    // XXXX - JMC :: filePath was copied into objPath??? #1111 by hcjiv
+    rstrcpy( regReplicaInp.destDataObjInfo->objPath,
              L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN );
+    rstrcpy( regReplicaInp.destDataObjInfo->filePath,
+             L1desc[l1descInx].dataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( regReplicaInp.destDataObjInfo->rescHier,
              L1desc[l1descInx].dataObjInfo->rescHier, MAX_NAME_LEN );
 

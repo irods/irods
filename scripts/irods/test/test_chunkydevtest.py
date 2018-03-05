@@ -136,6 +136,8 @@ class ChunkyDevTest(ResourceBase):
         testuser1 = self.user0.username
         irodshome = self.admin.session_collection
         irodsdefresource = self.admin.default_resource
+
+
         dir_w = "."
         sfile2 = dir_w + "/sfile2"
         cat_file_into_file_n_times(test_file, sfile2, 2)
@@ -238,17 +240,22 @@ class ChunkyDevTest(ResourceBase):
         assert (not compare_dirs.right_only and not compare_dirs.left_only and not compare_dirs.diff_files), "Directories differ"
         shutil.rmtree(dir_w + "/icmdtestbz2")
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestx1.tar.bz2")
-        self.admin.assert_icommand("iphybun -R " + self.anotherresc + " -Dbzip2 " + irodshome + "/icmdtestbz2")
-        self.admin.assert_icommand("itrim -N1 -S " + self.testresc + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
-        self.admin.assert_icommand("itrim -N1 -S " + irodsdefresource + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
+
+        # Issue 3835 - implement a phybun test suite
+        #self.admin.assert_icommand("iphybun -R " + self.anotherresc + " -Dbzip2 " + irodshome + "/icmdtestbz2")
+        #self.admin.assert_icommand("itrim -N1 -S " + self.testresc + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
+        #self.admin.assert_icommand("itrim -N1 -S " + irodsdefresource + " -r " + irodshome + "/icmdtestbz2", 'STDOUT_SINGLELINE', "Total size trimmed")
 
         # get the name of bundle file
-        out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestbz2', 'icmdtestx', 'foo1')])
-        bunfile = out.split()[-1]
-        print(bunfile)
-        self.admin.assert_icommand("ils --bundle " + bunfile, 'STDOUT_SINGLELINE', "Subfiles")
+        #path, test_collection = os.path.split(irodshome)
+        #out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestbz2', 'icmdtestx', 'foo1')])
+        #out, _ = self.admin.assert_icommand_fail(['ils', os.path.join('/tempZone', 'bundle', 'home', username, test_collection)], 'STDOUT_SINGLELINE', 'bundle')
+        #print(out)
+        #bunfile = out.split()[-1]
+        #print(bunfile)
+        #self.admin.assert_icommand("ils --bundle " + bunfile, 'STDOUT_SINGLELINE', "Subfiles")
+        #self.admin.assert_icommand("irm -f --empty " + bunfile)
         self.admin.assert_icommand("irm -rf " + irodshome + "/icmdtestbz2")
-        self.admin.assert_icommand("irm -f --empty " + bunfile)
 
         # cleanup
         os.unlink(dir_w + "/testx1.tar")
