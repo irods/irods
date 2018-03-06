@@ -50,6 +50,12 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
+    if ( myRodsArgs.resource == True && myRodsArgs.unmount == True ) {
+        rodsLog( LOG_ERROR, "irepl: -R and -U cannot be used together" );
+        printf( "Use -h for help.\n" );
+        exit( 2 );
+    }
+
     status = getRodsEnv( &myEnv );
 
     if ( status < 0 ) {
