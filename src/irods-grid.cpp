@@ -397,7 +397,7 @@ int main(
         zmq::context_t zmq_ctx( 1 );
         zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REQ );
         try {
-            zmq_skt.connect( bind_str.c_str() );
+            zmq_skt.connect(bind_str.c_str());
         }
         catch ( const zmq::error_t& ) {
             std::cerr << "ZeroMQ encountered an error connecting to a socket.\n";
@@ -405,24 +405,30 @@ int main(
         }
 
         // copy binary encoding into a zmq message for transport
-        zmq::message_t rep( data_to_send.size() );
+        zmq::message_t req( data_to_send.size() );
         memcpy(
-            rep.data(),
+            req.data(),
             data_to_send.data(),
             data_to_send.size() );
         try {
-            zmq_skt.send( rep );
+            if (!zmq_skt.send(req)) {
+                std::cerr << "ZeroMQ encountered an error sending a message.\n";
+                return errno;
+            }
         }
         catch ( const zmq::error_t& ) {
-            std::cerr << "ZeroMQ encountered an error receiving a message.\n";
+            std::cerr << "ZeroMQ encountered an error sending a message.\n";
             return 1;
         }
 
 
-        zmq::message_t req;
+        zmq::message_t rep;
         // wait for the server reponse
         try {
-            zmq_skt.recv( &req );
+            if (!zmq_skt.recv( &rep )) {
+                std::cerr << "ZeroMQ encountered an error receiving a message.\n";
+                return errno;
+            }
         }
         catch ( const zmq::error_t& ) {
             std::cerr << "ZeroMQ encountered an error receiving a message.\n";
@@ -433,8 +439,8 @@ int main(
         std::string rep_str;
         ret = decrypt_response(
                   env,
-                  static_cast< const uint8_t* >( req.data() ),
-                  req.size(),
+                  static_cast< const uint8_t* >( rep.data() ),
+                  rep.size(),
                   rep_str );
         if ( !ret.ok() ) {
             irods::error err = PASS( ret );
