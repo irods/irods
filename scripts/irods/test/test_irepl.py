@@ -5,10 +5,6 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-import os
-
-from . import session
-from . import settings
 from . import resource_suite
 
 class Test_IRepl(resource_suite.ResourceBase, unittest.TestCase):
