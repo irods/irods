@@ -124,7 +124,8 @@ namespace irods {
 
             keyValPair_t reg_param{};
             std::string dst_size_str; 
-            if(dst_size != src_info->dataSize) {
+            if(UNKNOWN_FILE_SZ != dst_size &&
+               dst_size != src_info->dataSize) {
                 dst_info->dataSize = dst_size;
                 dst_size_str = boost::lexical_cast<std::string>(dst_size);
                 addKeyVal(
