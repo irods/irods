@@ -331,10 +331,10 @@ static int ssl_post_connection_check(
        listed in the certificate */
     bool match = false;
     auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL ));
-    std::size_t num_names = sk_GENERAL_NAME_num( names );
-    for ( std::size_t i = 0; i < num_names; i++ ) {
+    int num_names = sk_GENERAL_NAME_num( names );
+    for ( int i = 0; i < num_names; i++ ) {
         auto* name = sk_GENERAL_NAME_value( names, i );
-        if ( name->type == GEN_DNS ) {
+        if ( name && name->type == GEN_DNS ) {
             if ( !strcasecmp( reinterpret_cast<const char*>(ASN1_STRING_get0_data( name->d.dNSName )), peer ) ) {
                 match = true;
                 break;
@@ -697,6 +697,7 @@ irods::error ssl_client_start(
                     ssl_obj->ssl_ctx( ctx );
 
                     int status = ssl_post_connection_check( ssl, ssl_obj->host().c_str() );
+
                     std::string err_str = "post connection certificate check failed";
                     ssl_build_error_string( err_str );
                     if ( !( result = ASSERT_ERROR( status, SSL_CERT_ERROR, err_str.c_str() ) ).ok() ) {
