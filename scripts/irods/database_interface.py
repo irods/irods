@@ -92,7 +92,7 @@ def setup_database_config(irods_config):
         'has been properly configured.\n'
         )
 
-    for k in irods_config.server_config.setdefault('plugin_configuration', {}).setdefault('database', {}):
+    for k in list(irods_config.server_config.setdefault('plugin_configuration', {}).setdefault('database', {})):
         if k != db_type:
             del irods_config.server_config['plugin_configuration']['database'][k]
     irods_config.server_config['plugin_configuration']['database'].setdefault(db_type, {})
