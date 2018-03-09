@@ -5,6 +5,7 @@
 #include "irods_osauth_auth_object.hpp"
 #include "irods_gsi_object.hpp"
 #include "irods_krb_object.hpp"
+#include "irods_generic_auth_object.hpp"
 #include "rodsErrorTable.h"
 #include <boost/algorithm/string.hpp>
 
@@ -35,9 +36,7 @@ namespace irods {
             _ptr.reset( new krb_auth_object( _r_error ) );
         }
         else {
-            std::string msg( "auth scheme not supported [" );
-            msg += scheme + "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg );
+            _ptr.reset( new irods::generic_auth_object( scheme, _r_error ) );
         }
 
         return SUCCESS();
