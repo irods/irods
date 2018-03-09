@@ -32,6 +32,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_factory.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_manager.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_object.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_generic_auth_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_plugin.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_types.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_buffer_encryption.hpp
