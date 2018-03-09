@@ -790,6 +790,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_factory.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_manager.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_object.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_generic_auth_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_gsi_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_krb_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_native_auth_object.cpp
@@ -992,6 +993,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_factory.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_manager.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_object.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_generic_auth_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_c_api.cpp
