@@ -112,7 +112,6 @@ namespace irods {
         void verify_and_update_replica(
             rsComm_t*     _comm,
             regReplica_t* _reg_inp) {
-
             dataObjInfo_t* src_info = _reg_inp->srcDataObjInfo;
             dataObjInfo_t* dst_info = _reg_inp->destDataObjInfo;
 
@@ -121,7 +120,6 @@ namespace irods {
                                       dst_info->objPath,
                                       dst_info->rescHier,
                                       dst_info->filePath);
-
             keyValPair_t reg_param{};
             std::string dst_size_str; 
             if(UNKNOWN_FILE_SZ != dst_size &&
@@ -143,7 +141,8 @@ namespace irods {
                                    dst_info->objPath,
                                    dst_info->filePath,
                                    dst_info->rescHier);
-                if(!dst_checksum.empty()) {
+                if(!dst_checksum.empty() &&
+                    dst_checksum != src_info->chksum) {
                     rstrcpy(
                        dst_info->chksum,
                        dst_checksum.c_str(),
