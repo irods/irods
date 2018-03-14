@@ -710,6 +710,28 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    def test_ireg_repl_to_coordinating_resource__issue_3844(self):
+        # local setup
+        filename = "newfile.txt"
+        filepath = os.path.abspath(filename)
+        with open(filepath, 'wt') as f:
+            print("TESTFILE -- [" + filepath + "]", file=f, end='')
+
+        # assertions
+        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+        self.admin.assert_icommand("ireg -R " + self.testresc + " " + filepath + " /" + self.admin.zone_name + "/home/" +
+                                   self.admin.username + "/" + self.admin._session_id + "/" + filename)  # ireg
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', self.testresc)  # should be listed
+        self.admin.assert_icommand("ireg -R demoResc --repl " + " " + filepath + " /" + self.admin.zone_name + "/home/" +
+                                   self.admin.username + "/" + self.admin._session_id + "/" + filename)  # ireg
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', 'demoResc')  # should be listed
+
+        # local cleanup
+        if os.path.exists(filepath):
+            os.unlink(filepath)
+
+
+
     ###################
     # irepl
     ###################
