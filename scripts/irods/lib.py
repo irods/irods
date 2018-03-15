@@ -43,22 +43,6 @@ execute_command_nonblocking = execute.execute_command_nonblocking
 execute_command_timeout = execute.execute_command_timeout
 execute_command_permissive = execute.execute_command_permissive
 execute_command = execute.execute_command
-'''
-def indent(*text, **kwargs):
-    return execute.indent(*text, **kwargs)
-
-def execute_command_nonblocking(args, **kwargs):
-    return execute.execute_command_nonblocking(args, **kwargs)
-
-def execute_command_timeout(args, **kwargs):
-    return execute.execute_command_timeout(args, **kwargs)
-
-def execute_command_permissive(args, **kwargs):
-    return execute.execute_command_permissive(args, **kwargs)
-
-def execute_command(args, **kwargs):
-    return execute.execute_command(args, **kwargs)
-'''
 
 def get_pids_executing_binary_file(binary_file_path):
     def get_exe(process):
