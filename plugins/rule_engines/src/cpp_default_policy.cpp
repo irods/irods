@@ -125,7 +125,7 @@ irods::error acPreConnect( irods::callback _cb, std::list<boost::any>& _params )
     for( auto itr : _params ) {
         if(itr.type() == typeid(std::string*)) {
             try {
-                *boost::any_cast<std::string*>(itr) = "CS_NEG_DONT_CARE";
+                *boost::any_cast<std::string*>(itr) = "CS_NEG_REFUSE";
             } catch (const boost::bad_any_cast& e) {
                 rodsLog(LOG_ERROR, "Bad any cast in acPreConnect, [%s]", e.what());
                 return ERROR(
