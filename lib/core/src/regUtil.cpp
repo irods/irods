@@ -61,6 +61,9 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                           destPath->outPath, status );
             savedStatus = status;
         }
+        else if ( status == CAT_NO_ROWS_FOUND && myRodsArgs->regRepl == True ) {
+            savedStatus = CAT_UNKNOWN_COLLECTION;
+        }
     }
     return savedStatus;
 }
