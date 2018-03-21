@@ -175,4 +175,8 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('irm -rU {0}'.format(thedirname))
         # cleanup
         os.system('rm -rf {0}'.format(thedirname))
+
+    def test_ireg_repl_invalid_collection__issue_3828(self):
+        cmd = 'ireg --repl -R demoResc /tmp/test_file /tempZone/home/invalid_collection_name'
+        self.admin.assert_icommand(cmd, 'STDERR', 'status = -814000 CAT_UNKNOWN_COLLECTION')
         
