@@ -96,6 +96,7 @@ main( int argc, char **argv ) {
     rcDisconnect( conn );
 
     if ( status < 0 ) {
+        rodsLogError( LOG_ERROR, status, "main: regUtil error. " );
         exit( 3 );
     }
     else {
