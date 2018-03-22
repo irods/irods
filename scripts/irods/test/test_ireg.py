@@ -142,7 +142,7 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         filename_2 = filename + '_2'
         lib.make_file(filename, 1024, 'arbitrary')
         lib.make_file(filename_2, 1024, 'arbitrary')
-        self.admin.assert_icommand(['ireg', '-Kk', '-R', 'demoResc', os.path.abspath(filename), self.admin.session_collection + '/' + filename]) 
+        self.admin.assert_icommand(['ireg', '-Kk', '-R', 'demoResc', os.path.abspath(filename), self.admin.session_collection + '/' + filename])
         # ireg --repl should fail if it targets a coordinating (i.e. non-leaf) resource
         self.admin.assert_icommand_fail(['ireg', '-Kk', '--repl', '-R', 'r_resc', os.path.abspath(filename_2), self.admin.session_collection + '/' + filename], 'STDOUT_SINGLELINE', 'coordinating resource')
         # ireg --repl should fail if it targets a coordinating (i.e. non-leaf) resource
@@ -179,6 +179,15 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def test_ireg_repl_invalid_collection__issue_3828(self):
         cmd = 'ireg --repl -R demoResc /tmp/test_file /tempZone/home/invalid_collection_name'
         self.admin.assert_icommand(cmd, 'STDERR', 'status = -814000 CAT_UNKNOWN_COLLECTION')
+
+    def test_ireg_double_slashes__issue_3658(self):
+        dirname = 'dir_3658'
+        lib.create_directory_of_small_files(dirname,2)
+        # This introduces the trailing slash to the end of the physical directory path name
+        self.admin.assert_icommand('ireg -R {0} -C {1} {2}'.format(self.testresc, os.path.abspath(dirname)+"/", self.admin.session_collection+"/"+dirname))
+        # And this shows the problem (or not, if the bug is fixed)
+        self.admin.assert_icommand('iscan {0}'.format(os.path.abspath(dirname)))
+        shutil.rmtree(os.path.abspath(dirname), ignore_errors=True)
 
     def test_ireg_silent_failure_on_invalid_perms__issue_3795(self):
         # Create a directory to hold the test files.
