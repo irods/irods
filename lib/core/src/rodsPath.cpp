@@ -265,6 +265,23 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
         return USER__NULL_INPUT_ERR;
     }
 
+    // Issue #3658 - This section removes trailing slashes from the 
+    // incoming directory path in an invoking icommand (e.g. ireg).
+    //
+    // TODO:  This is a localized fix that addresses any trailing slashes
+    // in inPath. Any future refactoring of the code that deals with paths
+    // would most probably take care of this issue, and the code segment
+    // below would/should then be removed.
+
+    char tmpStr[MAX_NAME_LEN];
+
+    rstrcpy( tmpStr, inPath, MAX_NAME_LEN );
+    size_t len = strlen(tmpStr);
+    for (size_t i = len-1; i > 0 && tmpStr[i] == '/'; i--) {
+        tmpStr[i] = '\0';
+    }
+    const char *modInPath = const_cast<const char *>(tmpStr);   // end of 3658 fix
+
     if ( ( rodsPathInp->numSrc % PTR_ARRAY_MALLOC_LEN ) == 0 ) {
         newNumSrc = rodsPathInp->numSrc + PTR_ARRAY_MALLOC_LEN;
         newSrcPath = ( rodsPath_t * ) malloc( newNumSrc * sizeof( rodsPath_t ) );
@@ -285,7 +302,7 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
     else {
         newSrcPath = rodsPathInp->srcPath;
     }
-    rstrcpy( newSrcPath[rodsPathInp->numSrc].inPath, inPath, MAX_NAME_LEN );
+    rstrcpy( newSrcPath[rodsPathInp->numSrc].inPath, modInPath, MAX_NAME_LEN );
     rodsPathInp->numSrc++;
 
     return 0;
@@ -478,3 +495,4 @@ clearRodsPath( rodsPath_t *rodsPath ) {
 
     return;
 }
+

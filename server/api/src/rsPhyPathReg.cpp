@@ -724,7 +724,24 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
 
-        snprintf( fileStatInp.fileName, MAX_NAME_LEN, "%s/%s", filePath, rodsDirent->d_name );
+        // Issue #3658 - This section removes trailing slashes from the 
+        // directory path in the server when the path is already in the catalog.
+        //
+        // TODO:  This is a localized fix that addresses any trailing slashes
+        // in inPath. Any future refactoring of the code that deals with paths
+        // would most probably take care of this issue, and the code segment
+        // below would/should then be removed.
+
+        char tmpStr[MAX_NAME_LEN];
+        rstrcpy( tmpStr, filePath, MAX_NAME_LEN );
+        size_t len = strlen(tmpStr);
+
+        for (size_t i = len-1; i > 0 && tmpStr[i] == '/'; i--) {
+            tmpStr[i] = '\0';
+        }
+
+        snprintf( fileStatInp.fileName, MAX_NAME_LEN, "%s/%s", tmpStr, rodsDirent->d_name );
+
         rstrcpy( fileStatInp.objPath, subPhyPathRegInp.objPath, MAX_NAME_LEN );
         fileStatInp.addr = fileOpendirInp.addr;
         rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
