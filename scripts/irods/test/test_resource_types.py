@@ -3606,6 +3606,44 @@ OUTPUT ruleExecOut
         os.unlink(filepath)
         os.unlink(rule_file_path)
 
+    def test_ibun_extract_to_rebalance(self):
+        # Create a tar file
+        tar_file = 'pea_pod.tar'
+        test_files = ['pea1', 'pea2', 'pea3']
+        for f in test_files:
+            lib.make_file(f, 1000)
+        lib.execute_command(['tar', 'czf', tar_file, test_files[0], test_files[1], test_files[2]])
+
+        # Set up some logical names
+        coll_name = 'peas'
+        coll_path = self.admin.session_collection + '/' + coll_name
+        tar_path = self.admin.session_collection + '/' + tar_file
+
+        # Put the tar file into iRODS
+        self.admin.assert_icommand(['iput', tar_file])
+        self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', tar_file)
+
+        # Extract tar file to the replication resource
+        self.admin.assert_icommand(['ibun', '-x', tar_path, coll_path])
+        for f in test_files:
+            self.admin.assert_icommand(['ils', '-L', coll_path], 'STDOUT_SINGLELINE', [' 0 ', ' & ', f])
+
+        # Perform a rebalance to give all the children a copy of each file
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
+        for f in test_files:
+            self.admin.assert_icommand(['ils', '-L', coll_path + '/' + f], 'STDOUT_SINGLELINE', [' 0 ', ' & ', f])
+            self.admin.assert_icommand(['ils', '-L', coll_path + '/' + f], 'STDOUT_SINGLELINE', [' 1 ', ' & ', f])
+            self.admin.assert_icommand(['ils', '-L', coll_path + '/' + f], 'STDOUT_SINGLELINE', [' 2 ', ' & ', f])
+
+        # Local cleanup
+        self.admin.assert_icommand(['irm', '-rf', coll_path])
+        self.admin.assert_icommand(['irm', '-rf', tar_path])
+        if os.path.exists(tar_file):
+            os.unlink(tar_file)
+        for f in test_files:
+            if os.path.exists(f):
+                os.unlink(f)
+
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_file_modified_on_checksum__ticket_3525(self):
         filename = 'test_file_modified_on_checksum__ticket_3525.txt'
