@@ -3,6 +3,7 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of
  * this API call.*/
 
+
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
@@ -16,6 +17,8 @@
 #include "rcGlobalExtern.h"
 #include "rsStructFileExtAndReg.hpp"
 #include "structFileExtAndReg.h"
+#include "rodsGenQuery.h"
+#include "rodsType.h"
 #include "rsDataObjOpen.hpp"
 #include "rsDataObjClose.hpp"
 #include "rsModDataObjMeta.hpp"
@@ -35,20 +38,39 @@
 using namespace boost::filesystem;
 
 int
-bulkRegUnbunSubfiles( rsComm_t *rsComm, const char*, const std::string& rescHier,
-                      char *collection, char *phyBunDir, int flags,
-                      genQueryOut_t *attriArray );
+bulkRegUnbunSubfiles(
+    rsComm_t *rsComm,
+    const char*,
+    const std::string& rescHier,
+    char *collection,
+    char *phyBunDir,
+    int flags,
+    genQueryOut_t *attriArray );
 
+int regUnbunSubfiles(
+    rsComm_t *rsComm,
+    const dataObjInfo_t& _dataObjInfo,
+    char *collection,
+    char *phyBunDir,
+    int flags,
+    genQueryOut_t *attriArray );
 
 int
-rsStructFileExtAndReg( rsComm_t *rsComm,
-                       structFileExtAndRegInp_t *structFileExtAndRegInp ) {
+regSubfile(
+    rsComm_t *rsComm,
+    const dataObjInfo_t& _dataObjInfo,
+    char *subObjPath,
+    char *subfilePath,
+    const rodsLong_t dataSize,
+    int flags );
+
+int
+rsStructFileExtAndReg(
+    rsComm_t *rsComm,
+    structFileExtAndRegInp_t *structFileExtAndRegInp ) {
     int status;
     dataObjInp_t dataObjInp;
-    openedDataObjInp_t dataObjCloseInp;
-    dataObjInfo_t *dataObjInfo;
     int l1descInx;
-    char *resc_name;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     char phyBunDir[MAX_NAME_LEN];
@@ -162,13 +184,11 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         return l1descInx;
     }
 
-    resc_name = L1desc[l1descInx].dataObjInfo->rescName;
-
-    bzero( &dataObjCloseInp, sizeof( dataObjCloseInp ) );
+    openedDataObjInp_t dataObjCloseInp{};
     dataObjCloseInp.l1descInx = l1descInx;
 
     if ( local == REMOTE_HOST ) {
-        addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW, resc_name );
+        addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW, L1desc[l1descInx].dataObjInfo->rescName );
 
         status = rcStructFileExtAndReg( host->conn, structFileExtAndRegInp );
         rsDataObjClose( rsComm, &dataObjCloseInp );
@@ -183,23 +203,22 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     }
 
 
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    std::string rescHier = dataObjInfo->rescHier;
+    const auto dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     createPhyBundleDir( rsComm, dataObjInfo->filePath, phyBunDir, dataObjInfo->rescHier );
 
-    status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name, // JMC - backport 4657
+    status = unbunPhyBunFile( rsComm, dataObjInp.objPath, dataObjInfo->rescName, // JMC - backport 4657
                               dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0,
-                              rescHier.c_str() );
+                              dataObjInfo->rescHier );
 
     if ( status == SYS_DIR_IN_VAULT_NOT_EMPTY ) {
         /* rename the phyBunDir */
         char tmp[MAX_NAME_LEN]; // JMC cppcheck - src & dst snprintf
         strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
         snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-u", tmp, irods::getRandom<unsigned int>() ); // JMC cppcheck - src & dst snprintf
-        status = unbunPhyBunFile( rsComm, dataObjInp.objPath, resc_name,
+        status = unbunPhyBunFile( rsComm, dataObjInp.objPath, dataObjInfo->rescName,
                                   dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0,
-                                  rescHier.c_str() );
+                                  dataObjInfo->rescHier );
     }
 
     if ( status < 0 ) {
@@ -217,11 +236,11 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     if ( getValByKey( &structFileExtAndRegInp->condInput, BULK_OPR_KW )
             != NULL ) {
 
-        status = bulkRegUnbunSubfiles( rsComm, resc_name, rescHier,
+        status = bulkRegUnbunSubfiles( rsComm, dataObjInfo->rescName, dataObjInfo->rescHier,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
     else {
-        status = regUnbunSubfiles( rsComm, resc_name, dataObjInfo->rescHier,
+        status = regUnbunSubfiles( rsComm, *dataObjInfo,
                                    structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
     }
 
@@ -307,9 +326,8 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
  * to the collection. Valid values for flags are:
  *      FORCE_FLAG_FLAG.
  */
-
 int
-regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
+regUnbunSubfiles( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
                   char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray ) {
     char subfilePath[MAX_NAME_LEN];
     char subObjPath[MAX_NAME_LEN];
@@ -362,7 +380,7 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
                 savedStatus = status;
                 continue;
             }
-            status = regUnbunSubfiles( rsComm, _resc_name, rescHier,
+            status = regUnbunSubfiles( rsComm, _dataObjInfo,
                                        subObjPath, subfilePath, flags, attriArray );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -374,7 +392,7 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
         }
         else if ( is_regular_file( p ) ) {
             st_size = file_size( p );
-            status = regSubfile( rsComm, _resc_name, rescHier,
+            status = regSubfile( rsComm, _dataObjInfo,
                                  subObjPath, subfilePath, st_size, flags );
             unlink( subfilePath );
             if ( status < 0 ) {
@@ -391,22 +409,20 @@ regUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const char* rescHier
 }
 
 int
-regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
-            char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags ) {
-    dataObjInfo_t dataObjInfo;
-    dataObjInp_t dataObjInp;
-    int status;
+regSubfile( rsComm_t *rsComm, const dataObjInfo_t& _dataObjInfo,
+            char *subObjPath, char *subfilePath, const rodsLong_t dataSize, int flags ) {
+    dataObjInfo_t dataObjInfo{};
+    dataObjInp_t dataObjInp{};
     int modFlag = 0;
 
-    bzero( &dataObjInp, sizeof( dataObjInp ) );
-    bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     rstrcpy( dataObjInp.objPath, subObjPath, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.objPath, subObjPath, MAX_NAME_LEN );
-    rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
-    rstrcpy( dataObjInfo.rescHier, rescHier, MAX_NAME_LEN );
+    rstrcpy( dataObjInfo.rescName, _dataObjInfo.rescName, NAME_LEN );
+    rstrcpy( dataObjInfo.rescHier, _dataObjInfo.rescHier, MAX_NAME_LEN );
+    rstrcpy( dataObjInfo.dataMode, _dataObjInfo.dataMode, MAX_NAME_LEN );
     rstrcpy( dataObjInfo.dataType, "generic", NAME_LEN );
 
-    irods::error ret = resc_mgr.hier_to_leaf_id(rescHier,dataObjInfo.rescId);
+    irods::error ret = resc_mgr.hier_to_leaf_id(dataObjInfo.rescHier,dataObjInfo.rescId);
     if( !ret.ok() ) {
         irods::log(PASS(ret));
     }
@@ -415,7 +431,7 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
     dataObjInfo.dataSize = dataSize;
     dataObjInfo.replStatus = 1;
 
-    status = getFilePathName( rsComm, &dataObjInfo, &dataObjInp );
+    int status = getFilePathName( rsComm, &dataObjInfo, &dataObjInp );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "regSubFile: getFilePathName err for %s. status = %d",
@@ -429,7 +445,7 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
             return SYS_PATH_IS_NOT_A_FILE;
         }
 
-        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, _resc_name,
+        if ( chkOrphanFile( rsComm, dataObjInfo.filePath, _dataObjInfo.rescName,
                             &dataObjInfo ) > 0 ) {
             /* an orphan file. just rename it */
             fileRenameInp_t fileRenameInp;

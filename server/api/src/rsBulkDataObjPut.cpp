@@ -65,6 +65,29 @@ bulkRegSubfile( rsComm_t *rsComm, const char*, const std::string& rescHier,
                 renamedPhyFiles_t *renamedPhyFiles );
 
 int
+addRenamedPhyFile(
+    char *subObjPath,
+    char *oldFileName,
+    char *newFileName,
+    renamedPhyFiles_t *renamedPhyFiles );
+
+int
+cleanupBulkRegFiles(
+    rsComm_t *rsComm,
+    genQueryOut_t *bulkDataObjRegInp );
+
+int
+postProcBulkPut(
+    rsComm_t *rsComm,
+    genQueryOut_t *bulkDataObjRegInp,
+    genQueryOut_t *bulkDataObjRegOut );
+
+int
+postProcRenamedPhyFiles(
+    renamedPhyFiles_t *renamedPhyFiles,
+    int regStatus );
+
+int
 rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                   bytesBuf_t *bulkOprInpBBuf ) {
     int status;
@@ -388,8 +411,8 @@ bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::strin
         if ( status1 < 0 ) {
             status = status1;
             rodsLog( LOG_ERROR,
-                     "regUnbunSubfiles: rsBulkDataObjReg error for %s. stat = %d",
-                     collection, status1 );
+                     "%s: rsBulkDataObjReg error for %s. stat = %d",
+                     __FUNCTION__, collection, status1 );
             cleanupBulkRegFiles( rsComm, &bulkDataObjRegInp );
         }
         postProcRenamedPhyFiles( &renamedPhyFiles, status );
@@ -416,8 +439,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
     path srcDirPath( phyBunDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
-                 "regUnbunphySubfiles: opendir error for %s, errno = %d",
-                 phyBunDir, errno );
+                 "%s: opendir error for %s, errno = %d",
+                 __FUNCTION__, phyBunDir, errno );
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &dataObjInp, sizeof( dataObjInp ) );
@@ -429,8 +452,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
 
         if ( !exists( p ) ) {
             rodsLog( LOG_ERROR,
-                     "regUnbunphySubfiles: stat error for %s, errno = %d",
-                     subfilePath, errno );
+                     "%s: stat error for %s, errno = %d",
+                     __FUNCTION__, subfilePath, errno );
             savedStatus = UNIX_FILE_STAT_ERR - errno;
             unlink( subfilePath );
             continue;
@@ -443,8 +466,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
             status = rsMkCollR( rsComm, "/", subObjPath );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "regUnbunSubfiles: rsMkCollR of %s error. status = %d",
-                         subObjPath, status );
+                         "%s: rsMkCollR of %s error. status = %d",
+                         __FUNCTION__, subObjPath, status );
                 savedStatus = status;
                 continue;
             }
@@ -453,8 +476,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
                                             renamedPhyFiles, attriArray );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "regUnbunSubfiles: regUnbunSubfiles of %s error. status=%d",
-                         subObjPath, status );
+                         "%s: _bulkRegUnbunSubfiles of %s error. status=%d",
+                         __FUNCTION__, subObjPath, status );
                 savedStatus = status;
                 continue;
             }
@@ -469,8 +492,8 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
             unlink( subfilePath );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "regUnbunSubfiles:bulkProcAndRegSubfile of %s err.stat=%d",
-                         subObjPath, status );
+                         "%s:bulkProcAndRegSubfile of %s err.stat=%d",
+                         __FUNCTION__, subObjPath, status );
                 savedStatus = status;
                 continue;
             }
