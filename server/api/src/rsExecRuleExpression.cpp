@@ -15,13 +15,6 @@ int rsExecRuleExpression(
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    std::string instance_name;
-    irods::error ret = get_default_rule_plugin_instance( instance_name );
-    if(!ret.ok()) {
-        irods::log(PASS(ret));
-        return ret.code();
-    }
-
     std::string my_rule_text = (char*)_exec_rule->rule_text_.buf;
 
     ruleExecInfoAndArg_t* rei_and_arg = NULL;
@@ -49,6 +42,18 @@ int rsExecRuleExpression(
         if ( rei->doi->next != NULL ) {
             free( rei->doi->next );
             rei->doi->next = NULL;
+        }
+    }
+
+    std::string instance_name;
+    if(strlen(rei->pluginInstanceName) > 0) {
+        instance_name = rei->pluginInstanceName;
+    }
+    else {
+        irods::error ret = get_default_rule_plugin_instance( instance_name );
+        if(!ret.ok()) {
+            irods::log(PASS(ret));
+            return ret.code();
         }
     }
 
