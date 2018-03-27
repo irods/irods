@@ -133,6 +133,28 @@ int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *r
     return i;
 }
 
+std::map<std::string, std::vector<std::string>>
+getTaggedValues(const char *str);
+void set_plugin_instance_name(
+    const char* _xml,
+    char*       _plugin_name) {
+    boost::optional<std::map<std::string, std::vector<std::string>>> taggedValues;
+    try {
+        taggedValues = getTaggedValues(_xml);
+    } catch ( const irods::exception& e) {
+        irods::log( irods::error(e) );
+    }
+
+    auto it = taggedValues->find("INST_NAME");
+    if ( it != taggedValues->end() ) {
+        rstrcpy(
+            _plugin_name,
+            it->second.front().c_str(),
+            MAX_NAME_LEN);
+        taggedValues->erase(it);
+    }
+} // set_plugin_instance_name
+
 int _delayExec( const char *inActionCall, const char *recoveryActionCall,
                 const char *delayCondition,  ruleExecInfo_t *rei ) {
 
@@ -142,6 +164,10 @@ int _delayExec( const char *inActionCall, const char *recoveryActionCall,
     bytesBuf_t *packedReiAndArgBBuf = NULL;
 
     RE_TEST_MACRO( "    Calling _delayExec" );
+
+    set_plugin_instance_name(
+        delayCondition,
+        rei->pluginInstanceName);
 
     args[0] = NULL;
     args[1] = NULL;
