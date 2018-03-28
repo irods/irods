@@ -1562,6 +1562,12 @@ irods::error repl_file_rebalance(
         return PASS(result);
     }
 
+    // get invocation timestamp
+    // only replicas at rest prior to this invocation timestamp will be rebalanced
+    // prevents race condition of new/inflight data being 'over'-rebalanced
+    char invocation_timestamp[50];
+    getNowStr(invocation_timestamp);
+
     std::string resource_name;
     result = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
     if (!result.ok()) {
@@ -1571,8 +1577,8 @@ irods::error repl_file_rebalance(
     try {
         const int batch_size = get_rebalance_batch_size(_ctx);
         const std::vector<leaf_bundle_t> leaf_bundles = resc_mgr.gather_leaf_bundles_for_resc(resource_name);
-        irods::update_out_of_date_replicas(_ctx, leaf_bundles, batch_size, resource_name);
-        irods::create_missing_replicas(_ctx, leaf_bundles, batch_size, resource_name);
+        irods::update_out_of_date_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
+        irods::create_missing_replicas(_ctx, leaf_bundles, batch_size, invocation_timestamp, resource_name);
     } catch (const irods::exception& e) {
         return irods::error(e);
     }

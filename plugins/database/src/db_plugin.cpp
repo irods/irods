@@ -14183,6 +14183,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     rodsLong_t                  _count,
     size_t                      _child_index,
     const std::vector<leaf_bundle_t>* _bundles,
+    const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results ) {
 
     // =-=-=-=-=-=-=-
@@ -14198,6 +14199,9 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     if (_bundles->empty()) {
         return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
+    if (!_invocation_timestamp || _invocation_timestamp->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "no invocation timestamp");
+    }
 
     // capture list of child resc ids
     std::stringstream child_array_stream;
@@ -14206,7 +14210,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     }
     std::string child_array = child_array_stream.str();
     if (child_array.empty()) {
-        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf arry is empty");
+        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf array is empty");
     }
     child_array.pop_back(); // trim last ','
 
@@ -14224,9 +14228,9 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     not_child_array.pop_back(); // trim last ','
 
 #ifdef ORA_ICAT
-    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s))) where rownum <= %d") % not_child_array % child_array % _count).str();
+    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #else
-    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) limit %d") % not_child_array % child_array % _count).str();
+    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s' limit %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #endif
 
     _results->reserve(_count);
@@ -15679,10 +15683,9 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
         function<error(plugin_context&,const string*, const string*, int, dist_child_result_t*)>(
             db_get_distinct_data_objs_missing_from_child_given_parent_op ) );
-
-    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*>(
+    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*>(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
-        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*)>(
+        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
     return pg;
 

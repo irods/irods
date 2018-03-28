@@ -177,6 +177,7 @@ namespace {
     std::vector<ReplicaAndRescId> get_out_of_date_replicas_batch(
         rsComm_t* _comm,
         const std::vector<leaf_bundle_t>& _bundles,
+        const std::string& _invocation_timestamp,
         const int _batch_size) {
         if (!_comm) {
             THROW(SYS_INTERNAL_NULL_INPUT_ERR, "null rsComm");
@@ -186,6 +187,9 @@ namespace {
         }
         if (_batch_size <= 0) {
             THROW(SYS_INVALID_INPUT_PARAM, boost::format("invalid batch size [%d]") % _batch_size);
+        }
+        if (_invocation_timestamp.empty()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "empty invocation timestamp");
         }
 
         irods::GenQueryInpWrapper genquery_inp_wrapped;
@@ -200,6 +204,8 @@ namespace {
         const std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, "= '0'");
+        const std::string timestamp_str = "<= '" + _invocation_timestamp + "'";
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_MODIFY_TIME, timestamp_str.c_str());
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_DATA_ID, 1);
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_DATA_REPL_NUM, 1);
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_RESC_ID, 1);
@@ -421,10 +427,11 @@ namespace irods {
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
+        const std::string& _invocation_timestamp,
         const std::string& _resource_name) {
 
         while (true) {
-            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_ctx.comm(), _leaf_bundles, _batch_size);
+            const std::vector<ReplicaAndRescId> replicas_to_update = get_out_of_date_replicas_batch(_ctx.comm(), _leaf_bundles, _invocation_timestamp, _batch_size);
             if (replicas_to_update.empty()) {
                 break;
             }
@@ -500,12 +507,13 @@ namespace irods {
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
+        const std::string& _invocation_timestamp,
         const std::string& _resource_name) {
         for (size_t i=0; i<_leaf_bundles.size(); ++i) {
             const std::string child_name = get_child_name_that_is_ancestor_of_bundle(_resource_name, _leaf_bundles[i]);
             while (true) {
                 dist_child_result_t data_ids_needing_new_replicas;
-                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundles(_batch_size, i, &_leaf_bundles, &data_ids_needing_new_replicas);
+                const int status_chlGetReplListForLeafBundles = chlGetReplListForLeafBundles(_batch_size, i, &_leaf_bundles, &_invocation_timestamp, &data_ids_needing_new_replicas);
                 if (status_chlGetReplListForLeafBundles != 0) {
                     THROW(status_chlGetReplListForLeafBundles,
                           boost::format("failed to get data objects needing new replicas for resource [%s] bundle index [%d] bundles [%s]")

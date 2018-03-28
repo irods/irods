@@ -198,6 +198,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     const std::string&   _parent,
     const std::string&   _child,
     int                  _limit,
+    const std::string&   _invocation_timestamp,
     dist_child_result_t& _results );
 
 /// =-=-=-=-=-=-=-
@@ -223,6 +224,7 @@ int chlGetReplListForLeafBundles(
     rodsLong_t                  _count,
     size_t                      _child_idx,
     const std::vector<leaf_bundle_t>* _bundles,
+    const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results );
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */
