@@ -56,7 +56,7 @@ webErrorExit( char *msg, int status ) {
 }
 
 char x2c( char *what ) {
-    register char digit;
+    char digit;
 
     digit = ( what[0] >= 'A' ? ( ( what[0] & 0xdf ) - 'A' ) + 10 : ( what[0] - '0' ) );
     digit *= 16;
@@ -65,7 +65,7 @@ char x2c( char *what ) {
 }
 
 void unescape_url( char *url ) {
-    register int x, y;
+    int x, y;
 
     for ( x = 0, y = 0; url[y]; ++x, ++y ) {
         if ( ( ( url[x] = url[y] ) == '%' ) && isxdigit( url[y + 1] ) && isxdigit( url[y + 2] ) ) {
@@ -78,7 +78,7 @@ void unescape_url( char *url ) {
 
 
 void plustospace( char *str ) {
-    register int x;
+    int x;
 
     for ( x = 0; str[x]; x++ ) if ( str[x] == '+' ) {
             str[x] = ' ';
@@ -306,7 +306,7 @@ char *fmakeword( FILE *f, char stop, int *cl ) {
 
 
 int rind( char *s, char c ) {
-    register int x;
+    int x;
     for ( x = strlen( s ) - 1; x != -1; x-- )
         if ( s[x] == c ) {
             return x;
@@ -315,7 +315,7 @@ int rind( char *s, char c ) {
 }
 
 int getline( char *s, int n, FILE *f ) {
-    register int i = 0;
+    int i = 0;
 
     while ( 1 ) {
         s[i] = ( char )fgetc( f );
@@ -348,7 +348,7 @@ void send_fd( FILE *f, FILE *fd ) {
 /* reads values entered in html form and stores them in the inStruct previously defined */
 
 int getEntries( inStruct Sentries ) {
-    register int x;
+    int x;
     char *stquery, *tmpq, *tmpStr, *tmpStr1, *tmpPtr;
     char reqMethod[100];
     int msgLength;
