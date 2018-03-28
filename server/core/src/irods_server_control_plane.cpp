@@ -728,81 +728,90 @@ namespace irods {
             return;
         }
 
-        zmq::context_t zmq_ctx( 1 );
-        zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REP );
+        while ( true ) {
+            try {
+                zmq::context_t zmq_ctx( 1 );
+                zmq::socket_t  zmq_skt( zmq_ctx, ZMQ_REP );
 
-        int time_out = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
-        zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
-        zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
-        zmq_skt.setsockopt( ZMQ_LINGER, 0 );
+                int time_out = SERVER_CONTROL_POLLING_TIME_MILLI_SEC;
+                zmq_skt.setsockopt( ZMQ_RCVTIMEO, &time_out, sizeof( time_out ) );
+                zmq_skt.setsockopt( ZMQ_SNDTIMEO, &time_out, sizeof( time_out ) );
+                zmq_skt.setsockopt( ZMQ_LINGER, 0 );
 
-        std::stringstream port_sstr;
-        port_sstr << port;
-        std::string conn_str( "tcp://*:" );
-        conn_str += port_sstr.str();
-        zmq_skt.bind( conn_str.c_str() );
+                std::stringstream port_sstr;
+                port_sstr << port;
+                std::string conn_str( "tcp://*:" );
+                conn_str += port_sstr.str();
+                zmq_skt.bind( conn_str.c_str() );
 
-        rodsLog(
-            LOG_NOTICE,
-            ">>> control plane :: listening on port %d\n",
-            port );
+                rodsLog(
+                        LOG_NOTICE,
+                        ">>> control plane :: listening on port %d\n",
+                        port );
 
-        server_state& s = server_state::instance();
-        while ( server_state::STOPPED != s() &&
-                server_state::EXITED != s() ) {
+                server_state& s = server_state::instance();
+                while ( server_state::STOPPED != s() &&
+                        server_state::EXITED != s() ) {
 
-            zmq::message_t req;
-            zmq_skt.recv( &req );
-            if ( 0 == req.size() ) {
+                    zmq::message_t req;
+                    zmq_skt.recv( &req );
+                    if ( 0 == req.size() ) {
+                        rodsLog(LOG_NOTICE, "Received empty request in control plane loop.");
+
+                    }
+
+                    // process the message
+                    std::string output;
+                    std::string rep_msg( SERVER_CONTROL_SUCCESS );
+                    error ret = process_operation( req, output );
+
+                    rep_msg = output;
+                    if ( !ret.ok() ) {
+                        log( PASS( ret ) );
+                    }
+
+                    if ( !output.empty() ) {
+                        rep_msg = output;
+
+                    }
+
+                    buffer_crypt crypt(
+                            shared_secret.size(), // key size
+                            0,                    // salt size ( we dont send a salt )
+                            num_hash_rounds,      // num hash rounds
+                            encryption_algorithm->c_str() );
+
+                    buffer_crypt::array_t iv;
+                    buffer_crypt::array_t data_to_send;
+                    buffer_crypt::array_t data_to_encrypt(
+                            rep_msg.begin(),
+                            rep_msg.end() );
+                    ret = crypt.encrypt(
+                            shared_secret,
+                            iv,
+                            data_to_encrypt,
+                            data_to_send );
+                    if ( !ret.ok() ) {
+                        irods::log( PASS( ret ) );
+
+                    }
+
+                    zmq::message_t rep( data_to_send.size() );
+                    memcpy(
+                            rep.data(),
+                            data_to_send.data(),
+                            data_to_send.size() );
+
+                    zmq_skt.send( rep );
+
+                } // while
+                // exited control loop normally, we're done
+                break;
+            } catch ( const zmq::error_t& _e ) {
+                rodsLog(LOG_ERROR, "ZMQ encountered an error in the control plane loop: [%s] Restarting control thread...", _e.what());
                 continue;
-
             }
-
-            // process the message
-            std::string output;
-            std::string rep_msg( SERVER_CONTROL_SUCCESS );
-            error ret = process_operation( req, output );
-
-            rep_msg = output;
-            if ( !ret.ok() ) {
-                log( PASS( ret ) );
-            }
-
-            if ( !output.empty() ) {
-                rep_msg = output;
-
-            }
-
-            buffer_crypt crypt(
-                shared_secret.size(), // key size
-                0,                    // salt size ( we dont send a salt )
-                num_hash_rounds,      // num hash rounds
-                encryption_algorithm->c_str() );
-
-            buffer_crypt::array_t iv;
-            buffer_crypt::array_t data_to_send;
-            buffer_crypt::array_t data_to_encrypt(
-                rep_msg.begin(),
-                rep_msg.end() );
-            ret = crypt.encrypt(
-                      shared_secret,
-                      iv,
-                      data_to_encrypt,
-                      data_to_send );
-            if ( !ret.ok() ) {
-                irods::log( PASS( ret ) );
-
-            }
-
-            zmq::message_t rep( data_to_send.size() );
-            memcpy(
-                rep.data(),
-                data_to_send.data(),
-                data_to_send.size() );
-
-            zmq_skt.send( rep );
-
-        } // while
+        }
 
     } // control operation
 
