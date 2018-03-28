@@ -154,9 +154,9 @@ void initTCPServer( rbudpBase_t *rbudpBase );
 /// TCP server starts listening
 void listenTCPServer( rbudpBase_t *rbudpBase );
 /// Read nbytes bytes from TCP connection
-int readn( register int fd, register char *ptr, register int nbytes );
+int readn( int fd, char *ptr, int nbytes );
 /// Write nbytes bytes to TCP connection
-int writen( register int fd, register char *ptr, register int nbytes );
+int writen( int fd, char *ptr, int nbytes );
 /// Initialize the bitmap
 void initErrorBitmap( rbudpBase_t *rbudpBase );
 /// Update the bitmap. Should be called every time when a UDP packet is received

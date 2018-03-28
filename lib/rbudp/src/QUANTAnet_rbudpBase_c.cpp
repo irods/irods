@@ -239,7 +239,7 @@ void listenTCPServer( rbudpBase_t *rbudpBase ) {
     }
 }
 
-int readn( register int fd, register char *ptr, register int nbytes ) {
+int readn( int fd, char *ptr, int nbytes ) {
     int nleft, nread;
     nleft = nbytes;
     while ( nleft > 0 ) {
@@ -257,7 +257,7 @@ int readn( register int fd, register char *ptr, register int nbytes ) {
     return nbytes - nleft;
 }
 
-int writen( register int fd, register char *ptr, register int nbytes ) {
+int writen( int fd, char *ptr, int nbytes ) {
     int nleft, nwritten;
 
     nleft = nbytes;

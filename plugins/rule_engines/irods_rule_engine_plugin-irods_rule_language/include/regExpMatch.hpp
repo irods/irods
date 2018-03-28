@@ -76,7 +76,7 @@ Wildcard Pattern Matching
 *
 ----------------------------------------------------------------------------*/
 BOOLEAN match( char *pattern, char *text );
-int matche( register char *pattern, register char *text );
+int matche( char *pattern, char *text );
 /*----------------------------------------------------------------------------
 *
 * Return TRUE if PATTERN has any special wildcard characters
