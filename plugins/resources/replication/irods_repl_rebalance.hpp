@@ -17,6 +17,7 @@ namespace irods {
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
+        const std::string& _invocation_timestamp,
         const std::string& resource_name);
 
     // throws irods::exception
@@ -24,6 +25,7 @@ namespace irods {
         irods::plugin_context& _ctx,
         const std::vector<leaf_bundle_t>& _leaf_bundles,
         const int _batch_size,
+        const std::string& _invocation_timestamp,
         const std::string& resource_name);
 }
 #endif // _IRODS_REPL_REBALANCE_HPP_
