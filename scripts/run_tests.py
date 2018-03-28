@@ -41,6 +41,9 @@ def optparse_callback_catch_keyboard_interrupt(*args, **kwargs):
 def optparse_callback_use_ssl(*args, **kwargs):
     irods.test.settings.USE_SSL = True
 
+def optparse_callback_use_mungefs(*args, **kwargs):
+    irods.test.settings.USE_MUNGEFS = True
+
 def optparse_callback_topology_test(option, opt_str, value, parser):
     irods.test.settings.RUN_IN_TOPOLOGY = True
     irods.test.settings.TOPOLOGY_FROM_RESOURCE_SERVER = value == 'resource'
@@ -135,6 +138,7 @@ if __name__ == '__main__':
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
     parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
     parser.add_option('--use_ssl', action='callback', callback=optparse_callback_use_ssl)
+    parser.add_option('--use_mungefs', action='callback', callback=optparse_callback_use_mungefs)
     parser.add_option('--no_buffer', action='store_false', dest='buffer_test_output', default=True)
     parser.add_option('--xml_output', action='store_true', dest='xml_output', default=False)
     parser.add_option('--federation', type='str', nargs=3, action='callback', callback=optparse_callback_federation, metavar='<remote irods version, remote zone, remote host>')
