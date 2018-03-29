@@ -11,11 +11,10 @@
 #include "rsGenQuery.hpp"
 #include "boost/format.hpp"
 #include "boost/lexical_cast.hpp"
+#include "rodsError.h"
 
 
 namespace {
-    const int MAX_ERROR_MESSAGES = 100;
-
     irods::error repl_for_rebalance(
         irods::plugin_context& _ctx,
         const std::string& _obj_path,

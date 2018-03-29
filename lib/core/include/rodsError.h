@@ -13,7 +13,8 @@
 
 /* The error struct */
 
-#define ERR_MSG_LEN     1024
+#define ERR_MSG_LEN             1024
+#define MAX_ERROR_MESSAGES      100
 
 typedef struct {
     int status;
