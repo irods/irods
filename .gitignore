@@ -1,2 +1,3 @@
 tags
 .dir-locals.el
+*.pyc
