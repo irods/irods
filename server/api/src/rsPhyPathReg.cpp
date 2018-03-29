@@ -752,21 +752,34 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                     continue;
                 }
             }
+
             subPhyPathRegInp.dataSize = myStat->st_size;
+            std::string reg_func_name;
+
             if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
-                status = filePathRegRepl( rsComm, &subPhyPathRegInp,
-                                          fileStatInp.fileName, _resc_name );
+                reg_func_name = "filePathRegRepl";
+                status = filePathRegRepl( rsComm, &subPhyPathRegInp, fileStatInp.fileName, _resc_name );
             }
             else {
-                addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW,
-                           fileStatInp.fileName );
+                reg_func_name = "filePathReg";
+                addKeyVal( &subPhyPathRegInp.condInput, FILE_PATH_KW, fileStatInp.fileName );
                 status = filePathReg( rsComm, &subPhyPathRegInp, _resc_name );
+            }
+
+            if ( status != 0 ) {
+                if ( rsComm->rError.len < MAX_ERROR_MESSAGES ) {
+                    char error_msg[ERR_MSG_LEN];
+                    snprintf( error_msg, ERR_MSG_LEN, "dirPathReg: %s failed for %s, status = %d",
+                             reg_func_name.c_str(), subPhyPathRegInp.objPath, status );
+                    addRErrorMsg( &rsComm->rError, status, error_msg );
+                }
             }
         }
         else if ( ( myStat->st_mode & S_IFDIR ) != 0 ) {    /* a directory */
             status = dirPathReg( rsComm, &subPhyPathRegInp,
                                  fileStatInp.fileName, _resc_name );
         }
+
         free( myStat );
         free( rodsDirent ); // JMC - backport 4835
     }

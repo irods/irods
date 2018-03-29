@@ -9,6 +9,7 @@ else:
 import os
 import datetime
 import socket
+import random
 
 from .. import test
 from . import settings
@@ -179,4 +180,41 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def test_ireg_repl_invalid_collection__issue_3828(self):
         cmd = 'ireg --repl -R demoResc /tmp/test_file /tempZone/home/invalid_collection_name'
         self.admin.assert_icommand(cmd, 'STDERR', 'status = -814000 CAT_UNKNOWN_COLLECTION')
+
+    def test_ireg_silent_failure_on_invalid_perms__issue_3795(self):
+        # Create a directory to hold the test files.
+        # The name of the directory should keep it from colliding with other
+        # tests even if it is not removed.
+        src_dir = os.path.join(self.admin.local_session_dir, 'issue_3795_src_dir')
+        lib.make_dir_p(src_dir)
+
+        files = [] # Holds the full physical path of the files.
+        for i in range(5):
+            filename = 'file_' + str(i) + '.txt'
+            filename = os.path.join(src_dir, filename)
+            lib.make_file(filename, random.randint(1, 1024))
+            files.append(filename)
+
+        # The indices of the files we will be modifying.
+        error_file_idx = [2, 4] 
+
+        # This will block iRODS from registering some of the files.
+        for i in error_file_idx:
+            lib.execute_command('chmod 000 {0}'.format(files[i]))
+
+        dst_dir = self.admin.home_collection + '/issue_3795_dst_dir'
+
+        # We expect two lines of errors to be printed out.
+        regex = '^.*Level [01]: dirPathReg: filePathReg failed for.*file_[{0}{1}].txt.*status = -510013$'.format(error_file_idx[0], error_file_idx[1])
+        self.admin.assert_icommand('ireg -CK {0} {1}'.format(src_dir, dst_dir), 'STDOUT_MULTILINE', use_regex=True, expected_results=regex)
+
+        # Update permissions so that files can be processed by iRODS
+        # and forcefully re-register the files. We should not receive any errors
+        # from these commands.
+        for i in error_file_idx:
+            lib.execute_command('chmod 664 {0}'.format(files[i]))
+        self.admin.assert_icommand('ireg -fCK {0} {1}'.format(src_dir, dst_dir))
+
+        # Remove the files from iRODS.
+        self.admin.assert_icommand('irm -rf {0}'.format(dst_dir))
         
