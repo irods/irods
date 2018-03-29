@@ -120,7 +120,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
             rule_engine = config.server_config['plugin_configuration']['rule_engines'][0]
             rule_engine['plugin_specific_configuration']['re_rulebase_set'][0] = rule_filename[:-3]
             lib.update_json_file_from_dict(config.server_config_path, config.server_config)
-            
+
             self.admin.assert_icommand(['ichksum', filename], 'STDERR', 'status = -1097000 NO_RULE_OR_MSI_FUNCTION_FOUND_ERR')
 
             # Update the rule to the correct signature.
