@@ -9,7 +9,6 @@ else:
 import os
 import datetime
 import socket
-import random
 
 from .. import test
 from . import settings
@@ -192,11 +191,11 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
         for i in range(5):
             filename = 'file_' + str(i) + '.txt'
             filename = os.path.join(src_dir, filename)
-            lib.make_file(filename, random.randint(1, 1024))
+            lib.make_file(filename, ord(os.urandom(1)) + 1) # Add 1 to avoid 0 sized file.
             files.append(filename)
 
         # The indices of the files we will be modifying.
-        error_file_idx = [2, 4] 
+        error_file_idx = [2, 4]
 
         # This will block iRODS from registering some of the files.
         for i in error_file_idx:
@@ -217,4 +216,3 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         # Remove the files from iRODS.
         self.admin.assert_icommand('irm -rf {0}'.format(dst_dir))
-        
