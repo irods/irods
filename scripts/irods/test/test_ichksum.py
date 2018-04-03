@@ -84,3 +84,12 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         new_chksum = lib.file_digest(full_path, 'sha256', encoding='base64')
         self.admin.assert_icommand_fail(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 1')
         self.admin.assert_icommand(['ichksum', '-K', filename], 'STDERR_SINGLELINE', 'USER_CHKSUM_MISMATCH')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing")
+    def test_ichksum_truncating_printed_filename__issue_3085(self):
+        filename = 'issue_3085_012345678901234567890123456789.txt'
+        filename_path = os.path.join(self.admin.local_session_dir, 'issue_3085_012345678901234567890123456789.txt')
+        lib.make_file(filename_path, 1024, 'arbitrary')
+        self.admin.assert_icommand(['iput', filename_path])
+        self.admin.assert_icommand(['ichksum', filename], 'STDOUT_SINGLELINE', filename)
+
