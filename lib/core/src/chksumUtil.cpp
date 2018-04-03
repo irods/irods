@@ -92,8 +92,9 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
 
     status = rcDataObjChksum( conn, dataObjInp, &chksumStr );
 
+    ChksumCnt++;
+
     if ( status < 0 ) {
-        ChksumCnt++;
         FailedChksumCnt++;
         rodsLogError( LOG_ERROR, status,
                       "chksumDataObjUtil: rcDataObjChksum error for %s",
@@ -103,12 +104,11 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
         conn->rError = NULL;
         return status;
     }
-    else {
-        ChksumCnt++;
-    }
-    splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
-    if ( rodsArgs->silent == False ) {
-        printf( "    %-30.30s    %s\n", myFile, chksumStr );
+
+    status = splitPathByKey( dataObjInp->objPath, myDir, MAX_NAME_LEN, myFile, MAX_NAME_LEN, '/' );
+
+    if ( 0 == status && rodsArgs->silent == False ) {
+        printf( "    %s    %s\n", myFile, chksumStr );
         free( chksumStr );
         if ( rodsArgs->verbose == True ) {
             ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
