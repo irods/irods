@@ -420,7 +420,8 @@ namespace irods {
                     }
 
                     for(int i = 0; i < l->condInput.len; ++i) {
-                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
+                        auto* value = l->condInput.value[i];
+                        _out[l->condInput.keyWord[i]] = value ? value : "";
                     }
                 } else {
                     _out["dataObjInfo_ptr"] = "nullptr";
