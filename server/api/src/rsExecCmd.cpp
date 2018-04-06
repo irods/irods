@@ -22,6 +22,7 @@
 
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
+#include "irods_re_structs.hpp"
 
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
@@ -37,6 +38,23 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
     int remoteFlag;
     rodsHostAddr_t addr;
     irods::error err = SUCCESS();
+
+    ruleExecInfo_t rei;
+    initReiWithDataObjInp(&rei, rsComm, NULL);
+
+    const char* args[4] = {
+        execCmdInp->cmd,
+        execCmdInp->cmdArgv,
+        execCmdInp->execAddr,
+        execCmdInp->hintPath
+    };
+
+    status = applyRuleArg("acPreProcForExecCmd", args, 4, &rei, NO_SAVE_REI);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+                "initAgent: acPreProcForExecCmd error, status = %d", status);
+        return (status);
+    }
 
     /* some sanity check on the cmd path */
     if ( strchr( execCmdInp->cmd, '/' ) != NULL ) {
