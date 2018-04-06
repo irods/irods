@@ -336,8 +336,29 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.unlink(rulefile7)
         os.unlink(rulefile8)
  
+    def test_acPreProcForExecCmd__3867(self):
+        with temporary_core_file() as core:
+            core.add_rule('acPreProcForExecCmd(*cmd, *args, *addr, *hint){ writeLine("serverLog", "TEST_MARKER_test_acPreProcForExecCmd__3867")}')
 
+            rule_file = 'test_acPreProcForExecCmd__3867.r'
+            rule_string = '''
+test_acPreProcForExecCmd__3867_rule {
+    msiExecCmd('hello', '', '', '', '', *out)
+}
 
+INPUT null
+OUTPUT ruleExecOut
+'''
+            with open(rule_file, 'w') as f:
+                f.write(rule_string)
+
+            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand('irule -F ' + rule_file)
+            os.unlink(rule_file)
+
+            log_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_MARKER_test_acPreProcForExecCmd__3867', start_index=initial_log_size)
+
+            assert 1 == log_count
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
@@ -602,3 +623,37 @@ OUTPUT ruleExecOut
 
         self.admin.assert_icommand(['irule', '-F', rule_file])
         os.unlink(rule_file)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
