@@ -161,11 +161,22 @@ main( int argc, char **argv )
 
     ProcessType = SERVER_PT;    /* I am a server */
 
-    if ( const char* log_level = getenv( SP_LOG_LEVEL ) ) {
+    const char* log_level = getenv(SP_LOG_LEVEL);
+    if (log_level)
+    {
         rodsLogLevel( atoi( log_level ) );
     }
-    else {
+    else
+    {
         rodsLogLevel( LOG_NOTICE );
+    }
+
+    // Issue #3865 - The mere existence of the environment variable sets 
+    // the value to 1.  Otherwise it stays at the default level (currently 0).
+    const char* sql_log_level = getenv(SP_LOG_SQL);
+    if (sql_log_level)
+    {
+    	rodsLogSqlReq(1);
     }
 
 #ifdef SYSLOG
