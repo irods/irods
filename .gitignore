@@ -1,3 +1,6 @@
 tags
 .dir-locals.el
+.project
+.cproject
+*.swp
 *.pyc
