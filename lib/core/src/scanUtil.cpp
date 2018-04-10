@@ -37,17 +37,6 @@ scanObj( rcComm_t *conn,
             return 0;
         }
 
-        size_t lenInpPath = strlen( inpPathO );
-        /* remove any trailing "/" from inpPathO */
-        if ( lenInpPath > 1 && '/' == inpPathO[ lenInpPath - 1 ] ) {
-            lenInpPath--;
-        }
-        if ( lenInpPath >= LONG_NAME_LEN ) {
-            rodsLog( LOG_ERROR, "Path %s is longer than %ju characters in scanObj",
-                     inpPathO, ( intmax_t ) LONG_NAME_LEN );
-            return USER_STRLEN_TOOLONG;
-        }
-
         char inpPath[ LONG_NAME_LEN ];
         snprintf( inpPath, sizeof( inpPath ), "%s", inpPathO );
         // if it is part of a mounted collection, abort
@@ -87,6 +76,10 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, co
         return status;
     }
 
+    // This variable will contain either the 0, or the last error
+    // encountered as the loop below iterates through all of the
+    // entries in the physical directory.
+    int return_status = 0;
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
@@ -104,9 +97,11 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, co
         else {
             status = chkObjExist( conn, fullPath, hostname );
         }
+        if (status != 0) {
+            return_status = status;
+        }
     }
-    return status;
-
+    return return_status;
 }
 
 int
@@ -168,7 +163,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
     /* check if the physical file corresponding to the iRODS object does exist */
     status =  rcGenQuery( conn, &genQueryInp2, &genQueryOut2 );
     if ( status == 0 ) {
-        statPhysFile( conn, genQueryOut2 );
+        status = statPhysFile( conn, genQueryOut2 );
     }
     else {
         printf( "Could not find the requested data object or collection in iRODS.\n" );
@@ -177,7 +172,7 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
         genQueryInp2.continueInx = genQueryOut2->continueInx;
         status = rcGenQuery( conn, &genQueryInp2, &genQueryOut2 );
         if ( status == 0 ) {
-            statPhysFile( conn, genQueryOut2 );
+            status = statPhysFile( conn, genQueryOut2 );
         }
     }
 
@@ -207,7 +202,6 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
             return -1;
         }
         char *dataPath = &dataPathStruct->value[dataPathStruct->len * i];
-        char *dataSize = &dataSizeStruct->value[dataSizeStruct->len * i];
         char *loc = &locStruct->value[locStruct->len * i];
         char *zone = &zoneStruct->value[zoneStruct->len * i];
         char *dataName = &dataNameStruct->value[dataNameStruct->len * i];
@@ -227,13 +221,11 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
             printf( "User must be a rodsadmin to scan iRODS data objects.\n" );
             rc = status;
         }
-        //zero-length files are not stored on disk
-        else if ( status < 0 && strcmp( dataSize, "0" ) != 0 ) {
+        else if ( status < 0 ) {
             printf( "Physical file %s on server %s is missing, corresponding to "
                     "iRODS object %s/%s\n", dataPath, loc, collName, dataName );
             rc = status;
         }
-
     }
 
     return rc;
