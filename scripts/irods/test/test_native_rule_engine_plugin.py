@@ -6,6 +6,7 @@ else:
     import unittest
 
 import inspect
+import json
 import os
 import time
 
@@ -17,6 +18,7 @@ from .. import lib
 from ..configuration import IrodsConfig
 from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
+from ..controller import IrodsController
 
 class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -42,7 +44,33 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
 
     def test_network_pep(self):
-        self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+        irodsctl = IrodsController()
+        server_config_filename = paths.server_config_path()
+
+        # load server_config.json to inject a new rule base
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+
+        # Occasionally, the expected message is printed twice due to the rule engine waking up, causing the test to fail
+        # Make irodsReServer sleep for a long time so it won't wake up while the test is running
+        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1000
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+
+        with lib.file_backed_up(server_config_filename):
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # Bounce server to apply setting
+            irodsctl.restart()
+
+            # Actually run the test
+            self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile)
+
+        # Bounce server to get back original settings
+        irodsctl.restart()
 
     def test_auth_pep(self):
         self.helper_test_pep(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name], "iput -f --metadata ATTR;VALUE;UNIT "+self.testfile, ['THIS IS AN OUT VARIABLE'], 2)
