@@ -19,6 +19,11 @@ from .. import lib
 from . import session
 from ..test.command import assert_command
 
+try:
+    import zmq
+except ImportError:
+    zmq = None
+
 SessionsMixin = session.make_sessions_mixin([('otherrods','pass')], [])
 
 class TestControlPlane(SessionsMixin, unittest.TestCase):
@@ -128,3 +133,21 @@ class TestControlPlane(SessionsMixin, unittest.TestCase):
             finally:
                 host_name = lib.get_hostname()
                 admin_session.assert_icommand('iadmin mkresc demoResc unixfilesystem '+host_name+':/var/lib/irods/Vault', 'STDOUT_SINGLELINE', 'demoResc')
+
+    @unittest.skipIf(zmq is None, 'Skip if pyzmq is unavailable')
+    def test_empty_message(self):
+        config = IrodsConfig()
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        control_plane_endpoint = "tcp://%s:%s" % (
+            config.client_environment['irods_host'],
+            config.server_config['server_control_plane_port'])
+        socket.connect(control_plane_endpoint)
+        socket.send("")
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.environment_file_contents = config.client_environment
+            _, out, _ = admin_session.assert_icommand('irods-grid status --hosts=%s' % config.client_environment['irods_host'], 'STDOUT_SINGLELINE', "")
+        status_dict = json.loads(out)
+        assert status_dict['hosts'][0]['status'] == 'server_state_running'
+
