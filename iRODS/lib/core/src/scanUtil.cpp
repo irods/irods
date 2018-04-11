@@ -8,6 +8,7 @@
 #include "scanUtil.h"
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
+#include "irods_hierarchy_parser.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -234,39 +235,106 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
 }
 
 int
-chkObjExist( rcComm_t *conn, const char *inpPath, const char *hostname ) {
-    int status;
-    genQueryInp_t genQueryInp;
+store_single_attribute_genquery_to_vector(
+    rcComm_t* conn,
+    genQueryInp_t& genQueryInp,
+    std::vector<std::string>& results ) {
     genQueryOut_t *genQueryOut = NULL;
+    const int status = rcGenQuery( conn, &genQueryInp, &genQueryOut );
+    if( status < 0 ) {
+        freeGenQueryOut( &genQueryOut );
+        return status;
+    }
+
+    for( int i = 0; i < genQueryOut->rowCnt; i++ ) {
+        results.push_back( genQueryOut->sqlResult[0].value + i * genQueryOut->sqlResult[0].len );
+    }
+    freeGenQueryOut( &genQueryOut );
+    return status;
+}
+
+int
+get_hierarchies_from_data_path(
+    rcComm_t* conn,
+    std::vector<std::string>& hierarchies,
+    const char* data_path ) {
+    genQueryInp_t genQueryInp;
     char condStr[MAX_NAME_LEN];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
-    addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
-    genQueryInp.maxRows = 0;
-    /*
-     Use the AUTO_CLOSE option to close down the statement after the
-     query, avoiding later 'too many concurrent statements' errors (and
-     CAT_SQL_ERR: -806000) later.  This could also be done by asking for 2
-     rows (maxRows), but the rows are not needed, just the status.
-     This may also fix a segfault error which might be related.
-     */
-    genQueryInp.options = AUTO_CLOSE;
-
-    snprintf( condStr, MAX_NAME_LEN, "='%s'", inpPath );
+    addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+    snprintf( condStr, MAX_NAME_LEN, "='%s'", data_path );
     addInxVal( &genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr );
+
+    const int status = store_single_attribute_genquery_to_vector( conn, genQueryInp, hierarchies );
+    clearGenQueryInp( &genQueryInp );
+    return status;
+}
+
+int
+get_resource_names_for_host(
+    rcComm_t* conn,
+    std::vector<std::string>& resource_names,
+    const char* hostname ) {
+    genQueryInp_t genQueryInp;
+    char condStr[MAX_NAME_LEN];
+
+    memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+    addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME, 1 );
+    genQueryInp.maxRows = MAX_SQL_ROWS;
     snprintf( condStr, MAX_NAME_LEN, "like '%s%%' || ='%s'", hostname, hostname );
     addInxVal( &genQueryInp.sqlCondInp, COL_R_LOC, condStr );
 
-    status =  rcGenQuery( conn, &genQueryInp, &genQueryOut );
-    if ( status == CAT_NO_ROWS_FOUND ) {
-        printf( "%s is not registered in iRODS\n", inpPath );
+    const int status = store_single_attribute_genquery_to_vector( conn, genQueryInp, resource_names );
+    clearGenQueryInp( &genQueryInp );
+    return status;
+}
+
+int
+chkObjExist(
+    rcComm_t *conn,
+    const char *inpPath,
+    const char *hostname ) {
+    const char* not_registered_message = "%s is not registered in iRODS\n";
+
+    // Get resource hierarchies which contain the given input path
+    std::vector<std::string> hierarchies;
+    int status = get_hierarchies_from_data_path( conn, hierarchies, inpPath );
+    if( status < 0 ) {
+        if( CAT_NO_ROWS_FOUND == status ) {
+            printf( not_registered_message, inpPath );
+        }
+        return status;
     }
 
-    clearGenQueryInp( &genQueryInp );
-    freeGenQueryOut( &genQueryOut );
+    // Gather all resources for this hostname
+    std::vector<std::string> resource_names;
+    status = get_resource_names_for_host( conn, resource_names, hostname );
+    if( status < 0 ) {
+        if( CAT_NO_ROWS_FOUND == status ) {
+            printf( not_registered_message, inpPath );
+        }
+        return status;
+    }
 
-    return status;
+    // Traverse the leaves of the list of hierarchies which are associated with the given pathname,
+    // and the resources on this host. Intersection indicates that data path is registered with iRODS.
+    for( std::vector<std::string>::iterator hier_it = hierarchies.begin(); hier_it != hierarchies.end(); ++hier_it ) {
+        std::string leaf;
+        irods::hierarchy_parser parser;
+        parser.set_string( *hier_it );
+        parser.last_resc( leaf );
+        for( std::vector<std::string>::iterator name_it = resource_names.begin(); name_it != resource_names.end(); ++name_it ) {
+            if( leaf == *name_it ) {
+                return status;
+            }
+        }
+    }
 
+    // Data path is registered but resides on a different host
+    printf( not_registered_message, inpPath );
+    return CAT_NO_ROWS_FOUND;
 }
 
 int
