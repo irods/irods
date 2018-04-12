@@ -178,6 +178,7 @@ int msiCreateCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecIn
 int msiDeleteCollByAdmin( msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei ) {
     int i;
     collInfo_t collInfo;
+    memset(&collInfo, 0, sizeof(collInfo));
     char *parColl;
     char *childName;
 

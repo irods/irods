@@ -9,6 +9,25 @@
 namespace irods {
     namespace re_serialization {
 
+        static void serialize_keyValPair(
+            const keyValPair_t&     _kvp,
+            serialized_parameter_t& _out) {
+            if(_kvp.len > 0) {
+                for(int i = 0; i < _kvp.len; ++i) {
+                   if(_kvp.keyWord && _kvp.keyWord[i]) {
+                        if(_kvp.value && _kvp.value[i]) {
+                            _out[_kvp.keyWord[i]] = _kvp.value[i];
+                        }
+                        else {
+                            _out[_kvp.keyWord[i]] = "empty_value";
+                        }
+                    }
+                }
+            } else {
+                _out["keyValPair_t"] = "nullptr";
+            }
+        }
+
         static error serialize_float_ptr(
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
@@ -336,9 +355,8 @@ namespace irods {
                                 _out );
                     }
 
-                    for(int i = 0; i < l->condInput.len; ++i) {
-                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
-                    }
+                    serialize_keyValPair(l->condInput, _out);
+
                 } else {
                     _out["dataObjInp_ptr"] = "nullptr";
                 }
@@ -419,10 +437,8 @@ namespace irods {
                                 _out );
                     }
 
-                    for(int i = 0; i < l->condInput.len; ++i) {
-                        auto* value = l->condInput.value[i];
-                        _out[l->condInput.keyWord[i]] = value ? value : "";
-                    }
+                    serialize_keyValPair(l->condInput, _out);
+
                 } else {
                     _out["dataObjInfo_ptr"] = "nullptr";
                 }
@@ -520,9 +536,8 @@ namespace irods {
                     _out["coll_info1"] = l->collInfo1;
                     _out["coll_info2"] = l->collInfo2;
 
-                    for(int i = 0; i < l->condInput.len; ++i) {
-                        _out[l->condInput.keyWord[i]] = l->condInput.value[i];
-                    }
+                    serialize_keyValPair(l->condInput, _out);
+
                 } else {
                     _out["collInfo_ptr"] = "nullptr";
                 }

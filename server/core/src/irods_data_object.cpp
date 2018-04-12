@@ -153,10 +153,18 @@ namespace irods {
         _kvp[FLAGS_KW] = flags_str.str().c_str();
 
         // copy contents of cond_input
-        for ( int i = 0; i < cond_input_.len; i++ ) {
-            _kvp[cond_input_.keyWord[i]] = cond_input_.value[i];
-        }
-
+        if(cond_input_.len > 0) {
+            for(int i = 0; i < cond_input_.len; ++i) {
+                if(cond_input_.keyWord && cond_input_.keyWord[i]) {
+                    if(cond_input_.value && cond_input_.value[i]) {
+                        _kvp[cond_input_.keyWord[i]] = cond_input_.value[i];
+                    }
+                    else {
+                        _kvp[cond_input_.keyWord[i]] = "empty_value";
+                    }
+                }
+            } // for
+        } // if
         return SUCCESS();
 
     } // get_re_vars
