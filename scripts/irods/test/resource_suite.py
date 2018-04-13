@@ -710,6 +710,7 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ireg_repl_to_coordinating_resource__issue_3844(self):
         # local setup
         filename = "newfile.txt"
