@@ -123,7 +123,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
             status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfoHead );
 
             if ( status < 0 )  {
-                rodsLog( LOG_NOTICE, "%s - Failed to get data objects.", __FUNCTION__ );
+                rodsLog( LOG_NOTICE, "%s - Failed to get data objects, status = %d", __FUNCTION__, status );
                 return status;
             }
             tmpDataObjInfo = dataObjInfoHead;
