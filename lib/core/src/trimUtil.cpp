@@ -60,8 +60,8 @@ trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         if ( status < 0 &&
                 status != CAT_NO_ROWS_FOUND ) {
             rodsLogError( LOG_ERROR, status,
-                          "trimUtil: trim error for %s, status = %d",
-                          rodsPathInp->srcPath[i].outPath, status );
+                          "trimUtil: trim error for %s. ",
+                          rodsPathInp->srcPath[i].outPath );
             savedStatus = status;
         }
     }
