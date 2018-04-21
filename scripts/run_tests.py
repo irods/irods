@@ -116,7 +116,7 @@ if __name__ == '__main__':
                                  'test_all_rules', 'test_iscan', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
                                  'test_iticket', 'test_irodsctl', 'test_resource_configuration', 'test_control_plane',
                                  'test_native_rule_engine_plugin', 'test_quotas', 'test_ils', 'test_irmdir', 'test_ichksum',
-                                 'test_iquest', 'test_imeta_help', 'test_irepl'])
+                                 'test_iquest', 'test_imeta_help', 'test_irepl', 'test_itrim'])
 
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
