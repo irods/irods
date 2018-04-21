@@ -17,6 +17,7 @@
 #include "rsGlobalExtern.hpp"
 //#include "reIn2p3SysRule.hpp"
 #include "irods_file_object.hpp"
+#include "irods_linked_list_iterator.hpp"
 
 /* definition for return value of resolveSingleReplCopy */
 #define NO_GOOD_COPY    0
@@ -116,4 +117,28 @@ regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
 int
 getDataObjByClass( dataObjInfo_t *dataObjInfoHead, int rescClass,
                    dataObjInfo_t **outDataObjInfo );
+
+irods::linked_list_iterator<dataObjInfo_t> begin(dataObjInfo_t* _objects) noexcept;
+
+irods::linked_list_iterator<const dataObjInfo_t> begin(const dataObjInfo_t* _objects) noexcept;
+
+irods::linked_list_iterator<dataObjInfo_t> end(dataObjInfo_t* _objects) noexcept;
+
+irods::linked_list_iterator<const dataObjInfo_t> end(const dataObjInfo_t* _objects) noexcept;
+
+// returns true if an object exists in [_objects] that satisfies [_pred].
+//
+// [UnaryPredicate]
+// - signature: bool(const dataObjInfo_t&)
+// - must return true for the required element.
+template <typename UnaryPredicate>
+bool contains_replica_if(const dataObjInfo_t* _objects, UnaryPredicate&& _pred) {
+    auto e = end(_objects);
+    return std::find_if(begin(_objects), e, std::forward<UnaryPredicate>(_pred)) != e;
+}
+
+bool contains_replica(const dataObjInfo_t* _objects, const std::string& _resc_name);
+
+bool contains_replica(const dataObjInfo_t* _objects, int _replica_number);
+
 #endif  /* DATA_OBJ_OPR_H */
