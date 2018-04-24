@@ -1285,3 +1285,21 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'parent', 'child', '{'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')
         self.admin.assert_icommand(['iadmin', 'rmresc', 'parent'])
         self.admin.assert_icommand(['iadmin', 'rmresc', 'child'])
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_silent_failure_when_removing_non_child_from_parent__issue_3859(self):
+        # Create resource tree.
+        self.admin.assert_icommand('iadmin mkresc pt0 passthru', 'STDOUT', 'passthru')
+        self.admin.assert_icommand('iadmin mkresc pt1 passthru', 'STDOUT', 'passthru')
+        self.admin.assert_icommand('iadmin addchildtoresc pt0 demoResc')
+
+        # The tests we care about.
+        self.admin.assert_icommand('iadmin rmchildfromresc pt1 demoResc', 'STDERR', '-857000 CAT_INVALID_CHILD')
+        self.admin.assert_icommand('iadmin rmchildfromresc invalid_resc demoResc', 'STDERR', '-78000 SYS_RESC_DOES_NOT_EXIST')
+        self.admin.assert_icommand('iadmin rmchildfromresc demoResc invalid_resc', 'STDERR', '-78000 SYS_RESC_DOES_NOT_EXIST')
+        self.admin.assert_icommand('iadmin rmchildfromresc pt0 demoResc')
+
+        # Clean-up.
+        self.admin.assert_icommand('iadmin rmresc pt0')
+        self.admin.assert_icommand('iadmin rmresc pt1')
+
