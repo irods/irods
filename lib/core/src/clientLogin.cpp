@@ -24,10 +24,14 @@
 #include "irods_configuration_parser.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "checksum.hpp"
+#include "termiosUtil.hpp"
 
 #include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <errno.h>
+#include <termios.h>
 
 static char prevChallengeSignatureClient[200];
 
@@ -91,7 +95,6 @@ int clientLoginPam( rcComm_t* Conn,
     int status = 0;
     pamAuthRequestInp_t pamAuthReqInp;
     pamAuthRequestOut_t *pamAuthReqOut = NULL;
-    int doStty = 0;
     int len = 0;
     char myPassword[MAX_PASSWORD_LEN + 2];
     char userName[NAME_LEN * 2];
@@ -100,26 +103,28 @@ int clientLoginPam( rcComm_t* Conn,
         strncpy( myPassword, password, sizeof( myPassword ) );
     }
     else {
-        path p( "/bin/stty" );
-        if ( exists( p ) ) {
-            if ( 0 != system( "/bin/stty -echo 2> /dev/null" ) ) {
-                // TODO: revisit this condition
-            }
-            doStty = 1;
+        irods::termiosUtil tiosutl(STDIN_FILENO);
+        if ( !tiosutl.echoOff() )
+        {
+            printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.\n", tiosutl.getError() );
         }
+
         printf( "Enter your current PAM (system) password:" );
-        if ( NULL == fgets( myPassword, sizeof( myPassword ), stdin ) ) {
-            // end of line reached or no input
+
+        const char *fgets_return = fgets( myPassword, sizeof( myPassword ), stdin );
+        if (fgets_return != myPassword || strlen(myPassword) < 2) {
+            // We're here because we either got an error or end-of-file.
+            myPassword[0] = '\0';
         }
-        if ( doStty ) {
-            if ( 0 != system( "/bin/stty echo 2> /dev/null" ) ) {
-                // TODO: revisit this condition
-            }
-            printf( "\n" );
+
+        printf( "\n" );
+        if( tiosutl.getValid() && !tiosutl.echoOn() )
+        {
+            printf( "Error reinstating echo mode.\n" );
         }
     }
     len = strlen( myPassword );
-    if ( myPassword[len - 1] == '\n' ) {
+    if ( len > 0 && myPassword[len - 1] == '\n' ) {
         myPassword[len - 1] = '\0'; /* remove trailing \n */
     }
 
@@ -378,8 +383,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     for ( i = 0; i < RESPONSE_LEN; i++ ) {
         if ( digest[i] == '\0' ) {
             digest[i]++;
-        }  /* make sure 'string' doesn't
-					    end early*/
+        }  /* make sure 'string' doesn't end early*/
     }
 
     /* free the array and structure allocated by the rcAuthRequest */
