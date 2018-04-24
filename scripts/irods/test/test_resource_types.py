@@ -4141,26 +4141,26 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         self.log_message_starting_location = lib.get_file_size_by_path(irods_config.server_log_path)
 
         self.valid_scenarios = [
-            self.test_scenario(1, 1, 1, self.make_context()),
-            self.test_scenario(3, 1, 1, self.make_context('3')),
-            self.test_scenario(1, 3, 1, self.make_context(delay='3')),
-            self.test_scenario(1, 3, 1, self.make_context(delay='3')),
-            self.test_scenario(3, 2, 2, self.make_context('3', '2', '2')),
-            self.test_scenario(3, 2, 1.5, self.make_context('3', '2', '1.5'))
+            self.retry_scenario(1, 1, 1, self.make_context()),
+            self.retry_scenario(3, 1, 1, self.make_context('3')),
+            self.retry_scenario(1, 3, 1, self.make_context(delay='3')),
+            self.retry_scenario(1, 3, 1, self.make_context(delay='3')),
+            self.retry_scenario(3, 2, 2, self.make_context('3', '2', '2')),
+            self.retry_scenario(3, 2, 1.5, self.make_context('3', '2', '1.5'))
             ]
 
         self.invalid_scenarios = [
-            self.test_scenario(1, 1, 1, self.make_context('-2')),
-            self.test_scenario(1, 1, 1, self.make_context('2.0')),
-            self.test_scenario(1, 1, 1, self.make_context('one')),
-            self.test_scenario(1, 1, 1, self.make_context(delay='0')),
-            self.test_scenario(1, 1, 1, self.make_context(delay='-2')),
-            self.test_scenario(1, 1, 1, self.make_context(delay='2.0')),
-            self.test_scenario(1, 1, 1, self.make_context(delay='one')),
-            self.test_scenario(3, 2, 1, self.make_context('3', '2', '0')),
-            self.test_scenario(3, 2, 1, self.make_context('3', '2', '0.5')),
-            self.test_scenario(3, 2, 1, self.make_context('3', '2', '-2')),
-            self.test_scenario(3, 2, 1, self.make_context('3', '2', 'one'))
+            self.retry_scenario(1, 1, 1, self.make_context('-2')),
+            self.retry_scenario(1, 1, 1, self.make_context('2.0')),
+            self.retry_scenario(1, 1, 1, self.make_context('one')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='0')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='-2')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='2.0')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='one')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '0')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '0.5')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '-2')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', 'one'))
             ]
         super(Test_Resource_Replication_With_Retry, self).setUp()
 
@@ -4186,7 +4186,7 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
 
     # Nested class for containing test case information
-    class test_scenario:
+    class retry_scenario(object):
         def __init__(self, retries, delay, multiplier, context_string=None):
             self.retries = retries
             self.delay = delay
@@ -4354,12 +4354,12 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
     def test_repl_retry_iput_no_context(self):
         self.reset_repl_resource()
-        self.run_iput_test(self.test_scenario(1, 1, 1), 'test_repl_retry_iput_no_context')
+        self.run_iput_test(self.retry_scenario(1, 1, 1), 'test_repl_retry_iput_no_context')
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
     def test_repl_retry_rebalance_no_context(self):
         self.reset_repl_resource()
-        self.run_rebalance_test(self.test_scenario(1, 1, 1), 'test_repl_retry_rebalance_no_context')
+        self.run_rebalance_test(self.retry_scenario(1, 1, 1), 'test_repl_retry_rebalance_no_context')
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
     def test_repl_retry_iput_no_retries(self):
@@ -4414,7 +4414,7 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         filename = "test_repl_retry_iput_large_multiplier"
         filepath = lib.create_local_testfile(filename)
         large_number = pow(2, 32)
-        scenario = self.test_scenario(2, 1, large_number, self.make_context('2', '1', str(large_number)))
+        scenario = self.retry_scenario(2, 1, large_number, self.make_context('2', '1', str(large_number)))
         failure_message = 'bad numeric conversion'
         self.admin.assert_icommand('iadmin modresc demoResc context "{0}"'.format(scenario.context_string))
 
