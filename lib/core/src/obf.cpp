@@ -43,6 +43,9 @@
 #include <sys/timeb.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <termios.h>
+#include "termiosUtil.hpp"
 #endif
 #include <cstdlib>
 
@@ -289,30 +292,34 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
 
     envVal = obfiGetEnvKey();
 
-    if ( strlen( pwArg ) == 0 ) {
-
+    if ( pwArg == NULL || strlen( pwArg ) == 0 ) {
 #ifdef windows_platform
         iRODSNtGetUserPasswdInputInConsole( inbuf, "Enter your current iRODS password:", promptOpt );
 #else
+        irods::termiosUtil tiosutl(STDIN_FILENO);
         if ( promptOpt != 1 ) {
-            path p( "/bin/stty" );
-            if ( exists( p ) ) {
-                if ( 0 != system( "/bin/stty -echo" ) ) {
-                    // TODO: revisit this condition
-                }
+            if ( !tiosutl.echoOff() )
+            {
+                printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.\n", tiosutl.getError() );
             }
         }
 
         printf( "Enter your current iRODS password:" );
-        if ( NULL == fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin ) ) {
-            // end of line reached or no input
-        }
+        const char *fgets_return = fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin );
 
         if ( promptOpt != 1 ) {
-            if ( 0 != system( "/bin/stty echo" ) ) {
-                // TODO: revisit this condition
-            }
             printf( "\n" );
+            if( tiosutl.getValid() && !tiosutl.echoOn() )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+        }
+        if (fgets_return != inbuf || strlen(inbuf) < 2)
+        {
+            // Either error or end-of-file encountered.
+            // If anything was actually entered, the length
+            // will be 2 - to include the '\n'.
+            return NO_PASSWORD_ENTERED;
         }
 #endif
 
