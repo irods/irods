@@ -3557,22 +3557,14 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         filename = "test_num_repl_policy__ticket_2851.txt"
         filepath = lib.create_local_testfile(filename)
 
-        for i in range(0,10):
-            self.admin.assert_icommand("iput " + filename + ' ' + filename+str(i))
-
-        hier_ctr = {}
-        for i in range(0,10):
-            stdout,_,_ = self.admin.run_icommand(['ils', '-l', filename+str(i)])
-            res = stdout.split()
-            hier_ctr[res[2]] = 'found_it' # first resc_hier
-            hier_ctr[res[9]] = 'found_it' # second resc_hier
-
-        print('hier_ctr size: '+str(len(hier_ctr)))
+        self.admin.assert_icommand("iput " + filepath + ' ' + filename)
+        # Count number of lines to determine number of replicas
+        linecount = len(self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', filename)[1].splitlines())
+        self.assertTrue(2 == linecount, msg='[{}] replicas made, expected 2'.format(linecount))
+        self.admin.assert_icommand(['irm', '-f', filename])
 
         self.admin.assert_icommand('iadmin modresc demoResc context "NO_CONTEXT"')
-
-        # 10 iputs should hit all the child resources
-        assert len(hier_ctr) == 3
+        os.unlink(filepath)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_random_read_policy__ticket_2851(self):
