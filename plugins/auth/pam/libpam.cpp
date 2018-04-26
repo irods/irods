@@ -502,8 +502,7 @@ class pam_auth_plugin : public irods::auth {
                 _ctx ) {
         } // ctor
 
-        ~pam_auth_plugin() override {
-        }
+        ~pam_auth_plugin() override = default;
 
 }; // class pam_auth_plugin
 

@@ -14,15 +14,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - cctor
     mysql_object::mysql_object(
-        const mysql_object& _rhs ) :
-        database_object( _rhs ) {
-
-    } // cctor
+        const mysql_object& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    mysql_object::~mysql_object() {
-    } // dtor
+    mysql_object::~mysql_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

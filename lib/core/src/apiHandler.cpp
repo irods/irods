@@ -32,25 +32,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - copy ctor
     api_entry::api_entry(
-        const api_entry& _rhs ) :
-        plugin_base( _rhs ),
-        apiNumber( _rhs.apiNumber ),
-        apiVersion( _rhs.apiVersion ),
-        clientUserAuth( _rhs.clientUserAuth ),
-        proxyUserAuth( _rhs.proxyUserAuth ),
-        inPackInstruct( _rhs.inPackInstruct ),
-        inBsFlag( _rhs.inBsFlag ),
-        outPackInstruct( _rhs.outPackInstruct ),
-        outBsFlag( _rhs.outBsFlag ),
-        call_wrapper(_rhs.call_wrapper),
-        in_pack_key(_rhs.in_pack_key),
-        out_pack_key(_rhs.out_pack_key),
-        in_pack_value(_rhs.in_pack_value),
-        out_pack_value(_rhs.out_pack_value),
-        operation_name(_rhs.operation_name),
-        extra_pack_struct(_rhs.extra_pack_struct),
-        clearInStruct( _rhs.clearInStruct ) {
-    } // cctor
+        const api_entry& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator
@@ -87,8 +69,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor for api entry table
-    api_entry_table::~api_entry_table() {
-    } // dtor
+    api_entry_table::~api_entry_table() = default; // dtor
 
 
 

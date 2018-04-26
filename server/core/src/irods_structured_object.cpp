@@ -83,8 +83,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    structured_object::~structured_object() {
-    } // dtor
+    structured_object::~structured_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

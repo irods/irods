@@ -20,8 +20,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    native_auth_object::~native_auth_object() {
-    } // dtor
+    native_auth_object::~native_auth_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - cctor

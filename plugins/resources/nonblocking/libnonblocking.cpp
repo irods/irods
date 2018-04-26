@@ -1494,10 +1494,7 @@ class non_blocking_resource : public irods::resource {
                     name_ = _rhs.name_;
                 }
 
-                maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                    name_ = _rhs.name_;
-                    return *this;
-                }
+                maintenance_operation& operator=( const maintenance_operation& _rhs ) = default;
 
                 irods::error operator()( rcComm_t* ) {
                     rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]",

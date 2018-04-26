@@ -387,8 +387,7 @@ namespace irods {
             });
         }
 
-        ~rule_engine_manager() {
-        }
+        ~rule_engine_manager() = default;
 
         error init_rule_engine(re_pack_inp<T>& _inp) {
             pluggable_rule_engine<T>* pre = nullptr;
@@ -445,7 +444,7 @@ namespace irods {
         rule_exists_manager(rule_engine_manager<T,C>& _re_mgr) :
                 re_mgr_{_re_mgr} {}
 
-        virtual ~rule_exists_manager() {}
+        virtual ~rule_exists_manager() = default;
 
         error rule_exists(const std::string& _rn, bool& ret) {
             auto er = [&ret] (re_pack_inp<T>&, const std::string&) {

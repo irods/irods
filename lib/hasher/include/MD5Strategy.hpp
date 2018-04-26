@@ -8,7 +8,7 @@ namespace irods {
     class MD5Strategy : public HashStrategy {
         public:
             MD5Strategy() {};
-            ~MD5Strategy() override {};
+            ~MD5Strategy() override = default;;
 
             std::string name() const override {
                 return MD5_NAME;

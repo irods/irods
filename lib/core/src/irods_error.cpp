@@ -156,19 +156,11 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - Destructor
-    error::~error() {
-    } // dtor
+    error::~error() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - Assignment Operator
-    error& error::operator=( const error& _rhs ) {
-        status_           = _rhs.status_;
-        code_             = _rhs.code_;
-        message_          = _rhs.message_;
-        result_stack_     = _rhs.result_stack_;
-        exception_        = _rhs.exception_;
-        return *this;
-    } // assignment operator
+    error& error::operator=( const error& _rhs ) = default; // assignment operator
 
 // =-=-=-=-=-=-=-
 // public - return the status of this error object

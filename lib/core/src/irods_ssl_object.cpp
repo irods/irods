@@ -63,8 +63,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    ssl_object::~ssl_object() {
-    } // dtor
+    ssl_object::~ssl_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

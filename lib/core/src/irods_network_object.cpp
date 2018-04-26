@@ -41,8 +41,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    network_object::~network_object() {
-    } // dtor
+    network_object::~network_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

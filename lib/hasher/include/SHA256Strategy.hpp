@@ -10,7 +10,7 @@ namespace irods {
     class SHA256Strategy : public HashStrategy {
         public:
             SHA256Strategy() {};
-            ~SHA256Strategy() override {};
+            ~SHA256Strategy() override = default;;
 
             std::string name() const override {
                 return SHA256_NAME;

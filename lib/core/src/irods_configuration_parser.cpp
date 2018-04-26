@@ -14,9 +14,7 @@ namespace irods {
 
     } // ctor
 
-    configuration_parser::~configuration_parser() {
-
-    } // dtor
+    configuration_parser::~configuration_parser() = default; // dtor
 
     configuration_parser::configuration_parser(
         const configuration_parser& _rhs ) {

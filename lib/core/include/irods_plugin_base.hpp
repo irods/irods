@@ -76,8 +76,7 @@ namespace irods {
 
             } // operator=
 
-            virtual ~plugin_base( ) {
-            } // dtor
+            virtual ~plugin_base( ) = default; // dtor
 
 
             /// @brief interface to create and register a PDMO

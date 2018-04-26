@@ -24,11 +24,11 @@ namespace irods {
         public:
             // =-=-=-=-=-=-=-
             // Constructors
-            first_class_object() {};
+            first_class_object() = default;;
 
             // =-=-=-=-=-=-=-
             // Destructor
-            virtual ~first_class_object() {};
+            virtual ~first_class_object() = default;;
 
             // =-=-=-=-=-=-=-
             // plugin resolution operators

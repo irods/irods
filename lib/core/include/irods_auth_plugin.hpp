@@ -23,13 +23,10 @@ namespace irods {
 
             }
 
-            ~auth() override {
-            }
+            ~auth() override = default;
 
             auth(
-                const auth& _rhs ) :
-                plugin_base( _rhs ) {
-            }
+                const auth& _rhs ) = default;
 
             auth& operator=(
                 const auth& _rhs ) {

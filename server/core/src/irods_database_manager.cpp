@@ -23,9 +23,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - Destructor
-    database_manager::~database_manager( ) {
-
-    } // dtor
+    database_manager::~database_manager( ) = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - retrieve a database plugin given its key

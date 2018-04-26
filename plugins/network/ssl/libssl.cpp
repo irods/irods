@@ -1280,8 +1280,7 @@ class ssl_network_plugin : public irods::network {
                 _ctx ) {
         } // ctor
 
-        ~ssl_network_plugin() override {
-        }
+        ~ssl_network_plugin() override = default;
 
 }; // class ssl_network_plugin
 

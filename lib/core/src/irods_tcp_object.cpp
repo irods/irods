@@ -31,26 +31,16 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - cctor
     tcp_object::tcp_object(
-        const tcp_object& _rhs ) :
-        network_object( _rhs ) {
-
-    } // cctor
+        const tcp_object& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    tcp_object::~tcp_object() {
-
-    } // dtor
+    tcp_object::~tcp_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator
     tcp_object& tcp_object::operator=(
-        const tcp_object& _rhs ) {
-        network_object::operator=( _rhs );
-
-        return *this;
-
-    } // operator=
+        const tcp_object& _rhs ) = default; // operator=
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

@@ -37,9 +37,7 @@ namespace irods {
         stacktrace_( _rhs.stacktrace_ ) {
     }
 
-    exception::~exception() throw() {
-
-    } // ~exception
+    exception::~exception() throw() = default; // ~exception
 
     const char* exception::what() const throw() {
         std::string message;

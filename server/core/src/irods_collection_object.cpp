@@ -96,22 +96,11 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    collection_object::~collection_object() {
-
-    } // dtor
+    collection_object::~collection_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator
-    collection_object& collection_object::operator=( const collection_object& _rhs ) {
-        // =-=-=-=-=-=-=-
-        // call base class assignment first
-        data_object::operator=( _rhs );
-
-        directory_pointer_  = _rhs.directory_pointer_;
-
-        return *this;
-
-    }  // operator=
+    collection_object& collection_object::operator=( const collection_object& _rhs ) = default;  // operator=
 
 // =-=-=-=-=-=-=-
 // plugin - resolve resource plugin for this object

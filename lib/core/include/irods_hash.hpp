@@ -44,8 +44,7 @@ namespace irods {
             return s1 < s2;
         }
 
-        ~irods_string_hash() {
-        }
+        ~irods_string_hash() = default;
 
     }; // struct irods_string_hash
 

@@ -605,8 +605,7 @@ class native_auth_plugin : public irods::auth {
                 _ctx ) {
         } // ctor
 
-        ~native_auth_plugin() override {
-        }
+        ~native_auth_plugin() override = default;
 
 }; // class native_auth_plugin
 

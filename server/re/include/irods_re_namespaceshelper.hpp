@@ -14,7 +14,7 @@ public:
     std::vector<std::string> getNamespaces();
 protected:
 private:
-    NamespacesHelper(){};
+    NamespacesHelper()= default;;
     static NamespacesHelper* _instance;
     static std::vector<std::string> namespaces;
 };

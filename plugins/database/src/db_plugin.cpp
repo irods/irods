@@ -15450,8 +15450,7 @@ class postgres_database_plugin : public irods::database {
 
         } // ctor
 
-        ~postgres_database_plugin() override {
-        }
+        ~postgres_database_plugin() override = default;
 
 }; // class postgres_database_plugin
 

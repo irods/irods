@@ -43,8 +43,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - destructor
-    physical_object::~physical_object() {
-    } // dtor
+    physical_object::~physical_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

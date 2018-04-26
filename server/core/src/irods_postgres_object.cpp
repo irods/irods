@@ -14,15 +14,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - cctor
     postgres_object::postgres_object(
-        const postgres_object& _rhs ) :
-        database_object( _rhs ) {
-
-    } // cctor
+        const postgres_object& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    postgres_object::~postgres_object() {
-    } // dtor
+    postgres_object::~postgres_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

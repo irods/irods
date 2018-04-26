@@ -40,22 +40,12 @@ namespace irods {
     } // ctor
 
     ms_table_entry::ms_table_entry(
-        const ms_table_entry& _rhs ) :
-        plugin_base( _rhs ),
-        operation_name_( _rhs.operation_name_ ),
-        num_args_( _rhs.num_args_ ) {
-    } // cctor
+        const ms_table_entry& _rhs ) = default; // cctor
 
     ms_table_entry& ms_table_entry::operator=(
-        const ms_table_entry& _rhs ) {
-        plugin_base::operator=( _rhs );
-        num_args_       = _rhs.num_args_;
-        operation_name_ = _rhs.operation_name_;
-        return *this;
-    } // operator=
+        const ms_table_entry& _rhs ) = default; // operator=
 
-    ms_table_entry::~ms_table_entry() {
-    } // dtor
+    ms_table_entry::~ms_table_entry() = default; // dtor
 
     int ms_table_entry::call(
         ruleExecInfo_t*          _rei,

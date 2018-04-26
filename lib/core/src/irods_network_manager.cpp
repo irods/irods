@@ -22,9 +22,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - Destructor
-    network_manager::~network_manager( ) {
-
-    } // dtor
+    network_manager::~network_manager( ) = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - retrieve a network plugin given its key

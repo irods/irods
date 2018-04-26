@@ -21,9 +21,7 @@ namespace irods {
 
     } // constructor
 
-    generic_auth_object::~generic_auth_object() {
-
-    } // destructor
+    generic_auth_object::~generic_auth_object() = default; // destructor
 
 
     error generic_auth_object::resolve(

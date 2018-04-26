@@ -43,8 +43,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - Destructor
-    resource_manager::~resource_manager( ) {
-    } // cctor
+    resource_manager::~resource_manager( ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - retrieve a resource given its key

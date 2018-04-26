@@ -14,15 +14,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - cctor
     generic_database_object::generic_database_object(
-        const generic_database_object& _rhs ) :
-        database_object( _rhs ), type_(_rhs.type_) {
-
-    } // cctor
+        const generic_database_object& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    generic_database_object::~generic_database_object() {
-    } // dtor
+    generic_database_object::~generic_database_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

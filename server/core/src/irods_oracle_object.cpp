@@ -14,16 +14,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - cctor
     oracle_object::oracle_object(
-        const oracle_object& _rhs ) :
-        database_object( _rhs ) {
-
-
-    } // cctor
+        const oracle_object& _rhs ) = default; // cctor
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    oracle_object::~oracle_object() {
-    } // dtor
+    oracle_object::~oracle_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

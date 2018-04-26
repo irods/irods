@@ -20,8 +20,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    osauth_auth_object::~osauth_auth_object() {
-    } // dtor
+    osauth_auth_object::~osauth_auth_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - cctor
@@ -36,13 +35,7 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - assignment operator
     osauth_auth_object& osauth_auth_object::operator=(
-        const osauth_auth_object& _rhs ) {
-        auth_object::operator=( _rhs );
-        user_name_ = _rhs.user_name_;
-        zone_name_ = _rhs.zone_name_;
-        digest_    = _rhs.digest_;
-        return *this;
-    }
+        const osauth_auth_object& _rhs ) = default;
 
 // =-=-=-=-=-=-=-
 // public - equality operator

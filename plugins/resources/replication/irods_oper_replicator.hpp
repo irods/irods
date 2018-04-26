@@ -16,9 +16,7 @@ namespace irods {
         public:
             virtual error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper ) = 0;
 
-            virtual ~oper_replicator() {
-
-            }
+            virtual ~oper_replicator() = default;
     };
 }; // namespace irods
 

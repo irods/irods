@@ -8,8 +8,7 @@ namespace irods {
         oper_replicator_( _oper_replicator ) {
     }
 
-    replicator::~replicator( ) {
-    }
+    replicator::~replicator( ) = default;
 
     error replicator::replicate(
         plugin_context& _ctx,

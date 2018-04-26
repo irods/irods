@@ -20,8 +20,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - dtor
-    pam_auth_object::~pam_auth_object() {
-    } // dtor
+    pam_auth_object::~pam_auth_object() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public - assignment operator

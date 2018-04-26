@@ -10,7 +10,7 @@ namespace irods {
     class HashStrategy {
         public:
 
-            virtual ~HashStrategy() {};
+            virtual ~HashStrategy() = default;;
 
             virtual std::string name() const = 0;
             virtual error init( boost::any& context ) const = 0;

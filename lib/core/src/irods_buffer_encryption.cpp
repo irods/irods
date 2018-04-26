@@ -90,8 +90,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - destructor
-    buffer_crypt::~buffer_crypt() {
-    } // dtor
+    buffer_crypt::~buffer_crypt() = default; // dtor
 
 // =-=-=-=-=-=-=-
 // public static - generate a random key

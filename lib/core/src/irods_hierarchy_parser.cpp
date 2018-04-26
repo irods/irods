@@ -141,10 +141,7 @@ namespace irods {
     }
 
     hierarchy_parser& hierarchy_parser::operator=(
-        const hierarchy_parser& rhs ) {
-        resc_list_ = rhs.resc_list_;
-        return *this;
-    }
+        const hierarchy_parser& rhs ) = default;
 
     const std::string& hierarchy_parser::delimiter( ) {
         return DELIM;

@@ -68,9 +68,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // dtor
-            virtual ~plugin_context() {
-
-            } // dtor
+            virtual ~plugin_context() = default; // dtor
 
             // =-=-=-=-=-=-=-
             // test to determine if contents are valid

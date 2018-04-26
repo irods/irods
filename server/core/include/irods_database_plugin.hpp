@@ -27,14 +27,11 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             /// @brief Destructor
-            ~database() override {
-            }
+            ~database() override = default;
 
             // =-=-=-=-=-=-=-
             /// @brief copy ctor
-            database( const database& _rhs ) :
-                plugin_base(_rhs ) {
-            }
+            database( const database& _rhs ) = default;
 
             // =-=-=-=-=-=-=-
             /// @brief Assignment Operator - necessary for stl containers
