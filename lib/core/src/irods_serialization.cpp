@@ -37,16 +37,16 @@ namespace irods {
         const std::set<char>& character_set ) {
         std::stringstream str;
         str << '[';
-        for (value_type iter : character_set) {
-            switch ( iter ) {
+        for ( auto iter = character_set.begin(); iter != character_set.end(); ++iter ) {
+            switch ( *iter ) {
             case ']':
             case '^':
             case '-':
             case '\\':
-                str << '\\' << iter;
+                str << '\\' << *iter;
                 break;
             default:
-                str << iter;
+                str << *iter;
             }
         }
         str << ']';

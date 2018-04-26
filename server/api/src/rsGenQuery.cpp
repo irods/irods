@@ -25,7 +25,6 @@
 namespace {
     std::string
     get_column_name(int j) {
-        const int n = sizeof(columnNames)/sizeof(columnNames[0]);
         for (auto & columnName : columnNames) {
             if (columnName.columnId == j) {
                 return std::string(columnName.columnName);
