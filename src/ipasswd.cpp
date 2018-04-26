@@ -6,6 +6,7 @@
 #include "rodsClient.h"
 #include <unistd.h>
 #include <termios.h>
+#include "termiosUtil.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
 
@@ -112,51 +113,114 @@ main( int argc, char **argv ) {
 #ifdef WIN32
     HANDLE hStdin = GetStdHandle( STD_INPUT_HANDLE );
     DWORD mode;
-    GetConsoleMode( hStdin, &mode );
-    DWORD lastMode = mode;
-    mode &= ~ENABLE_ECHO_INPUT;
-    BOOL error = !SetConsoleMode( hStdin, mode );
-    int errsv = -1;
+    DWORD lastMode = 0;
+    BOOL error = false;
+    int errsv = 0;
+
+    if (echoFlag != 1)
+    {
+        GetConsoleMode( hStdin, &mode );
+        lastMode = mode;
+        mode &= ~ENABLE_ECHO_INPUT;
+        error = !SetConsoleMode( hStdin, mode );
+        errsv = -1;
+    }
 #else
-    struct termios tty;
-    tcgetattr( STDIN_FILENO, &tty );
-    tcflag_t oldflag = tty.c_lflag;
-    tty.c_lflag &= ~ECHO;
-    int error = tcsetattr( STDIN_FILENO, TCSANOW, &tty );
-    int errsv = errno;
+    int error = 0;
+    int errsv = 0;
+    irods::termiosUtil tiosutl(STDIN_FILENO);
+    if ( echoFlag != 1 && !tiosutl.echoOff() )
+    {
+        error = 1;
+        errsv = tiosutl.getError();
+    }
 #endif
-    if ( error ) {
-        printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.", errsv );
+
+    if ( echoFlag != 1 && error )
+    {
+        printf( "WARNING: Error %d disabling echo mode. Password will be displayed in plaintext.\n", errsv );
     }
 
     len = 0;
-    for ( ; len < 4; ) {
+    for (int ntimes = 0 ; len < 3; ++ntimes) {
+        if (ntimes == 3)
+        {
+#ifdef WIN32
+            if ( echoFlag != 1 && !SetConsoleMode( hStdin, lastMode ) )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+#else
+            if( echoFlag != 1 && tiosutl.getValid() && !tiosutl.echoOn() )
+            {
+                printf( "Error reinstating echo mode.\n" );
+               }
+#endif
+            printf ("Invalid password. Aborting...\n");
+            rcDisconnect( Conn );
+            exit( 8 );
+        }
         printf( "Enter your new iRODS password:" );
         std::string password = "";
-        getline( std::cin, password );
+        if (!getline( std::cin, password ))
+        {
+            printf( "End of file encountered.\n" );
+#ifdef WIN32
+            if ( echoFlag != 1 && !SetConsoleMode( hStdin, lastMode ) )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+#else
+            if( echoFlag != 1 && tiosutl.getValid() && !tiosutl.echoOn() )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+#endif
+            rcDisconnect( Conn );
+            exit( 8 );
+        }
         printf( "\n" );
         strncpy( newPw, password.c_str(), MAX_PASSWORD_LEN );
         len = strlen( newPw );
-        if ( len < 4 ) {
+        if ( len < 3 ) {
             printf( "Your password must be at least 3 characters long.\n" );
         }
     }
+
     if ( myRodsArgs.force != True ) {
         printf( "Reenter your new iRODS password:" );
         std::string password = "";
-        getline( std::cin, password );
+        if (!getline( std::cin, password ))
+        {
+#ifdef WIN32
+            if ( echoFlag != 1 && !SetConsoleMode( hStdin, lastMode ) )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+#else
+            printf( "End of file encountered.\n" );
+            if( echoFlag != 1 && tiosutl.getValid() && !tiosutl.echoOn() )
+            {
+                printf( "Error reinstating echo mode.\n" );
+            }
+#endif
+            rcDisconnect( Conn );
+            exit( 8 );
+        }
         printf( "\n" );
         strncpy( newPw2, password.c_str(), MAX_PASSWORD_LEN );
         if ( strncmp( newPw, newPw2, MAX_PASSWORD_LEN ) != 0 ) {
             printf( "Entered passwords do not match\n" );
+
 #ifdef WIN32
-            if ( !SetConsoleMode( hStdin, lastMode ) ) {
-                printf( "Error reinstating echo mode." );
+            if ( echoFlag != 1 && !SetConsoleMode( hStdin, lastMode ) )
+            {
+                printf( "Error reinstating echo mode.\n" );
             }
 #else
-            tty.c_lflag = oldflag;
-            if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-                printf( "Error reinstating echo mode." );
+            if( echoFlag != 1 && tiosutl.getValid() && !tiosutl.echoOn() )
+            {
+                printf( "Error reinstating echo mode.\n" );
             }
 #endif
             rcDisconnect( Conn );
@@ -164,13 +228,13 @@ main( int argc, char **argv ) {
         }
     }
 #ifdef WIN32
-    if ( SetConsoleMode( hStdin, lastMode ) ) {
+    if ( echoFlag != 1 && SetConsoleMode( hStdin, lastMode ) ) {
         printf( "Error reinstating echo mode." );
     }
 #else
-    tty.c_lflag = oldflag;
-    if ( tcsetattr( STDIN_FILENO, TCSANOW, &tty ) ) {
-        printf( "Error reinstating echo mode." );
+    if( echoFlag != 1 && tiosutl.getValid() && !tiosutl.echoOn() )
+    {
+        printf( "Error reinstating echo mode.\n" );
     }
 #endif
 
@@ -178,8 +242,7 @@ main( int argc, char **argv ) {
     len = strlen( newPw );
     lcopy = MAX_PASSWORD_LEN - 10 - len;
     if ( lcopy > 15 ) {
-        /* server will look for 15 characters
-        		  of random string */
+        /* server will look for 15 characters of random string */
         strncat( buf0, rand, lcopy );
     }
     i = obfGetPw( buf1 );
