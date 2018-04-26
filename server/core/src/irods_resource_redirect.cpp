@@ -103,11 +103,11 @@ namespace irods {
         // grind through the list, get the root of the hiers and
         // place it into the map
         std::vector< physical_object > repls = _file_obj->replicas();
-        for ( size_t i = 0; i < repls.size(); ++i ) {
+        for (auto & repl : repls) {
             // =-=-=-=-=-=-=-
             // extract the root resource from the hierarchy
             hierarchy_parser parser;
-            parser.set_string( repls[ i ].resc_hier() );
+            parser.set_string( repl.resc_hier() );
 
             std::string      root_resc;
             parser.first_resc( root_resc );
@@ -185,18 +185,18 @@ namespace irods {
         if ( _key_word ) {
             // =-=-=-=-=-=-=-
             // we have a kw present, compare against all the repls for a match
-            for ( size_t i = 0; i < repls.size(); ++i ) {
+            for (auto & repl : repls) {
                 // =-=-=-=-=-=-=-
                 // extract the root resource from the hierarchy
                 std::string      root_resc;
                 hierarchy_parser parser;
-                parser.set_string( repls[ i ].resc_hier() );
+                parser.set_string( repl.resc_hier() );
                 parser.first_resc( root_resc );
 
                 // =-=-=-=-=-=-=-
                 // if we have a match then set open & break, otherwise continue
                 if ( root_resc == _key_word ) {
-                    _file_obj->resc_hier( repls[ i ].resc_hier() );
+                    _file_obj->resc_hier( repl.resc_hier() );
                     kw_match_found = true;
                     break;
                 }
@@ -312,18 +312,18 @@ namespace irods {
         if ( _key_word ) {
             // =-=-=-=-=-=-=-
             // we have a kw present, compare against all the repls for a match
-            for ( size_t i = 0; i < repls.size(); ++i ) {
+            for (auto & repl : repls) {
                 // =-=-=-=-=-=-=-
                 // extract the root resource from the hierarchy
                 std::string      root_resc;
                 hierarchy_parser parser;
-                parser.set_string( repls[ i ].resc_hier() );
+                parser.set_string( repl.resc_hier() );
                 parser.first_resc( root_resc );
 
                 // =-=-=-=-=-=-=-
                 // if we have a match then set open & break, otherwise continue
                 if ( root_resc == _key_word ) {
-                    _file_obj->resc_hier( repls[ i ].resc_hier() );
+                    _file_obj->resc_hier( repl.resc_hier() );
                     kw_match_found = true;
                     break;
                 }
@@ -390,11 +390,11 @@ namespace irods {
         }
 
         bool hier_match_flg = false;
-        for ( size_t i = 0; i < repls.size(); ++i ) {
+        for (auto & repl : repls) {
             // =-=-=-=-=-=-=-
             // extract the root resource from the hierarchy
             hierarchy_parser parser;
-            parser.set_string( repls[ i ].resc_hier() );
+            parser.set_string( repl.resc_hier() );
 
             std::string root_resc;
             parser.first_resc( root_resc );

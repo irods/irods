@@ -37,8 +37,8 @@ namespace irods {
         MD5_Final( hash, &ctx );
 
         std::stringstream ss;
-        for ( int i = 0; i < 16; ++i ) {
-            ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )hash[i];
+        for (unsigned char i : hash) {
+            ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << ( int )i;
         }
 
         return ss.str();
@@ -120,8 +120,8 @@ namespace irods {
         const array_t& _in_buf,
         std::string& _out_str ) {
         std::stringstream ss;
-        for ( irods::buffer_crypt::array_t::size_type i = 0; i < _in_buf.size(); ++i ) {
-            ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << static_cast<unsigned int>( _in_buf[i] );
+        for (unsigned char i : _in_buf) {
+            ss << std::setfill( '0' ) << std::setw( 2 ) << std::hex << static_cast<unsigned int>( i );
         }
 
         _out_str = ss.str();

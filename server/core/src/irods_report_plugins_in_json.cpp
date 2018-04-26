@@ -19,12 +19,10 @@ namespace irods {
             return PASS( ret );
         }
 
-        for ( auto itr = plugin_list.begin();
-                itr != plugin_list.end();
-                ++itr ) {
+        for (auto & itr : plugin_list) {
 
             json_t* plug = json_object();
-            json_object_set_new( plug, "name",     json_string( itr->c_str() ) );
+            json_object_set_new( plug, "name",     json_string( itr.c_str() ) );
             json_object_set_new( plug, "type",     json_string( _type_name ) );
             json_object_set_new( plug, "version",  json_string( "" ) );
             json_object_set_new( plug, "checksum_sha256", json_string( "" ) );

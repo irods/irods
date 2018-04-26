@@ -485,12 +485,10 @@ namespace irods {
             std::vector<std::string> children;
             resc->children(children);
 
-            for( size_t idx = 0;
-                 idx < children.size();
-                 ++idx ) {
+            for(auto & idx : children) {
 
                 ret = gather_leaf_bundle_for_child(
-                          children[idx],
+                          idx,
                           _bundle );
                 if(!ret.ok() ) {
                     return PASS(ret);

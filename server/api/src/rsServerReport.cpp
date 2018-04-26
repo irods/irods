@@ -405,11 +405,9 @@ irods::error get_resource_array(
 
     const std::string local_host_name = my_env.rodsHost;
 
-    for ( irods::resource_manager::iterator itr = resc_mgr.begin();
-            itr != resc_mgr.end();
-            ++itr ) {
+    for (auto & itr : resc_mgr) {
 
-        irods::resource_ptr resc = itr->second;
+        irods::resource_ptr resc = itr.second;
 
         rodsServerHost_t* tmp_host = nullptr;
         irods::error ret = resc->get_property< rodsServerHost_t* >(
@@ -463,7 +461,7 @@ irods::error get_resource_array(
                        "failed to alloc entry" );
         }
 
-        ret = serialize_resource_plugin_to_json(itr->second, entry);
+        ret = serialize_resource_plugin_to_json(itr.second, entry);
         if(!ret.ok()) {
             ret = PASS(ret);
             irods::log(ret);

@@ -100,8 +100,8 @@ namespace irods {
             } else {
                 const auto json_object_any = convert_json(json);
                 const auto& json_object = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(json_object_any);
-                for ( auto it = json_object.cbegin(); it != json_object.cend(); ++it ) {
-                    root_[it->first] = it->second;
+                for (const auto & it : json_object) {
+                    root_[it.first] = it.second;
                 }
             }
         } catch ( const irods::exception& e ) {

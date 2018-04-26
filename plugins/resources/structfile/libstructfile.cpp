@@ -2380,15 +2380,15 @@ irods::error bundle_cache_dir( int         _index,
     // iterate over the dir listing and archive the files
     std::string cache_dir( spec_coll->cacheDir );
     irods::error arch_err = SUCCESS();
-    for ( size_t i = 0; i < listing.size(); ++i ) {
+    for (auto & i : listing) {
         // =-=-=-=-=-=-=-
         // strip off archive path from the filename
-        irods::error ret = write_file_to_archive( listing[ i ].string(), cache_dir, arch );
+        irods::error ret = write_file_to_archive( i.string(), cache_dir, arch );
 
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to archive file [";
-            msg << listing[ i ].string();
+            msg << i.string();
             msg << "]";
             arch_err = PASSMSG( msg.str(), arch_err );
             irods::log( PASSMSG( msg.str(), ret ) );

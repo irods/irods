@@ -395,10 +395,8 @@ int checkHostAccessControl(
 
                 }
                 else {
-                    for ( size_t i = 0;
-                            i < group_list.size();
-                            ++i ) {
-                        if ( group == group_list[ i ] ) {
+                    for (auto & i : group_list) {
+                        if ( group == i ) {
                             group_match = true;
 
                         }

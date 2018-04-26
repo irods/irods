@@ -1365,8 +1365,8 @@ int get64RandomBytes( char *buf ) {
     irods::getRandomBytes( random_bytes, sizeof(random_bytes) );
 
     std::stringstream ss;
-    for ( size_t i = 0; i < sizeof(random_bytes); ++i ) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_bytes[i] );
+    for (unsigned char & random_byte : random_bytes) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)random_byte;
     }
 
     snprintf( buf, num_hex_bytes+1, "%s", ss.str().c_str() );

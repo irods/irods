@@ -428,11 +428,9 @@ namespace irods {
 
         std::vector<int> pids;
         getAgentProcPIDs( pids );
-        for ( size_t i = 0;
-                i < pids.size();
-                ++i ) {
-            int  pid = pids[i];
-            int  age = get_pid_age( pids[i] );
+        for (int i : pids) {
+            int  pid = i;
+            int  age = get_pid_age( i );
 
             json_t* agent_obj = json_object();
             if ( !agent_obj ) {
@@ -500,12 +498,10 @@ namespace irods {
     bool server_control_executor::is_host_in_list(
         const std::string& _hn,
         const host_list_t& _hosts ) {
-        for ( size_t i = 0;
-                i < _hosts.size();
-                ++i ) {
+        for (const auto & _host : _hosts) {
             if ( compare_host_names(
                         _hn,
-                        _hosts[ i ] ) ) {
+                        _host ) ) {
                 return true;
             }
 

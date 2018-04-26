@@ -95,8 +95,8 @@ namespace irods {
             /// =-=-=-=-=-=-=-
             /// @brief list all of the operations in the plugin
             error enumerate_operations( std::vector< std::string >& _ops ) {
-                for ( size_t i = 0; i < ops_for_delay_load_.size(); ++i ) {
-                    _ops.push_back( ops_for_delay_load_[ i ].first );
+                for (auto & i : ops_for_delay_load_) {
+                    _ops.push_back( i.first );
                 }
 
                 return SUCCESS();

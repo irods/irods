@@ -3058,8 +3058,8 @@ irods::error get_script_output_single_line(
         irods::log(e);
         return ERROR(-1, "failed to get irods home directory");
     }
-    for ( std::vector<std::string>::size_type i = 0; i < args.size(); ++i ) {
-        exec << " " << args[i];
+    for (const auto & arg : args) {
+        exec << " " << arg;
     }
 
     FILE *fp = popen( exec.str().c_str(), "r" );

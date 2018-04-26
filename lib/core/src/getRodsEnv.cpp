@@ -661,14 +661,14 @@ extern "C" {
                     IRODS_VERSION_MINOR,
                     IRODS_VERSION_PATCHLEVEL);
 
-            for( auto itr = prop_map.cbegin(); itr != prop_map.cend(); ++itr ) {
+            for(const auto & itr : prop_map) {
 
                 try {
-                    int val = boost::any_cast< int >( itr->second );
+                    int val = boost::any_cast< int >( itr.second );
                     fprintf(
                             _fout,
                             "%s - %d\n",
-                            itr->first.c_str(),
+                            itr.first.c_str(),
                             val );
                     continue;
                 }
@@ -676,11 +676,11 @@ extern "C" {
                 }
 
                 try {
-                    const std::string& val = boost::any_cast< const std::string& >( itr->second );
+                    const std::string& val = boost::any_cast< const std::string& >( itr.second );
                     fprintf(
                             _fout,
                             "%s - %s\n",
-                            itr->first.c_str(),
+                            itr.first.c_str(),
                             val.c_str() );
                     continue;
                 }
@@ -688,7 +688,7 @@ extern "C" {
                     fprintf(
                             stderr,
                             "failed to cast %s",
-                            itr->first.c_str() );
+                            itr.first.c_str() );
                 }
 
             } // for itr

@@ -127,11 +127,9 @@ irods::error get_server_reports(
                    "getRcatHost failed" );
     }
 
-    for ( irods::resource_manager::iterator itr = resc_mgr.begin();
-            itr != resc_mgr.end();
-            ++itr ) {
+    for (auto & itr : resc_mgr) {
 
-        irods::resource_ptr resc = itr->second;
+        irods::resource_ptr resc = itr.second;
 
         rodsServerHost_t* tmp_host = nullptr;
         irods::error ret = resc->get_property< rodsServerHost_t* >(

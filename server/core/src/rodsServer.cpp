@@ -135,8 +135,8 @@ namespace {
         irods::getRandomBytes( random_bytes, sizeof(random_bytes) );
 
         std::stringstream ss;
-        for ( size_t i = 0; i < sizeof(random_bytes); ++i ) {
-            ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)( random_bytes[i] );
+        for (unsigned char & random_byte : random_bytes) {
+            ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)random_byte;
         }
 
         snprintf( buf, num_hex_bytes + 1, "%s", ss.str().c_str() );
@@ -1236,8 +1236,8 @@ initServerMain( rsComm_t *svrComm ) {
             std::vector<std::string> args = setExecArg( getenv( "reServerOption" ) );
             std::vector<char *> av;
             av.push_back( "irodsReServer" );
-            for ( auto it = args.begin(); it != args.end(); it++ ) {
-                av.push_back( strdup( it->c_str() ) );
+            for (auto & arg : args) {
+                av.push_back( strdup( arg.c_str() ) );
             }
             av.push_back( NULL );
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
@@ -1331,9 +1331,9 @@ getConnReqFromQue() {
 int
 startProcConnReqThreads() {
     initConnThreadEnv();
-    for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
+    for (auto & i : ReadWorkerThread) {
         try {
-            ReadWorkerThread[i] = new boost::thread( readWorkerTask );
+            i = new boost::thread( readWorkerTask );
         }
         catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during thread construction in startProcConnReqThreads." );
@@ -1362,10 +1362,10 @@ stopProcConnReqThreads() {
         rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );
     }
 
-    for ( int i = 0; i < NUM_READ_WORKER_THR; i++ ) {
+    for (auto & i : ReadWorkerThread) {
         ReadReqCond.notify_all();
         try {
-            ReadWorkerThread[i]->join();
+            i->join();
         }
         catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "boost encountered a thread_resource_error during join in stopProcConnReqThreads." );

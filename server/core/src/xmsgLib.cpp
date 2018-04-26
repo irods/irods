@@ -466,9 +466,9 @@ getReqFromQue() {
 
 int
 startXmsgThreads() {
-    for ( int i = 0; i < NUM_XMSG_THR; i++ ) {
+    for (auto & i : ProcReqThread) {
         try {
-            ProcReqThread[i] = new boost::thread( procReqRoutine );
+            i = new boost::thread( procReqRoutine );
         }
         catch ( const boost::thread_resource_error& ) {
             return SYS_THREAD_RESOURCE_ERR;

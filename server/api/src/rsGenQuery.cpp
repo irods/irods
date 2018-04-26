@@ -26,9 +26,9 @@ namespace {
     std::string
     get_column_name(int j) {
         const int n = sizeof(columnNames)/sizeof(columnNames[0]);
-        for (int i=0; i<n; ++i) {
-            if (columnNames[i].columnId == j) {
-                return std::string(columnNames[i].columnName);
+        for (auto & columnName : columnNames) {
+            if (columnName.columnId == j) {
+                return std::string(columnName.columnName);
             }
         }
 
@@ -71,15 +71,15 @@ namespace {
             return ret;
         }
 
-        for (size_t i=0; i<sizeof(selectInpOptionsMap)/sizeof(selectInpOptionsMap[0]); ++i) {
-            if (columnOption == selectInpOptionsMap[i].key) {
-                ret = std::string(selectInpOptionsMap[i].token) + "(" + ret + ")";
+        for (auto & i : selectInpOptionsMap) {
+            if (columnOption == i.key) {
+                ret = std::string(i.token) + "(" + ret + ")";
                 return ret;
             }
         }
-        for (size_t i=0; i<sizeof(selectInpFunctionMap)/sizeof(selectInpFunctionMap[0]); ++i) {
-            if (columnOption == selectInpFunctionMap[i].key) {
-                ret = std::string(selectInpFunctionMap[i].token) + "(" + ret + ")";
+        for (auto & i : selectInpFunctionMap) {
+            if (columnOption == i.key) {
+                ret = std::string(i.token) + "(" + ret + ")";
                 return ret;
             }
         }
@@ -95,9 +95,9 @@ namespace {
     insert_genquery_inp_into_stream(const genQueryInp_t *genQueryInp, OutStream& f) {
         f << "maxRows: " << genQueryInp->maxRows << " continueInx: " << genQueryInp->continueInx << " rowOffset: " << genQueryInp->rowOffset << '\n';
         f << "options: " << genQueryInp->options;
-        for (size_t i=0; i<sizeof(queryWideOptionsMap)/sizeof(queryWideOptionsMap[0]); ++i) {
-            if (genQueryInp->options & queryWideOptionsMap[i].key) {
-                f << " " << queryWideOptionsMap[i].cpp_macro;
+        for (auto & i : queryWideOptionsMap) {
+            if (genQueryInp->options & i.key) {
+                f << " " << i.cpp_macro;
             }
         }
         f << '\n';
@@ -106,14 +106,14 @@ namespace {
         for (int i=0; i<genQueryInp->selectInp.len; ++i) {
             f << "    column: " << genQueryInp->selectInp.inx[i] << " " << get_column_name(genQueryInp->selectInp.inx[i]) << '\n';
             f << "    options: " << genQueryInp->selectInp.value[i];
-            for (size_t j=0; j<sizeof(selectInpOptionsMap)/sizeof(selectInpOptionsMap[0]); ++j) {
-                if (genQueryInp->selectInp.value[i] & selectInpOptionsMap[j].key) {
-                    f << " " << selectInpOptionsMap[j].cpp_macro;
+            for (auto & j : selectInpOptionsMap) {
+                if (genQueryInp->selectInp.value[i] & j.key) {
+                    f << " " << j.cpp_macro;
                 }
             }
-            for (size_t j=0; j<sizeof(selectInpFunctionMap)/sizeof(selectInpFunctionMap[0]); ++j) {
-                if ((genQueryInp->selectInp.value[i] & 0x7) == selectInpFunctionMap[j].key) {
-                    f << " " << selectInpFunctionMap[j].cpp_macro;
+            for (auto & j : selectInpFunctionMap) {
+                if ((genQueryInp->selectInp.value[i] & 0x7) == j.key) {
+                    f << " " << j.cpp_macro;
                 }
             }
             f << '\n';

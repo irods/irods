@@ -43,11 +43,9 @@ namespace irods {
 
     const char* exception::what() const throw() {
         std::string message;
-        for ( size_t i = 0;
-                i < message_stack_.size();
-                ++i ) {
+        for (const auto & i : message_stack_) {
             message += "        ";
-            message += message_stack_[i];
+            message += i;
             message += "\n";
 
         }
