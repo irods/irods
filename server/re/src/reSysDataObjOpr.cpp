@@ -77,8 +77,6 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 
     RE_TEST_MACRO( "    Calling msiSetDefaultResc" )
 
-    // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, &myRescGrpInfo );
-
     irods::error err = irods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, default_resc );
     rei->status = err.code();
 
@@ -623,11 +621,6 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
  *
  * \author Mike Wan
  *
- * \note The allFlag is only meaningful if the replResc is a resource group.
- *  In this case, setting allFlag to "all" means a copy will be made in all the
- *  resources in the resource group. A "null" input means a single copy will be made in
- *  one of the resources in the resource group.
- *
  * \usage See clients/icommands/test/rules/
  *
  *
@@ -652,7 +645,6 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
 int
 msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
                    ruleExecInfo_t *rei ) {
-//    int writeFlag;
     dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
     char *flag = NULL;
@@ -676,15 +668,6 @@ msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
     if ( dataObjInfoHead == NULL ) {
         return rei->status;
     }
-
-//    writeFlag = getWriteFlag( rei->doinp->openFlags );
-
-//    if ( requeDataObjInfoByResc( &dataObjInfoHead, cacheResc, writeFlag, 1 )
-//            >= 0 ) {
-//        /* we have a good copy on cache */
-//        rei->status = 1;
-//        return ( rei->status );
-//    }
 
     rei->status = rsReplAndRequeDataObjInfo( rei->rsComm, &dataObjInfoHead,
                   cacheResc, flag );

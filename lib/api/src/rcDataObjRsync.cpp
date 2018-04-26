@@ -74,10 +74,6 @@
  *            only for LOCAL_TO_IRODS or IRODS_TO_LOCAL modes.
  *    \n DEST_RESC_NAME_KW - The resource to store the new data object.
  *            Valid only for LOCAL_TO_IRODS or IRODS_TO_IRODS modes.
- *    \n ALL_KW - replicate to all resources in the resource group if the
- *             input resource (via DEST_RESC_NAME_KW) is a resource group.
- *            This keyWd has no value. Valid only for LOCAL_TO_IRODS or
- *            IRODS_TO_IRODS modes.
  *
  * \return integer
  * \retval 0 on success

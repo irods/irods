@@ -55,11 +55,8 @@
  *    \n RESC_NAME_KW - The copy stored in this resource to be used as source.
  *    \n DEST_RESC_NAME_KW - The resource to store the new replica.
  *    \n BACKUP_RESC_NAME_KW - The resource to store the new replica.
- *             In backup mode. If a good copy already exists in this resource
- *             group or resource, don't make another one.
- *    \n ALL_KW - replicate to all resources in the resource group if the
- *             input resource (via DEST_RESC_NAME_KW) is a resource group.
- *            This keyWd has no value.
+ *             In backup mode. If a good copy already exists in this
+ *             resource, don't make another one.
  *    \n ADMIN_KW - admin user backup/replicate other user's files.
  *            This keyWd has no value.
  *    \n FILE_PATH_KW - The physical file path for this data object if the

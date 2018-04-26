@@ -72,8 +72,6 @@
  *    \li keyValPair_t \b condInput - keyword/value pair input. Valid keywords:
  *    \n RESC_NAME_KW - selection only data objects in this resource.
  *        The INCLUDE_CONDINPUT_IN_QUERY flag must be on to be effective.
- *    \n RESC_NAME_KW - selection only data objects in this resource group.
- *        The INCLUDE_CONDINPUT_IN_QUERY flag must be on to be effective.
  * \return integer
  * \retval the opened collection handle on success
  * \sideeffect none

@@ -329,12 +329,9 @@ _rsDataObjRepl(
 
     if ( multiCopyFlag == 0 ) { // JMC - backport 4594
 
-        /* if one copy per resource, see if a good copy already exist,
+        /* if one copy per resource, see if a good copy already exists,
          * If it does, the copy is returned in destDataObjInfo.
-         * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
-         ( target resources remained are left in &myRescGrpInfo.
-         * Also, the copies need to be overwritten is returned
-         * in destDataObjInfo. */
+         * Otherwise, the resources are trimmed. */
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
                                         root_resc_name, &destDataObjInfo,
                                         &dataObjInp->condInput );
@@ -365,7 +362,7 @@ _rsDataObjRepl(
         }
         /* NO_GOOD_COPY drop through here */
 
-    } // if multicopy flg
+    } // if multicopy flag
 
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
     if ( status < 0 ) {
@@ -376,8 +373,7 @@ _rsDataObjRepl(
         return status;
     }
 
-    /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
-     * replicate to myRescGrpInfo */
+    /* If destDataObjInfo is not NULL, we will overwrite it. */
     if ( destDataObjInfo != NULL ) {
 
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
@@ -407,7 +403,7 @@ _rsDataObjRepl(
     }
 
     if ( !root_resc_name.empty() ) {
-        /* new replication to the resource group */
+        /* new replication to the target */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         root_resc_name.c_str(), transStat,
                                         outDataObjInfo );

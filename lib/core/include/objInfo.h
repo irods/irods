@@ -128,7 +128,7 @@ typedef struct KeyValPair {
 
 typedef struct DataObjInfo {
     char objPath[MAX_NAME_LEN];
-    char rescName[NAME_LEN];       /* This could be resource group */
+    char rescName[NAME_LEN];
     char rescHier[MAX_NAME_LEN];   // The hierarchy of resources within which the object resides
     char dataType[NAME_LEN];
     rodsLong_t dataSize;

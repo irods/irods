@@ -68,9 +68,6 @@
  *    \n FILE_PATH_KW - The physical file path for this data object if the
  *             normal resource vault is not used.
  *    \n FORCE_FLAG_KW - overwrite existing copy. This keyWd has no value
- *    \n ALL_KW - upload to all resources in the resource group if the
- *             input resource (via DEST_RESC_NAME_KW) is a resource group.
- *            This keyWd has no value.
  *    \n REPL_NUM_KW - If the data object already exist, the replica number
  *            of the copy to overwrite.
  *    \n REG_CHKSUM_KW -  register the target checksum value after the copy.
