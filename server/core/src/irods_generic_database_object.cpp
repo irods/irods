@@ -7,7 +7,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // public - ctor
-    generic_database_object::generic_database_object(const std::string &_type) : type_(_type) {
+    generic_database_object::generic_database_object(std::string _type) : type_(std::move(_type)) {
 
     } // ctor
 

@@ -61,6 +61,7 @@ agentProc_t *BadReqHead = nullptr;
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <utility>
 boost::mutex              ConnectedAgentMutex;
 boost::mutex              BadReqMutex;
 boost::thread*            ReadWorkerThread[NUM_READ_WORKER_THR];

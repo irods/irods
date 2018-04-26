@@ -18,7 +18,7 @@ namespace irods {
         public:
             // =-=-=-=-=-=-=-
             // Constructors
-            explicit generic_database_object(const std::string &);
+            explicit generic_database_object(std::string );
             generic_database_object( const generic_database_object& );
 
             // =-=-=-=-=-=-=-

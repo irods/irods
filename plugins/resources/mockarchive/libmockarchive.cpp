@@ -736,7 +736,7 @@ class mockarchive_resource : public irods::resource {
         //     and will not be called.
         class maintenance_operation {
             public:
-                maintenance_operation( const std::string& _n ) : name_( _n ) {
+                maintenance_operation( std::string  _n ) : name_(std::move( _n )) {
                 }
 
                 maintenance_operation( const maintenance_operation& _rhs ) {

@@ -24,7 +24,7 @@ namespace irods {
             file_object( const file_object& );
             file_object(
                 rsComm_t* _comm,
-                const std::string& _logical_name,
+                std::string  _logical_name,
                 const std::string& _filename,
                 rodsLong_t _resc_id,
                 int _fd,
@@ -32,7 +32,7 @@ namespace irods {
                 int _flags );
             file_object(
                 rsComm_t* _comm,
-                const std::string& _logical_name,
+                std::string  _logical_name,
                 const std::string& _filename,
                 const std::string& _resc_hier,
                 int _fd,

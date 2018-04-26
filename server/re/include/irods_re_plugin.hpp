@@ -135,7 +135,7 @@ namespace irods {
     class serialize final {
     public:
         template<typename... As>
-        serialize(std::function<error(As ...)> _op, std::string _op_name = "<unknown>") : op_(_op), op_name_(_op_name) { }
+        serialize(std::function<error(As ...)> _op, std::string _op_name = "<unknown>") : op_(_op), op_name_(std::move(_op_name)) { }
 
         template<typename... Bs>
         error operator()(Bs&&... _ps) {
@@ -158,7 +158,7 @@ namespace irods {
     class pluggable_rule_engine final {
     public:
 
-        pluggable_rule_engine(const std::string &_in, const std::string &_context) : instance_name_(_in) {
+        pluggable_rule_engine(std::string _in, const std::string &_context) : instance_name_(std::move(_in)) {
         }
 
         template<typename... types_t>
@@ -268,7 +268,7 @@ namespace irods {
 
         dynamic_operation_execution_manager(
             std::shared_ptr<rule_engine_context_manager<T,C,Audit> > _re_mgr  // rule engine manager
-        ) : re_mgr_{_re_mgr} { }
+        ) : re_mgr_{std::move(_re_mgr)} { }
 
         error exec_rule_text(
             const std::string& _instance_name,
@@ -337,7 +337,7 @@ namespace irods {
         std::string plugin_name_;
         T re_ctx_;
         pluggable_rule_engine<T> *re_;
-        re_pack_inp(std::string _instance_name, std::string _plugin_name, T _re_ctx) : instance_name_(_instance_name), plugin_name_(_plugin_name), re_ctx_(_re_ctx) { }
+        re_pack_inp(std::string _instance_name, std::string _plugin_name, T _re_ctx) : instance_name_(std::move(_instance_name)), plugin_name_(std::move(_plugin_name)), re_ctx_(std::move(_re_ctx)) { }
     };
 
     // load rule engines from plugins DONE
@@ -345,7 +345,7 @@ namespace irods {
     class rule_engine_plugin_manager final {
     public:
         double interface_version() { return 1.0; }
-        rule_engine_plugin_manager(std::string _dir) : dir_(_dir) { }
+        rule_engine_plugin_manager(std::string _dir) : dir_(std::move(_dir)) { }
 
         ~rule_engine_plugin_manager() {
             for (auto itr = begin(re_plugin_map_);itr != end(re_plugin_map_); ++itr) delete itr->second;

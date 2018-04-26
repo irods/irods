@@ -28,13 +28,13 @@ namespace irods {
     } // ctor
 
     ms_table_entry::ms_table_entry(
-        const std::string& _name,
+        std::string  _name,
         unsigned int                _num_args,
         boost::any         _fcn_ptr ) :
         plugin_base(
             "msvc",
             "ctx" ),
-        operation_name_( _name ),
+        operation_name_(std::move( _name )),
         num_args_( _num_args ) {
         operations_[operation_name_] = _fcn_ptr;
     } // ctor

@@ -1,5 +1,7 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
+#include <utility>
+
 #include "locks.hpp"
 #include "rodsConnect.h"
 //#include "filesystem.hpp"

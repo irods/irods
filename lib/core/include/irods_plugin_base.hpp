@@ -44,10 +44,10 @@ namespace irods {
     class plugin_base {
         public:
             plugin_base(
-                    const std::string& _n,
-                    const std::string& _c ) :
-                context_( _c ),
-                instance_name_( _n ),
+                    std::string  _n,
+                    std::string  _c ) :
+                context_(std::move( _c )),
+                instance_name_(std::move( _n )),
                 interface_version_( PLUGIN_INTERFACE_VERSION ),
                 operations_( ),
                 start_operation_( default_plugin_start_operation ),

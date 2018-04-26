@@ -46,7 +46,7 @@ namespace irods {
             // NOTE :: called internally for static plugins
             //         with no type checking
             ms_table_entry(
-                const std::string&, // ms name
+                std::string , // ms name
                 unsigned int,                // num ms args
                 boost::any );       // function pointer
 

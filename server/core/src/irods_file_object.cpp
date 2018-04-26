@@ -51,7 +51,7 @@ namespace irods {
 // public - ctor
     file_object::file_object(
         rsComm_t* _c,
-        const std::string& _logical_path,
+        std::string  _logical_path,
         const std::string& _fn,
         rodsLong_t         _resc_id,
         int _fd,
@@ -63,7 +63,7 @@ namespace irods {
             _m,
             _f ),
         comm_( _c ),
-        logical_path_( _logical_path ),
+        logical_path_(std::move( _logical_path )),
         data_type_( "" ),
         file_descriptor_( _fd ),
         l1_desc_idx_( -1 ),
@@ -78,7 +78,7 @@ namespace irods {
 // public - ctor
     file_object::file_object(
         rsComm_t* _c,
-        const std::string& _logical_path,
+        std::string  _logical_path,
         const std::string& _fn,
         const std::string& _resc_hier,
         int _fd,
@@ -90,7 +90,7 @@ namespace irods {
             _m,
             _f ),
         comm_( _c ),
-        logical_path_( _logical_path ),
+        logical_path_(std::move( _logical_path )),
         data_type_( "" ),
         file_descriptor_( _fd ),
         l1_desc_idx_( -1 ),

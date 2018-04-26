@@ -109,7 +109,7 @@ namespace irods {
         const error& _rhs ) :
         status_( _rhs.status() ),
         code_( _rhs.code() ),
-        message_( _msg ) {
+        message_(std::move( _msg )) {
         // =-=-=-=-=-=-=-
         // cache RHS vector into our vector first
         result_stack_ = _rhs.result_stack_;

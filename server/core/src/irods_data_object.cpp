@@ -21,11 +21,11 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     data_object::data_object(
-        const std::string& _phy_path,
+        std::string  _phy_path,
         rodsLong_t           _resc_id,
         int                _mode,
         int                _flags ) :
-        physical_path_( _phy_path ),
+        physical_path_(std::move( _phy_path )),
         id_( 0 ),
         mode_( _mode ),
         flags_( _flags ),
@@ -40,12 +40,12 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     data_object::data_object(
-        const std::string& _phy_path,
+        std::string  _phy_path,
         rodsLong_t           _resc_id,
         int                _mode,
         int                _flags,
         const keyValPair_t& _cond_input ) :
-        physical_path_( _phy_path ),
+        physical_path_(std::move( _phy_path )),
         id_( 0 ),
         mode_( _mode ),
         flags_( _flags ),
@@ -60,12 +60,12 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     data_object::data_object(
-        const std::string& _phy_path,
-        const std::string& _resc_hier,
+        std::string  _phy_path,
+        std::string  _resc_hier,
         int                _mode,
         int                _flags ) :
-        physical_path_( _phy_path ),
-        resc_hier_( _resc_hier ),
+        physical_path_(std::move( _phy_path )),
+        resc_hier_(std::move( _resc_hier )),
         id_( 0 ),
         mode_( _mode ),
         flags_( _flags ) {
@@ -79,13 +79,13 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     data_object::data_object(
-        const std::string& _phy_path,
-        const std::string& _resc_hier,
+        std::string  _phy_path,
+        std::string  _resc_hier,
         int                _mode,
         int                _flags,
         const keyValPair_t& _cond_input ) :
-        physical_path_( _phy_path ),
-        resc_hier_( _resc_hier ),
+        physical_path_(std::move( _phy_path )),
+        resc_hier_(std::move( _resc_hier )),
         id_( 0 ),
         mode_( _mode ),
         flags_( _flags ) {

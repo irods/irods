@@ -15,7 +15,7 @@ namespace irods {
     class generic_auth_object : public auth_object {
         public:
             /// @brief Constructor
-            generic_auth_object( const std::string& _type, rError_t* _r_error );
+            generic_auth_object( std::string  _type, rError_t* _r_error );
             generic_auth_object( const generic_auth_object& _rhs ); ~generic_auth_object() override;
 
             /// @brief Plugin resolution operator

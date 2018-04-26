@@ -13,7 +13,7 @@ namespace irods {
         public:
             /// @brief ctor
             object_oper( void ) {}
-            object_oper( const file_object& _file_object, const std::string& _operation );
+            object_oper( const file_object& _file_object, std::string  _operation );
             virtual ~object_oper( void );
 
             const file_object& object( void ) const {

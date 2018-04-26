@@ -2,6 +2,8 @@
  */
 
 #include <fcntl.h>
+
+#include <utility>
 #include "sharedmemory.hpp"
 #include "rodsConnect.h"
 #include "irods_server_properties.hpp"
