@@ -30,8 +30,8 @@ namespace irods {
         public:
             typedef typename irods_hash_map::iterator       iterator;
             typedef typename irods_hash_map::const_iterator const_iterator;
-            lookup_table() = default;;
-            virtual ~lookup_table() = default;
+            lookup_table() {};
+            virtual ~lookup_table() {};
             ValueType& operator[]( KeyType _k ) {
                 return table_[ _k ];
             }
@@ -100,8 +100,8 @@ namespace irods {
 
         public:
             typedef typename irods_hash_map::iterator iterator;
-            lookup_table() = default;;
-            virtual ~lookup_table() = default;
+            lookup_table() {};
+            virtual ~lookup_table() {};
             boost::any& operator[]( KeyType _k ) {
                 return table_[ _k ];
             }
