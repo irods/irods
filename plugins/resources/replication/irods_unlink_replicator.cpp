@@ -12,7 +12,7 @@ namespace irods {
         resource_ = _resource;
     }
 
-    unlink_replicator::~unlink_replicator( void ) {
+    unlink_replicator::~unlink_replicator( ) {
         // TODO - stub
     }
 

@@ -170,22 +170,22 @@ genquery_inp_to_iquest_string(const genQueryInp_t *q) {
     return ss.str();
 }
 
-irods::GenQueryInpWrapper::GenQueryInpWrapper(void) {
+irods::GenQueryInpWrapper::GenQueryInpWrapper() {
     memset(&genquery_inp_, 0, sizeof(genquery_inp_));
 }
-irods::GenQueryInpWrapper::~GenQueryInpWrapper(void) {
+irods::GenQueryInpWrapper::~GenQueryInpWrapper() {
     clearGenQueryInp(&genquery_inp_);
 }
-genQueryInp_t& irods::GenQueryInpWrapper::get(void) {
+genQueryInp_t& irods::GenQueryInpWrapper::get() {
     return genquery_inp_;
 }
-irods::GenQueryOutPtrWrapper::GenQueryOutPtrWrapper(void) {
+irods::GenQueryOutPtrWrapper::GenQueryOutPtrWrapper() {
     genquery_out_ptr_ = nullptr;
 }
-irods::GenQueryOutPtrWrapper::~GenQueryOutPtrWrapper(void) {
+irods::GenQueryOutPtrWrapper::~GenQueryOutPtrWrapper() {
     freeGenQueryOut(&genquery_out_ptr_);
 }
-genQueryOut_t*& irods::GenQueryOutPtrWrapper::get(void) {
+genQueryOut_t*& irods::GenQueryOutPtrWrapper::get() {
     return genquery_out_ptr_;
 }
 

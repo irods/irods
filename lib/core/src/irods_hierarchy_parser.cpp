@@ -10,7 +10,7 @@ namespace irods {
 
     static const std::string DELIM = ";";
 
-    hierarchy_parser::hierarchy_parser( void ) {
+    hierarchy_parser::hierarchy_parser( ) {
     }
 
     hierarchy_parser::hierarchy_parser(
@@ -132,11 +132,11 @@ namespace irods {
         return result;
     }
 
-    hierarchy_parser::const_iterator hierarchy_parser::begin( void ) const {
+    hierarchy_parser::const_iterator hierarchy_parser::begin( ) const {
         return resc_list_.begin();
     }
 
-    hierarchy_parser::const_iterator hierarchy_parser::end( void ) const {
+    hierarchy_parser::const_iterator hierarchy_parser::end( ) const {
         return resc_list_.end();
     }
 
@@ -146,7 +146,7 @@ namespace irods {
         return *this;
     }
 
-    const std::string& hierarchy_parser::delimiter( void ) {
+    const std::string& hierarchy_parser::delimiter( ) {
         return DELIM;
     }
 

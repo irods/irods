@@ -34,7 +34,7 @@ std::string socket_fd_to_remote_address(const int fd) {
     return ipstr;
 }
 
-std::vector<int> get_open_socket_file_descriptors(void) {
+std::vector<int> get_open_socket_file_descriptors() {
     std::vector<int> ret;
     try {
         const boost::filesystem::directory_iterator end;

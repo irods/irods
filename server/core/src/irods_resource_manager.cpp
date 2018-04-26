@@ -735,7 +735,7 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // private - walk the resource map and wire children up to parents
-    error resource_manager::init_child_map( void ) {
+    error resource_manager::init_child_map( ) {
         for( auto itr : resource_name_map_ ) {
             const std::string& child_name = itr.first;
             resource_ptr       child_resc = itr.second;
@@ -1053,7 +1053,7 @@ namespace irods {
      * construct a vector of all resource hierarchies in the system
      * throws irods::exception
      */
-    std::vector<std::string> resource_manager::get_all_resc_hierarchies( void ) {
+    std::vector<std::string> resource_manager::get_all_resc_hierarchies( ) {
         std::vector<std::string> hier_list;
         for ( const auto& entry : resource_name_map_ ) {
             const resource_ptr resc = entry.second;

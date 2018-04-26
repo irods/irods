@@ -6,7 +6,7 @@ namespace irods {
 // globally available auth manager
     auth_manager auth_mgr;
 
-    auth_manager::auth_manager( void ) {
+    auth_manager::auth_manager( ) {
         // TODO - stub
     }
 

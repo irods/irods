@@ -16,11 +16,11 @@ namespace irods {
         log_sql_ = _logSQL;
     }
 
-    sql_logger::~sql_logger( void ) {
+    sql_logger::~sql_logger( ) {
         // TODO - stub
     }
 
-    void sql_logger::log( void ) {
+    void sql_logger::log( ) {
         if ( log_sql_ ) {
             if ( count_ == 0 ) {
                 irods::log( LOG_SQL, name_ );

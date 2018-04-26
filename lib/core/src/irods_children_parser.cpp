@@ -7,10 +7,10 @@
 
 namespace irods {
 
-    children_parser::children_parser( void ) {
+    children_parser::children_parser( ) {
     }
 
-    children_parser::~children_parser( void ) {
+    children_parser::~children_parser( ) {
         // TODO - stub
     }
 
@@ -164,11 +164,11 @@ namespace irods {
     }
 
 
-    children_parser::const_iterator children_parser::begin( void ) const {
+    children_parser::const_iterator children_parser::begin( ) const {
         return children_list_.begin();
     }
 
-    children_parser::const_iterator children_parser::end( void ) const {
+    children_parser::const_iterator children_parser::end( ) const {
         return children_list_.end();
     }
 

@@ -792,7 +792,7 @@ connectToRhost( rcComm_t *conn, int connectCnt, int reconnFlag ) {
 
 
 int
-try_twice_to_create_socket(void) {
+try_twice_to_create_socket() {
     int sock = socket( AF_INET, SOCK_STREAM, 0 );
     if ( sock < 0 ) {  /* the ol' one-two */
         sock = socket( AF_INET, SOCK_STREAM, 0 );
@@ -876,7 +876,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
 }
 #else
 int
-create_nonblocking_socket(void) {
+create_nonblocking_socket() {
     const int sock = try_twice_to_create_socket();
     if (sock < 0) {
         return sock;

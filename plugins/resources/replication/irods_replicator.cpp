@@ -8,7 +8,7 @@ namespace irods {
         oper_replicator_( _oper_replicator ) {
     }
 
-    replicator::~replicator( void ) {
+    replicator::~replicator( ) {
     }
 
     error replicator::replicate(

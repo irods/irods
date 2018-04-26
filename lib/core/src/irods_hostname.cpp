@@ -107,7 +107,7 @@ namespace {
     }
 
     void
-    print_local_ipv4_and_ipv6_addresses(void) {
+    print_local_ipv4_and_ipv6_addresses() {
         auto ipv4_and_ipv6_addresses = get_local_ipv4_and_ipv6_addresses();
         for (const auto& v4_addr : ipv4_and_ipv6_addresses.first) {
             std::cout << to_string(v4_addr) << std::endl;

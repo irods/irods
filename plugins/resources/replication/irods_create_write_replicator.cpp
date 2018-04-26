@@ -15,7 +15,7 @@ namespace irods {
         child_ = _child;
     }
 
-    create_write_replicator::~create_write_replicator( void ) {
+    create_write_replicator::~create_write_replicator( ) {
         // TODO - stub
     }
 

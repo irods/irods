@@ -9,7 +9,7 @@ namespace irods {
         operation_( _operation ) {
     }
 
-    object_oper::~object_oper( void ) {
+    object_oper::~object_oper( ) {
         // TODO - stub
     }
 
