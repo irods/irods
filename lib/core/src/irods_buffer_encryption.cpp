@@ -135,7 +135,7 @@ namespace irods {
         array_t& _out_iv ) {
         // =-=-=-=-=-=-=-
         // generate a random initialization vector
-        unsigned char* iv = new unsigned char[ key_size_ ];
+        auto  iv = new unsigned char[ key_size_ ];
         int rnd_err = RAND_bytes(
                           iv,
                           key_size_ );
@@ -203,7 +203,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // max ciphertext len for a n bytes of plaintext is n + AES_BLOCK_SIZE -1 bytes
         int            cipher_len  = _in_buf.size() + AES_BLOCK_SIZE;
-        unsigned char* cipher_text = new unsigned char[ cipher_len ] ;
+        auto  cipher_text = new unsigned char[ cipher_len ] ;
         // =-=-=-=-=-=-=-
         // update ciphertext, cipher_len is filled with the length of ciphertext generated,
         ret = EVP_EncryptUpdate(

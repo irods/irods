@@ -57,7 +57,7 @@ namespace irods {
     error children_parser::remove_child(
         const std::string& child ) {
         error ret = SUCCESS();
-        children_map_t::iterator itr = children_list_.find( child );
+        auto itr = children_list_.find( child );
         if ( itr == children_list_.end() ) {
             std::stringstream msg;
             msg << "child [" << child << "] not found";

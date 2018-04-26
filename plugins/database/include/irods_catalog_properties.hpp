@@ -53,7 +53,7 @@ namespace irods {
                 if ( !captured_ ) {
                     return ERROR( SYS_INTERNAL_ERR, "'capture' must be called on the catalog_properties instance before properties may be accessed." );
                 }
-                std::unordered_map<std::string, boost::any>::iterator it = properties.find( _key );
+                auto it = properties.find( _key );
                 if ( it == properties.end() ) {
                     std::stringstream msg;
                     msg << "Catalog properties map does not contain the key \"" << _key << "\".";

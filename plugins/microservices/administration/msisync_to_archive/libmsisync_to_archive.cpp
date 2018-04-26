@@ -211,7 +211,7 @@ int msisync_to_archive(
 
 extern "C"
 irods::ms_table_entry* plugin_factory() {
-    irods::ms_table_entry* msvc = new irods::ms_table_entry(3);
+    auto  msvc = new irods::ms_table_entry(3);
     msvc->add_operation<
         msParam_t*,
         msParam_t*,

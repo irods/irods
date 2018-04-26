@@ -618,7 +618,7 @@ irods::auth* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create an auth object
-    native_auth_plugin* nat = new native_auth_plugin(
+    auto  nat = new native_auth_plugin(
         _inst_name,
         _context );
 

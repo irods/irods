@@ -1295,7 +1295,7 @@ irods::network* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create a ssl network object
-    ssl_network_plugin* ssl = new ssl_network_plugin(
+    auto  ssl = new ssl_network_plugin(
         _inst_name,
         _context );
 

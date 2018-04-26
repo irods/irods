@@ -1329,7 +1329,7 @@ irods::error non_blocking_file_redirect_open(
                 // set up variables for iteration
                 irods::error final_ret = SUCCESS();
                 std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
+                auto itr = objs.begin();
 
                 // =-=-=-=-=-=-=-
                 // check to see if the replica is in this resource, if one is requested
@@ -1547,7 +1547,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4a. create non_blocking_resource
-    non_blocking_resource* resc = new non_blocking_resource( _inst_name, _context );
+    auto  resc = new non_blocking_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

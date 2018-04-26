@@ -44,7 +44,7 @@ namespace irods {
         _ret_string.clear();
         bool first = true;
         bool done = false;
-        for ( resc_list_t::const_iterator itr = resc_list_.begin();
+        for ( auto itr = resc_list_.begin();
                 !done && itr != resc_list_.end(); ++itr ) {
             if ( first ) {
                 first = false;
@@ -101,11 +101,11 @@ namespace irods {
         error result = SUCCESS();
         _ret_resc.clear();
         bool found = false;
-        for ( resc_list_t::const_iterator itr = resc_list_.begin();
+        for ( auto itr = resc_list_.begin();
                 !found && itr != resc_list_.end(); ++itr ) {
             if ( *itr == _current ) {
                 found = true;
-                resc_list_t::const_iterator next_itr = itr + 1;
+                auto next_itr = itr + 1;
                 if ( next_itr != resc_list_.end() ) {
                     _ret_resc = *next_itr;
                 }
@@ -153,7 +153,7 @@ namespace irods {
     bool hierarchy_parser::resc_in_hier(
         const std::string& _resc ) const {
         bool result = false;
-        for ( resc_list_t::const_iterator itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr ) {
+        for ( auto itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr ) {
             if ( *itr == _resc ) {
                 result = true;
             }

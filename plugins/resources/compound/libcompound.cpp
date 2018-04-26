@@ -1773,7 +1773,7 @@ class compound_resource : public irods::resource {
 
             // =-=-=-=-=-=-=-
             // copy the properties from the context to the prop map
-            irods::kvp_map_t::iterator itr = kvp.begin();
+            auto itr = kvp.begin();
             for( ; itr != kvp.end(); ++itr ) {
                 properties_.set< std::string >(
                     itr->first,
@@ -1812,7 +1812,7 @@ irods::resource* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // 4a. create compound_resource object
-    compound_resource* resc = new compound_resource( _inst_name, _context );
+    auto  resc = new compound_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

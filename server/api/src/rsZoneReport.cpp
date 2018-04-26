@@ -151,7 +151,7 @@ irods::error get_server_reports(
         }
 
         // skip previously reported servers
-        std::map< rodsServerHost_t*, int >::iterator svr_itr =
+        auto svr_itr =
             svr_reported.find( tmp_host );
         if ( svr_itr != svr_reported.end() ) {
             continue;

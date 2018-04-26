@@ -2684,7 +2684,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4a. create tarfilesystem_resource
-    tarfilesystem_resource* resc = new tarfilesystem_resource( _inst_name, _context );
+    auto  resc = new tarfilesystem_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b1. set start and stop operations for alloc / free of tables

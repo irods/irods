@@ -575,7 +575,7 @@ convL3descInx( int l3descInx ) {
 
 int allocCollHandle() {
     // look for a free collHandle_t
-    for (std::vector<collHandle_t>::iterator it = CollHandle.begin(); it != CollHandle.end(); ++it) {
+    for (auto it = CollHandle.begin(); it != CollHandle.end(); ++it) {
     	if (it->inuseFlag <= FD_FREE) {
     		it->inuseFlag = FD_INUSE;
     		return it - CollHandle.begin();

@@ -234,7 +234,7 @@ irods::error impostor_file_resolve_hierarchy_open(
                 // set up variables for iteration
                 irods::error final_ret = SUCCESS();
                 std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
+                auto itr = objs.begin();
 
                 // =-=-=-=-=-=-=-
                 // check to see if the replica is in this resource, if one is requested

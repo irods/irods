@@ -785,7 +785,7 @@ irods::error univ_mss_file_resolve_hierarchy_open(
     // set up variables for iteration
     irods::error final_ret = SUCCESS();
     std::vector< irods::physical_object > objs = _file_obj->replicas();
-    std::vector< irods::physical_object >::iterator itr = objs.begin();
+    auto itr = objs.begin();
 
     // =-=-=-=-=-=-=-
     // initially set vote to 0.0
@@ -963,7 +963,7 @@ irods::resource* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // 4a. create univ_mss_resource object
-    univ_mss_resource* resc = new univ_mss_resource( _inst_name, _context );
+    auto  resc = new univ_mss_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

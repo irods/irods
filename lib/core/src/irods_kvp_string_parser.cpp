@@ -170,7 +170,7 @@ namespace irods {
         const kvp_map_t& _kvp ) {
         std::stringstream str;
         bool first = true;
-        for ( kvp_map_t::const_iterator it = _kvp.begin(); it != _kvp.end(); ++it ) {
+        for ( auto it = _kvp.begin(); it != _kvp.end(); ++it ) {
             if ( first ) {
                 first = false;
             }
@@ -218,7 +218,7 @@ namespace irods {
         special_tokens.insert( kvp_delimiter() );
         special_tokens.insert( kvp_association() );
         bool first = true;
-        for ( kvp_map_t::const_iterator it = _kvp.begin(); it != _kvp.end(); ++it ) {
+        for ( auto it = _kvp.begin(); it != _kvp.end(); ++it ) {
             if ( first ) {
                 first = false;
             }

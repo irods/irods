@@ -107,7 +107,7 @@ irods::error get_next_child_for_open_or_write(
     // =-=-=-=-=-=-=-
     // set up iteration over physical objects
     std::vector< irods::physical_object > objs = _file_obj->replicas();
-    std::vector< irods::physical_object >::iterator itr = objs.begin();
+    auto itr = objs.begin();
 
     // =-=-=-=-=-=-=-
     // check to see if the replica is in this resource, if one is requested
@@ -1297,7 +1297,7 @@ irods::resource* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // 4a. create round_robinfilesystem_resource
-    roundrobin_resource* resc = new roundrobin_resource( _inst_name, _context );
+    auto  resc = new roundrobin_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

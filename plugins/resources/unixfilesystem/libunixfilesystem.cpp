@@ -560,7 +560,7 @@ irods::error unix_file_create(
                 irods::log( PASS( ret ) );
             }
             else {
-                irods::kvp_map_t::iterator itr = kvp.begin();
+                auto itr = kvp.begin();
                 for ( ; itr != kvp.end(); ++ itr ) {
                     rodsLog(
                         LOG_DEBUG,
@@ -666,7 +666,7 @@ irods::error unix_file_open(
                 irods::log( PASS( ret ) );
             }
             else {
-                irods::kvp_map_t::iterator itr = kvp.begin();
+                auto itr = kvp.begin();
                 for ( ; itr != kvp.end(); ++ itr ) {
                     rodsLog(
                         LOG_DEBUG,
@@ -1410,7 +1410,7 @@ irods::error unix_resolve_hierarchy_open(
                 // set up variables for iteration
                 irods::error final_ret = SUCCESS();
                 std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
+                auto itr = objs.begin();
 
                 // =-=-=-=-=-=-=-
                 // check to see if the replica is in this resource, if one is requested
@@ -1627,7 +1627,7 @@ class unixfilesystem_resource : public irods::resource {
 
                 // =-=-=-=-=-=-=-
                 // copy the properties from the context to the prop map
-                irods::kvp_map_t::iterator itr = kvp.begin();
+                auto itr = kvp.begin();
                 for( ; itr != kvp.end(); ++itr ) {
                     properties_.set< std::string >(
                         itr->first,
@@ -1662,7 +1662,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4a. create unixfilesystem_resource
-    unixfilesystem_resource* resc = new unixfilesystem_resource( _inst_name, _context );
+    auto  resc = new unixfilesystem_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

@@ -15463,7 +15463,7 @@ irods::database* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create a postgres database plugin instance
-    postgres_database_plugin* pg = new postgres_database_plugin(
+    auto  pg = new postgres_database_plugin(
         _inst_name,
         _context );
 

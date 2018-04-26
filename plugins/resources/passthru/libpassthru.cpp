@@ -690,7 +690,7 @@ static irods::error capture_weight(
 
         // =-=-=-=-=-=-=-
         // copy the properties from the context to the prop map
-        irods::kvp_map_t::iterator itr = kvp.begin();
+        auto itr = kvp.begin();
         for( ; itr != kvp.end(); ++itr ) {
             if (itr->first == _type) {
                 irods::error ret = irods::lexical_cast<double>(itr->second, _weight);
@@ -957,7 +957,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4a. create passthru_resource
-    passthru_resource* resc = new passthru_resource( _inst_name, _context );
+    auto  resc = new passthru_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

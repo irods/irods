@@ -720,7 +720,7 @@ irods::auth* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create an auth object
-    osauth_auth_plugin* nat = new osauth_auth_plugin(
+    auto  nat = new osauth_auth_plugin(
         _inst_name,
         _context );
 

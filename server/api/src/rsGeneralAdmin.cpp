@@ -305,7 +305,7 @@ _listRescTypes( rsComm_t* _rsComm ) {
     ret = name_gen.list_plugins( plugin_home, plugin_list );
     if ( ret.ok() ) {
         std::stringstream msg;
-        for ( irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+        for ( auto it = plugin_list.begin();
                 result == 0 && it != plugin_list.end(); ++it ) {
             msg << *it << std::endl;
         }

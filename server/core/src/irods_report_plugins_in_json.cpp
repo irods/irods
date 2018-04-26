@@ -19,7 +19,7 @@ namespace irods {
             return PASS( ret );
         }
 
-        for ( plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
+        for ( auto itr = plugin_list.begin();
                 itr != plugin_list.end();
                 ++itr ) {
 

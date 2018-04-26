@@ -912,7 +912,7 @@ irods::resource* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // 4a. create unixfilesystem_resource
-    deferred_resource* resc = new deferred_resource( _inst_name, _context );
+    auto  resc = new deferred_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

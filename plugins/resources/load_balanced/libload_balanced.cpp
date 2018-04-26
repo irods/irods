@@ -1055,7 +1055,7 @@ irods::resource* plugin_factory( const std::string& _inst_name,
                                  const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // 4a. create unixfilesystem_resource
-    load_balanced_resource* resc = new load_balanced_resource( _inst_name, _context );
+    auto  resc = new load_balanced_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

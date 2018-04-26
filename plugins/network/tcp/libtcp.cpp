@@ -650,7 +650,7 @@ irods::network* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create a tcp network object
-    tcp_network_plugin* tcp = new tcp_network_plugin(
+    auto  tcp = new tcp_network_plugin(
         _inst_name,
         _context );
 

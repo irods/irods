@@ -1351,7 +1351,7 @@ irods::error replCreateChildReplList(
     if ( !ret.ok() ) {
 
         // loop over all of the children in the map except the first (selected) and add them to a vector
-        redirect_map_t::const_iterator it = _redirect_map.begin();
+        auto it = _redirect_map.begin();
         for ( ++it; it != _redirect_map.end(); ++it ) {
             // JMC - need to consider the vote here as if it is 0 the child
             //       is down and should not get a replica
@@ -1382,7 +1382,7 @@ irods::error process_redirect_map_for_random_open(
     float*                   _out_vote ) {
 
     std::vector<std::pair<float, irods::hierarchy_parser>> items;
-    redirect_map_t::const_iterator itr = _redirect_map.cbegin();
+    auto itr = _redirect_map.cbegin();
     for( ; itr != _redirect_map.cend(); ++itr ) {
         if(itr->first > 0) {
             items.push_back(std::make_pair(itr->first, itr->second));
@@ -1390,7 +1390,7 @@ irods::error process_redirect_map_for_random_open(
     }
 
     size_t rand_index = irods::getRandom<size_t>() % items.size();
-    std::vector<std::pair<float, irods::hierarchy_parser>>::iterator a_itr = items.begin();
+    auto a_itr = items.begin();
     std::advance(a_itr, rand_index);
     *_out_vote   = a_itr->first;
     *_out_parser = a_itr->second;
@@ -1942,7 +1942,7 @@ irods::resource* plugin_factory( const std::string& _inst_name, const std::strin
 
     // =-=-=-=-=-=-=-
     // 4a. create repl_resource
-    repl_resource* resc = new repl_resource( _inst_name, _context );
+    auto  resc = new repl_resource( _inst_name, _context );
 
     // =-=-=-=-=-=-=-
     // 4b. map function names to operations.  this map will be used to load

@@ -982,7 +982,7 @@ namespace irods {
         }
 
         // capture and validate the option parameter
-        std::map<std::string, std::string>::const_iterator itr =
+        auto itr =
             _cmd.options.find( SERVER_CONTROL_OPTION_KW );
         if ( _cmd.options.end() == itr ) {
             return ERROR(

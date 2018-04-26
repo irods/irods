@@ -515,7 +515,7 @@ irods::auth* plugin_factory(
     const std::string& _context ) {
     // =-=-=-=-=-=-=-
     // create an auth object
-    pam_auth_plugin* pam = new pam_auth_plugin(
+    auto  pam = new pam_auth_plugin(
         _inst_name,
         _context );
 

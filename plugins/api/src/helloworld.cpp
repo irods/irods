@@ -140,7 +140,7 @@ extern "C" {
                               };
         // =-=-=-=-=-=-=-
         // create an api object
-        irods::api_entry* api = new irods::api_entry( def );
+        auto  api = new irods::api_entry( def );
 
 #ifdef RODS_SERVER
         irods::re_serialization::add_operation(

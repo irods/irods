@@ -1235,7 +1235,7 @@ initServerMain( rsComm_t *svrComm ) {
             std::vector<std::string> args = setExecArg( getenv( "reServerOption" ) );
             std::vector<char *> av;
             av.push_back( "irodsReServer" );
-            for ( std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++ ) {
+            for ( auto it = args.begin(); it != args.end(); it++ ) {
                 av.push_back( strdup( it->c_str() ) );
             }
             av.push_back( NULL );

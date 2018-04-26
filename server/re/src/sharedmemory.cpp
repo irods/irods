@@ -20,7 +20,7 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
     }
 
     try {
-        bi::shared_memory_object* tmp_s = new bi::shared_memory_object(
+        auto  tmp_s = new bi::shared_memory_object(
                                             bi::open_or_create,
                                             shared_memory_name.c_str(),
                                             bi::read_write,
@@ -32,7 +32,7 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
             tmp_s->truncate( SHMMAX );
         }
         
-        bi::mapped_region* tmp_m = new bi::mapped_region( *tmp_s, bi::read_write );
+        auto  tmp_m = new bi::mapped_region( *tmp_s, bi::read_write );
         unsigned char *shmBuf = ( unsigned char * ) tmp_m->get_address();
 
         std::memset( shmBuf, 0, tmp_m->get_size() );
@@ -78,12 +78,12 @@ unsigned char *prepareNonServerSharedMemory( const std::string& _key ) {
     }
 
     try {
-        bi::shared_memory_object* tmp_s = new bi::shared_memory_object(
+        auto  tmp_s = new bi::shared_memory_object(
                                                   bi::open_only,
                                                   shared_memory_name.c_str(),
                                                   bi::read_only );
         shm_obj[_key] = std::unique_ptr<bi::shared_memory_object>(tmp_s);
-        bi::mapped_region* tmp_m = new bi::mapped_region( *tmp_s, bi::read_only );
+        auto  tmp_m = new bi::mapped_region( *tmp_s, bi::read_only );
         unsigned char *buf = ( unsigned char * ) tmp_m->get_address();
         mapped[_key] = std::unique_ptr<bi::mapped_region>(tmp_m);
         return buf;

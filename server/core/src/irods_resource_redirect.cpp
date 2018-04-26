@@ -120,7 +120,7 @@ namespace irods {
         // cache that and keep track of the max
         std::string max_hier;
         float       max_vote = -1.0;
-        std::map< std::string, float >::iterator itr = root_map.begin();
+        auto itr = root_map.begin();
         for ( ; itr != root_map.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // request the vote

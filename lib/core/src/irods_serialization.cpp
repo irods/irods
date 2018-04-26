@@ -37,7 +37,7 @@ namespace irods {
         const std::set<char>& character_set ) {
         std::stringstream str;
         str << '[';
-        for ( std::set<char>::const_iterator iter = character_set.begin(); iter != character_set.end(); ++iter ) {
+        for ( auto iter = character_set.begin(); iter != character_set.end(); ++iter ) {
             switch ( *iter ) {
             case ']':
             case '^':
@@ -71,12 +71,12 @@ namespace irods {
             if ( !boost::regex_match( std::string( 1, escape_char ), special_character_set_regex ) ) {
                 THROW( SYS_BAD_INPUT, "Regular expression passed to escape_string must match against the escape character." );
             }
-            for ( std::vector<std::string>::const_iterator iter = strs.begin(); iter != strs.end(); ++iter ) {
+            for ( auto iter = strs.begin(); iter != strs.end(); ++iter ) {
                 escaped_strs.push_back( boost::regex_replace( *iter, special_character_set_regex, get_format_string_for_escape( escape_char ) ) );
             }
         }
         else {
-            for ( std::vector<std::string>::const_iterator iter = strs.begin(); iter != strs.end(); ++iter ) {
+            for ( auto iter = strs.begin(); iter != strs.end(); ++iter ) {
                 escaped_strs.push_back( *iter );
             }
         }
@@ -345,7 +345,7 @@ namespace irods {
 
     std::string serialize_acl( const std::vector<std::vector<std::string> >& acl ) {
         std::vector<std::string> shallow_serialized_acl;
-        for ( std::vector<std::vector<std::string> >::const_iterator iter = acl.begin(); iter != acl.end(); ++iter ) {
+        for ( auto iter = acl.begin(); iter != acl.end(); ++iter ) {
             if ( iter->size() != 2 ) {
                 THROW( SYS_BAD_INPUT, "ACLs must be a tuple of user and permission" );
             }

@@ -243,7 +243,7 @@ namespace irods {
             return PASSMSG( msg.str(), res );
         }
 
-        hierarchy_parser::const_iterator it = parser.begin();
+        auto it = parser.begin();
         for ( ; res.ok() && it != parser.end(); ++it ) {
             rodsLong_t resc_id;
             res = resc_mgr.hier_to_leaf_id(*it,resc_id);
@@ -346,7 +346,7 @@ namespace irods {
         //      :: scan for one.  i don't think this would break anything...
         std::string default_resc_name;
 
-        std::vector< std::string >::iterator itr = resources.begin();
+        auto itr = resources.begin();
         for ( ; itr != resources.end(); ++itr ) {
             error resc_err = is_hier_live( *itr );
             if ( resc_err.ok() ) {

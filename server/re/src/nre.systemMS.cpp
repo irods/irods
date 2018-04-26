@@ -1007,7 +1007,7 @@ msiListEnabledMS(
     irods::plugin_name_generator::plugin_list_t plugin_list;
     ret = name_gen.list_plugins( plugin_home, plugin_list );
     if ( ret.ok() ) {
-        irods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+        auto it = plugin_list.begin();
         for ( ; it != plugin_list.end(); ++it ) {
             addKeyVal( results, it->c_str(), "plugin" );
         }
