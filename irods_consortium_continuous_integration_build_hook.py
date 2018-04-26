@@ -31,7 +31,7 @@ def install_building_dependencies():
         "irods-externals-clang3.8-0",
         "irods-externals-cppzmq4.1-0",
         "irods-externals-jansson2.7-0",
-        "irods-externals-libarchive3.1.2-0",
+        "irods-externals-libarchive3.3.2-0",
         "irods-externals-zeromq4-14.1.3-0"
         ])
     install_os_specific_dependencies()
