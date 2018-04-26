@@ -57,7 +57,7 @@ remoteFileWrite( rsComm_t *rsComm, const fileWriteInp_t *fileWriteInp,
                  const bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost ) {
     int retVal;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileWrite: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

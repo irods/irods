@@ -13,7 +13,7 @@
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -29,7 +29,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     initCondForCp( myRodsEnv, myRodsArgs, &dataObjCopyInp, &rodsRestart );
 
     /* initialize the progress struct */
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
         for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
             rodsPath_t * targPath = &rodsPathInp->targPath[i];
@@ -50,8 +50,8 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         rodsPath_t * targPath = &rodsPathInp->targPath[i];
 
-        if ( rodsPathInp->srcPath[i].rodsObjStat != NULL &&
-                rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL ) {
+        if ( rodsPathInp->srcPath[i].rodsObjStat != nullptr &&
+                rodsPathInp->srcPath[i].rodsObjStat->specColl != nullptr ) {
             dataObjCopyInp.srcDataObjInp.specColl =
                 rodsPathInp->srcPath[i].rodsObjStat->specColl;
         }
@@ -75,9 +75,9 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 close( rodsRestart.fd );
                 return status;
             }
-            if ( dataObjCopyInp.srcDataObjInp.specColl != NULL &&
+            if ( dataObjCopyInp.srcDataObjInp.specColl != nullptr &&
                     dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL ) {
-                dataObjCopyInp.srcDataObjInp.specColl = NULL;
+                dataObjCopyInp.srcDataObjInp.specColl = nullptr;
                 status = cpCollUtil( conn, rodsPathInp->srcPath[i].outPath,
                                      targPath->outPath, myRodsEnv, myRodsArgs, &dataObjCopyInp,
                                      &rodsRestart );
@@ -113,17 +113,17 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "cpFileUtil: NULL srcPath or targPath in cp" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         rstrcpy( conn->operProgress.curFileName, srcPath, MAX_NAME_LEN );
         conn->operProgress.curFileSize = srcSize;
         conn->operProgress.curFileSizeDone = 0;
@@ -139,11 +139,11 @@ cpFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     if ( status >= 0 ) {
         if ( rodsArgs->verbose == True ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, dataObjCopyInp->destDataObjInp.objPath,
-                         conn->transStat.bytesWritten, NULL, &startTime, &endTime );
+                         conn->transStat.bytesWritten, nullptr, &startTime, &endTime );
         }
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.totalNumFilesDone++;
             conn->operProgress.totalFileSizeDone += srcSize;
         }
@@ -157,7 +157,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart ) {
     char *tmpStr;
 
-    if ( dataObjCopyInp == NULL ) {
+    if ( dataObjCopyInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForCp: NULL dataObjCopyInp in cp" );
         return USER__NULL_INPUT_ERR;
@@ -165,12 +165,12 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
     if ( rodsArgs->dataType == True ) {
-        if ( rodsArgs->dataTypeString != NULL ) {
+        if ( rodsArgs->dataTypeString != nullptr ) {
             addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, DATA_TYPE_KW,
                        rodsArgs->dataTypeString );
         }
@@ -199,7 +199,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->physicalPath == True ) {
-        if ( rodsArgs->physicalPathString == NULL ) {
+        if ( rodsArgs->physicalPathString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForCp: NULL physicalPathString error" );
             return USER__NULL_INPUT_ERR;
@@ -211,7 +211,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForCp: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -221,7 +221,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        DEST_RESC_NAME_KW, rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, DEST_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
@@ -239,14 +239,14 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput, VERY_VERBOSE_KW, "" );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
                    RBUDP_SEND_RATE_KW, tmpStr );
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
                    RBUDP_SEND_RATE_KW, tmpStr );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
                    RBUDP_PACK_SIZE_KW, tmpStr );
         addKeyVal( &dataObjCopyInp->srcDataObjInp.condInput,
@@ -283,7 +283,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     dataObjCopyInp_t childDataObjCopyInp;
 
-    if ( srcColl == NULL || targColl == NULL ) {
+    if ( srcColl == nullptr || targColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "cpCollUtil: NULL srcColl or targColl in cp" );
         return USER__NULL_INPUT_ERR;

@@ -45,7 +45,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // call generic plugin loader
-        auth* ath = 0;
+        auth* ath = nullptr;
         error ret = load_plugin< auth >(
                         ath,
                         _plugin_name,

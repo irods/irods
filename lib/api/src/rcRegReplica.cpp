@@ -27,10 +27,10 @@ rcRegReplica( rcComm_t *conn, regReplica_t *regReplicaInp ) {
     /* don't send next */
     srcNext = regReplicaInp->srcDataObjInfo->next;
     destNext = regReplicaInp->destDataObjInfo->next;
-    regReplicaInp->srcDataObjInfo->next = NULL;
-    regReplicaInp->destDataObjInfo->next = NULL;
-    status = procApiRequest( conn, REG_REPLICA_AN, regReplicaInp, NULL,
-                             ( void ** ) NULL, NULL );
+    regReplicaInp->srcDataObjInfo->next = nullptr;
+    regReplicaInp->destDataObjInfo->next = nullptr;
+    status = procApiRequest( conn, REG_REPLICA_AN, regReplicaInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
     regReplicaInp->srcDataObjInfo->next = srcNext;
     regReplicaInp->destDataObjInfo->next = destNext;
 

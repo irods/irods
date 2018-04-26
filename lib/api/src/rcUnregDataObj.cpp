@@ -22,8 +22,8 @@
 int
 rcUnregDataObj( rcComm_t *conn, unregDataObj_t *unregDataObjInp ) {
     int status;
-    status = procApiRequest( conn, UNREG_DATA_OBJ_AN, unregDataObjInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, UNREG_DATA_OBJ_AN, unregDataObjInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

@@ -9,21 +9,21 @@
  */
 Node *newNode( NodeType type, const char* text, Label * eloc, Region *r ) {
     Node *node = ( Node * )region_alloc( r, sizeof( Node ) );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     memset( node, 0, sizeof( Node ) );
     setNodeType( node, type );
-    if ( text != NULL ) {
+    if ( text != nullptr ) {
         node->text = ( char * )region_alloc( r, ( strlen( text ) + 1 ) * sizeof( char ) );
         strcpy( node->text, text );
     }
     else {
-        node->text = NULL;
+        node->text = nullptr;
     }
-    NODE_EXPR_POS( node ) = eloc == NULL ? 0 : eloc->exprloc;
+    NODE_EXPR_POS( node ) = eloc == nullptr ? 0 : eloc->exprloc;
     setIOType( node, IO_TYPE_INPUT );
-    if ( eloc != NULL ) {
+    if ( eloc != nullptr ) {
         setBase( node, eloc->base, r );
     }
     else {
@@ -49,10 +49,10 @@ Node *newExprType( NodeType type, int degree, Node **subtrees, Region *r ) {
 }
 
 ExprType *newTVar2( int numDisjuncts, Node **disjuncts, Region *r ) {
-    ExprType *t = newExprType( T_VAR, 0, NULL, r );
+    ExprType *t = newExprType( T_VAR, 0, nullptr, r );
     T_VAR_ID( t ) = newTVarId();
     T_VAR_NUM_DISJUNCTS( t ) = numDisjuncts;
-    T_VAR_DISJUNCTS( t ) = numDisjuncts == 0 ? NULL : ( Node ** )region_alloc( r, sizeof( Node * ) * numDisjuncts );
+    T_VAR_DISJUNCTS( t ) = numDisjuncts == 0 ? nullptr : ( Node ** )region_alloc( r, sizeof( Node * ) * numDisjuncts );
     if ( numDisjuncts != 0 ) {
         memcpy( T_VAR_DISJUNCTS( t ), disjuncts, numDisjuncts * sizeof( Node * ) );
     }
@@ -60,18 +60,18 @@ ExprType *newTVar2( int numDisjuncts, Node **disjuncts, Region *r ) {
 }
 
 ExprType *newTVar( Region *r ) {
-    ExprType *t = newExprType( T_VAR, 0, NULL, r );
+    ExprType *t = newExprType( T_VAR, 0, nullptr, r );
     T_VAR_ID( t ) = newTVarId();
     T_VAR_NUM_DISJUNCTS( t ) = 0;
-    T_VAR_DISJUNCTS( t ) = NULL;
+    T_VAR_DISJUNCTS( t ) = nullptr;
     return t;
 }
 
 ExprType *newSimpType( NodeType type, Region *r ) {
-    return newExprType( type, 0, NULL, r );
+    return newExprType( type, 0, nullptr, r );
 }
 ExprType *newErrorType( int errcode, Region *r ) {
-    Res *res = newExprType( T_ERROR, 0, NULL, r );
+    Res *res = newExprType( T_ERROR, 0, nullptr, r );
     RES_ERR_CODE( res ) = errcode;
     return res;
 
@@ -97,13 +97,13 @@ ExprType *newTupleTypeVarArg( int arity, int vararg, ExprType **paramTypes, Regi
 }
 
 ExprType *newIRODSType( const char *name, Region *r ) {
-    ExprType *t = newExprType( T_IRODS, 0, NULL, r );
+    ExprType *t = newExprType( T_IRODS, 0, nullptr, r );
     if ( name ) {
         t->text = ( char * )region_alloc( r, ( strlen( name ) + 1 ) * sizeof( char ) );
         strcpy( t->text, name );
     }
     else {
-        t->text = NULL;
+        t->text = nullptr;
     }
     return t;
 }
@@ -168,7 +168,7 @@ Res* newCollRes( int size, ExprType *elemType, Region *r ) {
 /* used in cpRes only */
 Res* newCollRes2( int size, Region *r ) {
     Res *res1 = newRes( r );
-    res1->exprType = NULL;
+    res1->exprType = nullptr;
     res1->degree = size;
     res1->subtrees = ( Res ** )region_alloc( r, sizeof( Res * ) * size );
     return res1;
@@ -194,7 +194,7 @@ msParam_t *newMsParam( const char *typeName, void *ioStruct, bytesBuf_t *ioBuf, 
         strcpy( param->type, typeName );
     }
     else {
-        param->type = NULL;
+        param->type = nullptr;
     }
     param->inOutStruct = ioStruct;
     param->inpOutBuf = ioBuf;
@@ -228,7 +228,7 @@ Res* newStringBasedRes( Region *r, const char *s ) {
         memcpy( res1->text, s, size );
     }
     else {
-        res1->text = NULL;
+        res1->text = nullptr;
     }
     return res1;
 }
@@ -266,7 +266,7 @@ Res* newErrorRes( Region *r, int errcode ) {
 msParamArray_t *newMsParamArray() {
     msParamArray_t *mpa = ( msParamArray_t * )malloc( sizeof( msParamArray_t ) );
     mpa->len = 0;
-    mpa->msParam = NULL;
+    mpa->msParam = nullptr;
     mpa->oprType = 0;
     return mpa;
 }
@@ -312,7 +312,7 @@ TypingConstraint *newTypingConstraint( ExprType *a, ExprType *b, NodeType type, 
     TC_B( tc ) = b;
     setNodeType( tc, type );
     TC_NODE( tc ) = node;
-    TC_NEXT( tc ) = NULL;
+    TC_NEXT( tc ) = nullptr;
     tc->degree = 4;
     return tc;
 }
@@ -324,7 +324,7 @@ FunctionDesc *newFunctionFD( char *type, SmsiFuncTypePtr func, Region *r ) {
     FunctionDesc *desc = ( FunctionDesc * ) region_alloc( r, sizeof( FunctionDesc ) );
     memset( desc, 0, sizeof( FunctionDesc ) );
     FD_SMSI_FUNC_PTR_LVAL( desc ) = func;
-    desc->exprType = type == NULL ? NULL : parseFuncTypeFromString( type, r );
+    desc->exprType = type == nullptr ? nullptr : parseFuncTypeFromString( type, r );
     setNodeType( desc, N_FD_FUNCTION );
     return desc;
 }
@@ -349,7 +349,7 @@ FunctionDesc *newExternalFD( Node *type, Region *r ) {
 FunctionDesc *newDeconstructorFD( char *type, int proj, Region *r ) {
     FunctionDesc *desc = ( FunctionDesc * ) region_alloc( r, sizeof( FunctionDesc ) );
     memset( desc, 0, sizeof( FunctionDesc ) );
-    desc->exprType = type == NULL ? NULL : parseFuncTypeFromString( type, r );
+    desc->exprType = type == nullptr ? nullptr : parseFuncTypeFromString( type, r );
     setNodeType( desc, N_FD_DECONSTRUCTOR );
     FD_PROJ( desc ) = proj;
     return desc;
@@ -368,7 +368,7 @@ RuleDesc *newRuleDesc( RuleType rk, Node *n, int dynamictyping, Region *r ) {
     memset( rd, 0, sizeof( RuleDesc ) );
     rd->id = -1;
     rd->node = n;
-    rd->type = NULL;
+    rd->type = nullptr;
     rd->ruleType = rk;
     rd->dynamictyping = dynamictyping;
     return rd;
@@ -392,8 +392,8 @@ void setBase( Node *node, char *base, Region *r ) {
 Node **setDegree( Node *node, int d, Region *r ) {
     node->degree = d;
     node->subtrees = ( Node ** )region_alloc( r, d * sizeof( Node * ) );
-    if ( node->subtrees == NULL ) {
-        return NULL;
+    if ( node->subtrees == nullptr ) {
+        return nullptr;
     }
     return node->subtrees;
 }
@@ -409,8 +409,8 @@ Node *dupNode(Node *node, Region* r) {
 }*/
 Node *createUnaryFunctionNode( char *fn, Node *a, Label * expr, Region *r ) {
     Node *node = newNode( N_APPLICATION, fn, expr, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     setDegree( node, 1, r );
     node->subtrees[0] = a;
@@ -418,8 +418,8 @@ Node *createUnaryFunctionNode( char *fn, Node *a, Label * expr, Region *r ) {
 }
 Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * expr, Region *r ) {
     Node *node = newNode( N_APPLICATION, fn, expr, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     setDegree( node, 2, r );
     node->subtrees[0] = a;
@@ -428,8 +428,8 @@ Node *createBinaryFunctionNode( char *fn, Node *a, Node *b, Label * expr, Region
 }
 Node *createFunctionNode( const char *fn, Node **params, int paramsLen, Label * exprloc, Region *r ) {
     Node *node = newNode( N_APPLICATION, fn, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     Node *func = newNode( TK_TEXT, fn, exprloc, r );
     Node *param = newNode( N_TUPLE, APPLICATION, exprloc, r );
@@ -442,8 +442,8 @@ Node *createFunctionNode( const char *fn, Node **params, int paramsLen, Label * 
 }
 Node *createActionsNode( Node **params, int paramsLen, Label * exprloc, Region *r ) {
     Node *node = newNode( N_ACTIONS, "ACTIONS", exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     setDegree( node, paramsLen, r );
     memcpy( node->subtrees, params, paramsLen * sizeof( Node * ) );
@@ -451,36 +451,36 @@ Node *createActionsNode( Node **params, int paramsLen, Label * exprloc, Region *
 }
 Node *createTextNode( char *t, Label * exprloc, Region *r ) {
     Node *node = newNode( TK_TEXT, t, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     return node;
 }
 Node *createIntNode( char *t, Label * exprloc, Region *r ) {
     Node *node = newNode( TK_INT, t, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     return node;
 }
 Node *createDoubleNode( char *t, Label * exprloc, Region *r ) {
     Node *node = newNode( TK_DOUBLE, t, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     return node;
 }
 Node *createStringNode( char *t, Label * exprloc, Region *r ) {
     Node *node = newNode( TK_STRING, t, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     return node;
 }
 Node *createErrorNode( char *error, Label * exprloc, Region *r ) {
     Node *node = newNode( N_ERROR, error, exprloc, r );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
     return node;
 }

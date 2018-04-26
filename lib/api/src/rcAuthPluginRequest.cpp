@@ -11,9 +11,9 @@ int rcAuthPluginRequest(
                      _comm,
                      AUTH_PLUG_REQ_AN,
                      _req_inp,
-                     NULL,
+                     nullptr,
                      ( void ** )_req_out,
-                     NULL );
+                     nullptr );
     return status;
 
 } // rcAuthPluginRequest

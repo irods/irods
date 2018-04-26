@@ -51,7 +51,7 @@ rsFileSyncToArchByHost( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
     int status;
     int remoteFlag;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsFileSyncToArchByHost: Input NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -84,7 +84,7 @@ int
 remoteFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** sync_out, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileSyncToArch: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -143,7 +143,7 @@ int _rsFileSyncToArch(
     // set object id if provided
     char *id_str = getValByKey(&_sync_inp->condInput, DATA_ID_KW);
     if (id_str) {
-        file_obj->id(strtol(id_str, NULL, 10));
+        file_obj->id(strtol(id_str, nullptr, 10));
     }
 
     irods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );

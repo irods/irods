@@ -48,7 +48,7 @@ remoteFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp,
                  rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileMkdir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

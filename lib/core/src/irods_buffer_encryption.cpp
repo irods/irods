@@ -188,7 +188,7 @@ namespace irods {
         int ret = EVP_EncryptInit_ex(
                       context,
                       algo,
-                      NULL,
+                      nullptr,
                       &_key[0],
                       &_iv[0] );
         if ( 0 == ret ) {
@@ -279,7 +279,7 @@ namespace irods {
         int ret = EVP_DecryptInit_ex(
                       context,
                       algo,
-                      NULL,
+                      nullptr,
                       &_key[0],
                       &_iv [0] );
         if ( 0 == ret ) {

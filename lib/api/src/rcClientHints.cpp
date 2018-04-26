@@ -6,8 +6,8 @@
 int
 rcClientHints( rcComm_t *conn, bytesBuf_t** _bbuf ) {
     int status;
-    status = procApiRequest( conn, CLIENT_HINTS_AN, NULL, NULL,
-                             ( void ** ) _bbuf, NULL );
+    status = procApiRequest( conn, CLIENT_HINTS_AN, nullptr, nullptr,
+                             ( void ** ) _bbuf, nullptr );
 
     return status;
 }

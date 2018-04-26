@@ -1478,7 +1478,7 @@ irods::error replValidOperation(
         else {
             // if the api commands involve replication we have to error out since managing replicas is our job
             char* in_repl = getValByKey( &file_obj->cond_input(), IN_REPL_KW );
-            if ( in_repl != NULL && false ) { // For migration we no longer have this restriction but might be added later. - harry
+            if ( in_repl != nullptr && false ) { // For migration we no longer have this restriction but might be added later. - harry
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Using repl or trim commands on a replication resource is not allowed. ";

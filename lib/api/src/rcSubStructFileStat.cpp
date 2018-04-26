@@ -24,8 +24,8 @@ int
 rcSubStructFileStat( rcComm_t *conn, subFile_t *subFile,
                      rodsStat_t **subStructFileStatOut ) {
     int status;
-    status = procApiRequest( conn, SUB_STRUCT_FILE_STAT_AN, subFile, NULL,
-                             ( void ** ) subStructFileStatOut, NULL );
+    status = procApiRequest( conn, SUB_STRUCT_FILE_STAT_AN, subFile, nullptr,
+                             ( void ** ) subStructFileStatOut, nullptr );
 
     return status;
 }

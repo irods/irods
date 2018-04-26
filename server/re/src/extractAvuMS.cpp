@@ -77,7 +77,7 @@ msiReadMDTemplateIntoTagStruct( msParam_t* bufParam, msParam_t* tagParam, ruleEx
     RE_TEST_MACRO( "Loopback on msiReadMDTemplateIntoTagStruct" );
 
     if ( strcmp( bufParam->type, BUF_LEN_MS_T ) != 0 ||
-            bufParam->inpOutBuf == NULL ) {
+            bufParam->inpOutBuf == nullptr ) {
         return USER_PARAM_TYPE_ERR;
     }
     tmplObjBuf = ( bytesBuf_t * ) bufParam->inpOutBuf;
@@ -241,18 +241,18 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
     if ( regexec( &preg[0], t1, 1, &pm[0], 0 ) == 0 ) {
         t2 = t1 + pm[0].rm_eo ;                     /* t2 starts value */
         if ( regexec( &preg[1], t2, 1, &pm[1], 0 ) != 0 ) {
-            fillMsParam( outValueParam, NULL, STR_MS_T, 0, NULL );
+            fillMsParam( outValueParam, nullptr, STR_MS_T, nullptr, nullptr );
         }
         else {
             t3 = t2 + pm[1].rm_so;                      /* t3 ends value */
             c = *t3;
             *t3 = '\0';
-            fillMsParam( outValueParam, NULL, STR_MS_T, t2, NULL );
+            fillMsParam( outValueParam, nullptr, STR_MS_T, t2, nullptr );
             *t3 = c;
         }
     }
     else {
-        fillMsParam( outValueParam, NULL, STR_MS_T, 0, NULL );
+        fillMsParam( outValueParam, nullptr, STR_MS_T, nullptr, nullptr );
     }
     regfree( &preg[0] );
     regfree( &preg[1] );
@@ -324,7 +324,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
     RE_TEST_MACRO( "Loopback on msiExtractTemplateMetadata" );
 
     if ( strcmp( bufParam->type, BUF_LEN_MS_T ) != 0 ||
-            bufParam->inpOutBuf == NULL ) {
+            bufParam->inpOutBuf == nullptr ) {
         return USER_PARAM_TYPE_ERR;
     }
     if ( strcmp( tagParam->type, TagStruct_MS_T ) != 0 ) {

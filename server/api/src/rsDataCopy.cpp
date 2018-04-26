@@ -42,7 +42,7 @@ rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
 
 
-    if ( getValByKey( &dataOprInp->condInput, EXEC_LOCALLY_KW ) != NULL ||
+    if ( getValByKey( &dataOprInp->condInput, EXEC_LOCALLY_KW ) != nullptr ||
             dataCopyInp->portalOprOut.numThreads == 0 ) {
         /* XXXXX do it locally if numThreads == 0 */
         status = _rsDataCopy( rsComm, dataCopyInp );
@@ -55,7 +55,7 @@ rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
             l3descInx = dataOprInp->srcL3descInx;
         }
         rodsServerHost = FileDesc[l3descInx].rodsServerHost;
-        if ( rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST ) {
+        if ( rodsServerHost != nullptr && rodsServerHost->localFlag != LOCAL_HOST ) {
             addKeyVal( &dataOprInp->condInput, EXEC_LOCALLY_KW, "" );
             status = remoteDataCopy( rsComm, dataCopyInp, rodsServerHost );
             clearKeyVal( &dataOprInp->condInput );
@@ -72,7 +72,7 @@ remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
                 rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteDataCopy: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -98,12 +98,12 @@ remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
 static
 int
 apply_acPostProcForDataCopyReceived(rsComm_t *rsComm, dataOprInp_t *dataOprInp) {
-    if (rsComm == NULL) {
+    if (rsComm == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL rsComm");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if (dataOprInp == NULL) {
+    if (dataOprInp == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL dataOprInp");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -115,7 +115,7 @@ apply_acPostProcForDataCopyReceived(rsComm_t *rsComm, dataOprInp_t *dataOprInp) 
     }
 
     const char* resource_hierarchy = FileDesc[l3_index].rescHier;
-    if (resource_hierarchy == NULL) {
+    if (resource_hierarchy == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForDataCopyReceived: NULL resource_hierarchy");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -147,7 +147,7 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp_t *dataOprInp;
     int retVal;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "_rsDataCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;

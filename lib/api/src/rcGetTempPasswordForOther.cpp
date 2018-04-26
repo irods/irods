@@ -10,8 +10,8 @@ rcGetTempPasswordForOther( rcComm_t *conn,
                            getTempPasswordForOtherInp_t *getTempPasswordForOtherInp,
                            getTempPasswordForOtherOut_t **getTempPasswordForOtherOut ) {
     int status;
-    status = procApiRequest( conn, GET_TEMP_PASSWORD_FOR_OTHER_AN,  getTempPasswordForOtherInp, NULL,
-                             ( void ** ) getTempPasswordForOtherOut, NULL );
+    status = procApiRequest( conn, GET_TEMP_PASSWORD_FOR_OTHER_AN,  getTempPasswordForOtherInp, nullptr,
+                             ( void ** ) getTempPasswordForOtherOut, nullptr );
 
     return status;
 }

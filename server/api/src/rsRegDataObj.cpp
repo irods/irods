@@ -19,13 +19,13 @@ int
 rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
               dataObjInfo_t **outDataObjInfo ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
-    *outDataObjInfo = NULL;
+    *outDataObjInfo = nullptr;
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )dataObjInfo->objPath,
                                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -76,7 +76,7 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         irods::error ret;
         status = chlRegDataObj( rsComm, dataObjInfo );
         if ( status < 0 ) {
-            char* sys_error = NULL;
+            char* sys_error = nullptr;
             const char* rods_error = rodsErrorName( status, &sys_error );
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -119,9 +119,9 @@ _rsRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 int
 svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
-    if ( dataObjInfo->specColl != NULL ) {
+    if ( dataObjInfo->specColl != nullptr ) {
         rodsLog( LOG_NOTICE,
                  "svrRegDataObj: Reg path %s is in spec coll",
                  dataObjInfo->objPath );
@@ -130,7 +130,7 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )dataObjInfo->objPath,
                                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -155,10 +155,10 @@ svrRegDataObj( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
         }
     }
     else {
-        dataObjInfo_t *outDataObjInfo = NULL;
+        dataObjInfo_t *outDataObjInfo = nullptr;
         status = rcRegDataObj( rodsServerHost->conn, dataObjInfo,
                                &outDataObjInfo );
-        if ( status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
+        if ( status >= 0 && nullptr != outDataObjInfo ) { // JMC cppcheck - nullptr
             dataObjInfo->dataId = outDataObjInfo->dataId;
             clearKeyVal( &outDataObjInfo->condInput );
             free( outDataObjInfo );

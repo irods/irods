@@ -14,12 +14,12 @@ int
 rsModAccessControl( rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
     char newPath[MAX_NAME_LEN];
     modAccessControlInp_t newModAccessControlInp = *modAccessControlInp;
 
     rstrcpy( newPath, newModAccessControlInp.path, MAX_NAME_LEN );
-    resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
+    resolveLinkedPath( rsComm, newPath, &specCollCache, nullptr );
     if ( strcmp( newPath, newModAccessControlInp.path ) != 0 ) {
         newModAccessControlInp.path = newPath;
     }
@@ -74,7 +74,7 @@ _rsModAccessControl( rsComm_t *rsComm,
     ruleExecInfo_t rei2;
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }

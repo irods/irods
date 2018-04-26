@@ -218,7 +218,7 @@ irods::error rule_exists(irods::default_re_ctx&, const std::string& _rn, bool& _
         _ret = false;
         return SUCCESS();
     }
-    _ret = lookupFromEnv(ruleEngineConfig.extFuncDescIndex, const_cast<char*>(_rn.c_str())) != NULL;
+    _ret = lookupFromEnv(ruleEngineConfig.extFuncDescIndex, const_cast<char*>(_rn.c_str())) != nullptr;
     rodsLog(
         LOG_DEBUG,
         "looking up rule name %s, found = %d",
@@ -284,16 +284,16 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
 
         if(!ret.ok()) {
              rodsLog(LOG_ERROR, "unsupported argument for calling re rules from the rule language");
-             addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", NULL);
+             addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", nullptr);
         }
         else {
             if( 0 == param.size() ) {
                 rodsLog( LOG_DEBUG, "empty serialized map for parameter %s", arg );
-                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", NULL);
+                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) "<unconvertible>", nullptr);
             }
             else if( 1 == param.size() ) {
                 // only one key-value in them map, bind it as a string
-                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) param.begin()->second.c_str(), NULL);
+                addMsParam(&(ar.msParamArray), arg, STR_MS_T, (void *) param.begin()->second.c_str(), nullptr);
             }
             else {
                 keyValPair_t* kvp = (keyValPair_t*)malloc(sizeof(keyValPair_t));
@@ -301,7 +301,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
                 for( auto i : param ) {
                     addKeyVal( kvp, i.first.c_str(), i.second.c_str() );
                 }
-                addMsParam(&(ar.msParamArray), arg, KeyValPair_MS_T, kvp, NULL );
+                addMsParam(&(ar.msParamArray), arg, KeyValPair_MS_T, kvp, nullptr );
             }
         }
 
@@ -317,7 +317,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
         if(itr->type() == typeid(std::string)) {
         } else if(itr->type() == typeid(std::string*)) {
             msParam_t *msParam = getMsParamByLabel(&(ar.msParamArray), arg);
-            if(msParam != NULL) {
+            if(msParam != nullptr) {
                 *boost::any_cast<std::string*>(*itr) = reinterpret_cast<char *>(msParam->inOutStruct);
             } else {
                 rodsLog(LOG_ERROR, "no output parameter");

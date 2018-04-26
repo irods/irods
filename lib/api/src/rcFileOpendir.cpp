@@ -22,8 +22,8 @@
 int
 rcFileOpendir( rcComm_t *conn, fileOpendirInp_t *fileOpendirInp ) {
     int status;
-    status = procApiRequest( conn, FILE_OPENDIR_AN,  fileOpendirInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_OPENDIR_AN,  fileOpendirInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

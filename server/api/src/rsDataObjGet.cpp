@@ -36,8 +36,8 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
-    if ( dataObjOutBBuf == NULL ) {
+    specCollCache_t *specCollCache = nullptr;
+    if ( dataObjOutBBuf == nullptr ) {
         rodsLog( LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -52,7 +52,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else if ( remoteFlag == LOCAL_HOST ) {
         // dataObjInfo_t linked list
-        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *dataObjInfoHead = nullptr;
 
         // resource hierarchy
         std::string hier;
@@ -61,7 +61,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // working on the "home zone", determine if we need to redirect to a different
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
-        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
             irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
                                dataObjInp, hier, &dataObjInfoHead );
             if ( !ret.ok() ) {
@@ -115,7 +115,7 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
              * rsComplete knows what to do */
             l1descInx = allocAndSetL1descForZoneOpr(
-                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
+                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, nullptr );
             if ( l1descInx < 0 ) {
                 return l1descInx;
             }
@@ -138,7 +138,7 @@ _rsDataObjGet( rsComm_t *rsComm,
     int status;
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
-    char *chksumStr = NULL;
+    char *chksumStr = nullptr;
     int retval;
     openedDataObjInp_t dataObjCloseInp;
 
@@ -166,7 +166,7 @@ _rsDataObjGet( rsComm_t *rsComm,
         return l1descInx;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != nullptr ) {
         if ( strlen( dataObjInfo->chksum ) > 0 ) {
             /* a chksum already exists */
             chksumStr = strdup( dataObjInfo->chksum );
@@ -194,7 +194,7 @@ _rsDataObjGet( rsComm_t *rsComm,
             else {
                 status = status2;
             }
-            if ( chksumStr != NULL ) {
+            if ( chksumStr != nullptr ) {
                 rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
             }
         }
@@ -214,7 +214,7 @@ _rsDataObjGet( rsComm_t *rsComm,
     }
 
     status = l1descInx;         /* means file not included */
-    if ( chksumStr != NULL ) {
+    if ( chksumStr != nullptr ) {
         rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
     }
     free( chksumStr );
@@ -251,13 +251,13 @@ preProcParaGet( rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut )
 
     initDataOprInp( &dataOprInp, l1descInx, GET_OPR );
     /* add RESC_HIER_STR_KW for getNumThreads */
-    if ( L1desc[l1descInx].dataObjInfo != NULL ) {
+    if ( L1desc[l1descInx].dataObjInfo != nullptr ) {
         //addKeyVal (&dataOprInp.condInput, RESC_NAME_KW,
         //           L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
         addKeyVal( &dataOprInp.condInput, RESC_HIER_STR_KW,
                    L1desc[l1descInx].dataObjInfo->rescHier );
     }
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         status =  remoteDataGet( rsComm, &dataOprInp, portalOprOut,
                                  L1desc[l1descInx].remoteZoneHost );
     }

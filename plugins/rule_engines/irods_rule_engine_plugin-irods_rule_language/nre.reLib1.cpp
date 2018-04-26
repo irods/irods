@@ -44,7 +44,7 @@ applyRuleArg331( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION]
     writeToTmp( "entry.log", action );
     writeToTmp( "entry.log", "(pass on to applyRulePA)\n" );
 #endif
-    msParamArray_t *inMsParamArray = NULL;
+    msParamArray_t *inMsParamArray = nullptr;
     int i;
 
     i = applyRuleArgPA( action , args,  argc, inMsParamArray, rei, reiSaveFlag );
@@ -77,7 +77,7 @@ int computeExpression( char *inAction, msParamArray_t *inMsParamArray, ruleExecI
     writeToTmp( "entry.log", "\n" );
 #endif
 
-    Region *r = make_region( 0, NULL );
+    Region *r = make_region( 0, nullptr );
 
     Res *res0 = parseAndComputeExpressionAdapter( inAction, inMsParamArray, 0, rei, reiSaveFlag, r );
     int ret;
@@ -132,11 +132,11 @@ applyRuleBase( char *inAction, msParamArray_t *inMsParamArray, int updateInMsPar
         RuleEngineEventParam param;
         param.actionName = inAction;
         param.ruleIndex = -1;
-        reDebug( APPLY_RULE_BEGIN, -1, &param, NULL, NULL, rei );
+        reDebug( APPLY_RULE_BEGIN, -1, &param, nullptr, nullptr, rei );
 
     }
 
-    Region *r = make_region( 0, NULL );
+    Region *r = make_region( 0, nullptr );
     int ret;
     Res *res;
     if ( inAction[strlen( inAction ) - 1] == '|' ) {
@@ -157,7 +157,7 @@ applyRuleBase( char *inAction, msParamArray_t *inMsParamArray, int updateInMsPar
         RuleEngineEventParam param;
         param.actionName = inAction;
         param.ruleIndex = -1;
-        reDebug( APPLY_RULE_END, -1, &param, NULL, NULL, rei );
+        reDebug( APPLY_RULE_END, -1, &param, nullptr, nullptr, rei );
     }
 
     return ret;
@@ -170,9 +170,9 @@ int applyRuleArgPA( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTI
                 msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
     int i;
 
-    Region *r = make_region( 0, NULL );
+    Region *r = make_region( 0, nullptr );
     rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
+    errmsgBuf.errMsg = nullptr;
     errmsgBuf.len = 0;
     Res *res = computeExpressionWithParams( action, args, argc, rei, reiSaveFlag, inMsParamArray, &errmsgBuf, r );
     i = processReturnRes( res );
@@ -218,7 +218,7 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
         RuleEngineEventParam param;
         param.actionName = inAction;
         param.ruleIndex = -1;
-        reDebug( APPLY_ALL_RULES_BEGIN, -1, &param, NULL, NULL, rei );
+        reDebug( APPLY_ALL_RULES_BEGIN, -1, &param, nullptr, nullptr, rei );
     }
 
     int ret = applyRule( inAction, inMsParamArray, rei, reiSaveFlag );
@@ -227,7 +227,7 @@ applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
         RuleEngineEventParam param;
         param.actionName = inAction;
         param.ruleIndex = -1;
-        reDebug( APPLY_ALL_RULES_END, -1, &param, NULL, NULL, rei );
+        reDebug( APPLY_ALL_RULES_END, -1, &param, nullptr, nullptr, rei );
     }
 
     /* restore global flag */
@@ -249,13 +249,13 @@ void appendOutputToInput( msParamArray_t *inpParamArray, char **outParamNames, i
         }
         repeat = 0;
         for ( k = 0; k < inpParamArray->len; k++ ) {
-            if ( inpParamArray->msParam[k]->label != NULL && strcmp( outParamNames[i], inpParamArray->msParam[k]->label ) == 0 ) {
+            if ( inpParamArray->msParam[k]->label != nullptr && strcmp( outParamNames[i], inpParamArray->msParam[k]->label ) == 0 ) {
                 repeat = 1;
                 break;
             }
         }
         if ( !repeat ) {
-            addMsParam( inpParamArray, outParamNames[i], NULL, NULL, NULL );
+            addMsParam( inpParamArray, outParamNames[i], nullptr, nullptr, nullptr );
         }
     }
 
@@ -291,7 +291,7 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const ch
         RuleEngineEventParam param;
         param.actionName = ruleDef;
         param.ruleIndex = -1;
-        reDebug( EXEC_MY_RULE_BEGIN, -1, &param, NULL, NULL, rei );
+        reDebug( EXEC_MY_RULE_BEGIN, -1, &param, nullptr, nullptr, rei );
     }
 
 
@@ -304,7 +304,7 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const ch
         free( outParamNames[i] );
     }
 
-    Region *r = make_region( 0, NULL );
+    Region *r = make_region( 0, nullptr );
     status =
         parseAndComputeRuleAdapter( ruleDef, inMsParamArray, rei, reiSaveFlag, r );
     region_free( r );
@@ -316,7 +316,7 @@ execMyRuleWithSaveFlag( char * ruleDef, msParamArray_t *inMsParamArray, const ch
         RuleEngineEventParam param;
         param.actionName = ruleDef;
         param.ruleIndex = -1;
-        reDebug( EXEC_MY_RULE_END, -1, &param, NULL, NULL, rei );
+        reDebug( EXEC_MY_RULE_END, -1, &param, nullptr, nullptr, rei );
     }
     return status;
 }
@@ -366,13 +366,13 @@ initRuleStruct( const char* inst_name, rsComm_t *svrComm, const char *irbSet, co
     }
 
     /* read logging settings */
-    if ( svrComm != NULL ) { /* if this is not a process started by a client, then we used the default logging setting */
+    if ( svrComm != nullptr ) { /* if this is not a process started by a client, then we used the default logging setting */
         readICatUserLogging( svrComm->clientUser.userName, &ruleEngineConfig.logging, svrComm );
     }
 
-    if ( getenv( RETESTFLAG ) != NULL ) {
+    if ( getenv( RETESTFLAG ) != nullptr ) {
         reTestFlag = atoi( getenv( RETESTFLAG ) );
-        if ( getenv( RELOOPBACKFLAG ) != NULL ) {
+        if ( getenv( RELOOPBACKFLAG ) != nullptr ) {
             reLoopBackFlag = atoi( getenv( RELOOPBACKFLAG ) );
         }
         else {
@@ -383,14 +383,14 @@ initRuleStruct( const char* inst_name, rsComm_t *svrComm, const char *irbSet, co
         reTestFlag = 0;
         reLoopBackFlag = 0;
     }
-    if ( getenv( "GLOBALALLRULEEXECFLAG" ) != NULL ) {
+    if ( getenv( "GLOBALALLRULEEXECFLAG" ) != nullptr ) {
         GlobalAllRuleExecFlag = 9;
     }
 
-    if ( getenv( GLOBALREDEBUGFLAG ) != NULL ) {
+    if ( getenv( GLOBALREDEBUGFLAG ) != nullptr ) {
         GlobalREDebugFlag = atoi( getenv( GLOBALREDEBUGFLAG ) );
     }
-    if ( getenv( GLOBALREAUDITFLAG ) != NULL ) {
+    if ( getenv( GLOBALREAUDITFLAG ) != nullptr ) {
         GlobalREAuditFlag = atoi( getenv( GLOBALREAUDITFLAG ) );
     }
     if ( GlobalREAuditFlag == 0 ) {
@@ -407,7 +407,7 @@ int
 readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleExecInfo_t *rei, rError_t *errmsg, Region *region ) {
     int i, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
     sqlResult_t *r[8];
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -426,7 +426,7 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
     addInxIval( &genQueryInp.selectInp, COL_RULE_BODY, 1 );
     addInxIval( &genQueryInp.selectInp, COL_RULE_RECOVERY, 1 );
     addInxIval( &genQueryInp.selectInp, COL_RULE_ID, 1 );
-    Env *env = newEnv( newHashTable2( 100, region ), NULL, NULL, region );
+    Env *env = newEnv( newHashTable2( 100, region ), nullptr, nullptr, region );
     status = rsGenQuery( rei->rsComm, &genQueryInp, &genQueryOut );
     while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
         r[0] = getSqlResultByInx( genQueryOut, COL_RULE_BASE_MAP_BASE_NAME );
@@ -504,7 +504,7 @@ readRuleSetFromDB( char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleE
 int
 readRuleStructFromDB( char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
     sqlResult_t *r[8];
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -556,7 +556,7 @@ int
 readDVMapStructFromDB( char *dvmBaseName, char *versionStr, rulevardef_t *inDvmStrct, ruleExecInfo_t *rei ) {
     int i, l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
     sqlResult_t *r[5];
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -608,7 +608,7 @@ int
 readFNMapStructFromDB( char *fnmBaseName, char *versionStr, fnmapStruct_t *inFnmStrct, ruleExecInfo_t *rei ) {
     int i, l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
     sqlResult_t *r[5];
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -657,7 +657,7 @@ int
 readMsrvcStructFromDB( int inStatus, msrvcStruct_t *inMsrvcStrct, ruleExecInfo_t *rei ) {
     int i, l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     sqlResult_t *r[10];
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
     genQueryInp.maxRows = MAX_SQL_ROWS;
@@ -728,19 +728,19 @@ int
 clearRuleStruct( ruleStruct_t *inRuleStrct ) {
     int i;
     for ( i = 0 ; i < inRuleStrct->MaxNumOfRules ; i++ ) {
-        if ( inRuleStrct->ruleBase[i]  != NULL ) {
+        if ( inRuleStrct->ruleBase[i]  != nullptr ) {
             free( inRuleStrct->ruleBase[i] );
         }
-        if ( inRuleStrct->ruleHead[i]  != NULL ) {
+        if ( inRuleStrct->ruleHead[i]  != nullptr ) {
             free( inRuleStrct->ruleHead[i] );
         }
-        if ( inRuleStrct->ruleCondition[i]  != NULL ) {
+        if ( inRuleStrct->ruleCondition[i]  != nullptr ) {
             free( inRuleStrct->ruleCondition[i] );
         }
-        if ( inRuleStrct->ruleAction[i]  != NULL ) {
+        if ( inRuleStrct->ruleAction[i]  != nullptr ) {
             free( inRuleStrct->ruleAction[i] );
         }
-        if ( inRuleStrct->ruleRecovery[i]  != NULL ) {
+        if ( inRuleStrct->ruleRecovery[i]  != nullptr ) {
             free( inRuleStrct->ruleRecovery[i] );
         }
 
@@ -759,13 +759,13 @@ clearRuleStruct( ruleStruct_t *inRuleStrct ) {
 int clearDVarStruct( rulevardef_t *inRuleVarDef ) {
     int i;
     for ( i = 0 ; i < inRuleVarDef->MaxNumOfDVars; i++ ) {
-        if ( inRuleVarDef->varName[i] != NULL ) {
+        if ( inRuleVarDef->varName[i] != nullptr ) {
             free( inRuleVarDef->varName[i] );
         }
-        if ( inRuleVarDef->action[i] != NULL ) {
+        if ( inRuleVarDef->action[i] != nullptr ) {
             free( inRuleVarDef->action[i] );
         }
-        if ( inRuleVarDef->var2CMap[i] != NULL ) {
+        if ( inRuleVarDef->var2CMap[i] != nullptr ) {
             free( inRuleVarDef->var2CMap[i] );
         }
     }
@@ -776,10 +776,10 @@ int clearDVarStruct( rulevardef_t *inRuleVarDef ) {
 int clearFuncMapStruct( rulefmapdef_t* inRuleFuncMapDef ) {
     int i;
     for ( i = 0 ; i < inRuleFuncMapDef->MaxNumOfFMaps; i++ ) {
-        if ( inRuleFuncMapDef->funcName[i] != NULL ) {
+        if ( inRuleFuncMapDef->funcName[i] != nullptr ) {
             free( inRuleFuncMapDef->funcName[i] );
         }
-        if ( inRuleFuncMapDef->func2CMap[i] != NULL ) {
+        if ( inRuleFuncMapDef->func2CMap[i] != nullptr ) {
             free( inRuleFuncMapDef->func2CMap[i] );
         }
     }
@@ -825,14 +825,14 @@ readDVarStructFromFile( char *dvarBaseName, rulevardef_t *inRuleVarDef ) {
 
     }
     file = fopen( dvarsFileName, "r" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "readDvarStructFromFile() could not open dvm file %s\n",
                  dvarsFileName );
         return DVARMAP_FILE_READ_ERROR;
     }
     buf[MAX_DVAR_LENGTH - 1] = '\0';
-    while ( fgets( buf, MAX_DVAR_LENGTH - 1, file ) != NULL ) {
+    while ( fgets( buf, MAX_DVAR_LENGTH - 1, file ) != nullptr ) {
         if ( buf[strlen( buf ) - 1] == '\n' ) {
             buf[strlen( buf ) - 1] = '\0';
         }
@@ -887,14 +887,14 @@ readFuncMapStructFromFile( char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef )
         snprintf( fmapsFileName, sizeof( fmapsFileName ), "%s", cfg_file.c_str() );
     }
     file = fopen( fmapsFileName, "r" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "readFmapStructFromFile() could not open fnm file %s\n",
                  fmapsFileName );
         return FMAP_FILE_READ_ERROR;
     }
     buf[MAX_FMAP_LENGTH - 1] = '\0';
-    while ( fgets( buf, MAX_FMAP_LENGTH - 1, file ) != NULL ) {
+    while ( fgets( buf, MAX_FMAP_LENGTH - 1, file ) != nullptr ) {
         if ( buf[strlen( buf ) - 1] == '\n' ) {
             buf[strlen( buf ) - 1] = '\0';
         }
@@ -954,14 +954,14 @@ readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct ) {
         snprintf( mymsrvcFileName, MAX_NAME_LEN, "%s/%s.msi", re_dir.c_str(), msrvcFileName );
     }
     file = fopen( mymsrvcFileName, "r" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "readMservcStructFromFile() could not open msrvc file %s\n",
                  mymsrvcFileName );
         return MSRVC_FILE_READ_ERROR;
     }
     buf[MAX_RULE_LENGTH - 1] = '\0';
-    while ( fgets( buf, MAX_RULE_LENGTH - 1, file ) != NULL ) {
+    while ( fgets( buf, MAX_RULE_LENGTH - 1, file ) != nullptr ) {
         if ( buf[strlen( buf ) - 1] == '\n' ) {
             buf[strlen( buf ) - 1] = '\0';
         }
@@ -1049,7 +1049,7 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
 
     for ( i = 0; i < ruleSet->len; i++ ) {
         RuleDesc *rd = ruleSet->rules[i];
-        char *ruleType = NULL;
+        char *ruleType = nullptr;
         Node *ruleNode = rd->node;
         char ruleNameStr[MAX_RULE_LEN];
         char ruleCondStr[MAX_RULE_LEN];
@@ -1070,7 +1070,7 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
             s = MAX_RULE_LEN;
             termToString( &p, &s, 0, MIN_PREC, ruleNode->subtrees[2], 0 );
             avu = lookupAVUFromMetadata( ruleNode->subtrees[4], "id" );
-            if ( avu != NULL ) {
+            if ( avu != nullptr ) {
                 rstrcpy( ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN );
             }
             else {
@@ -1089,7 +1089,7 @@ insertRulesIntoDBNew( char * baseName, RuleSet *ruleSet,
             s = MAX_RULE_LEN;
             actionsToString( &p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3] );
             avu = lookupAVUFromMetadata( ruleNode->subtrees[4], "id" );
-            if ( avu != NULL ) {
+            if ( avu != nullptr ) {
                 rstrcpy( ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN );
             }
             else {
@@ -1361,7 +1361,7 @@ writeRulesIntoFile( char * inFileName, ruleStruct_t *myRuleStruct,
 
 
     file = fopen( fileName, "w" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "writeRulesIntoFile() could not open rules file %s for writing\n",
                  fileName );
@@ -1402,7 +1402,7 @@ writeDVMapsIntoFile( char * inFileName, dvmStruct_t *myDVMapStruct,
     }
 
     file = fopen( fileName, "w" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "writeDVMapsIntoFile() could not open rules file %s for writing\n",
                  fileName );
@@ -1442,7 +1442,7 @@ writeFNMapsIntoFile( char * inFileName, fnmapStruct_t *myFNMapStruct,
     }
 
     file = fopen( fileName, "w" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "writeFNMapsIntoFile() could not open rules file %s for writing\n",
                  fileName );
@@ -1484,7 +1484,7 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
     }
 
     file = fopen( fileName, "w" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "writeMsrvcsIntoFile() could not open microservics file %s for writing\n",
                  fileName );

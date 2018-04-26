@@ -42,7 +42,7 @@ remoteSubStructFileUnlink( rsComm_t *rsComm, subFile_t *subFile,
                            rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileUnlink: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

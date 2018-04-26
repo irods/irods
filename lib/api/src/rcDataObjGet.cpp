@@ -106,12 +106,12 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
 #endif
     {
         /* local file exists */
-        if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) == NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) == nullptr ) {
             return OVERWRITE_WITHOUT_FORCE_FLAG;
         }
     }
 
-    portalOprOut_t *portalOprOut = NULL;
+    portalOprOut_t *portalOprOut = nullptr;
     bytesBuf_t dataObjOutBBuf;
     int status = _rcDataObjGet( conn, dataObjInp, &portalOprOut, &dataObjOutBBuf );
 
@@ -139,7 +139,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             return SYS_INVALID_PORTAL_OPR;
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
-        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
             printf( "From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
                     portalOprOut->numThreads, portalOprOut->portList.hostAddr,
                     portalOprOut->portList.portNum, portalOprOut->portList.cookie );
@@ -182,7 +182,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                               locFilePath, dataObjInp->objPath, dataObjInp->dataSize );
         }
         else {
-            if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+            if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
                 printf( "From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
                         portalOprOut->numThreads, portalOprOut->portList.hostAddr,
                         portalOprOut->portList.portNum, portalOprOut->portList.cookie );
@@ -214,19 +214,19 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         clearLfRestartFile( &conn->fileRestart );
     }
 
-    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
-        if ( portalOprOut == NULL || strlen( portalOprOut->chksum ) == 0 ) {
+    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != nullptr ) {
+        if ( portalOprOut == nullptr || strlen( portalOprOut->chksum ) == 0 ) {
             rodsLog( LOG_ERROR,
                      "rcDataObjGet: VERIFY_CHKSUM_KW set but no checksum from server" );
         }
         else {
 
-            status = verifyChksumLocFile( locFilePath, portalOprOut->chksum, NULL );
+            status = verifyChksumLocFile( locFilePath, portalOprOut->chksum, nullptr );
             if ( status == USER_CHKSUM_MISMATCH ) {
                 rodsLogError( LOG_ERROR, status,
                               "rcDataObjGet: checksum mismatch error for %s, status = %d",
                               locFilePath, status );
-                if ( portalOprOut != NULL ) {
+                if ( portalOprOut != nullptr ) {
                     free( portalOprOut );
                 }
                 return status;
@@ -235,7 +235,7 @@ rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
                 rodsLogError( LOG_ERROR, status,
                               "rcDataObjGet: chksumLocFile error for %s, status = %d",
                               locFilePath, status );
-                if ( portalOprOut != NULL ) {
+                if ( portalOprOut != nullptr ) {
                     free( portalOprOut );
                 }
                 return status;
@@ -253,7 +253,7 @@ _rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
                portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf ) {
     int status;
 
-    *portalOprOut = NULL;
+    *portalOprOut = nullptr;
 
     memset( &conn->transStat, 0, sizeof( transStat_t ) );
 
@@ -261,10 +261,10 @@ _rcDataObjGet( rcComm_t *conn, dataObjInp_t *dataObjInp,
 
     dataObjInp->oprType = GET_OPR;
 
-    status = procApiRequest( conn, DATA_OBJ_GET_AN,  dataObjInp, NULL,
+    status = procApiRequest( conn, DATA_OBJ_GET_AN,  dataObjInp, nullptr,
                              ( void ** ) portalOprOut, dataObjOutBBuf );
 
-    if ( *portalOprOut != NULL && ( *portalOprOut )->l1descInx < 0 ) {
+    if ( *portalOprOut != nullptr && ( *portalOprOut )->l1descInx < 0 ) {
         status = ( *portalOprOut )->l1descInx;
     }
 

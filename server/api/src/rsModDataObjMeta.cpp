@@ -20,7 +20,7 @@ int _call_file_modified_for_modification(
 int
 rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     dataObjInfo_t *dataObjInfo;
 
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
@@ -30,7 +30,7 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
                  MASTER_RCAT,
                  ( const char* )dataObjInfo->objPath,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -82,7 +82,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
         memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
         rei2.rsComm = rsComm;
-        if ( rsComm != NULL ) {
+        if ( rsComm != nullptr ) {
             rei2.uoic = &rsComm->clientUser;
             rei2.uoip = &rsComm->proxyUser;
         }
@@ -101,7 +101,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
         /**  June 1 2009 for pre-post processing rule hooks **/
         rei2.doi = dataObjInfo;
-        i =  applyRule( "acPreProcForModifyDataObjMeta", NULL, &rei2, NO_SAVE_REI );
+        i =  applyRule( "acPreProcForModifyDataObjMeta", nullptr, &rei2, NO_SAVE_REI );
         if ( i < 0 ) {
             if ( rei2.status < 0 ) {
                 i = rei2.status;
@@ -112,9 +112,9 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         }
         /**  June 1 2009 for pre-post processing rule hooks **/
 
-        if ( getValByKey( regParam, ALL_KW ) != NULL ) {
+        if ( getValByKey( regParam, ALL_KW ) != nullptr ) {
             /* all copies */
-            dataObjInfo_t *dataObjInfoHead = NULL;
+            dataObjInfo_t *dataObjInfoHead = nullptr;
             dataObjInfo_t *tmpDataObjInfo;
             dataObjInp_t dataObjInp;
 
@@ -127,8 +127,8 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
                 return status;
             }
             tmpDataObjInfo = dataObjInfoHead;
-            while ( tmpDataObjInfo != NULL ) {
-                if ( tmpDataObjInfo->specColl != NULL ) {
+            while ( tmpDataObjInfo != nullptr ) {
+                if ( tmpDataObjInfo->specColl != nullptr ) {
                     break;
                 }
                 status = chlModDataObjMeta( rsComm, tmpDataObjInfo, regParam );
@@ -144,7 +144,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         else {
             status = chlModDataObjMeta( rsComm, dataObjInfo, regParam );
             if ( status < 0 ) {
-                char* sys_error = NULL;
+                char* sys_error = nullptr;
                 const char* rods_error = rodsErrorName( status, &sys_error );
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -159,7 +159,7 @@ _rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
         /**  June 1 2009 for pre-post processing rule hooks **/
         if ( status >= 0 ) {
-            i =  applyRule( "acPostProcForModifyDataObjMeta", NULL, &rei2, NO_SAVE_REI );
+            i =  applyRule( "acPostProcForModifyDataObjMeta", nullptr, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;
@@ -209,9 +209,9 @@ int _call_file_modified_for_modification(
         return 0;
     }
 
-    if ( getValByKey( regParam, ALL_KW ) != NULL ) {
+    if ( getValByKey( regParam, ALL_KW ) != nullptr ) {
         /* all copies */
-        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *dataObjInfoHead = nullptr;
         dataObjInfo_t *tmpDataObjInfo;
         dataObjInp_t dataObjInp;
 
@@ -224,8 +224,8 @@ int _call_file_modified_for_modification(
             return status;
         }
         tmpDataObjInfo = dataObjInfoHead;
-        while ( tmpDataObjInfo != NULL ) {
-            if ( tmpDataObjInfo->specColl != NULL ) {
+        while ( tmpDataObjInfo != nullptr ) {
+            if ( tmpDataObjInfo->specColl != nullptr ) {
                 break;
             }
 
@@ -235,12 +235,12 @@ int _call_file_modified_for_modification(
                     tmpDataObjInfo ) );
 
             char* admin_kw = getValByKey( regParam, ADMIN_KW );
-            if ( admin_kw != NULL ) {
+            if ( admin_kw != nullptr ) {
                 addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );
             }
 
             char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
+            if ( pdmo_kw != nullptr ) {
                 file_obj->in_pdmo( pdmo_kw );
 
             }
@@ -268,12 +268,12 @@ int _call_file_modified_for_modification(
                 dataObjInfo ) );
 
         char* admin_kw = getValByKey( regParam, ADMIN_KW );
-        if ( admin_kw != NULL ) {
+        if ( admin_kw != nullptr ) {
             addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );
         }
 
         char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
-        if ( pdmo_kw != NULL ) {
+        if ( pdmo_kw != nullptr ) {
             file_obj->in_pdmo( pdmo_kw );
         }
         irods::error ret = fileModified( rsComm, file_obj );

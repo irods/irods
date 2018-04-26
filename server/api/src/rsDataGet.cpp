@@ -24,12 +24,12 @@ rsDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     l3descInx = dataOprInp->srcL3descInx;
 
-    if ( getValByKey( &dataOprInp->condInput, EXEC_LOCALLY_KW ) != NULL ) {
+    if ( getValByKey( &dataOprInp->condInput, EXEC_LOCALLY_KW ) != nullptr ) {
         remoteFlag = LOCAL_HOST;
     }
     else {
         rodsServerHost = FileDesc[l3descInx].rodsServerHost;
-        if ( rodsServerHost == NULL ) {
+        if ( rodsServerHost == nullptr ) {
             rodsLog( LOG_NOTICE, "rsDataGet: NULL rodsServerHost" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
@@ -66,7 +66,7 @@ remoteDataGet( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                portalOprOut_t **portalOprOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteDataGet: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

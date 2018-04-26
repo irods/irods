@@ -391,7 +391,7 @@ namespace irods {
         }
 
         error init_rule_engine(re_pack_inp<T>& _inp) {
-            pluggable_rule_engine<T>* pre = NULL;
+            pluggable_rule_engine<T>* pre = nullptr;
             error err;
 
             err = re_plugin_mgr_.resolve(_inp.plugin_name_, _inp.instance_name_, pre);

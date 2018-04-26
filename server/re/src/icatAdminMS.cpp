@@ -512,17 +512,17 @@ msiAclPolicy( msParam_t* msParam, ruleExecInfo_t* ) {
 
     std::string strict = "off";
     inputArg = ( char * ) msParam->inOutStruct;
-    if ( inputArg != NULL ) {
+    if ( inputArg != nullptr ) {
         if ( strncmp( inputArg, "STRICT", 6 ) == 0 ) {
             if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-                chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 2 );
+                chlGenQueryAccessControlSetup( nullptr, nullptr, nullptr, 0, 2 );
                 strict = "on";
             }
         }
     }
     else {
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            chlGenQueryAccessControlSetup( NULL, NULL, NULL, 0, 0 );
+            chlGenQueryAccessControlSetup( nullptr, nullptr, nullptr, 0, 0 );
         }
     }
 
@@ -587,7 +587,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     RE_TEST_MACRO( "    Calling msiSetQuota" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiSetQuota: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -618,7 +618,7 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     generalAdminInp.arg0 = "set-quota";
 
     /* Parse type */
-    if ( ( generalAdminInp.arg1 = parseMspForStr( type ) ) == NULL ) {
+    if ( ( generalAdminInp.arg1 = parseMspForStr( type ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiSetQuota: Null user or group type provided." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -630,13 +630,13 @@ msiSetQuota( msParam_t *type, msParam_t *name, msParam_t *resource, msParam_t *v
     }
 
     /* Parse user/group name */
-    if ( ( generalAdminInp.arg2 = parseMspForStr( name ) ) == NULL ) {
+    if ( ( generalAdminInp.arg2 = parseMspForStr( name ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiSetQuota: Null user or group name provided." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* parse resource name */
-    if ( ( generalAdminInp.arg3 = parseMspForStr( resource ) ) == NULL ) {
+    if ( ( generalAdminInp.arg3 = parseMspForStr( resource ) ) == nullptr ) {
         generalAdminInp.arg3 = "total";
     }
 

@@ -58,7 +58,7 @@ int msiCutBufferInHalf( msParam_t* mPIn, ruleExecInfo_t *rei ) {
 
     RE_TEST_MACRO( "Test for msiCutBufferInHalf\n" );
 
-    if ( mPIn == NULL || mPIn->inpOutBuf == NULL ) {
+    if ( mPIn == nullptr || mPIn->inpOutBuf == nullptr ) {
         rodsLog( LOG_ERROR, "msiCutBufferInHalf: input is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -120,7 +120,7 @@ msiDoSomething( msParam_t *, msParam_t *outParam, ruleExecInfo_t * rei ) {
     RE_TEST_MACRO( "    Calling msiDoSomething" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiDoSomething: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }

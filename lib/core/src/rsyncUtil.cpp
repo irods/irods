@@ -27,7 +27,7 @@ ageExceeded( int ageLimit, int myTime, char *objPath,
 int
 rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -61,14 +61,14 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             return USER_INPUT_PATH_ERR;
         }
 
-        if ( srcPath->objType <= COLL_OBJ_T && srcPath->rodsObjStat != NULL &&
-                rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL ) {
+        if ( srcPath->objType <= COLL_OBJ_T && srcPath->rodsObjStat != nullptr &&
+                rodsPathInp->srcPath[i].rodsObjStat->specColl != nullptr ) {
             dataObjOprInp.specColl = dataObjCopyInp.srcDataObjInp.specColl =
                                          srcPath->rodsObjStat->specColl;
         }
         else {
             dataObjOprInp.specColl =
-                dataObjCopyInp.srcDataObjInp.specColl = NULL;
+                dataObjCopyInp.srcDataObjInp.specColl = nullptr;
         }
 
         int status = 0;
@@ -97,9 +97,9 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             addKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW, "" );
             status = rsyncCollToDirUtil( conn, srcPath, targPath,
                                          myRodsEnv, myRodsArgs, &dataObjOprInp );
-            if ( status >= 0 && dataObjOprInp.specColl != NULL &&
+            if ( status >= 0 && dataObjOprInp.specColl != nullptr &&
                     dataObjOprInp.specColl->collClass == STRUCT_FILE_COLL ) {
-                dataObjOprInp.specColl = NULL;
+                dataObjOprInp.specColl = nullptr;
                 status = rsyncCollToDirUtil( conn, srcPath, targPath,
                                              myRodsEnv, myRodsArgs, &dataObjOprInp );
             }
@@ -115,9 +115,9 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                        REG_CHKSUM_KW, "" );
             status = rsyncCollToCollUtil( conn, srcPath, targPath,
                                           myRodsEnv, myRodsArgs, &dataObjCopyInp );
-            if ( status >= 0 && dataObjOprInp.specColl != NULL &&
+            if ( status >= 0 && dataObjOprInp.specColl != nullptr &&
                     dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL ) {
-                dataObjCopyInp.srcDataObjInp.specColl = NULL;
+                dataObjCopyInp.srcDataObjInp.specColl = nullptr;
                 status = rsyncCollToCollUtil( conn, srcPath, targPath,
                                               myRodsEnv, myRodsArgs, &dataObjCopyInp );
             }
@@ -152,14 +152,14 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     int syncFlag = 0;
     char *chksum;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncDataToFileUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
     }
     /* check the age */
     if ( myRodsArgs->age == True ) {
-        if ( srcPath->rodsObjStat != NULL ) {
+        if ( srcPath->rodsObjStat != nullptr ) {
             if ( ageExceeded( myRodsArgs->agevalue,
                               atoi( srcPath->rodsObjStat->modifyTime ),
                               srcPath->outPath, srcPath->size ) ) {
@@ -169,7 +169,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
 
     if ( myRodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
 
@@ -216,7 +216,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
-            if ( chksum == NULL || strcmp( chksum, srcPath->chksum ) != 0 ) {
+            if ( chksum == nullptr || strcmp( chksum, srcPath->chksum ) != 0 ) {
                 getFlag = 1;
             }
         }
@@ -275,7 +275,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( status >= 0 && myRodsArgs->verbose == True ) {
         if ( getFlag > 0 ||
                 ( syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED ) ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, srcPath->outPath, srcPath->size,
                          targPath->outPath, &startTime, &endTime );
         }
@@ -297,7 +297,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     int syncFlag = 0;
     char *chksum;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncFileToDataUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -334,7 +334,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
 
     if ( myRodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
 
@@ -359,7 +359,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 				chksum = getValByKey(
 				             &dataObjOprInp->condInput,
 							 RSYNC_CHKSUM_KW );
-				if ( chksum != NULL ) {
+				if ( chksum != nullptr ) {
 					addKeyVal(
 					    &dataObjOprInp->condInput,
 						VERIFY_CHKSUM_KW,
@@ -398,8 +398,8 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
 
-            if ( chksum == NULL || strcmp( chksum, targPath->chksum ) != 0 ) {
-                if ( chksum != NULL && myRodsArgs->verifyChecksum == True ) {
+            if ( chksum == nullptr || strcmp( chksum, targPath->chksum ) != 0 ) {
+                if ( chksum != nullptr && myRodsArgs->verifyChecksum == True ) {
                     addKeyVal( &dataObjOprInp->condInput, VERIFY_CHKSUM_KW,
                                chksum );
                 }
@@ -421,7 +421,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
         else {
             chksum = getValByKey( &dataObjOprInp->condInput, RSYNC_CHKSUM_KW );
-            if ( chksum != NULL && myRodsArgs->verifyChecksum == True ) {
+            if ( chksum != nullptr && myRodsArgs->verifyChecksum == True ) {
                 addKeyVal( &dataObjOprInp->condInput, VERIFY_CHKSUM_KW, chksum );
             }
             syncFlag = 1;
@@ -466,7 +466,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( status >= 0 && myRodsArgs->verbose == True ) {
         if ( putFlag > 0 ||
                 ( syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED ) ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, srcPath->outPath, srcPath->size,
                          targPath->outPath, &startTime, &endTime );
         }
@@ -487,14 +487,14 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     int syncFlag = 0;
     int cpFlag = 0;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncDataToDataUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
     }
     /* check the age */
     if ( myRodsArgs->age == True ) {
-        if ( srcPath->rodsObjStat != NULL ) {
+        if ( srcPath->rodsObjStat != nullptr ) {
             if ( ageExceeded( myRodsArgs->agevalue,
                               atoi( srcPath->rodsObjStat->modifyTime ),
                               srcPath->outPath, srcPath->size ) ) {
@@ -504,7 +504,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     }
 
     if ( myRodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
         bzero( &conn->transStat, sizeof( transStat_t ) );
     }
 
@@ -538,7 +538,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
             status = rcDataObjCopy( conn, dataObjCopyInp );
 
             if ( status < 0 ) {
-                char* sys_error = NULL;
+                char* sys_error = nullptr;
                 const char* rods_error = rodsErrorName( status, &sys_error );
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -584,7 +584,7 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
     if ( status >= 0 && myRodsArgs->verbose == True ) {
         if ( cpFlag > 0 ||
                 ( syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED ) ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, srcPath->outPath, srcPath->size,
                          targPath->outPath, &startTime, &endTime );
         }
@@ -610,7 +610,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
     collEnt_t collEnt;
     dataObjInp_t childDataObjInp;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncCollToDirUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -697,7 +697,7 @@ rsyncCollToDirUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 childDataObjInp.specColl = &collEnt.specColl;
             }
             else {
-                childDataObjInp.specColl = NULL;
+                childDataObjInp.specColl = nullptr;
             }
             rstrcpy( myTargPath.outPath, targChildPath, MAX_NAME_LEN );
             rstrcpy( mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN );
@@ -731,7 +731,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -824,9 +824,9 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             status = rsyncFileToDataUtil( conn, &mySrcPath, &myTargPath,
                                           rodsArgs, dataObjOprInp );
             /* fix a big mem leak */
-            if ( myTargPath.rodsObjStat != NULL ) {
+            if ( myTargPath.rodsObjStat != nullptr ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
-                myTargPath.rodsObjStat = NULL;
+                myTargPath.rodsObjStat = nullptr;
             }
         }
         else if ( is_directory( p ) ) {
@@ -847,9 +847,9 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                 status = rsyncDirToCollUtil( conn, &mySrcPath, &myTargPath,
                                              myRodsEnv, rodsArgs, dataObjOprInp );
                 /* fix a big mem leak */
-                if ( myTargPath.rodsObjStat != NULL ) {
+                if ( myTargPath.rodsObjStat != nullptr ) {
                     freeRodsObjStat( myTargPath.rodsObjStat );
-                    myTargPath.rodsObjStat = NULL;
+                    myTargPath.rodsObjStat = nullptr;
                 }
             }
         }
@@ -891,7 +891,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     dataObjInp_t *dataObjOprInp = &collHandle.dataObjInp;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsyncCollToCollUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -917,7 +917,7 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         return status;
     }
 
-    if ( dataObjOprInp->specColl != NULL ) {
+    if ( dataObjOprInp->specColl != nullptr ) {
         if ( rodsArgs->verbose == True ) {
             if ( rodsArgs->verbose == True ) {
                 char objType[NAME_LEN];
@@ -964,9 +964,9 @@ rsyncCollToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
             int status = rsyncDataToDataUtil( conn, &mySrcPath, &myTargPath,
                                           rodsArgs, dataObjCopyInp );
-            if ( myTargPath.rodsObjStat != NULL ) {
+            if ( myTargPath.rodsObjStat != nullptr ) {
                 freeRodsObjStat( myTargPath.rodsObjStat );
-                myTargPath.rodsObjStat = NULL;
+                myTargPath.rodsObjStat = nullptr;
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
@@ -1030,7 +1030,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     char tmpStr[NAME_LEN];
 
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForRsync: NULL dataObjOprInp input" );
         return USER__NULL_INPUT_ERR;
@@ -1038,7 +1038,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -1067,7 +1067,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 #endif
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -1077,7 +1077,7 @@ initCondForRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
@@ -1094,7 +1094,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                               dataObjCopyInp_t *dataObjCopyInp ) {
     char tmpStr[NAME_LEN];
 
-    if ( dataObjCopyInp == NULL ) {
+    if ( dataObjCopyInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForCp: NULL dataObjCopyInp incp" );
         return USER__NULL_INPUT_ERR;
@@ -1102,7 +1102,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjCopyInp, 0, sizeof( dataObjCopyInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -1119,7 +1119,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -1129,7 +1129,7 @@ initCondForIrodsToIrodsRsync( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        DEST_RESC_NAME_KW, rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjCopyInp->destDataObjInp.condInput,
                    DEST_RESC_NAME_KW, myRodsEnv->rodsDefResource );
     }
@@ -1167,7 +1167,7 @@ ageExceeded( int ageLimit, int myTime, char *objPath,
     int age;
 
     if ( CurrentTime == 0 ) {
-        CurrentTime = time( 0 );
+        CurrentTime = time( nullptr );
     }
     age = CurrentTime - myTime;
     if ( age > ageLimit * 60 ) {

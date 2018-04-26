@@ -22,7 +22,7 @@
  * The rule engine status is also set to uninitialized. */
 Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
     if ( size % REGION_ALIGNMENT != 0 ) { /* size should be divisible by ALIGNMENT */
-        return NULL;
+        return nullptr;
     }
 
     unsigned char *buf = *p;
@@ -40,30 +40,30 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
 
     MK_PTR( RuleSet, coreRuleSet );
     ecopy->coreRuleSetStatus = COMPRESSED;
-    ecopy->appRuleSet = NULL;
+    ecopy->appRuleSet = nullptr;
     ecopy->appRuleSetStatus = UNINITIALIZED;
-    ecopy->extRuleSet = NULL;
+    ecopy->extRuleSet = nullptr;
     ecopy->extRuleSetStatus = UNINITIALIZED;
     MK_PTR_TAPP( Env, coreFuncDescIndex, PARAM( Node ) );
     ecopy->coreFuncDescIndexStatus = COMPRESSED; /* The coreFuncDescIndex is stored in a continuously allocated memory block in *buf */
-    ecopy->appFuncDescIndex = NULL;
+    ecopy->appFuncDescIndex = nullptr;
     ecopy->appFuncDescIndexStatus = UNINITIALIZED;
-    ecopy->extFuncDescIndex = NULL;
+    ecopy->extFuncDescIndex = nullptr;
     ecopy->extFuncDescIndexStatus = UNINITIALIZED;
     ecopy->dataSize = ( *p - buf );
     ecopy->address = buf;
     ecopy->pointers = pointers0;
     ecopy->cacheSize = size;
     ecopy->cacheStatus = INITIALIZED;
-    ecopy->appRegion = NULL;
+    ecopy->appRegion = nullptr;
     ecopy->appRegionStatus = UNINITIALIZED;
-    ecopy->coreRegion = NULL;
+    ecopy->coreRegion = nullptr;
     ecopy->coreRegionStatus = UNINITIALIZED;
-    ecopy->extRegion = NULL;
+    ecopy->extRegion = nullptr;
     ecopy->extRegionStatus = UNINITIALIZED;
-    ecopy->sysRegion = NULL;
+    ecopy->sysRegion = nullptr;
     ecopy->sysRegionStatus = UNINITIALIZED;
-    ecopy->sysFuncDescIndex = NULL;
+    ecopy->sysFuncDescIndex = nullptr;
     ecopy->sysFuncDescIndexStatus = UNINITIALIZED;
     ecopy->ruleEngineStatus = UNINITIALIZED;
     MK_VAR_ARRAY_IN_STRUCT( char, ruleBase );
@@ -83,8 +83,8 @@ Cache *restoreCache( const char* _inst_name ) {
     mutex_type *mutex;
     lockReadMutex(_inst_name, &mutex);
     unsigned char *buf = prepareNonServerSharedMemory( _inst_name );
-    if (buf == NULL) {
-        return NULL;
+    if (buf == nullptr) {
+        return nullptr;
     }
     Cache *cache = ( Cache * ) buf;
     unsigned char *bufCopy;
@@ -97,10 +97,10 @@ Cache *restoreCache( const char* _inst_name ) {
     size_t dataSize;
     dataSize = cache->dataSize;
     bufCopy = ( unsigned char * )malloc( dataSize );
-    if ( bufCopy == NULL ) {
+    if ( bufCopy == nullptr ) {
         rodsLog( LOG_ERROR, "Cannot allocate object buffer of size %lld" , dataSize);
         unlockReadMutex(_inst_name, &mutex);
-        return NULL;
+        return nullptr;
     }
     memcpy( bufCopy, buf, cache->dataSize );
     Cache *cacheCopy = ( Cache * ) bufCopy;
@@ -108,12 +108,12 @@ Cache *restoreCache( const char* _inst_name ) {
     bufMapped = cacheCopy->address;
     pointersSize = bufMapped + SHMMAX - pointersMapped;
     pointersCopy = ( unsigned char * )malloc( pointersSize );
-    if ( pointersCopy == NULL ) {
+    if ( pointersCopy == nullptr ) {
         free( bufCopy );
         rodsLog( LOG_ERROR, "Cannot allocate pointer pointer buffer of size %lld", pointersSize);
         detachSharedMemory( _inst_name );
         unlockReadMutex(_inst_name, &mutex);
-        return NULL;
+        return nullptr;
     }
     memcpy( pointersCopy, pointersMapped + ( buf - bufMapped ), pointersSize );
     detachSharedMemory( _inst_name );
@@ -190,11 +190,11 @@ void applyDiffToPointers( unsigned char *pointers, long pointersSize, long point
  */
 int updateCache( const char* _inst_name, size_t size, Cache *cache ) {
         unsigned char *buf = ( unsigned char * ) malloc( size );
-        if ( buf != NULL ) {
+        if ( buf != nullptr ) {
             int ret;
             unsigned char *cacheBuf = buf;
             Cache *cacheCopy = copyCache( &cacheBuf, size, cache );
-            if ( cacheCopy != NULL ) {
+            if ( cacheCopy != nullptr ) {
 #ifdef DEBUG
                 printf( "Buffer usage: %fM\n", ( ( double )( cacheCopy->dataSize ) ) / ( 1024 * 1024 ) );
 #endif
@@ -202,7 +202,7 @@ int updateCache( const char* _inst_name, size_t size, Cache *cache ) {
                 mutex_type *mutex;
                 lockWriteMutex(_inst_name, &mutex);
                 unsigned char *shared = prepareServerSharedMemory( _inst_name );
-                if (shared == NULL) {
+                if (shared == nullptr) {
                     ret = -1;
                 } else {
                     long diff = shared - cacheCopy->address;

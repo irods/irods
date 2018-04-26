@@ -34,7 +34,7 @@ rcL3FilePutSingleBuf( rcComm_t *conn, int l1descInx,
                       bytesBuf_t *dataObjInBBuf ) {
     int status;
     status = procApiRequest( conn, L3_FILE_PUT_SINGLE_BUF_AN,
-                             &l1descInx, dataObjInBBuf, ( void ** ) NULL, NULL );
+                             &l1descInx, dataObjInBBuf, ( void ** ) nullptr, nullptr );
 
     return status;
 }

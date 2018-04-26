@@ -97,55 +97,55 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
          *tmpCollInfo2;
     specColl_t *specColl;
 
-    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_COLL_ID ) ) == NULL ) {
+    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_COLL_ID ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache: getSqlResultByInx for COL_COLL_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( ownerName = getSqlResultByInx( genQueryOut,
-                            COL_COLL_OWNER_NAME ) ) == NULL ) {
+                            COL_COLL_OWNER_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_OWNER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
-                            COL_COLL_OWNER_ZONE ) ) == NULL ) {
+                            COL_COLL_OWNER_ZONE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_OWNER_ZONE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( createTime = getSqlResultByInx( genQueryOut,
-                             COL_COLL_CREATE_TIME ) ) == NULL ) {
+                             COL_COLL_CREATE_TIME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_CREATE_TIME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
-                             COL_COLL_MODIFY_TIME ) ) == NULL ) {
+                             COL_COLL_MODIFY_TIME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_MODIFY_TIME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collType = getSqlResultByInx( genQueryOut,
-                           COL_COLL_TYPE ) ) == NULL ) {
+                           COL_COLL_TYPE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_TYPE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collection = getSqlResultByInx( genQueryOut,
-                             COL_COLL_NAME ) ) == NULL ) {
+                             COL_COLL_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collInfo1 = getSqlResultByInx( genQueryOut,
-                            COL_COLL_INFO1 ) ) == NULL ) {
+                            COL_COLL_INFO1 ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_INFO1 failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
     else if ( ( collInfo2 = getSqlResultByInx( genQueryOut,
-                            COL_COLL_INFO2 ) ) == NULL ) {
+                            COL_COLL_INFO2 ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queueSpecCollCache:getSqlResultByInx for COL_COLL_INFO2 failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -236,7 +236,7 @@ specCollCache_t *
 matchSpecCollCache( char *objPath ) {
     specCollCache_t *tmpSpecCollCache = SpecCollCacheHead;
 
-    while ( tmpSpecCollCache != NULL ) {
+    while ( tmpSpecCollCache != nullptr ) {
         int len = strlen( tmpSpecCollCache->specColl.collection );
         if ( strncmp( tmpSpecCollCache->specColl.collection, objPath, len )
                 == 0 ) {
@@ -248,16 +248,16 @@ matchSpecCollCache( char *objPath ) {
         }
         tmpSpecCollCache = tmpSpecCollCache->next;
     }
-    return NULL;
+    return nullptr;
 }
 
 int
 getSpecCollCache( rsComm_t *rsComm, char *objPath,
                   int inCachOnly, specCollCache_t **specCollCache ) {
     int status;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
 
-    if ( ( *specCollCache = matchSpecCollCache( objPath ) ) != NULL ) {
+    if ( ( *specCollCache = matchSpecCollCache( objPath ) ) != nullptr ) {
         return 0;
     }
     else if ( inCachOnly > 0 ) {
@@ -319,7 +319,7 @@ int
 statPathInSpecColl( rsComm_t *rsComm, char *objPath,
                     int inCachOnly, rodsObjStat_t **rodsObjStatOut ) {
     int status;
-    dataObjInfo_t *dataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfo = nullptr;
     specColl_t *specColl;
     specCollCache_t *specCollCache;
 
@@ -334,7 +334,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
         return status;
     }
 
-    if ( *rodsObjStatOut == NULL ) {
+    if ( *rodsObjStatOut == nullptr ) {
         *rodsObjStatOut = ( rodsObjStat_t * ) malloc( sizeof( rodsObjStat_t ) );
     }
     memset( *rodsObjStatOut, 0, sizeof( rodsObjStat_t ) );
@@ -346,8 +346,8 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
     status = specCollSubStat( rsComm, specColl, objPath, UNKNOWN_COLL_PERM, &dataObjInfo );
 
     if ( status < 0 ) {
-        if ( dataObjInfo != NULL ) {
-            if ( dataObjInfo->specColl != NULL ) {
+        if ( dataObjInfo != nullptr ) {
+            if ( dataObjInfo->specColl != nullptr ) {
                 ( *rodsObjStatOut )->specColl = dataObjInfo->specColl;
             }
             else {
@@ -361,7 +361,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
             else {
                 ( *rodsObjStatOut )->specColl->objPath[0] = '\0';
             }
-            dataObjInfo->specColl = NULL;
+            dataObjInfo->specColl = nullptr;
         }
         ( *rodsObjStatOut )->objType = UNKNOWN_OBJ_T;
         rstrcpy( ( *rodsObjStatOut )->createTime, specCollCache->createTime,
@@ -374,7 +374,7 @@ statPathInSpecColl( rsComm_t *rsComm, char *objPath,
     }
     else {
         ( *rodsObjStatOut )->specColl = dataObjInfo->specColl;
-        dataObjInfo->specColl = NULL;
+        dataObjInfo->specColl = nullptr;
 
         if ( specColl->collClass == LINKED_COLL ) {
             rstrcpy( ( *rodsObjStatOut )->ownerName, dataObjInfo->dataOwnerName,
@@ -410,13 +410,13 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                  char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo ) {
     int status;
     int objType;
-    rodsStat_t *rodsStat = NULL;
-    dataObjInfo_t *myDataObjInfo = NULL;;
+    rodsStat_t *rodsStat = nullptr;
+    dataObjInfo_t *myDataObjInfo = nullptr;;
 
-    if ( dataObjInfo == NULL ) {
+    if ( dataObjInfo == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
-    *dataObjInfo = NULL;
+    *dataObjInfo = nullptr;
 
     if ( specColl->collClass == MOUNTED_COLL ) {
         /* a mount point */
@@ -447,7 +447,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                                        specColl->phyPath, subPath, myDataObjInfo->filePath );
         if ( status < 0 ) {
             freeDataObjInfo( myDataObjInfo );
-            *dataObjInfo = NULL;
+            *dataObjInfo = nullptr;
             return status;
         }
         replSpecColl( specColl, &myDataObjInfo->specColl );
@@ -455,14 +455,14 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
     else if ( specColl->collClass == LINKED_COLL ) {
 
         /* a link point */
-        specCollCache_t *specCollCache = NULL;
+        specCollCache_t *specCollCache = nullptr;
         char newPath[MAX_NAME_LEN];
         specColl_t *curSpecColl;
         char *accessStr;
         dataObjInp_t myDataObjInp;
-        rodsObjStat_t *rodsObjStatOut = NULL;
+        rodsObjStat_t *rodsObjStatOut = nullptr;
 
-        *dataObjInfo = NULL;
+        *dataObjInfo = nullptr;
         curSpecColl = specColl;
 
         status = getMountedSubPhyPath( curSpecColl->collection,
@@ -471,11 +471,11 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             return status;
         }
 
-        status = resolveLinkedPath( rsComm, newPath, &specCollCache, NULL );
+        status = resolveLinkedPath( rsComm, newPath, &specCollCache, nullptr );
         if ( status < 0 ) {
             return status;
         }
-        if ( specCollCache != NULL &&
+        if ( specCollCache != nullptr &&
                 specCollCache->specColl.collClass != LINKED_COLL ) {
 
             status = specCollSubStat( rsComm, &specCollCache->specColl,
@@ -486,13 +486,13 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         rstrcpy( myDataObjInp.objPath, newPath, MAX_NAME_LEN );
 
         status = collStat( rsComm, &myDataObjInp, &rodsObjStatOut );
-        if ( status >= 0 && NULL != rodsObjStatOut ) {      /* a collection */ // JMC cppcheck - nullptr
+        if ( status >= 0 && nullptr != rodsObjStatOut ) {      /* a collection */ // JMC cppcheck - nullptr
             myDataObjInfo = *dataObjInfo =
                                 ( dataObjInfo_t * ) malloc( sizeof( dataObjInfo_t ) );
             memset( myDataObjInfo, 0, sizeof( dataObjInfo_t ) );
             replSpecColl( curSpecColl, &myDataObjInfo->specColl );
             rstrcpy( myDataObjInfo->objPath, newPath, MAX_NAME_LEN );
-            myDataObjInfo->dataId = strtoll( rodsObjStatOut->dataId, 0, 0 );
+            myDataObjInfo->dataId = strtoll( rodsObjStatOut->dataId, nullptr, 0 );
             rstrcpy( myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName, NAME_LEN );
             rstrcpy( myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone, NAME_LEN );
             rstrcpy( myDataObjInfo->dataCreate,    rodsObjStatOut->createTime, TIME_LEN );
@@ -510,7 +510,7 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             accessStr = ACCESS_DELETE_OBJECT;
         }
         else {
-            accessStr = NULL;
+            accessStr = nullptr;
         }
 
         status = getDataObjInfo( rsComm, &myDataObjInp, dataObjInfo,
@@ -541,12 +541,12 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
         rstrcpy( myDataObjInp.objPath, specColl->objPath, MAX_NAME_LEN );
         // add the resource hierarchy to the condInput of the inp
         addKeyVal( &myDataObjInp.condInput, RESC_HIER_STR_KW, specColl->rescHier );
-        status = getDataObjInfo( rsComm, &myDataObjInp, dataObjInfo, NULL, 1 );
+        status = getDataObjInfo( rsComm, &myDataObjInp, dataObjInfo, nullptr, 1 );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
                      "specCollSubStat: getDataObjInfo error for %s, status = %d",
                      myDataObjInp.objPath, status );
-            *dataObjInfo = NULL;
+            *dataObjInfo = nullptr;
             return status;
         }
 
@@ -563,13 +563,13 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
             if ( requeDataObjInfoByResc( dataObjInfo, specColl->resource,
                                          0, 1 ) >= 0 ) {
                 if ( strstr( ( *dataObjInfo )->rescHier,
-                             specColl->resource ) == 0 ) {
+                             specColl->resource ) == nullptr ) {
                     rodsLog( LOG_ERROR,
                              "specCollSubStat: %s in %s does not match cache resc %s",
                              myDataObjInp.objPath, ( *dataObjInfo )->rescName,
                              specColl->resource );
                     freeAllDataObjInfo( *dataObjInfo );
-                    *dataObjInfo = NULL;
+                    *dataObjInfo = nullptr;
                     return SYS_CACHE_STRUCT_FILE_RESC_ERR;
                 }
             }
@@ -578,15 +578,15 @@ specCollSubStat( rsComm_t *rsComm, specColl_t *specColl,
                          "specCollSubStat: requeDataObjInfoByResc %s, resc %s error",
                          myDataObjInp.objPath, specColl->resource );
                 freeAllDataObjInfo( *dataObjInfo );
-                *dataObjInfo = NULL;
+                *dataObjInfo = nullptr;
                 return SYS_CACHE_STRUCT_FILE_RESC_ERR;
             }
         }
 
         /* free all the other dataObjInfo */
-        if ( ( *dataObjInfo )->next != NULL ) {
+        if ( ( *dataObjInfo )->next != nullptr ) {
             freeAllDataObjInfo( ( *dataObjInfo )->next );
-            ( *dataObjInfo )->next = NULL;
+            ( *dataObjInfo )->next = nullptr;
         }
 
         /* fill in DataObjInfo */
@@ -648,7 +648,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
     int status;
     char *accessStr;
 
-    if ( objPath == NULL ) {
+    if ( objPath == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     if ( ( status = getSpecCollCache( rsComm, objPath, inCachOnly,
@@ -687,7 +687,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
                               specCollPerm, dataObjInfo );
 
     if ( status < 0 ) {
-        if ( *dataObjInfo != NULL ) {
+        if ( *dataObjInfo != nullptr ) {
             /* does not exist. return the dataObjInfo anyway */
             return SYS_SPEC_COLL_OBJ_NOT_EXIST;
         }
@@ -697,7 +697,7 @@ resolvePathInSpecColl( rsComm_t *rsComm, char *objPath,
         return status;
     }
     else {
-        if ( *dataObjInfo != NULL ) {
+        if ( *dataObjInfo != nullptr ) {
             if ( specCollPerm == WRITE_COLL_PERM ) {
                 ( *dataObjInfo )->writeFlag = 1;
             }
@@ -713,12 +713,12 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
     int linkCnt = 0;
     specColl_t *curSpecColl;
     char prevNewPath[MAX_NAME_LEN];
-    specCollCache_t *oldSpecCollCache = NULL;
+    specCollCache_t *oldSpecCollCache = nullptr;
     int status;
 
-    *specCollCache = NULL;
+    *specCollCache = nullptr;
 
-    if ( getValByKey( condInput, TRANSLATED_PATH_KW ) != NULL ) {
+    if ( getValByKey( condInput, TRANSLATED_PATH_KW ) != nullptr ) {
         return 0;
     }
 
@@ -735,7 +735,7 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
 
         curSpecColl = &( *specCollCache )->specColl;
         if ( strcmp( curSpecColl->collection, objPath ) == 0 &&
-                getValByKey( condInput, NO_TRANSLATE_LINKPT_KW ) != NULL ) {
+                getValByKey( condInput, NO_TRANSLATE_LINKPT_KW ) != nullptr ) {
             return 0;
         }
         rstrcpy( prevNewPath, objPath, MAX_NAME_LEN );
@@ -745,7 +745,7 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
             return status;
         }
     }
-    if ( *specCollCache == NULL ) {
+    if ( *specCollCache == nullptr ) {
         *specCollCache = oldSpecCollCache;
     }
     return linkCnt;

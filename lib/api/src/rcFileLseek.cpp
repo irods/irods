@@ -24,8 +24,8 @@ int
 rcFileLseek( rcComm_t *conn, fileLseekInp_t *fileLseekInp,
              fileLseekOut_t **fileLseekOut ) {
     int status;
-    status = procApiRequest( conn, FILE_LSEEK_AN,  fileLseekInp, NULL,
-                             ( void ** ) fileLseekOut, NULL );
+    status = procApiRequest( conn, FILE_LSEEK_AN,  fileLseekInp, nullptr,
+                             ( void ** ) fileLseekOut, nullptr );
 
     return status;
 }

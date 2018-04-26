@@ -49,7 +49,7 @@ _rnew = _rnew2;}
 #define RE_BACKWARD_COMPATIBLE
 
 static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
-static keyValPair_t globalHashtable = {0, NULL, NULL};
+static keyValPair_t globalHashtable = {0, nullptr, nullptr};
 
 /* todo include proper header files */
 int rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp );
@@ -71,7 +71,7 @@ Res *smsi_setGlobalSessionId( Node**subtrees, int, Node*, ruleExecInfo_t*, int, 
 }
 
 Res *smsi_properties( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
-    return newUninterpretedRes( r, KeyValPair_MS_T, &globalHashtable, NULL );
+    return newUninterpretedRes( r, KeyValPair_MS_T, &globalHashtable, nullptr );
 }
 
 
@@ -118,8 +118,8 @@ ReIterableData *newReIterableData(
     ReIterableData *itrData = ( ReIterableData * ) malloc( sizeof( ReIterableData ) );
     itrData->varName = varName;
     itrData->res = res;
-    itrData->itrSpecData = NULL;
-    itrData->errorRes = NULL;
+    itrData->itrSpecData = nullptr;
+    itrData->errorRes = nullptr;
     itrData->subtrees = subtrees;
     itrData->node = node;
     itrData->rei = rei;
@@ -175,7 +175,7 @@ Res *smsi_if2Exec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
 Res *smsi_do( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     switch ( getNodeType( params[0] ) ) {
     case N_ACTIONS:
-        return evaluateActions( ( Node * )params[0], NULL, 0, rei, reiSaveFlag, env, errmsg, r );
+        return evaluateActions( ( Node * )params[0], nullptr, 0, rei, reiSaveFlag, env, errmsg, r );
     default:
         return evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag, env, errmsg, r );
     }
@@ -186,7 +186,7 @@ Res *smsi_letExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFl
     if ( getNodeType( res ) == N_ERROR ) {
         return res;
     }
-    Env *nEnv = newEnv( newHashTable2( 100, r ), env, NULL, r );
+    Env *nEnv = newEnv( newHashTable2( 100, r ), env, nullptr, r );
     Res *pres = matchPattern( params[0], res, nEnv, rei, reiSaveFlag, errmsg, r );
     if ( getNodeType( pres ) == N_ERROR ) {
         /*deleteEnv(nEnv, 1); */
@@ -204,7 +204,7 @@ Res *smsi_matchExec( Node** params, int n, Node* node, ruleExecInfo_t* rei, int 
     }
     int i;
     for ( i = 1; i < n; i++ ) {
-        Env *nEnv = newEnv( newHashTable2( 100, r ), env, NULL, r );
+        Env *nEnv = newEnv( newHashTable2( 100, r ), env, nullptr, r );
         Res *pres = matchPattern( params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r );
         if ( getNodeType( pres ) == N_ERROR ) {
             /*deleteEnv(nEnv, 1); */
@@ -258,8 +258,8 @@ Res *smsi_whileExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSave
 
 Res *smsi_forExec( Node** params, int, Node*, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
 
-    Res *init, *cond, *res = NULL, *step;
-    Region* rnew = make_region( 0, NULL );
+    Res *init, *cond, *res = nullptr, *step;
+    Region* rnew = make_region( 0, nullptr );
     init = evaluateExpression3( ( Node * )params[0], 0, 1, rei, reiSaveFlag | DISCARD_EXPRESSION_RESULT, env, errmsg, rnew );
     if ( getNodeType( init ) == N_ERROR ) {
         res = init;
@@ -317,7 +317,7 @@ Res *smsi_collection( Node** subtrees, int, Node*, ruleExecInfo_t*, int, Env*, r
     memset( collInpCache, 0, sizeof( collInp_t ) );
     rstrcpy( collInpCache->collName, collName, MAX_NAME_LEN );
 
-    return newUninterpretedRes( r, CollInp_MS_T, collInpCache, NULL );
+    return newUninterpretedRes( r, CollInp_MS_T, collInpCache, nullptr );
 }
 
 ReIterableType collType( Res *coll ) {
@@ -426,7 +426,7 @@ Res *reIterable_genQuery_next( ReIterableData *itrData, Region* r ) {
 
     if ( getNodeType( res ) == N_ERROR ) {
         itrData->errorRes = res;
-        return NULL;
+        return nullptr;
     }
     return res;
 
@@ -525,7 +525,7 @@ void reIterable_collection_init( ReIterableData *itrData, Region* r ) {
     itrData->itrSpecData = data;
 
     /* Sanity test */
-    if ( itrData->rei == NULL || itrData->rei->rsComm == NULL ) {
+    if ( itrData->rei == nullptr || itrData->rei->rsComm == nullptr ) {
         generateAndAddErrMsg( "msiCollectionSpider: input rei or rsComm is NULL.", itrData->node, SYS_INTERNAL_NULL_INPUT_ERR, itrData->errmsg );
         itrData->errorRes = newErrorRes( r, SYS_INTERNAL_NULL_INPUT_ERR );
         return;
@@ -564,7 +564,7 @@ int reIterable_collection_hasNext( ReIterableData *itrData, Region* ) {
 
     collEnt_t *collEnt;
     while ( ( itrData->rei->status = rsReadCollection( itrData->rei->rsComm, &data->handleInx, &collEnt ) ) >= 0 ) {
-        if ( collEnt != NULL ) {
+        if ( collEnt != nullptr ) {
             if ( collEnt->objType == DATA_OBJ_T ) {
                 data->collEnt = collEnt;
                 return 1;
@@ -589,7 +589,7 @@ Res *reIterable_collection_next( ReIterableData *itrData, Region* r ) {
     free( data->collEnt );
 
     /* Set var with name varname in the current environment */
-    updateInEnv( itrData->env, itrData->varName, newUninterpretedRes( r, DataObjInp_MS_T, ( void * ) data->dataObjInp, NULL ) );
+    updateInEnv( itrData->env, itrData->varName, newUninterpretedRes( r, DataObjInp_MS_T, ( void * ) data->dataObjInp, nullptr ) );
 
     /* Run actionStr on our object */
     Res *ret = evaluateActions( itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei, itrData->reiSaveFlag, itrData->env, itrData->errmsg, r );
@@ -619,7 +619,7 @@ ReIterable *getReIterable( ReIterableType nodeType ) {
             return &( reIterableTable[i].reIterable );
         }
     }
-    return NULL;
+    return nullptr;
 }
 Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     Res *res;
@@ -641,7 +641,7 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
         Res *paramsr[2];
         paramsr[0] = subtrees[1];
         paramsr[1] = newStringRes( r, "," );
-        subtreesNew[1] = smsi_split( paramsr, 2, node, NULL, 0, NULL, errmsg, r );;
+        subtreesNew[1] = smsi_split( paramsr, 2, node, nullptr, 0, nullptr, errmsg, r );;
         subtreesNew[2] = subtrees[2];
         subtreesNew[3] = subtrees[3];
         subtrees = subtreesNew;
@@ -662,12 +662,12 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
         GC_BEGIN
         itr = getReIterable( ctype );
         itr->init( itrData, GC_REGION );
-        if ( itrData->errorRes != NULL ) {
+        if ( itrData->errorRes != nullptr ) {
             res = itrData->errorRes;
         }
         else {
             while ( itr->hasNext( itrData, GC_REGION ) ) {
-                if ( itrData->errorRes != NULL ) {
+                if ( itrData->errorRes != nullptr ) {
                     res = itrData->errorRes;
                     break;
                 }
@@ -675,7 +675,7 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
 
                 res = itr->next( itrData, GC_REGION );
 
-                if ( itrData->errorRes != NULL ) {
+                if ( itrData->errorRes != nullptr ) {
                     res = itrData->errorRes;
                     break;
                 }
@@ -688,7 +688,7 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
             }
         }
         itr->finalize( itrData, GC_REGION );
-        if ( itrData->errorRes != NULL ) {
+        if ( itrData->errorRes != nullptr ) {
             res = itrData->errorRes;
         }
 
@@ -696,7 +696,7 @@ Res *smsi_forEach2Exec( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, i
         res = cpRes( res, r );
         GC_END
         /* restore variable value */
-        if ( oldVal == NULL ) {
+        if ( oldVal == nullptr ) {
             deleteFromHashTable( env->current, itrData-> varName );
         }
         else {
@@ -803,7 +803,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
         case N_QUERY_COND_JUNCTION:
 
             attr = subQueNode->subtrees[0]->subtrees[0]->text;
-            if ( lookupFromHashTable( queCondHashTable, attr ) != NULL ) {
+            if ( lookupFromHashTable( queCondHashTable, attr ) != nullptr ) {
                 deleteHashTable( queCondHashTable, nop );
                 snprintf( errmsgBuf, ERR_MSG_LEN, "Unsupported gen query format: multiple query conditions on one attribute %s.", attr );
                 generateAndAddErrMsg( errmsgBuf, subQueNode, RE_DYNAMIC_TYPE_ERROR, errmsg );
@@ -903,7 +903,7 @@ Res *smsi_query( Node** subtrees, int, Node* node, ruleExecInfo_t* rei, int reiS
 
     deleteHashTable( queCondHashTable, nop );
 
-    Region* rNew = make_region( 0, NULL );
+    Region* rNew = make_region( 0, nullptr );
     msParam_t genQOutParam;
     memset( &genQOutParam, 0, sizeof( msParam_t ) );
     int status = msiExecGenQuery( &genQInpParam, &genQOutParam, rei );
@@ -985,7 +985,7 @@ Examples:
 Res *smsi_getValByKey( Node** params, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
     char errbuf[ERR_MSG_LEN];
     keyValPair_t *kvp = ( keyValPair_t * ) RES_UNINTER_STRUCT( params[0] );
-    char *key = NULL;
+    char *key = nullptr;
     Res *res;
     if ( getNodeType( params[1] ) == N_APPLICATION && N_APP_ARITY( params[1] ) == 0 ) {
         key = N_APP_FUNC( params[1] )->text;
@@ -1294,7 +1294,7 @@ Res *smsi_timestr( Node** params, int n, Node*, ruleExecInfo_t*, int, Env*, rErr
 Res *smsi_type( Node** params, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *val = params[0], *res;
     char typeName[128];
-    typeToString( val->exprType, NULL, typeName, 128 );
+    typeToString( val->exprType, nullptr, typeName, 128 );
     res = newStringRes( r, typeName );
     return res;
 }
@@ -1324,7 +1324,7 @@ Res *smsi_str( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
             || TYPE( val ) == T_PATH
             || TYPE( val ) == T_DATETIME ) {
         char *buf = convertResToString( val );
-        if ( buf != NULL ) {
+        if ( buf != nullptr ) {
             res = newStringRes( r, buf );
             free( buf );
         }
@@ -1605,7 +1605,7 @@ Res *smsi_lt( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
@@ -1628,7 +1628,7 @@ Res *smsi_le( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
@@ -1651,7 +1651,7 @@ Res *smsi_gt( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 
@@ -1674,7 +1674,7 @@ Res *smsi_ge( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
@@ -1702,7 +1702,7 @@ Res *smsi_eq( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rError
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
@@ -1730,7 +1730,7 @@ Res *smsi_neq( Node** params, int, Node* node, ruleExecInfo_t*, int, Env*, rErro
         break;
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
-    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, NULL, type0, 128 ), typeToString( params[1]->exprType, NULL, type1, 128 ) );
+    snprintf( errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString( params[0]->exprType, nullptr, type0, 128 ), typeToString( params[1]->exprType, nullptr, type1, 128 ) );
     generateAndAddErrMsg( errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg );
     return newErrorRes( r, RE_DYNAMIC_TYPE_ERROR );
 }
@@ -1747,7 +1747,7 @@ Res *smsi_like( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t
     buf2 = wildCardToRegex( pattern );
     regex_t regbuf;
     regcomp( &regbuf, buf2, REG_EXTENDED );
-    res = newBoolRes( r, regexec( &regbuf, bufstr, 0, 0, 0 ) == 0 ? 1 : 0 );
+    res = newBoolRes( r, regexec( &regbuf, bufstr, 0, nullptr, 0 ) == 0 ? 1 : 0 );
     regfree( &regbuf );
     free( buf2 );
     free( bufstr );
@@ -1771,7 +1771,7 @@ Res *smsi_like_regex( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rE
     pattern = matchWholeString( params[1]->text );
     regex_t regbuf;
     regcomp( &regbuf, pattern, REG_EXTENDED );
-    res = newBoolRes( r, regexec( &regbuf, bufstr, 0, 0, 0 ) == 0 ? 1 : 0 );
+    res = newBoolRes( r, regexec( &regbuf, bufstr, 0, nullptr, 0 ) == 0 ? 1 : 0 );
     regfree( &regbuf );
     free( bufstr );
     free( pattern );
@@ -1886,7 +1886,7 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 
     int i;
     execMyRuleInp_t execMyRuleInp;
-    msParamArray_t *outParamArray = NULL;
+    msParamArray_t *outParamArray = nullptr;
     char tmpStr[LONG_NAME_LEN];
 
     Res **params = ( Res ** )paramsr;
@@ -1927,12 +1927,12 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
 
     i = rsExecMyRule( rei->rsComm, &execMyRuleInp,  &outParamArray );
 
-    if ( outParamArray != NULL ) {
+    if ( outParamArray != nullptr ) {
         rei->msParamArray = outParamArray;
     }
     updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, r );
     deleteMsParamArray( rei->msParamArray );
-    rei->msParamArray = NULL;
+    rei->msParamArray = nullptr;
     if ( i < 0 ) {
         return newErrorRes( r, i );
     }
@@ -1996,7 +1996,7 @@ Res *smsi_triml( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_
     char *delim = delimres->text;
 
     char *p = strstr( str, delim );
-    if ( p != NULL ) {
+    if ( p != nullptr ) {
         /* found */
         return newStringRes( r, p + strlen( delim ) );
     }
@@ -2042,9 +2042,9 @@ Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_
     int trim = 1;
     int i;
     for ( i = 0; i < len; i++ ) {
-        if ( strchr( delimres->text, buf[i] ) != NULL ) {
+        if ( strchr( delimres->text, buf[i] ) != nullptr ) {
             i++;
-            while ( i < len && strchr( delimres->text, buf[i] ) != NULL ) {
+            while ( i < len && strchr( delimres->text, buf[i] ) != nullptr ) {
                 i++;
             }
             if ( !trim && i < len ) {
@@ -2065,13 +2065,13 @@ Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_
     trim = 1;
     char *bufStart = buf;
     for ( i = 0; i < len; i++ ) {
-        if ( strchr( delimres->text, buf[i] ) != NULL ) {
+        if ( strchr( delimres->text, buf[i] ) != nullptr ) {
             buf[i] = '\0';
             if ( !trim ) {
                 coll->subtrees[j++] = newStringRes( r, bufStart );
             }
             i++;
-            while ( i < len && strchr( delimres->text, buf[i] ) != NULL ) {
+            while ( i < len && strchr( delimres->text, buf[i] ) != nullptr ) {
                 i++;
             }
             bufStart = buf + i;
@@ -2105,12 +2105,12 @@ Res *smsi_trimr( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_
     }
 
     char *p = strstr( str, delim );
-    char *newp = NULL;
-    while ( p != NULL ) {
+    char *newp = nullptr;
+    while ( p != nullptr ) {
         newp = p;
         p = strstr( p + 1, delim );
     }
-    if ( newp == NULL ) {
+    if ( newp == nullptr ) {
         /* not found */
         return strres;
     }
@@ -2154,11 +2154,11 @@ Res *smsi_setReLogging( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, in
 
 
 Res *smsi_getstdout( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    msParam_t * mP = NULL;
+    msParam_t * mP = nullptr;
     msParamArray_t * inMsParamArray = rei->msParamArray;
     execCmdOut_t *out;
-    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-            ( mP->inOutStruct != NULL ) &&
+    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != nullptr ) &&
+            ( mP->inOutStruct != nullptr ) &&
             strcmp(mP->type, ExecCmdOut_MS_T) == 0  ) {
             out = ( execCmdOut_t* )mP->inOutStruct;
     } else {
@@ -2174,11 +2174,11 @@ Res *smsi_getstdout( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int r
 }
 
 Res *smsi_getstderr( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int reiSaveFlag, Env* env, rError_t* errmsg, Region* r ) {
-    msParam_t * mP = NULL;
+    msParam_t * mP = nullptr;
     msParamArray_t * inMsParamArray = rei->msParamArray;
     execCmdOut_t *out;
-    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-            ( mP->inOutStruct != NULL ) &&
+    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != nullptr ) &&
+            ( mP->inOutStruct != nullptr ) &&
             strcmp(mP->type, ExecCmdOut_MS_T) == 0  ) {
             out = ( execCmdOut_t* )mP->inOutStruct;
     } else {
@@ -2275,9 +2275,9 @@ Res *smsi_msiCheckStringForSystem( Node** paramsr, int, Node*, ruleExecInfo_t*, 
 int
 parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
                     collInp_t **outCollInp, int outputToCache ) {
-    *outCollInp = NULL;
+    *outCollInp = nullptr;
 
-    if ( inpParam == NULL ) {
+    if ( inpParam == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2285,7 +2285,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
 
     if ( TYPE( inpParam ) == T_STRING ) {
         /* str input */
-        if ( collInpCache == NULL ) {
+        if ( collInpCache == nullptr ) {
             collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
         }
         memset( collInpCache, 0, sizeof( collInp_t ) );
@@ -2299,7 +2299,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
         if ( outputToCache == 1 ) {
             collInp_t *tmpCollInp;
             tmpCollInp = ( collInp_t * ) RES_UNINTER_STRUCT( inpParam );
-            if ( collInpCache == NULL ) {
+            if ( collInpCache == nullptr ) {
                 collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
             }
             *collInpCache = *tmpCollInp;
@@ -2317,7 +2317,7 @@ parseResForCollInp( Node *inpParam, collInp_t *collInpCache,
         char buf[ERR_MSG_LEN];
         Hashtable *varTypes = newHashTable( 10 );
         typeToString( inpParam->exprType, varTypes, buf, ERR_MSG_LEN );
-        deleteHashTable( varTypes, NULL );
+        deleteHashTable( varTypes, nullptr );
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: Unsupported input Param1 type %s",
                  buf );
@@ -2332,7 +2332,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
     dataObjInp_t *dataObjInp;				/* will contain pathnames for each object (one at a time) */
 
     /* Sanity test */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         generateAndAddErrMsg( "msiCollectionSpider: input rei or rsComm is NULL.", node, SYS_INTERNAL_NULL_INPUT_ERR, errmsg );
         return newErrorRes( r, SYS_INTERNAL_NULL_INPUT_ERR );
     }
@@ -2376,7 +2376,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
     while ( ( rei->status = rsReadCollection( rei->rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         GC_ON( env );
         /* Skip collection entries */
-        if ( collEnt != NULL ) {
+        if ( collEnt != nullptr ) {
             if ( collEnt->objType == DATA_OBJ_T ) {
                 /* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
 
@@ -2387,7 +2387,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
                 free( collEnt );
 
                 /* Set var with name varname in the current environment */
-                updateInEnv( env, varname, newUninterpretedRes( GC_REGION, DataObjInp_MS_T, ( void * ) dataObjInp, NULL ) );
+                updateInEnv( env, varname, newUninterpretedRes( GC_REGION, DataObjInp_MS_T, ( void * ) dataObjInp, nullptr ) );
 
                 /* Run actionStr on our object */
                 Res *ret = evaluateActions( subtrees[2], subtrees[3], 0, rei, reiSaveFlag, env, errmsg, GC_REGION );
@@ -2410,7 +2410,7 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
 
     }
 
-    if ( oldVal == NULL ) {
+    if ( oldVal == nullptr ) {
         deleteFromHashTable( env->current, varname );
     }
     else {
@@ -2438,24 +2438,24 @@ Res *smsiCollectionSpider( Node** subtrees, int, Node* node, ruleExecInfo_t* rei
 int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
     char buf[1024];
     FILE *f1 = fopen( file1, "r" );
-    if ( f1 == NULL ) {
+    if ( f1 == nullptr ) {
         return USER_FILE_DOES_NOT_EXIST;
     }
     FILE *f2;
-    if ( file2 == NULL ) {
-        f2 = NULL;
+    if ( file2 == nullptr ) {
+        f2 = nullptr;
     }
     else {
         f2 = fopen( file2, "r" );
-        if ( f2 == NULL ) {
+        if ( f2 == nullptr ) {
             fclose( f1 );
             return USER_FILE_DOES_NOT_EXIST;
         }
     }
     FILE *f3 = fopen( file3, "w" );
-    if ( NULL == f3 ) {
+    if ( nullptr == f3 ) {
         fclose( f1 );
-        if ( NULL != f2 ) {
+        if ( nullptr != f2 ) {
             fclose( f2 );
         }
         return UNIX_FILE_OPEN_ERR;
@@ -2468,7 +2468,7 @@ int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
         fwrite( buf, 1, len, f3 );
     }
     error = ferror( f1 );
-    if ( error == 0 && f2 != NULL ) {
+    if ( error == 0 && f2 != nullptr ) {
         while ( !feof( f2 ) && ferror( f2 ) == 0 ) {
             len = fread( buf, 1, 1024, f2 );
             fwrite( buf, 1, len, f3 );
@@ -2477,7 +2477,7 @@ int fileConcatenate( const char *file1, const char *file2, const char *file3 ) {
     }
 
     fclose( f1 );
-    if ( f2 != NULL ) {
+    if ( f2 != nullptr ) {
         fclose( f2 );
     }
     fclose( f3 );
@@ -2546,7 +2546,7 @@ char *wildCardToRegex( char *buf ) {
 Res *smsi_segfault( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* ) {
 
     raise( SIGSEGV );
-    return NULL;
+    return nullptr;
 }
 
 void getSystemFunctions( Hashtable *ft, Region* r ) {
@@ -2667,8 +2667,8 @@ void getSystemFunctions( Hashtable *ft, Region* r ) {
     insertIntoHashTable( ft, "setGlobalSessionId", newFunctionFD( "string->integer", smsi_setGlobalSessionId, r ) );
     insertIntoHashTable( ft, "temporaryStorage", newFunctionFD( "->KeyValPair_PI", smsi_properties, r ) );
     /*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
-    insertIntoHashTable( ft, "rei->doi->dataSize", newFunctionFD( "double : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );
-    insertIntoHashTable( ft, "rei->doi->writeFlag", newFunctionFD( "integer : 0 {string}", ( SmsiFuncTypePtr ) NULL, r ) );
+    insertIntoHashTable( ft, "rei->doi->dataSize", newFunctionFD( "double : 0 {string}", ( SmsiFuncTypePtr ) nullptr, r ) );
+    insertIntoHashTable( ft, "rei->doi->writeFlag", newFunctionFD( "integer : 0 {string}", ( SmsiFuncTypePtr ) nullptr, r ) );
 
 #ifdef RE_BACKWARD_COMPATIBLE
     insertIntoHashTable( ft, "assignStr", newFunctionFD( "e ? * e ?->integer", smsi_assignStr, r ) );

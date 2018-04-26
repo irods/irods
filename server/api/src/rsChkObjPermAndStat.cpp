@@ -23,14 +23,14 @@ int
 rsChkObjPermAndStat( rsComm_t *rsComm,
                      chkObjPermAndStat_t *chkObjPermAndStatInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
     status = getAndConnRcatHost(
                  rsComm,
                  SLAVE_RCAT,
                  ( const char* )chkObjPermAndStatInp->objPath,
                  &rodsServerHost );
-    if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
+    if ( status < 0 || rodsServerHost == nullptr ) { // JMC cppcheck
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -108,8 +108,8 @@ chkCollForBundleOpr( rsComm_t *rsComm,
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         int status;
         collInp_t openCollInp;
-        collEnt_t *collEnt = NULL;
-        collEnt_t *curCollEnt = NULL;
+        collEnt_t *collEnt = nullptr;
+        collEnt_t *curCollEnt = nullptr;
         int handleInx;
         int curCopyGood = False;
         char *resource;
@@ -118,7 +118,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         char myPath[MAX_NAME_LEN];
 
         if ( ( resource = getValByKey( &chkObjPermAndStatInp->condInput,
-                                       RESC_NAME_KW ) ) == NULL ) {
+                                       RESC_NAME_KW ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "chkCollForBundleOpr: RESC_NAME_KW not specified for %s",
                      chkObjPermAndStatInp->objPath );
@@ -126,7 +126,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         }
 
         if ( ( resc_hier = getValByKey( &chkObjPermAndStatInp->condInput,
-                                        RESC_HIER_STR_KW ) ) == NULL ) {
+                                        RESC_HIER_STR_KW ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "chkCollForBundleOpr: RESC_HIER_STR_KW not specified for %s",
                      chkObjPermAndStatInp->objPath );
@@ -169,12 +169,12 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                     return status;
                 }
                 free( collEnt );
-                collEnt = NULL;
+                collEnt = nullptr;
                 continue;
             }
 
             if ( collEnt->objType == DATA_OBJ_T ) {
-                if ( curCollEnt == NULL ) {
+                if ( curCollEnt == nullptr ) {
                     curCollEnt = collEnt;
                     saveCollEntForChkColl( collEnt );
                     if ( collEnt->replStatus > 0 &&
@@ -204,7 +204,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                         if ( curCopyGood == False ) {
                             status = replDataObjForBundle( rsComm,
                                                            curCollEnt->collName, curCollEnt->dataName,
-                                                           resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
+                                                           resource, curCollEnt->resc_hier, resc_hier, 0, nullptr );
 
                             if ( status < 0 ) {
                                 rodsLog( LOG_ERROR,
@@ -220,7 +220,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                         }
                         freeCollEntForChkColl( curCollEnt );
                         curCopyGood = False;
-                        curCollEnt = NULL;
+                        curCollEnt = nullptr;
 
                         /* we have a good copy. Check the permission */
                         myId = chlCheckAndGetObjectID( rsComm, "-d", myPath,
@@ -239,7 +239,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                             /* copy is OK */
                             curCollEnt = collEnt;
                             saveCollEntForChkColl( collEnt );
-                            collEnt = NULL;
+                            collEnt = nullptr;
                             if ( curCollEnt->replStatus > 0 &&
                                     strcmp( resource, curCollEnt->resource ) == 0 &&
                                     strcmp( resc_hier, curCollEnt->resc_hier ) == 0 ) {
@@ -256,10 +256,10 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         }
 
         /* handle what's left */
-        if ( curCollEnt != NULL ) {
+        if ( curCollEnt != nullptr ) {
             if ( curCopyGood == False ) {
                 status = replDataObjForBundle( rsComm, curCollEnt->collName,
-                                               curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
+                                               curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, nullptr );
                 freeCollEntForChkColl( curCollEnt );
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR,
@@ -292,19 +292,19 @@ chkCollForBundleOpr( rsComm_t *rsComm,
  */
 int
 saveCollEntForChkColl( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) {
+    if ( collEnt == nullptr ) {
         return 0;
     }
-    if ( collEnt->collName != NULL ) {
+    if ( collEnt->collName != nullptr ) {
         collEnt->collName = strdup( collEnt->collName );
     }
-    if ( collEnt->dataName != NULL ) {
+    if ( collEnt->dataName != nullptr ) {
         collEnt->dataName = strdup( collEnt->dataName );
     }
-    if ( collEnt->resource != NULL ) {
+    if ( collEnt->resource != nullptr ) {
         collEnt->resource = strdup( collEnt->resource );
     }
-    if ( collEnt->resc_hier != NULL ) {
+    if ( collEnt->resc_hier != nullptr ) {
         collEnt->resc_hier = strdup( collEnt->resc_hier );
     }
     return 0;
@@ -312,16 +312,16 @@ saveCollEntForChkColl( collEnt_t *collEnt ) {
 
 int
 freeCollEntForChkColl( collEnt_t *collEnt ) {
-    if ( collEnt == NULL ) {
+    if ( collEnt == nullptr ) {
         return 0;
     }
-    if ( collEnt->collName != NULL ) {
+    if ( collEnt->collName != nullptr ) {
         free( collEnt->collName );
     }
-    if ( collEnt->dataName != NULL ) {
+    if ( collEnt->dataName != nullptr ) {
         free( collEnt->dataName );
     }
-    if ( collEnt->resource != NULL ) {
+    if ( collEnt->resource != nullptr ) {
         free( collEnt->resource );
     }
 

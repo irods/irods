@@ -54,7 +54,7 @@
 
 int
 rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp ) {
-    int status = irsDataObjClose( rsComm, dataObjCloseInp, NULL );
+    int status = irsDataObjClose( rsComm, dataObjCloseInp, nullptr );
 
     return status;
 }
@@ -95,10 +95,10 @@ irsDataObjClose(
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    if ( outDataObjInfo != NULL ) {
-        *outDataObjInfo = NULL;
+    if ( outDataObjInfo != nullptr ) {
+        *outDataObjInfo = nullptr;
     }
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         /* cross zone operation */
         dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         /* XXXXX outDataObjInfo will not be returned in this call.
@@ -119,9 +119,9 @@ irsDataObjClose(
                 DATA_OBJ_UNLOCK_AN,
                 rsComm,
                 L1desc[l1descInx].dataObjInp,
-                NULL,
-                ( void** ) NULL,
-                NULL );
+                nullptr,
+                ( void** ) nullptr,
+                nullptr );
 
             L1desc[l1descInx].lockFd = -1;
         }
@@ -139,7 +139,7 @@ irsDataObjClose(
                 // make resource properties available as rule session variables
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-                rei.status = applyRule( "acPostProcForCreate", NULL, &rei,
+                rei.status = applyRule( "acPostProcForCreate", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -156,7 +156,7 @@ irsDataObjClose(
                 // make resource properties available as rule session variables
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-                rei.status = applyRule( "acPostProcForOpen", NULL, &rei,
+                rei.status = applyRule( "acPostProcForOpen", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -170,7 +170,7 @@ irsDataObjClose(
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
-                rei.status = applyRule( "acPostProcForRepl", NULL, &rei,
+                rei.status = applyRule( "acPostProcForRepl", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -190,7 +190,7 @@ irsDataObjClose(
                 // make resource properties available as rule session variables
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-                rei.status = applyRule( "acPostProcForCopy", NULL, &rei,
+                rei.status = applyRule( "acPostProcForCopy", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -210,20 +210,20 @@ irsDataObjClose(
                 // make resource properties available as rule session variables
                 irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-                rei.status = applyRule( "acPostProcForPut", NULL, &rei,
+                rei.status = applyRule( "acPostProcForPut", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
                 clearKeyVal(rei.condInputData);
                 free(rei.condInputData);
             }
-            else if ( L1desc[l1descInx].dataObjInp != NULL &&
+            else if ( L1desc[l1descInx].dataObjInp != nullptr &&
                       L1desc[l1descInx].dataObjInp->oprType == PHYMV_OPR ) {
                 initReiWithDataObjInp( &rei, rsComm,
                                        L1desc[l1descInx].dataObjInp );
                 rei.doi = L1desc[l1descInx].dataObjInfo;
                 rei.status = status;
-                rei.status = applyRule( "acPostProcForPhymv", NULL, &rei,
+                rei.status = applyRule( "acPostProcForPhymv", nullptr, &rei,
                                         NO_SAVE_REI );
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -243,9 +243,9 @@ irsDataObjClose(
         rsDataObjClose( rsComm, &myDataObjCloseInp );
     }
 
-    if ( outDataObjInfo != NULL ) {
+    if ( outDataObjInfo != nullptr ) {
         *outDataObjInfo = L1desc[l1descInx].dataObjInfo;
-        L1desc[l1descInx].dataObjInfo = NULL;
+        L1desc[l1descInx].dataObjInfo = nullptr;
     }
 
     freeL1desc( l1descInx );
@@ -267,7 +267,7 @@ int _modDataObjSize(
     addKeyVal( &regParam, IN_PDMO_KW, _info->rescHier ); // to stop resource hierarchy recursion
     if ( getValByKey(
             &L1desc[_l1descInx].dataObjInp->condInput,
-            ADMIN_KW ) != NULL ) {
+            ADMIN_KW ) != nullptr ) {
         addKeyVal( &regParam, ADMIN_KW, "" );
     }
 
@@ -392,7 +392,7 @@ _rsDataObjClose(
         }
 
         if ( L1desc[l1descInx].chksumFlag != 0 && L1desc[l1descInx].oprType == PUT_OPR ) {
-            char *chksumStr = NULL;
+            char *chksumStr = nullptr;
             status = procChksumForClose( rsComm, l1descInx, &chksumStr );
             if (status >= 0) {
                 std::string checksum = std::string( chksumStr );
@@ -412,7 +412,7 @@ _rsDataObjClose(
     }
 
     if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                      NO_CHK_COPY_LEN_KW ) != NULL ) {
+                      NO_CHK_COPY_LEN_KW ) != nullptr ) {
         noChkCopyLenFlag = 1;
     }
 
@@ -454,12 +454,12 @@ _rsDataObjClose(
     // need a checksum check
     std::string checksum;
     if ( !noChkCopyLenFlag || updateChksumFlag ) {
-        char *chksumStr = NULL;
+        char *chksumStr = nullptr;
         status = procChksumForClose( rsComm, l1descInx, &chksumStr );
         if ( status < 0 ) {
             return status;
         }
-        if ( chksumStr != NULL ) {
+        if ( chksumStr != nullptr ) {
             checksum = std::string( chksumStr );
             free( chksumStr );
         }
@@ -484,11 +484,11 @@ _rsDataObjClose(
         addKeyVal( &regParam, RESC_NAME_KW,     destDataObjInfo->rescName );
         addKeyVal( &regParam, RESC_HIER_STR_KW, destDataObjInfo->rescHier );
         if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                          ADMIN_KW ) != NULL ) {
+                          ADMIN_KW ) != nullptr ) {
             addKeyVal( &regParam, ADMIN_KW, "" );
         }
         char* pdmo_kw = getValByKey( &dataObjCloseInp->condInput, IN_PDMO_KW );
-        if ( pdmo_kw != NULL ) {
+        if ( pdmo_kw != nullptr ) {
             addKeyVal( &regParam, IN_PDMO_KW, pdmo_kw );
         }
         modDataObjMetaInp.dataObjInfo = destDataObjInfo;
@@ -536,14 +536,14 @@ _rsDataObjClose(
             addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );
             snprintf( tmpStr, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataSize );
             addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
-            snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
+            snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( nullptr ) );
             addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
             if ( !checksum.empty() ) {
                 addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
             }
 
             if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                              ADMIN_KW ) != NULL ) {
+                              ADMIN_KW ) != nullptr ) {
                 addKeyVal( &regParam, ADMIN_KW, "" );
             }
             if ( ( L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG ) != 0 ) {
@@ -551,7 +551,7 @@ _rsDataObjClose(
                 addKeyVal( &regParam, FILE_PATH_KW, destDataObjInfo->filePath );
             }
             char* pdmo_kw = getValByKey( &dataObjCloseInp->condInput, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
+            if ( pdmo_kw != nullptr ) {
                 addKeyVal( &regParam, IN_PDMO_KW, pdmo_kw );
             }
             modDataObjMetaInp.dataObjInfo = destDataObjInfo;
@@ -567,12 +567,12 @@ _rsDataObjClose(
             regReplicaInp.srcDataObjInfo = srcDataObjInfo;
             regReplicaInp.destDataObjInfo = destDataObjInfo;
             if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                              SU_CLIENT_USER_KW ) != NULL ) {
+                              SU_CLIENT_USER_KW ) != nullptr ) {
                 addKeyVal( &regReplicaInp.condInput, SU_CLIENT_USER_KW, "" );
                 addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
             }
             else if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                                   ADMIN_KW ) != NULL ) {
+                                   ADMIN_KW ) != nullptr ) {
                 addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
             }
 
@@ -628,11 +628,11 @@ _rsDataObjClose(
             return status;
         }
     }
-    else if ( L1desc[l1descInx].dataObjInfo->specColl == NULL ) {
+    else if ( L1desc[l1descInx].dataObjInfo->specColl == nullptr ) {
         /* put or copy */
         if ( l3descInx < 2 &&
                 getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                             CROSS_ZONE_CREATE_KW ) != NULL &&
+                             CROSS_ZONE_CREATE_KW ) != nullptr &&
                 L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
             /* the comes from a cross zone copy. have not been
              * registered yet */
@@ -658,7 +658,7 @@ _rsDataObjClose(
 
         if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
             addKeyVal( &regParam, ALL_REPL_STATUS_KW, "TRUE" );
-            snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
+            snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( nullptr ) );
             addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
         }
         else {
@@ -807,7 +807,7 @@ procChksumForClose(
     int srcL1descInx = 0;
     dataObjInfo_t *srcDataObjInfo;
 
-    *chksumStr = NULL;
+    *chksumStr = nullptr;
     if ( oprType == REPLICATE_DEST || oprType == PHYMV_DEST ) {
         srcL1descInx = L1desc[l1descInx].srcL1descInx;
         if ( srcL1descInx <= 2 ) {
@@ -840,7 +840,7 @@ procChksumForClose(
                     return status;
                 }
             }
-            else if ( *chksumStr == NULL ) {
+            else if ( *chksumStr == nullptr ) {
                 rodsLog( LOG_ERROR, "chksumStr is NULL" );
                 return SYS_INTERNAL_NULL_INPUT_ERR;
             }
@@ -851,7 +851,7 @@ procChksumForClose(
                              "procChksumForClose: chksum mismatch for %s src [%s] new [%s]",
                              dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr );
                     free( *chksumStr );
-                    *chksumStr = NULL;
+                    *chksumStr = nullptr;
                     return USER_CHKSUM_MISMATCH;
                 }
                 else {
@@ -889,14 +889,14 @@ procChksumForClose(
                          dataObjInfo->objPath,
                          L1desc[l1descInx].chksum, *chksumStr );
                 free( *chksumStr );
-                *chksumStr = NULL;
+                *chksumStr = nullptr;
                 return USER_CHKSUM_MISMATCH;
             }
 
             if ( strcmp( dataObjInfo->chksum, *chksumStr ) == 0 ) {
                 /* the same as in rcat */
                 free( *chksumStr );
-                *chksumStr = NULL;
+                *chksumStr = nullptr;
             }
         }
         else if ( oprType == REPLICATE_DEST ) {
@@ -908,7 +908,7 @@ procChksumForClose(
             if ( status < 0 ) {
                 return status;
             }
-            if ( *chksumStr == NULL ) {
+            if ( *chksumStr == nullptr ) {
                 rodsLog( LOG_ERROR, "chksumStr is NULL" );
                 return SYS_INTERNAL_NULL_INPUT_ERR;
             }
@@ -926,7 +926,7 @@ procChksumForClose(
                 else {
                     /* not need to register because reg repl will do it */
                     free( *chksumStr );
-                    *chksumStr = NULL;
+                    *chksumStr = nullptr;
                     status = 0;
                 }
             }
@@ -952,7 +952,7 @@ procChksumForClose(
             if ( status < 0 ) {
                 return status;
             }
-            if ( *chksumStr == NULL ) {
+            if ( *chksumStr == nullptr ) {
                 rodsLog( LOG_ERROR, "chkSumStr is null." );
                 return SYS_INTERNAL_NULL_INPUT_ERR;
             }
@@ -963,7 +963,7 @@ procChksumForClose(
                              "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
                              dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr );
                     free( *chksumStr );
-                    *chksumStr = NULL;
+                    *chksumStr = nullptr;
                     return USER_CHKSUM_MISMATCH;
                 }
             }
@@ -988,7 +988,7 @@ procChksumForClose(
             if ( strcmp( dataObjInfo->chksum, L1desc[l1descInx].chksum ) == 0 ) {
                 /* same as in icat */
                 free( *chksumStr );
-                *chksumStr = NULL;
+                *chksumStr = nullptr;
             }
             return 0;
         }
@@ -1005,7 +1005,7 @@ procChksumForClose(
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
             if ( strlen( srcDataObjInfo->chksum ) == 0 ) {
                 free( *chksumStr );
-                *chksumStr = NULL;
+                *chksumStr = nullptr;
             }
         }
         return 0;

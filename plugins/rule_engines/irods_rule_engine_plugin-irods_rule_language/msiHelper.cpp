@@ -92,7 +92,7 @@ msiGetStdoutInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
 int
 msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
                           ruleExecInfo_t *rei ) {
-    char *strPtr = NULL;
+    char *strPtr = nullptr;
 
     rei->status = getStderrInExecCmdOut( inpExecCmdOut, &strPtr );
 
@@ -102,12 +102,12 @@ msiGetStderrInExecCmdOut( msParam_t *inpExecCmdOut, msParam_t *outStr,
         }
         else {
             free( strPtr );
-            strPtr = NULL;
+            strPtr = nullptr;
             rei->status = 0;
         }
     }
 
-    if ( strPtr != NULL ) {
+    if ( strPtr != nullptr ) {
         fillStrInMsParam( outStr, strPtr );
         free( strPtr );
     }
@@ -159,7 +159,7 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
 
     RE_TEST_MACRO( " Calling msiWriteRodsLog" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiWriteRodsLog: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -167,7 +167,7 @@ msiWriteRodsLog( msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
 
     rsComm = rei->rsComm;
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiWriteRodsLog: input Param1 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -232,7 +232,7 @@ msiAddKeyValToMspStr( msParam_t *keyStr, msParam_t *valStr,
                       msParam_t *msKeyValStr, ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( " Calling msiAddKeyValToMspStr" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiAddKeyValToMspStr: input rei is NULL" );
         // JMC cppcheck rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
@@ -284,14 +284,14 @@ msiSplitPath( msParam_t *inpPath,  msParam_t *outParentColl,
 
     RE_TEST_MACRO( " Calling msiSplitPath" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPath: input rei is NULL" );
         // JMC cppcheck - rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return SYS_INTERNAL_NULL_INPUT_ERR;//(rei->status);
     }
 
-    if ( inpPath == NULL ) {
+    if ( inpPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPath: input inpPath is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -363,14 +363,14 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
 
     RE_TEST_MACRO( " Calling msiGetSessionVarValue" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiGetSessionVar: input rei or rei->rsComm is NULL" );
         // JMC cppcheck - rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return SYS_INTERNAL_NULL_INPUT_ERR;//(rei->status);
     }
 
-    if ( inpVar == NULL || outputMode == NULL ) {
+    if ( inpVar == nullptr || outputMode == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiGetSessionVarValue: input inpVar or outputMode is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -388,7 +388,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
     inpVarStr = ( char * ) inpVar->inOutStruct;
     outputModeStr = ( char * ) outputMode->inOutStruct;
 
-    if ( inpVarStr == NULL || outputModeStr == NULL ) {
+    if ( inpVarStr == nullptr || outputModeStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiGetSessionVarValue: input inpVar or outputMode is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -421,12 +421,12 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
         }
     }
     else {
-        char *outStr = NULL;
+        char *outStr = nullptr;
         rei->status = getSessionVarValue( "", inpVarStr, rei, &outStr );
         if ( rei->status >= 0 && outStr ) { // cppcheck - Possible null pointer dereference: outStr
             if ( strcmp( outputModeStr, "server" ) == 0 ||
                     strcmp( outputModeStr, "all" ) == 0 ) {
-                if ( NULL != outStr ) { // JMC cppcheck
+                if ( nullptr != outStr ) { // JMC cppcheck
                     printf( "msiGetSessionVarValue: %s=%s\n", inpVarStr, outStr );
                 }
             }
@@ -437,7 +437,7 @@ msiGetSessionVarValue( msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
                 addRErrorMsg( &rsComm->rError, 0, errMsg );
             }
         }
-        if ( outStr != NULL ) {
+        if ( outStr != nullptr ) {
             free( outStr );
         }
     }
@@ -481,14 +481,14 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
 
     RE_TEST_MACRO( " Calling msiStrlen" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiStrlen: input rei is NULL" );
         // JMC cppcheck - rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return SYS_INTERNAL_NULL_INPUT_ERR;//(rei->status);
     }
 
-    if ( stringIn == NULL ) {
+    if ( stringIn == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiStrlen: input stringIn is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -496,7 +496,7 @@ msiStrlen( msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei ) {
     }
 
     if ( strcmp( stringIn->type, STR_MS_T ) == 0 ) {
-        if ( stringIn->inOutStruct != NULL ) {
+        if ( stringIn->inOutStruct != nullptr ) {
             rei->status = strlen( ( char * )  stringIn->inOutStruct );
         }
         else {
@@ -549,14 +549,14 @@ int
 msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
     RE_TEST_MACRO( " Calling msiStrchop" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiStrchop: input rei is NULL" );
         // JMC cppcheck - rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return SYS_INTERNAL_NULL_INPUT_ERR;//(rei->status);
     }
 
-    if ( stringIn == NULL ) {
+    if ( stringIn == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiStrchop: input stringIn is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -564,7 +564,7 @@ msiStrchop( msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei ) {
     }
 
     if ( strcmp( stringIn->type, STR_MS_T ) == 0 ) {
-        if ( stringIn->inOutStruct != NULL ) {
+        if ( stringIn->inOutStruct != nullptr ) {
             fillStrInMsParam( stringOut, ( char * ) stringIn->inOutStruct );
             rei->status = strlen( ( char * )  stringIn->inOutStruct );
             if ( rei->status > 0 ) {
@@ -631,18 +631,18 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
     int intLength, intOffset;
     int origLen;
     char savedChar;
-    char *savedPtr = NULL;
+    char *savedPtr = nullptr;
 
     RE_TEST_MACRO( " Calling msiSubstr" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSubstr: input rei is NULL" );
         // JMC cppcheck - rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return SYS_INTERNAL_NULL_INPUT_ERR;// (rei->status);
     }
 
-    if ( stringIn == NULL || offset == NULL ) {
+    if ( stringIn == nullptr || offset == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSubstr: input stringIn or offset is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -671,7 +671,7 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
         intOffset = atoi( ( char * ) offset->inOutStruct );
     }
 
-    if ( length == NULL ) {
+    if ( length == nullptr ) {
         /* not defined */
         intLength = -1;
     }
@@ -706,7 +706,7 @@ msiSubstr( msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
     }
 
     fillStrInMsParam( stringOut, strPtr );
-    if ( savedPtr != NULL ) {
+    if ( savedPtr != nullptr ) {
         /* restore */
         *savedPtr = savedChar;
     }
@@ -758,7 +758,7 @@ msiExit( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei ) {
 
     RE_TEST_MACRO( " Calling msiExit" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiExit: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -766,14 +766,14 @@ msiExit( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei ) {
 
     rsComm = rei->rsComm;
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExit: input Param1 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
         return rei->status;
     }
 
-    if ( inpParam2 == NULL ) {
+    if ( inpParam2 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiExit: input Param2 is NULL" );
         rei->status = USER__NULL_INPUT_ERR;
@@ -804,7 +804,7 @@ msiStrCat( msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei ) {
 
     RE_TEST_MACRO( "    Calling msiStrCat" )
 
-    if ( targParam == NULL || srcParam == NULL ) {
+    if ( targParam == nullptr || srcParam == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -841,13 +841,13 @@ msiSplitPathByKey( msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentC
 
     RE_TEST_MACRO( " Calling msiSplitPathByKey" )
 
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPathByKey: input rei is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( inpPath == NULL ) {
+    if ( inpPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiSplitPathByKey: input inpPath is NULL" );
         rei->status = USER__NULL_INPUT_ERR;

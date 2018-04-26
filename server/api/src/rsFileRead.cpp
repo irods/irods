@@ -27,7 +27,7 @@ rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
                                          &rodsServerHost );
 
     if ( fileReadInp->len > 0 ) {
-        if ( fileReadOutBBuf->buf == NULL ) {
+        if ( fileReadOutBBuf->buf == nullptr ) {
             fileReadOutBBuf->buf = malloc( fileReadInp->len );
         }
     }
@@ -62,7 +62,7 @@ remoteFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp,
                 bytesBuf_t *fileReadOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int retVal;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileRead: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

@@ -144,7 +144,7 @@ rcBulkDataObjPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
                   bytesBuf_t *bulkOprInpBBuf ) {
     int status;
     status = procApiRequest( conn, BULK_DATA_OBJ_PUT_AN, bulkOprInp,
-                             bulkOprInpBBuf, ( void ** ) NULL, NULL );
+                             bulkOprInpBBuf, ( void ** ) nullptr, nullptr );
 
     return status;
 }

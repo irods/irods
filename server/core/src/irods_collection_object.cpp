@@ -12,7 +12,7 @@ namespace irods {
 // public - ctor
     collection_object::collection_object() :
         data_object(),
-        directory_pointer_( 0 ) {
+        directory_pointer_( nullptr ) {
     } // collection_object
 
 // =-=-=-=-=-=-=-
@@ -36,7 +36,7 @@ namespace irods {
             _resc_id,
             _m,
             _f ),
-        directory_pointer_( 0 ) {
+        directory_pointer_( nullptr ) {
 
     } // collection_object
 
@@ -55,7 +55,7 @@ namespace irods {
             _m,
             _f,
             _cond_input ),
-        directory_pointer_( 0 ) {
+        directory_pointer_( nullptr ) {
 
     } // collection_object
 
@@ -71,7 +71,7 @@ namespace irods {
             _resc_hier,
             _m,
             _f ),
-        directory_pointer_( 0 ) {
+        directory_pointer_( nullptr ) {
 
     } // collection_object
 
@@ -90,7 +90,7 @@ namespace irods {
             _m,
             _f,
             _cond_input ),
-        directory_pointer_( 0 ) {
+        directory_pointer_( nullptr ) {
 
     } // collection_object
 

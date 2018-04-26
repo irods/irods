@@ -47,7 +47,7 @@ logAgentProc( rsComm_t *rsComm ) {
     }
 
     if ( *rsComm->clientUser.rodsZone == '\0' ) {
-        if ( ( clientZone = getLocalZoneName() ) == NULL ) {
+        if ( ( clientZone = getLocalZoneName() ) == nullptr ) {
             clientZone = "UNKNOWN";
         }
     }
@@ -56,7 +56,7 @@ logAgentProc( rsComm_t *rsComm ) {
     }
 
     if ( *rsComm->proxyUser.rodsZone == '\0' ) {
-        if ( ( proxyZone = getLocalZoneName() ) == NULL ) {
+        if ( ( proxyZone = getLocalZoneName() ) == nullptr ) {
             proxyZone = "UNKNOWN";
         }
     }
@@ -65,7 +65,7 @@ logAgentProc( rsComm_t *rsComm ) {
     }
 
     remoteAddr = inet_ntoa( rsComm->remoteAddr.sin_addr );
-    if ( remoteAddr == NULL || *remoteAddr == '\0' ) {
+    if ( remoteAddr == nullptr || *remoteAddr == '\0' ) {
         remoteAddr = "UNKNOWN";
     }
     if ( *rsComm->option == '\0' ) {
@@ -79,7 +79,7 @@ logAgentProc( rsComm_t *rsComm ) {
 
     fptr = fopen( procPath, "w" );
 
-    if ( fptr == NULL ) {
+    if ( fptr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "logAgentProc: Cannot open input file %s. errno = %d",
                  procPath, errno );
@@ -89,7 +89,7 @@ logAgentProc( rsComm_t *rsComm ) {
     fprintf( fptr, "%s %s %s %s %s %s %u\n",
              rsComm->proxyUser.userName, clientZone,
              rsComm->clientUser.userName, proxyZone,
-             progName, remoteAddr, ( unsigned int ) time( 0 ) );
+             progName, remoteAddr, ( unsigned int ) time( nullptr ) );
 
     rsComm->procLogFlag = PROC_LOG_DONE;
     fclose( fptr );
@@ -108,7 +108,7 @@ rmProcLog( int pid ) {
 int
 readProcLog( int pid, procLog_t *procLog ) {
 
-    if ( procLog == NULL ) {
+    if ( procLog == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 

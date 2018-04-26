@@ -76,11 +76,11 @@ getFileSize( char *myPath ) {
 
 
 int freeBBuf( bytesBuf_t *myBBuf ) {
-    if ( myBBuf == NULL ) {
+    if ( myBBuf == nullptr ) {
         return 0;
     }
 
-    if ( myBBuf->buf != NULL ) {
+    if ( myBBuf->buf != nullptr ) {
         free( myBBuf->buf );
     }
     free( myBBuf );
@@ -89,11 +89,11 @@ int freeBBuf( bytesBuf_t *myBBuf ) {
 
 int
 clearBBuf( bytesBuf_t *myBBuf ) {
-    if ( myBBuf == NULL ) {
+    if ( myBBuf == nullptr ) {
         return 0;
     }
 
-    if ( myBBuf->buf != NULL ) {
+    if ( myBBuf->buf != nullptr ) {
         free( myBBuf->buf );
     }
 
@@ -113,7 +113,7 @@ addRErrorMsg( rError_t *myError, int status, const char *msg ) {
     int newLen;
     int i;
 
-    if ( myError == NULL ) {
+    if ( myError == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -124,7 +124,7 @@ addRErrorMsg( rError_t *myError, int status, const char *msg ) {
         for ( i = 0; i < myError->len; i++ ) {
             newErrMsg[i] = myError->errMsg[i];
         }
-        if ( myError->errMsg != NULL ) {
+        if ( myError->errMsg != nullptr ) {
             free( myError->errMsg );
         }
         myError->errMsg = newErrMsg;
@@ -143,7 +143,7 @@ replErrorStack( rError_t *srcRError, rError_t *destRError ) {
     int i, len;
     rErrMsg_t *errMsg;
 
-    if ( srcRError == NULL || destRError == NULL ) {
+    if ( srcRError == nullptr || destRError == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -159,7 +159,7 @@ replErrorStack( rError_t *srcRError, rError_t *destRError ) {
 int
 freeRError( rError_t *myError ) {
 
-    if ( myError == NULL ) {
+    if ( myError == nullptr ) {
         return 0;
     }
 
@@ -172,7 +172,7 @@ int
 freeRErrorContent( rError_t *myError ) {
     int i;
 
-    if ( myError == NULL ) {
+    if ( myError == nullptr ) {
         return 0;
     }
 
@@ -200,19 +200,19 @@ parseUserName( const char * fullUserNameIn, char * userName, char * userZone ) {
                                        std::string( octothorpePointer + 1 ) :
                                        std::string();
     if ( zoneNameString.find( '#' ) != std::string::npos || userNameString.size() >= NAME_LEN || zoneNameString.size() >= NAME_LEN ) {
-        if ( userName != NULL ) {
+        if ( userName != nullptr ) {
             userName[0] = '\0';
         }
-        if ( userZone != NULL ) {
+        if ( userZone != nullptr ) {
             userZone[0] = '\0';
         }
         return USER_INVALID_USERNAME_FORMAT;
     }
 
-    if ( userName != NULL ) {
+    if ( userName != nullptr ) {
         snprintf( userName, NAME_LEN, "%s", userNameString.c_str() );
     }
-    if ( userZone != NULL ) {
+    if ( userZone != nullptr ) {
         snprintf( userZone, NAME_LEN, "%s", zoneNameString.c_str() );
     }
     return 0;
@@ -222,7 +222,7 @@ int
 myHtonll( rodsLong_t inlonglong, rodsLong_t *outlonglong ) {
     char *inPtr, *outPtr;
 
-    if ( outlonglong == NULL ) {
+    if ( outlonglong == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -246,7 +246,7 @@ int
 myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
     char *inPtr, *outPtr;
 
-    if ( outlonglong == NULL ) {
+    if ( outlonglong == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -268,7 +268,7 @@ myNtohll( rodsLong_t inlonglong,  rodsLong_t *outlonglong ) {
 
 int
 statToRodsStat( rodsStat_t *rodsStat, struct stat *myFileStat ) {
-    if ( rodsStat == NULL || myFileStat == NULL ) {
+    if ( rodsStat == nullptr || myFileStat == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -293,7 +293,7 @@ statToRodsStat( rodsStat_t *rodsStat, struct stat *myFileStat ) {
 
 int
 rodsStatToStat( struct stat *myFileStat, rodsStat_t *rodsStat ) {
-    if ( myFileStat == NULL || rodsStat == NULL ) {
+    if ( myFileStat == nullptr || rodsStat == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -318,7 +318,7 @@ rodsStatToStat( struct stat *myFileStat, rodsStat_t *rodsStat ) {
 
 int
 direntToRodsDirent( struct rodsDirent *dirent, struct dirent *fileDirent ) {
-    if ( dirent == NULL || fileDirent == NULL ) {
+    if ( dirent == nullptr || fileDirent == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -532,18 +532,18 @@ int getZoneNameFromHint(
 
 int
 freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
-    if ( dataObjInfo == NULL ) {
+    if ( dataObjInfo == nullptr ) {
         return 0;
     }
 
     clearKeyVal( &dataObjInfo->condInput );
     /* separate specColl */
-    if ( dataObjInfo->specColl != NULL ) {
+    if ( dataObjInfo->specColl != nullptr ) {
         free( dataObjInfo->specColl );
     }
 
     free( dataObjInfo );
-    dataObjInfo = 0;
+    dataObjInfo = nullptr;
     return 0;
 }
 
@@ -552,7 +552,7 @@ freeAllDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         nextDataObjInfo = tmpDataObjInfo->next;
         freeDataObjInfo( tmpDataObjInfo );
         tmpDataObjInfo = nextDataObjInfo;
@@ -576,14 +576,14 @@ int queDataObjInfo(
 
     dataObjInfo_t *tmpDataObjInfo;
 
-    if ( dataObjInfo == NULL ) {
+    if ( dataObjInfo == nullptr ) {
         return -1;
     }
 
-    if ( *dataObjInfoHead == NULL ) {
+    if ( *dataObjInfoHead == nullptr ) {
         *dataObjInfoHead = dataObjInfo;
         if ( singleInfoFlag > 0 ) {
-            dataObjInfo->next = NULL;
+            dataObjInfo->next = nullptr;
         }
     }
     else {
@@ -598,7 +598,7 @@ int queDataObjInfo(
             else {
                 /* have to drill down to find the last DataObjInfo */
                 tmpDataObjInfo = *dataObjInfoHead;
-                while ( tmpDataObjInfo->next != NULL ) {
+                while ( tmpDataObjInfo->next != nullptr ) {
                     tmpDataObjInfo = tmpDataObjInfo->next;
                 }
                 tmpDataObjInfo->next = savedDataObjInfo;
@@ -606,13 +606,13 @@ int queDataObjInfo(
         }
         else {
             tmpDataObjInfo = *dataObjInfoHead;
-            while ( tmpDataObjInfo->next != NULL ) {
+            while ( tmpDataObjInfo->next != nullptr ) {
                 tmpDataObjInfo = tmpDataObjInfo->next;
             }
             tmpDataObjInfo->next = dataObjInfo;
 
             if ( singleInfoFlag > 0 ) {
-                dataObjInfo->next = NULL;
+                dataObjInfo->next = nullptr;
             }
         }
     }
@@ -624,16 +624,16 @@ int queDataObjInfo(
 int
 dequeDataObjInfo( dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo ) {
     dataObjInfo_t *tmpDataObjInfo;
-    dataObjInfo_t *prevDataObjInfo = NULL;
+    dataObjInfo_t *prevDataObjInfo = nullptr;
 
-    if ( dataObjInfo == NULL || dataObjInfoHead == NULL ) {
+    if ( dataObjInfo == nullptr || dataObjInfoHead == nullptr ) {
         return -1;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         if ( tmpDataObjInfo == dataObjInfo ) {
-            if ( prevDataObjInfo == NULL ) {
+            if ( prevDataObjInfo == nullptr ) {
                 *dataObjInfoHead = tmpDataObjInfo->next;
             }
             else {
@@ -653,7 +653,7 @@ getDataObjInfoCnt( dataObjInfo_t *dataObjInfoHead ) {
     int cnt = 0;
     tmpDataObjInfo = dataObjInfoHead;
 
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         cnt++;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
@@ -665,8 +665,8 @@ char *
 getValByKey( const keyValPair_t *condInput, const char *keyWord ) {
     int i;
 
-    if ( condInput == NULL ) {
-        return NULL;
+    if ( condInput == nullptr ) {
+        return nullptr;
     }
 
     for ( i = 0; i < condInput->len; i++ ) {
@@ -675,14 +675,14 @@ getValByKey( const keyValPair_t *condInput, const char *keyWord ) {
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int
 getIvalByInx( inxIvalPair_t *inxIvalPair, int inx, int *outValue ) {
     int i;
 
-    if ( inxIvalPair == NULL ) {
+    if ( inxIvalPair == nullptr ) {
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -700,12 +700,12 @@ int
 rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
     int i, j;
 
-    if ( condInput == NULL ) {
+    if ( condInput == nullptr ) {
         return 0;
     }
 
     for ( i = 0; i < condInput->len; i++ ) {
-        if ( condInput->keyWord[i] != NULL &&
+        if ( condInput->keyWord[i] != nullptr &&
                 strcmp( condInput->keyWord[i], keyWord ) == 0 ) {
             free( condInput->keyWord[i] );
             free( condInput->value[i] );
@@ -717,7 +717,7 @@ rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
             if ( condInput->len <= 0 ) {
                 free( condInput->keyWord );
                 free( condInput->value );
-                condInput->value = condInput->keyWord = NULL;
+                condInput->value = condInput->keyWord = nullptr;
             }
             break;
         }
@@ -756,8 +756,8 @@ replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
     *destDataObjInp = *srcDataObjInp;
 
     destDataObjInp->condInput.len = 0;
-    destDataObjInp->condInput.keyWord = NULL;
-    destDataObjInp->condInput.value = NULL;
+    destDataObjInp->condInput.keyWord = nullptr;
+    destDataObjInp->condInput.value = nullptr;
 
     replKeyVal( &srcDataObjInp->condInput, &destDataObjInp->condInput );
     replSpecColl( srcDataObjInp->specColl, &destDataObjInp->specColl );
@@ -766,7 +766,7 @@ replDataObjInp( dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp ) {
 
 int
 replSpecColl( specColl_t *inSpecColl, specColl_t **outSpecColl ) {
-    if ( inSpecColl == NULL || outSpecColl == NULL ) {
+    if ( inSpecColl == nullptr || outSpecColl == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     *outSpecColl = ( specColl_t * )malloc( sizeof( specColl_t ) );
@@ -777,25 +777,25 @@ replSpecColl( specColl_t *inSpecColl, specColl_t **outSpecColl ) {
 
 int
 addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
-    if ( condInput == NULL ) {
+    if ( condInput == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    if ( condInput->keyWord == NULL || condInput->value == NULL ) {
+    if ( condInput->keyWord == nullptr || condInput->value == nullptr ) {
         condInput->len = 0;
     }
 
     /* check if the keyword exists */
     for ( int i = 0; i < condInput->len; i++ ) {
-        if ( condInput->keyWord[i] == NULL || strlen( condInput->keyWord[i] ) == 0 ) {
+        if ( condInput->keyWord[i] == nullptr || strlen( condInput->keyWord[i] ) == 0 ) {
             free( condInput->keyWord[i] );
             free( condInput->value[i] );
             condInput->keyWord[i] = strdup( keyWord );
-            condInput->value[i] = value ? strdup( value ) : NULL;
+            condInput->value[i] = value ? strdup( value ) : nullptr;
             return 0;
         }
         else if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
-            condInput->value[i] = value ? strdup( value ) : NULL;
+            condInput->value[i] = value ? strdup( value ) : nullptr;
             return 0;
         }
     }
@@ -810,7 +810,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     }
 
     condInput->keyWord[condInput->len] = strdup( keyWord );
-    condInput->value[condInput->len] = value ? strdup( value ) : NULL;
+    condInput->value[condInput->len] = value ? strdup( value ) : nullptr;
     condInput->len++;
 
     return 0;
@@ -825,7 +825,7 @@ addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag, char *keyWord
     int newLen;
     int i;
 
-    if ( condInput == NULL ) {
+    if ( condInput == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -844,13 +844,13 @@ addTagStruct( tagStruct_t *condInput, char *preTag, char *postTag, char *keyWord
             newPreTag[i] = condInput->preTag[i];
             newPostTag[i] = condInput->postTag[i];
         }
-        if ( condInput->keyWord != NULL ) {
+        if ( condInput->keyWord != nullptr ) {
             free( condInput->keyWord );
         }
-        if ( condInput->preTag != NULL ) {
+        if ( condInput->preTag != nullptr ) {
             free( condInput->preTag );
         }
-        if ( condInput->postTag != NULL ) {
+        if ( condInput->postTag != nullptr ) {
             free( condInput->postTag );
         }
         condInput->keyWord = newKeyWord;
@@ -876,7 +876,7 @@ addInxIval( inxIvalPair_t *inxIvalPair, int inx, int value ) {
     int newLen;
     int i;
 
-    if ( inxIvalPair == NULL ) {
+    if ( inxIvalPair == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -890,10 +890,10 @@ addInxIval( inxIvalPair_t *inxIvalPair, int inx, int value ) {
             newInx[i] = inxIvalPair->inx[i];
             newValue[i] = inxIvalPair->value[i];
         }
-        if ( inxIvalPair->inx != NULL ) {
+        if ( inxIvalPair->inx != nullptr ) {
             free( inxIvalPair->inx );
         }
-        if ( inxIvalPair->value != NULL ) {
+        if ( inxIvalPair->value != nullptr ) {
             free( inxIvalPair->value );
         }
         inxIvalPair->inx = newInx;
@@ -914,7 +914,7 @@ addInxVal( inxValPair_t *inxValPair, int inx, const char *value ) {
     int newLen;
     int i;
 
-    if ( inxValPair == NULL ) {
+    if ( inxValPair == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -928,10 +928,10 @@ addInxVal( inxValPair_t *inxValPair, int inx, const char *value ) {
             newInx[i] = inxValPair->inx[i];
             newValue[i] = inxValPair->value[i];
         }
-        if ( inxValPair->inx != NULL ) {
+        if ( inxValPair->inx != nullptr ) {
             free( inxValPair->inx );
         }
-        if ( inxValPair->value != NULL ) {
+        if ( inxValPair->value != nullptr ) {
             free( inxValPair->value );
         }
         inxValPair->inx = newInx;
@@ -953,7 +953,7 @@ addStrArray( strArray_t *strArray, char *value ) {
     int size;
     int myLen;
 
-    if ( strArray == NULL ) {
+    if ( strArray == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -991,7 +991,7 @@ addStrArray( strArray_t *strArray, char *value ) {
         for ( i = 0; i < strArray->len; i++ ) {
             rstrcpy( &newValue[i * size], &strArray->value[i * oldSize], size );
         }
-        if ( strArray->value != NULL ) {
+        if ( strArray->value != nullptr ) {
             free( strArray->value );
         }
         strArray->value = newValue;
@@ -1025,7 +1025,7 @@ resizeStrArray( strArray_t *strArray, int newSize ) {
             rstrcpy( &newValue[i * newSize], &strArray->value[i * oldSize],
                      newSize );
         }
-        if ( strArray->value != NULL ) {
+        if ( strArray->value != nullptr ) {
             free( strArray->value );
         }
         strArray->value = newValue;
@@ -1036,15 +1036,15 @@ resizeStrArray( strArray_t *strArray, int newSize ) {
 int
 clearKeyVal( keyValPair_t *condInput ) {
 
-    if ( condInput == NULL || condInput->len < 1 ) {
+    if ( condInput == nullptr || condInput->len < 1 ) {
         return 0;
     }
 
     for ( int i = 0; i < condInput->len; i++ ) {
-        if ( condInput->keyWord != NULL ) {
+        if ( condInput->keyWord != nullptr ) {
             free( condInput->keyWord[i] );
         }
-        if ( condInput->value != NULL ) {
+        if ( condInput->value != nullptr ) {
             free( condInput->value[i] );
         }
     }
@@ -1057,7 +1057,7 @@ clearKeyVal( keyValPair_t *condInput ) {
 
 int
 clearInxIval( inxIvalPair_t *inxIvalPair ) {
-    if ( inxIvalPair == NULL || inxIvalPair->len <= 0 ) {
+    if ( inxIvalPair == nullptr || inxIvalPair->len <= 0 ) {
         return 0;
     }
 
@@ -1072,7 +1072,7 @@ int
 clearInxVal( inxValPair_t *inxValPair ) {
     int i;
 
-    if ( inxValPair == NULL || inxValPair->len <= 0 ) {
+    if ( inxValPair == nullptr || inxValPair->len <= 0 ) {
         return 0;
     }
 
@@ -1089,17 +1089,17 @@ clearInxVal( inxValPair_t *inxValPair ) {
 
 int
 freeGenQueryInp( genQueryInp_t **genQueryInp ) {
-    if ( genQueryInp == NULL ) {
+    if ( genQueryInp == nullptr ) {
         return 0;
     }
 
-    if ( *genQueryInp == NULL ) {
+    if ( *genQueryInp == nullptr ) {
         return 0;
     }
 
     clearGenQueryInp( *genQueryInp );
     free( *genQueryInp );
-    *genQueryInp = NULL;
+    *genQueryInp = nullptr;
 
     return 0;
 }
@@ -1107,7 +1107,7 @@ freeGenQueryInp( genQueryInp_t **genQueryInp ) {
 void
 clearGenQueryInp( void* voidInp ) {
 
-    if ( voidInp == NULL ) {
+    if ( voidInp == nullptr ) {
         return;
     }
 
@@ -1121,17 +1121,17 @@ clearGenQueryInp( void* voidInp ) {
 
 int
 freeGenQueryOut( genQueryOut_t **genQueryOut ) {
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         return 0;
     }
 
-    if ( *genQueryOut == NULL ) {
+    if ( *genQueryOut == nullptr ) {
         return 0;
     }
 
     clearGenQueryOut( *genQueryOut );
     free( *genQueryOut );
-    *genQueryOut = NULL;
+    *genQueryOut = nullptr;
 
     return 0;
 }
@@ -1141,12 +1141,12 @@ clearGenQueryOut( void* voidInp ) {
     genQueryOut_t *genQueryOut = ( genQueryOut_t* ) voidInp;
     int i;
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         return;
     }
 
     for ( i = 0; i < genQueryOut->attriCnt; i++ ) {
-        if ( genQueryOut->sqlResult[i].value != NULL ) {
+        if ( genQueryOut->sqlResult[i].value != nullptr ) {
             free( genQueryOut->sqlResult[i].value );
         }
     }
@@ -1167,7 +1167,7 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
     /* do some sanity checks */
 
 
-    if ( targGenQueryOut == NULL || genQueryOut == NULL ) {
+    if ( targGenQueryOut == nullptr || genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -1216,10 +1216,10 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
         if ( ( len = genQueryOut->sqlResult[i].len ) <= 0 ) {
             continue;
         }
-        if ( ( tmpValue = ( char * )malloc( totalRowCnt * len ) ) == 0 ) {
+        if ( ( tmpValue = ( char * )malloc( totalRowCnt * len ) ) == nullptr ) {
             return SYS_MALLOC_ERR - errno;
         }
-        if ( targGenQueryOut->sqlResult[i].value != NULL ) {
+        if ( targGenQueryOut->sqlResult[i].value != nullptr ) {
             memcpy( tmpValue, targGenQueryOut->sqlResult[i].value,
                     len * targGenQueryOut->rowCnt );
             free( targGenQueryOut->sqlResult[i].value );
@@ -1237,7 +1237,7 @@ catGenQueryOut( genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
 void
 clearBulkOprInp( void* voidInp ) {
     bulkOprInp_t *bulkOprInp = ( bulkOprInp_t* ) voidInp;
-    if ( bulkOprInp == NULL ) {
+    if ( bulkOprInp == nullptr ) {
         return;
     }
     clearGenQueryOut( &bulkOprInp->attriArray );
@@ -1247,7 +1247,7 @@ clearBulkOprInp( void* voidInp ) {
 
 int
 moveKeyVal( keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal ) {
-    if ( destKeyVal == NULL || srcKeyVal == NULL ) {
+    if ( destKeyVal == nullptr || srcKeyVal == nullptr ) {
         return 0;
     }
 
@@ -1259,11 +1259,11 @@ moveKeyVal( keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal ) {
 int
 getUnixUid( char *userName ) {
 #ifndef _WIN32
-    struct passwd *pw = 0;
+    struct passwd *pw = nullptr;
     int myuid = 0;
-    char* splitPos = 0;
+    char* splitPos = nullptr;
 
-    if ( ( splitPos = strchr( userName, '@' ) ) != NULL ) {
+    if ( ( splitPos = strchr( userName, '@' ) ) != nullptr ) {
         *splitPos = '\0';       /* skip @ */
     }
 
@@ -1273,7 +1273,7 @@ getUnixUid( char *userName ) {
     else {
         myuid = ( int ) pw->pw_uid;
     }
-    if ( splitPos != NULL ) {
+    if ( splitPos != nullptr ) {
         *splitPos = '@';
     }
     return myuid;
@@ -1287,7 +1287,7 @@ getUnixUsername( int uid, char *username, int username_len ) {
 #ifndef _WIN32
     struct passwd *pwent;
 
-    if ( uid < 0 || username == NULL ) {
+    if ( uid < 0 || username == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -1295,7 +1295,7 @@ getUnixUsername( int uid, char *username, int username_len ) {
        means the user doesn't exist in the user db */
     errno = 0;
     pwent = getpwuid( uid );
-    if ( pwent == NULL ) {
+    if ( pwent == nullptr ) {
         if ( errno ) {
             rodsLog( LOG_ERROR,
                      "getUnixUsername: error calling getpwuid for uid %d. errno = %d",
@@ -1324,13 +1324,13 @@ getUnixGroupname( int gid, char *groupname, int groupname_len ) {
 #ifndef _WIN32
     struct group *grent;
 
-    if ( gid < 0 || groupname == NULL ) {
+    if ( gid < 0 || groupname == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     errno = 0;
     grent = getgrgid( gid );
-    if ( grent == NULL ) {
+    if ( grent == nullptr ) {
         if ( errno ) {
             rodsLog( LOG_ERROR,
                      "getUnixGroupname: error calling getgrgid for gid %d. errno = %d",
@@ -1377,8 +1377,8 @@ sqlResult_t *
 getSqlResultByInx( genQueryOut_t *genQueryOut, int attriInx ) {
     int i;
 
-    if ( genQueryOut == NULL ) {
-        return NULL;
+    if ( genQueryOut == nullptr ) {
+        return nullptr;
     }
 
     for ( i = 0; i < genQueryOut->attriCnt; i++ ) {
@@ -1386,22 +1386,22 @@ getSqlResultByInx( genQueryOut_t *genQueryOut, int attriInx ) {
             return &genQueryOut->sqlResult[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void
 clearModDataObjMetaInp( void* voidInp ) {
     modDataObjMeta_t *modDataObjMetaInp = ( modDataObjMeta_t* ) voidInp;
-    if ( modDataObjMetaInp == NULL ) {
+    if ( modDataObjMetaInp == nullptr ) {
         return;
     }
 
-    if ( modDataObjMetaInp->regParam != NULL ) {
+    if ( modDataObjMetaInp->regParam != nullptr ) {
         clearKeyVal( modDataObjMetaInp->regParam );
         free( modDataObjMetaInp->regParam );
     }
 
-    if ( modDataObjMetaInp->dataObjInfo != NULL ) {
+    if ( modDataObjMetaInp->dataObjInfo != nullptr ) {
         freeDataObjInfo( modDataObjMetaInp->dataObjInfo );
     }
 
@@ -1411,16 +1411,16 @@ clearModDataObjMetaInp( void* voidInp ) {
 void
 clearUnregDataObj( void* voidInp ) {
     unregDataObj_t *unregDataObjInp = ( unregDataObj_t* ) voidInp;
-    if ( unregDataObjInp == NULL ) {
+    if ( unregDataObjInp == nullptr ) {
         return;
     }
 
-    if ( unregDataObjInp->condInput != NULL ) {
+    if ( unregDataObjInp->condInput != nullptr ) {
         clearKeyVal( unregDataObjInp->condInput );
         free( unregDataObjInp->condInput );
     }
 
-    if ( unregDataObjInp->dataObjInfo != NULL ) {
+    if ( unregDataObjInp->dataObjInfo != nullptr ) {
         freeDataObjInfo( unregDataObjInp->dataObjInfo );
     }
 
@@ -1430,17 +1430,17 @@ clearUnregDataObj( void* voidInp ) {
 void
 clearRegReplicaInp( void* voidInp ) {
     regReplica_t *regReplicaInp = ( regReplica_t* ) voidInp;
-    if ( regReplicaInp == NULL ) {
+    if ( regReplicaInp == nullptr ) {
         return;
     }
 
     clearKeyVal( &regReplicaInp->condInput );
 
-    if ( regReplicaInp->srcDataObjInfo != NULL ) {
+    if ( regReplicaInp->srcDataObjInfo != nullptr ) {
         freeDataObjInfo( regReplicaInp->srcDataObjInfo );
     }
 
-    if ( regReplicaInp->destDataObjInfo != NULL ) {
+    if ( regReplicaInp->destDataObjInfo != nullptr ) {
         freeDataObjInfo( regReplicaInp->destDataObjInfo );
     }
 
@@ -1452,7 +1452,7 @@ clearRegReplicaInp( void* voidInp ) {
 void
 clearFileOpenInp( void* voidInp ) {
     fileOpenInp_t *fileOpenInp = ( fileOpenInp_t* ) voidInp;
-    if ( fileOpenInp == NULL ) {
+    if ( fileOpenInp == nullptr ) {
         return;
     }
     clearKeyVal( &fileOpenInp->condInput );
@@ -1464,12 +1464,12 @@ clearFileOpenInp( void* voidInp ) {
 void
 clearDataObjInp( void* voidInp ) {
     dataObjInp_t *dataObjInp = ( dataObjInp_t* ) voidInp;
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         return;
     }
 
     clearKeyVal( &dataObjInp->condInput );
-    if ( dataObjInp->specColl != NULL ) {
+    if ( dataObjInp->specColl != nullptr ) {
         free( dataObjInp->specColl );
     }
 
@@ -1482,7 +1482,7 @@ void
 clearCollInp( void* voidInp ) {
 
     collInp_t *collInp = ( collInp_t* ) voidInp;
-    if ( collInp == NULL ) {
+    if ( collInp == nullptr ) {
         return;
     }
 
@@ -1496,14 +1496,14 @@ clearCollInp( void* voidInp ) {
 void
 clearDataObjCopyInp( void* voidInp ) {
     dataObjCopyInp_t *dataObjCopyInp = ( dataObjCopyInp_t* ) voidInp;
-    if ( dataObjCopyInp == NULL ) {
+    if ( dataObjCopyInp == nullptr ) {
         return;
     }
 
     clearKeyVal( &dataObjCopyInp->destDataObjInp.condInput );
     clearKeyVal( &dataObjCopyInp->srcDataObjInp.condInput );
 
-    if ( dataObjCopyInp->srcDataObjInp.specColl != NULL ) {
+    if ( dataObjCopyInp->srcDataObjInp.specColl != nullptr ) {
         free( dataObjCopyInp->srcDataObjInp.specColl );
     }
 
@@ -1517,7 +1517,7 @@ freeAllRescQuota( rescQuota_t *rescQuotaHead ) {
     rescQuota_t *tmpRescQuota, *nextRescQuota;
 
     tmpRescQuota = rescQuotaHead;
-    while ( tmpRescQuota != NULL ) {
+    while ( tmpRescQuota != nullptr ) {
         nextRescQuota = tmpRescQuota->next;
         free( tmpRescQuota );
         tmpRescQuota = nextRescQuota;
@@ -1530,7 +1530,7 @@ parseMultiStr( char *strInput, strArray_t *strArray ) {
     char *startPtr, *endPtr;
     int endReached = 0;
 
-    if ( strInput == NULL || strArray == NULL ) {
+    if ( strInput == nullptr || strArray == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -1580,7 +1580,7 @@ void
 getNowStr( char *timeStr ) {
     time_t myTime;
 
-    myTime = time( NULL );
+    myTime = time( nullptr );
     snprintf( timeStr, 15, "%011d", ( uint ) myTime );
 }
 
@@ -1649,7 +1649,7 @@ void
 getOffsetTimeStr( char *timeStr, const char *offSet ) {
     time_t myTime;
 
-    myTime = time( NULL );
+    myTime = time( nullptr );
     myTime += atoi( offSet );
 
     snprintf( timeStr, TIME_LEN, "%d", ( uint ) myTime );
@@ -1669,7 +1669,7 @@ updateOffsetTimeStr( char *timeStr, int offset ) {
     time_t newTime;
     char s[50];
 
-    myTime = time( NULL );
+    myTime = time( nullptr );
     mytm = localtime( &myTime );
 
     rstrcpy( s, timeStr, 49 );
@@ -1806,7 +1806,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         sprintf( delayStr, "%lld%c DOUBLE FOR EVER", it * 2, u );
         return 3;
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
+    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR UNTIL " ) ) != nullptr ) {
         s = s + strlen( "REPEAT UNTIL SUCCESS OR UNTIL " );
         while ( isspace( *s ) ) {
             s++;
@@ -1822,7 +1822,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 1;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR UNTIL " ) ) != NULL ) {
+    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR UNTIL " ) ) != nullptr ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS OR UNTIL " );
         while ( isspace( *s ) ) {
             s++;
@@ -1839,7 +1839,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR " ) ) != NULL ) {
+    if ( ( s = strstr( t, "REPEAT UNTIL SUCCESS OR " ) ) != nullptr ) {
         s = s + strlen( "REPEAT UNTIL SUCCESS OR " );
         while ( isspace( *s ) ) {
             s++;
@@ -1854,7 +1854,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         n--;
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != nullptr ) {
             sprintf( delayStr, "%lld%c REPEAT UNTIL SUCCESS OR %i %s", it, u, n, s + 1 );
         }
         else {
@@ -1867,7 +1867,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR " ) ) != NULL ) {
+    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS OR " ) ) != nullptr ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS OR " );
         while ( isspace( *s ) ) {
             s++;
@@ -1882,7 +1882,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         n--;
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != nullptr ) {
             sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS OR %i %s", it * 2, u, n, s + 1 );
         }
         else {
@@ -1895,7 +1895,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 4;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS UPTO " ) ) != NULL ) {
+    if ( ( s = strstr( t, "DOUBLE UNTIL SUCCESS UPTO " ) ) != nullptr ) {
         s = s + strlen( "DOUBLE UNTIL SUCCESS UPTO " );
         while ( isspace( *s ) ) {
             s++;
@@ -1913,18 +1913,18 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
         return 4;
     }
-    if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != NULL ) {
+    if ( strstr( t, "REPEAT UNTIL SUCCESS" ) != nullptr ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         return 1;
     }
-    if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != NULL ) {
+    if ( strstr( t, "DOUBLE UNTIL SUCCESS" ) != nullptr ) {
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
         sprintf( delayStr, "%lld%c DOUBLE UNTIL SUCCESS", it * 2, u );
         return 4;
     }
-    if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != NULL ) {
+    if ( ( s = strstr( t, "REPEAT UNTIL " ) ) != nullptr ) {
         s = s + strlen( "REPEAT UNTIL " );
         while ( isspace( *s ) ) {
             s++;
@@ -1941,7 +1941,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
     }
 
-    if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != NULL ) {
+    if ( ( s = strstr( t, "DOUBLE UNTIL " ) ) != nullptr ) {
         s = s + strlen( "DOUBLE UNTIL " );
         while ( isspace( *s ) ) {
             s++;
@@ -1960,7 +1960,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         }
 
     }
-    if ( ( s = strstr( t, "REPEAT " ) ) != NULL ) {
+    if ( ( s = strstr( t, "REPEAT " ) ) != nullptr ) {
         s = s + strlen( "REPEAT " );
         while ( isspace( *s ) ) {
             s++;
@@ -1976,7 +1976,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
 
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != nullptr ) {
             sprintf( delayStr, "%lld%c REPEAT %i %s", it, u, n, s + 1 );
         }
         else {
@@ -1989,7 +1989,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
             return 3;
         }
     }
-    if ( ( s = strstr( t, "DOUBLE " ) ) != NULL ) {
+    if ( ( s = strstr( t, "DOUBLE " ) ) != nullptr ) {
         s = s + strlen( "DOUBLE " );
         while ( isspace( *s ) ) {
             s++;
@@ -2004,7 +2004,7 @@ getNextRepeatTime( char *currTime, char *delayStr, char *nextTime ) {
         n--;
         dt = dt   + atol( currTime );
         sprintf( nextTime, "%lld", dt );
-        if ( strstr( s + 1, "ORIGINAL TIMES" ) != NULL ) {
+        if ( strstr( s + 1, "ORIGINAL TIMES" ) != nullptr ) {
             sprintf( delayStr, "%lld%c DOUBLE %i %s", it * 2, u, n, s + 1 );
         }
         else {
@@ -2028,7 +2028,7 @@ localToUnixTime( char * localTime, char * unixTime ) {
     time_t newTime;
     char s[TIME_LEN];
 
-    myTime = time( NULL );
+    myTime = time( nullptr );
     mytm = localtime( &myTime );
 
     rstrcpy( s, localTime, TIME_LEN );
@@ -2087,7 +2087,7 @@ convertDateFormat( char * s, char * currTime ) {
     if ( i != 0 ) {
         return i;
     }
-    if ( !isInteger( s ) && strchr( s, '-' ) == NULL && strchr( s, ':' ) == NULL ) {
+    if ( !isInteger( s ) && strchr( s, '-' ) == nullptr && strchr( s, ':' ) == nullptr ) {
         it = atol( tstr ) + atol( currTime );
         sprintf( s, "%lld", it );
     }
@@ -2318,7 +2318,7 @@ printErrorStack( rError_t * rError ) {
     int i, len;
     rErrMsg_t *errMsg;
 
-    if ( rError == NULL ) {
+    if ( rError == nullptr ) {
         return 0;
     }
 
@@ -2366,7 +2366,7 @@ isBundlePath( char * myPath ) {
     }
 
     tmpPtr++;
-    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == nullptr ) {
         return False;
     }
 
@@ -2393,7 +2393,7 @@ isTrashPath( char * myPath ) {
     }
 
     tmpPtr++;
-    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == nullptr ) {
         return False;
     }
 
@@ -2425,7 +2425,7 @@ isTrashHome( char * myPath ) {
     }
 
     tmpPtr++;
-    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == nullptr ) {
         return 0;
     }
 
@@ -2447,7 +2447,7 @@ isTrashHome( char * myPath ) {
 
     tmpPtr++;
 
-    if ( strchr( tmpPtr, '/' ) == NULL ) {
+    if ( strchr( tmpPtr, '/' ) == nullptr ) {
         /* /myZone/trash/home/myName */
         return 1;
     }
@@ -2471,7 +2471,7 @@ isOrphanPath( char * myPath ) {
     }
 
     tmpPtr++;
-    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == nullptr ) {
         return NOT_ORPHAN_PATH;
     }
 
@@ -2506,7 +2506,7 @@ isHomeColl( char * myPath ) {
     }
 
     tmpPtr++;
-    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == NULL ) {
+    if ( ( tmpPtr1 = strchr( tmpPtr, '/' ) ) == nullptr ) {
         return 0;
     }
 
@@ -2528,7 +2528,7 @@ isHomeColl( char * myPath ) {
 
     tmpPtr++;
 
-    if ( strchr( tmpPtr, '/' ) == NULL ) {
+    if ( strchr( tmpPtr, '/' ) == nullptr ) {
         /* /myZone/home/myName */
         return 1;
     }
@@ -2703,7 +2703,7 @@ setStateForRestart( rodsRestart_t * rodsRestart, rodsPath_t * targPath,
                     rodsArguments_t * rodsArgs ) {
     if ( rodsRestart->restartState & PATH_MATCHING ) {
         /* check the restart collection */
-        if ( strstr( targPath->outPath, rodsRestart->collection ) != NULL ) {
+        if ( strstr( targPath->outPath, rodsRestart->collection ) != nullptr ) {
             /* just use the rodsRestart->collection because the
              * targPath may be resolved into a different path */
             rstrcpy( targPath->outPath, rodsRestart->collection, MAX_NAME_LEN );
@@ -2760,16 +2760,16 @@ int
 separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
     char *s;
 
-    if ( ( s = strchr( t, '(' ) ) == NULL ) {
+    if ( ( s = strchr( t, '(' ) ) == nullptr ) {
         *colNm = t;
-        *aggOp = NULL;
+        *aggOp = nullptr;
         return 0;
     }
     *aggOp = t;
     *s = '\0';
     s++;
     *colNm = s;
-    if ( ( s = strchr( *colNm, ')' ) ) == NULL ) {
+    if ( ( s = strchr( *colNm, ')' ) ) == nullptr ) {
         return NO_COLUMN_NAME_FOUND;
     }
     *s = '\0';
@@ -2778,7 +2778,7 @@ separateSelFuncFromAttr( char * t, char **aggOp, char **colNm ) {
 
 int
 getSelVal( char * c ) {
-    if ( c == NULL ) {
+    if ( c == nullptr ) {
         return 1;
     }
     if ( !strcmp( c, "sum" ) || !strcmp( c, "SUM" ) ) {
@@ -2819,7 +2819,7 @@ getAttrNameFromAttrId( int cid ) {
             return columnNames[i].columnName;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int
@@ -2880,16 +2880,16 @@ char *getCondFromString( char * t ) {
         u1 = strstr( s, " and " );
         u2 = strstr( s, " AND " );
         u = u1;
-        if ( u1 == NULL ) {
+        if ( u1 == nullptr ) {
             u = u2;
         }
-        if ( u1 != NULL && u2 != NULL ) {
+        if ( u1 != nullptr && u2 != nullptr ) {
             if ( strlen( u2 ) > strlen( u1 ) ) {
                 u = u2;    /* both are present, use the first */
             }
         }
 
-        if ( u != NULL ) {
+        if ( u != nullptr ) {
             *u = '\0';
             if ( goodStrExpr( t ) == 0 ) {
                 *u = ' ';
@@ -2902,7 +2902,7 @@ char *getCondFromString( char * t ) {
             break;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int
@@ -2912,16 +2912,16 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
     char *p, *t, *f, *u, *a, *c;
     char *s;
     s = strdup( str );
-    if ( ( t = strstr( s, "select" ) ) != NULL ||
-            ( t = strstr( s, "SELECT" ) ) != NULL ) {
+    if ( ( t = strstr( s, "select" ) ) != nullptr ||
+            ( t = strstr( s, "SELECT" ) ) != nullptr ) {
 
-        if ( ( f = strstr( t, "where" ) ) != NULL ||
-                ( f = strstr( t, "WHERE" ) ) != NULL ) {
+        if ( ( f = strstr( t, "where" ) ) != nullptr ||
+                ( f = strstr( t, "WHERE" ) ) != nullptr ) {
             /* Where Condition Found*/
             *f = '\0';
         }
         t = t +  7;
-        while ( ( u = strchr( t, ',' ) ) != NULL ) {
+        while ( ( u = strchr( t, ',' ) ) != nullptr ) {
             *u = '\0';
             trimWS( t );
             separateSelFuncFromAttr( t, &a, &c );
@@ -2943,7 +2943,7 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
             return n;
         }
         addInxIval( &genQueryInp->selectInp, n, m );
-        if ( f == NULL ) {
+        if ( f == nullptr ) {
             free( s );
             return 0;
         }
@@ -2953,10 +2953,10 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
         return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
     t = f + 6;
-    while ( ( u = getCondFromString( t ) ) != NULL ) {
+    while ( ( u = getCondFromString( t ) ) != nullptr ) {
         *u = '\0';
         trimWS( t );
-        if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+        if ( ( p = strchr( t, ' ' ) ) == nullptr ) {
             free( s );
             return INPUT_ARG_NOT_WELL_FORMED_ERR;
         }
@@ -2970,7 +2970,7 @@ fillGenQueryInpFromStrCond( char * str, genQueryInp_t * genQueryInp ) {
         t = u + 5;
     }
     trimWS( t );
-    if ( ( p = strchr( t, ' ' ) ) == NULL ) {
+    if ( ( p = strchr( t, ' ' ) ) == nullptr ) {
         free( s );
         return INPUT_ARG_NOT_WELL_FORMED_ERR;
     }
@@ -2991,7 +2991,7 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
     sqlResult_t *v[MAX_SQL_ATTR];
     char * cname[MAX_SQL_ATTR];
 
-    if ( hint != NULL &&  strlen( hint ) > 0 ) {
+    if ( hint != nullptr &&  strlen( hint ) > 0 ) {
         //i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
         return i;
     }
@@ -3001,14 +3001,14 @@ printGenQueryOut( FILE * fd, char * format, char * hint, genQueryOut_t * genQuer
     for ( i = 0; i < n; i++ ) {
         v[i] = &genQueryOut->sqlResult[i];
         cname[i] = getAttrNameFromAttrId( v[i]->attriInx );
-        if ( cname[i] == NULL ) {
+        if ( cname[i] == nullptr ) {
             return NO_COLUMN_NAME_FOUND;
         }
     }
 
     try {
         for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
-            if ( format == NULL || strlen( format ) == 0 ) {
+            if ( format == nullptr || strlen( format ) == 0 ) {
                 for ( j = 0; j < n; j++ ) {
                     fprintf( fd, "%s = %s\n", cname[j], &v[j]->value[v[j]->len * i] );
                 }
@@ -3036,7 +3036,7 @@ int
 appendToByteBuf( bytesBuf_t * bytesBuf, char * str ) {
     const int i = strlen( str );
     const int num_new_bytes = i + 1 + MAX_NAME_LEN * 5;
-    if ( bytesBuf->buf == NULL ) {
+    if ( bytesBuf->buf == nullptr ) {
         bytesBuf->buf = malloc( num_new_bytes );
         memset( bytesBuf->buf, 0, num_new_bytes );
         strcpy( ( char * )bytesBuf->buf, str );
@@ -3116,7 +3116,7 @@ resolveSpecCollType( char * type, char * collection, char * collInfo1,
                      char * collInfo2, specColl_t * specColl ) {
     int i;
 
-    if ( specColl == NULL ) {
+    if ( specColl == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -3173,7 +3173,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
     char *tmpPtr1, *tmpPtr2;
     int len;
 
-    if ( collInfo2 == NULL || specColl == NULL ) {
+    if ( collInfo2 == nullptr || specColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseCachedStructFileStr: NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -3187,7 +3187,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
 
     tmpPtr1 = strstr( collInfo2, ";;;" );
 
-    if ( tmpPtr1 == NULL ) {
+    if ( tmpPtr1 == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "parseCachedStructFileStr: collInfo2 %s format error 1", collInfo2 );
         return SYS_COLLINFO_2_FORMAT_ERR;
@@ -3200,7 +3200,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
 
     tmpPtr2 = strstr( tmpPtr1, ";;;" );
 
-    if ( tmpPtr2 == NULL ) {
+    if ( tmpPtr2 == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "parseCachedStructFileStr: collInfo2 %s format error 2", collInfo2 );
         return SYS_COLLINFO_2_FORMAT_ERR;
@@ -3227,7 +3227,7 @@ parseCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
 
 int
 makeCachedStructFileStr( char * collInfo2, specColl_t * specColl ) {
-    if ( collInfo2 == NULL || specColl == NULL ) {
+    if ( collInfo2 == nullptr || specColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "makeCachedStructFileStr: NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -3263,7 +3263,7 @@ getIrodsErrno( int irodError ) {
 
 structFileOprType_t
 getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
-    if ( specColl == NULL ) {
+    if ( specColl == nullptr ) {
         return NOT_SPEC_COLL_OPR;
     }
 
@@ -3271,7 +3271,7 @@ getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
         return NON_STRUCT_FILE_SPEC_COLL_OPR;
     }
 
-    if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == NULL ) {
+    if ( getValByKey( condInput, STRUCT_FILE_OPR_KW ) == nullptr ) {
         return NORMAL_OPR_ON_STRUCT_FILE_COLL;
     }
     else {
@@ -3289,7 +3289,7 @@ getSpecCollOpr( keyValPair_t * condInput, specColl_t * specColl ) {
  */
 int
 keyValToString( keyValPair_t * list, char** string ) {
-    if ( NULL == list || NULL == string ) { // JMC cppcheck - nullptr
+    if ( nullptr == list || nullptr == string ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "keyValToString :: null input parameter" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -3303,10 +3303,10 @@ keyValToString( keyValPair_t * list, char** string ) {
     /* Scan the list to figure out how much space we need. */
     for ( i = 0; i < nKeys; i++ ) {
         int nk, nv;
-        if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
+        if ( list->keyWord[i] == nullptr || list->keyWord[i][0] == '\0' ) {
             continue;    /* Null keyword means empty entry */
         }
-        if ( list->value[i] == NULL ) {
+        if ( list->value[i] == nullptr ) {
             continue;    /* Null value is not legal */
         }
         nk = strlen( list->keyWord[i] );
@@ -3323,10 +3323,10 @@ keyValToString( keyValPair_t * list, char** string ) {
 
     /* Write the string. */
     for ( i = 0; i < nKeys; i++ ) {
-        if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' ) {
+        if ( list->keyWord[i] == nullptr || list->keyWord[i][0] == '\0' ) {
             continue;    /* Null keyword means empty entry */
         }
-        if ( list->value[i] == NULL ) {
+        if ( list->value[i] == nullptr ) {
             continue;    /* Null value is not legal */
         }
 
@@ -3367,15 +3367,15 @@ keyValFromString( char * string, keyValPair_t** list ) {
     while ( 1 ) {
         int startTag = -1;
         int endTag = -1;
-        char* tag = NULL;
+        char* tag = nullptr;
 
         int startCloseTag = -1;
         int endCloseTag = -1;
-        char* closeTag = NULL;
+        char* closeTag = nullptr;
 
         int startValue = -1;
         int endValue = -1;
-        char* value = NULL;
+        char* value = nullptr;
 
         /* Skip over everything until the start */
         /* of the next tag. */
@@ -3458,24 +3458,24 @@ keyValFromString( char * string, keyValPair_t** list ) {
 
 int
 clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
-    if ( sendXmsgInfo == NULL ) {
+    if ( sendXmsgInfo == nullptr ) {
         return 0;
     }
 
-    if ( sendXmsgInfo->msg != NULL ) {
+    if ( sendXmsgInfo->msg != nullptr ) {
         free( sendXmsgInfo->msg );
     }
 
-    if ( sendXmsgInfo->deliPort != NULL ) {
+    if ( sendXmsgInfo->deliPort != nullptr ) {
         free( sendXmsgInfo->deliPort );
     }
 
-    if ( sendXmsgInfo->miscInfo != NULL ) {
+    if ( sendXmsgInfo->miscInfo != nullptr ) {
         free( sendXmsgInfo->miscInfo );
     }
 
-    if ( sendXmsgInfo->deliAddress != NULL &&
-            *sendXmsgInfo->deliAddress != NULL ) {
+    if ( sendXmsgInfo->deliAddress != nullptr &&
+            *sendXmsgInfo->deliAddress != nullptr ) {
         int i;
 
         for ( i = 0; i < sendXmsgInfo->numDeli; i++ ) {
@@ -3522,11 +3522,11 @@ clearModAVUMetadataInp( void* voidInp ) {
  */
 int
 freeRodsObjStat( rodsObjStat_t * rodsObjStat ) {
-    if ( rodsObjStat == NULL ) {
+    if ( rodsObjStat == nullptr ) {
         return 0;
     }
 
-    if ( rodsObjStat->specColl != NULL ) {
+    if ( rodsObjStat->specColl != nullptr ) {
         free( rodsObjStat->specColl );
     }
 
@@ -3540,7 +3540,7 @@ parseHostAddrStr( char * hostAddr, rodsHostAddr_t * addr ) {
     char port[LONG_NAME_LEN];
     char buffer[LONG_NAME_LEN];
 
-    if ( hostAddr == NULL || addr == NULL ) {
+    if ( hostAddr == nullptr || addr == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     if ( splitPathByKey( hostAddr, buffer, LONG_NAME_LEN, port, SHORT_STR_LEN, ':' ) < 0 ) {
@@ -3597,7 +3597,7 @@ seedRandom() {
 
 int
 initBulkDataObjRegInp( genQueryOut_t * bulkDataObjRegInp ) {
-    if ( bulkDataObjRegInp == NULL ) {
+    if ( bulkDataObjRegInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -3675,12 +3675,12 @@ int
 initBulkDataObjRegOut( genQueryOut_t **bulkDataObjRegOut ) {
     genQueryOut_t *myBulkDataObjRegOut;
 
-    if ( bulkDataObjRegOut == NULL ) {
+    if ( bulkDataObjRegOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     myBulkDataObjRegOut = *bulkDataObjRegOut = ( genQueryOut_t* )malloc( sizeof( genQueryOut_t ) );
-    if ( myBulkDataObjRegOut == NULL ) {
+    if ( myBulkDataObjRegOut == nullptr ) {
         return SYS_MALLOC_ERR;
     }
 
@@ -3704,7 +3704,7 @@ initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
     genQueryOut_t *attriArray;
     int i;
 
-    if ( bulkOprInp == NULL ) {
+    if ( bulkOprInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -3731,8 +3731,8 @@ initAttriArrayOfBulkOprInp( bulkOprInp_t * bulkOprInp ) {
     bzero( attriArray->sqlResult[2].value,
            NAME_LEN * MAX_NUM_BULK_OPR_FILES );
 
-    if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
-            getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
+    if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != nullptr ||
+            getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != nullptr ) {
         i = attriArray->attriCnt;
         attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
         attriArray->sqlResult[i].len = NAME_LEN;
@@ -3751,9 +3751,9 @@ fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
                             int offset, bulkOprInp_t * bulkOprInp ) {
     genQueryOut_t *attriArray;
     int rowCnt;
-    sqlResult_t *chksum = NULL;
+    sqlResult_t *chksum = nullptr;
 
-    if ( bulkOprInp == NULL || objPath == NULL ) {
+    if ( bulkOprInp == nullptr || objPath == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -3766,8 +3766,8 @@ fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
     }
 
     chksum = getSqlResultByInx( attriArray, COL_D_DATA_CHECKSUM );
-    if ( inpChksum != NULL && strlen( inpChksum ) > 0 ) {
-        if ( chksum == NULL ) {
+    if ( inpChksum != nullptr && strlen( inpChksum ) > 0 ) {
+        if ( chksum == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initAttriArrayOfBulkOprInp: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -3777,7 +3777,7 @@ fillAttriArrayOfBulkOprInp( char * objPath, int dataMode, char * inpChksum,
         }
     }
     else {
-        if ( chksum != NULL ) {
+        if ( chksum != nullptr ) {
             chksum->value[NAME_LEN * rowCnt] = '\0';
         }
     }
@@ -3801,20 +3801,20 @@ getAttriInAttriArray( const char * inpObjPath, genQueryOut_t * attriArray,
     sqlResult_t *objPath, *dataMode, *chksum;
     char *tmpObjPath, *tmpDataMode, *tmpChksum;
 
-    if ( inpObjPath == NULL || attriArray == NULL || outDataMode == NULL ||
-            outChksum == NULL ) {
+    if ( inpObjPath == nullptr || attriArray == nullptr || outDataMode == nullptr ||
+            outChksum == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     if ( ( objPath =
-                getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
+                getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getAttriInAttriArray: getSqlResultByInx for COL_DATA_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
-                getSqlResultByInx( attriArray, COL_DATA_MODE ) ) == NULL ) {
+                getSqlResultByInx( attriArray, COL_DATA_MODE ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getAttriInAttriArray: getSqlResultByInx for COL_DATA_MODE failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -3833,17 +3833,17 @@ getAttriInAttriArray( const char * inpObjPath, genQueryOut_t * attriArray,
             attriArray->continueInx = i + 1;
             tmpDataMode = &dataMode->value[dataMode->len * i];
             *outDataMode = atoi( tmpDataMode );
-            if ( chksum != NULL ) {
+            if ( chksum != nullptr ) {
                 tmpChksum = &chksum->value[chksum->len * i];
                 if ( strlen( tmpChksum ) > 0 ) {
                     *outChksum = tmpChksum;
                 }
                 else {
-                    *outChksum = NULL;
+                    *outChksum = nullptr;
                 }
             }
             else {
-                *outChksum = NULL;
+                *outChksum = nullptr;
             }
             return 0;
         }
@@ -3855,23 +3855,23 @@ getAttriInAttriArray( const char * inpObjPath, genQueryOut_t * attriArray,
             attriArray->continueInx = i + 1;
             tmpDataMode = &dataMode->value[dataMode->len * i];
             *outDataMode = atoi( tmpDataMode );
-            if ( chksum != NULL ) {
+            if ( chksum != nullptr ) {
                 tmpChksum = &chksum->value[chksum->len * i];
                 if ( strlen( tmpChksum ) > 0 ) {
                     *outChksum = tmpChksum;
                 }
                 else {
-                    *outChksum = NULL;
+                    *outChksum = nullptr;
                 }
             }
             else {
-                *outChksum = NULL;
+                *outChksum = nullptr;
             }
             return 0;
         }
     }
     /* no match when got here */
-    *outChksum = NULL;
+    *outChksum = nullptr;
     return UNMATCHED_KEY_OR_INDEX;
 }
 
@@ -3896,7 +3896,7 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
     toRead = buflen;
 
     while ( 1 ) {
-        nbytes = myRead( fd, bufptr, toRead, NULL, NULL );
+        nbytes = myRead( fd, bufptr, toRead, nullptr, nullptr );
         if ( nbytes == toRead ) { /* more */
             char *tmpPtr;
 
@@ -3923,7 +3923,7 @@ readToByteBuf( int fd, bytesBuf_t * bytesBuf ) {
             }
             if ( bytesBuf->len <= 0 ) {
                 free( bytesBuf->buf );
-                bytesBuf->buf = NULL;
+                bytesBuf->buf = nullptr;
             }
             break;
         }
@@ -3943,7 +3943,7 @@ writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
 
     bufptr = ( char * )bytesBuf->buf;
     toWrite = bytesBuf->len;
-    while ( ( nbytes = myWrite( fd, bufptr, toWrite, NULL ) ) >= 0 ) {
+    while ( ( nbytes = myWrite( fd, bufptr, toWrite, nullptr ) ) >= 0 ) {
         toWrite -= nbytes;
         bufptr += nbytes;
         if ( toWrite <= 0 ) {
@@ -3962,11 +3962,11 @@ writeFromByteBuf( int fd, bytesBuf_t * bytesBuf ) {
 
 int
 setForceFlagForRestart( bulkOprInp_t * bulkOprInp, bulkOprInfo_t * bulkOprInfo ) {
-    if ( bulkOprInp == NULL || bulkOprInfo == NULL ) {
+    if ( bulkOprInp == nullptr || bulkOprInfo == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( getValByKey( &bulkOprInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+    if ( getValByKey( &bulkOprInp->condInput, FORCE_FLAG_KW ) != nullptr ) {
         /* already has FORCE_FLAG_KW */
         return 0;
     }
@@ -3998,7 +3998,7 @@ int mySetenvStr( const char * envname, const char * envval ) {
     int status;
 
 #if defined(linux_platform)||defined(osx_platform)
-    if ( envname == NULL || envval == NULL ) {
+    if ( envname == nullptr || envval == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     status = setenv( envname, envval, 1 );
@@ -4024,7 +4024,7 @@ mySetenvInt( char * envname, int envval ) {
 
 #if defined(linux_platform)||defined(osx_platform)
     char myIntStr[NAME_LEN];
-    if ( envname == NULL ) {
+    if ( envname == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     snprintf( myIntStr, NAME_LEN, "%d", envval );
@@ -4047,7 +4047,7 @@ mySetenvInt( char * envname, int envval ) {
 int
 getRandomArray( int **randomArray, int size ) {
     if ( size < 0 ) {
-        *randomArray = NULL;
+        *randomArray = nullptr;
         return -1;
     }
 
@@ -4063,7 +4063,7 @@ getRandomArray( int **randomArray, int size ) {
 int
 isPathSymlink( rodsArguments_t * rodsArgs, const char * myPath ) {
     path p( myPath );
-    if ( rodsArgs != NULL && rodsArgs->link != True ) {
+    if ( rodsArgs != nullptr && rodsArgs->link != True ) {
         return 0;
     }
     if ( exists( p ) && is_symlink( p ) ) {
@@ -4080,7 +4080,7 @@ clearAuthResponseInp( void * inauthResponseInp ) {
 
     authResponseInp = ( authResponseInp_t * ) inauthResponseInp;
 
-    if ( authResponseInp == NULL ) {
+    if ( authResponseInp == nullptr ) {
         return;
     }
     free( authResponseInp->username );
@@ -4233,7 +4233,7 @@ splitMultiStr( char * strInput, strArray_t * strArray ) {
     char *startPtr, *endPtr;
     int endReached = 0;
 
-    if ( strInput == NULL || strArray == NULL ) {
+    if ( strInput == nullptr || strArray == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -4319,15 +4319,15 @@ hasSymlinkInDir( const char * mydir ) {
     struct dirent *myDirent;
     struct stat statbuf;
 
-    if ( mydir == NULL ) {
+    if ( mydir == nullptr ) {
         return 0;
     }
     dirPtr = opendir( mydir );
-    if ( dirPtr == NULL ) {
+    if ( dirPtr == nullptr ) {
         return 0;
     }
 
-    while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+    while ( ( myDirent = readdir( dirPtr ) ) != nullptr ) {
         if ( strcmp( myDirent->d_name, "." ) == 0 ||
                 strcmp( myDirent->d_name, ".." ) == 0 ) {
             continue;
@@ -4378,7 +4378,7 @@ hasSymlinkInPartialPath( const char * myPath, int pos ) {
         return 1;
     }
 
-    while ( ( curPtr = strchr( curPtr, '/' ) ) != NULL ) {
+    while ( ( curPtr = strchr( curPtr, '/' ) ) != nullptr ) {
         std::string sub_path( myPath, curPtr - myPath );
         status = lstat( sub_path.c_str(), &statbuf );
         if ( status != 0 ) {
@@ -4433,7 +4433,7 @@ static std::string stringify_addrinfo_hints(const struct addrinfo *_hints) {
 
 int
 getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res) {
-    *_res = 0;
+    *_res = nullptr;
     const int max_retry = 300;
     for (int i=0; i<max_retry; ++i) {
         const int ret_getaddrinfo = getaddrinfo(_node, _service, _hints, _res);
@@ -4477,7 +4477,7 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len) {
     memset(&hint, 0, sizeof(hint));
     hint.ai_flags = AI_CANONNAME;
     struct addrinfo *p_addrinfo;
-    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, nullptr, &hint, &p_addrinfo);
     if (ret_getaddrinfo_with_retry ) {
         return ret_getaddrinfo_with_retry;
     }
@@ -4491,7 +4491,7 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out) {
     memset(&hint, 0, sizeof(hint));
     hint.ai_family = AF_INET;
     struct addrinfo *p_addrinfo;
-    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, nullptr, &hint, &p_addrinfo);
     if (ret_getaddrinfo_with_retry) {
         return ret_getaddrinfo_with_retry;
     }
@@ -4555,14 +4555,14 @@ myRead( int sock, void *buf, int len,
     /* Initialize the file descriptor set. */
     FD_ZERO( &set );
     FD_SET( sock, &set );
-    if ( tv != NULL ) {
+    if ( tv != nullptr ) {
         timeout = *tv;
     }
 
     toRead = len;
     tmpPtr = ( char * ) buf;
 
-    if ( bytesRead != NULL ) {
+    if ( bytesRead != nullptr ) {
         *bytesRead = 0;
     }
 
@@ -4575,8 +4575,8 @@ myRead( int sock, void *buf, int len,
             nbytes = read( sock, ( void * ) tmpPtr, toRead );
         }
 #else
-        if ( tv != NULL ) {
-            status = select( sock + 1, &set, NULL, NULL, &timeout );
+        if ( tv != nullptr ) {
+            status = select( sock + 1, &set, nullptr, nullptr, &timeout );
             if ( status == 0 ) {
                 /* timedout */
                 if ( len - toRead > 0 ) {
@@ -4610,7 +4610,7 @@ myRead( int sock, void *buf, int len,
 
         toRead -= nbytes;
         tmpPtr += nbytes;
-        if ( bytesRead != NULL ) {
+        if ( bytesRead != nullptr ) {
             *bytesRead += nbytes;
         }
     }

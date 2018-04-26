@@ -620,7 +620,7 @@ namespace irods {
                              my_env.rodsPort,
                              my_env.rodsUserName,
                              my_env.rodsZone,
-                             NO_RECONN, 0 );
+                             NO_RECONN, nullptr );
         if ( !comm ) {
             return ERROR(
                        NULL_VALUE_ERR,
@@ -629,7 +629,7 @@ namespace irods {
 
         int status = clientLogin(
                          comm,
-                         0,
+                         nullptr,
                          my_env.rodsAuthScheme );
         if ( status != 0 ) {
             rcDisconnect( comm );
@@ -639,7 +639,7 @@ namespace irods {
         }
 
         genQueryInp_t  gen_inp;
-        genQueryOut_t* gen_out = NULL;
+        genQueryOut_t* gen_out = nullptr;
         memset( &gen_inp, 0, sizeof( gen_inp ) );
 
         addInxIval( &gen_inp.selectInp, COL_R_LOC, 1 );

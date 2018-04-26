@@ -727,7 +727,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     }
 
     if ( PrePostProcForGenQueryFlag < 0 ) {
-        if ( getenv( "PREPOSTPROCFORGENQUERYFLAG" ) != NULL ) {
+        if ( getenv( "PREPOSTPROCFORGENQUERYFLAG" ) != nullptr ) {
             PrePostProcForGenQueryFlag = 1;
         }
         else {
@@ -759,7 +759,7 @@ _rsGenQuery( rsComm_t *rsComm, genQueryInp_t *genQueryInp,
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
 
-        status = applyRule( "acAclPolicy", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acAclPolicy", nullptr, &rei, NO_SAVE_REI );
         if ( status == 0 ) {
 
             ruleExecuted = 1; /* No need to retry next time since it

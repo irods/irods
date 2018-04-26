@@ -44,7 +44,7 @@ remoteSubStructFileStat( rsComm_t *rsComm, subFile_t *subFile,
                          rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileStat: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -97,7 +97,7 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
         // manage error if necessary
         if ( status < 0 ) {
             free( *_stat_out );
-            *_stat_out = NULL;
+            *_stat_out = nullptr;
         }
 
         return status;

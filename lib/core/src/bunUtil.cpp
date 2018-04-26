@@ -13,7 +13,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     rodsPath_t *collPath, *structFilePath;
     structFileExtAndRegInp_t structFileExtAndRegInp;
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -75,7 +75,7 @@ bunUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 int
 initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                    structFileExtAndRegInp_t *structFileExtAndRegInp ) {
-    if ( structFileExtAndRegInp == NULL ) {
+    if ( structFileExtAndRegInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForBunOpr: NULL structFileExtAndRegInp input" );
         return USER__NULL_INPUT_ERR;
@@ -83,12 +83,12 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( structFileExtAndRegInp, 0, sizeof( structFileExtAndRegInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
     if ( rodsArgs->dataType == True ) {
-        if ( rodsArgs->dataTypeString != NULL ) {
+        if ( rodsArgs->dataTypeString != nullptr ) {
             if ( strcmp( rodsArgs->dataTypeString, "t" ) == 0 ||
                     strcmp( rodsArgs->dataTypeString, TAR_DT_STR ) == 0 || // JMC - backport 4640
                     strcmp( rodsArgs->dataTypeString, "tar" ) == 0 ) {
@@ -128,7 +128,7 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForBunOpr: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -142,7 +142,7 @@ initCondForBunOpr( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         /* use rodsDefResource but set the DEF_RESC_NAME_KW instead.
          * Used by dataObjCreate. Will only make a new replica only if
          * DEST_RESC_NAME_KW is set */

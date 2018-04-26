@@ -68,7 +68,7 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
     struct timeval curTime, startTime;
     int verbose = rbudpReceiver->rbudpBase.verbose;
 
-    gettimeofday( &curTime, NULL );
+    gettimeofday( &curTime, nullptr );
     startTime = curTime;
     initReceiveRudp( rbudpReceiver, buffer, bufSize, packetSize );
     initErrorBitmap( &rbudpReceiver->rbudpBase );
@@ -83,7 +83,7 @@ int  receiveBuf( rbudpReceiver_t *rbudpReceiver, void * buffer, int bufSize,
 
         reportTime( &curTime );
 
-        gettimeofday( &curTime, NULL );
+        gettimeofday( &curTime, nullptr );
         if ( verbose > 1 ) {
             TRACE_DEBUG( "Current time: %d %ld", curTime.tv_sec, curTime.tv_usec );
         }
@@ -137,7 +137,7 @@ int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
         // These two FD_SET cannot be put outside the while, don't why though
         FD_SET( rbudpReceiver->rbudpBase.udpSockfd, &rset );
         FD_SET( rbudpReceiver->rbudpBase.tcpSockfd, &rset );
-        const int retval = select( maxfdpl, &rset, NULL, NULL, &timeout );
+        const int retval = select( maxfdpl, &rset, nullptr, nullptr, &timeout );
         if ( retval <= 0 ) {
             irods::log( ERROR( retval, boost::format("select failed. retval [%d]") % retval ) );
         }
@@ -191,7 +191,7 @@ int udpReceive( rbudpReceiver_t *rbudpReceiver ) {
                 if ( oldprog > 100 ) {
                     oldprog = 100;
                 }
-                if ( rbudpReceiver->rbudpBase.progress != 0 ) {
+                if ( rbudpReceiver->rbudpBase.progress != nullptr ) {
                     fseek( rbudpReceiver->rbudpBase.progress,
                            0, SEEK_SET );
                     fprintf( rbudpReceiver->rbudpBase.progress,
@@ -224,7 +224,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
     }
 
     long long curSize = -1;
-    char *buf = 0;
+    char *buf = nullptr;
     int ok = RB_SUCCESS;
 
     while ( true ) {
@@ -247,7 +247,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
             fprintf( stderr, "accepting %lld byte chunk\n", bufSize );
         }
 
-        if ( buf == NULL || bufSize != curSize ) {
+        if ( buf == nullptr || bufSize != curSize ) {
             free( buf );
             if ( bufSize < 1 || bufSize > std::numeric_limits<long long>::max() ) {
                 fprintf( stderr, "bufSize %ji must be greater than zero and no more than %ji\n",
@@ -256,7 +256,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
                 break;
             }
             buf = ( char * )malloc( bufSize );
-            if ( buf == 0 ) {
+            if ( buf == nullptr ) {
                 fprintf( stderr, " getstream: Couldn't malloc %lld bytes for buffer\n", bufSize );
                 ok = FAILED;
                 break;
@@ -272,7 +272,7 @@ int  getstream( rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize ) {
             break;
         }
     }
-    if ( buf != 0 ) {
+    if ( buf != nullptr ) {
         free( buf );
     }
     close( tofd );
@@ -284,7 +284,7 @@ int  getfile( rbudpReceiver_t *rbudpReceiver, char * origFName,
     int status;
 
     // Send getfile message.
-    if ( origFName != NULL ) {
+    if ( origFName != nullptr ) {
         if ( writen( rbudpReceiver->rbudpBase.tcpSockfd, origFName,
                      SIZEOFFILENAME ) != SIZEOFFILENAME ) {
             perror( "tcp send" );
@@ -345,7 +345,7 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
             TRACE_DEBUG( "Receiving %d bytes chunk. %lld bytes remaining",
                          toRead, remaining - toRead );
 
-        buf = ( char * )mmap( NULL, toRead, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+        buf = ( char * )mmap( nullptr, toRead, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
                               offset );
         if ( buf == MAP_FAILED ) {
             fprintf( stderr, "mmap failed. toRead = %d, offset = %lld, errno = %d\n",
@@ -371,7 +371,7 @@ getfileByFd( rbudpReceiver_t *rbudpReceiver, int fd, int packetSize ) {
 int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
                   int packetSize ) {
     FILE *fp = fopen( fileList, "r" );
-    if ( fp == NULL ) {
+    if ( fp == nullptr ) {
         fprintf( stderr, "Error open file!\n" );
         return -1;
     }
@@ -381,8 +381,8 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
     while ( fgets( str, SIZEOFFILENAME, fp ) ) {
         puts( str );
         origFName = strtok( str, " " );
-        destFName = strtok( NULL, " " );
-        if ( ( origFName != NULL ) && ( destFName != NULL ) ) {
+        destFName = strtok( nullptr, " " );
+        if ( ( origFName != nullptr ) && ( destFName != nullptr ) ) {
 
             // Send getfile message.
             if ( writen( rbudpReceiver->rbudpBase.tcpSockfd, origFName, SIZEOFFILENAME ) !=
@@ -415,7 +415,7 @@ int  getfilelist( rbudpReceiver_t *rbudpReceiver, char * fileList,
             }
 
             char *buf;
-            buf = ( char * )mmap( NULL, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
+            buf = ( char * )mmap( nullptr, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0 );
             if ( buf == MAP_FAILED ) {
                 fprintf( stderr, "mmap failed.\n" );
                 close( fd );
@@ -487,11 +487,11 @@ int  initReceiveRudp( rbudpReceiver_t *rbudpReceiver, void* buffer,
         TRACE_DEBUG( "totalNumberOfPackets: %d",
                      rbudpReceiver->rbudpBase.totalNumberOfPackets );
 
-    if ( rbudpReceiver->rbudpBase.errorBitmap == NULL ) {
+    if ( rbudpReceiver->rbudpBase.errorBitmap == nullptr ) {
         fprintf( stderr, "malloc errorBitmap failed\n" );
         return FAILED;
     }
-    if ( rbudpReceiver->rbudpBase.hashTable == NULL ) {
+    if ( rbudpReceiver->rbudpBase.hashTable == nullptr ) {
         fprintf( stderr, "malloc hashTable failed\n" );
         return FAILED;
     }
@@ -515,7 +515,7 @@ void  initReceiver( rbudpReceiver_t *rbudpReceiver, char *remoteHost ) {
         rbudpReceiver->rbudpBase.progress = fopen( "progress.log", "w" );
     }
     else {
-        rbudpReceiver->rbudpBase.progress = 0;
+        rbudpReceiver->rbudpBase.progress = nullptr;
     }
 
     passiveUDP( &rbudpReceiver->rbudpBase, remoteHost );
@@ -535,7 +535,7 @@ void  initReceiver( rbudpReceiver_t *rbudpReceiver, char *remoteHost ) {
         }
     }
 
-    rbudpReceiver->msgRecv.msg_name = NULL;
+    rbudpReceiver->msgRecv.msg_name = nullptr;
     rbudpReceiver->msgRecv.msg_namelen = 0;
     rbudpReceiver->msgRecv.msg_iov = rbudpReceiver->iovRecv;
     rbudpReceiver->msgRecv.msg_iovlen = 2;
@@ -555,7 +555,7 @@ void recvClose( rbudpReceiver_t *rbudpReceiver ) {
 #ifdef DEBUG
     fclose( rbudpReceiver->rbudpBase.log );
 #endif
-    if ( rbudpReceiver->rbudpBase.progress != 0 ) {
+    if ( rbudpReceiver->rbudpBase.progress != nullptr ) {
         fclose( rbudpReceiver->rbudpBase.progress );
     }
 }

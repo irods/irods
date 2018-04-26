@@ -30,7 +30,7 @@ rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     char *resc_name;
 
     if ( ( resc_name = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) )
-            == NULL ) {
+            == nullptr ) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
@@ -58,7 +58,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp, const char
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
     int rmBunCopyFlag;
-    char *dataType = NULL; // JMC - backport 4664
+    char *dataType = nullptr; // JMC - backport 4664
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
@@ -87,7 +87,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp, const char
     }
     /* process this locally */
     if ( ( bunFilePath = getValByKey( &dataObjInp->condInput, BUN_FILE_PATH_KW ) ) // JMC - backport 4768
-            == NULL ) {
+            == nullptr ) {
         rodsLog( LOG_ERROR,
                  "_rsUnbunAndRegPhyBunfile: No filePath input for %s",
                  dataObjInp->objPath );
@@ -106,7 +106,7 @@ _rsUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp, const char
         return status;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, RM_BUN_COPY_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RM_BUN_COPY_KW ) == nullptr ) {
         rmBunCopyFlag = 0;
     }
     else {
@@ -137,8 +137,8 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
     int status = 0;
     int savedStatus = 0;
 
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *bunDataObjInfo = NULL;       /* the copy in BUNDLE_RESC */
+    dataObjInfo_t *dataObjInfoHead = nullptr;
+    dataObjInfo_t *bunDataObjInfo = nullptr;       /* the copy in BUNDLE_RESC */
     path srcDirPath( phyBunDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
@@ -174,7 +174,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
         addKeyVal( &dataObjInp.condInput, QUERY_BY_DATA_ID_KW,
                    ( char * ) childPath.c_str() );
         status = getDataObjInfo( rsComm, &dataObjInp, &dataObjInfoHead,
-                                 NULL, 1 );
+                                 nullptr, 1 );
         if ( status < 0 ) {
             rodsLog( LOG_DEBUG,
                      "regUnbunphySubfiles: getDataObjInfo error for %s, status = %d",
@@ -184,7 +184,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
             continue;
         }
         requeDataObjInfoByResc( &dataObjInfoHead, BUNDLE_RESC, 1, 1 );
-        bunDataObjInfo = NULL;
+        bunDataObjInfo = nullptr;
         if ( strcmp( dataObjInfoHead->rescName, BUNDLE_RESC ) != 0 ) {
             /* no match */
             rodsLog( LOG_DEBUG,
@@ -199,7 +199,7 @@ regUnbunPhySubfiles( rsComm_t *rsComm, const char *_resc_name, char *phyBunDir,
         }
         requeDataObjInfoByResc( &dataObjInfoHead, _resc_name, 1, 1 );
         /* The copy in DEST_RESC_NAME_KW should be on top */
-        if ( strstr(_resc_name, dataObjInfoHead->rescHier) != 0 ) {
+        if ( strstr(_resc_name, dataObjInfoHead->rescHier) != nullptr ) {
             /* no copy. stage it */
             status = regPhySubFile( rsComm, subfilePath, bunDataObjInfo, _resc_name );
             unlink( subfilePath );
@@ -344,10 +344,10 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     /* pass on the dataType */
 
 
-    if ( dataType != NULL && // JMC - backport 4632
-            ( strstr( dataType, GZIP_TAR_DT_STR )  != NULL || // JMC - backport 4658
-              strstr( dataType, BZIP2_TAR_DT_STR ) != NULL ||
-              strstr( dataType, ZIP_DT_STR )       != NULL ) ) {
+    if ( dataType != nullptr && // JMC - backport 4632
+            ( strstr( dataType, GZIP_TAR_DT_STR )  != nullptr || // JMC - backport 4658
+              strstr( dataType, BZIP2_TAR_DT_STR ) != nullptr ||
+              strstr( dataType, ZIP_DT_STR )       != nullptr ) ) {
         addKeyVal( &structFileOprInp.condInput, DATA_TYPE_KW, dataType );
     }
 
@@ -397,7 +397,7 @@ remoteUnbunAndRegPhyBunfile( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                              rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteUnbunAndRegPhyBunfile: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

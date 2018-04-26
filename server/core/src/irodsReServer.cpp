@@ -32,7 +32,7 @@
 using namespace boost::filesystem;
 
 time_t LastRescUpdateTime;
-char *CurLogfileName = NULL;    /* the path of the current logfile */
+char *CurLogfileName = nullptr;    /* the path of the current logfile */
 static time_t LogfileLastChkTime = 0;
 
 void
@@ -63,7 +63,7 @@ char *
 getLogDir() {
     char *myDir;
 
-    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
+    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) nullptr ) {
         return myDir;
     }
     return DEF_LOG_DIR;
@@ -105,7 +105,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 
     /* Put together the full pathname of the logFile */
 
-    if ( logDir == NULL ) {
+    if ( logDir == nullptr ) {
         snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
     }
     else {
@@ -113,7 +113,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     }
     *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
 
-    LogfileLastChkTime = myTime = time( 0 );
+    LogfileLastChkTime = myTime = time( nullptr );
     mytm = localtime( &myTime );
     const int rotation_time = get_log_file_rotation_time(); /*
     if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
@@ -127,7 +127,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4793
-    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
+    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == nullptr ) {
         logfilePattern = DEF_LOGFILE_PATTERN;
     }
     mytm->tm_mday = tm_mday;
@@ -138,24 +138,24 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 
 int
 logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
+    char *logFile = nullptr;
 #ifdef SYSLOG
     int logFd = 0;
 #else
     int logFd;
 #endif
 
-    if ( runMode == SINGLE_PASS && logDir == NULL ) {
+    if ( runMode == SINGLE_PASS && logDir == nullptr ) {
         return 1;
     }
 
-    if ( logFileName == NULL ) {
+    if ( logFileName == nullptr ) {
         fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     getLogfileName( &logFile, logDir, logFileName );
-    if ( NULL == logFile ) { // JMC cppcheck - nullptr
+    if ( nullptr == logFile ) { // JMC cppcheck - nullptr
         fprintf( stderr, "logFileOpen: unable to open log file" );
         return -1;
     }
@@ -212,10 +212,10 @@ main( int argc, char **argv ) {
     int c;
     int runMode = SERVER;
     int flagval = 0;
-    char *logDir = NULL;
+    char *logDir = nullptr;
     char *tmpStr;
     int logFd;
-    char *ruleExecId = NULL;
+    char *ruleExecId = nullptr;
     int jobType = 0;
 
     ProcessType = CLIENT_PT;
@@ -232,7 +232,7 @@ main( int argc, char **argv ) {
 
     /* Handle option to log sql commands */
     tmpStr = getenv( SP_LOG_SQL );
-    if ( tmpStr != NULL ) {
+    if ( tmpStr != nullptr ) {
 #ifdef SYSLOG
         int j = atoi( tmpStr );
         rodsLogSqlReq( j );
@@ -243,7 +243,7 @@ main( int argc, char **argv ) {
 
     /* Set the logging level */
     tmpStr = getenv( SP_LOG_LEVEL );
-    if ( tmpStr != NULL ) {
+    if ( tmpStr != nullptr ) {
         int i;
         i = atoi( tmpStr );
         rodsLogLevel( i );
@@ -290,7 +290,7 @@ main( int argc, char **argv ) {
 
     daemonize( runMode, logFd );
 
-    if ( ruleExecId != NULL ) {
+    if ( ruleExecId != nullptr ) {
         status = reServerSingleExec( ruleExecId, jobType );
         if ( status >= 0 ) {
             return 0;
@@ -317,10 +317,10 @@ int usage( char *prog ) {
 
 int
 chkLogfileName( const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
+    char *logFile = nullptr;
     int i;
 
-    time_t myTime = time( 0 );
+    time_t myTime = time( nullptr );
     if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
         /* not time yet */
         return 0;
@@ -328,7 +328,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
 
     getLogfileName( &logFile, logDir, logFileName );
 
-    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
+    if ( CurLogfileName != nullptr && strcmp( CurLogfileName, logFile ) == 0 ) {
         free( logFile );
         return 0;
     }
@@ -342,7 +342,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
         lseek( i, 0, SEEK_END );
     }
 
-    if ( CurLogfileName != NULL ) {
+    if ( CurLogfileName != nullptr ) {
         free( CurLogfileName );
     }
 
@@ -364,12 +364,12 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
 void
 reServerMain( char* logDir ) {
 
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     reExec_t reExec;
     int repeatedQueryErrorCount = 0;
 
     initReExec( &reExec );
-    LastRescUpdateTime = time( NULL );
+    LastRescUpdateTime = time( nullptr );
 
     int re_exec_time;
     try {
@@ -426,11 +426,11 @@ reServerMain( char* logDir ) {
                 repeatedQueryErrorCount = 0;
             }
 
-            const time_t endTime = time( NULL ) + re_exec_time;
+            const time_t endTime = time( nullptr ) + re_exec_time;
             int runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
 
             if ( runCnt > 0 ||
-                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+                    ( genQueryOut != nullptr && genQueryOut->continueInx > 0 ) ) {
                 /* need to refresh */
                 closeQueryOut( rc_comm, genQueryOut );
                 freeGenQueryOut( &genQueryOut );
@@ -452,7 +452,7 @@ reServerMain( char* logDir ) {
             closeQueryOut( rc_comm, genQueryOut );
             freeGenQueryOut( &genQueryOut );
             if ( runCnt > 0 ||
-                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+                    ( genQueryOut != nullptr && genQueryOut->continueInx > 0 ) ) {
                 rcDisconnect( rc_comm );
                 reSvrSleep();
                 continue;

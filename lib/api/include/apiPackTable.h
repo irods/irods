@@ -100,7 +100,7 @@ packInstruct_t api_pack_table_init[] = {
     {"GetHierOut_PI",GetHierOut_PI,irods::clearInStruct_noop},
     {"SetRoundRobinContextInp_PI",SetRoundRobinContextInp_PI,irods::clearInStruct_noop},
     {"ExecRuleExpression_PI",ExecRuleExpression_PI,irods::clearInStruct_noop},
-    {PACK_TABLE_END_PI, ( char * ) NULL, irods::clearInStruct_noop},
+    {PACK_TABLE_END_PI, ( char * ) nullptr, irods::clearInStruct_noop},
 };
 
 #endif	// API_PACK_TABLE_H__

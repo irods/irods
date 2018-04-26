@@ -13,7 +13,7 @@ int strttime( char* timestr, char* timeformat, rodsLong_t* t ) {
     }
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
-    if ( strptime( timestr, timeformat, &tm ) == 0 ) {
+    if ( strptime( timestr, timeformat, &tm ) == nullptr ) {
         return 0;
     }
     /*	printf("year: %d; month: %d; day: %d;\n",

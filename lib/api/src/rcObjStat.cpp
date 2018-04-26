@@ -66,8 +66,8 @@ rcObjStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
            rodsObjStat_t **rodsObjStatOut ) {
     int status;
 
-    status = procApiRequest( conn, OBJ_STAT_AN,  dataObjInp, NULL,
-                             ( void ** ) rodsObjStatOut, NULL );
+    status = procApiRequest( conn, OBJ_STAT_AN,  dataObjInp, nullptr,
+                             ( void ** ) rodsObjStatOut, nullptr );
 
     return status;
 }

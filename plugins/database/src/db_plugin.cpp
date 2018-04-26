@@ -134,18 +134,18 @@ validateAndParseUserName( const char *fullUserNameIn, char *userName, char *user
                 matches.str( 4 ).size() >= NAME_LEN ||
                 matches.str( 1 ) == "." ||
                 matches.str( 1 ) == ".." ) {
-            if ( userName != NULL ) {
+            if ( userName != nullptr ) {
                 userName[0] = '\0';
             }
-            if ( userZone != NULL ) {
+            if ( userZone != nullptr ) {
                 userZone[0] = '\0';
             }
             return USER_INVALID_USERNAME_FORMAT;
         }
-        if ( userName != NULL ) {
+        if ( userName != nullptr ) {
             snprintf( userName, NAME_LEN, "%s", matches.str( 1 ).c_str() );
         }
-        if ( userZone != NULL ) {
+        if ( userZone != nullptr ) {
             snprintf( userZone, NAME_LEN, "%s", matches.str( 4 ).c_str() );
         }
     }
@@ -507,7 +507,7 @@ int hostname_resolves_to_ipv4(const char* _hostname) {
     memset(&hint, 0, sizeof(hint));
     hint.ai_family = AF_INET;
     struct addrinfo *p_addrinfo;
-    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, nullptr, &hint, &p_addrinfo);
     if (ret_getaddrinfo_with_retry) {
         return ret_getaddrinfo_with_retry;
     }
@@ -1003,7 +1003,7 @@ irods::error verify_auth_response(
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
     irods::auth_object_ptr auth_obj;
-    irods::error ret = irods::auth_factory( _scheme, 0, auth_obj );
+    irods::error ret = irods::auth_factory( _scheme, nullptr, auth_obj );
     if ( !ret.ok() ) {
         return ret;
     }
@@ -1019,7 +1019,7 @@ irods::error verify_auth_response(
 
     // =-=-=-=-=-=-=-
     // call auth verify on plugin
-    ret = auth_plugin->call <const char*, const char*, const char* > ( 0, irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
+    ret = auth_plugin->call <const char*, const char*, const char* > ( nullptr, irods::AUTH_AGENT_AUTH_VERIFY, auth_obj, _challenge, _user_name, _response );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret;
@@ -1050,7 +1050,7 @@ icatDescramble( char *pw ) {
     }
     snprintf( pw2, sizeof( pw2 ), "%s", cp1 );
     cp3 = getenv( PASSWORD_KEY_ENV_VAR );
-    if ( cp3 == NULL ) {
+    if ( cp3 == nullptr ) {
         cp3 = PASSWORD_DEFAULT_KEY;
     }
     obfDecodeByKey( pw2, cp3, unscrambled );
@@ -1070,7 +1070,7 @@ icatScramble( char *pw ) {
     char scrambled[MAX_PASSWORD_LEN + 10];
 
     cp1 = getenv( PASSWORD_KEY_ENV_VAR );
-    if ( cp1 == NULL ) {
+    if ( cp1 == nullptr ) {
         cp1 = PASSWORD_DEFAULT_KEY;
     }
     obfEncodeByKey( pw, cp1, scrambled );
@@ -1123,7 +1123,7 @@ int decodePw( rsComm_t *rsComm, const char *in, char *out ) {
     memset( password, 0, MAX_PASSWORD_LEN );
 
     cp = strstr( upassword, rand );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         *cp = '\0';
     }
 
@@ -1199,7 +1199,7 @@ rodsLong_t checkAndGetObjectId(
         return CATALOG_NOT_CONNECTED;
     }
 
-    if ( type == NULL ) {
+    if ( type == nullptr ) {
         return CAT_INVALID_ARGUMENT;
     }
 
@@ -1208,7 +1208,7 @@ rodsLong_t checkAndGetObjectId(
     }
 
 
-    if ( name == NULL ) {
+    if ( name == nullptr ) {
         return CAT_INVALID_ARGUMENT;
     }
 
@@ -1818,7 +1818,7 @@ int convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer(const char* _hos
     memset(&hint, 0, sizeof(hint));
     hint.ai_family = AF_INET;
     struct addrinfo *p_addrinfo;
-    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, 0, &hint, &p_addrinfo);
+    const int ret_getaddrinfo_with_retry = getaddrinfo_with_retry(_hostname, nullptr, &hint, &p_addrinfo);
     if (ret_getaddrinfo_with_retry) {
         return ret_getaddrinfo_with_retry;
     }
@@ -1834,7 +1834,7 @@ convertHostToIp( const char *inputName ) {
     const int status = convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer(inputName, ipAddr);
     if (status != 0) {
         rodsLog( LOG_ERROR, "convertHostToIp convert_hostname_to_dotted_decimal_ipv4_and_store_in_buffer error. status [%d]", status );
-        return NULL;
+        return nullptr;
     }
     return ipAddr;
 }
@@ -2170,7 +2170,7 @@ irods::error db_mod_data_obj_meta_op(
 
     char logicalFileName[MAX_NAME_LEN];
     char logicalDirName[MAX_NAME_LEN];
-    char *theVal = 0;
+    char *theVal = nullptr;
     char replNum1[MAX_NAME_LEN];
 
     const char* whereColsAndConds[10];
@@ -2216,7 +2216,7 @@ irods::error db_mod_data_obj_meta_op(
     int doingDataSize = 0;
     char dataSizeString[NAME_LEN] = "";
     char objIdString[MAX_NAME_LEN];
-    char *neededAccess = 0;
+    char *neededAccess = nullptr;
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModDataObjMeta" );
@@ -2224,7 +2224,7 @@ irods::error db_mod_data_obj_meta_op(
 
     adminMode = 0;
     theVal = getValByKey( _reg_param, ADMIN_KW );
-    if ( theVal != NULL ) {
+    if ( theVal != nullptr ) {
         adminMode = 1;
     }
 
@@ -2234,7 +2234,7 @@ irods::error db_mod_data_obj_meta_op(
     /* Set up the updateCols and updateVals arrays */
     for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
         theVal = getValByKey( _reg_param, regParamNames[i] );
-        if ( theVal != NULL ) {
+        if ( theVal != nullptr ) {
             if( std::string( "resc_name") == colNames[i]) {
                 continue;
             }
@@ -2323,7 +2323,7 @@ irods::error db_mod_data_obj_meta_op(
     /* If dataExpiry is being updated, user needs to have
        a greater access permission */
     theVal = getValByKey( _reg_param, DATA_EXPIRY_KW );
-    if ( theVal != NULL ) {
+    if ( theVal != nullptr ) {
         neededAccess = ACCESS_DELETE_OBJECT;
     }
 
@@ -2412,7 +2412,7 @@ irods::error db_mod_data_obj_meta_op(
 
         if ( status != 0 ) {
             theVal = getValByKey( _reg_param, ACL_COLLECTION_KW );
-            if ( theVal != NULL && upCols == 1 &&
+            if ( theVal != nullptr && upCols == 1 &&
                     strcmp( updateCols[0], "data_path" ) == 0 ) {
                 int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
                 /*
@@ -2456,7 +2456,7 @@ irods::error db_mod_data_obj_meta_op(
      * only one).
      */
     std::string where_resc_id_str;
-    if ( getValByKey( _reg_param, ALL_KW ) == NULL ) {
+    if ( getValByKey( _reg_param, ALL_KW ) == nullptr ) {
         // use resc_id instead of replNum as it is
         // always set, unless resc_id is to be
         // updated.  replNum is sometimes 0 in various
@@ -2499,7 +2499,7 @@ irods::error db_mod_data_obj_meta_op(
     // If we are moving the data object from one resource to another resource, update the object counts for those resources
     // appropriately - hcj
     char* new_resc_hier = getValByKey( _reg_param, RESC_HIER_STR_KW );
-    if ( new_resc_hier != NULL ) {
+    if ( new_resc_hier != nullptr ) {
         std::stringstream id_stream;
         id_stream << _data_obj_info->dataId;
         std::stringstream repl_stream;
@@ -2966,9 +2966,9 @@ irods::error db_reg_replica_op(
     }
 
     adminMode = 0;
-    if ( _cond_input != NULL ) {
+    if ( _cond_input != nullptr ) {
         theVal = getValByKey( _cond_input, ADMIN_KW );
-        if ( theVal != NULL ) {
+        if ( theVal != nullptr ) {
             adminMode = 1;
         }
     }
@@ -3187,13 +3187,13 @@ irods::error db_unreg_replica_op(
 
     adminMode = 0;
     trashMode = 0;
-    if ( _cond_input != NULL ) {
+    if ( _cond_input != nullptr ) {
         theVal = getValByKey( _cond_input, ADMIN_KW );
-        if ( theVal != NULL ) {
+        if ( theVal != nullptr ) {
             adminMode = 1;
         }
         theVal = getValByKey( _cond_input, ADMIN_RMTRASH_KW );
-        if ( theVal != NULL ) {
+        if ( theVal != nullptr ) {
             adminMode = 1;
             trashMode = 1;
         }
@@ -3557,7 +3557,7 @@ irods::error db_mod_rule_exec_op(
     int i, j, status;
 
     char tSQL[MAX_SQL_SIZE];
-    char *theVal = 0;
+    char *theVal = nullptr;
 
     /* regParamNames has the argument names (in regParam) that this
        routine understands and colNames has the corresponding column
@@ -3586,7 +3586,7 @@ irods::error db_mod_rule_exec_op(
 
     for ( i = 0, j = 0; strcmp( regParamNames[i], "END" ); i++ ) {
         theVal = getValByKey( _reg_param, regParamNames[i] );
-        if ( theVal != NULL ) {
+        if ( theVal != nullptr ) {
             if ( j > 0 ) {
                 rstrcat( tSQL, "," , MAX_SQL_SIZE );
             }
@@ -5666,7 +5666,7 @@ irods::error db_mod_zone_coll_acl_op(
         return ERROR( CAT_INVALID_ARGUMENT, "invalid path name" );
     }
     const char* cp = _path_name + 1;
-    if ( strstr( cp, PATH_SEPARATOR ) != NULL ) {
+    if ( strstr( cp, PATH_SEPARATOR ) != nullptr ) {
         return ERROR( CAT_INVALID_ARGUMENT, "invalid path name" );
     }
     status =  chlModAccessControl( _ctx.comm(), 0,
@@ -6292,13 +6292,13 @@ irods::error db_simple_query_op(
     int                    _max_out_buf ) {
 
     std::vector<std::string> bindVars;
-    if ( _arg1 != NULL && _arg1[0] != '\0' ) {
+    if ( _arg1 != nullptr && _arg1[0] != '\0' ) {
         bindVars.push_back( _arg1 );
-        if ( _arg2 != NULL && _arg2[0] != '\0' ) {
+        if ( _arg2 != nullptr && _arg2[0] != '\0' ) {
             bindVars.push_back( _arg2 );
-            if ( _arg3 != NULL && _arg3[0] != '\0' ) {
+            if ( _arg3 != nullptr && _arg3[0] != '\0' ) {
                 bindVars.push_back( _arg3 );
-                if ( _arg4 != NULL && _arg4[0] != '\0' ) {
+                if ( _arg4 != nullptr && _arg4[0] != '\0' ) {
                     bindVars.push_back( _arg4 );
                 }
             }
@@ -6575,7 +6575,7 @@ irods::error db_check_auth_op(
     int status = 0;
     char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
     char digest[RESPONSE_LEN + 2];
-    const char *cp = NULL;
+    const char *cp = nullptr;
     int i = 0, OK = 0, k = 0;
     char userType[MAX_NAME_LEN];
     static int prevFailure = 0;
@@ -6585,7 +6585,7 @@ irods::error db_check_auth_op(
     char goodPwTs[MAX_PASSWORD_LEN + 10] = "";
     char goodPwModTs[MAX_PASSWORD_LEN + 10] = "";
     rodsLong_t expireTime = 0;
-    char *cpw = NULL;
+    char *cpw = nullptr;
     int nPasswords = 0;
     char myTime[50];
     time_t nowTime;
@@ -6600,7 +6600,7 @@ irods::error db_check_auth_op(
     int hashType = 0;
     char lastPwModTs[MAX_PASSWORD_LEN + 10];
     snprintf( lastPwModTs, sizeof( lastPwModTs ), "0" );
-    char *cPwTs = NULL;
+    char *cPwTs = nullptr;
     int iTs1 = 0, iTs2 = 0;
     std::vector<char> pwInfoArray( MAX_PASSWORD_LEN * MAX_PASSWORDS * 4 );
 
@@ -7069,7 +7069,7 @@ irods::error db_make_temp_pw_op(
         rodsLog( LOG_SQL, "chlMakeTempPw" );
     }
 
-    if ( _other_user != NULL && strlen( _other_user ) > 0 ) {
+    if ( _other_user != nullptr && strlen( _other_user ) > 0 ) {
         if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
         }
@@ -7546,7 +7546,7 @@ irods::error db_update_pam_password_op(
 
     } // while
 
-    if ( _test_time != NULL && strlen( _test_time ) > 0 ) {
+    if ( _test_time != nullptr && strlen( _test_time ) > 0 ) {
         snprintf( myTime, sizeof( myTime ), "%s", _test_time );
     }
 
@@ -8035,7 +8035,7 @@ irods::error db_mod_group_op(
         return PASS( ret );
     }
 
-    if ( _user_zone != NULL && *_user_zone != '\0' ) {
+    if ( _user_zone != nullptr && *_user_zone != '\0' ) {
         snprintf( zoneToUse, MAX_NAME_LEN, "%s", _user_zone );
     }
     else {
@@ -8717,7 +8717,7 @@ irods::error db_mod_resc_data_paths_op(
     char oldPath2[MAX_NAME_LEN];
     snprintf( oldPath2, sizeof( oldPath2 ), "%s%%", _old_path );
 
-    if ( _user_name != NULL && *_user_name != '\0' ) {
+    if ( _user_name != nullptr && *_user_name != '\0' ) {
         status = validateAndParseUserName( _user_name, userName2, userZone );
         if ( status ) {
             return ERROR( status, "Invalid username format" );
@@ -9209,7 +9209,7 @@ irods::error db_set_avu_metadata_op(
     }
 
     /* Treat unspecified unit as empty string */
-    if ( _new_unit == NULL ) {
+    if ( _new_unit == nullptr ) {
         _new_unit = "";
     }
 
@@ -9518,19 +9518,19 @@ irods::error db_add_avu_metadata_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    if ( _type == NULL || *_type == '\0' ) {
+    if ( _type == nullptr || *_type == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "type null or empty" );
     }
 
-    if ( _name == NULL || *_name == '\0' ) {
+    if ( _name == nullptr || *_name == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "name null or empty" );
     }
 
-    if ( _attribute == NULL || *_attribute == '\0' ) {
+    if ( _attribute == nullptr || *_attribute == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "attribute null or empty" );
     }
 
-    if ( _value == NULL || *_value == '\0' ) {
+    if ( _value == nullptr || *_value == '\0' ) {
         return  ERROR( CAT_INVALID_ARGUMENT, "value null or empty" );
     }
 
@@ -9540,7 +9540,7 @@ irods::error db_add_avu_metadata_op(
         }
     }
 
-    if ( _units == NULL ) {
+    if ( _units == nullptr ) {
         _units = "";
     }
 
@@ -9819,13 +9819,13 @@ irods::error db_mod_avu_metadata_op(
     }
 
     int status, atype;
-    const char *dummy = NULL;
+    const char *dummy = nullptr;
     const char *myUnits = "";
     const char *addAttr = "";
     const char *addValue = "";
-    const char  *addUnits = NULL;
+    const char  *addUnits = nullptr;
 
-    if ( _unitsOrArg0 == NULL ) {
+    if ( _unitsOrArg0 == nullptr ) {
         return ERROR( CAT_INVALID_ARGUMENT, "unitsOrArg0 empty or null" );
     }
 
@@ -9850,7 +9850,7 @@ irods::error db_mod_avu_metadata_op(
 
     for (auto arg : { dummy , _arg1, _arg2, _arg3 } )
     {
-      if (arg == NULL) continue;
+      if (arg == nullptr) continue;
       atype = checkModArgType( arg );
       if ( atype == 1 ) {
         if (new_attr_set) {
@@ -9883,7 +9883,7 @@ irods::error db_mod_avu_metadata_op(
 
     if ( *addAttr  == '\0' &&
             *addValue == '\0' &&
-            addUnits == NULL ) {
+            addUnits == nullptr ) {
         _rollback( "chlModAVUMetadata" );
         return ERROR( CAT_INVALID_ARGUMENT, "arg check failed" );
     }
@@ -9894,7 +9894,7 @@ irods::error db_mod_avu_metadata_op(
     if ( *addValue == '\0' ) {
         addValue = _value;
     }
-    if ( addUnits == NULL ) {
+    if ( addUnits == nullptr ) {
         addUnits = myUnits;
     }
 
@@ -9961,24 +9961,24 @@ irods::error db_del_avu_metadata_op(
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
 
-    if ( _type == NULL || *_type == '\0' ) {
+    if ( _type == nullptr || *_type == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "invalid type" );
     }
 
-    if ( _name == NULL || *_name == '\0' ) {
+    if ( _name == nullptr || *_name == '\0' ) {
         return ERROR( CAT_INVALID_ARGUMENT, "invalid name" );
     }
     if ( _option != 2 ) {
-        if ( _attribute == NULL || *_attribute == '\0' ) {
+        if ( _attribute == nullptr || *_attribute == '\0' ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid attribute" );
         }
 
-        if ( _value == NULL || *_value == '\0' ) {
+        if ( _value == nullptr || *_value == '\0' ) {
             return ERROR( CAT_INVALID_ARGUMENT, "invalid value" );
         }
     }
 
-    if ( _unit == NULL ) {
+    if ( _unit == nullptr ) {
         _unit = "";
     }
 
@@ -10414,7 +10414,7 @@ irods::error db_mod_access_control_resc_op(
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
     char myAccessStr[LONG_NAME_LEN];
     char rescIdStr[MAX_NAME_LEN];
-    char *myAccessLev = NULL;
+    char *myAccessLev = nullptr;
     int rmFlag = 0;
     rodsLong_t status;
     const char *myZone;
@@ -10486,7 +10486,7 @@ irods::error db_mod_access_control_resc_op(
     }
 
     myZone = _zone;
-    if ( _zone == NULL || strlen( _zone ) == 0 ) {
+    if ( _zone == nullptr || strlen( _zone ) == 0 ) {
         myZone = zone.c_str();
     }
 
@@ -10609,7 +10609,7 @@ irods::error db_mod_access_control_op(
         adminMode = 1;
     }
 
-    char *myAccessLev = NULL;
+    char *myAccessLev = nullptr;
     int rmFlag = 0;
     int inheritFlag = 0;
     if ( strcmp( _access_level, AP_NULL ) == 0 ) {
@@ -12020,10 +12020,10 @@ irods::error db_reg_token_op(
         rodsLog( LOG_SQL, "chlRegToken" );
     }
 
-    if ( _name_space == NULL || strlen( _name_space ) == 0 ) {
+    if ( _name_space == nullptr || strlen( _name_space ) == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "namespace null or 0 len" );
     }
-    if ( _name == NULL || strlen( _name ) == 0 ) {
+    if ( _name == nullptr || strlen( _name ) == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "name null or 0 len" );
     }
 
@@ -12066,19 +12066,19 @@ irods::error db_reg_token_op(
     }
 
     myValue1 = _value;
-    if ( myValue1 == NULL ) {
+    if ( myValue1 == nullptr ) {
         myValue1 = "";
     }
     myValue2 = _value2;
-    if ( myValue2 == NULL ) {
+    if ( myValue2 == nullptr ) {
         myValue2 = "";
     }
     myValue3 = _value3;
-    if ( myValue3 == NULL ) {
+    if ( myValue3 == nullptr ) {
         myValue3 = "";
     }
     myComment = _comment;
-    if ( myComment == NULL ) {
+    if ( myComment == nullptr ) {
         myComment = "";
     }
 
@@ -12174,10 +12174,10 @@ irods::error db_del_token_op(
         rodsLog( LOG_SQL, "chlDelToken" );
     }
 
-    if ( _name_space == NULL || strlen( _name_space ) == 0 ) {
+    if ( _name_space == nullptr || strlen( _name_space ) == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "namespace is null or 0 len" );
     }
-    if ( _name == NULL || strlen( _name ) == 0 ) {
+    if ( _name == nullptr || strlen( _name ) == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "name is null or 0 len" );
     }
 
@@ -13694,7 +13694,7 @@ irods::error db_add_specific_query_op(
 
     getNowStr( myTime );
 
-    if ( _alias != NULL && strlen( _alias ) > 0 ) {
+    if ( _alias != nullptr && strlen( _alias ) > 0 ) {
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlAddSpecificQuery SQL 1" );
         }
@@ -13884,7 +13884,7 @@ irods::error db_specific_query_op(
     currentMaxColSize = 0;
 
     if ( _spec_query_inp->continueInx == 0 ) {
-        if ( _spec_query_inp->sql == NULL ) {
+        if ( _spec_query_inp->sql == nullptr ) {
             return ERROR( CAT_INVALID_ARGUMENT, "null sql string" );
         }
         /*
@@ -13927,7 +13927,7 @@ irods::error db_specific_query_op(
         }
 
         i = 0;
-        while ( _spec_query_inp->args[i] != NULL && strlen( _spec_query_inp->args[i] ) > 0 ) {
+        while ( _spec_query_inp->args[i] != nullptr && strlen( _spec_query_inp->args[i] ) > 0 ) {
             cllBindVars[cllBindVarCount++] = _spec_query_inp->args[i++];
         }
 
@@ -14002,7 +14002,7 @@ irods::error db_specific_query_op(
             totalLen = attriTextLen * _spec_query_inp->maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char * ) malloc( totalLen );
-                if ( tResult == NULL ) {
+                if ( tResult == nullptr ) {
                     return ERROR( SYS_MALLOC_ERR, "malloc error" );
                 }
                 memset( tResult, 0, totalLen );
@@ -14029,7 +14029,7 @@ irods::error db_specific_query_op(
                 char *cp1, *cp2;
                 int k;
                 tResult = ( char * ) malloc( totalLen );
-                if ( tResult == NULL ) {
+                if ( tResult == nullptr ) {
                     return ERROR( SYS_MALLOC_ERR, "failed to allocate result" );
                 }
                 memset( tResult, 0, totalLen );
@@ -14470,7 +14470,7 @@ irods::error db_get_hierarchy_for_resc_op(
             current_node = parent;
         }
         else {
-            current_node = NULL;
+            current_node = nullptr;
         }
     }
 
@@ -14818,7 +14818,7 @@ irods::error db_mod_ticket_op(
         }
 
         if ( strncmp( _arg3, "write", 5 ) == 0 ) {
-            if ( strstr( _arg3, "file" ) != NULL ) {
+            if ( strstr( _arg3, "file" ) != nullptr ) {
                 i = 0;
                 cllBindVars[i++] = _arg4;
                 cllBindVars[i++] = ticketIdStr;
@@ -14854,7 +14854,7 @@ irods::error db_mod_ticket_op(
                     return SUCCESS();
                 }
             }
-            if ( strstr( _arg3, "byte" ) != NULL ) {
+            if ( strstr( _arg3, "byte" ) != nullptr ) {
                 i = 0;
                 cllBindVars[i++] = _arg4;
                 cllBindVars[i++] = ticketIdStr;
@@ -14937,7 +14937,7 @@ irods::error db_mod_ticket_op(
             if ( strcmp( _arg4, "host" ) == 0 ) {
                 char *hostIp;
                 hostIp = convertHostToIp( _arg5 );
-                if ( hostIp == NULL ) {
+                if ( hostIp == nullptr ) {
                     return ERROR( CAT_HOSTNAME_INVALID, _arg5 );
                 }
                 i = 0;
@@ -15057,7 +15057,7 @@ irods::error db_mod_ticket_op(
             if ( strcmp( _arg4, "host" ) == 0 ) {
                 char *hostIp;
                 hostIp = convertHostToIp( _arg5 );
-                if ( hostIp == NULL ) {
+                if ( hostIp == nullptr ) {
                     return ERROR( CAT_HOSTNAME_INVALID, "host name null" );
                 }
                 i = 0;
@@ -15215,7 +15215,7 @@ irods::error db_get_icss_op(
         rodsLog( LOG_SQL, "chlGetRcs" );
     }
     if ( icss.status != 1 ) {
-        ( *_icss ) = 0;
+        ( *_icss ) = nullptr;
         return ERROR( icss.status, "catalog not connected" );
     }
 

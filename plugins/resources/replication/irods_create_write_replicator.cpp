@@ -56,7 +56,7 @@ namespace irods {
 
                     try { 
                         const auto status = data_obj_repl_with_retry( _ctx, dataObjInp );
-                        char* sys_error = NULL;
+                        char* sys_error = nullptr;
                         auto rods_error = rodsErrorName( status, &sys_error );
                         result = ASSERT_ERROR( status >= 0, status, "Failed to replicate the data object: \"%s\" from resource: \"%s\" "
                                                "to sibling: \"%s\" - %s %s.", object.logical_path().c_str(), child_.c_str(),

@@ -53,11 +53,11 @@ int
 rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int l1descInx;
     int status;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
-    char *lockType = NULL; // JMC - backport 4604
+    specCollCache_t *specCollCache = nullptr;
+    char *lockType = nullptr; // JMC - backport 4604
     int lockFd = -1; // JMC - backport 4604
 
     irods::error ret = validate_logical_path( dataObjInp->objPath );
@@ -74,7 +74,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        openStat_t *openStat = NULL;
+        openStat_t *openStat = nullptr;
         addKeyVal( &dataObjInp->condInput, CROSS_ZONE_CREATE_KW, "" );
         status = rcDataObjCreateAndStat( rodsServerHost->conn, dataObjInp, &openStat );
 
@@ -85,7 +85,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
         l1descInx = allocAndSetL1descForZoneOpr( status, dataObjInp, rodsServerHost, openStat );
 
-        if ( openStat != NULL ) {
+        if ( openStat != nullptr ) {
             free( openStat );
         }
         return l1descInx;
@@ -96,7 +96,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    if ( NULL == resc_hier ) {
+    if ( nullptr == resc_hier ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
                            dataObjInp, hier );
@@ -118,14 +118,14 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
     lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
-    if ( lockType != NULL ) {
+    if ( lockType != nullptr ) {
         lockFd = irods::server_api_call(
                      DATA_OBJ_LOCK_AN,
                      rsComm,
                      dataObjInp,
-                     NULL,
-                     ( void** ) NULL,
-                     NULL );
+                     nullptr,
+                     ( void** ) nullptr,
+                     nullptr );
         if ( lockFd >= 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
@@ -144,7 +144,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     status = rsObjStat( rsComm, dataObjInp, &rodsObjStatOut );
 
-    if ( rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T ) {
+    if ( rodsObjStatOut != nullptr && rodsObjStatOut->objType == COLL_OBJ_T ) {
         if ( lockFd >= 0 ) {
             char fd_string[NAME_LEN];
             snprintf( fd_string, sizeof( fd_string ), "%-d", lockFd );
@@ -153,16 +153,16 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 DATA_OBJ_UNLOCK_AN,
                 rsComm,
                 dataObjInp,
-                NULL,
-                ( void** ) NULL,
-                NULL );
+                nullptr,
+                ( void** ) nullptr,
+                nullptr );
         }
         freeRodsObjStat( rodsObjStatOut );
         return USER_INPUT_PATH_ERR;
     }
 
-    if ( rodsObjStatOut                      != NULL &&
-            rodsObjStatOut->specColl            != NULL &&
+    if ( rodsObjStatOut                      != nullptr &&
+            rodsObjStatOut->specColl            != nullptr &&
             rodsObjStatOut->specColl->collClass == LINKED_COLL ) {
         /*  should not be here because if has been translated */
         if ( lockFd >= 0 ) {
@@ -173,9 +173,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 DATA_OBJ_UNLOCK_AN,
                 rsComm,
                 dataObjInp,
-                NULL,
-                ( void** ) NULL,
-                NULL );
+                nullptr,
+                ( void** ) nullptr,
+                nullptr );
         }
 
         freeRodsObjStat( rodsObjStatOut );
@@ -183,9 +183,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
 
-    if ( rodsObjStatOut  == NULL                     ||
+    if ( rodsObjStatOut  == nullptr                     ||
             ( rodsObjStatOut->objType  == UNKNOWN_OBJ_T &&
-              rodsObjStatOut->specColl == NULL ) ) {
+              rodsObjStatOut->specColl == nullptr ) ) {
         /* does not exist. have to create one */
         /* use L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY instead */
         /* newly created. take out FORCE_FLAG since it could be used by put */
@@ -193,7 +193,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         l1descInx = _rsDataObjCreate( rsComm, dataObjInp );
 
     }
-    else if ( rodsObjStatOut->specColl != NULL &&
+    else if ( rodsObjStatOut->specColl != nullptr &&
               rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
 
         /* newly created. take out FORCE_FLAG since it could be used by put */
@@ -203,7 +203,7 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     else {
 
         /* dataObj exist */
-        if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, FORCE_FLAG_KW ) != nullptr ) {
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             // =-=-=-=-=-=-=-
             // re-determine the resource hierarchy since this is an open instead of a create
@@ -266,9 +266,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                 DATA_OBJ_UNLOCK_AN,
                 rsComm,
                 dataObjInp,
-                NULL,
-                ( void** ) NULL,
-                NULL );
+                nullptr,
+                ( void** ) nullptr,
+                nullptr );
         }
     }
 
@@ -301,11 +301,11 @@ int
 specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
     int l1descInx;
-    dataObjInfo_t *dataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfo = nullptr;
 
     status = resolvePathInSpecColl( rsComm, dataObjInp->objPath,
                                     WRITE_COLL_PERM, 0, &dataObjInfo );
-    if ( dataObjInfo == NULL ) { // JMC cppcheck
+    if ( dataObjInfo == nullptr ) { // JMC cppcheck
         rodsLog( LOG_ERROR, "specCollSubCreate :: dataObjInp is null" );
         return status;
     }
@@ -330,7 +330,7 @@ specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
-    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) == nullptr ) {
         status = dataCreate( rsComm, l1descInx );
         if ( status < 0 ) {
             freeL1desc( l1descInx );
@@ -381,7 +381,7 @@ _rsDataObjCreateWithResc(
 
     // =-=-=-=-=-=-=-
     // honor the purge flag
-    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != NULL ) { // JMC - backport 4537
+    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != nullptr ) { // JMC - backport 4537
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
@@ -424,7 +424,7 @@ _rsDataObjCreateWithResc(
     /* output of _rsDataObjCreate - filePath stored in
      * dataObjInfo struct */
 
-    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != nullptr ) {
 
         /* don't actually physically open the file */
         status = 0;
@@ -580,11 +580,11 @@ l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int retryCnt = 0;
     int l3descInx;
     do {
-        fileCreateOut_t* create_out = NULL;
+        fileCreateOut_t* create_out = nullptr;
         l3descInx = rsFileCreate( rsComm, &fileCreateInp, &create_out );
 
         // update the dataObjInfo with the potential changes made by the resource - hcj
-        if ( create_out != NULL ) {
+        if ( create_out != nullptr ) {
             rstrcpy( dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN );
             rstrcpy( dataObjInfo->filePath, create_out->file_name, MAX_NAME_LEN );
             free( create_out );
@@ -619,10 +619,10 @@ int getRescForCreate(
 
     int status = 0;
     if ( _obj_inp->oprType == REPLICATE_OPR ) {
-        status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acSetRescSchemeForRepl", nullptr, &rei, NO_SAVE_REI );
     }
     else {
-        status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acSetRescSchemeForCreate", nullptr, &rei, NO_SAVE_REI );
     }
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);

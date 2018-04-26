@@ -33,8 +33,8 @@ int
 rcPhyBundleColl( rcComm_t *conn,
                  structFileExtAndRegInp_t *phyBundleCollInp ) {
     int status;
-    status = procApiRequest( conn, PHY_BUNDLE_COLL_AN, phyBundleCollInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, PHY_BUNDLE_COLL_AN, phyBundleCollInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

@@ -10,7 +10,7 @@ int rsOprComplete( rsComm_t *rsComm, int *retval ) {
     if ( *retval >= 2 ) {
         int l1descInx = *retval;
 
-        if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+        if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
             *retval = rcOprComplete( L1desc[l1descInx].remoteZoneHost->conn,
                                      L1desc[l1descInx].remoteL1descInx );
             freeL1desc( l1descInx );

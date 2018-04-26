@@ -226,7 +226,7 @@ irods::error pam_auth_client_request(
 
     // =-=-=-=-=-=-=-
     // make the call to our auth request
-    authPluginReqOut_t* req_out = 0;
+    authPluginReqOut_t* req_out = nullptr;
     int status = rcAuthPluginRequest( _comm, &req_in, &req_out );
 
     // =-=-=-=-=-=-=-
@@ -296,7 +296,7 @@ int run_pam_auth_check(
         }
         close( p2cp[1] );
         i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, _username.c_str(),
-                   ( char * )NULL );
+                   ( char * )nullptr );
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }
@@ -317,7 +317,7 @@ irods::error pam_auth_agent_request(
 
     // =-=-=-=-=-=-=-
     // get the server host handle
-    rodsServerHost_t* server_host = 0;
+    rodsServerHost_t* server_host = nullptr;
     int status = getAndConnRcatHost(
                      _ctx.comm(),
                      MASTER_RCAT,
@@ -348,7 +348,7 @@ irods::error pam_auth_agent_request(
 
         // =-=-=-=-=-=-=-
         // manufacture structures for the redirected call
-        authPluginReqOut_t* req_out = 0;
+        authPluginReqOut_t* req_out = nullptr;
         authPluginReqInp_t  req_inp;
         strncpy( req_inp.auth_scheme_, irods::AUTH_PAM_SCHEME.c_str(), irods::AUTH_PAM_SCHEME.size() + 1 );
         strncpy( req_inp.context_, context.c_str(), context.size() + 1 );
@@ -364,7 +364,7 @@ irods::error pam_auth_agent_request(
         // =-=-=-=-=-=-=-
         // disconnect
         rcDisconnect( server_host->conn );
-        server_host->conn = NULL;
+        server_host->conn = nullptr;
         if ( !req_out || status < 0 ) {
             return ERROR( status, "redirected rcAuthPluginRequest failed." );
         }
@@ -372,7 +372,7 @@ irods::error pam_auth_agent_request(
             // =-=-=-=-=-=-=-
             // set the result for communication back to the client
             ptr->request_result( req_out->result_ );
-            if ( _ctx.comm()->auth_scheme != NULL ) {
+            if ( _ctx.comm()->auth_scheme != nullptr ) {
                 free( _ctx.comm()->auth_scheme );
             }
             _ctx.comm()->auth_scheme = strdup( irods::AUTH_PAM_SCHEME.c_str() );
@@ -420,7 +420,7 @@ irods::error pam_auth_agent_request(
     // request the resulting irods password after the handshake
     char password_out[ MAX_NAME_LEN ];
     char* pw_ptr = &password_out[0];
-    chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
+    chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, nullptr, &pw_ptr );
 
     // =-=-=-=-=-=-=-
     // set the result for communication back to the client
@@ -428,7 +428,7 @@ irods::error pam_auth_agent_request(
 
     // =-=-=-=-=-=-=-
     // win!
-    if ( _ctx.comm()->auth_scheme != NULL ) {
+    if ( _ctx.comm()->auth_scheme != nullptr ) {
         free( _ctx.comm()->auth_scheme );
     }
     _ctx.comm()->auth_scheme = strdup( "pam" );

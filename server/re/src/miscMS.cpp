@@ -229,14 +229,14 @@ msiApplyDCMetadataTemplate( msParam_t* inpParam, msParam_t* outParam, ruleExecIn
 
 
     /* microservice check */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiApplyDCMetadataTemplate: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* Check for proper input */
-    if ( ( objPath = parseMspForStr( inpParam ) ) == NULL ) {
+    if ( ( objPath = parseMspForStr( inpParam ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiApplyDCMetadataTemplate: input parameter is NULL" );
         return USER__NULL_INPUT_ERR;
     }

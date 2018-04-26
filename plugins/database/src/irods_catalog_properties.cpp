@@ -32,8 +32,8 @@ namespace irods {
     void catalog_properties::capture( icatSessionStruct* _icss ) {
         rodsLong_t row_count = 0; 	// total number of rows to get
         int col_nbr = 2;	// 2 columns for now: pg_settings.name, pg_settings.setting
-        char *sql_out = NULL;	// sql result string
-        char *row_ptr = NULL;	// for parsing result string
+        char *sql_out = nullptr;	// sql result string
+        char *row_ptr = nullptr;	// for parsing result string
         std::string prop_name, prop_setting; // property name and setting
 
         int i, status = 0;

@@ -24,18 +24,18 @@ rsSyncMountedColl( rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp ) {
     rodsLog( LOG_NOTICE, "rsSyncMountedColl - start" );
 
     int status;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
     dataObjInp_t myDataObjInp;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
 
     status = collStat( rsComm, syncMountedCollInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) {
+    if ( status < 0 || nullptr == rodsObjStatOut ) {
         freeRodsObjStat( rodsObjStatOut );
         return status;    // JMC cppcheck - nullptr
     }
 
-    if ( rodsObjStatOut->specColl == NULL ) {
+    if ( rodsObjStatOut->specColl == nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "rsSyncMountedColl: %s not a mounted collection",

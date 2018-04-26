@@ -264,7 +264,7 @@ irods::error osauth_auth_client_request(
 
     // =-=-=-=-=-=-=-
     // make the call to our auth request
-    authPluginReqOut_t* req_out = 0;
+    authPluginReqOut_t* req_out = nullptr;
     int status = rcAuthPluginRequest(
                      _comm,
                      &req_in,
@@ -320,7 +320,7 @@ irods::error osauth_auth_agent_request(
     // cache the challenge in the server for later usage
     _rsSetAuthRequestGetChallenge( buf );
 
-    if ( _ctx.comm()->auth_scheme != NULL ) {
+    if ( _ctx.comm()->auth_scheme != nullptr ) {
         free( _ctx.comm()->auth_scheme );
     }
     _ctx.comm()->auth_scheme = strdup( irods::AUTH_OSAUTH_SCHEME.c_str() );
@@ -450,7 +450,7 @@ irods::error osauth_auth_agent_response(
                            _resp->response;
     authCheckInp.response = const_cast<char*>( resp_str.c_str() );
 
-    authCheckOut_t *authCheckOut = NULL;
+    authCheckOut_t *authCheckOut = nullptr;
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         status = rsAuthCheck( _ctx.comm(), &authCheckInp, &authCheckOut );
     }
@@ -458,10 +458,10 @@ irods::error osauth_auth_agent_response(
         status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
         /* not likely we need this connection again */
         rcDisconnect( rodsServerHost->conn );
-        rodsServerHost->conn = NULL;
+        rodsServerHost->conn = nullptr;
     }
-    if ( status < 0 || authCheckOut == NULL ) { // JMC cppcheck
-        if ( authCheckOut != NULL ) {
+    if ( status < 0 || authCheckOut == nullptr ) { // JMC cppcheck
+        if ( authCheckOut != nullptr ) {
             free( authCheckOut->serverResponse );
         }
         free( authCheckOut );
@@ -471,7 +471,7 @@ irods::error osauth_auth_agent_response(
     }
 
     if ( rodsServerHost->localFlag != LOCAL_HOST ) {
-        if ( authCheckOut->serverResponse == NULL ) {
+        if ( authCheckOut->serverResponse == nullptr ) {
             rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
             if ( requireServerAuth ) {
                 free( authCheckOut );

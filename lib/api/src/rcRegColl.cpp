@@ -22,8 +22,8 @@
 int
 rcRegColl( rcComm_t *conn, collInp_t *regCollInp ) {
     int status;
-    status = procApiRequest( conn, REG_COLL_AN, regCollInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, REG_COLL_AN, regCollInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

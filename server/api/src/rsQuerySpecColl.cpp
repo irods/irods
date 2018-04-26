@@ -63,7 +63,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // we know that the redirection decision has already been made
     std::string hier;
     char* hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    if ( NULL == hier_kw ) {
+    if ( nullptr == hier_kw ) {
         irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
                            dataObjInp, hier );
         if ( !ret.ok() ) {
@@ -113,7 +113,7 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
     int specCollInx;
-    dataObjInfo_t *dataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfo = nullptr;
     int status;
     int l3descInx;
 
@@ -121,7 +121,7 @@ openSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx ) {
                                     //READ_COLL_PERM, 0, &dataObjInfo);
                                     UNKNOWN_COLL_PERM, 0, &dataObjInfo );
 
-    if ( status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == dataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog( LOG_NOTICE,
                  "rsQuerySpecColl: resolveSpecColl error for %s, status = %d",
                  dataObjInp->objPath, status );
@@ -217,7 +217,7 @@ int
 _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
                   dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag ) {
     int status = 0;
-    rodsDirent_t *rodsDirent = NULL;
+    rodsDirent_t *rodsDirent = nullptr;
     dataObjInfo_t *dataObjInfo;
     int rowCnt;
     objType_t selObjType;
@@ -232,7 +232,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
     }
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, SEL_OBJ_TYPE_KW ) ) !=
-            NULL ) {
+            nullptr ) {
         if ( strcmp( tmpStr, "dataObj" ) == 0 ) {
             selObjType = DATA_OBJ_T;
         }
@@ -244,7 +244,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
         selObjType = UNKNOWN_OBJ_T;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, RECURSIVE_OPR__KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RECURSIVE_OPR__KW ) != nullptr ) {
         recurFlag = 1;
     }
     else {
@@ -278,7 +278,7 @@ _rsQuerySpecColl( rsComm_t *rsComm, int specCollInx,
         snprintf( myDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
                   dataObjInfo->filePath, myRodsDirent.d_name );
 
-        rodsStat_t *fileStatOut = NULL;
+        rodsStat_t *fileStatOut = nullptr;
         status = l3Stat( rsComm, &myDataObjInfo, &fileStatOut );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
@@ -397,7 +397,7 @@ specCollReaddir( rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent ) 
     int status;
     dataObjInfo_t *dataObjInfo = SpecCollDesc[specCollInx].dataObjInfo;
 
-    if ( dataObjInfo == NULL || ( specColl = dataObjInfo->specColl ) == NULL ) {
+    if ( dataObjInfo == nullptr || ( specColl = dataObjInfo->specColl ) == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -445,7 +445,7 @@ specCollClosedir( rsComm_t *rsComm, int specCollInx ) {
     int status;
     dataObjInfo_t *dataObjInfo = SpecCollDesc[specCollInx].dataObjInfo;
 
-    if ( dataObjInfo == NULL || ( specColl = dataObjInfo->specColl ) == NULL ) {
+    if ( dataObjInfo == nullptr || ( specColl = dataObjInfo->specColl ) == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -490,7 +490,7 @@ l3Opendir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
     fileOpendirInp_t fileOpendirInp;
     int status;
 
-    if ( dataObjInfo == NULL ) {
+    if ( dataObjInfo == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 

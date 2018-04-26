@@ -140,7 +140,7 @@ irods::error load_balanced_get_resc_for_call(
 irods::error load_balanced_start_operation(
     irods::plugin_property_map&,
     irods::resource_child_map& ) {
-    srand( time( NULL ) );
+    srand( time( nullptr ) );
     return SUCCESS();
 
 } // load_balanced_start_operation
@@ -633,9 +633,9 @@ irods::error get_load_lists(
     // =-=-=-=-=-=-=-
     //
     int i = 0, j = 0, nresc = 0, status = 0;
-    char* tResult = 0;
+    char* tResult = nullptr;
     genQueryInp_t  genQueryInp;
-    genQueryOut_t* genQueryOut = NULL;
+    genQueryOut_t* genQueryOut = nullptr;
 
     // =-=-=-=-=-=-=-
     // query the database in order to retrieve the information on the
@@ -916,7 +916,7 @@ irods::error load_balanced_file_resolve_hierarchy(
         return PASSMSG( "Invalid resource context.", ret );
     }
 
-    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+    if ( nullptr == _opr || nullptr == _curr_host || nullptr == _out_parser || nullptr == _out_vote ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid parameters." );
     }
 

@@ -25,20 +25,20 @@ rsObjStat(
     dataObjInp_t *dataObjInp,
     rodsObjStat_t **rodsObjStatOut ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
-    specCollCache_t *specCollCache = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
+    specCollCache_t *specCollCache = nullptr;
     int linkCnt;
 
     linkCnt = resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
-                                 NULL );
+                                 nullptr );
 
-    *rodsObjStatOut = NULL;
+    *rodsObjStatOut = nullptr;
     status = getAndConnRcatHost(
                  rsComm,
                  SLAVE_RCAT,
                  ( const char* )dataObjInp->objPath,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -73,9 +73,9 @@ rsObjStat(
             }
             else if ( status != SYS_SPEC_COLL_NOT_IN_CACHE ) {
                 /* path is in the path of specColl cache but does not exist */
-                if ( linkCnt > 0 && *rodsObjStatOut != NULL ) {
+                if ( linkCnt > 0 && *rodsObjStatOut != nullptr ) {
                     /* a soft link - returns specColl */
-                    if ( ( *rodsObjStatOut )->specColl == NULL ) {
+                    if ( ( *rodsObjStatOut )->specColl == nullptr ) {
                         replSpecColl( &specCollCache->specColl,
                                       &( *rodsObjStatOut )->specColl );
                     }
@@ -89,15 +89,15 @@ rsObjStat(
         }
         /* not in cache, need to do a remote call */
         status = rcObjStat( rodsServerHost->conn, dataObjInp, rodsObjStatOut );
-        if ( status >= 0 && *rodsObjStatOut != NULL && ( *rodsObjStatOut )->specColl != NULL ) {
+        if ( status >= 0 && *rodsObjStatOut != nullptr && ( *rodsObjStatOut )->specColl != nullptr ) {
             /* queue it in cache */
             queueSpecCollCacheWithObjStat( *rodsObjStatOut );
         }
     }
 
-    if ( linkCnt > 0 && *rodsObjStatOut != NULL ) {
+    if ( linkCnt > 0 && *rodsObjStatOut != nullptr ) {
         /* fill in (*rodsObjStatOut)->specColl if it is linked */
-        if ( ( *rodsObjStatOut )->specColl == NULL ) {
+        if ( ( *rodsObjStatOut )->specColl == nullptr ) {
             replSpecColl( &specCollCache->specColl,
                           &( *rodsObjStatOut )->specColl );
         }
@@ -117,18 +117,18 @@ _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* do data first to catch data registered in spec Coll */
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, SEL_OBJ_TYPE_KW ) ) ==
-            NULL || strcmp( tmpStr, "dataObj" ) == 0 ) {
+            nullptr || strcmp( tmpStr, "dataObj" ) == 0 ) {
         status = dataObjStat( rsComm, dataObjInp, rodsObjStatOut );
         if ( status >= 0 ) {
             return status;
         }
     }
 
-    if ( tmpStr == NULL || strcmp( tmpStr, "collection" ) == 0 ) {
+    if ( tmpStr == nullptr || strcmp( tmpStr, "collection" ) == 0 ) {
         status = collStat( rsComm, dataObjInp, rodsObjStatOut );
         /* specColl may already been obtained from collStat */
         if ( status >= 0 ) {
-            if ( ( *rodsObjStatOut )->specColl == NULL ) {
+            if ( ( *rodsObjStatOut )->specColl == nullptr ) {
                 if ( getSpecCollCache( rsComm, dataObjInp->objPath, 0,
                                        &specCollCache ) >= 0 ) {
                     replSpecColl( &specCollCache->specColl,
@@ -154,7 +154,7 @@ int
 dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              rodsObjStat_t **rodsObjStatOut ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
@@ -204,61 +204,61 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if ( status >= 0 ) {
         if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_DATA_SIZE failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( dataMode = getSqlResultByInx( genQueryOut,
-                               COL_DATA_MODE ) ) == NULL ) {
+                               COL_DATA_MODE ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_DATA_MODE failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( replStatus = getSqlResultByInx( genQueryOut,
-                                 COL_D_REPL_STATUS ) ) == NULL ) {
+                                 COL_D_REPL_STATUS ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_D_REPL_STATUS failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( dataId = getSqlResultByInx( genQueryOut,
-                                                COL_D_DATA_ID ) ) == NULL ) {
+                                                COL_D_DATA_ID ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( chksum = getSqlResultByInx( genQueryOut,
-                                                COL_D_DATA_CHECKSUM ) ) == NULL ) {
+                                                COL_D_DATA_CHECKSUM ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerName = getSqlResultByInx( genQueryOut,
-                                COL_D_OWNER_NAME ) ) == NULL ) {
+                                COL_D_OWNER_NAME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_OWNER_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
-                                COL_D_OWNER_ZONE ) ) == NULL ) {
+                                COL_D_OWNER_ZONE ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_OWNER_ZONE failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( createTime = getSqlResultByInx( genQueryOut,
-                                 COL_D_CREATE_TIME ) ) == NULL ) {
+                                 COL_D_CREATE_TIME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_CREATE_TIME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
-                                 COL_D_MODIFY_TIME ) ) == NULL ) {
+                                 COL_D_MODIFY_TIME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_MODIFY_TIME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( rescHier = getSqlResultByInx( genQueryOut,
-                                                COL_D_RESC_HIER ) ) == NULL ) {
+                                                COL_D_RESC_HIER ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_D_RESC_HIER failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -278,7 +278,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     rstrcpy( ( *rodsObjStatOut )->dataId,
                              &dataId->value[dataId->len * i], NAME_LEN );
                     ( *rodsObjStatOut )->objSize =
-                        strtoll( &dataSize->value[dataSize->len * i], 0, 0 );
+                        strtoll( &dataSize->value[dataSize->len * i], nullptr, 0 );
                     ( *rodsObjStatOut )->dataMode =
                         atoi( &dataMode->value[dataMode->len * i] );
                     rstrcpy( ( *rodsObjStatOut )->chksum,
@@ -300,7 +300,7 @@ dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             if ( strlen( ( *rodsObjStatOut )->dataId ) == 0 ) {
                 /* just use the first one */
                 rstrcpy( ( *rodsObjStatOut )->dataId, dataId->value, NAME_LEN );
-                ( *rodsObjStatOut )->objSize = strtoll( dataSize->value, 0, 0 );
+                ( *rodsObjStatOut )->objSize = strtoll( dataSize->value, nullptr, 0 );
                 rstrcpy( ( *rodsObjStatOut )->chksum, chksum->value, NAME_LEN );
                 rstrcpy( ( *rodsObjStatOut )->ownerName, ownerName->value,
                          NAME_LEN );

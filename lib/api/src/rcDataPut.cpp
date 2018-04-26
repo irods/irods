@@ -36,8 +36,8 @@ int
 rcDataPut( rcComm_t *conn, dataOprInp_t *dataPutInp,
            portalOprOut_t **portalOprOut ) {
     int status;
-    status = procApiRequest( conn, DATA_PUT_AN,  dataPutInp, NULL,
-                             ( void ** ) portalOprOut, NULL );
+    status = procApiRequest( conn, DATA_PUT_AN,  dataPutInp, nullptr,
+                             ( void ** ) portalOprOut, nullptr );
 
     return status;
 }

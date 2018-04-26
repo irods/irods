@@ -50,12 +50,12 @@ int myPID;
 int initializeReDebug( rsComm_t *svrComm ) {
     char condRead[NAME_LEN];
     int i, s, m, status;
-    char *readhdr = NULL;
-    char *readmsg = NULL;
-    char *user = NULL;
-    char *addr = NULL;
+    char *readhdr = nullptr;
+    char *readmsg = nullptr;
+    char *user = nullptr;
+    char *addr = nullptr;
 
-    if ( svrComm == NULL ) {
+    if ( svrComm == nullptr ) {
         return 0;
     }
     if ( GlobalREDebugFlag != 4 ) {
@@ -71,28 +71,28 @@ int initializeReDebug( rsComm_t *svrComm ) {
              svrComm->clientUser.userName, svrComm->clientUser.rodsZone );
     status = _readXMsg( GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr );
     if ( status >= 0 ) {
-        if ( ( readmsg != NULL )  && strlen( readmsg ) > 0 ) {
+        if ( ( readmsg != nullptr )  && strlen( readmsg ) > 0 ) {
             GlobalREDebugFlag = atoi( readmsg );
         }
-        if ( readhdr != NULL ) {
+        if ( readhdr != nullptr ) {
             free( readhdr );
         }
-        if ( readmsg != NULL ) {
+        if ( readmsg != nullptr ) {
             free( readmsg );
         }
-        if ( user != NULL ) {
+        if ( user != nullptr ) {
             free( user );
         }
-        if ( addr != NULL ) {
+        if ( addr != nullptr ) {
             free( addr );
         }
         /* initialize reDebug stack space*/
         for ( i = 0; i < REDEBUG_STACK_SIZE_FULL; i++ ) {
-            reDebugStackFull[i] = NULL;
+            reDebugStackFull[i] = nullptr;
         }
         for ( i = 0; i < REDEBUG_STACK_SIZE_CURR; i++ ) {
             reDebugStackCurr[i].label = -1;
-            reDebugStackCurr[i].step = NULL;
+            reDebugStackCurr[i].step = nullptr;
         }
         memset( breakPoints, 0, sizeof( struct Breakpoint ) * 100 );
 
@@ -116,7 +116,7 @@ int processXMsg( int streamId, char *readmsg,
 
     char myhdr[HEADER_TYPE_LEN];
     char mymsg[MAX_NAME_LEN];
-    char *outStr = NULL;
+    char *outStr = nullptr;
     int i, n;
     int iLevel, wCnt;
     int  ruleInx = 0;
@@ -124,8 +124,8 @@ int processXMsg( int streamId, char *readmsg,
     Res *res;
     rError_t errmsg;
     errmsg.len = 0;
-    errmsg.errMsg = NULL;
-    r = make_region( 0, NULL );
+    errmsg.errMsg = nullptr;
+    r = make_region( 0, nullptr );
     ParserContext *context = newParserContext( &errmsg, r );
     Pointer *e = newPointer2( readmsg );
     int rulegen = 1;
@@ -153,7 +153,7 @@ int processXMsg( int streamId, char *readmsg,
     TTYPE( TK_TEXT );
     int breakPointsInx2;
     for ( breakPointsInx2 = 0; breakPointsInx2 < 100; breakPointsInx2++ ) {
-        if ( breakPoints[breakPointsInx2].actionName == NULL ) {
+        if ( breakPoints[breakPointsInx2].actionName == nullptr ) {
             break;
         }
     }
@@ -163,7 +163,7 @@ int processXMsg( int streamId, char *readmsg,
     }
     else {
         breakPoints[breakPointsInx2].actionName = strdup( token->text );
-        char * base_ptr = NULL;
+        char * base_ptr = nullptr;
         TRY( loc )
         TTYPE( TK_TEXT );
         base_ptr = ( char * ) malloc( sizeof( token->text ) + 2 );
@@ -180,7 +180,7 @@ int processXMsg( int streamId, char *readmsg,
         FILE *file;
         /* char errbuf[ERR_MSG_LEN]; */
         file = fopen( rulesFileName, "r" );
-        if ( file == NULL ) {
+        if ( file == nullptr ) {
             free( context );
             deletePointer( e );
             free( base_ptr );
@@ -194,12 +194,12 @@ int processXMsg( int streamId, char *readmsg,
             breakPoints[breakPointsInx2].finish = range[1];
         }
         else {
-            breakPoints[breakPointsInx2].actionName = NULL;
+            breakPoints[breakPointsInx2].actionName = nullptr;
         }
         deletePointer( p );
         OR( loc )
         TTYPE( TK_INT );
-        if ( node != NULL ) {
+        if ( node != nullptr ) {
             breakPoints[breakPointsInx2].base = strdup( node->base );
             breakPoints[breakPointsInx2].line = atoi( token->text );
             rodsLong_t range[2];
@@ -209,19 +209,19 @@ int processXMsg( int streamId, char *readmsg,
                 breakPoints[breakPointsInx2].finish = range[1];
             }
             else {
-                breakPoints[breakPointsInx2].actionName = NULL;
+                breakPoints[breakPointsInx2].actionName = nullptr;
             }
             deletePointer( p );
         }
         else {
-            breakPoints[breakPointsInx2].actionName = NULL;
+            breakPoints[breakPointsInx2].actionName = nullptr;
         }
         OR( loc )
         /* breakPoints[breakPointsInx].base = NULL; */
         END_TRY( loc )
 
         free( base_ptr );
-        if ( breakPoints[breakPointsInx2].actionName != NULL )
+        if ( breakPoints[breakPointsInx2].actionName != nullptr )
             snprintf( mymsg, MAX_NAME_LEN, "Breakpoint %i  set at %s\n", breakPointsInx2,
                       breakPoints[breakPointsInx2].actionName );
         else {
@@ -293,7 +293,7 @@ int processXMsg( int streamId, char *readmsg,
             int i;
             for ( i = 0; i < n; i++ ) {
                 Bucket *b = node->condIndex->valIndex->buckets[i];
-                while ( b != NULL ) {
+                while ( b != nullptr ) {
                     RuleDesc *rd = getRuleDesc( *( int * )b->value );
                     char buf[MAX_RULE_LEN];
                     ruleToString( buf, MAX_RULE_LEN, rd );
@@ -325,8 +325,8 @@ int processXMsg( int streamId, char *readmsg,
     mymsg[0] = '\n';
     mymsg[1] = '\0';
     for ( i = 0; i < breakPointsInx; i++ ) {
-        if ( breakPoints[i].actionName != NULL ) {
-            if ( breakPoints[i].base != NULL ) {
+        if ( breakPoints[i].actionName != nullptr ) {
+            if ( breakPoints[i].base != nullptr ) {
                 snprintf( mymsg + strlen( mymsg ), MAX_NAME_LEN - strlen( mymsg ), "Breaking at BreakPoint %i:%s %s:%d\n", i , breakPoints[i].actionName, breakPoints[i].base[0] == 's' ? "<source>" : breakPoints[i].base + 1, breakPoints[i].line );
             }
             else {
@@ -343,15 +343,15 @@ int processXMsg( int streamId, char *readmsg,
     mymsg[0] = '\n';
     mymsg[1] = '\0';
     found = 0;
-    while ( cenv != NULL ) {
+    while ( cenv != nullptr ) {
         n = cenv->current->size;
         for ( i = 0; i < n; i++ ) {
             Bucket *b = cenv->current->buckets[i];
-            while ( b != NULL ) {
+            while ( b != nullptr ) {
                 if ( b->key[0] == '*' ) { /* skip none * variables */
                     found = 1;
                     char typeString[128];
-                    typeToString( ( ( Res * )b->value )->exprType, NULL, typeString, 128 );
+                    typeToString( ( ( Res * )b->value )->exprType, nullptr, typeString, 128 );
                     snprintf( mymsg + strlen( mymsg ), MAX_NAME_LEN - strlen( mymsg ), "%s of type %s\n", b->key, typeString );
                 }
                 b = b->next;
@@ -373,12 +373,12 @@ int processXMsg( int streamId, char *readmsg,
     mymsg[1] = '\0';
     Hashtable *vars = newHashTable( 100 );
     for ( i = 0; i < coreRuleVarDef .MaxNumOfDVars; i++ ) {
-        if ( lookupFromHashTable( vars, coreRuleVarDef.varName[i] ) == NULL ) {
+        if ( lookupFromHashTable( vars, coreRuleVarDef.varName[i] ) == nullptr ) {
             snprintf( &mymsg[strlen( mymsg )], MAX_NAME_LEN - strlen( mymsg ), "$%s\n", coreRuleVarDef.varName[i] );
             insertIntoHashTable( vars, coreRuleVarDef.varName[i], coreRuleVarDef.varName[i] );
         }
     }
-    deleteHashTable( vars, NULL );
+    deleteHashTable( vars, nullptr );
     _writeXMsg( streamId, myhdr, mymsg );
     cmd = REDEBUG_WAIT;
     OR( Param )
@@ -400,13 +400,13 @@ int processXMsg( int streamId, char *readmsg,
     TRY( Param )
     TTYPE( TK_INT );
     n = atoi( token->text );
-    if ( breakPoints[n].actionName != NULL ) {
+    if ( breakPoints[n].actionName != nullptr ) {
         free( breakPoints[n].actionName );
-        if ( breakPoints[n].base != NULL ) {
+        if ( breakPoints[n].base != nullptr ) {
             free( breakPoints[n].base );
         }
-        breakPoints[n].actionName = NULL;
-        breakPoints[n].base = NULL;
+        breakPoints[n].actionName = nullptr;
+        breakPoints[n].base = nullptr;
         snprintf( mymsg, MAX_NAME_LEN, "Breakpoint %i  deleted\n", n );
     }
     else {
@@ -430,9 +430,9 @@ int processXMsg( int streamId, char *readmsg,
         i = HEADER_TYPE_LEN - 1 - strlen( myhdr );
         termToString( &ptr, &i, 0, MIN_PREC, n, 0 );
         snprintf( ptr, i, "\n" );
-        if ( env != NULL ) {
+        if ( env != nullptr ) {
             disableReDebugger( grdf );
-            res = computeNode( n, NULL, regionRegionCpEnv( env, r, ( RegionRegionCopyFuncType * ) regionRegionCpNode ), rei, 0, &errmsg, r );
+            res = computeNode( n, nullptr, regionRegionCpEnv( env, r, ( RegionRegionCopyFuncType * ) regionRegionCpNode ), rei, 0, &errmsg, r );
             enableReDebugger( grdf );
             outStr = convertResToString( res );
             snprintf( mymsg, MAX_NAME_LEN, "%s\n", outStr );
@@ -471,9 +471,9 @@ processBreakPoint( int streamId, RuleEngineEventParam *param,
     char myhdr[HEADER_TYPE_LEN];
     snprintf( myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s", param->actionName );
 
-    if ( breakPointsInx > 0 && node != NULL ) {
+    if ( breakPointsInx > 0 && node != nullptr ) {
         for ( int i = 0; i < breakPointsInx; i++ ) {
-            if ( breakPoints[i].base != NULL && breakPoints[i].actionName != NULL &&
+            if ( breakPoints[i].base != nullptr && breakPoints[i].actionName != nullptr &&
                     node->expr >= breakPoints[i].start && node->expr < breakPoints[i].finish &&
                     strcmp( node->base, breakPoints[i].base ) == 0 &&
                     strncmp( param->actionName, breakPoints[i].actionName, strlen( breakPoints[i].actionName ) ) == 0 ) {
@@ -519,7 +519,7 @@ popReStack( RuleEngineEvent label, char* step ) {
     i = reDebugStackCurrPtr - 1;
     while ( i >= 0 && ( reDebugStackCurr[i].label != label || strcmp( reDebugStackCurr[i].step, step ) != 0 ) ) {
         free( reDebugStackCurr[i].step );
-        reDebugStackCurr[i].step = NULL;
+        reDebugStackCurr[i].step = nullptr;
         reDebugStackCurr[i].label = -1;
         i = i - 1;
     }
@@ -548,16 +548,16 @@ int sendWaitXMsg( int streamId ) {
 int cleanUpDebug() {
     int i;
     for ( i = 0 ; i < REDEBUG_STACK_SIZE_CURR; i++ ) {
-        if ( reDebugStackCurr[i].step != NULL ) {
+        if ( reDebugStackCurr[i].step != nullptr ) {
             free( reDebugStackCurr[i].step );
-            reDebugStackCurr[i].step = NULL;
+            reDebugStackCurr[i].step = nullptr;
             reDebugStackCurr[i].label = -1;
         }
     }
     for ( i = 0 ; i < REDEBUG_STACK_SIZE_FULL; i++ ) {
-        if ( reDebugStackFull[i] != NULL ) {
+        if ( reDebugStackFull[i] != nullptr ) {
             free( reDebugStackFull[i] );
-            reDebugStackFull[i] = NULL;
+            reDebugStackFull[i] = nullptr;
         }
     }
     reDebugStackCurrPtr = 0;
@@ -646,10 +646,10 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     int i, m, s, status, sleepT, j;
     int processedBreakPoint = 0;
     char hdr[HEADER_TYPE_LEN];
-    char *readhdr = NULL;
-    char *readmsg = NULL;
-    char *user = NULL;
-    char *addr = NULL;
+    char *readhdr = nullptr;
+    char *readmsg = nullptr;
+    char *user = nullptr;
+    char *addr = nullptr;
     static int mNum = 0;
     static int sNum = 0;
     static int curStat = 0;
@@ -667,7 +667,7 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
 
     svrComm = rei->rsComm;
 
-    if ( svrComm == NULL ) {
+    if ( svrComm == nullptr ) {
         rodsLog( LOG_ERROR, "Empty svrComm in REI structure for actionStr=%s\n",
                  param->actionName );
         return 0;
@@ -681,27 +681,27 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
     snprintf( seActionStr, MAX_NAME_LEN + 10, "%s", buf );
     if ( GlobalREAuditFlag > 0 ) {
         if ( flag == -4 ) {
-            if ( rei->uoic != NULL && strlen( rei->uoic->userName ) > 0 && strlen( rei->uoic->rodsZone ) > 0 ) {
+            if ( rei->uoic != nullptr && strlen( rei->uoic->userName ) > 0 && strlen( rei->uoic->rodsZone ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  USER:%s@%s", rei->uoic->userName, rei->uoic->rodsZone );
                 aNum++;
             }
-            if ( rei->doi != NULL && strlen( rei->doi->objPath ) > 0 ) {
+            if ( rei->doi != nullptr && strlen( rei->doi->objPath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  DATA:%s", rei->doi->objPath );
                 aNum++;
             }
-            if ( rei->doi != NULL && strlen( rei->doi->filePath ) > 0 ) {
+            if ( rei->doi != nullptr && strlen( rei->doi->filePath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  FILE:%s", rei->doi->filePath );
                 aNum++;
             }
-            if ( rei->doinp != NULL && strlen( rei->doinp->objPath ) > 0 ) {
+            if ( rei->doinp != nullptr && strlen( rei->doinp->objPath ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  DATAIN:%s", rei->doinp->objPath );
                 aNum++;
             }
-            if ( rei->doi != NULL && strlen( rei->doi->rescName ) > 0 ) {
+            if ( rei->doi != nullptr && strlen( rei->doi->rescName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  RESC:%s", rei->doi->rescName );
                 aNum++;
             }
-            if ( rei->coi != NULL && strlen( rei->coi->collName ) > 0 ) {
+            if ( rei->coi != nullptr && strlen( rei->coi->collName ) > 0 ) {
                 snprintf( myActionStr[aNum], MAX_NAME_LEN + 10 , "  COLL:%s", rei->coi->collName );
                 aNum++;
             }
@@ -762,16 +762,16 @@ reDebug( RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *nod
                 rodsLog( LOG_NOTICE, "Getting XMsg:%i:%s:%s\n", s, readhdr, readmsg );
                 curStat = processXMsg( GlobalREDebugFlag, readmsg,
                                        param, node, env, rei );
-                if ( readhdr != NULL ) {
+                if ( readhdr != nullptr ) {
                     free( readhdr );
                 }
-                if ( readmsg != NULL ) {
+                if ( readmsg != nullptr ) {
                     free( readmsg );
                 }
-                if ( user != NULL ) {
+                if ( user != nullptr ) {
                     free( user );
                 }
-                if ( addr != NULL ) {
+                if ( addr != nullptr ) {
                     free( addr );
                 }
 

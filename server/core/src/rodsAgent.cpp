@@ -106,7 +106,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
 
         char* tokenized_strings = strtok(in_buf, ";");
 
-        while (tokenized_strings != NULL) {
+        while (tokenized_strings != nullptr) {
             std::string tmpStr = tokenized_strings;
 
             if ( tmpStr == "end_of_vars" ) {
@@ -140,7 +140,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
 
             setenv( lhs.c_str(), rhs.c_str(), 1 );
 
-            tokenized_strings = strtok(NULL, ";");
+            tokenized_strings = strtok(nullptr, ";");
         }
     }
 
@@ -232,8 +232,8 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     }
 
     // [#3563] reproduce serverize log behavior
-    char* logFile = NULL;
-    getLogfileName( &logFile, NULL, RODS_LOGFILE );
+    char* logFile = nullptr;
+    getLogfileName( &logFile, nullptr, RODS_LOGFILE );
     LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
     if ( LogFd < 0 ) {
         rodsLog( LOG_NOTICE, "runIrodsAgent: Unable to open %s. errno = %d",
@@ -249,7 +249,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     while ( true ) {
         // [#3563] check for log file roll over
-        chkLogfileName( NULL, RODS_LOGFILE );
+        chkLogfileName( nullptr, RODS_LOGFILE );
 
         // Reap any zombie processes from completed agents
         int reaped_pid, child_status;
@@ -387,7 +387,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     memset( &rsComm, 0, sizeof( rsComm ) );
     rsComm.thread_ctx = ( thread_context* )malloc( sizeof( thread_context ) );
 
-    status = initRsCommWithStartupPack( &rsComm, NULL );
+    status = initRsCommWithStartupPack( &rsComm, nullptr );
 
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
@@ -398,7 +398,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     }
 
     if ( status < 0 ) {
-        sendVersion( net_obj, status, 0, NULL, 0 );
+        sendVersion( net_obj, status, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 
@@ -410,7 +410,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: getRodsEnv failed" );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 
@@ -446,7 +446,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         return ret.code();
     }
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != NULL ) {
+        if ( strstr( rsComm.myEnv.rodsDebug, "CAT" ) != nullptr ) {
             chlDebug( rsComm.myEnv.rodsDebug );
         }
     }
@@ -455,7 +455,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "agentMain :: initAgent failed: %d", status );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 
@@ -464,7 +464,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                                  rsComm.clientUser.rodsZone );
 
         if ( status < 0 ) {
-            sendVersion( net_obj, status, 0, NULL, 0 );
+            sendVersion( net_obj, status, 0, nullptr, 0 );
             cleanupAndExit( status );
         }
     }
@@ -481,7 +481,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             // send a 'we failed to negotiate' message here??
             // or use the error stack rule engine thingie
             irods::log( PASS( ret ) );
-            sendVersion( net_obj, SERVER_NEGOTIATION_ERROR, 0, NULL, 0 );
+            sendVersion( net_obj, SERVER_NEGOTIATION_ERROR, 0, nullptr, 0 );
             cleanupAndExit( ret.code() );
 
         }
@@ -500,7 +500,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0 );
         cleanupAndExit( status );
     }
 
@@ -570,7 +570,7 @@ int agentMain(
     while ( result.ok() && status >= 0 ) {
 
         // set default to the native auth scheme here.
-        if ( rsComm->auth_scheme == NULL ) {
+        if ( rsComm->auth_scheme == nullptr ) {
             rsComm->auth_scheme = strdup( "native" );
         }
         // construct an auth object based on the scheme specified in the comm
@@ -643,8 +643,8 @@ int agentMain(
 
     // =-=-=-=-=-=-=-
     // find the icat host
-    rodsServerHost_t *rodsServerHost = 0;
-    status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
+    rodsServerHost_t *rodsServerHost = nullptr;
+    status = getRcatHost( MASTER_RCAT, nullptr, &rodsServerHost );
     if ( status < 0 ) {
         irods::log( ERROR( status, "getRcatHost failed." ) );
         return status;

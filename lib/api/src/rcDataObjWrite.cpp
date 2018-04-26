@@ -80,7 +80,7 @@ rcDataObjWrite( rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
                 bytesBuf_t *dataObjWriteInpBBuf ) {
     int status;
     status = procApiRequest( conn, DATA_OBJ_WRITE_AN,  dataObjWriteInp,
-                             dataObjWriteInpBBuf, ( void ** ) NULL, NULL );
+                             dataObjWriteInpBBuf, ( void ** ) nullptr, nullptr );
 
     return status;
 }

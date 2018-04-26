@@ -13,14 +13,14 @@
 int
 rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
     status = getAndConnRcatHost(
                  rsComm,
                  MASTER_RCAT,
                  ( const char* )modCollInp->collName,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -69,7 +69,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
 
         memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
         rei2.rsComm = rsComm;
-        if ( rsComm != NULL ) {
+        if ( rsComm != nullptr ) {
             rei2.uoic = &rsComm->clientUser;
             rei2.uoip = &rsComm->proxyUser;
         }
@@ -79,20 +79,20 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
         rstrcpy( collInfo.collName, modCollInp->collName, MAX_NAME_LEN );
 
         if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                     COLLECTION_TYPE_KW ) ) != NULL ) {
+                                     COLLECTION_TYPE_KW ) ) != nullptr ) {
             rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
         }
         if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                     COLLECTION_INFO1_KW ) ) != NULL ) {
+                                     COLLECTION_INFO1_KW ) ) != nullptr ) {
             rstrcpy( collInfo.collInfo1, tmpStr, MAX_NAME_LEN );
         }
         if ( ( tmpStr = getValByKey( &modCollInp->condInput,
-                                     COLLECTION_INFO2_KW ) ) != NULL ) {
+                                     COLLECTION_INFO2_KW ) ) != nullptr ) {
             rstrcpy( collInfo.collInfo2, tmpStr, MAX_NAME_LEN );
         }
         /**  June 1 2009 for pre-post processing rule hooks **/
         rei2.coi = &collInfo;
-        i =  applyRule( "acPreProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
+        i =  applyRule( "acPreProcForModifyCollMeta", nullptr, &rei2, NO_SAVE_REI );
         if ( i < 0 ) {
             if ( rei2.status < 0 ) {
                 i = rei2.status;
@@ -108,7 +108,7 @@ _rsModColl( rsComm_t *rsComm, collInp_t *modCollInp ) {
 
         /**  June 1 2009 for pre-post processing rule hooks **/
         if ( status >= 0 ) {
-            i =  applyRule( "acPostProcForModifyCollMeta", NULL, &rei2, NO_SAVE_REI );
+            i =  applyRule( "acPostProcForModifyCollMeta", nullptr, &rei2, NO_SAVE_REI );
             if ( i < 0 ) {
                 if ( rei2.status < 0 ) {
                     i = rei2.status;

@@ -11,8 +11,8 @@ namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
     ssl_object::ssl_object() :
-        ssl_ctx_( 0 ),
-        ssl_( 0 ),
+        ssl_ctx_( nullptr ),
+        ssl_( nullptr ),
         key_size_( 0 ),
         salt_size_( 0 ),
         num_hash_rounds_( 0 ) {

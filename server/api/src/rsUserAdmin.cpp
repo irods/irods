@@ -16,7 +16,7 @@ rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
 
     rodsLog( LOG_DEBUG, "userAdmin" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )nullptr, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }
@@ -65,7 +65,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
 
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
@@ -158,7 +158,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
+        status = applyRuleArg( "acCreateUser", nullptr, 0, &rei, SAVE_REI );
         if ( status != 0 ) {
             chlRollback( rsComm );
             return status;
@@ -190,7 +190,7 @@ _rsUserAdmin( rsComm_t *rsComm, userAdminInp_t *userAdminInp ) {
         rei.uoio = &userInfo;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
-        status = applyRuleArg( "acCreateUser", NULL, 0, &rei, SAVE_REI );
+        status = applyRuleArg( "acCreateUser", nullptr, 0, &rei, SAVE_REI );
         if ( status != 0 ) {
             chlRollback( rsComm );
         }

@@ -76,8 +76,8 @@ svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
     int reconnFlag;
 
 
-    if ( rodsServerHost->conn == NULL ) { /* a connection already */
-        if ( getenv( RECONNECT_ENV ) != NULL ) {
+    if ( rodsServerHost->conn == nullptr ) { /* a connection already */
+        if ( getenv( RECONNECT_ENV ) != nullptr ) {
             reconnFlag = RECONN_TIMEOUT;
         }
         else {
@@ -89,7 +89,7 @@ svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
                                            rsComm->clientUser.userName, rsComm->clientUser.rodsZone, &errMsg,
                                            rsComm->connectCnt, reconnFlag );
 
-        if ( rodsServerHost->conn == NULL ) {
+        if ( rodsServerHost->conn == nullptr ) {
             if ( errMsg.status < 0 ) {
                 return errMsg.status;
             }
@@ -137,11 +137,11 @@ svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
 int
 setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                           int oprType, portalOprOut_t **portalOprOut ) {
-    portalOprOut_t *myDataObjPutOut = NULL;
+    portalOprOut_t *myDataObjPutOut = nullptr;
     int portalSock = 0;
     int proto = 0;
 
-    if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
+    if ( getValByKey( &dataOprInp->condInput, RBUDP_TRANSFER_KW ) != nullptr ) {
         proto = SOCK_DGRAM;
     }
     else {
@@ -153,7 +153,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 
     *portalOprOut = myDataObjPutOut;
 
-    if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != NULL ||
+    if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != nullptr ||
             proto == SOCK_DGRAM ) {
         /* streaming or udp - use only one thread */
         myDataObjPutOut->numThreads = 1;
@@ -163,7 +163,7 @@ setupSrvPortalForParaOpr( rsComm_t *rsComm, dataOprInp_t *dataOprInp,
                                       dataOprInp->dataSize, dataOprInp->numThreads,
                                       &dataOprInp->condInput,
                                       //getValByKey (&dataOprInp->condInput, RESC_NAME_KW), NULL);
-                                      getValByKey( &dataOprInp->condInput,  RESC_HIER_STR_KW ), NULL, oprType );
+                                      getValByKey( &dataOprInp->condInput,  RESC_HIER_STR_KW ), nullptr, oprType );
     }
 
     if ( myDataObjPutOut->numThreads == 0 ) {
@@ -214,10 +214,10 @@ int
 createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     int lsock = -1;
     int lport = 0;
-    char *laddr = NULL;
+    char *laddr = nullptr;
     int udpsock = -1;
     int udpport = 0;
-    char *udpaddr = NULL;
+    char *udpaddr = nullptr;
 
 
     if ( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
@@ -241,7 +241,7 @@ createSrvPortal( rsComm_t *rsComm, portList_t *thisPortList, int proto ) {
     }
     else {
         /* server. try to use what is configured */
-        if (    LocalServerHost != NULL
+        if (    LocalServerHost != nullptr
              && strcmp( LocalServerHost->hostName->name, "localhost" ) != 0
              && get_canonical_name( LocalServerHost->hostName->name, thisPortList->hostAddr, LONG_NAME_LEN) == 0 ) {
             // empty block b/c get_canonical_name does the copy on success
@@ -292,7 +292,7 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
     while ( true ) {
         FD_ZERO( &basemask );
         FD_SET( sockfd, &basemask );
-        nSelected = select( nfds, &basemask, ( fd_set * ) NULL, ( fd_set * ) NULL, &selectTimeout );
+        nSelected = select( nfds, &basemask, ( fd_set * ) nullptr, ( fd_set * ) nullptr, &selectTimeout );
         if ( nSelected < 0 ) {
             if ( errno == EINTR || errno == EAGAIN ) {
                 rodsLog( LOG_ERROR, "acceptSrvPortal: select interrupted, errno = %d", errno );
@@ -313,7 +313,7 @@ acceptSrvPortal( rsComm_t *rsComm, portList_t *thisPortList ) {
 
     const int saved_socket_flags = fcntl( sockfd, F_GETFL );
     fcntl( sockfd, F_SETFL, saved_socket_flags | O_NONBLOCK );
-    const int myFd = accept( sockfd, 0, 0 );
+    const int myFd = accept( sockfd, nullptr, nullptr );
     fcntl( sockfd, F_SETFL, saved_socket_flags );
 
     if ( myFd < 0 ) {
@@ -402,13 +402,13 @@ svrPortalPutGet( rsComm_t *rsComm ) {
 
     myPortalOpr = rsComm->portalOpr;
 
-    if ( myPortalOpr == NULL ) {
+    if ( myPortalOpr == nullptr ) {
         rodsLog( LOG_NOTICE, "svrPortalPut: NULL myPortalOpr" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     thisPortList = &myPortalOpr->portList;
-    if ( thisPortList == NULL ) {
+    if ( thisPortList == nullptr ) {
         rodsLog( LOG_NOTICE, "svrPortalPut: NULL portList" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -422,7 +422,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
     oprType = myPortalOpr->oprType;
     dataOprInp = &myPortalOpr->dataOprInp;
 
-    if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != NULL ) {
+    if ( getValByKey( &dataOprInp->condInput, STREAMING_KW ) != nullptr ) {
         flags |= STREAMING_FLAG;
     }
 
@@ -537,7 +537,7 @@ svrPortalPutGet( rsComm_t *rsComm ) {
         }
 
         for ( i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
+            if ( tid[i] != nullptr ) {
                 tid[i]->join();
             }
             if ( myInput[i].status < 0 ) {
@@ -562,7 +562,7 @@ int fillPortalTransferInp(
     rodsLong_t           offset,
     int                  flags ) {
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -599,12 +599,12 @@ int fillPortalTransferInp(
 void
 partialDataPut( portalTransferInp_t *myInput ) {
     int destL3descInx = 0, srcFd = 0;
-    unsigned char *buf = 0;
+    unsigned char *buf = nullptr;
     int bytesWritten = 0;
     rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_SYS_FATAL, "partialDataPut: NULL myInput" );
         return;
     }
@@ -726,7 +726,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
                                 srcFd,
                                 &new_size,
                                 sizeof( int ),
-                                NULL, NULL );
+                                nullptr, nullptr );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
                     break;
@@ -739,7 +739,7 @@ partialDataPut( portalTransferInp_t *myInput ) {
                             srcFd,
                             buf,
                             new_size,
-                            NULL, NULL );
+                            nullptr, nullptr );
 
             if ( bytesRead == new_size ) {
                 // =-=-=-=-=-=-=-
@@ -834,7 +834,7 @@ void partialDataGet(
     rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_SYS_FATAL, "partialDataGet: NULL myInput" );
         return;
     }
@@ -1069,12 +1069,12 @@ void
 remToLocPartialCopy( portalTransferInp_t *myInput ) {
     transferHeader_t myHeader;
     int destL3descInx = 0, srcFd = 0;
-    unsigned char *buf = 0;
+    unsigned char *buf = nullptr;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
     int toRead, bytesRead = 0, bytesWritten = 0;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remToLocPartialCopy: NULL input" );
         return;
@@ -1164,7 +1164,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
             // read the incoming size as it might differ due to encryption
             int new_size = toRead;
             if ( use_encryption_flg ) {
-                bytesRead = myRead( srcFd, &new_size, sizeof( int ), NULL, NULL );
+                bytesRead = myRead( srcFd, &new_size, sizeof( int ), nullptr, nullptr );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
                     break;
@@ -1173,7 +1173,7 @@ remToLocPartialCopy( portalTransferInp_t *myInput ) {
 
             // =-=-=-=-=-=-=-
             // now read the provided number of bytes as suggested by the incoming size
-            bytesRead = myRead( srcFd, buf, new_size, NULL, NULL );
+            bytesRead = myRead( srcFd, buf, new_size, nullptr, nullptr );
             if ( bytesRead != new_size ) {
                 if ( bytesRead < 0 ) {
                     myInput->status = bytesRead;
@@ -1265,7 +1265,7 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
     char *tmpStr;
     int status;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rbudpRemLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1274,7 +1274,7 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
     oprType = dataOprInp->oprType;
 
-    if ( getValByKey( &dataOprInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+    if ( getValByKey( &dataOprInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
         veryVerbose = 2;
     }
     else {
@@ -1282,7 +1282,7 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
     }
 
     if ( ( tmpStr = getValByKey( &dataOprInp->condInput,
-                                 RBUDP_PACK_SIZE_KW ) ) != NULL ) {
+                                 RBUDP_PACK_SIZE_KW ) ) != nullptr ) {
         packetSize = atoi( tmpStr );
     }
     else {
@@ -1292,7 +1292,7 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
     if ( oprType == COPY_TO_LOCAL_OPR ) {
         int destL3descInx = dataOprInp->destL3descInx;
 
-        status = getFileToPortalRbudp( portalOprOut, NULL,
+        status = getFileToPortalRbudp( portalOprOut, nullptr,
                                        FileDesc[destL3descInx].fd,
                                        veryVerbose, packetSize );
 
@@ -1301,13 +1301,13 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
         int srcL3descInx = dataOprInp->srcL3descInx;
 
         if ( ( tmpStr = getValByKey( &dataOprInp->condInput,
-                                     RBUDP_SEND_RATE_KW ) ) != NULL ) {
+                                     RBUDP_SEND_RATE_KW ) ) != nullptr ) {
             sendRate = atoi( tmpStr );
         }
         else {
             sendRate = DEF_UDP_SEND_RATE;
         }
-        status = putFileToPortalRbudp( portalOprOut, NULL,
+        status = putFileToPortalRbudp( portalOprOut, nullptr,
                                        FileDesc[srcL3descInx].fd,
                                        veryVerbose, sendRate, packetSize );
     }
@@ -1329,7 +1329,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t dataSize;
     int oprType;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1383,7 +1383,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     if ( numThreads == 1 ) {
         if ( getValByKey( &dataOprInp->condInput,
-                          NO_CHK_COPY_LEN_KW ) != NULL ) {
+                          NO_CHK_COPY_LEN_KW ) != nullptr ) {
             myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
         }
         if ( oprType == COPY_TO_LOCAL_OPR ) {
@@ -1467,7 +1467,7 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         }
 
         for ( i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
+            if ( tid[i] != nullptr ) {
                 tid[i]->join();
             }
             totalWritten += myInput[i].bytesWritten;
@@ -1502,7 +1502,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t dataSize;
     rodsLong_t size0, size1, offset0;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "sameHostCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1541,7 +1541,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
 
     if ( numThreads == 1 ) {
         if ( getValByKey( &dataOprInp->condInput,
-                          NO_CHK_COPY_LEN_KW ) != NULL ) {
+                          NO_CHK_COPY_LEN_KW ) != nullptr ) {
             myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
         }
         sameHostPartialCopy( &myInput[0] );
@@ -1596,7 +1596,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
         }
 
         for ( i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
+            if ( tid[i] != nullptr ) {
                 tid[i]->join();
             }
             totalWritten += myInput[i].bytesWritten;
@@ -1629,7 +1629,7 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
     rodsLong_t toCopy;
     int bytesRead, bytesWritten;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "onsameHostPartialCopy: NULL input" );
         return;
@@ -1740,12 +1740,12 @@ void
 locToRemPartialCopy( portalTransferInp_t *myInput ) {
     transferHeader_t myHeader;
     int srcL3descInx = 0, destFd = 0;
-    unsigned char *buf = 0;
+    unsigned char *buf = nullptr;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
     int toRead = 0, bytesRead = 0, bytesWritten = 0;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "locToRemPartialCopy: NULL input" );
         return;
@@ -1904,7 +1904,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
                                destFd,
                                buf,
                                new_size,
-                               NULL );
+                               nullptr );
 
             if ( bytesWritten != new_size ) {
                 rodsLog( LOG_NOTICE,
@@ -1946,14 +1946,14 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     zoneInfo_t *tmpZoneInfo;
     rodsServerHost_t *tmpRodsServerHost;
     int zoneNameLen = 0;
-    char *localZoneName = NULL;
+    char *localZoneName = nullptr;
 
     if ( !zoneSID ) {
         rodsLog( LOG_ERROR, "getZoneServerId - input zoneSID is NULL" );
         return;
     }
 
-    if ( zoneName != NULL ) {
+    if ( zoneName != nullptr ) {
         zoneNameLen = strlen( zoneName );
     }
     if ( zoneNameLen == 0 ) {
@@ -1963,7 +1963,7 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
 
     /* get our local zoneName */
     tmpZoneInfo = ZoneInfoHead;
-    while ( tmpZoneInfo != NULL ) {
+    while ( tmpZoneInfo != nullptr ) {
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
             localZoneName = tmpZoneInfo->zoneName;
@@ -1972,7 +1972,7 @@ getZoneServerId( char *zoneName, char *zoneSID ) {
     }
 
     /* return the local SID if the local zone is the one requested */
-    if ( localZoneName != NULL ) {
+    if ( localZoneName != nullptr ) {
         if ( strncmp( localZoneName, zoneName, MAX_NAME_LEN ) == 0 ) {
             strncpy( zoneSID, localSID, MAX_PASSWORD_LEN );
             return;
@@ -2035,13 +2035,13 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
 
     myPortalOpr = rsComm->portalOpr;
 
-    if ( myPortalOpr == NULL ) {
+    if ( myPortalOpr == nullptr ) {
         rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL myPortalOpr" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     thisPortList = &myPortalOpr->portList;
-    if ( thisPortList == NULL ) {
+    if ( thisPortList == nullptr ) {
         rodsLog( LOG_NOTICE, "svrPortalPutGetRbudp: NULL portList" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -2067,13 +2067,13 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         return SYS_UDP_CONNECT_ERR;
     }
 
-    if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_PACK_SIZE_KW ) ) == NULL ||
+    if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_PACK_SIZE_KW ) ) == nullptr ||
             ( packetSize = atoi( tmpStr ) ) < 1 ) {
         packetSize = DEF_UDP_PACKET_SIZE;
     }
 
     if ( getValByKey( &myPortalOpr->dataOprInp.condInput, VERY_VERBOSE_KW ) !=
-            NULL ) {
+            nullptr ) {
         verbose = 2;
     }
     else {
@@ -2147,7 +2147,7 @@ svrPortalPutGetRbudp( rsComm_t *rsComm ) {
         }
         rbudpSender.rbudpBase.udpServerAddr.sin_port =
             htons( rbudpSender.rbudpBase.udpRemotePort );
-        if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_SEND_RATE_KW ) ) == NULL ||
+        if ( ( tmpStr = getValByKey( &myPortalOpr->dataOprInp.condInput, RBUDP_SEND_RATE_KW ) ) == nullptr ||
                 ( sendRate = atoi( tmpStr ) ) < 1 ) {
             sendRate = DEF_UDP_SEND_RATE;
         }
@@ -2175,7 +2175,7 @@ reconnManager( rsComm_t *rsComm ) {
     reconnMsg_t *reconnMsg;
     int acceptFailCnt = 0;
 
-    if ( rsComm == NULL || rsComm->reconnSock <= 0 ) {
+    if ( rsComm == nullptr || rsComm->reconnSock <= 0 ) {
         return;
     }
 
@@ -2194,7 +2194,7 @@ reconnManager( rsComm_t *rsComm ) {
     while ( 1 ) {
         int nSelected;
         while ( ( nSelected = select( nSockets, &basemask,
-                                      ( fd_set * ) NULL, ( fd_set * ) NULL, NULL ) ) < 0 ) {
+                                      ( fd_set * ) nullptr, ( fd_set * ) nullptr, nullptr ) ) < 0 ) {
             if ( errno == EINTR ) {
                 rodsLog( LOG_NOTICE, "reconnManager: select interrupted\n" );
                 continue;
@@ -2373,14 +2373,14 @@ svrSockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         return status;
     }
 
-    if ( addr != NULL && *addr != NULL &&
+    if ( addr != nullptr && *addr != nullptr &&
             ( isLoopbackAddress( *addr ) || strcmp( *addr, "0.0.0.0" ) == 0 ||
               strcmp( *addr, "localhost" ) == 0 ) ) {
         /* localhost */
         char *myaddr;
 
         myaddr = getLocalSvrAddr();
-        if ( myaddr != NULL ) {
+        if ( myaddr != nullptr ) {
             free( *addr );
             *addr = strdup( myaddr );
         }
@@ -2404,21 +2404,21 @@ char *
 _getSvrAddr( rodsServerHost_t *rodsServerHost ) {
     hostName_t *tmpHostName;
 
-    if ( rodsServerHost == NULL ) {
-        return NULL;
+    if ( rodsServerHost == nullptr ) {
+        return nullptr;
     }
 
     tmpHostName = rodsServerHost->hostName;
-    while ( tmpHostName != NULL ) {
+    while ( tmpHostName != nullptr ) {
         if ( strcmp( tmpHostName->name, "localhost" ) != 0 &&
                 !isLoopbackAddress( tmpHostName->name ) &&
                 strcmp( tmpHostName->name, "0.0.0.0" ) != 0 &&
-                strchr( tmpHostName->name, '.' ) != NULL ) {
+                strchr( tmpHostName->name, '.' ) != nullptr ) {
             return tmpHostName->name;
         }
         tmpHostName = tmpHostName->next;
     }
-    return NULL;
+    return nullptr;
 }
 
 char *
@@ -2426,7 +2426,7 @@ getSvrAddr( rodsServerHost_t *rodsServerHost ) {
     char *myHost;
 
     myHost = _getSvrAddr( rodsServerHost );
-    if ( myHost == NULL ) {
+    if ( myHost == nullptr ) {
         /* use the first one */
         myHost = rodsServerHost->hostName->name;
     }
@@ -2437,13 +2437,13 @@ int
 setLocalSrvAddr( char *outLocalAddr ) {
     char *myHost;
 
-    if ( outLocalAddr == NULL ) {
+    if ( outLocalAddr == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     myHost = getSvrAddr( LocalServerHost );
 
-    if ( myHost != NULL ) {
+    if ( myHost != nullptr ) {
         rstrcpy( outLocalAddr, myHost, NAME_LEN );
         return 0;
     }
@@ -2491,7 +2491,7 @@ singleRemLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int status = 0;
     int oprType;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2520,7 +2520,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t totalWritten = 0;
 
     /* a GET type operation */
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "singleRemToLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2561,7 +2561,7 @@ singleRemToLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     free( dataObjReadInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
-            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
+            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != nullptr ) {
         return 0;
     }
     else {
@@ -2584,7 +2584,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     rodsLong_t totalWritten = 0;
 
     /* a PUT type operation */
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "singleRemToLocCopy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2626,7 +2626,7 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     free( dataObjWriteInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
-            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
+            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != nullptr ) {
         return 0;
     }
     else {
@@ -2649,7 +2649,7 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     int bytesWritten, bytesRead;
     rodsLong_t totalWritten = 0;
 
-    if ( dataCopyInp == NULL ) {
+    if ( dataCopyInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "singleL1Copy: NULL dataCopyInp input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2697,7 +2697,7 @@ singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     }
     free( dataObjReadInpBBuf.buf );
     if ( dataSize <= 0 || totalWritten == dataSize ||
-            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
+            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != nullptr ) {
         return 0;
     }
     else {
@@ -2753,13 +2753,13 @@ readStartupPack(
     /* some sanity check */
 
     if ( strcmp( myHeader.type, RODS_CONNECT_T ) != 0 ) {
-        if ( inputStructBBuf.buf != NULL ) {
+        if ( inputStructBBuf.buf != nullptr ) {
             clearBBuf( &inputStructBBuf );
         }
-        if ( bsBBuf.buf != NULL ) {
+        if ( bsBBuf.buf != nullptr ) {
             clearBBuf( &bsBBuf );
         }
-        if ( errorBBuf.buf != NULL ) {
+        if ( errorBBuf.buf != nullptr ) {
             clearBBuf( &errorBBuf );
         }
         std::stringstream msg;
@@ -2768,7 +2768,7 @@ readStartupPack(
     }
 
     if ( myHeader.bsLen != 0 ) {
-        if ( bsBBuf.buf != NULL ) {
+        if ( bsBBuf.buf != nullptr ) {
             clearBBuf( &bsBBuf );
         }
         rodsLog( LOG_NOTICE, "readStartupPack: myHeader.bsLen = %d is not 0",
@@ -2776,7 +2776,7 @@ readStartupPack(
     }
 
     if ( myHeader.errorLen != 0 ) {
-        if ( errorBBuf.buf != NULL ) {
+        if ( errorBBuf.buf != nullptr ) {
             clearBBuf( &errorBBuf );
         }
         rodsLog( LOG_NOTICE,
@@ -2823,7 +2823,7 @@ initServiceUser() {
     struct passwd *pwent;
 
     serviceUser = getenv( "irodsServiceUser" );
-    if ( serviceUser == NULL || getuid() != 0 ) {
+    if ( serviceUser == nullptr || getuid() != 0 ) {
         /* either the option is not set, or not running     */
         /* with the necessary root permission. Just return. */
         return 0;
@@ -3000,7 +3000,7 @@ dropRootPrivilege() {
 */
 int
 checkModArgType( const char *arg ) {
-    if ( arg == NULL || strlen( arg ) == 0 ) {
+    if ( arg == nullptr || strlen( arg ) == 0 ) {
         return CAT_INVALID_ARGUMENT;
     }
     if ( ':' != arg[1] ) {
@@ -3026,7 +3026,7 @@ irods::error setRECacheSaltFromEnv() {
         return SUCCESS();
     } catch ( const irods::exception& ) {
         const char *p_mutex_salt = std::getenv( SP_RE_CACHE_SALT );
-        if ( NULL == p_mutex_salt ) {
+        if ( nullptr == p_mutex_salt ) {
             rodsLog( LOG_ERROR, "setRECacheSaltFromEnv: call to getenv failed" );
             return ERROR( SYS_GETENV_ERR, "setRECacheSaltFromEnv: mutex name already set" );
         }
@@ -3063,13 +3063,13 @@ irods::error get_script_output_single_line(
     }
 
     FILE *fp = popen( exec.str().c_str(), "r" );
-    if ( fp == NULL ) {
+    if ( fp == nullptr ) {
         return ERROR( SYS_FORK_ERROR, "popen() failed" );
     }
 
     std::vector<char> buf( 1000 );
     const char* fgets_ret = fgets( &buf[0], buf.size(), fp );
-    if ( fgets_ret == NULL ) {
+    if ( fgets_ret == nullptr ) {
         std::stringstream msg;
         msg << "fgets() failed. feof["
             << std::feof( fp )

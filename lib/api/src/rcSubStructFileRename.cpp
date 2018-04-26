@@ -22,8 +22,8 @@
 int
 rcSubStructFileRename( rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp ) {
     int status;
-    status = procApiRequest( conn, SUB_STRUCT_FILE_RENAME_AN, subStructFileRenameInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, SUB_STRUCT_FILE_RENAME_AN, subStructFileRenameInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

@@ -513,7 +513,7 @@ irods::error repl_object(
                         addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            sub_hier.c_str() );
                         addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
 
-                        transferStat_t* trans_stat = NULL;
+                        transferStat_t* trans_stat = nullptr;
                         int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
                         free( trans_stat );
                         clearKeyVal( &data_obj_inp.condInput );

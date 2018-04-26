@@ -89,7 +89,7 @@ remoteFilePut(
     filePutOut_t** _put_out ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFilePut: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -136,7 +136,7 @@ int _rsFilePut(
 
     }
     else {
-        fileCreateOut_t* _out = 0;
+        fileCreateOut_t* _out = nullptr;
         fd = _rsFileCreate( _comm, _put_inp, _server_host, &_out );
         free( _out );
 

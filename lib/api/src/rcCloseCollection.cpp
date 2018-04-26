@@ -67,8 +67,8 @@
 int
 rcCloseCollection( rcComm_t *conn, int handleInxInp ) {
     int status;
-    status = procApiRequest( conn, CLOSE_COLLECTION_AN, &handleInxInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, CLOSE_COLLECTION_AN, &handleInxInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

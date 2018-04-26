@@ -19,7 +19,7 @@ rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
     int remoteFlag;
     int status;
 
-    *fileReaddirOut = NULL;
+    *fileReaddirOut = nullptr;
 
     remoteFlag = getServerHostByFileInx( fileReaddirInp->fileInx,
                                          &rodsServerHost );
@@ -53,7 +53,7 @@ remoteFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
                    rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileReaddir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

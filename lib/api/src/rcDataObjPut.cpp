@@ -96,7 +96,7 @@
 int
 rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     int status;
-    portalOprOut_t *portalOprOut = NULL;
+    portalOprOut_t *portalOprOut = nullptr;
     bytesBuf_t dataObjInpBBuf;
 
     if ( dataObjInp->dataSize <= 0 ) {
@@ -115,7 +115,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         return status;
     }
     int single_buff_sz = rods_env.irodsMaxSizeForSingleBuffer * 1024 * 1024;
-    if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != nullptr ) {
         if ( dataObjInp->dataSize > single_buff_sz ) {
             rmKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW );
         }
@@ -147,8 +147,8 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
     clearBBuf( &dataObjInpBBuf );
 
     if ( status < 0 ||
-            getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
-        if ( portalOprOut != NULL ) {
+            getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != nullptr ) {
+        if ( portalOprOut != nullptr ) {
             free( portalOprOut );
         }
         return status;
@@ -168,7 +168,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             return SYS_INVALID_PORTAL_OPR;
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
-        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
             printf( "From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
                     portalOprOut->numThreads, portalOprOut->portList.hostAddr,
                     portalOprOut->portList.portNum, portalOprOut->portList.cookie );
@@ -199,7 +199,7 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
         }
     }
     else {
-        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
             printf( "From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
                     portalOprOut->numThreads, portalOprOut->portList.hostAddr,
                     portalOprOut->portList.portNum, portalOprOut->portList.cookie );
@@ -243,9 +243,9 @@ _rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
     int status;
 
     status = procApiRequest( conn, DATA_OBJ_PUT_AN,  dataObjInp,
-                             dataObjInpBBuf, ( void ** ) portalOprOut, NULL );
+                             dataObjInpBBuf, ( void ** ) portalOprOut, nullptr );
 
-    if ( *portalOprOut != NULL && ( *portalOprOut )->l1descInx < 0 ) {
+    if ( *portalOprOut != nullptr && ( *portalOprOut )->l1descInx < 0 ) {
         status = ( *portalOprOut )->l1descInx;
     }
 

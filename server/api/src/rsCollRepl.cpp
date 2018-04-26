@@ -62,8 +62,8 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     }
 
     fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
-    if ( collOprStat != NULL ) {
-        *collOprStat = NULL;
+    if ( collOprStat != nullptr ) {
+        *collOprStat = nullptr;
     }
     collReplInp->flags = RECUR_QUERY_FG;
     handleInx = rsOpenCollection( rsComm, collReplInp );
@@ -74,12 +74,12 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         return handleInx;
     }
 
-    if ( collOprStat != NULL ) {
+    if ( collOprStat != nullptr ) {
         *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
         memset( *collOprStat, 0, sizeof( collOprStat_t ) );
     }
 
-    if ( CollHandle[handleInx].rodsObjStat->specColl != NULL ) {
+    if ( CollHandle[handleInx].rodsObjStat->specColl != nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsCollRepl: unable to replicate mounted collection %s",
                  collReplInp->collName );
@@ -87,7 +87,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
         return 0;
     }
 
-    collEnt_t *collEnt = NULL;
+    collEnt_t *collEnt = nullptr;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( collEnt->objType == DATA_OBJ_T ) {
             if ( totalFileCnt == 0 ) totalFileCnt =
@@ -100,7 +100,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
 
             memset( &myTransStat, 0, sizeof( myTransStat ) );
             status = _rsDataObjRepl( rsComm, &dataObjInp,
-                                     &myTransStat, NULL );
+                                     &myTransStat, nullptr );
 
             if ( status == SYS_COPY_ALREADY_IN_RESC ) {
                 savedStatus = status;
@@ -115,12 +115,12 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
                 break;
             }
             else {
-                if ( collOprStat != NULL ) {
+                if ( collOprStat != nullptr ) {
                     ( *collOprStat )->bytesWritten += myTransStat.bytesWritten;
                     ( *collOprStat )->filesCnt ++;
                 }
             }
-            if ( collOprStat != NULL &&
+            if ( collOprStat != nullptr &&
                     ( *collOprStat )->filesCnt >= fileCntPerStatOut ) {
                 rstrcpy( ( *collOprStat )->lastObjPath, dataObjInp.objPath,
                          MAX_NAME_LEN );
@@ -130,7 +130,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
                     rodsLogError( LOG_ERROR, status,
                                   "rsCollRepl: svrSendCollOprStat failed for %s. status = %d",
                                   dataObjInp.objPath, status );
-                    *collOprStat = NULL;
+                    *collOprStat = nullptr;
                     savedStatus = status;
                     break;
                 }
@@ -139,7 +139,7 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
             }
         }
         free( collEnt );	   /* just free collEnt but not content */
-        collEnt = NULL;
+        collEnt = nullptr;
     }
     rsCloseCollection( rsComm, &handleInx );
     freeCollEnt( collEnt );

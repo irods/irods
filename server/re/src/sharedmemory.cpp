@@ -16,7 +16,7 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
     irods::error ret = getSharedMemoryName( _key, shared_memory_name );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to get shared memory name" );
-        return NULL;
+        return nullptr;
     }
 
     try {
@@ -45,7 +45,7 @@ unsigned char *prepareServerSharedMemory( const std::string& _key ) {
     }
     catch ( const bi::interprocess_exception &e ) {
         rodsLog( LOG_ERROR, "prepareServerSharedMemory: failed to prepare shared memory. Exception caught [%s]", e.what() );
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -74,7 +74,7 @@ unsigned char *prepareNonServerSharedMemory( const std::string& _key ) {
     irods::error ret = getSharedMemoryName( _key, shared_memory_name );
     if ( !ret.ok() ) {
         rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory name [%s]", shared_memory_name.c_str() );
-        return NULL;
+        return nullptr;
     }
 
     try {
@@ -90,7 +90,7 @@ unsigned char *prepareNonServerSharedMemory( const std::string& _key ) {
     }
     catch ( const bi::interprocess_exception &e ) {
         rodsLog( LOG_ERROR, "prepareNonServerSharedMemory: failed to get shared memory object [%s]. Exception caught [%s]", shared_memory_name.c_str(), e.what() );
-        return NULL;
+        return nullptr;
     }
 }
 

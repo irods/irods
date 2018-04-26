@@ -22,7 +22,7 @@ namespace irods {
 // public - ctor
     file_object::file_object() :
         data_object(),
-        comm_( NULL ),
+        comm_( nullptr ),
         file_descriptor_( -1 ),
         l1_desc_idx_( -1 ),
         size_( 0 ),
@@ -307,15 +307,15 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // make a call to build the linked list
-        dataObjInfo_t* head_ptr = 0;
+        dataObjInfo_t* head_ptr = nullptr;
 
         int status = getDataObjInfoIncSpecColl( _comm, _data_obj_inp, &head_ptr );
-        if ( 0 == head_ptr || status < 0 ) {
+        if ( nullptr == head_ptr || status < 0 ) {
             if ( head_ptr ) {
                 freeAllDataObjInfo( head_ptr );
             }
 
-            char* sys_error = NULL;
+            char* sys_error = nullptr;
             const char* rods_error = rodsErrorName( status, &sys_error );
             std::stringstream msg;
             msg << "failed in call to getDataObjInfoIncSpecColl";

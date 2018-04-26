@@ -84,7 +84,7 @@
 int
 rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp ) {
     int status;
-    transferStat_t *transferStat = NULL;
+    transferStat_t *transferStat = nullptr;
 
     memset( &conn->transStat, 0, sizeof( transferStat_t ) );
 
@@ -93,10 +93,10 @@ rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp ) {
 
     status = _rcDataObjCopy( conn, dataObjCopyInp, &transferStat );
 
-    if ( status >= 0 && transferStat != NULL ) {
+    if ( status >= 0 && transferStat != nullptr ) {
         conn->transStat = *( transferStat );
     }
-    if ( transferStat != NULL ) {
+    if ( transferStat != nullptr ) {
         free( transferStat );
     }
 
@@ -108,8 +108,8 @@ _rcDataObjCopy( rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
                 transferStat_t **transferStat ) {
     int status;
 
-    status = procApiRequest( conn, DATA_OBJ_COPY_AN,  dataObjCopyInp, NULL,
-                             ( void ** ) transferStat, NULL );
+    status = procApiRequest( conn, DATA_OBJ_COPY_AN,  dataObjCopyInp, nullptr,
+                             ( void ** ) transferStat, nullptr );
 
     return status;
 }

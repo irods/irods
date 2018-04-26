@@ -53,10 +53,10 @@ char agent_factory_socket_dir[128];
 uint ServerBootTime;
 int SvrSock;
 
-agentProc_t *ConnectedAgentHead = NULL;
-agentProc_t *ConnReqHead = NULL;
-agentProc_t *SpawnReqHead = NULL;
-agentProc_t *BadReqHead = NULL;
+agentProc_t *ConnectedAgentHead = nullptr;
+agentProc_t *ConnReqHead = nullptr;
+agentProc_t *SpawnReqHead = nullptr;
+agentProc_t *BadReqHead = nullptr;
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -157,7 +157,7 @@ main( int argc, char **argv )
     int c;
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
-    char *logDir = NULL;
+    char *logDir = nullptr;
 
     ProcessType = SERVER_PT;    /* I am a server */
 
@@ -184,7 +184,7 @@ main( int argc, char **argv )
     openlog( "rodsServer", LOG_ODELAY | LOG_PID, LOG_DAEMON );
 #endif
 
-    ServerBootTime = time( 0 );
+    ServerBootTime = time( nullptr );
     while ( ( c = getopt( argc, argv, "uvVqsh" ) ) != EOF ) {
         switch ( c ) {
         case 'u':               /* user command level. without serverized */
@@ -250,7 +250,7 @@ main( int argc, char **argv )
 
     char mkdtemp_template[] = "/tmp/irods_sockets_XXXXXX";
     char* mkdtemp_result = mkdtemp(mkdtemp_template); 
-    if ( mkdtemp_result == NULL ) {
+    if ( mkdtemp_result == nullptr ) {
         rodsLog( LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno) );
         free( logDir );
         return SYS_INTERNAL_ERR;
@@ -274,7 +274,7 @@ main( int argc, char **argv )
         rodsLog( LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid );
         agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
 
-        time_t sock_connect_start_time = time( 0 );
+        time_t sock_connect_start_time = time( nullptr );
         while (true) {
             const unsigned int len = sizeof(local_addr);
             ssize_t status = connect( agent_conn_socket, (const struct sockaddr*) &local_addr, len );
@@ -283,7 +283,7 @@ main( int argc, char **argv )
             }
 
             int saved_errno = errno;
-            if ( ( time( 0 ) - sock_connect_start_time ) > 5 ) {
+            if ( ( time( nullptr ) - sock_connect_start_time ) > 5 ) {
                 rodsLog(LOG_ERROR, "Error connecting to agent factory socket, errno = [%d]: %s", saved_errno, strerror( saved_errno ) );
                 free( logDir );
                 return SYS_SOCK_CONNECT_ERR;
@@ -301,7 +301,7 @@ main( int argc, char **argv )
 
 int
 serverize( char *logDir ) {
-    char *logFile = NULL;
+    char *logFile = nullptr;
 
     // [#3563] server process gets unique log
     getLogfileName( &logFile, logDir, RODS_SERVER_LOGFILE );
@@ -510,8 +510,8 @@ serverMain( char *logDir ) {
             while ( ( numSock = select(
                                     svrComm.sock + 1,
                                     &sockMask,
-                                    ( fd_set * ) NULL,
-                                    ( fd_set * ) NULL,
+                                    ( fd_set * ) nullptr,
+                                    ( fd_set * ) nullptr,
                                     &time_out ) ) < 0 ) {
 
                 if ( errno == EINTR ) {
@@ -628,7 +628,7 @@ serverExit()
     // RTS - rodsLog calls in signal handlers are unsafe - #3326 
     rodsLog( LOG_NOTICE, "rodsServer caught signal %d, exiting", sig );
 #endif
-    recordServerProcess( NULL ); /* unlink the process id file */
+    recordServerProcess( nullptr ); /* unlink the process id file */
 
     close( agent_conn_socket );
     unlink( agent_factory_socket_file );
@@ -653,18 +653,18 @@ usage( char *prog ) {
 int
 procChildren( agentProc_t **agentProcHead ) {
     agentProc_t *tmpAgentProc, *prevAgentProc, *finishedAgentProc;
-    prevAgentProc = NULL;
+    prevAgentProc = nullptr;
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
     tmpAgentProc = *agentProcHead;
 
-    while ( tmpAgentProc != NULL ) {
+    while ( tmpAgentProc != nullptr ) {
         // Check if pid is still an active process
         if ( kill( tmpAgentProc->pid, 0 ) ) {
             finishedAgentProc = tmpAgentProc;
 
-            if ( prevAgentProc == NULL ) {
+            if ( prevAgentProc == nullptr ) {
                 *agentProcHead = tmpAgentProc->next;
             } else {
                 prevAgentProc->next = tmpAgentProc->next;
@@ -685,15 +685,15 @@ procChildren( agentProc_t **agentProcHead ) {
 agentProc_t *
 getAgentProcByPid( int childPid, agentProc_t **agentProcHead ) {
     agentProc_t *tmpAgentProc, *prevAgentProc;
-    prevAgentProc = NULL;
+    prevAgentProc = nullptr;
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
     tmpAgentProc = *agentProcHead;
 
-    while ( tmpAgentProc != NULL ) {
+    while ( tmpAgentProc != nullptr ) {
         if ( childPid == tmpAgentProc->pid ) {
-            if ( prevAgentProc == NULL ) {
+            if ( prevAgentProc == nullptr ) {
                 *agentProcHead = tmpAgentProc->next;
             }
             else {
@@ -716,7 +716,7 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     int newSock;
     startupPack_t *startupPack;
 
-    if ( connReq == NULL ) {
+    if ( connReq == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -775,7 +775,7 @@ ssize_t sendSocketOverSocket( int writeFd, int socket ) {
     cmptr->cmsg_type = SCM_RIGHTS;
     *((int *) CMSG_DATA(cmptr)) = socket;
 
-    msg.msg_name = NULL;
+    msg.msg_name = nullptr;
     msg.msg_namelen = 0;
 
     iov[0].iov_base = (void*) "i";
@@ -951,7 +951,7 @@ execAgent( int newSock, startupPack_t *startupPack ) {
 int
 queConnectedAgentProc( int childPid, agentProc_t *connReq,
                        agentProc_t **agentProcHead ) {
-    if ( connReq == NULL ) {
+    if ( connReq == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -974,7 +974,7 @@ getAgentProcCnt() {
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
     tmpAgentProc = ConnectedAgentHead;
-    while ( tmpAgentProc != NULL ) {
+    while ( tmpAgentProc != nullptr ) {
         count++;
         tmpAgentProc = tmpAgentProc->next;
     }
@@ -1031,12 +1031,12 @@ chkAgentProcCnt() {
 int
 chkConnectedAgentProcQue() {
     agentProc_t *tmpAgentProc, *prevAgentProc, *unmatchedAgentProc;
-    prevAgentProc = NULL;
+    prevAgentProc = nullptr;
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
     tmpAgentProc = ConnectedAgentHead;
 
-    while ( tmpAgentProc != NULL ) {
+    while ( tmpAgentProc != nullptr ) {
         char procPath[MAX_NAME_LEN];
 
         snprintf( procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir,
@@ -1048,7 +1048,7 @@ chkConnectedAgentProcQue() {
             rodsLog( LOG_DEBUG,
                      "Agent process %d in Connected queue but not in ProcLogDir",
                      tmpAgentProc->pid );
-            if ( prevAgentProc == NULL ) {
+            if ( prevAgentProc == nullptr ) {
                 ConnectedAgentHead = tmpAgentProc->next;
             }
             else {
@@ -1070,7 +1070,7 @@ chkConnectedAgentProcQue() {
 int
 initServer( rsComm_t *svrComm ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
     status = initServerInfo( 0, svrComm );
     if ( status < 0 ) {
@@ -1085,9 +1085,9 @@ initServer( rsComm_t *svrComm ) {
 
     printZoneInfo();
 
-    status = getRcatHost( MASTER_RCAT, NULL, &rodsServerHost );
+    status = getRcatHost( MASTER_RCAT, nullptr, &rodsServerHost );
 
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -1105,9 +1105,9 @@ initServer( rsComm_t *svrComm ) {
         }
     }
     else {
-        if ( rodsServerHost->conn != NULL ) {
+        if ( rodsServerHost->conn != nullptr ) {
             rcDisconnect( rodsServerHost->conn );
-            rodsServerHost->conn = NULL;
+            rodsServerHost->conn = nullptr;
         }
     }
 
@@ -1132,7 +1132,7 @@ recordServerProcess( rsComm_t *svrComm ) {
     char *tmp;
     char *cp;
 
-    if ( svrComm == NULL ) {
+    if ( svrComm == nullptr ) {
         if ( filePath[0] != '\0' ) {
             unlink( filePath );
         }
@@ -1142,7 +1142,7 @@ recordServerProcess( rsComm_t *svrComm ) {
 
     /* Use /usr/tmp if it exists, /tmp otherwise */
     dirp = opendir( "/usr/tmp" );
-    if ( dirp != NULL ) {
+    if ( dirp != nullptr ) {
         tmp = "/usr/tmp";
         ( void )closedir( dirp );
     }
@@ -1156,9 +1156,9 @@ recordServerProcess( rsComm_t *svrComm ) {
 
     myPid = getpid();
     cp = getcwd( cwd, 1000 );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         fd = fopen( filePath, "w" );
-        if ( fd != NULL ) {
+        if ( fd != nullptr ) {
             fprintf( fd, "%d %s\n", myPid, cwd );
             fclose( fd );
             int err_code = chmod( filePath, 0664 );
@@ -1202,7 +1202,7 @@ initServerMain( rsComm_t *svrComm ) {
     svrComm->sock = sockOpenForInConn(
             svrComm,
             &zone_port,
-            NULL,
+            nullptr,
             SOCK_STREAM );
     if ( svrComm->sock < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1225,9 +1225,9 @@ initServerMain( rsComm_t *svrComm ) {
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess( svrComm );
     /* start the irodsReServer */
-    rodsServerHost_t *reServerHost = NULL;
+    rodsServerHost_t *reServerHost = nullptr;
     getReHost( &reServerHost );
-    if ( reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST ) {
+    if ( reServerHost != nullptr && reServerHost->localFlag == LOCAL_HOST ) {
         int re_pid = RODS_FORK();
         if ( re_pid == 0 ) { // child
 
@@ -1248,9 +1248,9 @@ initServerMain( rsComm_t *svrComm ) {
         }
     }
 
-    rodsServerHost_t *xmsgServerHost = NULL;
+    rodsServerHost_t *xmsgServerHost = nullptr;
     getXmsgHost( &xmsgServerHost );
-    if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {
+    if ( xmsgServerHost != nullptr && xmsgServerHost->localFlag == LOCAL_HOST ) {
         int xmsg_pid = RODS_FORK();
         if ( 0 == xmsg_pid ) { // child
             char *av[NAME_LEN];
@@ -1297,7 +1297,7 @@ initConnThreadEnv() {
 
 agentProc_t *
 getConnReqFromQue() {
-    agentProc_t *myConnReq = NULL;
+    agentProc_t *myConnReq = nullptr;
 
     irods::server_state& server_state = irods::server_state::instance();
     while ( irods::server_state::STOPPED != server_state() &&
@@ -1469,7 +1469,7 @@ readWorkerTask() {
 
 void
 spawnManagerTask() {
-    agentProc_t *mySpawnReq = NULL;
+    agentProc_t *mySpawnReq = nullptr;
     int status;
     uint curTime;
     uint agentQueChkTime = 0;
@@ -1521,7 +1521,7 @@ spawnManagerTask() {
 
 int
 procSingleConnReq( agentProc_t *connReq ) {
-    if ( connReq == NULL ) {
+    if ( connReq == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -1592,12 +1592,12 @@ procBadReq() {
     boost::unique_lock< boost::mutex > bad_req_lock( BadReqMutex );
 
     tmpConnReq = BadReqHead;
-    while ( tmpConnReq != NULL ) {
+    while ( tmpConnReq != nullptr ) {
         nextConnReq = tmpConnReq->next;
         free( tmpConnReq );
         tmpConnReq = nextConnReq;
     }
-    BadReqHead = NULL;
+    BadReqHead = nullptr;
     bad_req_lock.unlock();
 
     return 0;

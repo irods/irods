@@ -34,8 +34,8 @@
 int
 rcAuthResponse( rcComm_t *conn, authResponseInp_t *authResponseInp ) {
     int status;
-    status = procApiRequest( conn, AUTH_RESPONSE_AN,  authResponseInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, AUTH_RESPONSE_AN,  authResponseInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

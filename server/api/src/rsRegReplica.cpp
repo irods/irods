@@ -179,7 +179,7 @@ namespace irods {
 int
 rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     dataObjInfo_t *srcDataObjInfo;
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
@@ -189,7 +189,7 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
                  MASTER_RCAT,
                  ( const char* )srcDataObjInfo->objPath,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -251,7 +251,7 @@ _rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
 
         srcDataObjInfo = regReplicaInp->srcDataObjInfo;
         destDataObjInfo = regReplicaInp->destDataObjInfo;
-        if ( getValByKey( &regReplicaInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
+        if ( getValByKey( &regReplicaInp->condInput, SU_CLIENT_USER_KW ) != nullptr ) {
             savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
             rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
             status = chlRegReplica( rsComm, srcDataObjInfo, destDataObjInfo,
@@ -306,12 +306,12 @@ int _call_file_modified_for_replica(
             destDataObjInfo ) );
 
     char* pdmo_kw = getValByKey( &regReplicaInp->condInput, IN_PDMO_KW );
-    if ( pdmo_kw != NULL ) {
+    if ( pdmo_kw != nullptr ) {
         file_obj->in_pdmo( pdmo_kw );
     }
 
     char* admin_kw = getValByKey( &regReplicaInp->condInput, ADMIN_KW );
-    if ( admin_kw != NULL ) {
+    if ( admin_kw != nullptr ) {
         addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );;
     }
 

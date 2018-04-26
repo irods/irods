@@ -22,7 +22,7 @@ rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp ) {
     int remoteFlag;
     int fileInx;
     int status;
-    void *dirPtr = NULL;
+    void *dirPtr = nullptr;
 
     //remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
@@ -70,7 +70,7 @@ remoteFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp,
     int fileInx;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileOpendir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

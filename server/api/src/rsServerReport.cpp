@@ -124,7 +124,7 @@ irods::error sanitize_server_config_keys(
 
     // sanitize all federation keys
     size_t      idx = 0;
-    json_t*     obj = 0;
+    json_t*     obj = nullptr;
     json_array_foreach( fed_obj, idx, obj ) {
         json_object_set_new(
             obj,
@@ -411,7 +411,7 @@ irods::error get_resource_array(
 
         irods::resource_ptr resc = itr->second;
 
-        rodsServerHost_t* tmp_host = 0;
+        rodsServerHost_t* tmp_host = nullptr;
         irods::error ret = resc->get_property< rodsServerHost_t* >(
                                irods::RESOURCE_HOST,
                                tmp_host );
@@ -645,7 +645,7 @@ int _rsServerReport(
 
     }
 
-    json_t* version = 0;
+    json_t* version = nullptr;
     irods::error ret = load_version_file(
                            version );
     if ( !ret.ok() ) {
@@ -653,56 +653,56 @@ int _rsServerReport(
     }
     json_object_set_new( resc_svr, "version", version );
 
-    json_t* host_system_information = 0;
+    json_t* host_system_information = nullptr;
     ret = get_host_system_information( host_system_information );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "host_system_information", host_system_information );
 
-    json_t* svr_cfg = 0;
+    json_t* svr_cfg = nullptr;
     ret = convert_server_config( svr_cfg );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "server_config", svr_cfg );
 
-    json_t* host_ctrl = 0;
+    json_t* host_ctrl = nullptr;
     ret = convert_host_access_control( host_ctrl );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "host_access_control_config", host_ctrl );
 
-    json_t* irods_host = 0;
+    json_t* irods_host = nullptr;
     ret = convert_irods_host( irods_host );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "hosts_config", irods_host );
 
-    json_t* svc_acct = 0;
+    json_t* svc_acct = nullptr;
     ret = convert_service_account( svc_acct );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "service_account_environment", svc_acct );
 
-    json_t* plugins = 0;
+    json_t* plugins = nullptr;
     ret = irods::get_plugin_array( plugins );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "plugins", plugins );
 
-    json_t* resources = 0;
+    json_t* resources = nullptr;
     ret = get_resource_array( resources );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
     }
     json_object_set_new( resc_svr, "resources", resources );
 
-    json_t* cfg_dir = 0;
+    json_t* cfg_dir = nullptr;
     ret = get_config_dir( cfg_dir );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );

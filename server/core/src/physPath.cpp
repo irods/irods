@@ -49,7 +49,7 @@ getFileMode( dataObjInp_t *dataObjInp ) {
     int defFileMode;
 
     defFileMode = getDefFileMode();
-    if ( dataObjInp != NULL &&
+    if ( dataObjInp != nullptr &&
             ( dataObjInp->createMode & 0110 ) != 0 ) {
         if ( ( defFileMode & 0070 ) != 0 ) {
             createMode = defFileMode | 0110;
@@ -71,7 +71,7 @@ getFileFlags( int l1descInx ) {
 
     dataObjInp_t *dataObjInp = L1desc[l1descInx].dataObjInp;
 
-    if ( dataObjInp != NULL ) {
+    if ( dataObjInp != nullptr ) {
         flags = dataObjInp->openFlags;
     }
     else {
@@ -94,8 +94,8 @@ getFilePathName( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( dataObjInp != NULL &&
-            ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
+    if ( dataObjInp != nullptr &&
+            ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != nullptr
             && strlen( filePath ) > 0 ) {
         rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
         return 0;
@@ -156,19 +156,19 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     msParam_t *msParam;
     int status;
 
-    if ( outVaultPathPolicy == NULL || dataObjInfo == NULL || rsComm == NULL ) {
+    if ( outVaultPathPolicy == nullptr || dataObjInfo == nullptr || rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getVaultPathPolicy: NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    initReiWithDataObjInp( &rei, rsComm, NULL );
+    initReiWithDataObjInp( &rei, rsComm, nullptr );
 
     rei.doi = dataObjInfo;
 
     // make resource properties available as rule session variables
     irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-    status = applyRule( "acSetVaultPathPolicy", NULL, &rei, NO_SAVE_REI );
+    status = applyRule( "acSetVaultPathPolicy", nullptr, &rei, NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
     if ( status < 0 ) {
@@ -179,7 +179,7 @@ getVaultPathPolicy( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if ( ( msParam = getMsParamByLabel( &rei.inOutMsParamArray,
-                                        VAULT_PATH_POLICY ) ) == NULL ) {
+                                        VAULT_PATH_POLICY ) ) == nullptr ) {
         /* use the default */
         outVaultPathPolicy->scheme = DEF_VAULT_PATH_SCHEME;
         outVaultPathPolicy->addUserName = DEF_ADD_USER_FLAG;
@@ -221,7 +221,7 @@ setPathForRandomScheme( char *objPath, const char *vaultPath, char *userName,
 
     snprintf( outPath, MAX_NAME_LEN,
               "%s/%s/%d/%d/%s.%d", vaultPath, userName, dir1, dir2,
-              logicalFileName, ( uint ) time( NULL ) );
+              logicalFileName, ( uint ) time( nullptr ) );
     return 0;
 }
 
@@ -236,7 +236,7 @@ setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName
 
     for ( i = 0; i < trimDirCnt; i++ ) {
         tmpPtr = strchr( objPathPtr, '/' );
-        if ( tmpPtr == NULL ) {
+        if ( tmpPtr == nullptr ) {
             rodsLog( LOG_ERROR,
                      "setPathForGraftPathScheme: objPath %s too short", objPath );
             break;      /* just use the shorten one */
@@ -251,7 +251,7 @@ setPathForGraftPathScheme( char *objPath, const char *vaultPath, int addUserName
         }
     }
 
-    if ( addUserName > 0 && userName != NULL ) {
+    if ( addUserName > 0 && userName != nullptr ) {
         len = snprintf( outPath, MAX_NAME_LEN,
                         "%s/%s/%s", vaultPath, userName, objPathPtr );
     }
@@ -290,9 +290,9 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return 0;
     }
 
-    if ( dataObjInp != NULL ) {
+    if ( dataObjInp != nullptr ) {
         filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW );
-        if ( filePath != NULL && strlen( filePath ) > 0 ) {
+        if ( filePath != nullptr && strlen( filePath ) > 0 ) {
             return -1;
         }
     }
@@ -318,11 +318,11 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return NO_CHK_PATH_PERM;
     }
 
-    if ( dataObjInp == NULL || dataObjInfo == NULL ) {
+    if ( dataObjInp == nullptr || dataObjInfo == nullptr ) {
         return NO_CHK_PATH_PERM;
     }
 
-    if ( ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
+    if ( ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != nullptr
             && strlen( filePath ) > 0 ) {
         /* the user input a path */
         if ( !strlen( dataObjInfo->rescName ) ) {
@@ -338,7 +338,7 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             // =-=-=-=-=-=-=-
             // JMC - backport 4774
             rei.status = DISALLOW_PATH_REG;             /* default */
-            applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
+            applyRule( "acSetChkFilePathPerm", nullptr, &rei, NO_SAVE_REI );
             clearKeyVal(rei.condInputData);
             free(rei.condInputData);
 
@@ -370,7 +370,7 @@ getCopiesFromCond( keyValPair_t *condInput ) {
 
     myValue = getValByKey( condInput, COPIES_KW );
 
-    if ( myValue == NULL ) {
+    if ( myValue == nullptr ) {
         return 1;
     }
     else if ( strcmp( myValue, "all" ) == 0 ) {
@@ -393,13 +393,13 @@ getWriteFlag( int openFlag ) {
 
 rodsLong_t
 getSizeInVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
-    rodsStat_t *myStat = NULL;
+    rodsStat_t *myStat = nullptr;
     int status;
     rodsLong_t mysize;
 
     status = l3Stat( rsComm, dataObjInfo, &myStat );
 
-    if ( status < 0 || NULL == myStat ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == myStat ) { // JMC cppcheck - nullptr
         rodsLog( LOG_DEBUG,
                  "getSizeInVault: l3Stat error for %s. status = %d",
                  dataObjInfo->filePath, status );
@@ -555,7 +555,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
                                              1, new_fn );
             if ( status < 0 ) {
-                char* sys_error = NULL;
+                char* sys_error = nullptr;
                 const char* rods_error = rodsErrorName( status, &sys_error );
                 rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                          __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
@@ -578,7 +578,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                          MAX_NAME_LEN );
                 rstrcpy( fileRenameInp.newFileName, filePath, MAX_NAME_LEN );
                 rstrcpy( fileRenameInp.rescHier, myDataObjInfo.rescHier, MAX_NAME_LEN );
-                fileRenameOut_t* ren_out = 0;
+                fileRenameOut_t* ren_out = nullptr;
                 status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
                 free( ren_out );
 
@@ -609,7 +609,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                 return 0;
             }
             else {
-                char* sys_error = NULL;
+                char* sys_error = nullptr;
                 const char* rods_error = rodsErrorName( status, &sys_error );
                 rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                          __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
@@ -631,7 +631,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
             return 1;
         }
         else {
-            char* sys_error = NULL;
+            char* sys_error = nullptr;
             const char* rods_error = rodsErrorName( status, &sys_error );
             rodsLog( LOG_ERROR, "%s:%d renameFilePathToNewDir failed for file: %s - status = %d %s %s",
                      __FUNCTION__, __LINE__, filePath, status, rods_error, sys_error );
@@ -713,7 +713,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
 
 
     if ( renameFlag > 0 ) {
-        fileRenameOut_t* ren_out = 0;
+        fileRenameOut_t* ren_out = nullptr;
         status = rsFileRename( rsComm, fileRenameInp, &ren_out );
         strncpy( new_fn, ren_out->file_name, MAX_NAME_LEN );
         free( ren_out );
@@ -745,7 +745,7 @@ syncDataObjPhyPath( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int savedStatus = 0;
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
 
         if ( status < 0 ) {
@@ -823,7 +823,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileRenameInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         dataObjInp_t myDdataObjInp;
         memset( &myDdataObjInp, 0, sizeof( myDdataObjInp ) );
         rstrcpy( myDdataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
@@ -853,7 +853,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN );
 
-    fileRenameOut_t* ren_out = 0;
+    fileRenameOut_t* ren_out = nullptr;
     status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -871,7 +871,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     memset( &regParam, 0, sizeof( regParam ) );
     addKeyVal( &regParam, FILE_PATH_KW, ren_out->file_name );
     free( ren_out );
-    if ( acLCollection != NULL ) {
+    if ( acLCollection != nullptr ) {
         addKeyVal( &regParam, ACL_COLLECTION_KW, acLCollection );
     }
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
@@ -888,7 +888,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy( fileRenameInp.oldFileName, fileRenameInp.newFileName,
                  MAX_NAME_LEN );
         rstrcpy( fileRenameInp.newFileName, tmpPath, MAX_NAME_LEN );
-        fileRenameOut_t* ren_out = 0;
+        fileRenameOut_t* ren_out = nullptr;
         status1 = rsFileRename( rsComm, &fileRenameInp, &ren_out );
         free( ren_out );
 
@@ -911,12 +911,12 @@ int
 syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
     int status, i;
     int savedStatus = 0;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     genQueryInp_t genQueryInp;
     int continueInx;
 
     status = rsQueryDataObjInCollReCur( rsComm, collection,
-                                        &genQueryInp, &genQueryOut, NULL, 0 );
+                                        &genQueryInp, &genQueryOut, nullptr, 0 );
 
     if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
         savedStatus = status; /* return the error code */
@@ -932,44 +932,44 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
         memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
 
         if ( ( dataIdRes = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( subCollRes = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataNameRes = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_DATA_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( replNumRes = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath:getSqlResultByIn for COL_DATA_REPL_NUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( rescNameRes = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( filePathRes = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( rescIdRes = getSqlResultByInx( genQueryOut, COL_D_RESC_ID ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -984,13 +984,13 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
             tmpFilePath = &filePathRes->value[filePathRes->len * i];
             tmpRescId = &rescIdRes->value[rescIdRes->len * i];
 
-            dataObjInfo.dataId = strtoll( tmpDataId, 0, 0 );
+            dataObjInfo.dataId = strtoll( tmpDataId, nullptr, 0 );
             snprintf( dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
                       tmpSubColl, tmpDataName );
             dataObjInfo.replNum = atoi( tmpReplNum );
             rstrcpy( dataObjInfo.rescName, tmpRescName, NAME_LEN );
 
-            dataObjInfo.rescId = strtoll(tmpRescId, 0, 0);
+            dataObjInfo.rescId = strtoll(tmpRescId, nullptr, 0);
             std::string resc_hier;
             resc_mgr.leaf_id_to_hier(dataObjInfo.rescId, resc_hier);
 
@@ -998,7 +998,7 @@ syncCollPhyPath( rsComm_t *rsComm, char *collection ) {
 
             rstrcpy( dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN );
 
-            status = syncDataObjPhyPathS( rsComm, NULL, &dataObjInfo,
+            status = syncDataObjPhyPathS( rsComm, nullptr, &dataObjInfo,
                                           collection );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -1088,7 +1088,7 @@ int
 getLogPathFromPhyPath( char *phyPath, const char *rescVaultPath, char *outLogPath ) {
     int len;
     char *tmpPtr;
-    zoneInfo_t *tmpZoneInfo = NULL;
+    zoneInfo_t *tmpZoneInfo = nullptr;
     int status;
 
     if ( !phyPath || !rescVaultPath || !outLogPath ) {
@@ -1107,7 +1107,7 @@ getLogPathFromPhyPath( char *phyPath, const char *rescVaultPath, char *outLogPat
 
     tmpPtr ++;
     status = getLocalZoneInfo( &tmpZoneInfo );
-    if ( status < 0 || NULL == tmpZoneInfo ) {
+    if ( status < 0 || nullptr == tmpZoneInfo ) {
         return status;    // JMC cppcheck - nullptr
     }
 
@@ -1194,7 +1194,7 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
     int c;
     int len;
 
-    if ( objPath == NULL || outLockPath == NULL ) {
+    if ( objPath == nullptr || outLockPath == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     objPathPtr = objPath; // JMC - backport 4604
@@ -1202,7 +1202,7 @@ getDataObjLockPath( char *objPath, char **outLockPath ) {
     /* skip over the first 3 '/' */
     for ( i = 0; i < 3; i++ ) {
         tmpPtr = strchr( objPathPtr, '/' );
-        if ( tmpPtr == NULL ) {
+        if ( tmpPtr == nullptr ) {
             break;      /* just use the shorten one */
         }
         else {
@@ -1272,9 +1272,9 @@ executeFilesystemLockCommand( int cmd, int type, int fd, struct flock * lock ) {
 int
 fsDataObjLock( char *objPath, int cmd, int type ) {
     int fd;
-    char *path = NULL;
+    char *path = nullptr;
     int status = getDataObjLockPath( objPath, &path ); 
-    if ( status < 0 || NULL == path ) {
+    if ( status < 0 || nullptr == path ) {
         rodsLogError( LOG_ERROR, status,
                       "fsDataObjLock: getDataObjLockPath error for %s", objPath );
         free( path );
@@ -1321,7 +1321,7 @@ getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
 
 {
     static char fname[] = "getFileMetadataFromVault";
-    rodsStat_t *myStat = NULL;
+    rodsStat_t *myStat = nullptr;
     int status;
     rodsLong_t mysize;
     char name_buf[NAME_LEN];

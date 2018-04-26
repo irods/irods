@@ -20,7 +20,7 @@ rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    *fileStatOut = NULL;
+    *fileStatOut = nullptr;
 
     if( 0 == fileStatInp->rescId ) {
         if( 0 == strlen(fileStatInp->rescHier) ) {
@@ -69,7 +69,7 @@ rsFileStatByHost( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
     int remoteFlag;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsFileStatByHost: Input NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -106,7 +106,7 @@ remoteFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp,
                 rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileStat: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -164,7 +164,7 @@ int _rsFileStat(
     // manage error if necessary
     if ( status < 0 ) {
         free( *_stat_out );
-        *_stat_out = NULL;
+        *_stat_out = nullptr;
     }
 
     return status;

@@ -24,8 +24,8 @@ int
 rcFileCreate( rcComm_t *conn, fileCreateInp_t *fileCreateInp, fileCreateOut_t** _out ) {
     int status;
 
-    status = procApiRequest( conn, FILE_CREATE_AN, fileCreateInp, NULL,
-                             ( void ** ) _out, NULL );
+    status = procApiRequest( conn, FILE_CREATE_AN, fileCreateInp, nullptr,
+                             ( void ** ) _out, nullptr );
 
     return status;
 }

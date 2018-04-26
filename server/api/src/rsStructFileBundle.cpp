@@ -60,12 +60,12 @@ rsStructFileBundle( rsComm_t *rsComm,
     // we know that the redirection decision has already been made
     std::string       hier;
     int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
+    rodsServerHost_t* host  =  nullptr;
     dataObjInp_t      data_inp;
     bzero( &data_inp, sizeof( data_inp ) );
     rstrcpy( data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
     copyKeyVal( &structFileBundleInp->condInput, &data_inp.condInput );
-    if ( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    if ( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
                            &data_inp, hier, host, local );
         if ( !ret.ok() ) {
@@ -101,7 +101,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     char phyBunDir[MAX_NAME_LEN];
     char tmpPath[MAX_NAME_LEN];
     int l1descInx;
-    char* dataType = 0; // JMC - backport 4664
+    char* dataType = nullptr; // JMC - backport 4664
     openedDataObjInp_t dataObjCloseInp;
     memset( &dataObjCloseInp, 0, sizeof(dataObjCloseInp) );
 
@@ -117,7 +117,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
 
     // =-=-=-=-=-=-=-
     // ensure that the file name will end in .zip, if necessary
-    if ( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
+    if ( dataType != nullptr && strstr( dataType, ZIP_DT_STR ) != nullptr ) {
         int len = strlen( structFileBundleInp->objPath );
         if ( strcmp( &structFileBundleInp->objPath[len - 4], ".zip" ) != 0 ) {
             strcat( structFileBundleInp->objPath, ".zip" );
@@ -255,9 +255,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
 
     // =-=-=-=-=-=-=-
     // preserve the collection path?
-    collEnt_t* collEnt = NULL;
+    collEnt_t* collEnt = nullptr;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
-        if ( NULL == collEnt ) {
+        if ( nullptr == collEnt ) {
             rodsLog(
                 LOG_ERROR,
                 "rsStructFileBundle: collEnt is NULL" );
@@ -275,7 +275,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     collEnt->phyPath,
                     collEnt->resc_hier );
                 free( collEnt );
-                collEnt = NULL;
+                collEnt = nullptr;
                 continue;
             }
 
@@ -338,7 +338,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // entry is a collection
             if ( ( int ) strlen( collEnt->collName ) + 1 <= collLen ) {
                 free( collEnt );
-                collEnt = NULL;
+                collEnt = nullptr;
                 continue;
             }
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
@@ -351,7 +351,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         } // else
 
         free( collEnt );
-        collEnt = NULL;
+        collEnt = nullptr;
 
     } // while
 
@@ -396,7 +396,7 @@ remoteStructFileBundle( rsComm_t *rsComm,
                         structFileExtAndRegInp_t *structFileBundleInp, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteStructFileBundle: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

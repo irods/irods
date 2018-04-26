@@ -11,7 +11,7 @@
 int
 regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
          rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -70,7 +70,7 @@ regUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
 int
 initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp ) {
-    if ( dataObjOprInp == NULL ) {
+    if ( dataObjOprInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForReg: NULL dataObjOprInp input" );
         return USER__NULL_INPUT_ERR;
@@ -78,12 +78,12 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
     if ( rodsArgs->dataType == True ) {
-        if ( rodsArgs->dataTypeString == NULL ) {
+        if ( rodsArgs->dataTypeString == nullptr ) {
             addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, "generic" );
         }
         else {
@@ -104,7 +104,7 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForReg: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -116,7 +116,7 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
                 rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjOprInp->condInput, DEST_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
@@ -127,7 +127,7 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
                      "initCondForReg: rescGroup must be input together with -Rresource" );
             return USER__NULL_INPUT_ERR;
         }
-        else if ( rodsArgs->rescGroupString == NULL ) {
+        else if ( rodsArgs->rescGroupString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForReg: NULL rescGroupString error" );
             return USER__NULL_INPUT_ERR;
@@ -139,7 +139,7 @@ initCondForReg( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dat
     }
 
     if ( rodsArgs->excludeFile == True ) {
-        if ( rodsArgs->excludeFileString == NULL ) {
+        if ( rodsArgs->excludeFileString == nullptr ) {
             rodsLog( LOG_ERROR, "initCondForReg: NULL excludeFileString error" );
             return USER__NULL_INPUT_ERR;
         }

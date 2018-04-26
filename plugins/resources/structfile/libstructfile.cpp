@@ -219,7 +219,7 @@ ssize_t irods_file_read(
 
     // =-=-=-=-=-=-=-
     // stat the file to get its size
-    rodsStat_t*   stbuf = 0;
+    rodsStat_t*   stbuf = nullptr;
     fileStatInp_t f_inp;
     memset( &f_inp, 0, sizeof( f_inp ) );
     rstrcpy( f_inp.fileName, FileDesc[ cb_ctx->idx_ ].fileName, MAX_NAME_LEN );
@@ -344,7 +344,7 @@ irods::error extract_file( int _index ) {
     // =-=-=-=-=-=-=-
     // check struct desc table in use flag
     specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-    if ( spec_coll == NULL                  ||
+    if ( spec_coll == nullptr                  ||
             strlen( spec_coll->cacheDir ) == 0 ||
             strlen( spec_coll->phyPath ) == 0 ) {
         std::stringstream msg;
@@ -518,12 +518,12 @@ irods::error stage_tar_struct_file( int _index, std::string _host ) {
     // =-=-=-=-=-=-=-
     // extract the special collection from the struct file table
     specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
-    if ( spec_coll == NULL ) {
+    if ( spec_coll == nullptr ) {
         return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null spec coll" );
     }
 
     rsComm_t* comm = PluginStructFileDesc[ _index ].rsComm;
-    if ( comm == NULL ) {
+    if ( comm == nullptr ) {
         return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null comm" );
     }
 
@@ -623,7 +623,7 @@ int match_struct_file_desc( specColl_t* _spec_coll ) {
 
     for ( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
         if ( PluginStructFileDesc[i].inuseFlag == FD_INUSE &&
-                PluginStructFileDesc[i].specColl  != NULL     &&
+                PluginStructFileDesc[i].specColl  != nullptr     &&
                 strcmp( PluginStructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
                 strcmp( PluginStructFileDesc[i].specColl->objPath,    _spec_coll->objPath ) == 0 ) {
             return i;
@@ -643,16 +643,16 @@ irods::error tar_struct_file_open(
     const std::string& _resc_hier,
     std::string&       _resc_host ) {
     int status                  = 0;
-    specCollCache_t* spec_cache = 0;
+    specCollCache_t* spec_cache = nullptr;
 
     // =-=-=-=-=-=-=-
     // trap null parameters
-    if ( 0 == _spec_coll ) {
+    if ( nullptr == _spec_coll ) {
         std::string msg( "tar_struct_file_open - null special collection parameter" );
         return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
     }
 
-    if ( 0 == _comm ) {
+    if ( nullptr == _comm ) {
         std::string msg( "tar_struct_file_open - null rsComm_t parameter" );
         return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
     }
@@ -721,7 +721,7 @@ irods::error tar_struct_file_open(
 
     // =-=-=-=-=-=-=-
     // extract the name of the host of the resource from the resource plugin
-    rodsServerHost_t* rods_host = 0;
+    rodsServerHost_t* rods_host = nullptr;
     irods::error get_err = resc->get_property< rodsServerHost_t* >( irods::RESOURCE_HOST, rods_host );
     if ( !get_err.ok() ) {
         return PASSMSG( "failed to call get_property", get_err );
@@ -896,7 +896,7 @@ irods::error tar_file_create(
 
     // =-=-=-=-=-=-=-
     // make the call to create a file
-    fileCreateOut_t* create_out = NULL;
+    fileCreateOut_t* create_out = nullptr;
     int status = rsFileCreate( comm, &fileCreateInp, &create_out );
     free( create_out );
     if ( status < 0 ) {
@@ -1391,10 +1391,10 @@ irods::error tar_file_lseek(
     fileLseekInp.offset  = _offset;
     fileLseekInp.whence  = _whence;
 
-    fileLseekOut_t *fileLseekOut = NULL;
+    fileLseekOut_t *fileLseekOut = nullptr;
     int status = rsFileLseek( comm, &fileLseekInp, &fileLseekOut );
 
-    if ( status < 0 || NULL == fileLseekOut ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == fileLseekOut ) { // JMC cppcheck - nullptr
         return ERROR( status, "rsFileLseek failed" );
     }
     else {
@@ -1848,7 +1848,7 @@ irods::error tar_file_rename(
 
     // =-=-=-=-=-=-=-
     // make the api call for rename
-    fileRenameOut_t* ren_out = 0;
+    fileRenameOut_t* ren_out = nullptr;
     int status = rsFileRename( comm, &fileRenameInp, &ren_out );
     free( ren_out );
     if ( status >= 0 ) {
@@ -2034,10 +2034,10 @@ irods::error tar_file_extract(
         rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
                  spec_coll->cacheDir );
 
-        rodsHostAddr_t* host_addr = NULL;
+        rodsHostAddr_t* host_addr = nullptr;
         _ctx.prop_map().get< rodsHostAddr_t* >( irods::RESOURCE_LOCATION, host_addr );
 
-        if ( NULL == host_addr ) {
+        if ( nullptr == host_addr ) {
             return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "host_addr is null in rmDir" );
         }
         /* remove cache */
@@ -2221,7 +2221,7 @@ irods::error bundle_cache_dir( int         _index,
     // =-=-=-=-=-=-=-
     // check struct desc table in use flag
     specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-    if ( spec_coll == NULL                   ||
+    if ( spec_coll == nullptr                   ||
             spec_coll->cacheDirty <= 0          ||
             strlen( spec_coll->cacheDir ) == 0  ||
             strlen( spec_coll->phyPath ) == 0 ) {
@@ -2447,9 +2447,9 @@ irods::error sync_cache_dir_to_tar_file( int         _index,
 
     // =-=-=-=-=-=-=-
     // call file stat api to get the size of the new file
-    rodsStat_t* file_stat_out = NULL;
+    rodsStat_t* file_stat_out = nullptr;
     int status = rsFileStat( comm, &file_stat_inp, &file_stat_out );
-    if ( status < 0 || NULL ==  file_stat_out ) {
+    if ( status < 0 || nullptr ==  file_stat_out ) {
         std::stringstream msg;
         msg << "sync_cache_dir_to_tar_file - failed on call to rsFileStat for [";
         msg << spec_coll->phyPath;

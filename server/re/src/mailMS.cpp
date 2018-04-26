@@ -73,7 +73,7 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     }
 
     FILE* file = fdopen(fd, "w");
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         rodsLog( LOG_ERROR, "failed to create file [%s] errno %d", fName, errno );
         return FILE_CREATE_ERROR;
     }
@@ -91,7 +91,7 @@ int msiSendMail( msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, 
     fprintf( file, "%s\n", t1 );
     fclose( file );
     char * mailStr = ( char* )malloc( strlen( toAddr ) + strlen( subjectLine ) + 100 );
-    if ( mailStr == NULL ) {
+    if ( mailStr == nullptr ) {
         return SYS_MALLOC_ERR;
     }
 

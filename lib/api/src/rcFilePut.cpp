@@ -46,7 +46,7 @@ int rcFilePut(
 
 
     status = procApiRequest( conn, FILE_PUT_AN, filePutInp, filePutInpBBuf,
-                             ( void ** ) put_out, NULL );
+                             ( void ** ) put_out, nullptr );
 
     return status;
 }

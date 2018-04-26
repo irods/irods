@@ -35,7 +35,7 @@ rsDataObjLseek( rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp,
     if ( L1desc[l1descInx].inuseFlag != FD_INUSE ) {
         return BAD_INPUT_DESC_INDEX;
     }
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         /* cross zone operation */
         dataObjLseekInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         status = rcDataObjLseek( L1desc[l1descInx].remoteZoneHost->conn,
@@ -102,7 +102,7 @@ rodsLong_t
 _l3Lseek( rsComm_t *rsComm, int l3descInx,
           rodsLong_t offset, int whence ) {
     fileLseekInp_t fileLseekInp;
-    fileLseekOut_t *fileLseekOut = NULL;
+    fileLseekOut_t *fileLseekOut = nullptr;
     int status;
 
     memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );

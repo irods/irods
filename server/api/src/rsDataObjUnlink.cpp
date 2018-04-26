@@ -42,17 +42,17 @@ int
 rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     int status;
     ruleExecInfo_t rei;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    rodsServerHost_t *rodsServerHost = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
+    rodsServerHost_t *rodsServerHost = nullptr;
     int rmTrashFlag = 0;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, dataObjUnlinkInp->objPath, &specCollCache,
                        &dataObjUnlinkInp->condInput );
     status = getAndConnRcatHost( rsComm, MASTER_RCAT,
                                  ( const char* )dataObjUnlinkInp->objPath, &rodsServerHost );
 
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
@@ -66,7 +66,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
 
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
-    if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::UNLINK_OPERATION,
                            rsComm, dataObjUnlinkInp, hier, &dataObjInfoHead );
@@ -76,7 +76,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             msg << dataObjUnlinkInp->objPath << "]";
             irods::log( PASSMSG( msg.str(), ret ) );
 
-            if( getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) == NULL ) {
+            if( getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) == nullptr ) {
                 return ret.code();
             }
         }
@@ -88,9 +88,9 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     } // if keyword
 
     if ( getValByKey(
-                &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW ) != NULL ||
+                &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW ) != nullptr ||
             getValByKey(
-                &dataObjUnlinkInp->condInput, RMTRASH_KW ) != NULL ) {
+                &dataObjUnlinkInp->condInput, RMTRASH_KW ) != nullptr ) {
         if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
             return SYS_INVALID_FILE_PATH;
         }
@@ -102,7 +102,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
                                     &dataObjInfoHead );
 
     if ( status < 0 ) {
-        char* sys_error = NULL;
+        char* sys_error = nullptr;
         const char* rods_error = rodsErrorName( status, &sys_error );
         std::stringstream msg;
         msg << __FUNCTION__;
@@ -118,9 +118,9 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         char *tmpAge;
         int ageLimit;
         if ( ( tmpAge = getValByKey( &dataObjUnlinkInp->condInput, AGE_KW ) )
-                != NULL ) {
+                != nullptr ) {
             ageLimit = atoi( tmpAge ) * 60;
-            if ( ( time( 0 ) - atoi( dataObjInfoHead->dataModify ) ) < ageLimit ) {
+            if ( ( time( nullptr ) - atoi( dataObjInfoHead->dataModify ) ) < ageLimit ) {
                 /* younger than ageLimit. Nothing to do */
                 freeAllDataObjInfo( dataObjInfoHead );
                 return 0;
@@ -129,15 +129,15 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     }
 
     if ( dataObjUnlinkInp->oprType == UNREG_OPR ||
-            getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) != NULL ||
-            getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != NULL ||
-            getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ||
-            dataObjInfoHead->specColl != NULL || rmTrashFlag == 1 ) {
+            getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) != nullptr ||
+            getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != nullptr ||
+            getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != nullptr ||
+            dataObjInfoHead->specColl != nullptr || rmTrashFlag == 1 ) {
         status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
     }
     else {
         initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
-        applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+        applyRule( "acTrashPolicy", nullptr, &rei, NO_SAVE_REI );
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
 
@@ -158,7 +158,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     // make resource properties available as rule session variables
     irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-    rei.status = applyRule( "acPostProcForDelete", NULL, &rei, NO_SAVE_REI );
+    rei.status = applyRule( "acPostProcForDelete", nullptr, &rei, NO_SAVE_REI );
 
     if ( rei.status < 0 ) {
         rodsLog( LOG_NOTICE,
@@ -189,12 +189,12 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 
 
     myDataObjInfoHead = *dataObjInfoHead;
-    if ( strstr( myDataObjInfoHead->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
+    if ( strstr( myDataObjInfoHead->dataType, BUNDLE_STR ) != nullptr ) { // JMC - backport 4658
         int numSubfiles; // JMC - backport 4552
         if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
-        if ( getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != NULL ) {
+        if ( getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != nullptr ) {
             return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
         }
 
@@ -202,12 +202,12 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         // JMC - backport 4552
         numSubfiles = getNumSubfilesInBunfileObj( rsComm, myDataObjInfoHead->objPath );
         if ( numSubfiles > 0 ) {
-            if ( getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ) {
+            if ( getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != nullptr ) {
                 /* not empty. Nothing to do */
                 return 0;
             }
             else {
-                status = _unbunAndStageBunfileObj( rsComm, dataObjInfoHead, &dataObjUnlinkInp->condInput, NULL, 1 );
+                status = _unbunAndStageBunfileObj( rsComm, dataObjInfoHead, &dataObjUnlinkInp->condInput, nullptr, 1 );
                 if ( status < 0 ) {
                     /* go ahead and unlink the obj if the phy file does not
                      * exist or have problem untaring it */
@@ -218,7 +218,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                     }
                 } // status < 0
                 /* dataObjInfoHead may be outdated */
-                *dataObjInfoHead = NULL;
+                *dataObjInfoHead = nullptr;
                 status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp, dataObjInfoHead );
 
                 if ( status < 0 ) {
@@ -230,20 +230,20 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     // =-=-=-=-=-=-=-
 
     tmpDataObjInfo = *dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         status = dataObjUnlinkS( rsComm, dataObjUnlinkInp, tmpDataObjInfo );
         if ( status < 0 ) {
             if ( retVal == 0 ) {
                 retVal = status;
             }
         }
-        if ( dataObjUnlinkInp->specColl != NULL ) {     /* do only one */
+        if ( dataObjUnlinkInp->specColl != nullptr ) {     /* do only one */
             break;
         }
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    if ( ( *dataObjInfoHead )->specColl == NULL ) {
+    if ( ( *dataObjInfoHead )->specColl == nullptr ) {
         resolveDataObjReplStatus( rsComm, dataObjUnlinkInp );
     }
 
@@ -256,12 +256,12 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 int
 resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *newestDataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
+    dataObjInfo_t *newestDataObjInfo = nullptr;
     dataObjInfo_t *tmpDataObjInfo;
 
-    if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_NAME_KW ) == NULL &&
-            getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) == NULL ) {
+    if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_NAME_KW ) == nullptr &&
+            getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) == nullptr ) {
         return 0;
     }
     status = getDataObjInfo( rsComm, dataObjUnlinkInp,
@@ -272,9 +272,9 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     }
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         if ( tmpDataObjInfo->replStatus == 0 ) {
-            if ( newestDataObjInfo == NULL ) {
+            if ( newestDataObjInfo == nullptr ) {
                 newestDataObjInfo = tmpDataObjInfo;
             }
             else if ( atoi( tmpDataObjInfo->dataModify ) >
@@ -283,14 +283,14 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             }
         }
         else {
-            newestDataObjInfo = NULL;
+            newestDataObjInfo = nullptr;
             break;
         }
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
     /* modify the repl status */
-    if ( newestDataObjInfo != NULL ) {
+    if ( newestDataObjInfo != nullptr ) {
         keyValPair_t regParam;
         char tmpStr[MAX_NAME_LEN];
         modDataObjMeta_t modDataObjMetaInp;
@@ -316,7 +316,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     int status = 0;
     unregDataObj_t unregDataObjInp;
 
-    if ( dataObjInfo->specColl == NULL ) {
+    if ( dataObjInfo->specColl == nullptr ) {
         if ( dataObjUnlinkInp->oprType            == UNREG_OPR &&
                 rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
             ruleExecInfo_t rei;
@@ -328,7 +328,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             // make resource properties available as rule session variables
             irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-            applyRule( "acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI );
+            applyRule( "acSetChkFilePathPerm", nullptr, &rei, NO_SAVE_REI );
             clearKeyVal(rei.condInputData);
             free(rei.condInputData);
 
@@ -343,7 +343,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 }
 
                 rodsHostAddr_t addr;
-                rodsServerHost_t *rodsServerHost = 0;
+                rodsServerHost_t *rodsServerHost = nullptr;
 
                 memset( &addr, 0, sizeof( addr ) );
                 rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
@@ -382,7 +382,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 
         // Set the in_pdmo flag
         char* in_pdmo = getValByKey( &dataObjUnlinkInp->condInput, IN_PDMO_KW );
-        if ( in_pdmo != NULL ) {
+        if ( in_pdmo != nullptr ) {
             rstrcpy( dataObjInfo->in_pdmo, in_pdmo, MAX_NAME_LEN );
         }
         else {
@@ -507,11 +507,11 @@ rsMvDataObjToTrash( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
 
-    if ( strstr( ( *dataObjInfoHead )->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
+    if ( strstr( ( *dataObjInfoHead )->dataType, BUNDLE_STR ) != nullptr ) { // JMC - backport 4658
         return SYS_CANT_MV_BUNDLE_DATA_TO_TRASH;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, DATA_ACCESS_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, DATA_ACCESS_KW ) == nullptr ) {
         addKeyVal( &dataObjInp->condInput, DATA_ACCESS_KW,
                    ACCESS_DELETE_OBJECT );
     }
@@ -575,7 +575,7 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         /* have to go through the loop to test each copy (resource). */
         rei.doi = tmpDataObjInfo;
 
@@ -584,7 +584,7 @@ chkPreProcDeleteRule( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
         memset(rei.condInputData, 0, sizeof(keyValPair_t));
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-        status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acDataDeletePolicy", nullptr, &rei, NO_SAVE_REI );
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
 

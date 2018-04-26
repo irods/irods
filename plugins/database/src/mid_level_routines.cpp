@@ -90,7 +90,7 @@ int cmlOpen( icatSessionStruct *icss ) {
 
     /* Initialize the icss statement pointers */
     for ( i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS; i++ ) {
-        icss->stmtPtr[i] = 0;
+        icss->stmtPtr[i] = nullptr;
     }
 
     /*
@@ -176,7 +176,7 @@ int cmlGetOneRowFromSqlBV( const char *sql,
     strncpy( updatedSql, sql, MAX_SQL_SIZE );
     updatedSql[MAX_SQL_SIZE] = '\0';
     /* Verify there no limit or offset statement */
-    if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
+    if ( ( strstr( updatedSql, "limit " ) == nullptr ) && ( strstr( updatedSql, "offset " ) == nullptr ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
         rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlBV %s", updatedSql );
@@ -225,7 +225,7 @@ int cmlGetOneRowFromSql( const char *sql,
     strncpy( updatedSql, sql, MAX_SQL_SIZE );
     updatedSql[MAX_SQL_SIZE] = '\0';
     /* Verify there no limit or offset statement */
-    if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
+    if ( ( strstr( updatedSql, "limit " ) == nullptr ) && ( strstr( updatedSql, "offset " ) == nullptr ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
         rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSql %s", updatedSql );
@@ -278,7 +278,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
     strncpy( updatedSql, sql, MAX_SQL_SIZE );
     updatedSql[MAX_SQL_SIZE] = '\0';
     /* Verify there no limit or offset statement */
-    if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
+    if ( ( strstr( updatedSql, "limit " ) == nullptr ) && ( strstr( updatedSql, "offset " ) == nullptr ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
         rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlV2 %s", updatedSql );
@@ -330,7 +330,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
     strncpy( updatedSql, sql, MAX_SQL_SIZE );
     updatedSql[MAX_SQL_SIZE] = '\0';
     /* Verify there no limit or offset statement */
-    if ( ( strstr( updatedSql, "limit " ) == NULL ) && ( strstr( updatedSql, "offset " ) == NULL ) ) {
+    if ( ( strstr( updatedSql, "limit " ) == nullptr ) && ( strstr( updatedSql, "offset " ) == nullptr ) ) {
         /* add 'limit 1' for performance improvement */
         strncat( updatedSql, " limit 1", MAX_SQL_SIZE );
         rodsLog( LOG_DEBUG10, "cmlGetOneRowFromSqlV3 %s", updatedSql );
@@ -571,7 +571,7 @@ int cmlGetIntegerValueFromSql( const char *sql,
         if ( *cVal[0] == '\0' ) {
             return CAT_NO_ROWS_FOUND;
         }
-        *iVal = strtoll( *cVal, NULL, 0 );
+        *iVal = strtoll( *cVal, nullptr, 0 );
         return 0;
     }
     return i;
@@ -593,7 +593,7 @@ int cmlGetIntegerValueFromSqlV3( const char *sql,
         if ( *cVal[0] == '\0' ) {
             return CAT_NO_ROWS_FOUND;
         }
-        *iVal = strtoll( *cVal, NULL, 0 );
+        *iVal = strtoll( *cVal, nullptr, 0 );
         return 0;
     }
     return i;
@@ -908,7 +908,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
 
     *inheritFlag = 0;
 
-    if ( ticketStr != NULL && *ticketStr != '\0' ) {
+    if ( ticketStr != nullptr && *ticketStr != '\0' ) {
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 " );
         }
@@ -934,7 +934,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
         if ( *cVal[0] == '\0' ) {
             return CAT_NO_ROWS_FOUND;
         }
-        iVal = strtoll( *cVal, NULL, 0 );
+        iVal = strtoll( *cVal, nullptr, 0 );
         if ( cValStr2[0] == '1' ) {
             *inheritFlag = 1;
         }
@@ -963,7 +963,7 @@ cmlCheckDirAndGetInheritFlag( const char *dirName, const char *userName, const c
     /*
      Also check the other aspects ticket at this point.
      */
-    if ( ticketStr != NULL && *ticketStr != '\0' ) {
+    if ( ticketStr != nullptr && *ticketStr != '\0' ) {
         status = checkObjIdByTicket( cValStr1, accessLevel, ticketStr,
                                      ticketHost, userName, userZone,
                                      icss );
@@ -1564,7 +1564,7 @@ int cmlCheckDataObjId( const char *dataId, const char *userName,  const char *zo
     rodsLong_t iVal;
 
     iVal = 0;
-    if ( ticketStr != NULL && *ticketStr != '\0' ) {
+    if ( ticketStr != nullptr && *ticketStr != '\0' ) {
         status = checkObjIdByTicket( dataId, accessLevel, ticketStr,
                                      ticketHost, userName, zoneName,
                                      icss );
@@ -1626,7 +1626,7 @@ int cmlCheckGroupAdminAccess( const char *userName, const char *userZone,
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
-    if ( groupName == NULL ) {
+    if ( groupName == nullptr ) {
         return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
     }
     if ( *groupName == '\0' ) {

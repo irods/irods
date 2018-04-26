@@ -47,7 +47,7 @@ rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     int fd;
     int remoteFlag;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsFileOpenByHost: Input NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -88,7 +88,7 @@ remoteFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     int fileInx;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileOpen: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

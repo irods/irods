@@ -17,10 +17,10 @@ static char *cpStringExtForHashTable( const char *str, Region *r ) {
 
 struct bucket *newBucket( const char* key, const void* value ) {
     struct bucket *b = ( struct bucket * )malloc( sizeof( struct bucket ) );
-    if ( b == NULL ) {
-        return NULL;
+    if ( b == nullptr ) {
+        return nullptr;
     }
-    b->next = NULL;
+    b->next = nullptr;
     b->key = strdup( key );
     b->value = value;
     return b;
@@ -31,10 +31,10 @@ struct bucket *newBucket( const char* key, const void* value ) {
  */
 struct bucket *newBucket2( char* key, const void* value, Region *r ) {
     struct bucket *b = ( struct bucket * )region_alloc( r, sizeof( struct bucket ) );
-    if ( b == NULL ) {
-        return NULL;
+    if ( b == nullptr ) {
+        return nullptr;
     }
-    b->next = NULL;
+    b->next = nullptr;
     b->key = key;
     b->value = value;
     return b;
@@ -45,8 +45,8 @@ struct bucket *newBucket2( char* key, const void* value, Region *r ) {
  */
 Hashtable *newHashTable( int size ) {
     Hashtable *h = ( Hashtable * )malloc( sizeof( Hashtable ) );
-    if ( NULL == h ) { // JMC cppcheck - nullptr ref
-        return 0;
+    if ( nullptr == h ) { // JMC cppcheck - nullptr ref
+        return nullptr;
     }
     memset( h, 0, sizeof( Hashtable ) );
 
@@ -54,12 +54,12 @@ Hashtable *newHashTable( int size ) {
 //		return NULL;
 //	}
     h->dynamic = 0;
-    h->bucketRegion = NULL;
+    h->bucketRegion = nullptr;
     h->size = size;
     h->buckets = ( struct bucket ** )malloc( sizeof( struct bucket * ) * size );
-    if ( h->buckets == NULL ) {
+    if ( h->buckets == nullptr ) {
         free( h );
-        return NULL;
+        return nullptr;
     }
     memset( h->buckets, 0, sizeof( struct bucket * )*size );
     h->len = 0;
@@ -72,8 +72,8 @@ Hashtable *newHashTable( int size ) {
 Hashtable *newHashTable2( int size, Region *r ) {
 
     Hashtable *h = ( Hashtable * )region_alloc( r, sizeof( Hashtable ) );
-    if ( NULL == h ) { // JMC cppcheck - nullptr ref
-        return 0;
+    if ( nullptr == h ) { // JMC cppcheck - nullptr ref
+        return nullptr;
     }
     memset( h, 0, sizeof( Hashtable ) );
 
@@ -84,8 +84,8 @@ Hashtable *newHashTable2( int size, Region *r ) {
     h->bucketRegion = r;
     h->size = size;
     h->buckets = ( struct bucket ** )region_alloc( h->bucketRegion, sizeof( struct bucket * ) * size );
-    if ( h->buckets == NULL ) {
-        return NULL;
+    if ( h->buckets == nullptr ) {
+        return nullptr;
     }
     memset( h->buckets, 0, sizeof( struct bucket * )*size );
     h->len = 0;
@@ -105,31 +105,31 @@ int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
             Hashtable *h2 = newHashTable2( h->size * 2, h->bucketRegion );
             int i;
             for ( i = 0; i < h->size; i++ ) {
-                if ( h->buckets[i] != NULL ) {
+                if ( h->buckets[i] != nullptr ) {
                     struct bucket *b = h->buckets[i];
                     do {
                         insertIntoHashTable( h2, b->key, b->value );
                         b = b->next;
 
                     }
-                    while ( b != NULL );
+                    while ( b != nullptr );
                 }
             }
             memcpy( h, h2, sizeof( Hashtable ) );
         }
         struct bucket *b = newBucket2( cpStringExtForHashTable( key, h->bucketRegion ), value, h->bucketRegion );
-        if ( b == NULL ) {
+        if ( b == nullptr ) {
             return 0;
         }
 
         unsigned long hs = myhash( key );
         unsigned long index = hs % h->size;
-        if ( h->buckets[index] == NULL ) {
+        if ( h->buckets[index] == nullptr ) {
             h->buckets[index] = b;
         }
         else {
             struct bucket *b0 = h->buckets[index];
-            while ( b0->next != NULL ) {
+            while ( b0->next != nullptr ) {
                 b0 = b0->next;
             }
             b0->next = b;
@@ -139,17 +139,17 @@ int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
     }
     else {
         struct bucket *b = newBucket( key, value );
-        if ( b == NULL ) {
+        if ( b == nullptr ) {
             return 0;
         }
         unsigned long hs = myhash( key );
         unsigned long index = hs % h->size;
-        if ( h->buckets[index] == NULL ) {
+        if ( h->buckets[index] == nullptr ) {
             h->buckets[index] = b;
         }
         else {
             struct bucket *b0 = h->buckets[index];
-            while ( b0->next != NULL ) {
+            while ( b0->next != nullptr ) {
                 b0 = b0->next;
             }
             b0->next = b;
@@ -164,9 +164,9 @@ int insertIntoHashTable( Hashtable *h, const char* key, const void *value ) {
 const void* updateInHashTable( Hashtable *h, const char* key, const void* value ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
-    if ( h->buckets[index] != NULL ) {
+    if ( h->buckets[index] != nullptr ) {
         struct bucket *b0 = h->buckets[index];
-        while ( b0 != NULL ) {
+        while ( b0 != nullptr ) {
             if ( strcmp( b0->key, key ) == 0 ) {
                 const void* tmp = b0->value;
                 b0->value = value;
@@ -176,7 +176,7 @@ const void* updateInHashTable( Hashtable *h, const char* key, const void* value 
             b0 = b0->next;
         }
     }
-    return NULL;
+    return nullptr;
 }
 /**
  * delete from hash table
@@ -184,8 +184,8 @@ const void* updateInHashTable( Hashtable *h, const char* key, const void* value 
 const void *deleteFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
-    const void *temp = NULL;
-    if ( h->buckets[index] != NULL ) {
+    const void *temp = nullptr;
+    if ( h->buckets[index] != nullptr ) {
         struct bucket *b0 = h->buckets[index];
         if ( strcmp( b0->key, key ) == 0 ) {
             h->buckets[index] = b0->next;
@@ -197,7 +197,7 @@ const void *deleteFromHashTable( Hashtable *h, const char* key ) {
             h->len --;
         }
         else {
-            while ( b0->next != NULL ) {
+            while ( b0->next != nullptr ) {
                 if ( strcmp( b0->next->key, key ) == 0 ) {
                     struct bucket *tempBucket = b0->next;
                     temp = b0->next->value;
@@ -223,13 +223,13 @@ const void* lookupFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
     struct bucket *b0 = h->buckets[index];
-    while ( b0 != NULL ) {
+    while ( b0 != nullptr ) {
         if ( strcmp( b0->key, key ) == 0 ) {
             return b0->value;
         }
         b0 = b0->next;
     }
-    return NULL;
+    return nullptr;
 }
 /**
  * returns NULL if not found
@@ -238,23 +238,23 @@ struct bucket* lookupBucketFromHashTable( Hashtable *h, const char* key ) {
     unsigned long hs = myhash( key );
     unsigned long index = hs % h->size;
     struct bucket *b0 = h->buckets[index];
-    while ( b0 != NULL ) {
+    while ( b0 != nullptr ) {
         if ( strcmp( b0->key, key ) == 0 ) {
             return b0;
         }
         b0 = b0->next;
     }
-    return NULL;
+    return nullptr;
 }
 struct bucket* nextBucket( struct bucket *b0, const char* key ) {
     b0 = b0->next;
-    while ( b0 != NULL ) {
+    while ( b0 != nullptr ) {
         if ( strcmp( b0->key, key ) == 0 ) {
             return b0;
         }
         b0 = b0->next;
     }
-    return NULL;
+    return nullptr;
 }
 
 void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
@@ -262,7 +262,7 @@ void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
         int i;
         for ( i = 0; i < h->size; i++ ) {
             struct bucket *b0 = h->buckets[i];
-            if ( b0 != NULL ) {
+            if ( b0 != nullptr ) {
                 deleteBucket( b0, f );
             }
         }
@@ -271,12 +271,12 @@ void deleteHashTable( Hashtable *h, void ( *f )( const void * ) ) {
     }
 }
 void deleteBucket( struct bucket *b0, void ( *f )( const void * ) ) {
-    if ( b0->next != NULL ) {
+    if ( b0->next != nullptr ) {
         deleteBucket( b0->next, f );
     }
     /* todo do not delete keys if they are allocated in regions */
     free( b0->key );
-    if ( f != NULL ) {
+    if ( f != nullptr ) {
         f( b0->value );
     }
     free( b0 );

@@ -33,8 +33,8 @@
 int
 rcExecCmd( rcComm_t *conn, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     int status;
-    status = procApiRequest( conn, EXEC_CMD_AN, execCmdInp, NULL,
-                             ( void ** ) execCmdOut, NULL );
+    status = procApiRequest( conn, EXEC_CMD_AN, execCmdInp, nullptr,
+                             ( void ** ) execCmdOut, nullptr );
 
     return status;
 }

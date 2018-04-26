@@ -22,8 +22,8 @@
 int
 rcFileTruncate( rcComm_t *conn, fileOpenInp_t *fileTruncateInp ) {
     int status;
-    status = procApiRequest( conn, FILE_TRUNCATE_AN, fileTruncateInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_TRUNCATE_AN, fileTruncateInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

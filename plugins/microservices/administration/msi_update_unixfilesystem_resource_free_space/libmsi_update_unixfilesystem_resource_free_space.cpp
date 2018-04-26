@@ -15,16 +15,16 @@ extern irods::resource_manager resc_mgr;
 
 int
 msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, ruleExecInfo_t *rei) {
-    if (rei == NULL) {
+    if (rei == nullptr) {
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: input rei is NULL");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if (resource_name_msparam == NULL) {
+    if (resource_name_msparam == nullptr) {
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: resource_name_msparam is NULL");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    if (resource_name_msparam->type == NULL) {
+    if (resource_name_msparam->type == nullptr) {
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: resource_name_msparam->type is NULL");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -34,7 +34,7 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
     }
 
     const char* resource_name_cstring = static_cast<char*>(resource_name_msparam->inOutStruct);
-    if (resource_name_cstring == NULL) {
+    if (resource_name_cstring == nullptr) {
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: input resource_name_msparam->inOutStruct is NULL");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -94,7 +94,7 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
     }
     const std::string free_space_in_bytes_string = boost::lexical_cast<std::string>(free_space_in_bytes);
 
-    if (rei->rsComm == NULL) {
+    if (rei->rsComm == nullptr) {
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: input rei->rsComm is NULL");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -119,8 +119,8 @@ msi_update_unixfilesystem_resource_free_space(msParam_t *resource_name_msparam, 
     memset(&errMsg, 0, sizeof(errMsg));
     rcComm_t *admin_connection = rcConnect(service_account_environment.rodsHost, service_account_environment.rodsPort,
                                            service_account_environment.rodsUserName, service_account_environment.rodsZone, 0, &errMsg);
-    if (admin_connection == NULL) {
-        char *mySubName = NULL;
+    if (admin_connection == nullptr) {
+        char *mySubName = nullptr;
         const char *myName = rodsErrorName(errMsg.status, &mySubName);
         rodsLog(LOG_ERROR, "msi_update_unixfilesystem_resource_free_space: rcConnect failure [%s] [%s] [%d] [%s]",
                 myName, mySubName, errMsg.status, errMsg.msg);

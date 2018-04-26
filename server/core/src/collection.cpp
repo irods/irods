@@ -36,10 +36,10 @@ checkCollAccessPerm( rsComm_t *rsComm, char *collection, char *accessPerm ) {
     char accStr[LONG_NAME_LEN];
     char condStr[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
 
-    if ( collection == NULL || accessPerm == NULL ) {
+    if ( collection == nullptr || accessPerm == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -135,9 +135,9 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
     int status = 0;
     char accStr[LONG_NAME_LEN];
 
-    if ( genQueryInp == NULL ||
-            collection  == NULL ||
-            genQueryOut == NULL ) {
+    if ( genQueryInp == nullptr ||
+            collection  == nullptr ||
+            genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -159,7 +159,7 @@ rsQueryDataObjInCollReCur( rsComm_t *rsComm, char *collection,
 
     addInxIval( &genQueryInp->selectInp, COL_D_RESC_ID, 1 );
 
-    if ( accessPerm != NULL ) {
+    if ( accessPerm != nullptr ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );
         addKeyVal( &genQueryInp->condInput, USER_NAME_CLIENT_KW, accStr );
 
@@ -206,7 +206,7 @@ rsQueryCollInColl( rsComm_t *rsComm, char *collection,
     char collQCond[MAX_NAME_LEN];
     int status;
 
-    if ( collection == NULL || genQueryOut == NULL ) {
+    if ( collection == nullptr || genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -232,7 +232,7 @@ isCollEmpty( rsComm_t *rsComm, char *collection ) {
     int handleInx;
     int entCnt = 0;
 
-    if ( rsComm == NULL || collection == NULL ) {
+    if ( rsComm == nullptr || collection == nullptr ) {
         rodsLog( LOG_ERROR,
                  "isCollEmpty: Input rsComm or collection is NULL" );
         return True;
@@ -271,7 +271,7 @@ int
 collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
           rodsObjStat_t **rodsObjStatOut ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     char condStr[MAX_NAME_LEN];
     sqlResult_t *dataId;
@@ -310,49 +310,49 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         ( *rodsObjStatOut )->objType = COLL_OBJ_T;
         status = ( int )COLL_OBJ_T;
         if ( ( dataId = getSqlResultByInx( genQueryOut,
-                                           COL_COLL_ID ) ) == NULL ) {
+                                           COL_COLL_ID ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat: getSqlResultByInx for COL_COLL_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerName = getSqlResultByInx( genQueryOut,
-                                COL_COLL_OWNER_NAME ) ) == NULL ) {
+                                COL_COLL_OWNER_NAME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( ownerZone = getSqlResultByInx( genQueryOut,
-                                COL_COLL_OWNER_ZONE ) ) == NULL ) {
+                                COL_COLL_OWNER_ZONE ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_ZONE failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( createTime = getSqlResultByInx( genQueryOut,
-                                 COL_COLL_CREATE_TIME ) ) == NULL ) {
+                                 COL_COLL_CREATE_TIME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_CREATE_TIME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( modifyTime = getSqlResultByInx( genQueryOut,
-                                 COL_COLL_MODIFY_TIME ) ) == NULL ) {
+                                 COL_COLL_MODIFY_TIME ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_MODIFY_TIME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collType = getSqlResultByInx( genQueryOut,
-                               COL_COLL_TYPE ) ) == NULL ) {
+                               COL_COLL_TYPE ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_TYPE failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo1 = getSqlResultByInx( genQueryOut,
-                                COL_COLL_INFO1 ) ) == NULL ) {
+                                COL_COLL_INFO1 ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO1 failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         else if ( ( collInfo2 = getSqlResultByInx( genQueryOut,
-                                COL_COLL_INFO2 ) ) == NULL ) {
+                                COL_COLL_INFO2 ) ) == nullptr ) {
             rodsLog( LOG_ERROR,
                      "_rsObjStat:getSqlResultByInx for COL_COLL_INFO2 failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -369,10 +369,10 @@ collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      TIME_LEN );
 
             if ( strlen( collType->value ) > 0 ) {
-                specCollCache_t *specCollCache = 0;
+                specCollCache_t *specCollCache = nullptr;
 
                 if ( ( specCollCache =
-                            matchSpecCollCache( dataObjInp->objPath ) ) != NULL ) {
+                            matchSpecCollCache( dataObjInp->objPath ) ) != nullptr ) {
                     replSpecColl( &specCollCache->specColl,
                                   &( *rodsObjStatOut )->specColl );
                 }
@@ -406,7 +406,7 @@ collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                   rodsObjStat_t **rodsObjStatOut ) {
     int status;
 
-    *rodsObjStatOut = NULL;
+    *rodsObjStatOut = nullptr;
     addKeyVal( &dataObjInp->condInput, SEL_OBJ_TYPE_KW, "collection" );
     status = _rsObjStat( rsComm, dataObjInp, rodsObjStatOut );
     rmKeyVal( &dataObjInp->condInput, SEL_OBJ_TYPE_KW );
@@ -415,9 +415,9 @@ collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             status = OBJ_PATH_DOES_NOT_EXIST;
         }
     }
-    if ( status < 0 && *rodsObjStatOut != NULL ) {
+    if ( status < 0 && *rodsObjStatOut != nullptr ) {
         freeRodsObjStat( *rodsObjStatOut );
-        *rodsObjStatOut = NULL;
+        *rodsObjStatOut = nullptr;
     }
     return status;
 }
@@ -447,7 +447,7 @@ rsMkCollR( rsComm_t *rsComm, const char *startColl, const char *destColl ) {
     tmpLen = pathLen;
 
     while ( tmpLen > startLen ) {
-        if ( isCollAllKinds( rsComm, tmpPath, NULL ) >= 0 ) {
+        if ( isCollAllKinds( rsComm, tmpPath, nullptr ) >= 0 ) {
             break;
         }
 

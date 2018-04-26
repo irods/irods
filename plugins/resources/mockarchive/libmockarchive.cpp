@@ -276,7 +276,7 @@ irods::error mock_archive_file_stat(
     _statbuf->st_nlink = 1;
     _statbuf->st_uid   = getuid();
     _statbuf->st_gid   = getgid();
-    _statbuf->st_atime = _statbuf->st_mtime = _statbuf->st_ctime = time( 0 );
+    _statbuf->st_atime = _statbuf->st_mtime = _statbuf->st_ctime = time( nullptr );
     _statbuf->st_size  = UNKNOWN_FILE_SZ;
     return SUCCESS();
 
@@ -676,7 +676,7 @@ irods::error mock_archive_file_resolve_hierarchy(
         return PASSMSG( "Invalid plugin context.", ret );
     }
 
-    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+    if ( nullptr == _opr || nullptr == _curr_host || nullptr == _out_parser || nullptr == _out_vote ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameters." );
     }
 

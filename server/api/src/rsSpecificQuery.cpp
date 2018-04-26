@@ -83,7 +83,7 @@ _rsSpecificQuery( rsComm_t *rsComm, specificQueryInp_t *specificQueryInp,
     if ( status < 0 ) {
         clearGenQueryOut( *genQueryOut );
         free( *genQueryOut );
-        *genQueryOut = NULL;
+        *genQueryOut = nullptr;
         if ( status != CAT_NO_ROWS_FOUND ) {
             rodsLog( LOG_NOTICE,
                      "_rsSpecificQuery: specificQuery status = %d", status );

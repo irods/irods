@@ -48,8 +48,8 @@
 int
 rcUserAdmin( rcComm_t *conn, userAdminInp_t *userAdminInp ) {
     int status;
-    status = procApiRequest( conn, USER_ADMIN_AN,  userAdminInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, USER_ADMIN_AN,  userAdminInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

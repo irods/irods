@@ -17,7 +17,7 @@ int rsExecRuleExpression(
 
     std::string my_rule_text = (char*)_exec_rule->rule_text_.buf;
 
-    ruleExecInfoAndArg_t* rei_and_arg = NULL;
+    ruleExecInfoAndArg_t* rei_and_arg = nullptr;
     int status = unpackStruct(
                      _exec_rule->packed_rei_.buf,
                      ( void ** ) &rei_and_arg,
@@ -38,10 +38,10 @@ int rsExecRuleExpression(
     rei->rsComm->clientUser = *rei->uoic;
 
     // do doi things?
-    if ( rei->doi != NULL ) {
-        if ( rei->doi->next != NULL ) {
+    if ( rei->doi != nullptr ) {
+        if ( rei->doi->next != nullptr ) {
             free( rei->doi->next );
-            rei->doi->next = NULL;
+            rei->doi->next = nullptr;
         }
     }
 

@@ -69,8 +69,8 @@ rcDataObjRename( rcComm_t *conn, dataObjCopyInp_t *dataObjRenameInp ) {
     int status;
 
 
-    status = procApiRequest( conn, DATA_OBJ_RENAME_AN,  dataObjRenameInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, DATA_OBJ_RENAME_AN,  dataObjRenameInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

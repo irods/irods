@@ -39,7 +39,7 @@ extern "C" {
         char md5buffer[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
         char md5digest[RESPONSE_LEN + 2];
         int uid, status, i;
-        char *keybuf = NULL;
+        char *keybuf = nullptr;
         int key_len;
         MD5_CTX ctx;
 
@@ -113,7 +113,7 @@ extern "C" {
         char md5digest[16];
         MD5_CTX ctx;
 
-        if ( authenticator == NULL ||
+        if ( authenticator == nullptr ||
                 authenticator_len < 16 ) {
             return USER_INPUT_OPTION_ERR;
         }
@@ -122,7 +122,7 @@ extern "C" {
         buflen = username ? strlen( username ) : 0;
         buflen += sizeof( uid ) + CHALLENGE_LEN + key_len;
         buffer = ( char* )malloc( buflen );
-        if ( buffer == NULL ) {
+        if ( buffer == nullptr ) {
             rodsLog( LOG_ERROR,
                      "%s: could not allocate memory buffer. errno = %d",
                      fname, errno );
@@ -169,7 +169,7 @@ extern "C" {
         const char *keyfile;
         int buflen, key_fd, nb;
 
-        if ( key == NULL || key_len == NULL ) {
+        if ( key == nullptr || key_len == nullptr ) {
             return USER__NULL_INPUT_ERR;
         }
 
@@ -178,7 +178,7 @@ extern "C" {
         std::string default_os_auth_keyfile_path_string = default_os_auth_keyfile_path.string();
 
         keyfile = getenv( "irodsOsAuthKeyfile" );
-        if ( keyfile == NULL || *keyfile == '\0' ) {
+        if ( keyfile == nullptr || *keyfile == '\0' ) {
             keyfile = default_os_auth_keyfile_path_string.c_str();
         }
 
@@ -211,7 +211,7 @@ extern "C" {
         }
 
         char * keybuf = ( char* )malloc( buflen );
-        if ( keybuf == NULL ) {
+        if ( keybuf == nullptr ) {
             rodsLog( LOG_ERROR,
                      "%s: could not allocate memory for key buffer. errno = %d",
                      fname, errno );
@@ -250,7 +250,7 @@ extern "C" {
         int buflen, challenge_len = CHALLENGE_LEN;
         char buffer[128];
 
-        if ( challenge == NULL || username == NULL || authenticator == NULL ) {
+        if ( challenge == nullptr || username == nullptr || authenticator == nullptr ) {
             return USER__NULL_INPUT_ERR;
         }
 
@@ -379,7 +379,7 @@ extern "C" {
      */
     int
     osauthGetUid( char *username ) {
-        if ( NULL == username ) {
+        if ( nullptr == username ) {
             rodsLog( LOG_ERROR, "Error: osauthGetUid called with null username argument." );
             return -1;
         }
@@ -387,7 +387,7 @@ extern "C" {
 
         errno = 0;
         struct passwd *pwent = getpwnam( username );
-        if ( pwent == NULL ) {
+        if ( pwent == nullptr ) {
             if ( errno ) {
                 rodsLog( LOG_ERROR,
                          "%s: error calling getpwnam for %s. errno = %d",
@@ -418,7 +418,7 @@ extern "C" {
         uid = getuid();
         errno = 0;
         pwent = getpwuid( uid );
-        if ( pwent == NULL ) {
+        if ( pwent == nullptr ) {
             if ( errno ) {
                 rodsLog( LOG_ERROR,
                          "%s: error calling getpwuid for uid %d. errno = %d",

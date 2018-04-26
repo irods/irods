@@ -24,21 +24,21 @@ int
 rcRegDataObj( rcComm_t *conn, dataObjInfo_t *dataObjInfo,
               dataObjInfo_t **outDataObjInfo ) {
     int            status      = 0;
-    dataObjInfo_t* srcNext     = 0;
+    dataObjInfo_t* srcNext     = nullptr;
 
     /* don't send next */
     srcNext     = dataObjInfo->next;
-    dataObjInfo->next     = NULL;
-    status = procApiRequest( conn, REG_DATA_OBJ_AN, dataObjInfo, NULL,
-                             ( void ** ) outDataObjInfo, NULL );
+    dataObjInfo->next     = nullptr;
+    status = procApiRequest( conn, REG_DATA_OBJ_AN, dataObjInfo, nullptr,
+                             ( void ** ) outDataObjInfo, nullptr );
 
     /* restore */
     dataObjInfo->next     = srcNext;
     /* cleanup fake pointers */
-    if ( status >= 0 && *outDataObjInfo != NULL ) {
-        if ( ( *outDataObjInfo )->next != NULL ) {
+    if ( status >= 0 && *outDataObjInfo != nullptr ) {
+        if ( ( *outDataObjInfo )->next != nullptr ) {
             free( ( *outDataObjInfo )->next );
-            ( *outDataObjInfo )->next = NULL;
+            ( *outDataObjInfo )->next = nullptr;
         }
     }
     return status;

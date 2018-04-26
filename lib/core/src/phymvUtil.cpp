@@ -13,7 +13,7 @@
 int
 phymvUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -76,14 +76,14 @@ phymvDataObjUtil( rcComm_t *conn, char *srcPath,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "phymvDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
@@ -91,9 +91,9 @@ phymvDataObjUtil( rcComm_t *conn, char *srcPath,
     status = rcDataObjPhymv( conn, dataObjInp );
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
         printTiming( conn, dataObjInp->objPath, conn->transStat.bytesWritten,
-                     NULL, &startTime, &endTime );
+                     nullptr, &startTime, &endTime );
     }
 
     return status;
@@ -103,7 +103,7 @@ int
 initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                   dataObjInp_t *dataObjInp ) {
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForPhymv: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -111,7 +111,7 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -130,7 +130,7 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPhymv: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -140,7 +140,7 @@ initCondForPhymv( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
@@ -157,7 +157,7 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN];
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "phymvCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;
@@ -181,7 +181,7 @@ phymvCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                  srcColl, status );
         return status;
     }
-    if ( collHandle.rodsObjStat->specColl != NULL &&
+    if ( collHandle.rodsObjStat->specColl != nullptr &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no trim for mounted coll */
         rclCloseCollection( &collHandle );

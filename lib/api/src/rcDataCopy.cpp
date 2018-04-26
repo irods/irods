@@ -34,8 +34,8 @@
 int
 rcDataCopy( rcComm_t *conn, dataCopyInp_t *dataCopyInp ) {
     int status;
-    status = procApiRequest( conn, DATA_COPY_AN, dataCopyInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, DATA_COPY_AN, dataCopyInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

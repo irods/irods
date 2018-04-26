@@ -39,7 +39,7 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
         replKeyVal( &openCollInp->condInput, &collHandle->dataObjInp.condInput );
     }
 
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
     status = rsObjStat( rsComm, &collHandle->dataObjInp, &rodsObjStatOut );
     if ( status < 0 ) {
         freeRodsObjStat( rodsObjStatOut );
@@ -54,7 +54,7 @@ rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
     }
 
     replSpecColl( rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl );
-    if ( rodsObjStatOut->specColl != NULL &&
+    if ( rodsObjStatOut->specColl != nullptr &&
             rodsObjStatOut->specColl->collClass == LINKED_COLL ) {
         /* save the linked path */
         rstrcpy( collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath, MAX_NAME_LEN );

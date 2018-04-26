@@ -185,7 +185,7 @@ namespace irods {
         typedef PluginType* ( *factory_type )( const std::string& , const Ts&... );
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
         char* err = dlerror();
-        if ( 0 != err || !factory ) {
+        if ( nullptr != err || !factory ) {
             std::stringstream msg;
             msg << "failed to load symbol from shared object handle - plugin_factory"
                 << " :: dlerror is [" << err << "]";

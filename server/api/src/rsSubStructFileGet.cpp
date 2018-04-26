@@ -46,7 +46,7 @@ remoteSubStructFileGet( rsComm_t *rsComm, subFile_t *subFile,
                         bytesBuf_t *subFileGetOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileGet: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -99,7 +99,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // allocte outgoing buffer if necessary
-    if ( _out_buf->buf == NULL ) {
+    if ( _out_buf->buf == nullptr ) {
         _out_buf->buf = new unsigned char[ _sub_file->offset ];
     }
 

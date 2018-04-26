@@ -15,7 +15,7 @@ static int FailedChksumCnt = 0;
 int
 chksumUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -74,10 +74,10 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
                    rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status;
     struct timeval startTime, endTime;
-    char *chksumStr = NULL;
+    char *chksumStr = nullptr;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
 
         rodsLog( LOG_ERROR,
                  "chksumDataObjUtil: NULL srcPath input" );
@@ -85,7 +85,7 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
@@ -101,7 +101,7 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
                       dataObjInp->objPath );
         printErrorStack(conn->rError);
         freeRError(conn->rError);
-        conn->rError = NULL;
+        conn->rError = nullptr;
         return status;
     }
 
@@ -111,8 +111,8 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
         printf( "    %s    %s\n", myFile, chksumStr );
         free( chksumStr );
         if ( rodsArgs->verbose == True ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
-            printTiming( conn, dataObjInp->objPath, -1, NULL,
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
+            printTiming( conn, dataObjInp->objPath, -1, nullptr,
                          &startTime, &endTime );
         }
     }
@@ -123,7 +123,7 @@ chksumDataObjUtil( rcComm_t *conn, char *srcPath,
 int
 initCondForChksum( rodsArguments_t *rodsArgs,
                    dataObjInp_t *dataObjInp, collInp_t *collInp ) {
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForChksum: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -132,7 +132,7 @@ initCondForChksum( rodsArguments_t *rodsArgs,
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( collInp, 0, sizeof( collInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -202,7 +202,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     collEnt_t collEnt;
     int queryFlags;
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "chksumCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;
@@ -225,7 +225,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                  srcColl, status );
         return status;
     }
-    if ( collHandle.rodsObjStat->specColl != NULL &&
+    if ( collHandle.rodsObjStat->specColl != nullptr &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no trim for mounted coll */
         rclCloseCollection( &collHandle );
@@ -254,7 +254,7 @@ chksumCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 childDataObjInp.specColl = &collEnt.specColl;
             }
             else {
-                childDataObjInp.specColl = NULL;
+                childDataObjInp.specColl = nullptr;
             }
             int status = chksumCollUtil( conn, collEnt.collName, myRodsEnv,
                                      rodsArgs, &childDataObjInp, collInp );

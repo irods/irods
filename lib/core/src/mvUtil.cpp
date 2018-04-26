@@ -12,7 +12,7 @@
 
 int
 mvUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -51,7 +51,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "mvFileUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -75,7 +75,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
 
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     rstrcpy( dataObjRenameInp->destDataObjInp.objPath, targPath, MAX_NAME_LEN );
@@ -84,9 +84,9 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
     status = rcDataObjRename( conn, dataObjRenameInp );
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
         printTiming( conn, dataObjRenameInp->destDataObjInp.objPath,
-                     0, NULL, &startTime, &endTime );
+                     0, nullptr, &startTime, &endTime );
     }
 
     return status;
@@ -94,7 +94,7 @@ mvObjUtil( rcComm_t *conn, char *srcPath, char *targPath, objType_t objType,
 
 int
 initCondForMv( dataObjCopyInp_t *dataObjRenameInp ) {
-    if ( dataObjRenameInp == NULL ) {
+    if ( dataObjRenameInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForMv: NULL dataObjRenameInp input" );
         return USER__NULL_INPUT_ERR;

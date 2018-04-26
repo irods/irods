@@ -23,7 +23,7 @@ int
 rcChkObjPermAndStat( rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp ) {
     int status;
     status = procApiRequest( conn, CHK_OBJ_PERM_AND_STAT_AN,
-                             chkObjPermAndStatInp, NULL, ( void ** ) NULL, NULL );
+                             chkObjPermAndStatInp, nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

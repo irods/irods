@@ -48,7 +48,7 @@ int _makeQuery( char *sel, char *cond, char **sql );
 int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei ) {
     genQueryInp_t genQueryInp;
     int i;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char *query;
 
     query = ( char * ) malloc( strlen( ( const char* )queryParam->inOutStruct ) + 10 + MAX_NAME_LEN * 8 );
@@ -117,7 +117,7 @@ int msiExecStrCondQuery( msParam_t* queryParam, msParam_t* genQueryOutParam, rul
 int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei ) {
     genQueryInp_t *genQueryInp;
     int i;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
 
 
     genQueryInp = ( genQueryInp_t* )genQueryInParam->inOutStruct;
@@ -296,7 +296,7 @@ msiGetMoreRows( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_
 
     RE_TEST_MACRO( "    Calling msiGetMoreRows" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiGetMoreRows: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -398,19 +398,19 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
 
     RE_TEST_MACRO( "    Calling msiCloseGenQuery" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiCloseGenQuery: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     /* check for non null parameters */
-    if ( genQueryInp_msp == NULL || genQueryOut_msp == NULL ) {
+    if ( genQueryInp_msp == nullptr || genQueryOut_msp == nullptr ) {
         rodsLog( LOG_ERROR, "msiCloseGenQuery: Missing parameter(s)" );
         return USER__NULL_INPUT_ERR;
     }
 
     /* no double close */
-    if ( genQueryOut_msp->type == NULL ) {
+    if ( genQueryOut_msp->type == nullptr ) {
         return 0;
     }
 
@@ -450,8 +450,8 @@ msiCloseGenQuery( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleEx
 
     if ( rei->status == 0 ) {
         /* clear output parameter */
-        genQueryOut_msp->type = NULL;
-        genQueryOut_msp->inOutStruct = NULL;
+        genQueryOut_msp->type = nullptr;
+        genQueryOut_msp->inOutStruct = nullptr;
     }
 
     return rei->status;
@@ -500,21 +500,21 @@ msiMakeGenQuery( msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQue
 
     RE_TEST_MACRO( "    Calling msiMakeGenQuery" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiMakeGenQuery: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* parse selectListStr */
-    if ( ( sel = parseMspForStr( selectListStr ) ) == NULL ) {
+    if ( ( sel = parseMspForStr( selectListStr ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiMakeGenQuery: input selectListStr is NULL." );
         return USER__NULL_INPUT_ERR;
     }
 
 
     /* parse condStr */
-    if ( ( cond = parseMspForStr( condStr ) ) == NULL ) {
+    if ( ( cond = parseMspForStr( condStr ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiMakeGenQuery: input condStr is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -602,7 +602,7 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
 
     RE_TEST_MACRO( "    Calling msiPrintGenQueryInp" );
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiPrintGenQueryInp: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -611,7 +611,7 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
         return USER__NULL_INPUT_ERR;
     }
     /* where are we writing to? */
-    if ( where->inOutStruct != NULL ) {
+    if ( where->inOutStruct != nullptr ) {
         writeId = ( char* )where->inOutStruct;
     }
     else {
@@ -706,7 +706,7 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
     RE_TEST_MACRO( "    Calling msiAddSelectFieldToGenQuery" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddSelectFieldToGenQuery: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -715,7 +715,7 @@ msiAddSelectFieldToGenQuery( msParam_t *select, msParam_t *function, msParam_t *
     /********************************** PARAM PARSING  *********************************/
 
     /* Parse select */
-    if ( ( column_str = parseMspForStr( select ) ) == NULL ) {
+    if ( ( column_str = parseMspForStr( select ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddSelectFieldToGenQuery: input select is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -816,7 +816,7 @@ msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *opr, msParam_t *valu
     RE_TEST_MACRO( "    Calling msiAddConditionToGenQuery" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddConditionToGenQuery: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -825,19 +825,19 @@ msiAddConditionToGenQuery( msParam_t *attribute, msParam_t *opr, msParam_t *valu
     /********************************** PARAM PARSING  *********************************/
 
     /* Parse attribute */
-    if ( ( att_str = parseMspForStr( attribute ) ) == NULL ) {
+    if ( ( att_str = parseMspForStr( attribute ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddConditionToGenQuery: input attribute is NULL." );
         return USER__NULL_INPUT_ERR;
     }
 
     /* Parse operator */
-    if ( ( op_str = parseMspForStr( opr ) ) == NULL ) {
+    if ( ( op_str = parseMspForStr( opr ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddConditionToGenQuery: input opr is NULL." );
         return USER__NULL_INPUT_ERR;
     }
 
     /* Parse value */
-    if ( ( val_str = parseMspForStr( value ) ) == NULL ) {
+    if ( ( val_str = parseMspForStr( value ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddConditionToGenQuery: input value is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -922,7 +922,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     RE_TEST_MACRO( "    Calling msiPrintGenQueryOutToBuffer" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -956,7 +956,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     }
 
     /* Write results to temp file */
-    rei->status = printGenQueryOut( stream, format_str, NULL, genQueryOut );
+    rei->status = printGenQueryOut( stream, format_str, nullptr, genQueryOut );
     if ( rei->status < 0 ) {
         rodsLog( LOG_ERROR, "msiPrintGenQueryOutToBuffer: printGenQueryOut() failed, status = %d", rei->status );
         fclose( stream );
@@ -970,7 +970,7 @@ msiPrintGenQueryOutToBuffer( msParam_t *queryOut, msParam_t *format, msParam_t *
     /* Read from temp file and write to bytesBuf */
     rewind( stream );
     char readbuffer[MAX_NAME_LEN];
-    while ( fgets( readbuffer, sizeof(readbuffer), stream ) != NULL ) {
+    while ( fgets( readbuffer, sizeof(readbuffer), stream ) != nullptr ) {
         appendToByteBuf( bytesBuf, readbuffer );
     }
 

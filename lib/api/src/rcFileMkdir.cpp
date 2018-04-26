@@ -22,8 +22,8 @@
 int
 rcFileMkdir( rcComm_t *conn, fileMkdirInp_t *fileMkdirInp ) {
     int status;
-    status = procApiRequest( conn, FILE_MKDIR_AN,  fileMkdirInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_MKDIR_AN,  fileMkdirInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

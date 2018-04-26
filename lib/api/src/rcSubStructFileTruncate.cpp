@@ -23,7 +23,7 @@ int
 rcSubStructFileTruncate( rcComm_t *conn, subFile_t *bunSubTruncateInp ) {
     int status;
     status = procApiRequest( conn, SUB_STRUCT_FILE_TRUNCATE_AN, bunSubTruncateInp,
-                             NULL, ( void ** ) NULL, NULL );
+                             nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

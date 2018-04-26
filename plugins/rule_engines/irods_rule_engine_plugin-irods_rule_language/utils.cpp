@@ -70,7 +70,7 @@ ExprType *dupTypeAux( ExprType *ty, Region *r, Hashtable *varTable ) {
     case T_VAR:
         name = getTVarName( T_VAR_ID( ty ), buf );
         exist = ( ExprType * )lookupFromHashTable( varTable, name );
-        if ( exist != NULL ) {
+        if ( exist != nullptr ) {
             newt = exist;
         }
         else {
@@ -116,21 +116,21 @@ ExprType* unifyTVarL( ExprType *type, ExprType* expected, Hashtable *varTypes, R
     char buf[128];
     if ( T_VAR_NUM_DISJUNCTS( type ) == 0 ) { /* free */
         if ( occursIn( type, expected ) ) {
-            return NULL;
+            return nullptr;
         }
         insertIntoHashTable( varTypes, getTVarName( T_VAR_ID( type ), buf ), expected );
         return dereference( expected, varTypes, r );
     }
     else {   /* union type */
         int i;
-        ExprType *ty = NULL;
+        ExprType *ty = nullptr;
         for ( i = 0; i < T_VAR_NUM_DISJUNCTS( type ); i++ ) {
             if ( getNodeType( T_VAR_DISJUNCT( type, i ) ) == getNodeType( expected ) ) { /* union types can only include primitive types */
                 ty = expected;
                 break;
             }
         }
-        if ( ty != NULL ) {
+        if ( ty != nullptr ) {
             insertIntoHashTable( varTypes, getTVarName( T_VAR_ID( type ), buf ), expected );
         }
         return ty;
@@ -141,20 +141,20 @@ ExprType* unifyTVarR( ExprType *type, ExprType* expected, Hashtable *varTypes, R
     char buf[128];
     if ( T_VAR_NUM_DISJUNCTS( expected ) == 0 ) { /* free */
         if ( occursIn( expected, type ) ) {
-            return NULL;
+            return nullptr;
         }
         insertIntoHashTable( varTypes, getTVarName( T_VAR_ID( expected ), buf ), type );
         return dereference( expected, varTypes, r );
     }
     else {   /* union type */
         int i;
-        ExprType *ty = NULL;
+        ExprType *ty = nullptr;
         for ( i = 0; i < T_VAR_NUM_DISJUNCTS( expected ); i++ ) {
             if ( getNodeType( type ) == getNodeType( T_VAR_DISJUNCT( expected, i ) ) ) { /* union types can only include primitive types */
                 ty = type;
             }
         }
-        if ( ty != NULL ) {
+        if ( ty != nullptr ) {
             insertIntoHashTable( varTypes, getTVarName( T_VAR_ID( expected ), buf ), ty );
             return dereference( expected, varTypes, r );
         }
@@ -168,7 +168,7 @@ ExprType* unifyTVarR( ExprType *type, ExprType* expected, Hashtable *varTypes, R
  */
 ExprType* unifyWith( ExprType *type, ExprType* expected, Hashtable *varTypes, Region *r ) {
     if ( getVararg( type ) != getVararg( expected ) ) {
-        return NULL;
+        return nullptr;
     }
     char buf[128];
     /* dereference types to get the most specific type */
@@ -200,7 +200,7 @@ ExprType* unifyWith( ExprType *type, ExprType* expected, Hashtable *varTypes, Re
                 }
             }
             if ( cp == c ) {
-                return NULL;
+                return nullptr;
             }
             else {
                 ExprType *gcd;
@@ -226,7 +226,7 @@ ExprType* unifyWith( ExprType *type, ExprType* expected, Hashtable *varTypes, Re
             }
             else {
                 /* error unreachable */
-                return NULL;
+                return nullptr;
             }
         }
     }
@@ -257,20 +257,20 @@ ExprType* unifyNonTvars( ExprType *type, ExprType *expected, Hashtable *varTypes
                                          T_CONS_TYPE_ARG( type, i ),
                                          T_CONS_TYPE_ARG( expected, i ),
                                          varTypes, r ); /* unifyWithCoercion performs dereference */
-                if ( elemType == NULL ) {
-                    return NULL;
+                if ( elemType == nullptr ) {
+                    return nullptr;
                 }
                 subtrees[i] = elemType;
             }
             return dereference( newConsType( T_CONS_ARITY( expected ), T_CONS_TYPE_NAME( expected ), subtrees, r ), varTypes, r );
         }
         else {
-            return NULL;
+            return nullptr;
         }
     }
     else if ( getNodeType( type ) == T_IRODS || getNodeType( expected ) == T_IRODS ) {
         if ( strcmp( type->text, expected->text ) != 0 ) {
-            return NULL;
+            return nullptr;
         }
         return expected;
     }
@@ -386,7 +386,7 @@ void cpHashtable( Hashtable *env, Region *r ) {
 
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
-        while ( b != NULL ) {
+        while ( b != nullptr ) {
             b->value = cpRes( ( Res * )b->value, r );
             b = b->next;
         }
@@ -395,7 +395,7 @@ void cpHashtable( Hashtable *env, Region *r ) {
 
 void cpEnv( Env *env, Region *r ) {
     cpHashtable( env->current, r );
-    if ( env->previous != NULL ) {
+    if ( env->previous != nullptr ) {
         cpEnv( env->previous, r );
     }
 }
@@ -469,7 +469,7 @@ void cpHashtable2( Hashtable *env, Region *oldr, Region *r ) {
 
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
-        while ( b != NULL ) {
+        while ( b != nullptr ) {
             b->value = cpRes2( ( Res * )b->value, oldr, r );
             b = b->next;
         }
@@ -478,7 +478,7 @@ void cpHashtable2( Hashtable *env, Region *oldr, Region *r ) {
 
 void cpEnv2( Env *env, Region *oldr, Region *r ) {
     cpHashtable2( env->current, oldr, r );
-    if ( env->previous != NULL ) {
+    if ( env->previous != nullptr ) {
         cpEnv2( env->previous, oldr, r );
     }
 }
@@ -495,7 +495,7 @@ void printIndent( int n ) {
 void printEnvIndent( Env *env ) {
     Env *e = env->lower;
     int i = 0;
-    while ( e != NULL ) {
+    while ( e != nullptr ) {
         i++;
         e = e->lower;
     }
@@ -521,12 +521,12 @@ void printType( ExprType *type, Hashtable *var_types ) {
 
 char* typeToString( ExprType *type, Hashtable *var_types, char *buf, int bufsize ) {
     buf[0] = '\0';
-    Region *r = make_region( 0, NULL );
+    Region *r = make_region( 0, nullptr );
     if ( getVararg( type ) != OPTION_VARARG_ONCE ) {
         snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "vararg " );
     }
     ExprType *etype = type;
-    if ( getNodeType( etype ) == T_VAR && var_types != NULL ) {
+    if ( getNodeType( etype ) == T_VAR && var_types != nullptr ) {
         /* dereference */
         etype = dereference( etype, var_types, r );
     }
@@ -616,10 +616,10 @@ void typingConstraintsToString( List *typingConstraints, char *buf, int bufsize 
     char buf3[1024];
     ListNode *p = typingConstraints->head;
     buf[0] = '\0';
-    while ( p != NULL ) {
+    while ( p != nullptr ) {
         snprintf( buf + strlen( buf ), bufsize - strlen( buf ), "%s<%s\n",
-                  typeToString( TC_A( ( TypingConstraint * )p->value ), NULL, /*var_types,*/ buf2, 1024 ),
-                  typeToString( TC_B( ( TypingConstraint * )p->value ), NULL, /*var_types,*/ buf3, 1024 ) );
+                  typeToString( TC_A( ( TypingConstraint * )p->value ), nullptr, /*var_types,*/ buf2, 1024 ),
+                  typeToString( TC_B( ( TypingConstraint * )p->value ), nullptr, /*var_types,*/ buf3, 1024 ) );
         p = p->next;
     }
 }
@@ -629,7 +629,7 @@ ExprType *dereference( ExprType *type, Hashtable *type_table, Region *r ) {
         getTVarName( T_VAR_ID( type ), name );
         /* printf("deref: %s\n", name); */
         ExprType *deref = ( ExprType * )lookupFromHashTable( type_table, name );
-        if ( deref == NULL ) {
+        if ( deref == nullptr ) {
             return type;
         }
         else {
@@ -682,7 +682,7 @@ int writeToTmp( char *fileName, char *text ) {
     char buf[1024];
     snprintf( buf, sizeof( buf ), "/tmp/%s", fileName );
     FILE *fp = fopen( buf, "a" );
-    if ( fp == NULL ) {
+    if ( fp == nullptr ) {
         return 0;
     }
     fputs( text, fp );
@@ -699,7 +699,7 @@ int writeIntToTmp( char *fileName, int text ) {
 void printEnvToStdOut( Env *env ) {
     Env *e = env;
     char buffer[1024];
-    while ( e != NULL ) {
+    while ( e != nullptr ) {
         if ( e != env ) {
             printf( "%s\n===========\n", buffer );
         }
@@ -722,9 +722,9 @@ void printVarTypeEnvToStdOut( Hashtable *env ) {
     int i;
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
-        while ( b != NULL ) {
+        while ( b != nullptr ) {
             printf( "%s=", b->key );
-            printType( ( ExprType * )b->value, NULL/*env*/ );
+            printType( ( ExprType * )b->value, nullptr/*env*/ );
             printf( "\n" );
             b = b->next;
         }
@@ -753,7 +753,7 @@ void replace(Hashtable *varTypes, int a, ExprType *b) {
 
 Env* globalEnv( Env *env ) {
     Env *global = env;
-    while ( global->previous != NULL ) {
+    while ( global->previous != nullptr ) {
         global = global->previous;
     }
     return global;
@@ -767,7 +767,7 @@ void logErrMsg( rError_t *errmsg, rError_t *system ) {
     writeToTmp( "err.log", errbuf );
     writeToTmp( "err.log", "end errlog\n" );
 #endif
-    if ( system != NULL ) {
+    if ( system != nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, system, RE_UNKNOWN_ERROR, "%s", errbuf );
     }
     else {
@@ -812,20 +812,20 @@ char *errMsgToString( rError_t *errmsg, char *errbuf, int buflen /* = 0 */ ) {
 
 const void *lookupFromEnv( Env *env, const char *key ) {
     const void* val = lookupFromHashTable( env->current, key );
-    if ( val == NULL && env->previous != NULL ) {
+    if ( val == nullptr && env->previous != nullptr ) {
         val = lookupFromEnv( env->previous, key );
     }
     return val;
 }
 
 void updateInEnv( Env *env, char *varName, Res *res ) {
-    if ( NULL != env ) {
+    if ( nullptr != env ) {
         Env *defined = env;
 
-        while ( NULL != defined && NULL == lookupFromHashTable( defined->current, varName ) ) {
+        while ( nullptr != defined && nullptr == lookupFromHashTable( defined->current, varName ) ) {
             defined = defined->previous;
         }
-        if ( NULL != defined ) {
+        if ( nullptr != defined ) {
             updateInHashTable( defined->current, varName, res );
         }
         else {
@@ -839,20 +839,20 @@ void freeEnvUninterpretedStructs( Env *e ) {
     int i;
     for ( i = 0; i < ht->size; i++ ) {
         struct bucket *b = ht->buckets[i];
-        while ( b != NULL ) {
+        while ( b != nullptr ) {
             Res *res = ( Res * ) b->value;
             if ( TYPE( res ) == T_IRODS ) {
-                if ( RES_UNINTER_STRUCT( res ) != NULL ) {
+                if ( RES_UNINTER_STRUCT( res ) != nullptr ) {
                     free( RES_UNINTER_STRUCT( res ) );
                 }
-                if ( RES_UNINTER_BUFFER( res ) != NULL ) {
+                if ( RES_UNINTER_BUFFER( res ) != nullptr ) {
                     free( RES_UNINTER_BUFFER( res ) );
                 }
             }
             b = b->next;
         }
     }
-    if ( e->previous != NULL ) {
+    if ( e->previous != nullptr ) {
         freeEnvUninterpretedStructs( e->previous );
     }
 }
@@ -915,7 +915,7 @@ Node *lookupAVUFromMetadata( Node *metadata, char *a ) {
             return metadata->subtrees[i];
         }
     }
-    return NULL;
+    return nullptr;
 
 }
 

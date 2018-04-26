@@ -24,7 +24,7 @@ rsStreamClose( rsComm_t *rsComm, fileCloseInp_t *streamCloseInp ) {
         return SYS_BAD_FILE_DESCRIPTOR;
     }
 
-    if ( FileDesc[fileInx].fileName == NULL ) {
+    if ( FileDesc[fileInx].fileName == nullptr ) {
         return SYS_INVALID_FILE_PATH;
     }
     if ( strcmp( FileDesc[fileInx].fileName, STREAM_FILE_NAME ) != 0 ) {

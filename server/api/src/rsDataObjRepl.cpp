@@ -63,11 +63,11 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    dataObjInfo_t *dataObjInfo = NULL;
-    char* lockType = NULL; // JMC - backport 4609
+    dataObjInfo_t *dataObjInfo = nullptr;
+    char* lockType = nullptr; // JMC - backport 4609
     int   lockFd   = -1;   // JMC - backport 4609
 
-    if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != nullptr ) {
         /* To SU, cannot be called by normal user directly */
         if ( rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
@@ -78,7 +78,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                     READ_COLL_PERM, 0, &dataObjInfo );
 
     if ( status == DATA_OBJ_T ) {
-        if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL ) {
+        if ( dataObjInfo != nullptr && dataObjInfo->specColl != nullptr ) {
             if ( dataObjInfo->specColl->collClass == LINKED_COLL ) {
                 rstrcpy( dataObjInp->objPath, dataObjInfo->objPath,
                          MAX_NAME_LEN );
@@ -130,7 +130,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     std::string hier;
     char*       tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
 
-    if ( 0 == tmp_hier ) {
+    if ( nullptr == tmp_hier ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
         irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
@@ -164,14 +164,14 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // JMC - backport 4609
     lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
-    if ( lockType != NULL ) {
+    if ( lockType != nullptr ) {
         lockFd = irods::server_api_call(
                      DATA_OBJ_LOCK_AN,
                      rsComm,
                      dataObjInp,
-                     NULL,
-                     ( void** ) NULL,
-                     NULL );
+                     nullptr,
+                     ( void** ) nullptr,
+                     nullptr );
         if ( lockFd >= 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
@@ -185,7 +185,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     // =-=-=-=-=-=-=-
 
-    status = _rsDataObjRepl( rsComm, dataObjInp, *transStat, NULL );
+    status = _rsDataObjRepl( rsComm, dataObjInp, *transStat, nullptr );
     if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
         rodsLog( LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__ );
     }
@@ -198,9 +198,9 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             DATA_OBJ_UNLOCK_AN,
             rsComm,
             dataObjInp,
-            NULL,
-            ( void** ) NULL,
-            NULL );
+            nullptr,
+            ( void** ) nullptr,
+            nullptr );
     }
 
     // =-=-=-=-=-=-=-
@@ -221,30 +221,30 @@ _rsDataObjRepl(
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
     int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *oldDataObjInfoHead = NULL;
-    dataObjInfo_t *destDataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
+    dataObjInfo_t *oldDataObjInfoHead = nullptr;
+    dataObjInfo_t *destDataObjInfo = nullptr;
     std::string root_resc_name;
     ruleExecInfo_t rei;
     int multiCopyFlag;
     char *accessPerm;
     int allFlag;
     int savedStatus = 0;
-    if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
-        accessPerm = NULL;
+    if ( getValByKey( &dataObjInp->condInput, SU_CLIENT_USER_KW ) != nullptr ) {
+        accessPerm = nullptr;
     }
-    else if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+    else if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != nullptr ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
-        accessPerm = NULL;
+        accessPerm = nullptr;
     }
     else {
         accessPerm = ACCESS_READ_OBJECT;
     }
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
-    applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
+    applyRule( "acSetMultiReplPerResc", nullptr, &rei, NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
@@ -283,14 +283,14 @@ _rsDataObjRepl(
     // =-=-=-=-=-=-=-
     // if a resc is specified and it has a stale copy then we should just treat this as an update
     // also consider the 'update' keyword as that might also have some bearing on updates
-    if ( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey( &dataObjInp->condInput, UPDATE_REPL_KW ) != NULL ) {
+    if ( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey( &dataObjInp->condInput, UPDATE_REPL_KW ) != nullptr ) {
 
         /* update old repl to new repl */
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat );
 
-        if ( status >= 0 && outDataObjInfo != NULL ) {
+        if ( status >= 0 && outDataObjInfo != nullptr ) {
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
-            outDataObjInfo->next = NULL;
+            outDataObjInfo->next = nullptr;
         }
         else {
             if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
@@ -312,7 +312,7 @@ _rsDataObjRepl(
         return status;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != nullptr ) {
         allFlag = 1;
     }
     else {
@@ -340,10 +340,10 @@ _rsDataObjRepl(
             // =-=-=-=-=-=-=-
             // JMC - backport 4450
             // =-=-=-=-=-=-=-
-            if ( outDataObjInfo != NULL && destDataObjInfo != NULL ) {
+            if ( outDataObjInfo != nullptr && destDataObjInfo != nullptr ) {
                 /* pass back the GOOD_COPY */
                 *outDataObjInfo = *destDataObjInfo;
-                outDataObjInfo->next = NULL;
+                outDataObjInfo->next = nullptr;
             }
 
             freeAllDataObjInfo( dataObjInfoHead );
@@ -374,14 +374,14 @@ _rsDataObjRepl(
     }
 
     /* If destDataObjInfo is not NULL, we will overwrite it. */
-    if ( destDataObjInfo != NULL ) {
+    if ( destDataObjInfo != nullptr ) {
 
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
                                        destDataObjInfo, transStat );
         if ( status >= 0 ) {
-            if ( outDataObjInfo != NULL ) {
+            if ( outDataObjInfo != nullptr ) {
                 *outDataObjInfo = *destDataObjInfo;
-                outDataObjInfo->next = NULL;
+                outDataObjInfo->next = nullptr;
             }
             if ( allFlag == 0 ) {
                 freeAllDataObjInfo( dataObjInfoHead );
@@ -394,7 +394,7 @@ _rsDataObjRepl(
                 /* queue destDataObjInfo in &dataObjInfoHead so that stage to cache
                  * can evaluate it */
                 queDataObjInfo( &dataObjInfoHead, destDataObjInfo, 0, 1 );
-                destDataObjInfo = NULL;
+                destDataObjInfo = nullptr;
             }
         }
         else {
@@ -438,8 +438,8 @@ int _rsDataObjReplUpdate(
 
     // =-=-=-=-=-=-=-
     //
-    dataObjInfo_t *destDataObjInfo = 0;
-    dataObjInfo_t *srcDataObjInfo = 0;
+    dataObjInfo_t *destDataObjInfo = nullptr;
+    dataObjInfo_t *srcDataObjInfo = nullptr;
     int status = 0;
     int allFlag = 0;
     int savedStatus = 0;
@@ -447,7 +447,7 @@ int _rsDataObjReplUpdate(
 
     // =-=-=-=-=-=-=-
     // set all or single flag
-    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != nullptr ) {
         allFlag = 1;
     }
     else {
@@ -467,7 +467,7 @@ int _rsDataObjReplUpdate(
     // loop over all the dest data obj info structs
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     destDataObjInfo = destDataObjInfoHead;
-    while ( destDataObjInfo != NULL ) {
+    while ( destDataObjInfo != nullptr ) {
         // =-=-=-=-=-=-=-
         // skip invalid data ids
         if ( destDataObjInfo->dataId == 0 ) {
@@ -478,7 +478,7 @@ int _rsDataObjReplUpdate(
         // =-=-=-=-=-=-=-
         // overwrite a specific destDataObjInfo
         srcDataObjInfo = srcDataObjInfoHead;
-        while ( srcDataObjInfo != NULL ) {
+        while ( srcDataObjInfo != nullptr ) {
             // =-=-=-=-=-=-=-
             // if the dst hier kw is not set, then set the dest resc hier kw from the dest obj info
             // as it is already known and we do not want the resc hier making this decision again
@@ -542,7 +542,7 @@ _rsDataObjReplNewCopy(
     int allFlag;
     int savedStatus = 0;
 
-    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != nullptr ) {
         allFlag = 1;
     }
     else {
@@ -553,7 +553,7 @@ _rsDataObjReplNewCopy(
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
 
     srcDataObjInfo = srcDataObjInfoHead;
-    while ( srcDataObjInfo != NULL ) {
+    while ( srcDataObjInfo != nullptr ) {
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, _root_resc_name, outDataObjInfo, 0 );
         if ( status >= 0 ) {
             break;
@@ -603,7 +603,7 @@ _rsDataObjReplS(
     int status, status1;
     int l1descInx;
     openedDataObjInp_t dataObjCloseInp;
-    dataObjInfo_t *myDestDataObjInfo = NULL;
+    dataObjInfo_t *myDestDataObjInfo = nullptr;
 
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
                                     _root_resc_name, destDataObjInfo, updateFlag );
@@ -641,14 +641,14 @@ _rsDataObjReplS(
 
     // Need to propagate the in pdmo flag
     char* pdmo_kw = getValByKey( &dataObjInp->condInput, IN_PDMO_KW );
-    if ( pdmo_kw != NULL ) {
+    if ( pdmo_kw != nullptr ) {
         addKeyVal( &dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw );
     }
 
     status1 = irsDataObjClose( rsComm, &dataObjCloseInp, &myDestDataObjInfo );
 
-    if ( destDataObjInfo != NULL ) {
-        if ( destDataObjInfo->dataId <= 0 && myDestDataObjInfo != NULL ) {
+    if ( destDataObjInfo != nullptr ) {
+        if ( destDataObjInfo->dataId <= 0 && myDestDataObjInfo != nullptr ) {
             destDataObjInfo->dataId = myDestDataObjInfo->dataId;
             destDataObjInfo->replNum = myDestDataObjInfo->replNum;
         }
@@ -704,7 +704,7 @@ dataObjOpenForRepl(
     }
 
     dataObjInfo_t * srcDataObjInfo = ( dataObjInfo_t* )calloc( 1, sizeof( dataObjInfo_t ) );
-    if ( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
+    if ( nullptr == srcDataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
         return -1;
     }
@@ -737,7 +737,7 @@ dataObjOpenForRepl(
         op_name = irods::WRITE_OPERATION;
 
         /* update an existing copy */
-        if ( inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0 ) {
+        if ( inpDestDataObjInfo == nullptr || inpDestDataObjInfo->dataId <= 0 ) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
                      srcDataObjInfo->objPath );
             freeDataObjInfo( myDestDataObjInfo );
@@ -773,7 +773,7 @@ dataObjOpenForRepl(
     // call redirect for our operation of choice to request the hier string appropriately
     std::string hier;
     char*       dst_hier_str = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
-    if ( 0 == dst_hier_str ) {
+    if ( nullptr == dst_hier_str ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
 
@@ -891,7 +891,7 @@ dataObjOpenForRepl(
         }
     }
 
-    if ( inpDestDataObjInfo != NULL && updateFlag == 0 ) {
+    if ( inpDestDataObjInfo != nullptr && updateFlag == 0 ) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
 
@@ -902,7 +902,7 @@ dataObjOpenForRepl(
         memset( &inpDestDataObjInfo->condInput, 0, sizeof( keyValPair_t ) );
         replKeyVal( &myDestDataObjInfo->condInput, &inpDestDataObjInfo->condInput );
 
-        inpDestDataObjInfo->next = NULL;
+        inpDestDataObjInfo->next = nullptr;
     }
 
     // =-=-=-=-=-=-=-
@@ -948,7 +948,7 @@ dataObjOpenForRepl(
         L1desc[srcL1descInx].oprType = REPLICATE_SRC;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != nullptr ) {
         L1desc[srcL1descInx].purgeCacheFlag = 1;
     }
 
@@ -988,21 +988,21 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
     int destL3descInx = L1desc[destL1descInx].l3descInx;
 
     int srcRemoteFlag;
-    if ( L1desc[srcL1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[srcL1descInx].remoteZoneHost != nullptr ) {
         srcRemoteFlag = REMOTE_ZONE_HOST;
     }
     else {
         srcRemoteFlag = FileDesc[srcL3descInx].rodsServerHost->localFlag;
     }
     int destRemoteFlag;
-    if ( L1desc[destL1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[destL1descInx].remoteZoneHost != nullptr ) {
         destRemoteFlag = REMOTE_ZONE_HOST;
     }
     else {
         destRemoteFlag = FileDesc[destL3descInx].rodsServerHost->localFlag;
     }
 
-    portalOprOut_t * portalOprOut = NULL;
+    portalOprOut_t * portalOprOut = nullptr;
     if ( srcRemoteFlag == REMOTE_ZONE_HOST &&
             destRemoteFlag == REMOTE_ZONE_HOST ) {
         /* remote zone to remote zone copy. Have to do L1 level copy */
@@ -1035,7 +1035,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
             /* copy from local to remote */
             /* preProcParaPut to establish portalOprOut without data transfer */
             int status = preProcParaPut( rsComm, destL1descInx, &portalOprOut );
-            if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - nullptr
+            if ( status < 0 || nullptr == portalOprOut ) { // JMC cppcheck - nullptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaPut error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
@@ -1059,7 +1059,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         if ( L1desc[l1descInx].dataObjInp->numThreads > 0 ) {
             /* preProcParaGet to establish portalOprOut without data transfer */
             int status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
-            if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
+            if ( status < 0 || nullptr == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
@@ -1082,7 +1082,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
         /* do it locally if numThreads == 0 */
         if ( L1desc[l1descInx].dataObjInp->numThreads > 0 ) {
             int status = preProcParaGet( rsComm, srcL1descInx, &portalOprOut );
-            if ( status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
+            if ( status < 0 || nullptr == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog( LOG_NOTICE,
                          "dataObjCopy: preProcParaGet error for %s",
                          L1desc[srcL1descInx].dataObjInfo->objPath );
@@ -1097,7 +1097,7 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
     }
     /* rsDataCopy - does the physical data transfer */
     if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                      NO_CHK_COPY_LEN_KW ) != NULL ) {
+                      NO_CHK_COPY_LEN_KW ) != nullptr ) {
         /* don't check the transfer len */
         addKeyVal( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW, "" );
         if ( L1desc[l1descInx].dataObjInp->numThreads > 1 ) {
@@ -1108,8 +1108,8 @@ dataObjCopy( rsComm_t * rsComm, int l1descInx ) {
     }
     int status =  rsDataCopy( rsComm, &dataCopyInp );
 
-    if ( status >= 0 && portalOprOut != NULL &&
-            L1desc[l1descInx].dataObjInp != NULL ) {
+    if ( status >= 0 && portalOprOut != nullptr &&
+            L1desc[l1descInx].dataObjInp != nullptr ) {
         /* update numThreads since it could be changed by remote server */
         L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
     }
@@ -1148,7 +1148,7 @@ l3DataCopySingleBuf( rsComm_t * rsComm, int l1descInx ) {
         return bytesRead;
     }
     else if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                           NO_CHK_COPY_LEN_KW ) != NULL ) {
+                           NO_CHK_COPY_LEN_KW ) != nullptr ) {
         /* need to update size */
         L1desc[l1descInx].dataSize = L1desc[l1descInx].dataObjInp->dataSize
                                      = bytesRead;
@@ -1158,7 +1158,7 @@ l3DataCopySingleBuf( rsComm_t * rsComm, int l1descInx ) {
 
     L1desc[l1descInx].bytesWritten = bytesWritten;
 
-    if ( dataBBuf.buf != NULL ) {
+    if ( dataBBuf.buf != nullptr ) {
         free( dataBBuf.buf );
         memset( &dataBBuf, 0, sizeof( bytesBuf_t ) );
     }
@@ -1280,12 +1280,12 @@ l3FileSync( rsComm_t * rsComm, int srcL1descInx, int destL1descInx ) {
     addKeyVal(&fileSyncToArchInp.condInput, DATA_ID_KW, object_id.c_str());
 
     fileSyncToArchInp.mode = getFileMode( dataObjInp );
-    fileSyncOut_t* sync_out = 0;
+    fileSyncOut_t* sync_out = nullptr;
     status = rsFileSyncToArch( rsComm, &fileSyncToArchInp, &sync_out );
 
     if ( status >= 0 &&
             CREATE_PATH == dst_create_path &&
-            NULL != sync_out ) {
+            nullptr != sync_out ) {
 
         /* path name is created by the resource */
         rstrcpy( destDataObjInfo->filePath, sync_out->file_name, MAX_NAME_LEN );
@@ -1365,17 +1365,17 @@ rsReplAndRequeDataObjInfo( rsComm_t * rsComm,
     memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( &transStat, 0, sizeof( transStat ) );
 
-    if ( flagStr != NULL ) {
-        if ( strstr( flagStr, ALL_KW ) != NULL ) {
+    if ( flagStr != nullptr ) {
+        if ( strstr( flagStr, ALL_KW ) != nullptr ) {
             addKeyVal( &dataObjInp.condInput, ALL_KW, "" );
         }
-        if ( strstr( flagStr, RBUDP_TRANSFER_KW ) != NULL ) {
+        if ( strstr( flagStr, RBUDP_TRANSFER_KW ) != nullptr ) {
             addKeyVal( &dataObjInp.condInput, RBUDP_TRANSFER_KW, "" );
         }
-        if ( strstr( flagStr, SU_CLIENT_USER_KW ) != NULL ) {
+        if ( strstr( flagStr, SU_CLIENT_USER_KW ) != nullptr ) {
             addKeyVal( &dataObjInp.condInput, SU_CLIENT_USER_KW, "" );
         }
-        if ( strstr( flagStr, UPDATE_REPL_KW ) != NULL ) {
+        if ( strstr( flagStr, UPDATE_REPL_KW ) != nullptr ) {
             addKeyVal( &dataObjInp.condInput, UPDATE_REPL_KW, "" );
         }
     }
@@ -1421,7 +1421,7 @@ stageBundledData( rsComm_t * rsComm, dataObjInfo_t **subfileObjInfoHead ) {
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN );
     addKeyVal( &dataObjInp.condInput, RESC_NAME_KW, cacheRescName );
-    status = getDataObjInfo( rsComm, &dataObjInp, &cacheObjInfo, NULL, 0 );
+    status = getDataObjInfo( rsComm, &dataObjInp, &cacheObjInfo, nullptr, 0 );
     clearKeyVal( &dataObjInp.condInput );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1446,7 +1446,7 @@ unbunAndStageBunfileObj( rsComm_t * rsComm, char * bunfileObjPath, char **outCac
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, bunfileObjPath, MAX_NAME_LEN );
 
-    status = getDataObjInfo( rsComm, &dataObjInp, &bunfileObjInfoHead, NULL, 1 );
+    status = getDataObjInfo( rsComm, &dataObjInp, &bunfileObjInfoHead, nullptr, 1 );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "unbunAndStageBunfileObj: getDataObjInfo of bunfile %s failed.stat=%d",
@@ -1477,7 +1477,7 @@ _unbunAndStageBunfileObj( rsComm_t * rsComm, dataObjInfo_t **bunfileObjInfoHead,
         return status;
     }
 
-    if ( outCacheRescName != NULL ) {
+    if ( outCacheRescName != nullptr ) {
         *outCacheRescName = ( *bunfileObjInfoHead )->rescName;
     }
 

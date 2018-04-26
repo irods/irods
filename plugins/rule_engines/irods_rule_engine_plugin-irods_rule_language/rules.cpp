@@ -36,7 +36,7 @@ int readRuleSetFromLocalFile( const char *ruleBaseName, const char *rulesFileNam
     FILE *file;
     char errbuf[ERR_MSG_LEN];
     file = fopen( rulesFileName, "r" );
-    if ( file == NULL ) {
+    if ( file == nullptr ) {
         snprintf( errbuf, ERR_MSG_LEN,
                   "readRuleSetFromFile() could not open rules file %s\n",
                   rulesFileName );
@@ -53,7 +53,7 @@ int readRuleSetFromLocalFile( const char *ruleBaseName, const char *rulesFileNam
     Node *errnode{};
     ExprType *restype = typeRuleSet( ruleSet, errmsg, &errnode, r );
     if ( getNodeType( restype ) == T_ERROR ) {
-        if ( NULL != errnode ) {
+        if ( nullptr != errnode ) {
             *errloc = NODE_EXPR_POS( errnode );
         }
         return RE_TYPE_ERROR;
@@ -72,7 +72,7 @@ int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInf
         }
         char *varName = var->msParam[i]->label;
         if ( TYPE( res ) == T_UNSPECED ) {
-            if ( varName != NULL ) {
+            if ( varName != nullptr ) {
                 updateInEnv( env, varName, res );
             }
             continue;
@@ -86,7 +86,7 @@ int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInf
         if ( getNodeType( res )  ==  N_ERROR ) {
             return RES_ERR_CODE( res );
         }
-        if ( varName != NULL ) {
+        if ( varName != nullptr ) {
             updateInEnv( env, varName, res );
         }
     }
@@ -94,8 +94,8 @@ int parseAndComputeMsParamArrayToEnv( msParamArray_t *var, Env *env, ruleExecInf
 
 }
 Env *defaultEnv( Region *r ) {
-    Env *global = newEnv( newHashTable2( 10, r ), NULL, NULL, r );
-    Env *env = newEnv( newHashTable2( 10, r ), global, NULL, r );
+    Env *global = newEnv( newHashTable2( 10, r ), nullptr, nullptr, r );
+    Env *env = newEnv( newHashTable2( 10, r ), global, nullptr, r );
 
     return env;
 }
@@ -106,7 +106,7 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
     ruleEngineConfig.clearDelayed = 0;
 
     rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
+    errmsgBuf.errMsg = nullptr;
     errmsgBuf.len = 0;
 
     Env *env = defaultEnv( r );
@@ -114,7 +114,7 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
     rei->status = 0;
 
     int rescode = 0;
-    if ( msParamArray != NULL ) {
+    if ( msParamArray != nullptr ) {
         if ( strncmp( rule, "@external\n", 10 ) == 0 ) {
             rescode = parseAndComputeMsParamArrayToEnv( msParamArray, globalEnv( env ), rei, reiSaveFlag, &errmsgBuf, r );
             RE_ERROR( rescode < 0 );
@@ -133,7 +133,7 @@ int parseAndComputeRuleAdapter( char *rule, msParamArray_t *msParamArray, ruleEx
     rescode = parseAndComputeRule( rule, env, rei, reiSaveFlag, &errmsgBuf, r );
     RE_ERROR( rescode < 0 );
 
-    if ( NULL == rei->msParamArray ) {
+    if ( nullptr == rei->msParamArray ) {
         rei->msParamArray = newMsParamArray();
     }
     rescode = convertEnvToMsParamArray( rei->msParamArray, env, &errmsgBuf, r );
@@ -163,7 +163,7 @@ int parseAndComputeRuleNewEnv( char *rule, ruleExecInfo_t *rei, int reiSaveFlag,
 
     int rescode = 0;
 
-    if ( msParamArray != NULL ) {
+    if ( msParamArray != nullptr ) {
         rescode = convertMsParamArrayToEnv( msParamArray, env->previous, r );
         RE_ERROR( rescode < 0 );
         deleteFromHashTable(env->previous->current, "ruleExecOut");
@@ -191,7 +191,7 @@ int parseAndComputeRule( char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveF
     }
     Node *node;
     Pointer *e = newPointer2( rule );
-    if ( e == NULL ) {
+    if ( e == nullptr ) {
         addRErrorMsg( errmsg, RE_POINTER_ERROR, "error: can not create a Pointer." );
         return RE_POINTER_ERROR;
     }
@@ -211,8 +211,8 @@ int parseAndComputeRule( char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveF
         return RE_PARSER_ERROR;
     }
 
-    RuleDesc *rd = NULL;
-    Res *res = NULL;
+    RuleDesc *rd = nullptr;
+    Res *res = nullptr;
     /* add rules into rule index */
     int i;
     for ( i = tempLen; i < ruleEngineConfig.extRuleSet->len; i++ ) {
@@ -241,7 +241,7 @@ int parseAndComputeRule( char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveF
     rd = ruleEngineConfig.extRuleSet->rules[tempLen];
     node = rd->node;
 
-    res = execRuleNodeRes( node, NULL, 0, GlobalAllRuleExecFlag, env, rei, reiSaveFlag, errmsg, r );
+    res = execRuleNodeRes( node, nullptr, 0, GlobalAllRuleExecFlag, env, rei, reiSaveFlag, errmsg, r );
     rescode = getNodeType( res )  ==  N_ERROR ? RES_ERR_CODE( res ) : 0;
 ret:
     /* remove rules from ext rule set */
@@ -287,7 +287,7 @@ Res *computeExpressionWithParams( const char *actionName, const char **params, i
         }
 
         node = parseTermRuleGen(e, 1, errmsg, r);*/
-        node = newNode( TK_STRING, params[i], 0, r );
+        node = newNode( TK_STRING, params[i], nullptr, r );
         /*if(node==NULL) {
             addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
             return newErrorRes(r, OUT_OF_MEMORY);
@@ -299,14 +299,14 @@ Res *computeExpressionWithParams( const char *actionName, const char **params, i
         paramNodes[i] = node;
     }
 
-    Node *node = createFunctionNode( actionName, paramNodes, paramsCount, NULL, r );
-    Env *global = newEnv( newHashTable2( 10, r ), NULL, NULL, r );
-    Env *env = newEnv( newHashTable2( 10, r ), global, NULL, r );
-    if ( msParamArray != NULL ) {
+    Node *node = createFunctionNode( actionName, paramNodes, paramsCount, nullptr, r );
+    Env *global = newEnv( newHashTable2( 10, r ), nullptr, nullptr, r );
+    Env *env = newEnv( newHashTable2( 10, r ), global, nullptr, r );
+    if ( msParamArray != nullptr ) {
         convertMsParamArrayToEnv( msParamArray, global, r );
         deleteFromHashTable(global->current, "ruleExecOut");
     }
-    Res *res = computeNode( node, NULL, env, rei, reiSaveFlag, errmsg, r );
+    Res *res = computeNode( node, nullptr, env, rei, reiSaveFlag, errmsg, r );
     /* deleteEnv(env, 3); */
     if ( recclearDelayed ) {
         clearDelayed();
@@ -384,7 +384,7 @@ ExprType *typeRuleSet( RuleSet *ruleset, rError_t *errmsg, Node **errnode, Regio
             char errbuf[ERR_MSG_LEN];
             char *ruleName = rule->node->subtrees[0]->text;
             FunctionDesc *fd;
-            if ( ( fd = ( FunctionDesc * )lookupFromEnv( funcDesc, ruleName ) ) != NULL ) {
+            if ( ( fd = ( FunctionDesc * )lookupFromEnv( funcDesc, ruleName ) ) != nullptr ) {
                 if ( getNodeType( fd ) != N_FD_EXTERNAL && getNodeType( fd ) != N_FD_RULE_INDEX_LIST ) {
                     char *err;
                     switch ( getNodeType( fd ) ) {
@@ -411,7 +411,7 @@ ExprType *typeRuleSet( RuleSet *ruleset, rError_t *errmsg, Node **errnode, Regio
             }
 
             RuleDesc *rd = ( RuleDesc * )lookupFromHashTable( ruleType, ruleName );
-            if ( rd != NULL ) {
+            if ( rd != nullptr ) {
                 if ( rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC ) {
                     generateErrMsg( "redefinition of function", NODE_EXPR_POS( rule->node ), rule->node->base, errbuf );
                     addRErrorMsg( errmsg, RE_FUNCTION_REDEFINITION, errbuf );
@@ -446,7 +446,7 @@ int typeNode( Node *node, Hashtable *varTypes, rError_t *errmsg, Node **errnode,
         postProcessCoercion( node, varTypes, errmsg, errnode, r );
         postProcessActions( node, ruleEngineConfig.extFuncDescIndex, errmsg, errnode, r );
         /*    printTree(node, 0); */
-        varTypes = NULL;
+        varTypes = nullptr;
         node->option |= OPTION_TYPED;
     }
     return 0;
@@ -455,7 +455,7 @@ int typeNode( Node *node, Hashtable *varTypes, rError_t *errmsg, Node **errnode,
 /* compute an expression or action given by an AST node */
 Res* computeNode( Node *node, Node *reco, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t* errmsg, Region *r ) {
     Hashtable *varTypes = newHashTable2( 10, r );
-    Region *rNew = make_region( 0, NULL );
+    Region *rNew = make_region( 0, nullptr );
     Node *en;
     Node **errnode = &en;
     Res* res;
@@ -464,12 +464,12 @@ Res* computeNode( Node *node, Node *reco, Env *env, ruleExecInfo_t *rei, int rei
         res = newErrorRes( r, errorcode );
         RETURN;
     }
-    if ( reco != NULL && ( errorcode = typeNode( reco, varTypes, errmsg, errnode, r ) ) != 0 ) {
+    if ( reco != nullptr && ( errorcode = typeNode( reco, varTypes, errmsg, errnode, r ) ) != 0 ) {
         res = newErrorRes( r, errorcode );
         RETURN;
     }
     if ( getNodeType( node ) == N_ACTIONS ) {
-        res = evaluateActions( node, NULL, GlobalAllRuleExecFlag, rei, reiSaveFlag, env, errmsg, rNew );
+        res = evaluateActions( node, nullptr, GlobalAllRuleExecFlag, rei, reiSaveFlag, env, errmsg, rNew );
     }
     else {
         res = evaluateExpression3( node, GlobalAllRuleExecFlag, 0, rei, reiSaveFlag, env, errmsg, rNew );
@@ -493,10 +493,10 @@ ret:
  *
  */
 Res *parseAndComputeExpression( char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r ) {
-    Res *res = NULL;
+    Res *res = nullptr;
     char buf[ERR_MSG_LEN > 1024 ? ERR_MSG_LEN : 1024];
     int rulegen;
-    Node *node = NULL, *recoNode = NULL;
+    Node *node = nullptr, *recoNode = nullptr;
 
 #ifdef DEBUG
     snprintf( buf, 1024, "parseAndComputeExpression: %s\n", expr );
@@ -508,7 +508,7 @@ Res *parseAndComputeExpression( char *expr, Env *env, ruleExecInfo_t *rei, int r
     }
     Pointer *e = newPointer2( expr );
     ParserContext *pc = newParserContext( errmsg, r );
-    if ( e == NULL ) {
+    if ( e == nullptr ) {
         addRErrorMsg( errmsg, RE_POINTER_ERROR, "error: can not create pointer." );
         res = newErrorRes( r, RE_POINTER_ERROR );
         RETURN;
@@ -521,7 +521,7 @@ Res *parseAndComputeExpression( char *expr, Env *env, ruleExecInfo_t *rei, int r
     else {
         node = parseActionsRuleGen( e, rulegen, 1, pc );
     }
-    if ( node == NULL ) {
+    if ( node == nullptr ) {
         addRErrorMsg( errmsg, RE_OUT_OF_MEMORY, "error: out of memory." );
         res = newErrorRes( r, RE_OUT_OF_MEMORY );
         RETURN;
@@ -537,7 +537,7 @@ Res *parseAndComputeExpression( char *expr, Env *env, ruleExecInfo_t *rei, int r
         token = nextTokenRuleGen( e, pc, 0, 0 );
         if ( strcmp( token->text, "|" ) == 0 ) {
             recoNode = parseActionsRuleGen( e, rulegen, 1, pc );
-            if ( recoNode == NULL ) {
+            if ( recoNode == nullptr ) {
                 addRErrorMsg( errmsg, RE_OUT_OF_MEMORY, "error: out of memory." );
                 res = newErrorRes( r, RE_OUT_OF_MEMORY );
                 RETURN;
@@ -559,7 +559,7 @@ Res *parseAndComputeExpression( char *expr, Env *env, ruleExecInfo_t *rei, int r
             RETURN;
         }
     }
-    res = computeNode( node, NULL, env, rei, reiSaveFlag, errmsg, r );
+    res = computeNode( node, nullptr, env, rei, reiSaveFlag, errmsg, r );
 ret:
     deleteParserContext( pc );
     deletePointer( e );
@@ -570,7 +570,7 @@ int generateRuleTypes( RuleSet *inRuleSet, Hashtable *symbol_type_table, Region 
     int i;
     for ( i = 0; i < inRuleSet->len; i++ ) {
         Node *ruleNode = inRuleSet->rules[i]->node;
-        if ( ruleNode == NULL ) {
+        if ( ruleNode == nullptr ) {
             continue;
         }
         char *key = ruleNode->subtrees[0]->text;
@@ -613,7 +613,7 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
     int freeRei = 0;
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         rei = ( ruleExecInfo_t * ) malloc( sizeof( ruleExecInfo_t ) );
         memset( rei, 0, sizeof( ruleExecInfo_t ) );
         freeRei = 1;
@@ -623,17 +623,17 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
     Res *res;
     rError_t errmsgBuf;
-    errmsgBuf.errMsg = NULL;
+    errmsgBuf.errMsg = nullptr;
     errmsgBuf.len = 0;
 
-    if ( inMsParamArray != NULL ) {
+    if ( inMsParamArray != nullptr ) {
         convertMsParamArrayToEnv( inMsParamArray, env, r );
         deleteFromHashTable(env->current, "ruleExecOut");
     }
 
     res = parseAndComputeExpression( inAction, env, rei, reiSaveFlag, &errmsgBuf, r );
     if ( retOutParams ) { // JMC - backport 4540
-        if ( inMsParamArray != NULL ) {
+        if ( inMsParamArray != nullptr ) {
             clearMsParamArray( inMsParamArray, 0 );
             convertEnvToMsParamArray( inMsParamArray, env, &errmsgBuf, r );
         }

@@ -45,7 +45,7 @@ remoteSubStructFileLseek( rsComm_t *rsComm, subStructFileLseekInp_t *subStructFi
                           fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileLseek: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

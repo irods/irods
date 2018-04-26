@@ -24,7 +24,7 @@ rcStructFileBundle( rcComm_t *conn,
                     structFileExtAndRegInp_t *structFileBundleInp ) {
     int status;
     status = procApiRequest( conn, STRUCT_FILE_BUNDLE_AN, structFileBundleInp,
-                             NULL, ( void ** ) NULL, NULL );
+                             nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

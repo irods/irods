@@ -48,7 +48,7 @@ rsFileStageToCacheByHost( rsComm_t *rsComm,
     int status;
     int remoteFlag;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsFileStageToCacheByHost: Input NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -83,7 +83,7 @@ remoteFileStageToCache( rsComm_t *rsComm,
                         fileStageSyncInp_t *fileStageToCacheInp, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileStageToCache: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

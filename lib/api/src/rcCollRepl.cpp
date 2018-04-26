@@ -12,8 +12,8 @@ _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,
 
     collReplInp->oprType = REPLICATE_OPR;
 
-    status = procApiRequest( conn, COLL_REPL_AN, collReplInp, NULL,
-                             ( void ** ) collOprStat, NULL );
+    status = procApiRequest( conn, COLL_REPL_AN, collReplInp, nullptr,
+                             ( void ** ) collOprStat, nullptr );
 
     return status;
 }
@@ -49,7 +49,7 @@ _rcCollRepl( rcComm_t *conn, collInp_t *collReplInp,
 int
 rcCollRepl( rcComm_t *conn, collInp_t *collReplInp, int vFlag ) {
     int status, retval;
-    collOprStat_t *collOprStat = NULL;
+    collOprStat_t *collOprStat = nullptr;
 
     retval = _rcCollRepl( conn, collReplInp, &collOprStat );
 

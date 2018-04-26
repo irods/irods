@@ -80,7 +80,7 @@
 int
 rcDataObjRepl( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    transferStat_t *transferStat = NULL;
+    transferStat_t *transferStat = nullptr;
 
     memset( &conn->transStat, 0, sizeof( transferStat_t ) );
 
@@ -88,10 +88,10 @@ rcDataObjRepl( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
 
     status = _rcDataObjRepl( conn, dataObjInp, &transferStat );
 
-    if ( status >= 0 && transferStat != NULL ) {
+    if ( status >= 0 && transferStat != nullptr ) {
         conn->transStat = *( transferStat );
     }
-    if ( transferStat != NULL ) {
+    if ( transferStat != nullptr ) {
         free( transferStat );
     }
     return status;
@@ -102,8 +102,8 @@ _rcDataObjRepl( rcComm_t *conn, dataObjInp_t *dataObjInp,
                 transferStat_t **transferStat ) {
     int status;
 
-    status = procApiRequest( conn, DATA_OBJ_REPL_AN,  dataObjInp, NULL,
-                             ( void ** ) transferStat, NULL );
+    status = procApiRequest( conn, DATA_OBJ_REPL_AN,  dataObjInp, nullptr,
+                             ( void ** ) transferStat, nullptr );
 
     return status;
 }

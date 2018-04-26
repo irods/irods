@@ -38,8 +38,8 @@
 int
 rcModAccessControl( rcComm_t *conn, modAccessControlInp_t *modAccessControlInp ) {
     int status;
-    status = procApiRequest( conn, MOD_ACCESS_CONTROL_AN,  modAccessControlInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, MOD_ACCESS_CONTROL_AN,  modAccessControlInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

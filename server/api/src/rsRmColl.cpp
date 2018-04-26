@@ -37,8 +37,8 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     int status;
     ruleExecInfo_t rei;
     collInfo_t collInfo;
-    rodsServerHost_t *rodsServerHost = NULL;
-    specCollCache_t *specCollCache = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, rmCollInp->collName, &specCollCache,
                        &rmCollInp->condInput );
@@ -48,7 +48,7 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                  ( const char* )rmCollInp->collName,
                  &rodsServerHost );
 
-    if ( status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost )  { // JMC cppcheck - nullptr
         return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
@@ -58,7 +58,7 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
 
     initReiWithCollInp( &rei, rsComm, rmCollInp, &collInfo );
 
-    status = applyRule( "acPreprocForRmColl", NULL, &rei, NO_SAVE_REI );
+    status = applyRule( "acPreprocForRmColl", nullptr, &rei, NO_SAVE_REI );
 
     if ( status < 0 ) {
         if ( rei.status < 0 ) {
@@ -72,15 +72,15 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         return status;
     }
 
-    if ( collOprStat != NULL ) {
-        *collOprStat = NULL;
+    if ( collOprStat != nullptr ) {
+        *collOprStat = nullptr;
     }
-    if ( getValByKey( &rmCollInp->condInput, RECURSIVE_OPR__KW ) == NULL ) {
+    if ( getValByKey( &rmCollInp->condInput, RECURSIVE_OPR__KW ) == nullptr ) {
         status = _rsRmColl( rsComm, rmCollInp, collOprStat );
     }
     else {
         if ( isTrashPath( rmCollInp->collName ) == False &&
-                getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+                getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) != nullptr ) {
             rodsLog( LOG_NOTICE,
                      "rsRmColl: Recursively removing %s.",
                      rmCollInp->collName );
@@ -88,7 +88,7 @@ rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         status = _rsRmCollRecur( rsComm, rmCollInp, collOprStat );
     }
     rei.status = status;
-    rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
+    rei.status = applyRule( "acPostProcForRmColl", nullptr, &rei,
                             NO_SAVE_REI );
 
     clearKeyVal(rei.condInputData);
@@ -107,9 +107,9 @@ int
 _rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
            collOprStat_t **collOprStat ) {
     int status;
-    dataObjInfo_t *dataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfo = nullptr;
 
-    if ( getValByKey( &rmCollInp->condInput, UNREG_COLL_KW ) != NULL ) {
+    if ( getValByKey( &rmCollInp->condInput, UNREG_COLL_KW ) != nullptr ) {
         status = svrUnregColl( rsComm, rmCollInp );
     }
     else {
@@ -119,7 +119,7 @@ _rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
             return status;
         }
-        else if ( status == COLL_OBJ_T && dataObjInfo->specColl != NULL ) {
+        else if ( status == COLL_OBJ_T && dataObjInfo->specColl != nullptr ) {
             if ( dataObjInfo->specColl->collClass == LINKED_COLL ) {
                 rstrcpy( rmCollInp->collName, dataObjInfo->objPath,
                          MAX_NAME_LEN );
@@ -134,7 +134,7 @@ _rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
             status = svrUnregColl( rsComm, rmCollInp );
         }
     }
-    if ( status >= 0 && collOprStat != NULL ) {
+    if ( status >= 0 && collOprStat != nullptr ) {
         *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
         memset( *collOprStat, 0, sizeof( collOprStat_t ) );
         ( *collOprStat )->filesCnt = 1;
@@ -150,7 +150,7 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
                 collOprStat_t **collOprStat ) {
     int status;
     ruleExecInfo_t rei;
-    dataObjInfo_t *dataObjInfo = NULL;
+    dataObjInfo_t *dataObjInfo = nullptr;
     /* check for specColl and permission */
     status = resolvePathInSpecColl( rsComm, rmCollInp->collName,
                                     WRITE_COLL_PERM, 0, &dataObjInfo );
@@ -158,27 +158,27 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
     if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
         return status;
     }
-    if ( status == COLL_OBJ_T && dataObjInfo->specColl != NULL &&
+    if ( status == COLL_OBJ_T && dataObjInfo->specColl != nullptr &&
             dataObjInfo->specColl->collClass == LINKED_COLL ) {
         rstrcpy( rmCollInp->collName, dataObjInfo->objPath,
                  MAX_NAME_LEN );
         free( dataObjInfo->specColl );
-        dataObjInfo->specColl = NULL;
+        dataObjInfo->specColl = nullptr;
     }
-    if ( status != COLL_OBJ_T || dataObjInfo->specColl == NULL ) {
+    if ( status != COLL_OBJ_T || dataObjInfo->specColl == nullptr ) {
         /* a normal coll */
         if ( rmCollInp->oprType != UNREG_OPR &&
-                getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) == NULL &&
-                getValByKey( &rmCollInp->condInput, RMTRASH_KW ) == NULL &&
-                getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) == NULL ) {
-            initReiWithDataObjInp( &rei, rsComm, NULL );
-            applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+                getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) == nullptr &&
+                getValByKey( &rmCollInp->condInput, RMTRASH_KW ) == nullptr &&
+                getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) == nullptr ) {
+            initReiWithDataObjInp( &rei, rsComm, nullptr );
+            applyRule( "acTrashPolicy", nullptr, &rei, NO_SAVE_REI );
             clearKeyVal(rei.condInputData);
             free(rei.condInputData);
             if ( NO_TRASH_CAN != rei.status ) {
                 status = rsMvCollToTrash( rsComm, rmCollInp );
-                if ( status >= 0 && collOprStat != NULL ) {
-                    if ( *collOprStat == NULL ) {
+                if ( status >= 0 && collOprStat != nullptr ) {
+                    if ( *collOprStat == nullptr ) {
                         *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
                         memset( *collOprStat, 0, sizeof( collOprStat_t ) );
                     }
@@ -194,7 +194,7 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
     /* got here. will recursively phy delete the collection */
     status = _rsPhyRmColl( rsComm, rmCollInp, dataObjInfo, collOprStat );
 
-    if ( dataObjInfo != NULL ) {
+    if ( dataObjInfo != nullptr ) {
         freeDataObjInfo( dataObjInfo );
     }
     return status;
@@ -234,15 +234,15 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     /* catch the UNREG_OPR */
     dataObjInp.oprType = tmpCollInp.oprType = rmCollInp->oprType;
 
-    if ( ( tmpValue = getValByKey( &rmCollInp->condInput, AGE_KW ) ) != NULL ) {
-        if ( CollHandle[handleInx].rodsObjStat != NULL ) {
+    if ( ( tmpValue = getValByKey( &rmCollInp->condInput, AGE_KW ) ) != nullptr ) {
+        if ( CollHandle[handleInx].rodsObjStat != nullptr ) {
             /* when a collection is moved, the modfiyTime of the object in
               * the collectin does not change. So, we'll depend on the
               * modfiyTime of the collection */
             int ageLimit = atoi( tmpValue ) * 60;
             int modifyTime =
                 atoi( CollHandle[handleInx].rodsObjStat->modifyTime );
-            if ( ( time( 0 ) - modifyTime ) < ageLimit ) {
+            if ( ( time( nullptr ) - modifyTime ) < ageLimit ) {
                 rsCloseCollection( rsComm, &handleInx );
                 return 0;
             }
@@ -253,19 +253,19 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
     addKeyVal( &tmpCollInp.condInput, FORCE_FLAG_KW, "" );
 
-    if ( ( tmpValue = getValByKey( &rmCollInp->condInput, AGE_KW ) ) != NULL ) {
+    if ( ( tmpValue = getValByKey( &rmCollInp->condInput, AGE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjInp.condInput, AGE_KW, tmpValue );
         addKeyVal( &tmpCollInp.condInput, AGE_KW, tmpValue );
     }
 
-    if ( collOprStat != NULL && *collOprStat == NULL ) {
+    if ( collOprStat != nullptr && *collOprStat == nullptr ) {
         *collOprStat = ( collOprStat_t* )malloc( sizeof( collOprStat_t ) );
         memset( *collOprStat, 0, sizeof( collOprStat_t ) );
     }
 
 
 
-    if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) != NULL ) {
+    if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) != nullptr ) {
         if ( isTrashPath( rmCollInp->collName ) == False ) {
             return SYS_INVALID_FILE_PATH;
         }
@@ -276,7 +276,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         addKeyVal( &dataObjInp.condInput, ADMIN_RMTRASH_KW, "" );
         rmtrashFlag = 2;
     }
-    else if ( getValByKey( &rmCollInp->condInput, RMTRASH_KW ) != NULL ) {
+    else if ( getValByKey( &rmCollInp->condInput, RMTRASH_KW ) != nullptr ) {
         if ( isTrashPath( rmCollInp->collName ) == False ) {
             return SYS_INVALID_FILE_PATH;
         }
@@ -286,12 +286,12 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4552
-    if ( getValByKey( &rmCollInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ) {
+    if ( getValByKey( &rmCollInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != nullptr ) {
         addKeyVal( &tmpCollInp.condInput, EMPTY_BUNDLE_ONLY_KW, "" );
         addKeyVal( &dataObjInp.condInput, EMPTY_BUNDLE_ONLY_KW, "" );
     }
     // =-=-=-=-=-=-=-
-    collEnt_t *collEnt = NULL;
+    collEnt_t *collEnt = nullptr;
     while ( ( status = rsReadCollection( rsComm, &handleInx, &collEnt ) ) >= 0 ) {
         if ( entCnt == 0 ) {
             entCnt ++;
@@ -313,7 +313,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                 /* need to set global error here */
                 savedStatus = status;
             }
-            else if ( collOprStat != NULL ) {
+            else if ( collOprStat != nullptr ) {
                 ( *collOprStat )->filesCnt ++;
                 if ( ( *collOprStat )->filesCnt >= fileCntPerStatOut ) {
                     rstrcpy( ( *collOprStat )->lastObjPath, dataObjInp.objPath,
@@ -323,7 +323,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                         rodsLogError( LOG_ERROR, status,
                                       "_rsPhyRmColl: svrSendCollOprStat failed for %s. status = %d",
                                       rmCollInp->collName, status );
-                        *collOprStat = NULL;
+                        *collOprStat = nullptr;
                         savedStatus = status;
                         free( collEnt );
                         break;
@@ -336,7 +336,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         else if ( collEnt->objType == COLL_OBJ_T ) {
             if ( strcmp( collEnt->collName, rmCollInp->collName ) == 0 ) {
                 free( collEnt );
-                collEnt = NULL;
+                collEnt = nullptr;
                 continue;    /* duplicate */
             }
             rstrcpy( tmpCollInp.collName, collEnt->collName, MAX_NAME_LEN );
@@ -344,12 +344,12 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                 if ( strcmp( collEnt->collName, collEnt->specColl.collection )
                         == 0 ) {
                     free( collEnt );
-                    collEnt = NULL;
+                    collEnt = nullptr;
                     continue;    /* no mount point */
                 }
             }
             initReiWithCollInp( &rei, rsComm, &tmpCollInp, &collInfo );
-            status = applyRule( "acPreprocForRmColl", NULL, &rei, NO_SAVE_REI );
+            status = applyRule( "acPreprocForRmColl", nullptr, &rei, NO_SAVE_REI );
             if ( status < 0 ) {
                 if ( rei.status < 0 ) {
                     status = rei.status;
@@ -362,7 +362,7 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
             }
             status = _rsRmCollRecur( rsComm, &tmpCollInp, collOprStat );
             rei.status = status;
-            rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
+            rei.status = applyRule( "acPostProcForRmColl", nullptr, &rei,
                                     NO_SAVE_REI );
             if ( rei.status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -374,19 +374,19 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
             savedStatus = status;
         }
         free( collEnt );
-        collEnt = NULL;
+        collEnt = nullptr;
     }
     rsCloseCollection( rsComm, &handleInx );
 
     if ( ( rmtrashFlag > 0 && ( isTrashHome( rmCollInp->collName ) > 0 || // JMC - backport 4561
                                 isOrphanPath( rmCollInp->collName ) == is_ORPHAN_HOME ) )   ||
             ( isBundlePath( rmCollInp->collName ) == True                 &&
-              getValByKey( &rmCollInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ) ) {
+              getValByKey( &rmCollInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != nullptr ) ) {
         /* don't rm user's home trash coll or orphan collection */
         status = 0;
     }
     else {
-        if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL ) {
+        if ( dataObjInfo != nullptr && dataObjInfo->specColl != nullptr ) {
             if ( dataObjInfo->specColl->collClass == LINKED_COLL ) {
                 rstrcpy( rmCollInp->collName, dataObjInfo->objPath,
                          MAX_NAME_LEN );
@@ -416,14 +416,14 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     int status;
     collInfo_t collInfo;
 
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
     status = getAndConnRcatHost(
                  rsComm,
                  MASTER_RCAT,
                  ( const char* )rmCollInp->collName,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -439,7 +439,7 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
             memset( &collInfo, 0, sizeof( collInfo ) );
             rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );
             if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW )
-                    != NULL ) {
+                    != nullptr ) {
                 status = chlDelCollByAdmin( rsComm, &collInfo );
                 if ( status >= 0 ) {
                     chlCommit( rsComm );
@@ -459,10 +459,10 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         }
     }
     else {
-        collOprStat_t *collOprStat = NULL;;
+        collOprStat_t *collOprStat = nullptr;;
         addKeyVal( &rmCollInp->condInput, UNREG_COLL_KW, "" );
         status = _rcRmColl( rodsServerHost->conn, rmCollInp, &collOprStat );
-        if ( collOprStat != NULL ) {
+        if ( collOprStat != nullptr ) {
             free( collOprStat );
         }
     }
@@ -585,7 +585,7 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int continueInx;
     dataObjInfo_t dataObjInfo;
 
@@ -603,21 +603,21 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         /* check if allow to delete */
 
         if ( ( subColl = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_COLL_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataObj = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_DATA_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "rsMvCollToTrash: getSqlResultByInx for COL_D_RESC_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
@@ -627,13 +627,13 @@ rsMvCollToTrash( rsComm_t *rsComm, collInp_t *rmCollInp ) {
                   subColl->value, dataObj->value );
         rstrcpy( dataObjInfo.rescName, rescName->value, NAME_LEN );
 
-        initReiWithDataObjInp( &rei, rsComm, NULL );
+        initReiWithDataObjInp( &rei, rsComm, nullptr );
         rei.doi = &dataObjInfo;
 
         // make resource properties available as rule session variables
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-        status = applyRule( "acDataDeletePolicy", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acDataDeletePolicy", nullptr, &rei, NO_SAVE_REI );
 
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);

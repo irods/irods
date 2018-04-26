@@ -135,7 +135,7 @@ irods::error univ_mss_file_unlink(
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "rm '%s'", filename.c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "localhost" );
 
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     int status = _rsExecCmd( &execCmdInp, &execCmdOut );
     freeCmdExecOut( execCmdOut );
 
@@ -188,7 +188,7 @@ irods::error univ_mss_file_stat(
     const char *delim1 = ":\n";
     const char *delim2 = "-";
     const char *delim3 = ".";
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     struct tm mytm;
     time_t myTime;
 
@@ -199,8 +199,8 @@ irods::error univ_mss_file_stat(
     rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
 
-    if ( status == 0 && NULL != execCmdOut ) { // JMC cppcheck - nullptr
-        if ( execCmdOut->stdoutBuf.buf != NULL ) {
+    if ( status == 0 && nullptr != execCmdOut ) { // JMC cppcheck - nullptr
+        if ( execCmdOut->stdoutBuf.buf != nullptr ) {
             const std::string outputStr(static_cast<char*>(execCmdOut->stdoutBuf.buf), execCmdOut->stdoutBuf.len);
             std::vector<std::string> output_tokens;
             boost::algorithm::split( output_tokens, outputStr, boost::is_any_of( delim1 ) );
@@ -306,7 +306,7 @@ irods::error univ_mss_file_chmod(
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "chmod '%s' %o", filename.c_str(), mode );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     freeCmdExecOut( execCmdOut );
 
@@ -359,7 +359,7 @@ irods::error univ_mss_file_mkdir(
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mkdir '%s'", dirname.c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     freeCmdExecOut( execCmdOut );
     if ( status < 0 ) {
@@ -470,7 +470,7 @@ irods::error univ_mss_file_rename(
     snprintf( execCmdInp.cmd, sizeof( execCmdInp.cmd ), "%s", script.c_str() );
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "mv '%s' '%s'", filename.c_str(), _new_file_name );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     freeCmdExecOut( execCmdOut );
 
@@ -546,7 +546,7 @@ irods::error univ_mss_file_stage_to_cache(
     snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "%s", cmdArgv.str().c_str() );
     snprintf( execCmdInp.execAddr, sizeof( execCmdInp.execAddr ), "%s", "localhost" );
 
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     freeCmdExecOut( execCmdOut );
 
@@ -611,7 +611,7 @@ irods::error univ_mss_file_sync_to_arch(
     int status = 0;
     err = univ_mss_file_mkdir( context );
 
-    execCmdOut_t* execCmdOut = NULL;
+    execCmdOut_t* execCmdOut = nullptr;
 
     // =-=-=-=-=-=-=-
     // get the script property

@@ -48,7 +48,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    if ( ruleExecDelInp == NULL ) {
+    if ( ruleExecDelInp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsRuleExecDel error. NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -93,7 +93,7 @@ rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
 }
 
 int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     sqlResult_t *reiFilePath;
     sqlResult_t *ruleUserName;
@@ -139,7 +139,7 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     }
 
     if ( ( reiFilePath = getSqlResultByInx( genQueryOut,
-                                            COL_RULE_EXEC_REI_FILE_PATH ) ) == NULL ) {
+                                            COL_RULE_EXEC_REI_FILE_PATH ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "_rsRuleExecDel: getSqlResultByInx for REI_FILE_PATH failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -149,7 +149,7 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         if ( rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH ) {
             if ( ( ruleUserName = getSqlResultByInx( genQueryOut,
-                                  COL_RULE_EXEC_USER_NAME ) ) == NULL ) {
+                                  COL_RULE_EXEC_USER_NAME ) ) == nullptr ) {
                 rodsLog( LOG_NOTICE,
                          "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed" );
                 return UNMATCHED_KEY_OR_INDEX;
@@ -168,7 +168,7 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
     snprintf( reiDir, MAX_NAME_LEN,
               "/%-s/%-s.", PACKED_REI_DIR, REI_FILE_NAME );
 
-    if ( strstr( reiFilePath->value, reiDir ) == NULL ) {
+    if ( strstr( reiFilePath->value, reiDir ) == nullptr ) {
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             int i;
             char errMsg[105];

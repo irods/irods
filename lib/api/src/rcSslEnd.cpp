@@ -8,8 +8,8 @@
 int
 rcSslEnd( rcComm_t *conn, sslEndInp_t *sslEndInp ) {
     int status;
-    status = procApiRequest( conn, SSL_END_AN,  sslEndInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, SSL_END_AN,  sslEndInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

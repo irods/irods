@@ -373,7 +373,7 @@ extern "C" {
             return strdup( irods::serialize_metadata( metadata_strings ).c_str() );
         }
         catch ( const irods::exception& ) {
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -393,7 +393,7 @@ extern "C" {
             return strdup( irods::serialize_acl( acl_strings ).c_str() );
         }
         catch ( const irods::exception& ) {
-            return NULL;
+            return nullptr;
         }
     }
 }

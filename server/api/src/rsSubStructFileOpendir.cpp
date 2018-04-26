@@ -43,7 +43,7 @@ remoteSubStructFileOpendir( rsComm_t *rsComm, subFile_t *subFile,
     int fd;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileOpendir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

@@ -75,7 +75,7 @@ ParserContext *newParserContext( rError_t *errmsg, Region *r ) {
     pc->errloc.exprloc = -1;
     pc->region = r;
     pc->errmsg = errmsg;
-    pc->errnode = NULL;
+    pc->errnode = nullptr;
     pc->symtable = newHashTable2( 100, r );
     pc->errmsgbuf[0] = '\0';
     pc->tqp = pc->tqtop = pc->tqbot = 0;
@@ -137,7 +137,7 @@ char *findLineCont( char *expr ) {
         }
         break;
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -1272,8 +1272,8 @@ PARSER_FUNC_END( Term )
 
 PARSER_FUNC_BEGIN1( StringExpression, Token *tk )
 int rulegen = 0;
-Token *strToken = NULL;
-if ( tk == NULL ) {
+Token *strToken = nullptr;
+if ( tk == nullptr ) {
     TTYPE( TK_STRING );
     strToken = token;
 }
@@ -1444,7 +1444,7 @@ BUILD_APP_NODE( n->text, &start, 0 );
 END_TRY( nullary )
 END_TRY( func )
 OR( value )
-NT1( StringExpression, NULL );
+NT1( StringExpression, nullptr );
 END_TRY( value )
 PARSER_FUNC_END( Value )
 
@@ -1453,7 +1453,7 @@ int rulegen = 1;
 
 TRY( Column )
 Label colFuncStart = *FPOS;
-char *columnFunc = NULL;
+char *columnFunc = nullptr;
 TRY( columnFunc )
 TTEXT2( "count", "COUNT" );
 columnFunc = "count";
@@ -1486,7 +1486,7 @@ PARSER_FUNC_END( Column )
 
 PARSER_FUNC_BEGIN( QueryCond )
 int rulegen = 1;
-char *op = NULL;
+char *op = nullptr;
 
 TRY( QueryCond )
 NT( Column )
@@ -1539,11 +1539,11 @@ END_TRY( QueryCondOp )
 n++;
 TRY( Or )
 TTEXT( "||" );
-ABORT( op != NULL && strcmp( op, "||" ) != 0 );
+ABORT( op != nullptr && strcmp( op, "||" ) != 0 );
 op = "||";
 OR( Or )
 TTEXT( "&&" );
-ABORT( op != NULL && strcmp( op, "&&" ) != 0 );
+ABORT( op != nullptr && strcmp( op, "&&" ) != 0 );
 op = "&&";
 OR( Or )
 DONE( Junction )
@@ -1594,7 +1594,7 @@ int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char
                 value--;
                 mode = 3;
             }
-            else if ( strchr( delim, ch ) != NULL ) {
+            else if ( strchr( delim, ch ) != nullptr ) {
                 if ( consumeDelim ) {
                     value[1] = '\0';
                     trimquotes( value0 );
@@ -1643,10 +1643,10 @@ int nextStringParsed( Pointer *e, char *value, char* deliml, char *delimr, char 
     int ch = lookAhead( e, 0 );
     while ( ch != -1 ) {
         *value = ch;
-        if ( strchr( deliml, ch ) != NULL ) {
+        if ( strchr( deliml, ch ) != nullptr ) {
             mode ++;
         }
-        else if ( mode > 0 && strchr( delimr, ch ) != NULL ) {
+        else if ( mode > 0 && strchr( delimr, ch ) != nullptr ) {
             mode --;
         }
         else if ( mode == 0 && strchr( delim, ch ) ) {
@@ -1749,7 +1749,7 @@ void printTree( Node *n, int indent ) {
     printIndent( indent );
     char buf[128], buf2[128];
     if ( getNodeType( n ) >= T_UNSPECED && getNodeType( n ) <= T_TYPE ) {
-        typeToString( n, NULL, buf, 128 );
+        typeToString( n, nullptr, buf, 128 );
         printf( "%s:%d\n", buf, getNodeType( n ) );
         return;
     }
@@ -1757,14 +1757,14 @@ void printTree( Node *n, int indent ) {
         printf( "%s:%d\n", n->text, getNodeType( n ) );
     }
     else {
-        if ( n->coercionType != NULL ) {
-            typeToString( n->coercionType, NULL, buf, 128 );
+        if ( n->coercionType != nullptr ) {
+            typeToString( n->coercionType, nullptr, buf, 128 );
         }
         else {
             buf[0] = '\0';
         }
-        if ( n->exprType != NULL ) {
-            typeToString( n->exprType, NULL, buf2, 128 );
+        if ( n->exprType != nullptr ) {
+            typeToString( n->exprType, nullptr, buf2, 128 );
         }
         else {
             buf2[0] = '\0';
@@ -2089,7 +2089,7 @@ void actionsToString( char **p, int *s, int indent, Node *na, Node *nr ) {
     for ( i = 0; i < n; i++ ) {
         indentToString( p, s, indent + 1 );
         termToString( p, s, indent + 1, MIN_PREC, na->subtrees[i], 0 );
-        if ( nr != NULL && i < nr->degree && ( getNodeType( nr->subtrees[i] ) != N_APPLICATION || strcmp( nr->subtrees[i]->subtrees[0]->text, "nop" ) != 0 ) ) {
+        if ( nr != nullptr && i < nr->degree && ( getNodeType( nr->subtrees[i] ) != N_APPLICATION || strcmp( nr->subtrees[i]->subtrees[0]->text, "nop" ) != 0 ) ) {
             PRINT( p, s, "%s", ":::" );
             termToString( p, s, indent + 1, MIN_PREC, nr->subtrees[i], 0 );
         }
@@ -2234,7 +2234,7 @@ void ruleToString( char *buf, int size, RuleDesc *rd ) {
     Node *node = rd->node;
     char **p = &buf;
     int *s = &size;
-    Node *subt = NULL;
+    Node *subt = nullptr;
     switch ( rd->ruleType ) {
     case RK_REL:
         ruleNameToString( p, s, 0, node->subtrees[0] );
@@ -2314,7 +2314,7 @@ void functionApplicationToString( char *buf, int size, char *fn, Node **args, in
             free( res );
             break;
         case N_ACTIONS:
-            actionsToString( p, s, 0, args[i], NULL );
+            actionsToString( p, s, 0, args[i], nullptr );
             break;
         default:
             termToString( p, s, 0, MIN_PREC, args[i], 0 );
@@ -2344,7 +2344,7 @@ int eqExprNodeSyntactic( Node *a, Node *b ) {
 int eqExprNodeSyntacticVarMapping( Node *a, Node *b, Hashtable *varMapping /* from a to b */ ) {
     char *val;
     if ( getNodeType( a ) == TK_VAR && getNodeType( b ) == TK_VAR &&
-            ( val = ( char * )lookupFromHashTable( varMapping, a->text ) ) != NULL &&
+            ( val = ( char * )lookupFromHashTable( varMapping, a->text ) ) != nullptr &&
             strcmp( val, b->text ) == 0 ) {
         return 1;
     }
@@ -2362,7 +2362,7 @@ int eqExprNodeSyntacticVarMapping( Node *a, Node *b, Hashtable *varMapping /* fr
 }
 
 StringList *getVarNamesInExprNode( Node *expr, Region *r ) {
-    return getVarNamesInExprNodeAux( expr, NULL, r );
+    return getVarNamesInExprNodeAux( expr, nullptr, r );
 }
 
 StringList *getVarNamesInExprNodeAux( Node *expr, StringList *vars, Region *r ) {
@@ -2511,7 +2511,7 @@ void clearBuffer( Pointer *p ) {
 int dupString( Pointer *p, Label * start, int n, char *buf ) {
     if ( p->isFile ) {
         Label curr;
-        getFPos( &curr, p, NULL );
+        getFPos( &curr, p, nullptr );
         seekInFile( p, start->exprloc );
         int len = 0;
         int ch;
@@ -2534,7 +2534,7 @@ int dupString( Pointer *p, Label * start, int n, char *buf ) {
 
 int dupLine( Pointer *p, Label * start, int n, char *buf ) {
     Label pos;
-    getFPos( &pos, p, NULL );
+    getFPos( &pos, p, nullptr );
     seekInFile( p, 0 );
     int len = 0;
     int i = 0;
@@ -2565,7 +2565,7 @@ int dupLine( Pointer *p, Label * start, int n, char *buf ) {
 
 void getCoor( Pointer *p, Label * errloc, int coor[2] ) {
     Label pos;
-    getFPos( &pos, p, NULL );
+    getFPos( &pos, p, nullptr );
     seekInFile( p, 0 );
     coor[0] = coor[1] = 0;
     int i;
@@ -2588,7 +2588,7 @@ void getCoor( Pointer *p, Label * errloc, int coor[2] ) {
 
 int getLineRange( Pointer *p, int line, rodsLong_t range[2] ) {
     Label pos;
-    getFPos( &pos, p, NULL );
+    getFPos( &pos, p, nullptr );
     seekInFile( p, 0 );
     Label l;
     range[0] = range[1] = 0;
@@ -2606,7 +2606,7 @@ int getLineRange( Pointer *p, int line, rodsLong_t range[2] ) {
     if ( ch == -1 ) {
         return -1;
     }
-    range[0] = getFPos( &l, p, NULL )->exprloc;
+    range[0] = getFPos( &l, p, nullptr )->exprloc;
     while ( i == line && ch != -1 ) {
         if ( ch == '\n' ) {
             i++;
@@ -2616,13 +2616,13 @@ int getLineRange( Pointer *p, int line, rodsLong_t range[2] ) {
                     ch = nextChar(p);
                 } */
     }
-    range[1] = getFPos( &l, p, NULL )->exprloc;
+    range[1] = getFPos( &l, p, nullptr )->exprloc;
     seekInFile( p, pos.exprloc );
     return 0;
 }
 
 Label *getFPos( Label *l, Pointer *p, ParserContext *context ) {
-    if ( context == NULL || context->tqtop == context->tqp ) {
+    if ( context == nullptr || context->tqtop == context->tqp ) {
         if ( p->isFile ) {
             l->exprloc = p->fpos / sizeof( char ) + p->p;
         }
@@ -2827,7 +2827,7 @@ char * nextRuleSection( char* buf, char* value ) {
 void nextActionArgumentStringBackwardCompatible( Pointer *e, Token *token ) {
     skipWhitespace( e );
     Label start;
-    token->exprloc = getFPos( &start, e, NULL )->exprloc;
+    token->exprloc = getFPos( &start, e, nullptr )->exprloc;
     int ch = lookAhead( e, 0 );
     if ( ch == -1 ) { /* reach the end of stream */
         token->type = TK_EOS;
@@ -2895,7 +2895,7 @@ PARSER_FUNC_END( FuncType )
 PARSER_FUNC_BEGIN2( _Type, int prec, int lifted )
 int rulegen = 1;
 int arity = 0;
-Node *node = NULL;
+Node *node = nullptr;
 TRY( type )
 ABORT( prec == 1 );
 TRY( typeEnd )
@@ -2926,7 +2926,7 @@ END_TRY( typeVar ) /* type variable */
 char *vname = cpStringExt( token->text, context->region );
 
 Node *tvar;
-if ( ( tvar = ( ExprType * ) lookupFromHashTable( context->symtable, vname ) ) == NULL ) {
+if ( ( tvar = ( ExprType * ) lookupFromHashTable( context->symtable, vname ) ) == nullptr ) {
     TRY( typeVarBound )
     /* union */
     NT( TypeSet );
@@ -3238,7 +3238,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
         pushback( token, pc );
 
         Node *node = parseRuleRuleGen( e, backwardCompatible, pc );
-        if ( node == NULL ) {
+        if ( node == nullptr ) {
             addRErrorMsg( errmsg, RE_OUT_OF_MEMORY, "parseRuleSet: out of memory." );
             deleteParserContext( pc );
             return RE_OUT_OF_MEMORY;
@@ -3262,7 +3262,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 int k;
                 pushRule( ruleSet, newRuleDesc( RK_DATA, nodes[0], 0, r ) );
                 for ( k = 1; k < n; k++ ) {
-                    if ( lookupFromEnv( funcDescIndex, nodes[k]->subtrees[0]->text ) != NULL ) {
+                    if ( lookupFromEnv( funcDescIndex, nodes[k]->subtrees[0]->text ) != nullptr ) {
                         generateErrMsg( "parseRuleSet: redefinition of constructor.", NODE_EXPR_POS( nodes[k]->subtrees[0] ), nodes[k]->subtrees[0]->base, errbuf );
                         addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
                         deleteParserContext( pc );
@@ -3273,7 +3273,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
                 }
             }
             else if ( strcmp( node->text, "CONSTR" ) == 0 ) {
-                if ( lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) != NULL ) {
+                if ( lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) != nullptr ) {
                     generateErrMsg( "parseRuleSet: redefinition of constructor.", NODE_EXPR_POS( nodes[0]->subtrees[0] ), nodes[0]->subtrees[0]->base, errbuf );
                     addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
                     deleteParserContext( pc );
@@ -3284,7 +3284,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
             }
             else if ( strcmp( node->text, "EXTERN" ) == 0 ) {
                 FunctionDesc *fd;
-                if ( ( fd = ( FunctionDesc * ) lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) ) != NULL ) {
+                if ( ( fd = ( FunctionDesc * ) lookupFromEnv( funcDescIndex, nodes[0]->subtrees[0]->text ) ) != nullptr ) {
                     generateErrMsg( "parseRuleSet: redefinition of function.", NODE_EXPR_POS( nodes[0]->subtrees[0] ), nodes[0]->subtrees[0]->base, errbuf );
                     addRErrorMsg( errmsg, RE_TYPE_ERROR, errbuf );
                     deleteParserContext( pc );
@@ -3339,7 +3339,7 @@ int parseRuleSet( Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc,
  */
 Node* parseFuncTypeFromString( char *string, Region *r ) {
     Pointer *p = newPointer2( string );
-    ParserContext *pc = newParserContext( NULL, r );
+    ParserContext *pc = newParserContext( nullptr, r );
     nextRuleGenFuncType( p, pc );
     Node *exprType = pc->nodeStack[0];
     deleteParserContext( pc );
@@ -3348,7 +3348,7 @@ Node* parseFuncTypeFromString( char *string, Region *r ) {
 }
 Node* parseTypingConstraintsFromString( char *string, Region *r ) {
     Pointer *p = newPointer2( string );
-    ParserContext *pc = newParserContext( NULL, r );
+    ParserContext *pc = newParserContext( nullptr, r );
     nextRuleGenTypingConstraints( p, pc );
     Node *exprType = pc->nodeStack[0];
     /*char buf[ERR_MSG_LEN];
@@ -3362,7 +3362,7 @@ Node *parseRuleRuleGen( Pointer *expr, int backwardCompatible, ParserContext *pc
     nextRuleGenRule( expr, pc, backwardCompatible );
     Node *rulePackNode = pc->nodeStack[0];
     if ( pc->error ) {
-        if ( pc->errnode != NULL ) {
+        if ( pc->errnode != nullptr ) {
             rulePackNode = pc->errnode;
         }
         else {
@@ -3375,7 +3375,7 @@ Node *parseTermRuleGen( Pointer *expr, int rulegen, ParserContext *pc ) {
     nextRuleGenTerm( expr, pc, rulegen, 0 );
     Node *rulePackNode = pc->nodeStack[0];
     if ( pc->error ) {
-        if ( pc->errnode != NULL ) {
+        if ( pc->errnode != nullptr ) {
             rulePackNode = pc->errnode;
         }
         else {
@@ -3390,7 +3390,7 @@ Node *parseActionsRuleGen( Pointer *expr, int rulegen, int backwardCompatible, P
     nextRuleGenActions( expr, pc, rulegen, backwardCompatible );
     Node *rulePackNode = pc->nodeStack[0];
     if ( pc->error ) {
-        if ( pc->errnode != NULL ) {
+        if ( pc->errnode != nullptr ) {
             rulePackNode = pc->errnode;
         }
         else {
@@ -3490,10 +3490,10 @@ char* typeName_NodeType( NodeType s ) {
 
 void generateErrMsgFromFile( char *msg, long errloc, char *ruleBaseName, char* ruleBasePath, char errbuf[ERR_MSG_LEN] ) {
     FILE *fp = fopen( ruleBasePath, "r" );
-    if ( fp != NULL ) {
+    if ( fp != nullptr ) {
         Pointer *e = newPointer( fp, ruleBaseName );
         Label l;
-        l.base = NULL;
+        l.base = nullptr;
         l.exprloc = errloc;
         generateErrMsgFromPointer( msg, &l, e, errbuf );
         deletePointer( e );
@@ -3503,7 +3503,7 @@ void generateErrMsgFromFile( char *msg, long errloc, char *ruleBaseName, char* r
 void generateErrMsgFromSource( char *msg, long errloc, char *src, char errbuf[ERR_MSG_LEN] ) {
     Pointer *e = newPointer2( src );
     Label l;
-    l.base = NULL;
+    l.base = nullptr;
     l.exprloc = errloc;
     generateErrMsgFromPointer( msg, &l, e, errbuf );
     deletePointer( e );

@@ -22,8 +22,8 @@
 int
 rcSubStructFileClosedir( rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp ) {
     int status;
-    status = procApiRequest( conn, SUB_STRUCT_FILE_CLOSEDIR_AN, subStructFileClosedirInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, SUB_STRUCT_FILE_CLOSEDIR_AN, subStructFileClosedirInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

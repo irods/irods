@@ -25,7 +25,7 @@ rcBulkDataObjReg( rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
                   genQueryOut_t **bulkDataObjRegOut ) {
     int status;
     status = procApiRequest( conn, BULK_DATA_OBJ_REG_AN, bulkDataObjRegInp,
-                             NULL, ( void ** ) bulkDataObjRegOut, NULL );
+                             nullptr, ( void ** ) bulkDataObjRegOut, nullptr );
 
     return status;
 }

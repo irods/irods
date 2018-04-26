@@ -65,36 +65,36 @@ size_t region_size( Region *r ) {
 /* utility function */
 struct region_node *make_region_node( size_t is ) {
     struct region_node *node = ( struct region_node * )malloc( sizeof( *node ) );
-    if ( node == NULL ) {
-        return NULL;
+    if ( node == nullptr ) {
+        return nullptr;
     }
 
     node->block = ( unsigned char * )malloc( is );
     memset( node->block, 0, is );
-    if ( node->block == NULL ) {
+    if ( node->block == nullptr ) {
         free( node );
-        return NULL;
+        return nullptr;
     }
 
     node->size = is;
     node->used = 0;
-    node->next = NULL;
+    node->next = nullptr;
 
     return node;
 }
 Region *make_region( size_t is, jmp_buf *label ) {
     Region *r = ( Region * )malloc( sizeof( Region ) );
-    if ( r == NULL ) {
-        return NULL;
+    if ( r == nullptr ) {
+        return nullptr;
     }
 
     if ( is == 0 ) {
         is = DEFAULT_BLOCK_SIZE;
     }
     struct region_node *node = make_region_node( is );
-    if ( node == NULL ) {
+    if ( node == nullptr ) {
         free( r );
-        return NULL;
+        return nullptr;
     }
 
     r->head = r->active = node;
@@ -113,9 +113,9 @@ unsigned char *region_alloc_nodesc( Region *r, size_t s, size_t *alloc_size ) {
             blocksize = DEFAULT_BLOCK_SIZE;
         }
         struct region_node *next = make_region_node( blocksize );
-        if ( next == NULL ) {
-            if ( r->label == NULL ) { /* no error handler */
-                return NULL;
+        if ( next == nullptr ) {
+            if ( r->label == nullptr ) { /* no error handler */
+                return nullptr;
             }
             else {   /* with error handler */
                 longjmp( *( r->label ), -1 );
@@ -144,7 +144,7 @@ void *region_alloc( Region *r, size_t size ) {
     return mem + CACHE_SIZE( RegionDesc, 1 );
 }
 void region_free( Region *r ) {
-    while ( r->head != NULL ) {
+    while ( r->head != nullptr ) {
         struct region_node *node = r->head;
         r->head = node->next;
         /* memset(node->block, 0, node->size); */
@@ -157,7 +157,7 @@ void region_free( Region *r ) {
 size_t region_size( Region *r ) {
     size_t s = 0;
     struct region_node *node = r->head;
-    while ( node != NULL ) {
+    while ( node != nullptr ) {
         s += node->used;
         node = node->next;
     }

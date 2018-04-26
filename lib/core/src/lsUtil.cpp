@@ -11,12 +11,12 @@ int
 lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     if ( myRodsArgs->ticket == True ) {
-        if ( myRodsArgs->ticketString == NULL ) {
+        if ( myRodsArgs->ticketString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
             return USER__NULL_INPUT_ERR;
@@ -81,8 +81,8 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 
     if ( rodsArgs->longOption == True ) {
-        if ( srcPath->rodsObjStat != NULL &&
-                srcPath->rodsObjStat->specColl != NULL ) {
+        if ( srcPath->rodsObjStat != nullptr &&
+                srcPath->rodsObjStat->specColl != nullptr ) {
             if ( srcPath->rodsObjStat->specColl->collClass == LINKED_COLL ) {
                 lsDataObjUtilLong( conn, srcPath->rodsObjStat->specColl->objPath,
                                    rodsArgs, genQueryInp );
@@ -105,7 +105,7 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
     }
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "lsDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
@@ -129,7 +129,7 @@ int
 lsDataObjUtilLong( rcComm_t *conn, char *srcPath,
                    rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp ) {
     int status;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
     int queryFlags;
@@ -178,14 +178,14 @@ int
 printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
              genQueryOut_t *genQueryOut ) {
     int i = 0;
-    sqlResult_t *dataName = 0, *replNum = 0, *dataSize = 0, *rescName = 0,
-                 *replStatus = 0, *dataModify = 0, *dataOwnerName = 0, *dataId = 0;
-    sqlResult_t *chksumStr = 0, *dataPath = 0, *dataType = 0,*rescHier;
+    sqlResult_t *dataName = nullptr, *replNum = nullptr, *dataSize = nullptr, *rescName = nullptr,
+                 *replStatus = nullptr, *dataModify = nullptr, *dataOwnerName = nullptr, *dataId = nullptr;
+    sqlResult_t *chksumStr = nullptr, *dataPath = nullptr, *dataType = nullptr,*rescHier;
 
-    char *tmpDataId = 0;
+    char *tmpDataId = nullptr;
     int queryFlags = 0;
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -193,20 +193,20 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
 
     if ( rodsArgs->veryLongOption == True ) {
         if ( ( chksumStr = getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataPath = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_ERROR,
                      "printLsLong: getSqlResultByInx for COL_D_DATA_PATH failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) == NULL ) {
+        if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) == nullptr ) {
 
             rodsLog( LOG_ERROR,
                      "printLsLong: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
@@ -214,38 +214,38 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
         }
     }
 
-    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
+    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_DATA_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
+    if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_DATA_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == NULL ) {
+    if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_DATA_SIZE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) ) == NULL ) {
+    if ( ( rescName = getSqlResultByInx( genQueryOut, COL_D_RESC_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_RESC_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == NULL ) {
+    if ( ( rescHier = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) == nullptr ) {
         // If the index is not found then COL_D_RESC_HIER was most likely stripped
         // from the query input to talk to an older zone.
         // use resource name instead
@@ -253,21 +253,21 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
     }
 
     if ( ( replStatus = getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_REPL_STATUS failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataModify = getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_MODIFY_TIME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataOwnerName = getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsLong: getSqlResultByInx for COL_D_OWNER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -282,7 +282,7 @@ printLsLong( rcComm_t *conn, rodsArguments_t *rodsArgs,
 
         collEnt.dataName = &dataName->value[dataName->len * i];
         collEnt.replNum = atoi( &replNum->value[replNum->len * i] );
-        collEnt.dataSize = strtoll( &dataSize->value[dataSize->len * i], 0, 0 );
+        collEnt.dataSize = strtoll( &dataSize->value[dataSize->len * i], nullptr, 0 );
         collEnt.resource = &rescName->value[rescName->len * i];
         collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
         collEnt.replStatus = atoi( &replStatus->value[replStatus->len * i] );
@@ -329,17 +329,17 @@ printLsShort( rcComm_t *conn,  rodsArguments_t *rodsArgs,
     sqlResult_t *dataName, *dataId;
     char *tmpDataName, *tmpDataId;
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
+    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsShort: getSqlResultByInx for COL_D_DATA_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
+    if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printLsShort: getSqlResultByInx for COL_DATA_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -360,7 +360,7 @@ printLsShort( rcComm_t *conn,  rodsArguments_t *rodsArgs,
 
 int
 initCondForLs( genQueryInp_t *genQueryInp ) {
-    if ( genQueryInp == NULL ) {
+    if ( genQueryInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForLs: NULL genQueryInp input" );
         return USER__NULL_INPUT_ERR;
@@ -381,7 +381,7 @@ lsCollUtil( rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
     collHandle_t collHandle;
     collEnt_t collEnt;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "lsCollUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
@@ -552,7 +552,7 @@ printSpecLsLong( char *objPath, char *ownerName, char *objSize,
     getLastPathElement( objPath, srcElement );
     collEnt.dataName = objPath;
     collEnt.ownerName = ownerName;
-    collEnt.dataSize = strtoll( objSize, 0, 0 );
+    collEnt.dataSize = strtoll( objSize, nullptr, 0 );
     collEnt.resource = specColl->resource;
     collEnt.resc_hier = specColl->rescHier;
     collEnt.modifyTime = modifyTime;
@@ -566,7 +566,7 @@ printSpecLsLong( char *objPath, char *ownerName, char *objSize,
 
 int
 printDataAcl( rcComm_t *conn, char *dataId ) {
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     int i;
     sqlResult_t *userName, *userZone, *dataAccess;
@@ -581,20 +581,20 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
         return status;
     }
 
-    if ( ( userName = getSqlResultByInx( genQueryOut, COL_USER_NAME ) ) == NULL ) {
+    if ( ( userName = getSqlResultByInx( genQueryOut, COL_USER_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_USER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( userZone = getSqlResultByInx( genQueryOut, COL_USER_ZONE ) ) == NULL ) {
+    if ( ( userZone = getSqlResultByInx( genQueryOut, COL_USER_ZONE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_USER_ZONE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataAccess = getSqlResultByInx( genQueryOut, COL_DATA_ACCESS_NAME ) )
-            == NULL ) {
+            == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printDataAcl: getSqlResultByInx for COL_DATA_ACCESS_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -616,7 +616,7 @@ printDataAcl( rcComm_t *conn, char *dataId ) {
 
 int
 printCollAcl( rcComm_t *conn, char *collName ) {
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     int i;
     sqlResult_t *userName, *userZone, *dataAccess ;
@@ -635,7 +635,7 @@ printCollAcl( rcComm_t *conn, char *collName ) {
             char *tResult[10];
             char empty = 0;
             char typeStr[8];
-            tResult[3] = 0;
+            tResult[3] = nullptr;
 
             for ( j = 0; j < 10; j++ ) {
                 tResult[j] = &empty;
@@ -645,7 +645,7 @@ printCollAcl( rcComm_t *conn, char *collName ) {
                 }
             }
             typeStr[0] = '\0';
-            if ( tResult[3] != 0 && strncmp( tResult[3], "rodsgroup", 9 ) == 0 ) {
+            if ( tResult[3] != nullptr && strncmp( tResult[3], "rodsgroup", 9 ) == 0 ) {
                 strncpy( typeStr, "g:", 3 );
             }
             printf( "%s%s#%s:%s   ",  typeStr, tResult[0], tResult[1], tResult[2] );
@@ -664,20 +664,20 @@ printCollAcl( rcComm_t *conn, char *collName ) {
         return status;
     }
 
-    if ( ( userName = getSqlResultByInx( genQueryOut, COL_COLL_USER_NAME ) ) == NULL ) {
+    if ( ( userName = getSqlResultByInx( genQueryOut, COL_COLL_USER_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_USER_NAME failed" );
         freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( ( userZone = getSqlResultByInx( genQueryOut, COL_COLL_USER_ZONE ) ) == NULL ) {
+    if ( ( userZone = getSqlResultByInx( genQueryOut, COL_COLL_USER_ZONE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_USER_ZONE failed" );
         freeGenQueryOut( &genQueryOut );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataAccess = getSqlResultByInx( genQueryOut, COL_COLL_ACCESS_NAME ) ) == NULL ) {
+    if ( ( dataAccess = getSqlResultByInx( genQueryOut, COL_COLL_ACCESS_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printCollAcl: getSqlResultByInx for COL_COLL_ACCESS_NAME failed" );
         freeGenQueryOut( &genQueryOut );
@@ -700,7 +700,7 @@ printCollAcl( rcComm_t *conn, char *collName ) {
 
 int
 printCollInheritance( rcComm_t *conn, char *collName ) {
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     sqlResult_t *inheritResult;
     char *inheritStr;
@@ -712,7 +712,7 @@ printCollInheritance( rcComm_t *conn, char *collName ) {
         return status;
     }
 
-    if ( ( inheritResult = getSqlResultByInx( genQueryOut, COL_COLL_INHERITANCE ) ) == NULL ) {
+    if ( ( inheritResult = getSqlResultByInx( genQueryOut, COL_COLL_INHERITANCE ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "printCollInheritance: getSqlResultByInx for COL_COLL_INHERITANCE failed" );
         freeGenQueryOut( &genQueryOut );
@@ -749,7 +749,7 @@ printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
         typeStr = "D";
     }
 
-    if ( specColl != NULL ) {
+    if ( specColl != nullptr ) {
         char objType[NAME_LEN];
         int status;
         status = getSpecCollTypeStr( specColl, objType );
@@ -766,7 +766,7 @@ printCollOrDir( char *myName, objType_t myType, rodsArguments_t *rodsArgs,
 int
 lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
     int i, status;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     genQueryInp_t genQueryInp;
     char condStr[MAX_NAME_LEN];
     sqlResult_t *dataName, *collection, *dataSize;
@@ -803,19 +803,19 @@ lsSubfilesInBundle( rcComm_t *conn, char *srcPath ) {
         }
 
         if ( ( collection = getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_COLL_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
         if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_SIZE failed" );
             return UNMATCHED_KEY_OR_INDEX;

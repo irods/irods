@@ -53,7 +53,7 @@ remoteFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
                     rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileTruncate: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

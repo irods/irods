@@ -44,7 +44,7 @@ remoteSubStructFilePut( rsComm_t *rsComm, subFile_t *subFile,
                         bytesBuf_t *subFilePutOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFilePut: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

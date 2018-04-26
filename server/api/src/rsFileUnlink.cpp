@@ -53,7 +53,7 @@ remoteFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
                   rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileUnlink: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

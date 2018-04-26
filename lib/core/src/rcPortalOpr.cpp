@@ -43,7 +43,7 @@ sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
     myHtonll( offset, ( rodsLong_t * ) &myHeader.offset );
     myHtonll( length, ( rodsLong_t * ) &myHeader.length );
 
-    retVal = myWrite( sock, ( void * ) &myHeader, sizeof( myHeader ), NULL );
+    retVal = myWrite( sock, ( void * ) &myHeader, sizeof( myHeader ), nullptr );
 
     if ( retVal != sizeof( myHeader ) ) {
         rodsLog( LOG_ERROR,
@@ -67,7 +67,7 @@ rcvTranHeader( int sock, transferHeader_t *myHeader ) {
     transferHeader_t tmpHeader;
 
     retVal = myRead( sock, ( void * ) &tmpHeader, sizeof( tmpHeader ),
-                     NULL, NULL );
+                     nullptr, nullptr );
 
     if ( retVal != sizeof( tmpHeader ) ) {
         rodsLog( LOG_ERROR,
@@ -125,7 +125,7 @@ fillBBufWithFile( rcComm_t *conn, bytesBuf_t *myBBuf, char *locFilePath,
     conn->transStat.bytesWritten = dataSize;
 
     status = myRead( in_fd, myBBuf->buf, ( int ) dataSize,
-                     NULL, NULL );
+                     nullptr, nullptr );
 
     close( in_fd );
 
@@ -138,7 +138,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
 
-    if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
+    if ( portalOprOut == nullptr || portalOprOut->numThreads <= 0 ) {
         rodsLog( LOG_ERROR,
                  "putFileToPortal: invalid portalOprOut" );
         return SYS_INVALID_PORTAL_OPR;
@@ -236,7 +236,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
 
         for ( int i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
+            if ( tid[i] != nullptr ) {
                 try {
                     tid[i]->join();
                 }
@@ -255,7 +255,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-                if ( gGuiProgressCB != NULL ) {
+                if ( gGuiProgressCB != nullptr ) {
                     gGuiProgressCB( &conn->operProgress );
                 }
                 return 0;
@@ -273,7 +273,7 @@ putFileToPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
 int
 fillRcPortalTransferInp( rcComm_t *conn, rcPortalTransferInp_t *myInput,
                          int destFd, int srcFd, int threadNum ) {
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -291,13 +291,13 @@ void
 rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
     int destFd = 0;
     int srcFd = 0;
-    transferStat_t *myTransStat = 0;
+    transferStat_t *myTransStat = nullptr;
     rodsLong_t curOffset = 0;
-    rcComm_t *conn = 0;
-    fileRestartInfo_t* info = 0;
+    rcComm_t *conn = nullptr;
+    fileRestartInfo_t* info = nullptr;
     int threadNum = 0;
 
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rcPartialDataPut: NULL input" );
         return;
@@ -314,7 +314,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
 
     myInput->bytesWritten = 0;
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         conn->operProgress.flag = 1;
     }
 
@@ -406,7 +406,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
                             buf,
                             toRead,
                             &bytesRead,
-                            NULL );
+                            nullptr );
             if ( bytesRead != toRead ) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError( LOG_ERROR, myInput->status,
@@ -510,7 +510,7 @@ rcPartialDataPut( rcPortalTransferInp_t *myInput ) {
         /* should lock this. But window browser is the only one using it */
         myTransStat->bytesWritten += myHeader.length;
         /* should lock this. but it is info only */
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.curFileSizeDone += myHeader.length;
             if ( myInput->threadNum == 0 ) {
                 gGuiProgressCB( &conn->operProgress );
@@ -563,13 +563,13 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     dataObjWriteInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         conn->operProgress.flag = 1;
     }
 
     while ( ( dataObjWriteInpBBuf.len =
                   myRead( in_fd, dataObjWriteInpBBuf.buf, trans_buff_sz,
-                          &bytesRead, NULL ) ) > 0 ) {
+                          &bytesRead, nullptr ) ) > 0 ) {
         /* Write to the data object */
 
         dataObjWriteInp.len = dataObjWriteInpBBuf.len;
@@ -603,7 +603,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                     lastUpdateSize = totalWritten;
                 }
             }
-            if ( gGuiProgressCB != NULL ) {
+            if ( gGuiProgressCB != nullptr ) {
                 if ( progressCnt >= ( MAX_PROGRESS_CNT - 1 ) ) {
                     conn->operProgress.curFileSizeDone +=
                         ( ( MAX_PROGRESS_CNT - 1 ) * trans_buff_sz + bytesWritten );
@@ -621,7 +621,7 @@ putFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     close( in_fd );
 
     if ( dataSize <= 0 || totalWritten == dataSize ) {
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
         }
@@ -668,7 +668,7 @@ getIncludeFile( rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath ) 
         }
 
         bytesWritten = myWrite( out_fd, dataObjOutBBuf->buf,
-                                dataObjOutBBuf->len, NULL );
+                                dataObjOutBBuf->len, nullptr );
 
         close( out_fd );
     }
@@ -728,7 +728,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     dataObjReadInp.l1descInx = l1descInx;
     initFileRestart( conn, locFilePath, objPath, dataSize, 1 );
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         conn->operProgress.flag = 1;
     }
 
@@ -744,7 +744,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
         }
         else {
             bytesWritten = myWrite( out_fd, dataObjReadInpBBuf.buf,
-                                    bytesRead, NULL );
+                                    bytesRead, nullptr );
         }
 
         if ( bytesWritten != bytesRead ) {
@@ -779,7 +779,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
                     lastUpdateSize = totalWritten;
                 }
             }
-            if ( gGuiProgressCB != NULL ) {
+            if ( gGuiProgressCB != nullptr ) {
                 if ( progressCnt >= ( MAX_PROGRESS_CNT - 1 ) ) {
                     conn->operProgress.curFileSizeDone +=
                         ( ( MAX_PROGRESS_CNT - 1 ) * trans_buff_sz + bytesWritten );
@@ -799,7 +799,7 @@ getFile( rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
     }
 
     if ( bytesRead >= 0 ) {
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB( &conn->operProgress );
         }
@@ -835,7 +835,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
     int retVal = 0;
 
-    if ( portalOprOut == NULL || portalOprOut->numThreads <= 0 ) {
+    if ( portalOprOut == nullptr || portalOprOut->numThreads <= 0 ) {
         rodsLog( LOG_ERROR,
                  "getFileFromPortal: invalid portalOprOut" );
         return SYS_INVALID_PORTAL_OPR;
@@ -938,7 +938,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
 
         for ( int i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
+            if ( tid[i] != nullptr ) {
                 try {
                     tid[i]->join();
                 }
@@ -957,7 +957,7 @@ getFileFromPortal( rcComm_t *conn, portalOprOut_t *portalOprOut,
         }
         else {
             if ( dataSize <= 0 || totalWritten == dataSize ) {
-                if ( gGuiProgressCB != NULL ) {
+                if ( gGuiProgressCB != nullptr ) {
                     gGuiProgressCB( &conn->operProgress );
                 }
                 return 0;
@@ -983,7 +983,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
     rcComm_t *conn;
     fileRestartInfo_t *info;
     int threadNum;
-    if ( myInput == NULL ) {
+    if ( myInput == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rcPartialDataGet: NULL input" );
         return;
@@ -1001,7 +1001,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
 
     myInput->bytesWritten = 0;
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         conn = myInput->conn;
         conn->operProgress.flag = 1;
     }
@@ -1093,7 +1093,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                                 srcFd,
                                 &new_size,
                                 sizeof( int ),
-                                NULL, NULL );
+                                nullptr, nullptr );
                 if ( bytesRead != sizeof( int ) ) {
                     rodsLog(
                         LOG_ERROR,
@@ -1111,7 +1111,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
                             buf,
                             new_size,
                             &bytesRead,
-                            NULL );
+                            nullptr );
             if ( bytesRead != new_size ) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError( LOG_ERROR, myInput->status,
@@ -1189,7 +1189,7 @@ rcPartialDataGet( rcPortalTransferInp_t *myInput ) {
         /* should lock this. But window browser is the only one using it */
         myTransStat->bytesWritten += myHeader.length;
         /* should lock this. but it is info only */
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.curFileSizeDone += myHeader.length;
             if ( myInput->threadNum == 0 ) {
                 gGuiProgressCB( &conn->operProgress );
@@ -1221,7 +1221,7 @@ int putFileToPortalRbudp(
     int mysendRate, mypacketSize;
     char *tmpStr;
 
-    if ( portalOprOut == NULL || portalOprOut->numThreads != 1 ) {
+    if ( portalOprOut == nullptr || portalOprOut->numThreads != 1 ) {
         rodsLog( LOG_ERROR,
                  "putFileToPortal: invalid portalOprOut" );
         return SYS_INVALID_PORTAL_OPR;
@@ -1239,17 +1239,17 @@ int putFileToPortalRbudp(
     }
     rbudpSender.rbudpBase.verbose = veryVerbose;
     if ( ( mysendRate = sendRate ) < 1 &&
-            ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) == NULL ||
+            ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) == nullptr ||
               ( mysendRate = atoi( tmpStr ) ) < 1 ) ) {
         mysendRate = DEF_UDP_SEND_RATE;
     }
     if ( ( mypacketSize = packetSize ) < 1 &&
-            ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == NULL ||
+            ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == nullptr ||
               ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
         mypacketSize = DEF_UDP_PACKET_SIZE;
     }
 
-    if ( locFilePath == NULL ) {
+    if ( locFilePath == nullptr ) {
         status = sendfileByFd(
                      &rbudpSender,
                      mysendRate,
@@ -1292,7 +1292,7 @@ int getFileToPortalRbudp(
     int mypacketSize;
     char *tmpStr;
 
-    if ( portalOprOut == NULL || portalOprOut->numThreads != 1 ) {
+    if ( portalOprOut == nullptr || portalOprOut->numThreads != 1 ) {
         rodsLog( LOG_ERROR,
                  "getFileToPortalRbudp: invalid portalOprOut" );
         return SYS_INVALID_PORTAL_OPR;
@@ -1312,7 +1312,7 @@ int getFileToPortalRbudp(
     rbudpReceiver.rbudpBase.verbose = veryVerbose;
 
     if ( ( mypacketSize = packetSize ) < 1 &&
-            ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == NULL ||
+            ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) == nullptr ||
               ( mypacketSize = atoi( tmpStr ) ) < 1 ) ) {
         mypacketSize = DEF_UDP_PACKET_SIZE;
     }
@@ -1323,7 +1323,7 @@ int getFileToPortalRbudp(
         return status;
     }
 
-    if ( locFilePath == NULL ) {
+    if ( locFilePath == nullptr ) {
         status = getfileByFd(
                      &rbudpReceiver,
                      locFd,
@@ -1333,7 +1333,7 @@ int getFileToPortalRbudp(
     else {
         status = getfile(
                      &rbudpReceiver,
-                     NULL,
+                     nullptr,
                      locFilePath,
                      mypacketSize );
     }
@@ -1433,12 +1433,12 @@ initFileRestart( rcComm_t *conn, char *fileName, char *objPath,
 
 int
 writeLfRestartFile( char *infoFile, fileRestartInfo_t *info ) {
-    bytesBuf_t *packedBBuf = NULL;
+    bytesBuf_t *packedBBuf = nullptr;
     int status, fd;
 
     status =  packStruct( ( void * ) info, &packedBBuf,
                           "FileRestartInfo_PI", RodsPackTable, 0, XML_PROT );
-    if ( status < 0 || packedBBuf == NULL ) {
+    if ( status < 0 || packedBBuf == nullptr ) {
         rodsLog( LOG_ERROR,
                  "writeLfRestartFile: packStruct error for %s, status = %d",
                  info->fileName, status );
@@ -1477,7 +1477,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
     rodsLong_t mySize;
     char *buf;
 
-    *info = NULL;
+    *info = nullptr;
     path p( infoFile );
     if ( !exists( p ) || !is_regular_file( p ) ) {
         status = UNIX_FILE_STAT_ERR - errno;
@@ -1502,7 +1502,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
     }
 
     buf = ( char * ) calloc( 1, 2 * mySize );
-    if ( buf == NULL ) {
+    if ( buf == nullptr ) {
         close( fd );
         return SYS_MALLOC_ERR;
     }
@@ -1519,7 +1519,7 @@ readLfRestartFile( char *infoFile, fileRestartInfo_t **info ) {
 
     close( fd );
 
-    status =  unpackStruct( buf, ( void ** ) info, "FileRestartInfo_PI", NULL, XML_PROT );
+    status =  unpackStruct( buf, ( void ** ) info, "FileRestartInfo_PI", nullptr, XML_PROT );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -1549,7 +1549,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     openedDataObjInp_t dataObjWriteInp;
     openedDataObjInp_t dataObjLseekInp;
     openedDataObjInp_t dataObjCloseInp;
-    fileLseekOut_t *dataObjLseekOut = NULL;
+    fileLseekOut_t *dataObjLseekOut = nullptr;
     int writtenSinceUpdated = 0;
     rodsLong_t gap;
 
@@ -1635,7 +1635,7 @@ lfRestartPutWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
                 break;
             }
             else {
-                if ( dataObjLseekOut != NULL ) {
+                if ( dataObjLseekOut != nullptr ) {
                     free( dataObjLseekOut );
                 }
             }
@@ -1676,7 +1676,7 @@ putSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
         }
 
         dataObjWriteInpBBuf->len = myRead( localFd,
-                                           dataObjWriteInpBBuf->buf, toRead, NULL, NULL );
+                                           dataObjWriteInpBBuf->buf, toRead, nullptr, nullptr );
         /* Write to the data object */
         dataObjWriteInp->len = dataObjWriteInpBBuf->len;
         bytesWritten = rcDataObjWrite( conn, dataObjWriteInp,
@@ -1716,7 +1716,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
     openedDataObjInp_t dataObjReadInp;
     openedDataObjInp_t dataObjLseekInp;
     openedDataObjInp_t dataObjCloseInp;
-    fileLseekOut_t *dataObjLseekOut = NULL;
+    fileLseekOut_t *dataObjLseekOut = nullptr;
     int writtenSinceUpdated = 0;
     rodsLong_t gap;
 
@@ -1800,7 +1800,7 @@ lfRestartGetWithInfo( rcComm_t *conn, fileRestartInfo_t *info ) {
                 break;
             }
             else {
-                if ( dataObjLseekOut != NULL ) {
+                if ( dataObjLseekOut != nullptr ) {
                     free( dataObjLseekOut );
                 }
             }
@@ -1855,7 +1855,7 @@ getSeg( rcComm_t *conn, rodsLong_t segSize, int localFd,
             return SYS_COPY_LEN_ERR;
         }
         bytesWritten = myWrite( localFd, dataObjReadInpBBuf->buf,
-                                bytesRead, NULL );
+                                bytesRead, nullptr );
 
         if ( bytesWritten != bytesRead ) {
             rodsLog( LOG_ERROR,

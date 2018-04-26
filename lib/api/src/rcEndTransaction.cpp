@@ -30,8 +30,8 @@
 int
 rcEndTransaction( rcComm_t *conn, endTransactionInp_t *endTransactionInp ) {
     int status;
-    status = procApiRequest( conn, END_TRANSACTION_AN,  endTransactionInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, END_TRANSACTION_AN,  endTransactionInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

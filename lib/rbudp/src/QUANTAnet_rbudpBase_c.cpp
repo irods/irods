@@ -141,10 +141,10 @@ int connectTCP( rbudpBase_t *rbudpBase, char * host ) {
     }
 
     printf( "try to conn.\n" );
-    gettimeofday( &start, NULL );
+    gettimeofday( &start, nullptr );
     do {
         retval = connect( rbudpBase->tcpSockfd, ( struct sockaddr * )&tcpServerAddr, sizeof( tcpServerAddr ) );
-        gettimeofday( &now, NULL );
+        gettimeofday( &now, nullptr );
     }
     while ( ( retval < 0 ) && ( USEC( &start, &now ) < 5000000 ) );
     return retval;
@@ -275,7 +275,7 @@ int writen( int fd, char *ptr, int nbytes ) {
 int reportTime( struct timeval *start ) {
     struct timeval end;
     int usecs;
-    gettimeofday( &end, NULL );
+    gettimeofday( &end, nullptr );
     usecs = 1000000 * ( end.tv_sec - start->tv_sec ) + ( end.tv_usec - start->tv_usec );
     start->tv_sec = end.tv_sec;
     start->tv_usec = end.tv_usec;

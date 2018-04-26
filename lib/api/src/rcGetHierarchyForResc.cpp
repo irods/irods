@@ -11,9 +11,9 @@ int rcGetHierarchyForResc(
                      _comm,
                      GET_HIER_FOR_RESC_AN,
                      _resc,
-                     NULL,
+                     nullptr,
                      ( void ** )_hier,
-                     NULL );
+                     nullptr );
     return status;
 
 } // rcGetHierarchyForResc

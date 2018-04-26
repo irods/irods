@@ -90,8 +90,8 @@ rcGenQuery( rcComm_t *conn, genQueryInp_t *genQueryInp,
             genQueryOut_t **genQueryOut ) {
     int status;
     /*    printGenQI(genQueryInp); */
-    status = procApiRequest( conn, GEN_QUERY_AN,  genQueryInp, NULL,
-                             ( void ** )genQueryOut, NULL );
+    status = procApiRequest( conn, GEN_QUERY_AN,  genQueryInp, nullptr,
+                             ( void ** )genQueryOut, nullptr );
 
     return status;
 }

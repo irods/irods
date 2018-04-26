@@ -96,7 +96,7 @@ namespace irods {
         const std::string _plugin_name,
         const std::string _inst_name,
         const std::string _context ) {
-        resource* resc = 0;
+        resource* resc = nullptr;
         error ret = load_plugin< resource >(
                         resc,
                         _plugin_name,
@@ -155,7 +155,7 @@ namespace irods {
         for ( ; !found && itr != resource_name_map_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // get the host pointer from the resource
-            rodsServerHost_t* svr_host = 0;
+            rodsServerHost_t* svr_host = nullptr;
             error ret = itr->second->get_property< rodsServerHost_t* >( RESOURCE_HOST, svr_host );
             if ( !ret.ok() ) {
                 PASS( ret );
@@ -222,7 +222,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // set up data structures for a gen query
         genQueryInp_t  genQueryInp;
-        genQueryOut_t* genQueryOut = NULL;
+        genQueryOut_t* genQueryOut = nullptr;
 
         error proc_ret;
 
@@ -288,7 +288,7 @@ namespace irods {
                 break;
             }
             else {
-                if ( genQueryOut != NULL ) {
+                if ( genQueryOut != nullptr ) {
                     continueInx = genQueryInp.continueInx = genQueryOut->continueInx;
                     freeGenQueryOut( &genQueryOut );
                 }
@@ -548,78 +548,78 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // values to extract from query
-        sqlResult_t *rescId       = 0, *rescName      = 0, *zoneName   = 0, *rescType   = 0, *rescClass = 0;
-        sqlResult_t *rescLoc      = 0, *rescVaultPath = 0, *freeSpace  = 0, *rescInfo   = 0;
-        sqlResult_t *rescComments = 0, *rescCreate    = 0, *rescModify = 0, *rescStatus = 0;
-        sqlResult_t *rescChildren = 0, *rescContext   = 0, *rescParent = 0, *rescParentContext = 0;
+        sqlResult_t *rescId       = nullptr, *rescName      = nullptr, *zoneName   = nullptr, *rescType   = nullptr, *rescClass = nullptr;
+        sqlResult_t *rescLoc      = nullptr, *rescVaultPath = nullptr, *freeSpace  = nullptr, *rescInfo   = nullptr;
+        sqlResult_t *rescComments = nullptr, *rescCreate    = nullptr, *rescModify = nullptr, *rescStatus = nullptr;
+        sqlResult_t *rescChildren = nullptr, *rescContext   = nullptr, *rescParent = nullptr, *rescParentContext = nullptr;
 
         // =-=-=-=-=-=-=-
         // extract results from query
-        if ( ( rescId = getSqlResultByInx( _result, COL_R_RESC_ID ) ) == NULL ) {
+        if ( ( rescId = getSqlResultByInx( _result, COL_R_RESC_ID ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_ID failed" );
         }
 
-        if ( ( rescName = getSqlResultByInx( _result, COL_R_RESC_NAME ) ) == NULL ) {
+        if ( ( rescName = getSqlResultByInx( _result, COL_R_RESC_NAME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_NAME failed" );
         }
 
-        if ( ( zoneName = getSqlResultByInx( _result, COL_R_ZONE_NAME ) ) == NULL ) {
+        if ( ( zoneName = getSqlResultByInx( _result, COL_R_ZONE_NAME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_ZONE_NAME failed" );
         }
 
-        if ( ( rescType = getSqlResultByInx( _result, COL_R_TYPE_NAME ) ) == NULL ) {
+        if ( ( rescType = getSqlResultByInx( _result, COL_R_TYPE_NAME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_TYPE_NAME failed" );
         }
 
-        if ( ( rescClass = getSqlResultByInx( _result, COL_R_CLASS_NAME ) ) == NULL ) {
+        if ( ( rescClass = getSqlResultByInx( _result, COL_R_CLASS_NAME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CLASS_NAME failed" );
         }
 
-        if ( ( rescLoc = getSqlResultByInx( _result, COL_R_LOC ) ) == NULL ) {
+        if ( ( rescLoc = getSqlResultByInx( _result, COL_R_LOC ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_LOC failed" );
         }
 
-        if ( ( rescVaultPath = getSqlResultByInx( _result, COL_R_VAULT_PATH ) ) == NULL ) {
+        if ( ( rescVaultPath = getSqlResultByInx( _result, COL_R_VAULT_PATH ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_VAULT_PATH failed" );
         }
 
-        if ( ( freeSpace = getSqlResultByInx( _result, COL_R_FREE_SPACE ) ) == NULL ) {
+        if ( ( freeSpace = getSqlResultByInx( _result, COL_R_FREE_SPACE ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_FREE_SPACE failed" );
         }
 
-        if ( ( rescInfo = getSqlResultByInx( _result, COL_R_RESC_INFO ) ) == NULL ) {
+        if ( ( rescInfo = getSqlResultByInx( _result, COL_R_RESC_INFO ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_INFO failed" );
         }
 
-        if ( ( rescComments = getSqlResultByInx( _result, COL_R_RESC_COMMENT ) ) == NULL ) {
+        if ( ( rescComments = getSqlResultByInx( _result, COL_R_RESC_COMMENT ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_COMMENT failed" );
         }
 
-        if ( ( rescCreate = getSqlResultByInx( _result, COL_R_CREATE_TIME ) ) == NULL ) {
+        if ( ( rescCreate = getSqlResultByInx( _result, COL_R_CREATE_TIME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CREATE_TIME failed" );
         }
 
-        if ( ( rescModify = getSqlResultByInx( _result, COL_R_MODIFY_TIME ) ) == NULL ) {
+        if ( ( rescModify = getSqlResultByInx( _result, COL_R_MODIFY_TIME ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_MODIFY_TIME failed" );
         }
 
-        if ( ( rescStatus = getSqlResultByInx( _result, COL_R_RESC_STATUS ) ) == NULL ) {
+        if ( ( rescStatus = getSqlResultByInx( _result, COL_R_RESC_STATUS ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_STATUS failed" );
         }
 
-        if ( ( rescChildren = getSqlResultByInx( _result, COL_R_RESC_CHILDREN ) ) == NULL ) {
+        if ( ( rescChildren = getSqlResultByInx( _result, COL_R_RESC_CHILDREN ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CHILDREN failed" );
         }
 
-        if ( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_CONTEXT ) ) == NULL ) {
+        if ( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_CONTEXT ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
         }
 
-        if ( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL ) {
+        if ( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT failed" );
         }
 
-        if ( ( rescParentContext = getSqlResultByInx( _result, COL_R_RESC_PARENT_CONTEXT ) ) == NULL ) {
+        if ( ( rescParentContext = getSqlResultByInx( _result, COL_R_RESC_PARENT_CONTEXT ) ) == nullptr ) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT_CONTEXT failed" );
         }
 
@@ -662,7 +662,7 @@ namespace irods {
                 rstrcpy( addr.hostAddr, const_cast<char*>( tmpRescLoc.c_str() ), LONG_NAME_LEN );
                 rstrcpy( addr.zoneName, const_cast<char*>( tmpZoneName.c_str() ), NAME_LEN );
 
-                rodsServerHost_t* tmpRodsServerHost = 0;
+                rodsServerHost_t* tmpRodsServerHost = nullptr;
                 if ( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
                     rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s",
                              addr.hostAddr );
@@ -672,10 +672,10 @@ namespace irods {
 
             }
             else {
-                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, 0 );
+                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, nullptr );
             }
 
-            rodsLong_t resource_id = strtoll( tmpRescId.c_str(), 0, 0 );
+            rodsLong_t resource_id = strtoll( tmpRescId.c_str(), nullptr, 0 );
             resc->set_property<rodsLong_t>( RESOURCE_ID, resource_id );
             resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
 

@@ -22,8 +22,8 @@
 int
 rcFileUnlink( rcComm_t *conn, fileUnlinkInp_t *fileUnlinkInp ) {
     int status;
-    status = procApiRequest( conn, FILE_UNLINK_AN,  fileUnlinkInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_UNLINK_AN,  fileUnlinkInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

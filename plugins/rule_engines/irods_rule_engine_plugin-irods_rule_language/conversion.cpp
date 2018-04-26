@@ -18,8 +18,8 @@ char * getAttrNameFromAttrId( int id );
  * convert string value to Res
  */
 void convertStrValue( Res *res, char *val, Region *r ) {
-    if ( val == NULL ) {
-        res->text = NULL;
+    if ( val == nullptr ) {
+        res->text = nullptr;
     }
     else {
         int len = ( strlen( val ) + 1 ) * sizeof( char );
@@ -68,7 +68,7 @@ Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r ) {
         /* ->len  length of the array */
         strA = ( strArray_t  * ) inPtr;
         if ( inx >= strA->len ) {
-            return NULL;
+            return nullptr;
         }
         res = newStringRes( r, strA->value + inx * strA->size );
         return res;
@@ -79,7 +79,7 @@ Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r ) {
         intArray_t *intA;
         intA = ( intArray_t * ) inPtr;
         if ( inx >= intA->len ) {
-            return NULL;
+            return nullptr;
         }
         RES_INT_VAL_LVAL( res ) = intA->value[inx];
         return res;
@@ -90,29 +90,29 @@ Res* getValueFromCollection( char *typ, void *inPtr, int inx, Region *r ) {
         char *cname, *aval; /* key and value */
         sqlResult_t *v; /* a result row */
         if ( g->rowCnt == 0 || inx >= g->rowCnt ) {
-            return NULL;
+            return nullptr;
         }
         k = ( keyValPair_t * )malloc( sizeof( keyValPair_t ) );
         k->len = 0;
-        k->keyWord = NULL;
-        k->value = NULL;
+        k->keyWord = nullptr;
+        k->value = nullptr;
         for ( i = 0; i < g->attriCnt; i++ ) {
             v = g->sqlResult + i;
             cname = ( char * ) getAttrNameFromAttrId( v->attriInx );
             aval = v->value + v->len * inx;
             j  = addKeyVal( k, cname, aval ); /* addKeyVal duplicates the strings */
             if ( j < 0 ) {
-                return NULL;
+                return nullptr;
             }
         }
-        res = newUninterpretedRes( r, KeyValPair_MS_T, k, NULL );
+        res = newUninterpretedRes( r, KeyValPair_MS_T, k, nullptr );
         return res;
     }
     else if ( strcmp( typ, KeyValPair_MS_T ) == 0 ) {
         return newStringRes( r, ( ( keyValPair_t * ) inPtr )->keyWord[inx] );
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }
 int getCollectionSize( char *typ, void *inPtr ) {
@@ -145,7 +145,7 @@ int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
     writeToTmp( "relog.txt", mP->type );
     writeToTmp( "relog.txt", "\n" );
 #endif
-    if ( mP->type == NULL ) {
+    if ( mP->type == nullptr ) {
         res->exprType = newSimpType( T_UNSPECED, r );
         return 0;
 
@@ -156,7 +156,7 @@ int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
     }
     else if ( strcmp( mP->type, INT_MS_T ) == 0 ) { /* if the parameter is an integer */
         /* this could be int, bool, or datatime */
-        if ( res->exprType == NULL ) { /* output parameter */
+        if ( res->exprType == nullptr ) { /* output parameter */
             RES_INT_VAL_LVAL( res ) = *( int * )mP->inOutStruct;
             res->exprType = newSimpType( T_INT, r );
         }
@@ -197,11 +197,11 @@ int convertMsParamToRes( msParam_t *mP, Res *res, Region *r ) {
         */
     }
     else {
-        if ( res->param == NULL ) {
+        if ( res->param == nullptr ) {
             res->param = newMsParam( mP->type, mP->inOutStruct, mP->inpOutBuf, r );
         }
         else {
-            res->param->type = mP->type ? strdup( mP->type ) : NULL;
+            res->param->type = mP->type ? strdup( mP->type ) : nullptr;
             RES_UNINTER_STRUCT( res ) = mP->inOutStruct;
             RES_UNINTER_BUFFER( res ) = mP->inpOutBuf;
         }
@@ -225,7 +225,7 @@ int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r )
     writeToTmp( "relog.txt", mP->type );
     writeToTmp( "relog.txt", "\n" );
 #endif
-    if ( mP->type == NULL ) {
+    if ( mP->type == nullptr ) {
         res->exprType = newSimpType( T_UNSPECED, r );
         return 0;
 
@@ -233,12 +233,12 @@ int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r )
     else if ( strcmp( mP->type, DOUBLE_MS_T ) == 0 ) { /* if the parameter is an integer */
         convertDoubleValue( res, *( double * )mP->inOutStruct, r );
         free( mP->inOutStruct );
-        mP->inOutStruct = NULL;
+        mP->inOutStruct = nullptr;
         return 0;
     }
     else if ( strcmp( mP->type, INT_MS_T ) == 0 ) { /* if the parameter is an integer */
         /* this could be int, bool, or datatime */
-        if ( res->exprType == NULL ) { /* output parameter */
+        if ( res->exprType == nullptr ) { /* output parameter */
             RES_INT_VAL_LVAL( res ) = *( int * )mP->inOutStruct;
             res->exprType = newSimpType( T_INT, r );
         }
@@ -257,20 +257,20 @@ int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r )
                 convertIntValue( res, *( int * )mP->inOutStruct, r );
             }
         free( mP->inOutStruct );
-        mP->inOutStruct = NULL;
+        mP->inOutStruct = nullptr;
         return 0;
     }
     else if ( strcmp( mP->type, STR_MS_T ) == 0 ) { /* if the parameter is a string */
         convertStrValue( res, ( char * )mP->inOutStruct, r );
         free( mP->inOutStruct );
-        mP->inOutStruct = NULL;
+        mP->inOutStruct = nullptr;
         return 0;
     }
     else if ( strcmp( mP->type, DATETIME_MS_T ) == 0 ) {
         RES_TIME_VAL( res ) = *( rodsLong_t * )mP->inOutStruct;
         TYPE( res ) = T_DATETIME;
         free( mP->inOutStruct );
-        mP->inOutStruct = NULL;
+        mP->inOutStruct = nullptr;
         return 0;
         /*
         	} else if(strcmp(mP->type, StrArray_MS_T) == 0) {
@@ -285,11 +285,11 @@ int convertMsParamToResAndFreeNonIRODSType( msParam_t *mP, Res *res, Region *r )
         */
     }
     else {
-        if ( res->param == NULL ) {
+        if ( res->param == nullptr ) {
             res->param = newMsParam( mP->type, mP->inOutStruct, mP->inpOutBuf, r );
         }
         else {
-            res->param->type = mP->type ? strdup( mP->type ) : NULL;
+            res->param->type = mP->type ? strdup( mP->type ) : nullptr;
             RES_UNINTER_STRUCT( res ) = mP->inOutStruct;
             RES_UNINTER_BUFFER( res ) = mP->inpOutBuf;
         }
@@ -348,12 +348,12 @@ void convertCollectionToRes(msParam_t *mP, Res* res) {
 
 /************************ Res to Microservice parameter ***********************/
 int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
-    strArray_t *arr = NULL;
-    intArray_t *arr2 = NULL;
+    strArray_t *arr = nullptr;
+    intArray_t *arr2 = nullptr;
     int i = 0;
     int maxlen = 0;
-    var->inpOutBuf = NULL;
-    var->label = NULL;
+    var->inpOutBuf = nullptr;
+    var->label = nullptr;
     switch ( TYPE( res ) ) {
     case T_ERROR: /* error message */
         var->inOutStruct = ( int * )malloc( sizeof( int ) );
@@ -371,11 +371,11 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
         var->type = strdup( INT_MS_T );
         break;
     case T_STRING: /* string */
-        var->inOutStruct = res->text == NULL ? NULL : strdup( res->text );
+        var->inOutStruct = res->text == nullptr ? nullptr : strdup( res->text );
         var->type = strdup( STR_MS_T );
         break;
     case T_PATH: /* path */
-        var->inOutStruct = res->text == NULL ? NULL : strdup( res->text );
+        var->inOutStruct = res->text == nullptr ? nullptr : strdup( res->text );
         var->type = strdup( STR_MS_T );
         break;
     case T_DATETIME: /* date time */
@@ -427,11 +427,11 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
     case T_IRODS:
         var->inOutStruct = RES_UNINTER_STRUCT( res );
         var->inpOutBuf = RES_UNINTER_BUFFER( res );
-        var->type = res->exprType->text ? strdup( res->exprType->text ) : NULL;
+        var->type = res->exprType->text ? strdup( res->exprType->text ) : nullptr;
         break;
     case T_UNSPECED:
-        var->inOutStruct = NULL;
-        var->type = NULL;
+        var->inOutStruct = nullptr;
+        var->type = nullptr;
         break;
     default:
         /*error */
@@ -441,25 +441,25 @@ int convertResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
     return 0;
 }
 int updateResToMsParam( msParam_t *var, Res *res, rError_t *errmsg ) {
-    if ( var->type != NULL && ( strcmp( var->type, INT_MS_T ) == 0 ||
+    if ( var->type != nullptr && ( strcmp( var->type, INT_MS_T ) == 0 ||
                                 strcmp( var->type, DOUBLE_MS_T ) == 0 ||
                                 strcmp( var->type, STR_MS_T ) == 0 ) ) {
         /* do not free msParam_t if its inOutStruct and inOutBuf are shared */
-        if ( var->inOutStruct != NULL ) {
+        if ( var->inOutStruct != nullptr ) {
             free( var->inOutStruct );
         }
-        if ( var->inpOutBuf != NULL ) {
+        if ( var->inpOutBuf != nullptr ) {
             free( var->inpOutBuf );
         }
     }
-    if ( var->label != NULL ) {
+    if ( var->label != nullptr ) {
         free( var->label );
     }
     return convertResToMsParam( var, res, errmsg );
 }
 int convertEnvToMsParamArray( msParamArray_t *var, Env *env, rError_t *errmsg, Region *r ) {
     int ret;
-    if ( env->previous != NULL ) {
+    if ( env->previous != nullptr ) {
         if ( ( ret = convertEnvToMsParamArray( var, env->previous, errmsg, r ) ) != 0 ) {
             return ret;
         }
@@ -471,24 +471,24 @@ int convertHashtableToMsParamArray( msParamArray_t *var, Hashtable *env, rError_
     int i;
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
-        while ( b != NULL && !IS_TVAR_NAME( b->key ) ) {
+        while ( b != nullptr && !IS_TVAR_NAME( b->key ) ) {
             Res *res = ( Res * )b->value;
-            msParam_t *v = NULL;
+            msParam_t *v = nullptr;
             int needToFree = 0;
             int varindex;
             int ret;
             for ( varindex = 0; varindex < var->len; varindex++ ) {
-                if ( var->msParam[varindex]->label != NULL && strcmp( var->msParam[varindex]->label, b->key ) == 0 ) {
+                if ( var->msParam[varindex]->label != nullptr && strcmp( var->msParam[varindex]->label, b->key ) == 0 ) {
                     v = var->msParam[varindex];
                     ret = updateResToMsParam( v, res, errmsg );
                     break;
                 }
             }
-            if ( v == NULL ) {
+            if ( v == nullptr ) {
                 v = ( msParam_t * ) malloc( sizeof( msParam_t ) );
                 needToFree = 1;
                 ret = convertResToMsParam( v, res, errmsg );
-                if ( var->msParam == NULL ) {
+                if ( var->msParam == nullptr ) {
                     var->len = 0;
                     var->msParam = ( msParam_t ** ) malloc( sizeof( msParam_t * ) * ( PTR_ARRAY_MALLOC_LEN ) );
                 }
@@ -530,7 +530,7 @@ int updateMsParamArrayToEnv( msParamArray_t *var, Env *env, Region *r ) {
             return ret;
         }
         char *varName = var->msParam[i]->label;
-        if ( varName != NULL ) {
+        if ( varName != nullptr ) {
             updateInEnv( env, varName, res );
         }
     }
@@ -545,7 +545,7 @@ int updateMsParamArrayToEnvAndFreeNonIRODSType( msParamArray_t *var, Env *env, R
             return ret;
         }
         char *varName = var->msParam[i]->label;
-        if ( varName != NULL ) {
+        if ( varName != nullptr ) {
             updateInEnv( env, varName, res );
         }
     }
@@ -576,7 +576,7 @@ char* convertResToString( Res *res0 ) {
             }
             return res;
         case T_STRING:
-            if ( res0->text == NULL ) {
+            if ( res0->text == nullptr ) {
                 res = strdup( "<null>" );
             }
             else {
@@ -584,7 +584,7 @@ char* convertResToString( Res *res0 ) {
             }
             return res;
         case T_PATH:
-            if ( res0->text == NULL ) {
+            if ( res0->text == nullptr ) {
                 res = strdup( "<null>" );
             }
             else {
@@ -598,7 +598,7 @@ char* convertResToString( Res *res0 ) {
             if ( strcmp( type, KeyValPair_MS_T ) == 0 ) {
                 int num_pairs = 0;
                 keyValPair_t *kvp = ( keyValPair_t * ) RES_UNINTER_STRUCT( res0 );
-                if ( kvp != NULL ) {
+                if ( kvp != nullptr ) {
                     num_pairs = kvp->len;
                 }
                 snprintf( res, 1024, "KeyValue[%d]:", num_pairs );
@@ -666,9 +666,9 @@ char* convertResToString( Res *res0 ) {
             int i;
             for ( i = 0; i < res0->degree; i++ ) {
                 char *resElem = convertResToString( res0->subtrees[i] );
-                if ( resElem == NULL ) {
+                if ( resElem == nullptr ) {
                     free( res );
-                    return NULL;
+                    return nullptr;
                 }
                 else {
                     snprintf( res + strlen( res ), 1024 - strlen( res ), "%s%s", i == 0 ? "" : ",", resElem );
@@ -686,12 +686,12 @@ char* convertResToString( Res *res0 ) {
             return res;
         default:
             /*sprintf(res, "error: unsupported type %d", TYPE(res0)); */
-            return NULL;
+            return nullptr;
         }
         break;
     default:
         res = ( char * )malloc( sizeof( char ) * 128 );
-        return typeToString( res0, NULL, res, 128 );
+        return typeToString( res0, nullptr, res, 128 );
     }
 }
 
@@ -707,7 +707,7 @@ void printMsParamArray( msParamArray_t *msParamArray, char *buf2 ) {
         }
         strncat( buf2, mP->label, MAX_NAME_LEN - strlen( buf2 ) );
         strncat( buf2, "=", MAX_NAME_LEN - strlen( buf2 ) );
-        if ( mP->inOutStruct == NULL ) {
+        if ( mP->inOutStruct == nullptr ) {
             strncat( buf2, "<null>", MAX_NAME_LEN - strlen( buf2 ) );
         }
         else {
@@ -740,21 +740,21 @@ void printHashtable( Hashtable *env, char* buf2 ) {
     int k = 0;
     for ( i = 0; i < env->size; i++ ) {
         struct bucket *b = env->buckets[i];
-        while ( b != NULL ) {
+        while ( b != nullptr ) {
             Res *res = ( Res * ) b->value;
             if ( k != 0 ) {
                 strncat( buf2, "\n", MAX_NAME_LEN - strlen( buf2 ) );
             }
             strncat( buf2, b->key, MAX_NAME_LEN - strlen( buf2 ) );
             strncat( buf2, "=", MAX_NAME_LEN - strlen( buf2 ) );
-            if ( res == NULL ) {
+            if ( res == nullptr ) {
                 strncat( buf2, "<null>", MAX_NAME_LEN - strlen( buf2 ) );
             }
             else {
                 char *buf4 = convertResToString( res );
                 strncat( buf2, buf4, MAX_NAME_LEN - strlen( buf2 ) );
                 strncat( buf2, ":", MAX_NAME_LEN - strlen( buf2 ) );
-                strncat( buf2, res->exprType == NULL ? "<null>" : typeToString( res->exprType, NULL, typeNameBuf, 128 ), MAX_NAME_LEN - strlen( buf2 ) );
+                strncat( buf2, res->exprType == nullptr ? "<null>" : typeToString( res->exprType, nullptr, typeNameBuf, 128 ), MAX_NAME_LEN - strlen( buf2 ) );
                 free( buf4 );
             }
             k++;

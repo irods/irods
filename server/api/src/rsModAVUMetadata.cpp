@@ -44,7 +44,7 @@ rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     }
     else {
         /* assume local */
-        myHint = NULL;
+        myHint = nullptr;
     }
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )myHint, &rodsServerHost );
@@ -95,7 +95,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
 
     memset( ( char* )&rei2, 0, sizeof( ruleExecInfo_t ) );
     rei2.rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
     }
@@ -106,7 +106,7 @@ _rsModAVUMetadata( rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp ) {
     args[3] = modAVUMetadataInp->arg3; // attr name
     args[4] = modAVUMetadataInp->arg4; // attr val
     args[5] = modAVUMetadataInp->arg5; // attr unit
-    if ( args[5] == NULL ) { args[5] = ""; }
+    if ( args[5] == nullptr ) { args[5] = ""; }
     if ( strcmp( args[0], "mod" ) == 0 ) {
         argc = 9;
 #define ARG(arg) { int ix; if( ( ix = checkModArgType(arg) ) >= 0 ) avu[ix] = arg; }

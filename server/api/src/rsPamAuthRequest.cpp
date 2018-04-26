@@ -67,7 +67,7 @@ rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
                                    pamAuthRequestOut );
         sslEnd( rodsServerHost->conn );
         rcDisconnect( rodsServerHost->conn );
-        rodsServerHost->conn = NULL;
+        rodsServerHost->conn = nullptr;
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE, "rsPamAuthRequest: rcPamAuthRequest to remote server failed, status %d",
                      status );
@@ -120,7 +120,7 @@ runPamAuthCheck( char *username, char *password ) {
         }
         close( p2cp[1] );
         i = execl( PAM_AUTH_CHECK_PROG, PAM_AUTH_CHECK_PROG, username,
-                   ( char * )NULL );
+                   ( char * )nullptr );
         perror( "execl" );
         printf( "execl failed %d\n", i );
     }
@@ -156,14 +156,14 @@ _rsPamAuthRequest( rsComm_t *rsComm, pamAuthRequestInp_t *pamAuthRequestInp,
         return status;
     }
     result->irodsPamPassword = ( char* )malloc( 100 );
-    if ( result->irodsPamPassword == 0 ) {
+    if ( result->irodsPamPassword == nullptr ) {
         return SYS_MALLOC_ERR;
     }
     memset(result->irodsPamPassword, 0, 100);
     status = chlUpdateIrodsPamPassword( rsComm,
                                         pamAuthRequestInp->pamUser,
                                         pamAuthRequestInp->timeToLive,
-                                        NULL,
+                                        nullptr,
                                         &result->irodsPamPassword );
     return status;
 }

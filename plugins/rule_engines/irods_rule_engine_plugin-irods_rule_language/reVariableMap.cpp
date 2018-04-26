@@ -40,7 +40,7 @@ int setStrLeafValue( char *leafPtr, size_t len, Res *newVarValue ) {
     return 0;
 }
 int setStrDupLeafValue( char **leafPtr, Res *newVarValue ) {
-    if ( *leafPtr != NULL ) {
+    if ( *leafPtr != nullptr ) {
         free( *leafPtr );
     }
     *leafPtr = strdup( newVarValue->text );
@@ -59,13 +59,13 @@ mapExternalFuncToInternalProc( char *funcName ) {
     int i;
 
     for ( i = 0; i < appRuleFuncMapDef.MaxNumOfFMaps; i++ ) {
-        if ( strstr( appRuleFuncMapDef.funcName[i], funcName ) != NULL ) {
+        if ( strstr( appRuleFuncMapDef.funcName[i], funcName ) != nullptr ) {
             strcpy( funcName, appRuleFuncMapDef.func2CMap[i] );
             return 1;
         }
     }
     for ( i = 0; i < coreRuleFuncMapDef.MaxNumOfFMaps; i++ ) {
-        if ( strstr( coreRuleFuncMapDef.funcName[i], funcName ) != NULL ) {
+        if ( strstr( coreRuleFuncMapDef.funcName[i], funcName ) != nullptr ) {
             strcpy( funcName, coreRuleFuncMapDef.func2CMap[i] );
             return 1;
         }
@@ -88,7 +88,7 @@ getVarMap( char *action, char *inVarName, char **varMap, int index ) {
         for ( i = index; i < appRuleVarDef.MaxNumOfDVars; i++ ) {
             if ( !strcmp( appRuleVarDef.varName[i], varName ) ) {
                 if ( strlen( appRuleVarDef.action[i] ) == 0 ||
-                        strstr( appRuleVarDef.action[i], action ) != NULL ) {
+                        strstr( appRuleVarDef.action[i], action ) != nullptr ) {
                     *varMap = strdup( appRuleVarDef.var2CMap[i] );
                     return i;
                 }
@@ -100,7 +100,7 @@ getVarMap( char *action, char *inVarName, char **varMap, int index ) {
     for ( ; i < coreRuleVarDef.MaxNumOfDVars; i++ ) {
         if ( !strcmp( coreRuleVarDef.varName[i], varName ) ) {
             if ( strlen( coreRuleVarDef.action[i] ) == 0 ||
-                    strstr( coreRuleVarDef.action[i], action ) != NULL ) {
+                    strstr( coreRuleVarDef.action[i], action ) != nullptr ) {
                 *varMap = strdup( coreRuleVarDef.var2CMap[i] );
                 return i + 1000;
             }
@@ -116,9 +116,9 @@ getVarNameFromVarMap( char *varMap, char *varName, char **varMapCPtr ) {
 
     char *p;
 
-    if ( ( p = strstr( varMap, "->" ) ) == NULL ) {
+    if ( ( p = strstr( varMap, "->" ) ) == nullptr ) {
         rstrcpy( varName, varMap, NAME_LEN );
-        *varMapCPtr = NULL;
+        *varMapCPtr = nullptr;
     }
     else {
         *p = '\0';
@@ -379,19 +379,19 @@ int
 getAllSessionVarValue( ruleExecInfo_t *rei, keyValPair_t *varKeyVal ) {
     int i, status;
     char *varValue;
-    char *lastVar = NULL; 	/* last var that has data */
+    char *lastVar = nullptr; 	/* last var that has data */
 
-    if ( varKeyVal == NULL || rei == NULL ) {
+    if ( varKeyVal == nullptr || rei == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getAllSessionVarValue: input rei or varKeyVal is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     for ( i = 0; i < coreRuleVarDef.MaxNumOfDVars; i++ ) {
-        if ( lastVar == NULL || strcmp( lastVar, coreRuleVarDef.varName[i] ) != 0 ) {
+        if ( lastVar == nullptr || strcmp( lastVar, coreRuleVarDef.varName[i] ) != 0 ) {
             status = getSessionVarValue( "", coreRuleVarDef.varName[i], rei,
                                          &varValue );
-            if ( status >= 0 && varValue != NULL ) {
+            if ( status >= 0 && varValue != nullptr ) {
                 lastVar = coreRuleVarDef.varName[i];
                 addKeyVal( varKeyVal, lastVar, varValue );
                 free( varValue );
@@ -404,14 +404,14 @@ getAllSessionVarValue( ruleExecInfo_t *rei, keyValPair_t *varKeyVal ) {
 int
 getSessionVarValue( char *action, char *varName, ruleExecInfo_t *rei,
                     char **varValue ) {
-    Region *r = make_region( 0, NULL );
-    char *varMap = NULL;
+    Region *r = make_region( 0, nullptr );
+    char *varMap = nullptr;
     int vinx = getVarMap( action, varName, &varMap, 0 );
     while ( vinx >= 0 ) {
         Res *res;
         int i = getVarValue( varMap, rei, &res, r );
         free( varMap );
-        varMap = NULL;
+        varMap = nullptr;
         if ( i != NULL_VALUE_ERR ) {
             if ( i >= 0 ) {
                 *varValue = convertResToString( res );

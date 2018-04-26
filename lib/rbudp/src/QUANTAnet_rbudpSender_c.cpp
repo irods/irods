@@ -70,7 +70,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
     int status = 0;
     struct timeval curTime, startTime;
     double srate;
-    gettimeofday( &curTime, NULL );
+    gettimeofday( &curTime, nullptr );
     startTime = curTime;
     int lastRemainNumberOfPackets = 0;
     int noProgressCnt = 0;
@@ -112,7 +112,7 @@ int  sendBuf( rbudpSender_t *rbudpSender, void * buffer, int bufSize,
         rbudpSender->rbudpBase.endOfUdp.round ++;
 
         reportTime( &curTime );
-        gettimeofday( &curTime, NULL );
+        gettimeofday( &curTime, nullptr );
         if ( rbudpSender->rbudpBase.verbose > 1 ) {
             TRACE_DEBUG( "Current time: %d %ld", curTime.tv_sec, curTime.tv_usec );
         }
@@ -188,9 +188,9 @@ udpSend( rbudpSender_t *rbudpSender ) {
 
     done = 0;
     i = 0;
-    gettimeofday( &start, NULL );
+    gettimeofday( &start, nullptr );
     while ( !done ) {
-        gettimeofday( &now, NULL );
+        gettimeofday( &now, nullptr );
         if ( USEC( &start, &now ) < rbudpSender->rbudpBase.usecsPerPacket * i ) {
             // busy wait or sleep
             //		usleep(1);
@@ -272,7 +272,7 @@ int  sendstream( rbudpSender_t *rbudpSender, int fromfd, int sendRate,
 
     // allocate buffer
     char *buf = ( char * )malloc( bufSize );
-    if ( buf == 0 ) {
+    if ( buf == nullptr ) {
         fprintf( stderr, " sendstream: Couldn't malloc %d bytes for buffer\n", bufSize );
         return FAILED;
     }
@@ -381,7 +381,7 @@ int  sendfileByFd( rbudpSender_t *rbudpSender, int sendRate, int packetSize,
             TRACE_DEBUG( "Sending %d bytes chunk. %lld bytes remaining",
                          toSend, remaining - toSend );
 
-        char *buf = ( char * )mmap( NULL, toSend, PROT_READ, MAP_SHARED, fd, offset );
+        char *buf = ( char * )mmap( nullptr, toSend, PROT_READ, MAP_SHARED, fd, offset );
         if ( buf == MAP_FAILED ) {
             fprintf( stderr, "mmap failed. toSend = %d, offset = %lld, errno = %d\n",
                      toSend, offset, errno );
@@ -470,7 +470,7 @@ int  sendfilelist( rbudpSender_t *rbudpSender, int sendRate, int packetSize ) {
             }
         }
 
-        char *buf = ( char * )mmap( NULL, filesize, PROT_READ, MAP_SHARED, fd, 0 );
+        char *buf = ( char * )mmap( nullptr, filesize, PROT_READ, MAP_SHARED, fd, 0 );
 
         sendBuf( rbudpSender, buf, filesize, sendRate, packetSize );
 
@@ -534,11 +534,11 @@ int  initSendRudp( rbudpSender_t *rbudpSender, void* buffer, int bufSize,
         TRACE_DEBUG( "usecsPerPacket: %d",
                      rbudpSender->rbudpBase.usecsPerPacket );
 
-    if ( rbudpSender->rbudpBase.errorBitmap == NULL ) {
+    if ( rbudpSender->rbudpBase.errorBitmap == nullptr ) {
         fprintf( stderr, "malloc errorBitmap failed\n" );
         return -1;
     }
-    if ( rbudpSender->rbudpBase.hashTable == NULL ) {
+    if ( rbudpSender->rbudpBase.hashTable == nullptr ) {
         fprintf( stderr, "malloc hashTable failed\n" );
         return -1;
     }

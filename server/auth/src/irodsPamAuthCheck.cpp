@@ -70,13 +70,13 @@ namespace {
         }
 
         *resp = static_cast<pam_response*>( malloc( sizeof( **resp ) ) );
-        if ( *resp == NULL ) {
+        if ( *resp == nullptr ) {
             fprintf( stderr, "null_conv: irodsPamAuthCheck: malloc error\n" );
             return PAM_BUF_ERR;
         }
 
         ( *resp )->resp = strdup( appdata.password.c_str() );
-        if ( ( *resp )->resp == NULL ) {
+        if ( ( *resp )->resp == nullptr ) {
             free( *resp );
             fprintf( stderr, "irodsPamAuthCheck: malloc error\n" );
             return PAM_BUF_ERR;
@@ -89,7 +89,7 @@ namespace {
 
 int main( int argc, char *argv[] ) {
 
-    const char *username = NULL;
+    const char *username = nullptr;
     if ( argc == 2 || argc == 3 ) {
         username = argv[1];
     }
@@ -108,7 +108,7 @@ int main( int argc, char *argv[] ) {
     }
 
     pam_conv conv = { null_conv, &appdata };
-    pam_handle_t *pamh = NULL;
+    pam_handle_t *pamh = nullptr;
     const int retval_pam_start = pam_start( pam_service, username, &conv, &pamh );
     if ( appdata.debug_mode ) {
         printf( "retval_pam_start: %d\n", retval_pam_start );
@@ -134,7 +134,7 @@ int main( int argc, char *argv[] ) {
 
     // close Linux-PAM
     if ( pam_end( pamh, retval_pam_authenticate ) != PAM_SUCCESS ) {
-        pamh = NULL;
+        pamh = nullptr;
         fprintf( stderr, "irodsPamAuthCheck: failed to release authenticator\n" );
         return 4;
     }

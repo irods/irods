@@ -58,7 +58,7 @@ rcProcStat( rcComm_t *conn, procStatInp_t *procStatInp,
             genQueryOut_t **procStatOut ) {
     int status;
     status = procApiRequest( conn, PROC_STAT_AN, procStatInp,
-                             NULL, ( void ** ) procStatOut, NULL );
+                             nullptr, ( void ** ) procStatOut, nullptr );
 
     return status;
 }

@@ -13,7 +13,7 @@ namespace irods {
         addr_(),
         sub_file_path_( "" ),
         offset_( 0 ),
-        spec_coll_( 0 ),
+        spec_coll_( nullptr ),
         data_type_( "" ),
         opr_type_( 0 ),
         spec_coll_type_( HAAW_STRUCT_FILE_T ) {
@@ -24,7 +24,7 @@ namespace irods {
     structured_object::structured_object( subFile_t& _sub ) :
         sub_file_path_( "" ),
         offset_( 0 ),
-        spec_coll_( 0 ),
+        spec_coll_( nullptr ),
         data_type_( "" ),
         opr_type_( 0 ) {
         // =-=-=-=-=-=-=-
@@ -57,7 +57,7 @@ namespace irods {
         file_object(),
         sub_file_path_( "" ),
         offset_( 0 ),
-        spec_coll_( 0 ),
+        spec_coll_( nullptr ),
         data_type_( "" ),
         opr_type_( 0 ) {
 
@@ -170,7 +170,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // found ourselves a plugin, fill in the properties
-        rodsServerHost_t* tmpRodsServerHost = 0;
+        rodsServerHost_t* tmpRodsServerHost = nullptr;
         int status = resolveHost( &addr_, &tmpRodsServerHost );
         if ( status < 0 ) {
             std::stringstream msg;

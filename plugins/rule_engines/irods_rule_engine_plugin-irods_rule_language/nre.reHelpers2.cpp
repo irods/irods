@@ -17,7 +17,7 @@ getNewVarName( char *v, msParamArray_t *msParamArray ) {
     sprintf( v, "*RNDVAR%i", staticVarNumber );
     staticVarNumber++;
 
-    while ( getMsParamByLabel( msParamArray, v ) != NULL ) {
+    while ( getMsParamByLabel( msParamArray, v ) != nullptr ) {
         sprintf( v, "*RNDVAR%i", staticVarNumber );
         staticVarNumber++;
     }

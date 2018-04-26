@@ -20,16 +20,16 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     char *remoteZoneOpr;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
-    *outParamArray = NULL;
-    if ( dataObjInp == NULL ) {
+    *outParamArray = nullptr;
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR, "rsDataObjRsync error. NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsyncMode = getValByKey( &dataObjInp->condInput, RSYNC_MODE_KW );
-    if ( rsyncMode == NULL ) {
+    if ( rsyncMode == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsDataObjRsync: RSYNC_MODE_KW input is missing" );
         return USER_RSYNC_NO_MODE_INPUT_ERR;
@@ -51,7 +51,7 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* source in a remote zone. try dest */
             destObjPath = getValByKey( &dataObjInp->condInput,
                                        RSYNC_DEST_PATH_KW );
-            if ( destObjPath == NULL ) {
+            if ( destObjPath == nullptr ) {
                 rodsLog( LOG_ERROR,
                          "rsDataObjRsync: RSYNC_DEST_PATH_KW input is missing for %s",
                          dataObjInp->objPath );
@@ -75,7 +75,7 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
-    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
                            rsComm, dataObjInp, hier );
@@ -129,13 +129,13 @@ rsDataObjRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 rsRsyncDataToFile( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
-    char *fileChksumStr = NULL;
-    char *dataObjChksumStr = NULL;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    char *fileChksumStr = nullptr;
+    char *dataObjChksumStr = nullptr;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
 
     fileChksumStr = getValByKey( &dataObjInp->condInput, RSYNC_CHKSUM_KW );
 
-    if ( fileChksumStr == NULL ) {
+    if ( fileChksumStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
                  dataObjInp->objPath );
@@ -172,7 +172,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     char * fileChksumStr = getValByKey( &dataObjInp->condInput, RSYNC_CHKSUM_KW );
 
-    if ( fileChksumStr == NULL ) {
+    if ( fileChksumStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing" );
         return CHKSUM_EMPTY_IN_STRUCT_ERR;
@@ -182,7 +182,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
-    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         std::string       hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
                            rsComm, dataObjInp, hier );
@@ -202,8 +202,8 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     } // if keyword
 
-    char *dataObjChksumStr = NULL;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    char *dataObjChksumStr = nullptr;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
     int status = _rsDataObjChksum( rsComm, dataObjInp, &dataObjChksumStr,
                                    &dataObjInfoHead );
 
@@ -218,7 +218,7 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     freeAllDataObjInfo( dataObjInfoHead );
-    if ( dataObjChksumStr != NULL &&
+    if ( dataObjChksumStr != nullptr &&
             strcmp( dataObjChksumStr, fileChksumStr ) == 0 ) {
         free( dataObjChksumStr );
         return 0;
@@ -230,17 +230,17 @@ rsRsyncFileToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 int
 rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
-    char *srcChksumStr = NULL;
-    char *destChksumStr = NULL;
+    char *srcChksumStr = nullptr;
+    char *destChksumStr = nullptr;
     dataObjCopyInp_t dataObjCopyInp;
     char *destObjPath;
-    transferStat_t *transStat = NULL;
+    transferStat_t *transStat = nullptr;
 
     /* always have the FORCE flag on */
     addKeyVal( &dataObjInp->condInput, FORCE_FLAG_KW, "" );
 
     destObjPath = getValByKey( &dataObjInp->condInput, RSYNC_DEST_PATH_KW );
-    if ( destObjPath == NULL ) {
+    if ( destObjPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsRsyncDataToData: RSYNC_DEST_PATH_KW input is missing for %s",
                  dataObjInp->objPath );
@@ -262,7 +262,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                               &srcChksumStr );
 
     if ( status < 0 &&
-            ( status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == NULL ) ) {
+            ( status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == nullptr ) ) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
          * cannot be registered. But the chksum value is OK.
          */
@@ -289,7 +289,7 @@ rsRsyncDataToData( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-    if ( destChksumStr != NULL && strcmp( srcChksumStr, destChksumStr ) == 0 ) {
+    if ( destChksumStr != nullptr && strcmp( srcChksumStr, destChksumStr ) == 0 ) {
         free( srcChksumStr );
         free( destChksumStr );
         clearKeyVal( &dataObjCopyInp.destDataObjInp.condInput );

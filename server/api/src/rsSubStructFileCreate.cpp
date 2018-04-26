@@ -44,7 +44,7 @@ remoteSubStructFileCreate( rsComm_t *rsComm, subFile_t *subFile,
     int fd;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileCreate: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

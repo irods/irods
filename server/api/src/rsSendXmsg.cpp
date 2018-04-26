@@ -14,14 +14,14 @@ extern xmsgQue_t XmsgQue;
 int
 rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     int status, i;
-    ticketMsgStruct_t *ticketMsgStruct = NULL;
+    ticketMsgStruct_t *ticketMsgStruct = nullptr;
     irodsXmsg_t *irodsXmsg;
     char *miscInfo;
 
     status = getTicketMsgStructByTicket( sendXmsgInp->ticket.rcvTicket,
                                          &ticketMsgStruct );
 
-    if ( status < 0 || NULL == ticketMsgStruct ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == ticketMsgStruct ) { // JMC cppcheck - nullptr
         clearSendXmsgInfo( &sendXmsgInp->sendXmsgInfo );
         return status;
     }
@@ -37,7 +37,7 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
 
     /* dropping and clearing a messageStream */
     miscInfo = sendXmsgInp->sendXmsgInfo.miscInfo;
-    if ( miscInfo != NULL && strlen( miscInfo ) > 0 ) {
+    if ( miscInfo != nullptr && strlen( miscInfo ) > 0 ) {
         if ( !strcmp( miscInfo, "CLEAR_STREAM" ) ) {
             i = clearAllXMessages( ticketMsgStruct );
             return i;
@@ -65,7 +65,7 @@ rsSendXmsg( rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp ) {
     irodsXmsg = ( irodsXmsg_t* )calloc( 1, sizeof( irodsXmsg_t ) );
     irodsXmsg->sendXmsgInfo = ( sendXmsgInfo_t* )calloc( 1, sizeof( sendXmsgInfo_t ) );
     *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
-    irodsXmsg->sendTime = time( 0 );
+    irodsXmsg->sendTime = time( nullptr );
     snprintf( irodsXmsg->sendUserName, NAME_LEN, "%s@%s", rsComm->clientUser.userName, rsComm->clientUser.rodsZone );
     rstrcpy( irodsXmsg->sendAddr, sendXmsgInp->sendAddr, NAME_LEN );
     status = addXmsgToQues( irodsXmsg,  ticketMsgStruct );

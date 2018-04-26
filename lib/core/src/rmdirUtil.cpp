@@ -81,7 +81,7 @@ int rmdirCollUtil( rcComm_t        *conn,
 int checkCollExists( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *collPath ) {
     int status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condStr[MAX_NAME_LEN];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -107,7 +107,7 @@ int checkCollExists( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *co
 int checkCollIsEmpty( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *collPath ) {
     int status;
     genQueryInp_t genQueryInp1, genQueryInp2;
-    genQueryOut_t *genQueryOut1 = NULL, *genQueryOut2 = NULL;
+    genQueryOut_t *genQueryOut1 = nullptr, *genQueryOut2 = nullptr;
     int noDataFound = 0;
     int noCollFound = 0;
     char condStr[MAX_NAME_LEN];

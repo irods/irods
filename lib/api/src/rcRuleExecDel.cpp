@@ -35,7 +35,7 @@ int
 rcRuleExecDel( rcComm_t *conn, ruleExecDelInp_t *ruleExecDelInp ) {
     int status;
     status = procApiRequest( conn, RULE_EXEC_DEL_AN, ruleExecDelInp,
-                             NULL, ( void ** ) NULL, NULL );
+                             nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

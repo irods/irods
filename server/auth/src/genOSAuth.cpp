@@ -17,7 +17,7 @@ main( int argc, char *argv[] ) {
 
     /* make sure the provided username matches what the OS thinks */
     char * username = getenv( OS_AUTH_ENV_USER );
-    if ( username == NULL ) {
+    if ( username == nullptr ) {
         if ( argc > 0 ) {
             /* probably means someone has run from command-line */
             printf( "%s is run through an iRODS library call, and probably won't do anything useful for you.\n",
@@ -58,7 +58,7 @@ main( int argc, char *argv[] ) {
     }
 
     /* read the key from the key file */
-    char * keybuf = NULL;
+    char * keybuf = nullptr;
     int key_len;
     if ( osauthGetKey( &keybuf, &key_len ) ) {
         printf( "Error retrieving key. Exiting." );

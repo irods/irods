@@ -26,7 +26,7 @@ rcFileRead( rcComm_t *conn, fileReadInp_t *fileReadInp,
     int status;
 
     status = procApiRequest( conn, FILE_READ_AN, fileReadInp,
-                             NULL, ( void ** ) NULL, fileReadOutBBuf );
+                             nullptr, ( void ** ) nullptr, fileReadOutBBuf );
 
     return status;
 }

@@ -16,7 +16,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     rodsPath_t *destPath, *srcPath;
     dataObjInp_t dataObjOprInp;
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -73,7 +73,7 @@ mcollUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 int
 initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                   dataObjInp_t *dataObjOprInp ) {
-    if ( dataObjOprInp == NULL ) {
+    if ( dataObjOprInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForReg: NULL dataObjOprInp input" );
         return USER__NULL_INPUT_ERR;
@@ -81,7 +81,7 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return USER_INPUT_OPTION_ERR;
     }
 
@@ -143,7 +143,7 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForReg: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -153,7 +153,7 @@ initCondForMcoll( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         addKeyVal( &dataObjOprInp->condInput, DEST_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }

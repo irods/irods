@@ -30,7 +30,7 @@
 int
 rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp ) {
     int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
 
@@ -67,14 +67,14 @@ _rsDataObjTruncate( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
     dataObjInfo_t *tmpDataObjInfo;
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         status = dataObjTruncateS( rsComm, dataObjTruncateInp, tmpDataObjInfo );
         if ( status < 0 ) {
             if ( retVal == 0 ) {
                 retVal = status;
             }
         }
-        if ( dataObjTruncateInp->specColl != NULL ) {  /* do only one */
+        if ( dataObjTruncateInp->specColl != nullptr ) {  /* do only one */
             break;
         }
         tmpDataObjInfo = tmpDataObjInfo->next;
@@ -114,7 +114,7 @@ int dataObjTruncateS( rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
         }
     }
 
-    if ( dataObjInfo->specColl == NULL ) {
+    if ( dataObjInfo->specColl == nullptr ) {
         /* reigister the new size */
 
         memset( &regParam, 0, sizeof( regParam ) );

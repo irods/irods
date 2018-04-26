@@ -36,7 +36,7 @@ sslStart( rcComm_t *rcComm ) {
     int status;
     sslStartInp_t sslStartInp;
 
-    if ( rcComm == NULL ) {
+    if ( rcComm == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -54,17 +54,17 @@ sslStart( rcComm_t *rcComm ) {
     }
 
     /* we have the go-ahead ... set up SSL on our side of the socket */
-    rcComm->ssl_ctx = sslInit( NULL, NULL );
-    if ( rcComm->ssl_ctx == NULL ) {
+    rcComm->ssl_ctx = sslInit( nullptr, nullptr );
+    if ( rcComm->ssl_ctx == nullptr ) {
         rodsLog( LOG_ERROR, "sslStart: couldn't initialize SSL context" );
         return SSL_INIT_ERROR;
     }
 
     rcComm->ssl = sslInitSocket( rcComm->ssl_ctx, rcComm->sock );
-    if ( rcComm->ssl == NULL ) {
+    if ( rcComm->ssl == nullptr ) {
         rodsLog( LOG_ERROR, "sslStart: couldn't initialize SSL socket" );
         SSL_CTX_free( rcComm->ssl_ctx );
-        rcComm->ssl_ctx = NULL;
+        rcComm->ssl_ctx = nullptr;
         return SSL_INIT_ERROR;
     }
 
@@ -72,9 +72,9 @@ sslStart( rcComm_t *rcComm ) {
     if ( status < 1 ) {
         sslLogError( "sslStart: error in SSL_connect" );
         SSL_free( rcComm->ssl );
-        rcComm->ssl = NULL;
+        rcComm->ssl = nullptr;
         SSL_CTX_free( rcComm->ssl_ctx );
-        rcComm->ssl_ctx = NULL;
+        rcComm->ssl_ctx = nullptr;
         return SSL_HANDSHAKE_ERROR;
     }
 
@@ -96,7 +96,7 @@ sslEnd( rcComm_t *rcComm ) {
     int status;
     sslEndInp_t sslEndInp;
 
-    if ( rcComm == NULL ) {
+    if ( rcComm == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -125,9 +125,9 @@ sslEnd( rcComm_t *rcComm ) {
 
     /* clean up the SSL state */
     SSL_free( rcComm->ssl );
-    rcComm->ssl = NULL;
+    rcComm->ssl = nullptr;
     SSL_CTX_free( rcComm->ssl_ctx );
-    rcComm->ssl_ctx = NULL;
+    rcComm->ssl_ctx = nullptr;
     rcComm->ssl_on = 0;
 
     snprintf( rcComm->negotiation_results, sizeof( rcComm->negotiation_results ),
@@ -154,7 +154,7 @@ sslAccept( rsComm_t *rsComm ) {
        keyfile passed through environment variables */
     rsComm->ssl_ctx = sslInit( env.irodsSSLCertificateChainFile,
                                env.irodsSSLCertificateKeyFile );
-    if ( rsComm->ssl_ctx == NULL ) {
+    if ( rsComm->ssl_ctx == nullptr ) {
         rodsLog( LOG_ERROR, "sslAccept: couldn't initialize SSL context" );
         return SSL_INIT_ERROR;
     }
@@ -163,15 +163,15 @@ sslAccept( rsComm_t *rsComm ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "sslAccept: error setting Diffie-Hellman parameters" );
         SSL_CTX_free( rsComm->ssl_ctx );
-        rsComm->ssl_ctx = NULL;
+        rsComm->ssl_ctx = nullptr;
         return SSL_INIT_ERROR;
     }
 
     rsComm->ssl = sslInitSocket( rsComm->ssl_ctx, rsComm->sock );
-    if ( rsComm->ssl == NULL ) {
+    if ( rsComm->ssl == nullptr ) {
         rodsLog( LOG_ERROR, "sslAccept: couldn't initialize SSL socket" );
         SSL_CTX_free( rsComm->ssl_ctx );
-        rsComm->ssl_ctx = NULL;
+        rsComm->ssl_ctx = nullptr;
         return SSL_INIT_ERROR;
     }
 
@@ -209,9 +209,9 @@ sslShutdown( rsComm_t *rsComm ) {
 
     /* clean up the SSL state */
     SSL_free( rsComm->ssl );
-    rsComm->ssl = NULL;
+    rsComm->ssl = nullptr;
     SSL_CTX_free( rsComm->ssl_ctx );
-    rsComm->ssl_ctx = NULL;
+    rsComm->ssl_ctx = nullptr;
     rsComm->ssl_on = 0;
 
     snprintf( rsComm->negotiation_results, sizeof( rsComm->negotiation_results ),
@@ -233,7 +233,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
     /* read the header length packet */
 
     nbytes = sslRead( sock, ( void * ) &myLen, sizeof( myLen ),
-                      NULL, tv, ssl );
+                      nullptr, tv, ssl );
     if ( nbytes != sizeof( myLen ) ) {
         if ( nbytes < 0 ) {
             status = nbytes - errno;
@@ -255,7 +255,7 @@ sslReadMsgHeader( int sock, msgHeader_t *myHeader, struct timeval *tv, SSL *ssl 
         return SYS_HEADER_READ_LEN_ERR;
     }
 
-    nbytes = sslRead( sock, ( void * ) tmpBuf, myLen, NULL, tv, ssl );
+    nbytes = sslRead( sock, ( void * ) tmpBuf, myLen, nullptr, tv, ssl );
 
     if ( nbytes != myLen ) {
         if ( nbytes < 0 ) {
@@ -299,28 +299,28 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
     int nbytes;
     int bytesRead;
 
-    if ( myHeader == NULL ) {
+    if ( myHeader == nullptr ) {
         return SYS_READ_MSG_BODY_INPUT_ERR;
     }
-    if ( inputStructBBuf != NULL ) {
+    if ( inputStructBBuf != nullptr ) {
         memset( inputStructBBuf, 0, sizeof( bytesBuf_t ) );
     }
 
     /* Don't memset bsBBuf because bsBBuf can be reused on the client side */
 
-    if ( errorBBuf != NULL ) {
+    if ( errorBBuf != nullptr ) {
         memset( errorBBuf, 0, sizeof( bytesBuf_t ) );
     }
 
     if ( myHeader->msgLen > 0 ) {
-        if ( inputStructBBuf == NULL ) {
+        if ( inputStructBBuf == nullptr ) {
             return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
         inputStructBBuf->buf = malloc( myHeader->msgLen );
 
         nbytes = sslRead( sock, inputStructBBuf->buf, myHeader->msgLen,
-                          NULL, tv, ssl );
+                          nullptr, tv, ssl );
 
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "received msg: \n%s\n", ( char * ) inputStructBBuf->buf );
@@ -337,14 +337,14 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
     }
 
     if ( myHeader->errorLen > 0 ) {
-        if ( errorBBuf == NULL ) {
+        if ( errorBBuf == nullptr ) {
             return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
         errorBBuf->buf = malloc( myHeader->errorLen );
 
         nbytes = sslRead( sock, errorBBuf->buf, myHeader->errorLen,
-                          NULL, tv, ssl );
+                          nullptr, tv, ssl );
 
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "received error msg: \n%s\n", ( char * ) errorBBuf->buf );
@@ -361,11 +361,11 @@ sslReadMsgBody( int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
     }
 
     if ( myHeader->bsLen > 0 ) {
-        if ( bsBBuf == NULL ) {
+        if ( bsBBuf == nullptr ) {
             return SYS_READ_MSG_BODY_INPUT_ERR;
         }
 
-        if ( bsBBuf->buf == NULL ) {
+        if ( bsBBuf->buf == nullptr ) {
             bsBBuf->buf = malloc( myHeader->bsLen );
         }
         else if ( myHeader->bsLen > bsBBuf->len ) {
@@ -394,7 +394,7 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
     int nbytes;
     int status;
     int myLen;
-    bytesBuf_t *headerBBuf = NULL;
+    bytesBuf_t *headerBBuf = nullptr;
 
     /* always use XML_PROT for the Header */
     status = packStruct( ( void * ) myHeader, &headerBBuf,
@@ -413,7 +413,7 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
 
     myLen = htonl( headerBBuf->len );
 
-    nbytes = sslWrite( ( void * ) &myLen, sizeof( myLen ), NULL, ssl );
+    nbytes = sslWrite( ( void * ) &myLen, sizeof( myLen ), nullptr, ssl );
 
     if ( nbytes != sizeof( myLen ) ) {
         rodsLog( LOG_ERROR,
@@ -425,7 +425,7 @@ sslWriteMsgHeader( msgHeader_t *myHeader, SSL *ssl ) {
 
     /* now send the header */
 
-    nbytes = sslWrite( headerBBuf->buf, headerBBuf->len, NULL, ssl );
+    nbytes = sslWrite( headerBBuf->buf, headerBBuf->len, nullptr, ssl );
 
     if ( headerBBuf->len != nbytes ) {
         rodsLog( LOG_ERROR,
@@ -470,7 +470,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
         if ( irodsProt == XML_PROT && getRodsLogLevel() >= LOG_DEBUG8 ) {
             printf( "sending msg: \n%s\n", ( char * ) msgBBuf->buf );
         }
-        status = sslWrite( msgBBuf->buf, msgBBuf->len, NULL, ssl );
+        status = sslWrite( msgBBuf->buf, msgBBuf->len, nullptr, ssl );
         if ( status < 0 ) {
             return status;
         }
@@ -481,7 +481,7 @@ sslSendRodsMsg( char *msgType, bytesBuf_t *msgBBuf,
             printf( "sending error msg: \n%s\n", ( char * ) errorBBuf->buf );
         }
         status = sslWrite( errorBBuf->buf, errorBBuf->len,
-                           NULL, ssl );
+                           nullptr, ssl );
         if ( status < 0 ) {
             return status;
         }
@@ -506,20 +506,20 @@ sslRead( int sock, void *buf, int len,
     fd_set set;
     FD_ZERO( &set );
     FD_SET( sock, &set );
-    if ( tv != NULL ) {
+    if ( tv != nullptr ) {
         timeout = *tv;
     }
 
     int toRead = len;
     char *tmpPtr = ( char * ) buf;
 
-    if ( bytesRead != NULL ) {
+    if ( bytesRead != nullptr ) {
         *bytesRead = 0;
     }
 
     while ( toRead > 0 ) {
-        if ( SSL_pending( ssl ) == 0 && tv != NULL ) {
-            const int status = select( sock + 1, &set, NULL, NULL, &timeout );
+        if ( SSL_pending( ssl ) == 0 && tv != nullptr ) {
+            const int status = select( sock + 1, &set, nullptr, nullptr, &timeout );
             if ( status == 0 ) {
                 /* timedout */
                 if ( len - toRead > 0 ) {
@@ -552,7 +552,7 @@ sslRead( int sock, void *buf, int len,
 
         toRead -= nbytes;
         tmpPtr += nbytes;
-        if ( bytesRead != NULL ) {
+        if ( bytesRead != nullptr ) {
             *bytesRead += nbytes;
         }
     }
@@ -569,7 +569,7 @@ sslWrite( void *buf, int len,
     toWrite = len;
     tmpPtr = ( char * ) buf;
 
-    if ( bytesWritten != NULL ) {
+    if ( bytesWritten != nullptr ) {
         *bytesWritten = 0;
     }
 
@@ -587,7 +587,7 @@ sslWrite( void *buf, int len,
         }
         toWrite -= nbytes;
         tmpPtr += nbytes;
-        if ( bytesWritten != NULL ) {
+        if ( bytesWritten != nullptr ) {
             *bytesWritten += nbytes;
         }
     }
@@ -607,7 +607,7 @@ sslInit( char *certfile, char *keyfile ) {
             LOG_ERROR,
             "sslInit - failed in getRodsEnv : %d",
             status );
-        return NULL;
+        return nullptr;
 
     }
 
@@ -630,20 +630,20 @@ sslInit( char *certfile, char *keyfile ) {
         if ( SSL_CTX_use_certificate_chain_file( ctx, certfile ) != 1 ) {
             sslLogError( "sslInit: couldn't read certificate chain file" );
             SSL_CTX_free( ctx );
-            return NULL;
+            return nullptr;
         }
         else {
             if ( SSL_CTX_use_PrivateKey_file( ctx, keyfile, SSL_FILETYPE_PEM ) != 1 ) {
                 sslLogError( "sslInit: couldn't read key file" );
                 SSL_CTX_free( ctx );
-                return NULL;
+                return nullptr;
             }
         }
     }
 
     /* set up CA paths and files here */
-    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : NULL;
-    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : NULL;
+    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : nullptr;
+    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : nullptr;
     if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             sslLogError( "sslInit: error loading CA certificate locations" );
@@ -671,7 +671,7 @@ sslInit( char *certfile, char *keyfile ) {
     if ( SSL_CTX_set_cipher_list( ctx, SSL_CIPHER_LIST ) != 1 ) {
         sslLogError( "sslInit: couldn't set the cipher list (no valid ciphers)" );
         SSL_CTX_free( ctx );
-        return NULL;
+        return nullptr;
     }
 
     return ctx;
@@ -683,15 +683,15 @@ sslInitSocket( SSL_CTX *ctx, int sock ) {
     BIO *bio;
 
     bio = BIO_new_socket( sock, BIO_NOCLOSE );
-    if ( bio == NULL ) {
+    if ( bio == nullptr ) {
         sslLogError( "sslInitSocket: BIO allocation error" );
-        return NULL;
+        return nullptr;
     }
     ssl = SSL_new( ctx );
-    if ( ssl == NULL ) {
+    if ( ssl == nullptr ) {
         sslLogError( "sslInitSocket: couldn't create a new SSL socket" );
         BIO_free( bio );
-        return NULL;
+        return nullptr;
     }
     SSL_set_bio( ssl, bio, bio );
 
@@ -751,13 +751,13 @@ get_dh2048() {
     auto *dh = DH_new();
 
     if ( !dh ) {
-        return NULL;
+        return nullptr;
     }
-    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
-    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
+    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), nullptr );
+    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), nullptr );
     if ( !p || !g ) {
         DH_free( dh );
-        return NULL;
+        return nullptr;
     }
     DH_set0_pqg(dh, p, nullptr, g);
     return dh;
@@ -765,21 +765,21 @@ get_dh2048() {
 
 static int
 sslLoadDHParams( SSL_CTX *ctx, char *file ) {
-    DH *dhparams = NULL;
+    DH *dhparams = nullptr;
     BIO *bio;
 
     if ( file ) {
         bio = BIO_new_file( file, "r" );
         if ( bio ) {
-            dhparams = PEM_read_bio_DHparams( bio, NULL, NULL, NULL );
+            dhparams = PEM_read_bio_DHparams( bio, nullptr, nullptr, nullptr );
             BIO_free( bio );
         }
     }
 
-    if ( dhparams == NULL ) {
+    if ( dhparams == nullptr ) {
         sslLogError( "sslLoadDHParams: can't load DH parameter file. Falling back to built-ins." );
         dhparams = get_dh2048();
-        if ( dhparams == NULL ) {
+        if ( dhparams == nullptr ) {
             rodsLog( LOG_ERROR, "sslLoadDHParams: can't load built-in DH params" );
             return -1;
         }
@@ -838,12 +838,12 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
     }
 
     auto* cert = SSL_get_peer_certificate( ssl );
-    if ( cert == NULL ) {
+    if ( cert == nullptr ) {
         /* no certificate presented */
         return 0;
     }
 
-    if ( peer == NULL ) {
+    if ( peer == nullptr ) {
         /* no hostname passed to verify */
         X509_free( cert );
         return 0;
@@ -851,7 +851,7 @@ sslPostConnectionCheck( SSL *ssl, char *peer ) {
 
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
-    auto names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL ));
+    auto names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, nullptr, NULL ));
     std::size_t num_names = sk_GENERAL_NAME_num( names );
     for ( std::size_t i = 0; i < num_names; i++ ) {
         auto* name = sk_GENERAL_NAME_value( names, i );

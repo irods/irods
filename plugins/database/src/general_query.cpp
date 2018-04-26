@@ -225,7 +225,7 @@ tablePresent( char *table, char *sqlText ) {
         printf( "tablePresent sqlText:%s:\n", sqlText );
     }
 
-    if ( strstr( sqlText, table ) == NULL ) {
+    if ( strstr( sqlText, table ) == nullptr ) {
         if ( debug > 1 ) {
             printf( "tablePresent return 0 (simple)\n" );
         }
@@ -262,7 +262,7 @@ tablePresent( char *table, char *sqlText ) {
     cp1 = sqlText;
     for ( ;; ) {
         cp2 = strstr( cp1, table );
-        if ( cp2 == NULL ) {
+        if ( cp2 == nullptr ) {
             return 0;
         }
         tokens = 0;
@@ -738,37 +738,37 @@ handleMultiDataAVUConditions( int nConditions ) {
        r_data_meta_mnNN.meta_attr_name, where NN is index.  First one
        is OK, subsequent ones need a new name for each. */
     firstItem = strstr( whereSQL, "r_data_meta_main.meta_attr_name" );
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'x'; /* temporarily change 1st string */
     }
     for ( i = 2; i <= nConditions; i++ ) {
         nextItem = strstr( whereSQL, "r_data_meta_main.meta_attr_name" );
-        if ( nextItem != NULL ) {
+        if ( nextItem != nullptr ) {
             snprintf( nextStr, sizeof nextStr, "n%2.2d", i );
             *( nextItem + 13 ) = nextStr[0]; /* replace "ain" in main */
             *( nextItem + 14 ) = nextStr[1]; /* with nNN */
             *( nextItem + 15 ) = nextStr[2];
         }
     }
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'r'; /* put it back */
     }
 
     /* Do similar for r_data_meta_main.meta_attr_value.  */
     firstItem = strstr( whereSQL, "r_data_meta_main.meta_attr_value" );
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'x'; /* temporarily change 1st string */
     }
     for ( i = 2; i <= nConditions; i++ ) {
         nextItem = strstr( whereSQL, "r_data_meta_main.meta_attr_value" );
-        if ( nextItem != NULL ) {
+        if ( nextItem != nullptr ) {
             snprintf( nextStr, sizeof nextStr, "n%2.2d", i );
             *( nextItem + 13 ) = nextStr[0]; /* replace "ain" in main */
             *( nextItem + 14 ) = nextStr[1]; /* with nNN */
             *( nextItem + 15 ) = nextStr[2];
         }
     }
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'r'; /* put it back */
     }
 
@@ -811,37 +811,37 @@ handleMultiCollAVUConditions( int nConditions ) {
        r_coll_meta_mnNN.meta_attr_name, where NN is index.  First one
        is OK, subsequent ones need a new name for each. */
     firstItem = strstr( whereSQL, "r_coll_meta_main.meta_attr_name" );
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'x'; /* temporarily change 1st string */
     }
     for ( i = 2; i <= nConditions; i++ ) {
         nextItem = strstr( whereSQL, "r_coll_meta_main.meta_attr_name" );
-        if ( nextItem != NULL ) {
+        if ( nextItem != nullptr ) {
             snprintf( nextStr, sizeof nextStr, "n%2.2d", i );
             *( nextItem + 13 ) = nextStr[0]; /* replace "ain" in main */
             *( nextItem + 14 ) = nextStr[1]; /* with nNN */
             *( nextItem + 15 ) = nextStr[2];
         }
     }
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'r'; /* put it back */
     }
 
     /* Do similar for r_coll_meta_main.meta_attr_value.  */
     firstItem = strstr( whereSQL, "r_coll_meta_main.meta_attr_value" );
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'x'; /* temporarily change 1st string */
     }
     for ( i = 2; i <= nConditions; i++ ) {
         nextItem = strstr( whereSQL, "r_coll_meta_main.meta_attr_value" );
-        if ( nextItem != NULL ) {
+        if ( nextItem != nullptr ) {
             snprintf( nextStr, sizeof nextStr, "n%2.2d", i );
             *( nextItem + 13 ) = nextStr[0]; /* replace "ain" in main */
             *( nextItem + 14 ) = nextStr[1]; /* with nNN */
             *( nextItem + 15 ) = nextStr[2];
         }
     }
-    if ( firstItem != NULL ) {
+    if ( firstItem != nullptr ) {
         *firstItem = 'r'; /* put it back */
     }
 
@@ -886,8 +886,8 @@ compoundConditionSpecified( char *condition ) {
     char *cptr;
 
     /* Simple case, not in the condition at all */
-    if ( strstr( condition, "||" ) == NULL &&
-            strstr( condition, "&&" ) == NULL ) {
+    if ( strstr( condition, "||" ) == nullptr &&
+            strstr( condition, "&&" ) == nullptr ) {
         return 0;
     }
 
@@ -909,8 +909,8 @@ compoundConditionSpecified( char *condition ) {
     }
 
     /* And now test again */
-    if ( strstr( myCondition, "||" ) == NULL &&
-            strstr( myCondition, "&&" ) == NULL ) {
+    if ( strstr( myCondition, "||" ) == nullptr &&
+            strstr( myCondition, "&&" ) == nullptr ) {
         return 0;
     }
     return 1;
@@ -962,13 +962,13 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
 
         char* orptr = strstr( condPart1, "||" );
         char* andptr = strstr( condPart1, "&&" );
-        char *cptr = NULL;
+        char *cptr = nullptr;
         int type = 0;
-        if ( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
+        if ( orptr != nullptr && ( andptr == nullptr || orptr < andptr ) ) {
             cptr = orptr;
             type = 1;
         }
-        else if ( andptr != NULL && ( orptr == NULL || andptr < orptr ) ) {
+        else if ( andptr != nullptr && ( orptr == nullptr || andptr < orptr ) ) {
             cptr = andptr;
             type = 2;
         }
@@ -1115,43 +1115,43 @@ checkCondition( char *condition ) {
         }
     }
     cp = strstr( tmpStr, "begin_of" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 8 );
     }
     cp = strstr( tmpStr, "parent_of" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 9 );
     }
     cp = strstr( tmpStr, "not" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 3 );
     }
     cp = strstr( tmpStr, "NOT" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 3 );
     }
     cp = strstr( tmpStr, "between" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 7 );
     }
     cp = strstr( tmpStr, "BETWEEN" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 7 );
     }
     cp = strstr( tmpStr, "like" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 4 );
     }
     cp = strstr( tmpStr, "LIKE" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 4 );
     }
     cp = strstr( tmpStr, "in" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 2 );
     }
     cp = strstr( tmpStr, "IN" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         setBlank( cp, 2 );
     }
 
@@ -1358,26 +1358,26 @@ insertWhere( char *condition, int option ) {
     }
 
     cp = strstr( condition, "in" );
-    if ( cp == NULL ) {
+    if ( cp == nullptr ) {
         cp = strstr( condition, "IN" );
     }
-    if ( cp != NULL && cp == condStart ) {
+    if ( cp != nullptr && cp == condStart ) {
         return addInClauseToWhereForIn( condition, 0 );
     }
 
     cp = strstr( condition, "between" );
-    if ( cp == NULL ) {
+    if ( cp == nullptr ) {
         cp = strstr( condition, "BETWEEN" );
     }
-    if ( cp != NULL && cp == condStart ) {
+    if ( cp != nullptr && cp == condStart ) {
         return addBetweenClauseToWhere( condition );
     }
 
-    cpFirstQuote = 0;
-    cpSecondQuote = 0;
+    cpFirstQuote = nullptr;
+    cpSecondQuote = nullptr;
     for ( cp1 = condition; *cp1 != '\0'; cp1++ ) {
         if ( *cp1 == '\'' ) {
-            if ( cpFirstQuote == 0 ) {
+            if ( cpFirstQuote == nullptr ) {
                 cpFirstQuote = cp1;
             }
             else {
@@ -1399,7 +1399,7 @@ insertWhere( char *condition, int option ) {
     }
     bindIx++;
     thisBindVar = ( char* )&bindVars[bindIx];
-    if ( cpFirstQuote == 0 || cpSecondQuote == 0 ) {
+    if ( cpFirstQuote == nullptr || cpSecondQuote == nullptr ) {
         return CAT_INVALID_ARGUMENT;
     }
     if ( ( cpSecondQuote - cpFirstQuote ) + bindIx > MAX_SQL_SIZE_GQ + 90 ) {
@@ -1435,7 +1435,7 @@ insertWhere( char *condition, int option ) {
     }
 
     cp = strstr( myCondition, "begin_of" );
-    if ( cp != NULL ) {
+    if ( cp != nullptr ) {
         char tmpStr2[MAX_SQL_SIZE_GQ];
         cp1 = whereSQL + strlen( whereSQL ) - 1;
         while ( *cp1 != ' ' ) {
@@ -1461,7 +1461,7 @@ insertWhere( char *condition, int option ) {
     }
     else {
         cp = strstr( myCondition, "parent_of" );
-        if ( cp != NULL ) {
+        if ( cp != nullptr ) {
             /* New version to replace begin_of in a call from
                    rsObjStat.c, as suggested by Andy Salnikov; add an IN
                    clause with each of the possible parent collection names;
@@ -1514,8 +1514,8 @@ genqAppendAccessCheck() {
 
     /* First, in all cases (non-admin), check on ticket_string
        and, if present, restrict to the owner */
-    if ( strstr( selectSQL, "ticket_string" ) != NULL &&
-            strstr( selectSQL, "R_TICKET_MAIN" ) != NULL ) {
+    if ( strstr( selectSQL, "ticket_string" ) != nullptr &&
+            strstr( selectSQL, "R_TICKET_MAIN" ) != nullptr ) {
         if ( strlen( whereSQL ) > 6 ) {
             if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
@@ -1531,8 +1531,8 @@ genqAppendAccessCheck() {
     if ( sessionTicket[0] == '\0' ) {
         /* Normal access control */
 
-        if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
-                strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
+        if ( strstr( selectSQL, "R_DATA_MAIN" ) != nullptr ||
+                strstr( whereSQL, "R_DATA_MAIN" ) != nullptr ) {
             if ( strlen( whereSQL ) > 6 ) {
                 if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
@@ -1542,8 +1542,8 @@ genqAppendAccessCheck() {
             if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
         
-        if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
-                strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
+        if ( strstr( selectSQL, "R_COLL_MAIN" ) != nullptr ||
+                strstr( whereSQL, "R_COLL_MAIN" ) != nullptr ) {
             if ( strlen( whereSQL ) > 6 ) {
                 if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
@@ -1556,8 +1556,8 @@ genqAppendAccessCheck() {
     else {
         /* Ticket-based access control */
 
-        if ( strstr( selectSQL, "R_DATA_MAIN" ) != NULL ||
-                strstr( whereSQL, "R_DATA_MAIN" ) != NULL ) {
+        if ( strstr( selectSQL, "R_DATA_MAIN" ) != nullptr ||
+                strstr( whereSQL, "R_DATA_MAIN" ) != nullptr ) {
             if ( strlen( whereSQL ) > 6 ) {
                 if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
             }
@@ -1570,8 +1570,8 @@ genqAppendAccessCheck() {
         }
 
         if ( !ticketAlreadyChecked ) {
-            if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
-                strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
+            if ( strstr( selectSQL, "R_COLL_MAIN" ) != nullptr ||
+                strstr( whereSQL, "R_COLL_MAIN" ) != nullptr ) {
                 if ( strlen( whereSQL ) > 6 ) {
                     if ( !rstrcat( whereSQL, " AND ", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
                 }
@@ -2122,7 +2122,7 @@ int chl_gen_query_access_control_setup_impl(
     const char *host,
     int priv,
     int controlFlag ) {
-    if ( user != NULL ) {
+    if ( user != nullptr ) {
         if ( !rstrcpy( accessControlUserName, user, MAX_NAME_LEN ) ) {
             return USER_STRLEN_TOOLONG;
         }
@@ -2188,7 +2188,7 @@ int chl_gen_query_access_control_setup_impl(
         rodsLog( LOG_SQL, "chlGenQuery" );
     }
 
-    icatSessionStruct *icss = 0;
+    icatSessionStruct *icss = nullptr;
 
     result->attriCnt = 0;
     result->rowCnt = 0;
@@ -2197,7 +2197,7 @@ int chl_gen_query_access_control_setup_impl(
     currentMaxColSize = 0;
 
     status = chlGetRcs( &icss );
-    if ( status < 0 || icss == NULL ) {
+    if ( status < 0 || icss == nullptr ) {
         return CAT_NOT_OPEN;
     }
     if ( debug ) {
@@ -2374,7 +2374,7 @@ int chl_gen_query_access_control_setup_impl(
             totalLen = attriTextLen * genQueryInp.maxRows;
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char* )malloc( totalLen );
-                if ( tResult == NULL ) {
+                if ( tResult == nullptr ) {
                     return SYS_MALLOC_ERR;
                 }
                 memset( tResult, 0, totalLen );
@@ -2408,7 +2408,7 @@ int chl_gen_query_access_control_setup_impl(
                 char *cp1, *cp2;
                 int k;
                 tResult = ( char* )malloc( totalLen );
-                if ( tResult == NULL ) {
+                if ( tResult == nullptr ) {
                     return SYS_MALLOC_ERR;
                 }
                 memset( tResult, 0, totalLen );

@@ -22,7 +22,7 @@ rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
     *outXmsgTicketInfo = ( xmsgTicketInfo_t* )calloc( 1, sizeof( xmsgTicketInfo_t ) );
 
     /**    (*outXmsgTicketInfo)->sendTicket = random(); **/
-    thisTime = time( NULL );
+    thisTime = time( nullptr );
     inpExpireTime = getXmsgTicketInp->expireTime;
     if ( inpExpireTime > 0 ) {
         if ( inpExpireTime - thisTime > MAX_EXPIRE_INT ) {
@@ -52,7 +52,7 @@ rsGetXmsgTicket( rsComm_t*, getXmsgTicketInp_t *getXmsgTicketInp,
 
     if ( status < 0 ) {
         free( *outXmsgTicketInfo );
-        *outXmsgTicketInfo = NULL;
+        *outXmsgTicketInfo = nullptr;
     }
 
     return status;

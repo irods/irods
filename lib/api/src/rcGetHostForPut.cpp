@@ -44,8 +44,8 @@ int
 rcGetHostForPut( rcComm_t *conn, dataObjInp_t *dataObjInp,
                  char **outHost ) {
     int status;
-    status = procApiRequest( conn, GET_HOST_FOR_PUT_AN,  dataObjInp, NULL,
-                             ( void ** ) outHost, NULL );
+    status = procApiRequest( conn, GET_HOST_FOR_PUT_AN,  dataObjInp, nullptr,
+                             ( void ** ) outHost, nullptr );
 
     return status;
 }

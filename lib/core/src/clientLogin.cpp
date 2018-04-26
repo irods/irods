@@ -75,7 +75,7 @@ int printError( rcComm_t *Conn, int status, char *routineName ) {
             }
         }
     }
-    char *mySubName = NULL;
+    char *mySubName = nullptr;
     const char *myName = rodsErrorName( status, &mySubName );
     fprintf( stderr, "%s failed with error %d %s %s\n", routineName,
              status, myName, mySubName );
@@ -90,7 +90,7 @@ int clientLoginPam( rcComm_t* Conn,
     using namespace boost::filesystem;
     int status = 0;
     pamAuthRequestInp_t pamAuthReqInp;
-    pamAuthRequestOut_t *pamAuthReqOut = NULL;
+    pamAuthRequestOut_t *pamAuthReqOut = nullptr;
     int doStty = 0;
     int len = 0;
     char myPassword[MAX_PASSWORD_LEN + 2];
@@ -108,7 +108,7 @@ int clientLoginPam( rcComm_t* Conn,
             doStty = 1;
         }
         printf( "Enter your current PAM (system) password:" );
-        if ( NULL == fgets( myPassword, sizeof( myPassword ), stdin ) ) {
+        if ( nullptr == fgets( myPassword, sizeof( myPassword ), stdin ) ) {
             // end of line reached or no input
         }
         if ( doStty ) {
@@ -293,7 +293,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // call client side init
-    ret = auth_plugin->call <rcComm_t*, const char* > ( NULL, irods::AUTH_CLIENT_START, auth_obj, _comm, _context );
+    ret = auth_plugin->call <rcComm_t*, const char* > ( nullptr, irods::AUTH_CLIENT_START, auth_obj, _comm, _context );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -301,7 +301,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // send an authentication request to the server
-    ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
+    ret = auth_plugin->call <rcComm_t* > ( nullptr, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
     if ( !ret.ok() ) {
         printError(
             _comm,
@@ -312,7 +312,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // establish auth context client side
-    ret = auth_plugin->call( NULL, irods::AUTH_ESTABLISH_CONTEXT, auth_obj );
+    ret = auth_plugin->call( nullptr, irods::AUTH_ESTABLISH_CONTEXT, auth_obj );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -320,7 +320,7 @@ int clientLogin(
 
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
-    ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_RESPONSE, auth_obj, _comm );
+    ret = auth_plugin->call <rcComm_t* > ( nullptr, irods::AUTH_CLIENT_AUTH_RESPONSE, auth_obj, _comm );
     if ( !ret.ok() ) {
         printError(
             _comm,
@@ -342,7 +342,7 @@ int clientLogin(
 int
 clientLoginWithPassword( rcComm_t *Conn, char* password ) {
     int status, len, i = 0;
-    authRequestOut_t *authReqOut = NULL;
+    authRequestOut_t *authReqOut = nullptr;
     authResponseInp_t authRespIn;
     char md5Buf[CHALLENGE_LEN + MAX_PASSWORD_LEN + 2];
     char digest[RESPONSE_LEN + 2];
@@ -358,7 +358,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
         return 0;
     }
     status = rcAuthRequest( Conn, &authReqOut );
-    if ( status || NULL == authReqOut ) { // JMC cppcheck - nullptr
+    if ( status || nullptr == authReqOut ) { // JMC cppcheck - nullptr
         printError( Conn, status, "rcAuthRequest" );
         return status;
     }
@@ -384,7 +384,7 @@ clientLoginWithPassword( rcComm_t *Conn, char* password ) {
 
     /* free the array and structure allocated by the rcAuthRequest */
     //if (authReqOut != NULL) { // JMC cppcheck - redundant nullptr check
-    if ( authReqOut->challenge != NULL ) {
+    if ( authReqOut->challenge != nullptr ) {
         free( authReqOut->challenge );
     }
     free( authReqOut );

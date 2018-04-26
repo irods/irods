@@ -69,7 +69,7 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
         re_dir.c_str(),
         NARA_META_DATA_FILE );
 
-    if ( ( fp = fopen( metafile, "r" ) ) == NULL ) {
+    if ( ( fp = fopen( metafile, "r" ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiExtractNaraMetadata: Cannot open the metadata file %s.", metafile );
         return UNIX_FILE_OPEN_ERR;
@@ -83,7 +83,7 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
         flag = 0;
         if ( fgets( str, 500, fp ) ) {
             substring = strtok( str, "|" );
-            while ( substring != NULL ) {
+            while ( substring != nullptr ) {
                 if ( flag == 0 && strcmp( substring, rei->doi->objPath ) == 0 ) {
                     flag = 2;
                 }
@@ -115,7 +115,7 @@ msiExtractNaraMetadata( ruleExecInfo_t *rei ) {
                     }
                     rodsLog( LOG_DEBUG, "msiExtractNaraMetadata: %s:%s", attr, value );
                 }
-                substring = strtok( NULL, "|" );
+                substring = strtok( nullptr, "|" );
                 counter++;
             }
         }

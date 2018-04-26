@@ -73,8 +73,8 @@ int
 rcDataObjTrim( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
 
-    status = procApiRequest( conn, DATA_OBJ_TRIM_AN,  dataObjInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, DATA_OBJ_TRIM_AN,  dataObjInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

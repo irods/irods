@@ -45,8 +45,8 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     generalAdminInp_t generalAdminInp1, generalAdminInp2;
     genQueryInp_t genQueryInp;
 
-    genQueryOut_t *genQueryOut = NULL;
-    time_t tps = time( NULL );
+    genQueryOut_t *genQueryOut = nullptr;
+    time_t tps = time( nullptr );
     struct tm *now = localtime( &tps );
 
     /* a quick test in order to see if the resource is up or down (needed to update the "status" metadata) */
@@ -119,7 +119,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
 #endif
         /* append to the output log file */
         FILE *foutput = fopen( fname, "a" );
-        if ( foutput != NULL ) {
+        if ( foutput != nullptr ) {
             fprintf( foutput, "time=%ji %s", ( intmax_t )timestamp, msg );
             // fclose(foutput); // JMC cppcheck - nullptr // cannot close it here. it is used later - hcj
         }
@@ -139,7 +139,7 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
 #ifndef windows_platform
         pthread_mutex_unlock( &my_mutex );
 #endif
-        if ( foutput != NULL ) {
+        if ( foutput != nullptr ) {
             if ( rc1 != 0 ) {
                 fprintf( foutput, "time=%ji : unable to insert the entries for server %s into the iCAT\n",
                          ( intmax_t )timestamp, serverName );
@@ -170,7 +170,7 @@ int getListOfResc( rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], i
      ***********************************************************/
     int i, j, k, index[MAX_NSERVERS], l, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condStr[MAX_NAME_LEN];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
@@ -255,8 +255,8 @@ void *startMonScript( void *arg ) {
 
     thrInp_t *tinput = ( thrInp_t* )arg;
 #ifndef windows_platform
-    pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, NULL );
-    pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
+    pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, nullptr );
+    pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, nullptr );
 #endif
     fillStrInMsParam( &msp1, tinput->cmd );
     fillStrInMsParam( &msp2, tinput->cmdArgv );
@@ -281,7 +281,7 @@ void *startMonScript( void *arg ) {
 
     /* if (&msout != NULL) { */
     /* write into the irodsMonPerf log file */
-    if ( ( char * )( *( ( execCmdOut_t * ) msout.inOutStruct ) ).stdoutBuf.buf != NULL ) {
+    if ( ( char * )( *( ( execCmdOut_t * ) msout.inOutStruct ) ).stdoutBuf.buf != nullptr ) {
         output = ( char * )( *( ( execCmdOut_t * ) msout.inOutStruct ) ).stdoutBuf.buf;
         rodsMonPerfLog( tinput->execAddr, tinput->rescName, output, &( tinput->rei ) );
     }
@@ -473,7 +473,7 @@ int msiCheckHostAccessControl( ruleExecInfo_t *rei ) {
     char condstr[MAX_NAME_LEN];
     int i, rc, status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     rsComm_t *rsComm;
 
     RE_TEST_MACRO( "    Calling msiCheckHostAccessControl" )
@@ -586,7 +586,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     rsComm = rei->rsComm;
 
     std::stringstream valinit_stream;
-    if ( verb->inOutStruct != NULL ) {
+    if ( verb->inOutStruct != nullptr ) {
         verbosity = ( char * ) verb->inOutStruct;
         if ( strcmp( verbosity, "verbose" ) == 0 ) {
             valinit_stream << "-v ";
@@ -611,9 +611,9 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     nresc = 0;
 
     nservers = -1;  /* nservers = -1, no config file available, consider all resources for the monitoring */
-    if ( ( filein = fopen( MON_CFG_FILE, "r" ) ) != NULL ) {
+    if ( ( filein = fopen( MON_CFG_FILE, "r" ) ) != nullptr ) {
         i = 0;
-        while ( fgets( line, sizeof line, filein ) != NULL ) { /* for each line of the file */
+        while ( fgets( line, sizeof line, filein ) != nullptr ) { /* for each line of the file */
             /* if begin of line = # => ignore */
             if ( line[0] != '#' ) {
                 std::vector<std::string> tokens;
@@ -639,7 +639,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
     strcpy( cmd, MON_PERF_SCRIPT );
 #ifndef windows_platform
     pthread_t *threads = ( pthread_t* )malloc( sizeof( pthread_t ) * nresc );
-    pthread_mutex_init( &my_mutex, NULL );
+    pthread_mutex_init( &my_mutex, nullptr );
 #endif
     thrInput = ( thrInp_t* )malloc( sizeof( thrInp_t ) * nresc );
     thrCount = 0;
@@ -686,7 +686,7 @@ int msiServerMonPerf( msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei ) {
 
     for ( i = 0; i < thrCount; i++ ) {
 #ifndef windows_platform
-        if ( pthread_create( &threads[i], NULL, *startMonScript, ( void * ) &thrInput[i] ) < 0 ) {
+        if ( pthread_create( &threads[i], nullptr, *startMonScript, ( void * ) &thrInput[i] ) < 0 ) {
             rodsLog( LOG_ERROR, "msiServerMonPerf: pthread_create error\n" );
             exit( 1 );
         }
@@ -782,14 +782,14 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
 
     defaultTimespan = 24;  /* in hours */
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiFlushMonStat: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     rsComm = rei->rsComm;
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: input Param1 is NULL" );
         return rei->status;
@@ -805,7 +805,7 @@ int msiFlushMonStat( msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
         return rei->status;
     }
 
-    if ( inpParam2 == NULL ) {
+    if ( inpParam2 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiFlushMonStat: input Param2 is NULL" );
         return rei->status;
@@ -911,11 +911,11 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
     rsComm_t *rsComm;
     generalRowInsertInp_t generalRowInsertInp;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
 
     RE_TEST_MACRO( "    Calling msiDigestMonStat" );
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDigestMonStat: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -923,8 +923,8 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
 
     rsComm = rei->rsComm;
 
-    if ( cpu_wght == NULL || mem_wght == NULL || swap_wght == NULL || runq_wght == NULL
-            || disk_wght == NULL || netin_wght == NULL || netout_wght == NULL ) {
+    if ( cpu_wght == nullptr || mem_wght == nullptr || swap_wght == nullptr || runq_wght == nullptr
+            || disk_wght == nullptr || netin_wght == nullptr || netout_wght == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDigestMonStat: at least one of the input param is NULL" );
         return rei->status;
@@ -1010,7 +1010,7 @@ int msiDigestMonStat( msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_
     addInxIval( &genQueryInp.selectInp, COL_SL_CREATE_TIME, SELECT_MAX );
     genQueryInp.maxRows = MAX_SQL_ROWS;
     status =  rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    if ( NULL == genQueryOut ) { // JMC cppcheck - nullptr
+    if ( nullptr == genQueryOut ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "msiDigestMonStat :: &genQueryOut is NULL" );
         return rei->status;
     }

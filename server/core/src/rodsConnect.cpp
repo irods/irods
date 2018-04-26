@@ -88,7 +88,7 @@ int
 getRcatHost( int rcatType, const char *rcatZoneHint,
              rodsServerHost_t **rodsServerHost ) {
     int status;
-    zoneInfo_t *myZoneInfo = NULL;
+    zoneInfo_t *myZoneInfo = nullptr;
 
     status = getZoneInfo( rcatZoneHint, &myZoneInfo );
     if ( status < 0 ) {
@@ -96,7 +96,7 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
     }
 
     if ( rcatType == MASTER_RCAT ||
-            myZoneInfo->slaveServerHost == NULL ) {
+            myZoneInfo->slaveServerHost == nullptr ) {
         *rodsServerHost = myZoneInfo->masterServerHost;
         return myZoneInfo->masterServerHost->localFlag;
     }
@@ -114,7 +114,7 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     /* XXXXX need to lookup the zone table when availiable */
     if ( queHostName( tmpRodsServerHost, myHostAddr, 0 ) < 0 ) {
         free( tmpRodsServerHost );
-        return NULL;
+        return nullptr;
     }
 
     tmpRodsServerHost->localFlag = UNKNOWN_HOST_LOC;
@@ -123,7 +123,7 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
         matchHostConfig( tmpRodsServerHost ) < 0 ||
         getZoneInfo( zoneName, ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) ) < 0 ) {
         free( tmpRodsServerHost );
-        return NULL;
+        return nullptr;
     }
     else {
         return tmpRodsServerHost;
@@ -132,13 +132,13 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
 
 int
 queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
-    if ( rodsServerHost == NULL || myHostName == NULL ) {
+    if ( rodsServerHost == nullptr || myHostName == nullptr ) {
         return 0;
     }
 
     // JMC :: consider empty host for coordinating nodes
     if ( irods::EMPTY_RESC_HOST != myHostName ) {
-        time_t beforeTime = time( 0 );
+        time_t beforeTime = time( nullptr );
         char canonicalName[260]; // DNS specification limits hostnames to 255-ish bytes
         const int ret_get_canonical_name = get_canonical_name(myHostName, canonicalName, sizeof(canonicalName));
         if (ret_get_canonical_name != 0) {
@@ -149,7 +149,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
             }
             return SYS_GET_HOSTNAME_ERR;
         }
-        time_t afterTime = time( 0 );
+        time_t afterTime = time( nullptr );
         if ( afterTime - beforeTime >= 2 ) {
             rodsLog( LOG_NOTICE,
                      "WARNING WARNING: get_canonical_name of %s is taking %d sec. This could severely affect interactivity of your Rods system",
@@ -171,7 +171,7 @@ queHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag )
 
     myHostName = lastHostName = rodsServerHost->hostName;
 
-    while ( myHostName != NULL ) {
+    while ( myHostName != nullptr ) {
         if ( strcmp( myName, myHostName->name ) == 0 ) {
             return 0;
         }
@@ -187,13 +187,13 @@ queHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag )
         rodsServerHost->hostName = tmpHostName;
     }
     else {
-        if ( lastHostName == NULL ) {
+        if ( lastHostName == nullptr ) {
             rodsServerHost->hostName = tmpHostName;
         }
         else {
             lastHostName->next = tmpHostName;
         }
-        tmpHostName->next = NULL;
+        tmpHostName->next = nullptr;
     }
 
     return 0;
@@ -205,18 +205,18 @@ queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
     rodsServerHost_t *lastRodsServerHost, *tmpRodsServerHost;
 
     lastRodsServerHost = tmpRodsServerHost = *rodsServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         lastRodsServerHost = tmpRodsServerHost;
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
 
-    if ( lastRodsServerHost == NULL ) {
+    if ( lastRodsServerHost == nullptr ) {
         *rodsServerHostHead = myRodsServerHost;
     }
     else {
         lastRodsServerHost->next = myRodsServerHost;
     }
-    myRodsServerHost->next = NULL;
+    myRodsServerHost->next = nullptr;
 
     return 0;
 }
@@ -237,17 +237,17 @@ int queZone(
     memset( myZoneInfo, 0, sizeof( zoneInfo_t ) );
 
     rstrcpy( myZoneInfo->zoneName, zoneName, NAME_LEN );
-    if ( masterServerHost != NULL ) {
+    if ( masterServerHost != nullptr ) {
         myZoneInfo->masterServerHost = masterServerHost;
         masterServerHost->zoneInfo = myZoneInfo;
     }
-    if ( slaveServerHost != NULL ) {
+    if ( slaveServerHost != nullptr ) {
         myZoneInfo->slaveServerHost = slaveServerHost;
         slaveServerHost->zoneInfo = myZoneInfo;
     }
 
     if ( portNum <= 0 ) {
-        if ( ZoneInfoHead != NULL ) {
+        if ( ZoneInfoHead != nullptr ) {
             myZoneInfo->portNum = ZoneInfoHead->portNum;
         }
         else {
@@ -264,7 +264,7 @@ int queZone(
     /* queue it */
 
     lastZoneInfo = tmpZoneInfo = ZoneInfoHead;
-    while ( tmpZoneInfo != NULL ) {
+    while ( tmpZoneInfo != nullptr ) {
         if (strcmp(tmpZoneInfo->zoneName, myZoneInfo->zoneName) == 0 ) {
             zoneAlreadyInList = true;
         }
@@ -272,14 +272,14 @@ int queZone(
         tmpZoneInfo = tmpZoneInfo->next;
     }
 
-    if ( lastZoneInfo == NULL ) {
+    if ( lastZoneInfo == nullptr ) {
         ZoneInfoHead = myZoneInfo;
     } else if (!zoneAlreadyInList) {
         lastZoneInfo->next = myZoneInfo;
     }
-    myZoneInfo->next = NULL;
+    myZoneInfo->next = nullptr;
 
-    if ( masterServerHost == NULL ) {
+    if ( masterServerHost == nullptr ) {
         rodsLog( LOG_DEBUG,
                  "queZone:  masterServerHost for %s is NULL", zoneName );
         return SYS_INVALID_SERVER_HOST;
@@ -294,13 +294,13 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
     rodsServerHost_t *tmpRodsServerHost;
     int status;
 
-    if ( myRodsServerHost == NULL ) {
+    if ( myRodsServerHost == nullptr ) {
         return 0;
     }
 
     if ( myRodsServerHost->localFlag == LOCAL_HOST ) {
         tmpRodsServerHost = HostConfigHead;
-        while ( tmpRodsServerHost != NULL ) {
+        while ( tmpRodsServerHost != nullptr ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
                 status = queConfigName( tmpRodsServerHost, myRodsServerHost );
                 return status;
@@ -310,7 +310,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
     }
     else {
         tmpRodsServerHost = HostConfigHead;
-        while ( tmpRodsServerHost != NULL ) {
+        while ( tmpRodsServerHost != nullptr ) {
             hostName_t *tmpHostName, *tmpConfigName;
 
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST &&
@@ -320,9 +320,9 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
             }
 
             tmpConfigName = tmpRodsServerHost->hostName;
-            while ( tmpConfigName != NULL ) {
+            while ( tmpConfigName != nullptr ) {
                 tmpHostName = myRodsServerHost->hostName;
-                while ( tmpHostName != NULL ) {
+                while ( tmpHostName != nullptr ) {
                     if ( strcmp( tmpHostName->name, tmpConfigName->name ) == 0 ) {
                         myRodsServerHost->localFlag = tmpRodsServerHost->localFlag;
                         queConfigName( tmpRodsServerHost, myRodsServerHost );
@@ -345,7 +345,7 @@ queConfigName( rodsServerHost_t *configServerHost,
     hostName_t *tmpHostName = configServerHost->hostName;
     int cnt = 0;
 
-    while ( tmpHostName != NULL ) {
+    while ( tmpHostName != nullptr ) {
         if ( cnt == 0 ) {
             /* queue the first one on top */
             queHostName( myRodsServerHost, tmpHostName->name, 1 );
@@ -362,9 +362,9 @@ queConfigName( rodsServerHost_t *configServerHost,
 
 int
 resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
-    rodsServerHost_t *tmpRodsServerHost = 0;
-    char *myHostAddr = 0;
-    char *myZoneName = 0;
+    rodsServerHost_t *tmpRodsServerHost = nullptr;
+    char *myHostAddr = nullptr;
+    char *myZoneName = nullptr;
 
     /* check if host exist */
 
@@ -382,12 +382,12 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
     }
 
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         hostName_t *tmpName;
         zoneInfo_t *serverZoneInfo = ( zoneInfo_t * ) tmpRodsServerHost->zoneInfo;
         if ( strcmp( myZoneName, serverZoneInfo->zoneName ) == 0 ) {
             tmpName = tmpRodsServerHost->hostName;
-            while ( tmpName != NULL ) {
+            while ( tmpName != nullptr ) {
                 if ( strcasecmp( tmpName->name, myHostAddr ) == 0 ) {
                     *rodsServerHost = tmpRodsServerHost;
                     return tmpRodsServerHost->localFlag;
@@ -402,7 +402,7 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
 
     tmpRodsServerHost = mkServerHost( myHostAddr, myZoneName );
 
-    if ( tmpRodsServerHost == NULL ) {
+    if ( tmpRodsServerHost == nullptr ) {
         rodsLog( LOG_ERROR,
                  "resolveHost: mkServerHost error" );
         return SYS_INVALID_SERVER_HOST;
@@ -428,7 +428,7 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     int status;
     rodsHostAddr_t addr;
     int remoteFlag;
-    if ( dataObjInfo == NULL ) {
+    if ( dataObjInfo == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "resoAndConnHostByDataObjInfo: NULL dataObjInfo" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -481,7 +481,7 @@ printServerHost( rodsServerHost_t *myServerHost ) {
 
     tmpHostName = myServerHost->hostName;
 
-    while ( tmpHostName != NULL ) {
+    while ( tmpHostName != nullptr ) {
 #ifdef SYSLOG
         rodsLog( LOG_NOTICE, " %s,", tmpHostName->name );
 #else /* SYSLOG */
@@ -511,7 +511,7 @@ printZoneInfo() {
 #else /* SYSLOG */
     fprintf( stderr, "Zone Info:\n" );
 #endif /* SYSLOG */
-    while ( tmpZoneInfo != NULL ) {
+    while ( tmpZoneInfo != nullptr ) {
         /* print the master */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
 #ifdef SYSLOG
@@ -545,7 +545,7 @@ printZoneInfo() {
 
         /* print the slave */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->slaveServerHost;
-        if ( tmpRodsServerHost != NULL ) {
+        if ( tmpRodsServerHost != nullptr ) {
 #ifdef SYSLOG
             rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
             rodsLog( LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   " );
@@ -606,7 +606,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     int zoneInput;
     char zoneName[NAME_LEN];
 
-    if ( rcatZoneHint == NULL || strlen( rcatZoneHint ) == 0 ) {
+    if ( rcatZoneHint == nullptr || strlen( rcatZoneHint ) == 0 ) {
         zoneInput = 0;
     }
     else {
@@ -614,9 +614,9 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
         getZoneNameFromHint( rcatZoneHint, zoneName, NAME_LEN );
     }
 
-    *myZoneInfo = NULL;
+    *myZoneInfo = nullptr;
     tmpZoneInfo = ZoneInfoHead;
-    while ( tmpZoneInfo != NULL ) {
+    while ( tmpZoneInfo != nullptr ) {
         if ( zoneInput == 0 ) { /* assume local */
             if ( tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT ) {
                 *myZoneInfo = tmpZoneInfo;
@@ -627,7 +627,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
                 *myZoneInfo = tmpZoneInfo;
             }
         }
-        if ( *myZoneInfo != NULL ) {
+        if ( *myZoneInfo != nullptr ) {
             return 0;
         }
         tmpZoneInfo = tmpZoneInfo->next;
@@ -641,7 +641,7 @@ getZoneInfo( const char *rcatZoneHint, zoneInfo_t **myZoneInfo ) {
     else {
         rodsLog( LOG_DEBUG,
                  "getZoneInfo: Invalid zone name from hint %s", rcatZoneHint );
-        status = getZoneInfo( ( const char* )NULL, myZoneInfo );
+        status = getZoneInfo( ( const char* )nullptr, myZoneInfo );
         if ( status < 0 ) {
             return SYS_INVALID_ZONE_NAME;
         }
@@ -656,7 +656,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
     zoneInfo_t *tmpZoneInfo;
 
     tmpZoneInfo = ZoneInfoHead;
-    while ( tmpZoneInfo != NULL ) {
+    while ( tmpZoneInfo != nullptr ) {
         if ( tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT ) {
             *outZoneInfo = tmpZoneInfo;
             return 0;
@@ -666,7 +666,7 @@ getLocalZoneInfo( zoneInfo_t **outZoneInfo ) {
     rodsLog( LOG_ERROR,
              "getLocalZoneInfo: Local Zone does not exist" );
 
-    *outZoneInfo = NULL;
+    *outZoneInfo = nullptr;
     return SYS_INVALID_ZONE_NAME;
 }
 
@@ -678,7 +678,7 @@ getLocalZoneName() {
         return tmpZoneInfo->zoneName;
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -694,7 +694,7 @@ getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
         return status;
     }
 
-    if ( ( *rodsServerHost )->conn != NULL ) { /* a connection exists */
+    if ( ( *rodsServerHost )->conn != nullptr ) { /* a connection exists */
         status = rcDisconnect( ( *rodsServerHost )->conn );
         return status;
     }
@@ -704,11 +704,11 @@ getAndDisconnRcatHost( int rcatType, char *rcatZoneHint,
 int
 disconnRcatHost( int rcatType, const char *rcatZoneHint ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
 
     status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -716,9 +716,9 @@ disconnRcatHost( int rcatType, const char *rcatZoneHint ) {
         return LOCAL_HOST;
     }
 
-    if ( rodsServerHost->conn != NULL ) { /* a connection exists */
+    if ( rodsServerHost->conn != nullptr ) { /* a connection exists */
         status = rcDisconnect( rodsServerHost->conn );
-        rodsServerHost->conn = NULL;
+        rodsServerHost->conn = nullptr;
     }
     if ( status >= 0 ) {
         return REMOTE_HOST;
@@ -732,10 +732,10 @@ disconnRcatHost( int rcatType, const char *rcatZoneHint ) {
 
 int
 resetRcatHost( int rcatType, const char *rcatZoneHint ) {
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     int status = getRcatHost( rcatType, rcatZoneHint, &rodsServerHost );
 
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -743,7 +743,7 @@ resetRcatHost( int rcatType, const char *rcatZoneHint ) {
         return LOCAL_HOST;
     }
 
-    rodsServerHost->conn = NULL;
+    rodsServerHost->conn = nullptr;
     return REMOTE_HOST;
 }
 
@@ -754,10 +754,10 @@ disconnectAllSvrToSvrConn() {
     /* check if host exist */
 
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
-        if ( tmpRodsServerHost->conn != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
+        if ( tmpRodsServerHost->conn != nullptr ) {
             rcDisconnect( tmpRodsServerHost->conn );
-            tmpRodsServerHost->conn = NULL;
+            tmpRodsServerHost->conn = nullptr;
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
@@ -804,8 +804,8 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
                              rodsServerHost_t **rodsServerHost ) {
     int status;
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    rodsServerHost_t *srcIcatServerHost = NULL;
-    rodsServerHost_t *destIcatServerHost = NULL;
+    rodsServerHost_t *srcIcatServerHost = nullptr;
+    rodsServerHost_t *destIcatServerHost = nullptr;
 
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
@@ -813,7 +813,7 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     status = getRcatHost( MASTER_RCAT, srcDataObjInp->objPath,
                           &srcIcatServerHost );
 
-    if ( status < 0 || NULL == srcIcatServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == srcIcatServerHost ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR,
                  "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
                  srcDataObjInp->objPath );
@@ -828,7 +828,7 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     status = getRcatHost( MASTER_RCAT, destDataObjInp->objPath,
                           &destIcatServerHost );
 
-    if ( status < 0 || NULL == destIcatServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == destIcatServerHost ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR,
                  "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
                  destDataObjInp->objPath );
@@ -857,11 +857,11 @@ getAndConnRemoteZoneForCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 int
 isLocalZone( char *zoneHint ) {
     int status;
-    rodsServerHost_t *icatServerHost = NULL;
+    rodsServerHost_t *icatServerHost = nullptr;
 
     status = getRcatHost( MASTER_RCAT, zoneHint, &icatServerHost );
 
-    if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == icatServerHost ) { // JMC cppcheck - nullptr
         return 0;
     }
 
@@ -880,7 +880,7 @@ int
 isSameZone( char *zoneHint1, char *zoneHint2 ) {
     char zoneName1[NAME_LEN], zoneName2[NAME_LEN];
 
-    if ( zoneHint1 == NULL || zoneHint2 == NULL ) {
+    if ( zoneHint1 == nullptr || zoneHint2 == nullptr ) {
         return 0;
     }
 
@@ -899,12 +899,12 @@ int
 getRemoteZoneHost( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    rodsServerHost_t **rodsServerHost, char *remoteZoneOpr ) {
     int status;
-    rodsServerHost_t *icatServerHost = NULL;
-    rodsHostAddr_t *rescAddr = NULL;
+    rodsServerHost_t *icatServerHost = nullptr;
+    rodsHostAddr_t *rescAddr = nullptr;
 
     status = getRcatHost( MASTER_RCAT, dataObjInp->objPath, &icatServerHost );
 
-    if ( status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == icatServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
 
@@ -964,14 +964,14 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
     rodsServerHost_t *tmpRodsServerHost;
 
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         if ( tmpRodsServerHost->reHostFlag == 1 ) {
             *rodsServerHost = tmpRodsServerHost;
             return 0;
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    status = getRcatHost( MASTER_RCAT, ( const char* )NULL, rodsServerHost );
+    status = getRcatHost( MASTER_RCAT, ( const char* )nullptr, rodsServerHost );
 
     return status;
 }
@@ -981,14 +981,14 @@ getXmsgHost( rodsServerHost_t **rodsServerHost ) {
     rodsServerHost_t *tmpRodsServerHost;
 
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         if ( tmpRodsServerHost->xmsgHostFlag == 1 ) {
             *rodsServerHost = tmpRodsServerHost;
             return 0;
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    *rodsServerHost = NULL;
+    *rodsServerHost = nullptr;
 
     return SYS_INVALID_SERVER_HOST;
 }

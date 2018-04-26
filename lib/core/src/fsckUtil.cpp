@@ -114,9 +114,9 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
     genQueryInp_t genQueryInp;
     strategy(&genQueryInp, inpPath, argument_for_SetGenQueryInpFromPhysicalPath);
 
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status = rcGenQuery( conn, &genQueryInp, &genQueryOut );
-    if ( status == 0 && NULL != genQueryOut ) {
+    if ( status == 0 && nullptr != genQueryOut ) {
         const char *objName = genQueryOut->sqlResult[0].value;
         const char *objPath = genQueryOut->sqlResult[1].value;
         const intmax_t objSize = atoi( genQueryOut->sqlResult[2].value );
@@ -124,7 +124,7 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
         if ( srcSize == objSize ) {
             if ( myRodsArgs->verifyChecksum == True ) {
                 if ( strcmp( objChksum, "" ) != 0 ) {
-                    status = verifyChksumLocFile( inpPath, objChksum, NULL );
+                    status = verifyChksumLocFile( inpPath, objChksum, nullptr );
                     if ( status == USER_CHKSUM_MISMATCH ) {
                         printf( "CORRUPTION: local file [%s] checksum not consistent with iRODS object [%s/%s] checksum.\n", inpPath, objPath, objName );
                     } else if (status != 0) {

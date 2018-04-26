@@ -70,7 +70,7 @@ irods::error validate_logical_path(
         size_t pos = _path.find( zone_name );
         if ( 0 == pos ) {
             ret_val = SUCCESS();
-            zone_info = 0;
+            zone_info = nullptr;
         }
         else {
             zone_info = zone_info->next;
@@ -91,7 +91,7 @@ getDataObjInfo(
     char*           accessPerm,
     int             ignoreCondInput ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int i, status;
     dataObjInfo_t *dataObjInfo;
     char *tmpStr;
@@ -110,7 +110,7 @@ getDataObjInfo(
     int qcondCnt;
     int writeFlag;
 
-    *dataObjInfoHead = NULL;
+    *dataObjInfoHead = nullptr;
 
     qcondCnt = initDataObjInfoQuery( dataObjInp, &genQueryInp,
                                      ignoreCondInput );
@@ -141,7 +141,7 @@ getDataObjInfo(
     addInxIval( &genQueryInp.selectInp, COL_DATA_MODE, 1 );
     addInxIval( &genQueryInp.selectInp, COL_D_RESC_HIER, 1 );
 
-    if ( accessPerm != NULL ) {
+    if ( accessPerm != nullptr ) {
         snprintf( accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName );
         addKeyVal( &genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr );
 
@@ -151,7 +151,7 @@ getDataObjInfo(
         snprintf( accStr, LONG_NAME_LEN, "%s", accessPerm );
         addKeyVal( &genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr );
     }
-    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, TICKET_KW ) ) != NULL ) {
+    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, TICKET_KW ) ) != nullptr ) {
         addKeyVal( &genQueryInp.condInput, TICKET_KW, tmpStr );
     }
 
@@ -179,151 +179,151 @@ getDataObjInfo(
 
 	clearGenQueryInp( &genQueryInp );
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: NULL genQueryOut" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( dataOwnerName =
-                getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataName =
-                getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collName =
-                getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_COLL_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
+    if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( collId = getSqlResultByInx( genQueryOut, COL_D_COLL_ID ) ) == NULL ) {
+    if ( ( collId = getSqlResultByInx( genQueryOut, COL_D_COLL_ID ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_COLL_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( version = getSqlResultByInx( genQueryOut, COL_DATA_VERSION ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_VERSION failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == NULL ) {
+    if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_SIZE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( hierString = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_RESC_HIER failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( filePath = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_PATH failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataOwnerZone =
-                getSqlResultByInx( genQueryOut, COL_D_OWNER_ZONE ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_OWNER_ZONE ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_ZONE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replStatus =
-                getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_REPL_STATUS failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( statusString =
-                getSqlResultByInx( genQueryOut, COL_D_DATA_STATUS ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_DATA_STATUS ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_STATUS failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( chksum =
-                getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataExpiry =
-                getSqlResultByInx( genQueryOut, COL_D_EXPIRY ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_EXPIRY ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_EXPIRY failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMapId =
-                getSqlResultByInx( genQueryOut, COL_D_MAP_ID ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_MAP_ID ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_MAP_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataComments =
-                getSqlResultByInx( genQueryOut, COL_D_COMMENTS ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_COMMENTS ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_COMMENTS failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataCreate =
-                getSqlResultByInx( genQueryOut, COL_D_CREATE_TIME ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_CREATE_TIME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_CREATE_TIME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataModify =
-                getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_D_MODIFY_TIME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
-                getSqlResultByInx( genQueryOut, COL_DATA_MODE ) ) == NULL ) {
+                getSqlResultByInx( genQueryOut, COL_DATA_MODE ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "getDataObjInfo: getSqlResultByInx for COL_DATA_MODE failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -374,7 +374,7 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->rescName, leaf.c_str(), NAME_LEN );
 
         rstrcpy( dataObjInfo->dataType, tmpDataType, NAME_LEN );
-        dataObjInfo->dataSize = strtoll( tmpDataSize, 0, 0 );
+        dataObjInfo->dataSize = strtoll( tmpDataSize, nullptr, 0 );
         rstrcpy( dataObjInfo->chksum, tmpChksum, NAME_LEN );
         rstrcpy( dataObjInfo->version, tmpVersion, NAME_LEN );
         rstrcpy( dataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN );
@@ -383,8 +383,8 @@ getDataObjInfo(
         dataObjInfo->replNum = atoi( tmpReplNum );
         dataObjInfo->replStatus = atoi( tmpReplStatus );
         rstrcpy( dataObjInfo->statusString, tmpStatusString, NAME_LEN );
-        dataObjInfo->dataId = strtoll( tmpDataId, 0, 0 );
-        dataObjInfo->collId = strtoll( tmpCollId, 0, 0 );
+        dataObjInfo->dataId = strtoll( tmpDataId, nullptr, 0 );
+        dataObjInfo->collId = strtoll( tmpCollId, nullptr, 0 );
         dataObjInfo->dataMapId = atoi( tmpDataMapId );
         rstrcpy( dataObjInfo->dataComments, tmpDataComments, LONG_NAME_LEN );
         rstrcpy( dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN );
@@ -393,7 +393,7 @@ getDataObjInfo(
         rstrcpy( dataObjInfo->dataMode, tmpDataMode, SHORT_STR_LEN );
         dataObjInfo->writeFlag = writeFlag;
 
-        dataObjInfo->next = 0;
+        dataObjInfo->next = nullptr;
 
         queDataObjInfo( dataObjInfoHead, dataObjInfo, 1, 0 );
 
@@ -417,18 +417,18 @@ sortObjInfo(
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     // int rescClassInx;
     int topFlag;
-    dataObjInfo_t *currentBundleInfo = NULL;
-    dataObjInfo_t *oldBundleInfo = NULL;
+    dataObjInfo_t *currentBundleInfo = nullptr;
+    dataObjInfo_t *oldBundleInfo = nullptr;
 
-    *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
-    *downCurrentInfo = *downOldInfo = NULL;
+    *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = nullptr;
+    *downCurrentInfo = *downOldInfo = nullptr;
 
     tmpDataObjInfo = *dataObjInfoHead;
 
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
 
         nextDataObjInfo = tmpDataObjInfo->next;
-        tmpDataObjInfo->next = NULL;
+        tmpDataObjInfo->next = nullptr;
 
 
         if ( !strlen( tmpDataObjInfo->rescName ) ) {
@@ -449,7 +449,7 @@ sortObjInfo(
             continue;
         }
         else {
-            rodsServerHost_t *rodsServerHost = NULL;
+            rodsServerHost_t *rodsServerHost = nullptr;
             irods::get_resource_property< rodsServerHost_t* >( tmpDataObjInfo->rescId, irods::RESOURCE_HOST, rodsServerHost );
 
             if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST ) {
@@ -468,14 +468,14 @@ sortObjInfo(
                                     class_type );
 
         bool hier_match = false;
-        if ( resc_hier != NULL && ( strcmp( resc_hier, tmpDataObjInfo->rescHier ) == 0 ) ) {
+        if ( resc_hier != nullptr && ( strcmp( resc_hier, tmpDataObjInfo->rescHier ) == 0 ) ) {
             hier_match = true;
         }
 
         // =-=-=-=-=-=-=-
         // if the resc hierarchy is defined match it
         // honor the original queue structure given repl status
-        if ( resc_hier != NULL && hier_match ) {
+        if ( resc_hier != nullptr && hier_match ) {
             //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
             // =-=-=-=-=-=-=-
             // even if the repl is dirty we will want to select it here as
@@ -486,7 +486,7 @@ sortObjInfo(
             //    queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
             //}
         }
-        else if ( resc_hier != NULL && !hier_match ) {
+        else if ( resc_hier != nullptr && !hier_match ) {
             if ( tmpDataObjInfo->replStatus > 0 ) {
                 queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
             }
@@ -560,10 +560,10 @@ int sortObjInfoForOpen(
         result = SYS_INVALID_INPUT_PARAM;
     }
     else {
-        dataObjInfo_t* found_info = NULL;
-        dataObjInfo_t* prev_info = NULL;
+        dataObjInfo_t* found_info = nullptr;
+        dataObjInfo_t* prev_info = nullptr;
         for ( dataObjInfo_t* dataObjInfo = *dataObjInfoHead;
-                result >= 0 && found_info == NULL && dataObjInfo != NULL;
+                result >= 0 && found_info == nullptr && dataObjInfo != nullptr;
                 dataObjInfo = dataObjInfo->next ) {
             if ( strcmp( resc_hier, dataObjInfo->rescHier ) == 0 ) {
                 found_info = dataObjInfo;
@@ -572,7 +572,7 @@ int sortObjInfoForOpen(
                 prev_info = dataObjInfo;
             }
         }
-        if ( found_info == NULL ) {
+        if ( found_info == nullptr ) {
             // =-=-=-=-=-=-=-
             // according to the below read only semantics
             // any copy in the head is a good copy.
@@ -587,17 +587,17 @@ int sortObjInfoForOpen(
             }
         }
         else {
-            if ( prev_info == NULL ) {
+            if ( prev_info == nullptr ) {
                 // our object is at the head of the list. So delete the rest of the list, if any and we are done.
-                if ( found_info->next != NULL ) {
+                if ( found_info->next != nullptr ) {
                     freeAllDataObjInfo( found_info->next );
-                    found_info->next = NULL;
+                    found_info->next = nullptr;
                 }
             }
             else {
                 // remove our object from the list. delete that list then make our object the head.
                 prev_info->next = found_info->next;
-                found_info->next = NULL;
+                found_info->next = nullptr;
                 freeAllDataObjInfo( *dataObjInfoHead );
                 *dataObjInfoHead = found_info;
             }
@@ -622,7 +622,7 @@ int create_and_sort_data_obj_info_for_open(
     }
 
 	// initialize output list
-	*data_obj_info_head = NULL;
+	*data_obj_info_head = nullptr;
 
 // check C++11 support
 #if __cplusplus > 199711L
@@ -690,7 +690,7 @@ getNumDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
     int numInfo = 0;
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         numInfo++;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
@@ -719,7 +719,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
 
     tmpCnt = numInfo;
     tmpDataObjInfo = *dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         if ( tmpCnt > 1 ) {
             order = irods::getRandom<unsigned int>() % tmpCnt;
         }
@@ -727,7 +727,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
             order = 0;
         }
         for ( i = 0, j = 0; i < numInfo; i ++ ) {
-            if ( myDataObjInfo[i] == NULL ) {
+            if ( myDataObjInfo[i] == nullptr ) {
                 if ( order <= j ) {
                     myDataObjInfo[i] = tmpDataObjInfo;
                     break;
@@ -741,7 +741,7 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead ) {
 
     /* now que the array in order */
 
-    *dataObjInfoHead = NULL;
+    *dataObjInfoHead = nullptr;
     for ( i = 0; i < numInfo; i ++ ) {
         queDataObjInfo( dataObjInfoHead, myDataObjInfo[i], 1, 1 );
     }
@@ -763,25 +763,25 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
 
-    if ( preferredResc == NULL || *dataObjInfoHead == NULL ) {
+    if ( preferredResc == nullptr || *dataObjInfoHead == nullptr ) {
         return 0;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
-    if ( tmpDataObjInfo->next == NULL ) {
+    if ( tmpDataObjInfo->next == nullptr ) {
         /* just one */
-        if ( strstr(tmpDataObjInfo->rescHier,preferredResc ) != 0 ) {
+        if ( strstr(tmpDataObjInfo->rescHier,preferredResc ) != nullptr ) {
             return 0;
         }
         else {
             return -1;
         }
     }
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
-        if ( strstr(tmpDataObjInfo->rescHier,preferredResc) != 0 ) {
+    prevDataObjInfo = nullptr;
+    while ( tmpDataObjInfo != nullptr ) {
+        if ( strstr(tmpDataObjInfo->rescHier,preferredResc) != nullptr ) {
             if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
-                if ( prevDataObjInfo != NULL ) {
+                if ( prevDataObjInfo != nullptr ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
                     queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
                                     topFlag );
@@ -807,12 +807,12 @@ requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
 
-    if ( dataObjInfoHead == NULL || *dataObjInfoHead == NULL ) {
+    if ( dataObjInfoHead == nullptr || *dataObjInfoHead == nullptr ) {
         return -1;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
-    if ( tmpDataObjInfo->next == NULL ) {
+    if ( tmpDataObjInfo->next == nullptr ) {
         /* just one */
         if ( replNum == tmpDataObjInfo->replNum ) {
             return 0;
@@ -821,10 +821,10 @@ requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
             return -1;
         }
     }
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
+    prevDataObjInfo = nullptr;
+    while ( tmpDataObjInfo != nullptr ) {
         if ( replNum == tmpDataObjInfo->replNum ) {
-            if ( prevDataObjInfo != NULL ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
                 queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1, 1 );
             }
@@ -846,22 +846,22 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
     dataObjInfo_t *tmpDataObjInfo;
 
     tmpDataObjInfo = dataObjInfoHead;
-    dataObjInfo_t* prev = NULL;
+    dataObjInfo_t* prev = nullptr;
 
 
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
         // match as well. - hcj
         // XXXX  - if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 &&
-        if ( strstr( tmpDataObjInfo->rescHier, _resc_name.c_str() ) != 0 &&
-                ( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
-            if ( prev != NULL ) {
+        if ( strstr( tmpDataObjInfo->rescHier, _resc_name.c_str() ) != nullptr &&
+                ( destRescHier == nullptr || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
+            if ( prev != nullptr ) {
                 prev->next = tmpDataObjInfo->next;
             }
             else {
                 dataObjInfoHead = tmpDataObjInfo->next;
             }
-            tmpDataObjInfo->next = NULL;
+            tmpDataObjInfo->next = nullptr;
             return tmpDataObjInfo;
         }
 
@@ -869,7 +869,7 @@ chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -887,14 +887,14 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
 
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo, *nextDataObjInfo;
 
-    if ( trimmedDataObjInfo != NULL ) {
-        *trimmedDataObjInfo = NULL;
+    if ( trimmedDataObjInfo != nullptr ) {
+        *trimmedDataObjInfo = nullptr;
     }
 
     tmpDataObjInfo = *dataObjInfoHead;
-    prevDataObjInfo = NULL;
+    prevDataObjInfo = nullptr;
 
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         nextDataObjInfo = tmpDataObjInfo->next;
 
         irods::hierarchy_parser h_parse;
@@ -906,12 +906,12 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
                     *dataObjInfoHead = tmpDataObjInfo->next;
 
                 }
-                else if ( prevDataObjInfo != NULL ) {
+                else if ( prevDataObjInfo != nullptr ) {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
 
                 }
 
-                if ( trimmedDataObjInfo != NULL ) {
+                if ( trimmedDataObjInfo != nullptr ) {
                     queDataObjInfo( trimmedDataObjInfo, tmpDataObjInfo, 1, 0 );
 
                 }
@@ -959,10 +959,10 @@ sortObjInfoForRepl(
     // is provided which means the choice for to which repl
     // to update is made already. However, we have to handle
     // the case where the resc_hier and dst_resc_hier are the same.
-    *oldDataObjInfoHead = NULL;
+    *oldDataObjInfoHead = nullptr;
     if ( dst_resc_hier && strcmp( dst_resc_hier, resc_hier ) != 0 ) {
         dataObjInfo_t* tmp_info = *dataObjInfoHead;
-        dataObjInfo_t* prev_info = NULL;
+        dataObjInfo_t* prev_info = nullptr;
         while ( tmp_info ) {
             // =-=-=-=-=-=-=-
             // compare resc hier strings, if its a match this is our
@@ -973,15 +973,15 @@ sortObjInfoForRepl(
                 // to determine if it is up or down before
                 // queue-ing it up
                 if ( irods::is_hier_live( dst_resc_hier ).ok() /* INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus */ ) {
-                    if ( prev_info == NULL ) {
+                    if ( prev_info == nullptr ) {
                         *dataObjInfoHead = tmp_info->next;
                     }
                     else {
                         prev_info->next = tmp_info->next;
                     }
-                    tmp_info->next = NULL;
+                    tmp_info->next = nullptr;
                     queDataObjInfo( oldDataObjInfoHead, tmp_info, 1, 1 );
-                    tmp_info = 0;
+                    tmp_info = nullptr;
                 }
                 else {
                     rodsLog(
@@ -1002,8 +1002,8 @@ sortObjInfoForRepl(
 
     } // if dst_resc_hier
 
-    dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
-                   *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
+    dataObjInfo_t *currentArchInfo = nullptr, *currentCacheInfo = nullptr, *oldArchInfo = nullptr,
+                   *oldCacheInfo = nullptr,    *downCurrentInfo = nullptr,  *downOldInfo = nullptr;
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier );
@@ -1011,8 +1011,8 @@ sortObjInfoForRepl(
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo( dataObjInfoHead, currentArchInfo, 0, 0 );
     queDataObjInfo( dataObjInfoHead, downCurrentInfo, 0, 0 );
-    if ( *dataObjInfoHead != NULL ) {
-        if ( *oldDataObjInfoHead == NULL && deleteOldFlag == 0 ) {
+    if ( *dataObjInfoHead != nullptr ) {
+        if ( *oldDataObjInfoHead == nullptr && deleteOldFlag == 0 ) {
             /* multi copy not allowed. have to keep old copy in
              * oldDataObjInfoHead for further processing */
             *oldDataObjInfoHead = oldCacheInfo;
@@ -1027,7 +1027,7 @@ sortObjInfoForRepl(
         queDataObjInfo( dataObjInfoHead, oldCacheInfo, 0, 0 );
         queDataObjInfo( dataObjInfoHead, oldArchInfo, 0, 0 );
     }
-    if ( *dataObjInfoHead == NULL ) {
+    if ( *dataObjInfoHead == nullptr ) {
         return SYS_RESC_IS_DOWN;
     }
     else {
@@ -1052,7 +1052,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
     memset( genQueryInp, 0, sizeof( genQueryInp_t ) );
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, QUERY_BY_DATA_ID_KW ) )
-            == NULL ) {
+            == nullptr ) {
         memset( myColl, 0, MAX_NAME_LEN );
         memset( myData, 0, MAX_NAME_LEN );
 
@@ -1074,7 +1074,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
     }
 
     if ( ignoreCondInput == 0 && ( tmpStr =
-                                       getValByKey( &dataObjInp->condInput, REPL_NUM_KW ) ) != NULL ) {
+                                       getValByKey( &dataObjInp->condInput, REPL_NUM_KW ) ) != nullptr ) {
         snprintf( condStr, NAME_LEN, "='%s'", tmpStr );
         addInxVal( &genQueryInp->sqlCondInp, COL_DATA_REPL_NUM, condStr );
         qcondCnt++;
@@ -1110,7 +1110,7 @@ chkOrphanFile(
     }
 
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status;
     char condStr[MAX_NAME_LEN];
 
@@ -1194,34 +1194,34 @@ chkOrphanFile(
         rsComm->perfStat.nonOrphanCnt++;
 
         if ( ( collName =
-                    getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
+                    getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == nullptr ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_COLL_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( dataName = getSqlResultByInx( genQueryOut, COL_DATA_NAME ) )
-                == NULL ) {
+                == nullptr ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_DATA_NAME failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
+        if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == nullptr ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
         if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_NOTICE,
                      "chkOrphanFile: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( dataObjInfo != NULL ) {
-            dataObjInfo->dataId = strtoll( dataId->value, 0, 0 );
+        if ( dataObjInfo != nullptr ) {
+            dataObjInfo->dataId = strtoll( dataId->value, nullptr, 0 );
             dataObjInfo->replNum = atoi( replNum->value );
             snprintf( dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
                       collName->value, dataName->value );
@@ -1270,7 +1270,7 @@ chkOrphanDir( rsComm_t *rsComm, char *dirPath, const char *rescName ) {
             status = chkOrphanDir( rsComm, subfilePath, rescName );
         }
         else if ( is_regular_file( p ) ) {
-            status = chkOrphanFile( rsComm, subfilePath, rescName, NULL );
+            status = chkOrphanFile( rsComm, subfilePath, rescName, nullptr );
         }
         if ( status == 0 ) {
             /* not orphan */
@@ -1304,8 +1304,8 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
                        dataObjInfo_t **destDataObjInfo,
                        keyValPair_t *condInput ) {
     int status = 0;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+    dataObjInfo_t *matchedDataObjInfo = nullptr;
+    dataObjInfo_t *matchedOldDataObjInfo = nullptr;
 
     /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
     status = matchDataObjInfoByCondInput( dataObjInfoHead, oldDataObjInfoHead,
@@ -1314,12 +1314,12 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
         return status;
     }
 
-    if ( matchedDataObjInfo != NULL ) {
+    if ( matchedDataObjInfo != nullptr ) {
         /* que the matched one on top */
         queDataObjInfo( dataObjInfoHead, matchedDataObjInfo, 0, 1 );
         queDataObjInfo( oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1 );
     }
-    else if ( matchedOldDataObjInfo != NULL ) {
+    else if ( matchedOldDataObjInfo != nullptr ) {
         /* The source of replication is an old copy. Queue dataObjInfoHead
          * to oldDataObjInfoHead */
         queDataObjInfo( oldDataObjInfoHead, *dataObjInfoHead, 0, 1 );
@@ -1331,15 +1331,15 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
     char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
     if ( ( *destDataObjInfo = chkCopyInResc( *dataObjInfoHead,
                               _resc_name,
-                              destRescHier ) ) != NULL ) {
+                              destRescHier ) ) != nullptr ) {
         /* have a good copy already */
-        *destDataObjInfo = NULL; // JMC - backport 4594
+        *destDataObjInfo = nullptr; // JMC - backport 4594
         return HAVE_GOOD_COPY;
     }
 
     /* handle the old dataObj */
-    if ( getValByKey( condInput, ALL_KW ) != NULL ) {
-        dataObjInfo_t *trimmedDataObjInfo = NULL;
+    if ( getValByKey( condInput, ALL_KW ) != nullptr ) {
+        dataObjInfo_t *trimmedDataObjInfo = nullptr;
         /* replicate to all resc. trim the resc that has a match and
          * the DataObjInfo that does not have a match */
         matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
@@ -1350,10 +1350,10 @@ resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
     else {
         char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
         *destDataObjInfo = chkCopyInResc( *oldDataObjInfoHead, _resc_name, destRescHier );
-        if ( *destDataObjInfo != NULL ) {
+        if ( *destDataObjInfo != nullptr ) {
             /* see if there is any resc that is not used */
             matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                                 TRIM_MATCHED_RESC_INFO, NULL );
+                                 TRIM_MATCHED_RESC_INFO, nullptr );
             dequeDataObjInfo( oldDataObjInfoHead, *destDataObjInfo );
         }
     }
@@ -1367,8 +1367,8 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
                      keyValPair_t *condInput,
                      int multiCopyFlag ) {
     int status;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+    dataObjInfo_t *matchedDataObjInfo = nullptr;
+    dataObjInfo_t *matchedOldDataObjInfo = nullptr;
 
     status = matchDataObjInfoByCondInput( dataObjInfoHead, oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
@@ -1376,7 +1376,7 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
         return status;
     }
 
-    if ( matchedDataObjInfo != NULL ) {
+    if ( matchedDataObjInfo != nullptr ) {
         /* put the matched in oldDataObjInfoHead. should not be anything in
          * oldDataObjInfoHead */
         *oldDataObjInfoHead = *dataObjInfoHead;
@@ -1385,16 +1385,16 @@ resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
 
     if ( multiCopyFlag ) {
         matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
-                             REQUE_MATCHED_RESC_INFO, NULL );
+                             REQUE_MATCHED_RESC_INFO, nullptr );
         matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                             REQUE_MATCHED_RESC_INFO, NULL );
+                             REQUE_MATCHED_RESC_INFO, nullptr );
     }
     else {
-        matchAndTrimRescGrp( dataObjInfoHead, _resc_name, TRIM_MATCHED_OBJ_INFO, NULL );
+        matchAndTrimRescGrp( dataObjInfoHead, _resc_name, TRIM_MATCHED_OBJ_INFO, nullptr );
     }
 
     if ( _resc_name.empty() ) {
-        if ( *dataObjInfoHead == NULL ) {
+        if ( *dataObjInfoHead == nullptr ) {
             return CAT_NO_ROWS_FOUND;
         }
         else {
@@ -1427,20 +1427,20 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     int replNum = 0;
     int rescCond;
     bool destHierCond = false;
-    char *tmpStr, *rescName = NULL;
-    char* rescHier = NULL;
-    char* destRescHier = NULL;
+    char *tmpStr, *rescName = nullptr;
+    char* rescHier = nullptr;
+    char* destRescHier = nullptr;
     dataObjInfo_t *prevDataObjInfo, *nextDataObjInfo, *tmpDataObjInfo;
 
-    if ( dataObjInfoHead == NULL || *dataObjInfoHead == NULL ||
-            oldDataObjInfoHead == NULL || matchedDataObjInfo == NULL ||
-            matchedOldDataObjInfo == NULL ) {
+    if ( dataObjInfoHead == nullptr || *dataObjInfoHead == nullptr ||
+            oldDataObjInfoHead == nullptr || matchedDataObjInfo == nullptr ||
+            matchedOldDataObjInfo == nullptr ) {
         rodsLog( LOG_ERROR,
                  "requeDataObjInfoByCondInput: NULL dataObjInfo input" );
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( ( tmpStr = getValByKey( condInput, REPL_NUM_KW ) ) != NULL ) {
+    if ( ( tmpStr = getValByKey( condInput, REPL_NUM_KW ) ) != nullptr ) {
         replNum = atoi( tmpStr );
         replNumCond = 1;
     }
@@ -1450,12 +1450,12 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
 
     destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
     rescHier = getValByKey( condInput, RESC_HIER_STR_KW );
-    if ( destRescHier != NULL && rescHier != NULL ) {
+    if ( destRescHier != nullptr && rescHier != nullptr ) {
         destHierCond = true;
     }
 
     // We only use the resource name if the resource hierarchy is not set
-    if ( !destHierCond && ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != NULL ) {
+    if ( !destHierCond && ( rescName = getValByKey( condInput, RESC_NAME_KW ) ) != nullptr ) {
         rescCond = 1;
     }
     else {
@@ -1465,17 +1465,17 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     if ( replNumCond + rescCond == 0 && !destHierCond ) {
         return 0;
     }
-    *matchedDataObjInfo = NULL;
-    *matchedOldDataObjInfo = NULL;
+    *matchedDataObjInfo = nullptr;
+    *matchedOldDataObjInfo = nullptr;
 
     tmpDataObjInfo = *dataObjInfoHead;
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
+    prevDataObjInfo = nullptr;
+    while ( tmpDataObjInfo != nullptr ) {
         nextDataObjInfo = tmpDataObjInfo->next;
         if ( replNumCond == 1 && replNum == tmpDataObjInfo->replNum ) {
 
 
-            if ( prevDataObjInfo != NULL ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1486,7 +1486,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
         else if ( destHierCond &&
                   ( strcmp( rescHier, tmpDataObjInfo->rescHier ) == 0 ||
                     strcmp( destRescHier, tmpDataObjInfo->rescHier ) == 0 ) ) {
-            if ( prevDataObjInfo != NULL ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1495,8 +1495,8 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
-            if ( prevDataObjInfo != NULL ) {
+                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != nullptr ) ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1512,11 +1512,11 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
     }
 
     tmpDataObjInfo = *oldDataObjInfoHead;
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
+    prevDataObjInfo = nullptr;
+    while ( tmpDataObjInfo != nullptr ) {
         nextDataObjInfo = tmpDataObjInfo->next;
         if ( replNumCond == 1 && replNum == tmpDataObjInfo->replNum ) {
-            if ( prevDataObjInfo != NULL ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1527,7 +1527,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
         else if ( destHierCond &&
                   ( strcmp( rescHier, tmpDataObjInfo->rescHier ) == 0 ||
                     strcmp( destRescHier, tmpDataObjInfo->rescHier ) == 0 ) ) {
-            if ( prevDataObjInfo != NULL ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1536,8 +1536,8 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( matchedOldDataObjInfo, tmpDataObjInfo, 1, 0 );
         }
         else if ( rescCond == 1 &&
-                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != 0 ) ) {
-            if ( prevDataObjInfo != NULL ) {
+                  ( strstr( tmpDataObjInfo->rescHier, rescName ) != nullptr ) ) {
+            if ( prevDataObjInfo != nullptr ) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             }
             else {
@@ -1551,7 +1551,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
         tmpDataObjInfo = nextDataObjInfo;
     }
 
-    if ( *matchedDataObjInfo == NULL && *matchedOldDataObjInfo == NULL ) {
+    if ( *matchedDataObjInfo == nullptr && *matchedOldDataObjInfo == nullptr ) {
         return CAT_NO_ROWS_FOUND;
     }
     else {
@@ -1592,9 +1592,9 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
     }
     
     int i, status;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
-    dataObjInfo_t *oldDataObjInfoHead = NULL;
+    dataObjInfo_t *matchedDataObjInfo = nullptr;
+    dataObjInfo_t *matchedOldDataObjInfo = nullptr;
+    dataObjInfo_t *oldDataObjInfoHead = nullptr;
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int matchedInfoCnt, unmatchedInfoCnt, matchedOldInfoCnt,
         unmatchedOldInfoCnt;
@@ -1605,14 +1605,14 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
 
     //char* resc_hier     = getValByKey( condInput, RESC_HIER_STR_KW );
     //char* dst_resc_hier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
-    sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, NULL, NULL );
+    sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, nullptr, nullptr );
 
     status = matchDataObjInfoByCondInput( dataObjInfoHead, &oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
     if ( status < 0 ) {
         freeAllDataObjInfo( *dataObjInfoHead );
         freeAllDataObjInfo( oldDataObjInfoHead );
-        *dataObjInfoHead = NULL;
+        *dataObjInfoHead = nullptr;
         if ( status == CAT_NO_ROWS_FOUND ) {
             return 0;
         }
@@ -1623,20 +1623,20 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
     }
     condFlag = status;  /* cond exist if condFlag > 0 */
 
-    if ( matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL ) {
+    if ( matchedDataObjInfo == nullptr && matchedOldDataObjInfo == nullptr ) {
         if ( condFlag == 0 ) {
             /* at least have some good copies */
             /* see if we can trim some old copies */
             matchedOldDataObjInfo = oldDataObjInfoHead;
-            oldDataObjInfoHead = NULL;
+            oldDataObjInfoHead = nullptr;
             /* also trim good copy too since there is no condition 12/1/09 */
             matchedDataObjInfo = *dataObjInfoHead;
-            *dataObjInfoHead = NULL;
+            *dataObjInfoHead = nullptr;
         }
         else {
             /* don't trim anything */
             freeAllDataObjInfo( *dataObjInfoHead );
-            *dataObjInfoHead = NULL; // JMC cppcheck - nullptr
+            *dataObjInfoHead = nullptr; // JMC cppcheck - nullptr
             freeAllDataObjInfo( oldDataObjInfoHead );
             return 0;
         }
@@ -1649,11 +1649,11 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
 
     freeAllDataObjInfo( *dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    *dataObjInfoHead = oldDataObjInfoHead = NULL;
+    *dataObjInfoHead = oldDataObjInfoHead = nullptr;
 
     const auto total_good_repls = matchedInfoCnt + unmatchedInfoCnt;
 
-    if ( ( tmpStr = getValByKey( condInput, COPIES_KW ) ) != NULL ) {
+    if ( ( tmpStr = getValByKey( condInput, COPIES_KW ) ) != nullptr ) {
         minCnt = atoi( tmpStr );
         if ( minCnt <= 0 ) {
             minCnt = DEF_MIN_COPY_CNT;
@@ -1689,16 +1689,16 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
         /* take some off the bottom - since cache are queued at top. Want
          * to trim them first */
         for ( i = 0; i < matchedInfoCnt - toTrim; i++ ) {
-            prevDataObjInfo = NULL;
+            prevDataObjInfo = nullptr;
             tmpDataObjInfo = matchedDataObjInfo;
-            while ( tmpDataObjInfo != NULL ) {
-                if ( tmpDataObjInfo->next == NULL ) {
-                    if ( prevDataObjInfo == NULL ) {
+            while ( tmpDataObjInfo != nullptr ) {
+                if ( tmpDataObjInfo->next == nullptr ) {
+                    if ( prevDataObjInfo == nullptr ) {
 
-                        matchedDataObjInfo = NULL;
+                        matchedDataObjInfo = nullptr;
                     }
                     else {
-                        prevDataObjInfo->next = NULL;
+                        prevDataObjInfo->next = nullptr;
                     }
                     freeDataObjInfo( tmpDataObjInfo );
                     break;
@@ -1725,15 +1725,15 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
             /* take some off the bottom - since cache are queued at top. Want
              * to trim them first */
             for ( i = 0; i < matchedOldInfoCnt - toTrim; i++ ) {
-                prevDataObjInfo = NULL;
+                prevDataObjInfo = nullptr;
                 tmpDataObjInfo = matchedOldDataObjInfo;
-                while ( tmpDataObjInfo != NULL ) {
-                    if ( tmpDataObjInfo->next == NULL ) {
-                        if ( prevDataObjInfo == NULL ) {
-                            matchedOldDataObjInfo = NULL;
+                while ( tmpDataObjInfo != nullptr ) {
+                    if ( tmpDataObjInfo->next == nullptr ) {
+                        if ( prevDataObjInfo == nullptr ) {
+                            matchedOldDataObjInfo = nullptr;
                         }
                         else {
-                            prevDataObjInfo->next = NULL;
+                            prevDataObjInfo->next = nullptr;
                         }
                         freeDataObjInfo( tmpDataObjInfo );
                         break;
@@ -1753,9 +1753,9 @@ requeDataObjInfoByDestResc( dataObjInfo_t **dataObjInfoHead,
                             keyValPair_t *condInput, int writeFlag, int topFlag ) {
     char *rescName;
     int status = -1;
-    if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) != NULL ||
-            ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) != NULL ||
-            ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) != NULL ) {
+    if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) != nullptr ||
+            ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) != nullptr ||
+            ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) != nullptr ) {
 
 
         status = requeDataObjInfoByResc( dataObjInfoHead, rescName,
@@ -1782,16 +1782,16 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         specCollPerm = READ_COLL_PERM;
     }
 
-    if ( dataObjInp->specColl != NULL &&
+    if ( dataObjInp->specColl != nullptr &&
             dataObjInp->specColl->collClass != NO_SPEC_COLL &&
             dataObjInp->specColl->collClass != LINKED_COLL ) {
         /* if it is linked, it already has been resolved */
         status = resolvePathInSpecColl( rsComm, dataObjInp->objPath,
                                         specCollPerm, 0, dataObjInfo );
         if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-                dataObjInfo != NULL ) {
+                dataObjInfo != nullptr ) {
             freeDataObjInfo( *dataObjInfo );
-            dataObjInfo = NULL;
+            dataObjInfo = nullptr;
         }
     }
     else if ( ( status = resolvePathInSpecColl( rsComm, dataObjInp->objPath,
@@ -1799,10 +1799,10 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         /* check if specColl in cache. May be able to save one query */
     }
     else if ( getValByKey( &dataObjInp->condInput,
-                           ADMIN_RMTRASH_KW ) != NULL &&
+                           ADMIN_RMTRASH_KW ) != nullptr &&
               rsComm->proxyUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH ) {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
-                                 NULL, 0 );
+                                 nullptr, 0 );
     }
     else if ( writeFlag > 0 && dataObjInp->oprType != REPLICATE_OPR ) {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
@@ -1813,15 +1813,15 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                  ACCESS_READ_OBJECT, 0 );
     }
 
-    if ( status < 0 && dataObjInp->specColl == NULL ) {
+    if ( status < 0 && dataObjInp->specColl == nullptr ) {
         int status2;
         status2 = resolvePathInSpecColl( rsComm, dataObjInp->objPath,
                                          specCollPerm, 0, dataObjInfo );
         if ( status2 < 0 ) {
             if ( status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-                    dataObjInfo != NULL ) {
+                    dataObjInfo != nullptr ) {
                 freeDataObjInfo( *dataObjInfo );
-                *dataObjInfo = NULL;
+                *dataObjInfo = nullptr;
             }
         }
         else {
@@ -1829,13 +1829,13 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
     if ( status >= 0 &&
-         NULL != dataObjInfo && NULL != ( *dataObjInfo )->specColl ) {
+         nullptr != dataObjInfo && nullptr != ( *dataObjInfo )->specColl ) {
         if ( LINKED_COLL == ( *dataObjInfo )->specColl->collClass ) {
             /* already been translated */
             rstrcpy( dataObjInp->objPath, ( *dataObjInfo )->objPath,
                      MAX_NAME_LEN );
             free( ( *dataObjInfo )->specColl );
-            ( *dataObjInfo )->specColl = NULL;
+            ( *dataObjInfo )->specColl = nullptr;
         }
         else if ( getStructFileType( ( *dataObjInfo )->specColl ) >= 0 ) {
             dataObjInp->numThreads = NO_THREADING;
@@ -1852,7 +1852,7 @@ int regNewObjSize( rsComm_t *rsComm, char *objPath, int replNum,
     char tmpStr[MAX_NAME_LEN];
     int status;
 
-    if ( objPath == NULL ) {
+    if ( objPath == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 

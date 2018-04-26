@@ -23,7 +23,7 @@ rsL3FileGetSingleBuf( rsComm_t *rsComm, int *l1descInx,
     int bytesRead;
 
     if ( L1desc[*l1descInx].dataObjInfo->dataSize > 0 ) {
-        if ( L1desc[*l1descInx].remoteZoneHost != NULL ) {
+        if ( L1desc[*l1descInx].remoteZoneHost != nullptr ) {
             bytesRead = rcL3FileGetSingleBuf(
                             L1desc[*l1descInx].remoteZoneHost->conn,
                             L1desc[*l1descInx].remoteL1descInx, dataObjOutBBuf );

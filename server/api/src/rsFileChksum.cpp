@@ -60,7 +60,7 @@ remoteFileChksum( rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
                   char **chksumStr, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileChksum: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -104,7 +104,7 @@ _rsFileChksum(
                  "_rsFileChksum: fileChksum for %s, status = %d",
                  fileChksumInp->fileName, status );
         free( *chksumStr );
-        *chksumStr = NULL;
+        *chksumStr = nullptr;
     }
 
     return status;

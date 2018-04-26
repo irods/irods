@@ -42,10 +42,10 @@ int
 rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     int status;
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    rodsServerHost_t *rodsServerHost = NULL;
-    dataObjInfo_t *srcDataObjInfo = NULL;
-    dataObjInfo_t *destDataObjInfo = NULL;
-    specCollCache_t *specCollCache = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
+    dataObjInfo_t *srcDataObjInfo = nullptr;
+    dataObjInfo_t *destDataObjInfo = nullptr;
+    specCollCache_t *specCollCache = nullptr;
     int srcType, destType;
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
@@ -70,7 +70,7 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
                  MASTER_RCAT,
                  ( const char* )srcDataObjInp->objPath,
                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) {
+    if ( status < 0 || nullptr == rodsServerHost ) {
         return status;
     }
     else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
@@ -84,13 +84,13 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     destType = resolvePathInSpecColl( rsComm, destDataObjInp->objPath,
                                       WRITE_COLL_PERM, 0, &destDataObjInfo );
 
-    if ( srcDataObjInfo           != NULL &&
-            srcDataObjInfo->specColl != NULL &&
+    if ( srcDataObjInfo           != nullptr &&
+            srcDataObjInfo->specColl != nullptr &&
             strcmp( srcDataObjInfo->specColl->collection,
                     srcDataObjInp->objPath ) == 0 ) {
         /* this must be the link pt or mount pt. treat it as normal coll */
         freeDataObjInfo( srcDataObjInfo );
-        srcDataObjInfo = NULL;
+        srcDataObjInfo = nullptr;
         srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
     }
 
@@ -111,10 +111,10 @@ rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         /* src is a specColl of some sort. dest must also be a specColl in
          * order to rename, except in the special case where src is in a
          * mounted collection. Otherwise, bail out with specColl conflict error. */
-        if ( NULL != srcDataObjInfo && SYS_SPEC_COLL_OBJ_NOT_EXIST == destType ) {
+        if ( nullptr != srcDataObjInfo && SYS_SPEC_COLL_OBJ_NOT_EXIST == destType ) {
             status = specCollObjRename( rsComm, srcDataObjInfo, destDataObjInfo );
         }
-        else if ( NULL != srcDataObjInfo && NULL != srcDataObjInfo->specColl &&
+        else if ( nullptr != srcDataObjInfo && nullptr != srcDataObjInfo->specColl &&
                   MOUNTED_COLL == srcDataObjInfo->specColl->collClass ) {
             status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType, destDataObjInp );
         }
@@ -180,7 +180,7 @@ getMultiCopyPerResc( rsComm_t *rsComm ) { // JMC - backport 4556
 
     memset( &rei, 0, sizeof( rei ) );
     rei.rsComm = rsComm; // JMC - backport 4556
-    applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
+    applyRule( "acSetMultiReplPerResc", nullptr, &rei, NO_SAVE_REI );
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
         return 1;
     }
@@ -200,7 +200,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
     }
 
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        if ( rsComm == NULL ) {
+        if ( rsComm == nullptr ) {
             rodsLog( LOG_ERROR, "_rsDataObjRename was passed a null rsComm" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
@@ -208,7 +208,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
         char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
         dataObjInp_t *srcDataObjInp, *destDataObjInp;
-        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *dataObjInfoHead = nullptr;
         rodsLong_t srcId, destId;
         int multiCopyFlag;
         int acPreProcFromRenameFlag = 0;
@@ -248,7 +248,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
 
             status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
 
-            if ( status >= 0 || NULL != dataObjInfoHead ) {
+            if ( status >= 0 || nullptr != dataObjInfoHead ) {
                 srcId = dataObjInfoHead->dataId;
             }
             else {
@@ -270,7 +270,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         else {
             if ( ( status = isData( rsComm, srcDataObjInp->objPath, &srcId ) ) >= 0 ) {
                 if ( isData( rsComm, destDataObjInp->objPath, &destId ) >= 0 &&
-                        getValByKey( &srcDataObjInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+                        getValByKey( &srcDataObjInp->condInput, FORCE_FLAG_KW ) != nullptr ) {
                     /* dest exist */
                     rsDataObjUnlink( rsComm, destDataObjInp );
                 }
@@ -298,7 +298,7 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         }
 
         if ( srcDataObjInp->oprType == RENAME_DATA_OBJ ) {
-            if ( strstr( dataObjInfoHead->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
+            if ( strstr( dataObjInfoHead->dataType, BUNDLE_STR ) != nullptr ) { // JMC - backport 4658
                 rodsLog( LOG_ERROR,
                          "_rsDataObjRename: cannot rename tar bundle type obj %s",
                          srcDataObjInp->objPath );
@@ -379,12 +379,12 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
 
                     /* update src dataObjInfoHead with dest objPath */
                     tmpDataObjInfo = dataObjInfoHead;
-                    while ( tmpDataObjInfo != NULL ) {
+                    while ( tmpDataObjInfo != nullptr ) {
                         rstrcpy( tmpDataObjInfo->objPath, destDataObjInp->objPath, MAX_NAME_LEN );
 
                         tmpDataObjInfo = tmpDataObjInfo->next;
                     }
-                    status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, NULL );
+                    status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, nullptr );
                     freeAllDataObjInfo( dataObjInfoHead );
                 }
                 else {
@@ -491,7 +491,7 @@ l3Rename( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName ) {
         rstrcpy( fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN );
         rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,   MAX_NAME_LEN );
         rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
-        fileRenameOut_t* ren_out = 0;
+        fileRenameOut_t* ren_out = nullptr;
         status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
         free( ren_out );
     }
@@ -525,7 +525,7 @@ moveMountedCollDataObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     fileRenameInp_t fileRenameInp;
     int status;
 
-    if ( rsComm == NULL || srcDataObjInfo == NULL || destDataObjInp == NULL ) {
+    if ( rsComm == nullptr || srcDataObjInfo == nullptr || destDataObjInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     bzero( &destDataObjInfo, sizeof( destDataObjInfo ) );
@@ -601,8 +601,8 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                         dataObjInp_t *destDataObjInp ) {
     int l3descInx;
     fileReaddirInp_t fileReaddirInp;
-    rodsDirent_t *rodsDirent = NULL;
-    rodsStat_t *fileStatOut = NULL;
+    rodsDirent_t *rodsDirent = nullptr;
+    rodsStat_t *fileStatOut = nullptr;
     dataObjInfo_t subSrcDataObjInfo;
     dataObjInp_t subDestDataObjInp;
     int status;
@@ -614,7 +614,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     fileReaddirInp.fileInx = l3descInx;
     rsMkCollR( rsComm, "/", destDataObjInp->objPath );
     while ( rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) >= 0 ) {
-        if ( rodsDirent == NULL ) {
+        if ( rodsDirent == nullptr ) {
             savedStatus = SYS_INTERNAL_NULL_INPUT_ERR;
             break;
         }
@@ -635,7 +635,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                   srcDataObjInfo->filePath, myRodsDirent.d_name );
 
         status = l3Stat( rsComm, &subSrcDataObjInfo, &fileStatOut );
-        if ( status < 0 || fileStatOut == NULL ) { // JMC cppcheck
+        if ( status < 0 || fileStatOut == nullptr ) { // JMC cppcheck
             rodsLog( LOG_ERROR,
                      "moveMountedCollCollObj: l3Stat for %s error, status = %d",
                      subSrcDataObjInfo.filePath, status );
@@ -663,7 +663,7 @@ moveMountedCollCollObj( rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                      subSrcDataObjInfo.objPath, status );
         }
         free( fileStatOut );
-        fileStatOut = NULL;
+        fileStatOut = nullptr;
     }
     l3Rmdir( rsComm, srcDataObjInfo );
     return savedStatus;

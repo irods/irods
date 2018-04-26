@@ -33,8 +33,8 @@ int
 rcStreamRead( rcComm_t *conn, fileReadInp_t *streamReadInp,
               bytesBuf_t *streamReadOutBBuf ) {
     int status;
-    status = procApiRequest( conn, STREAM_READ_AN, streamReadInp, NULL,
-                             ( void ** ) NULL, streamReadOutBBuf );
+    status = procApiRequest( conn, STREAM_READ_AN, streamReadInp, nullptr,
+                             ( void ** ) nullptr, streamReadOutBBuf );
 
     return status;
 }

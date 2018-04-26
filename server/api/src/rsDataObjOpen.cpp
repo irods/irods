@@ -52,7 +52,7 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return remoteFlag;
     }
     else if ( remoteFlag == REMOTE_HOST ) {
-        openStat_t *openStat = NULL;
+        openStat_t *openStat = nullptr;
         status = rcDataObjOpenAndStat( rodsServerHost->conn, dataObjInp,
                                        &openStat );
         if ( status < 0 ) {
@@ -60,21 +60,21 @@ rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         }
         l1descInx = allocAndSetL1descForZoneOpr( status, dataObjInp,
                     rodsServerHost, openStat );
-        if ( openStat != NULL ) {
+        if ( openStat != nullptr ) {
             free( openStat );
         }
         return l1descInx;
     }
     else {
         // dataObjInfo_t linked list
-        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *dataObjInfoHead = nullptr;
 
         // resource hierarchy
         std::string hier;
 
         // =-=-=-=-=-=-=-
         // determine the resource hierarchy if one is not provided
-        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
 
             irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::OPEN_OPERATION,
@@ -117,25 +117,25 @@ int
 _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfoHead ) {
     int status = 0;
     int phyOpenFlag = DO_PHYOPEN;
-    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, NO_OPEN_FLAG_KW ) != nullptr ) {
         phyOpenFlag = DO_NOT_PHYOPEN;
     }
     else if ( getValByKey( &dataObjInp->condInput, PHYOPEN_BY_SIZE_KW )
-              != NULL ) {
+              != nullptr ) {
         phyOpenFlag = PHYOPEN_BY_SIZE;
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
     char * lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
     int lockFd = -1; // JMC - backport 4604
-    if ( lockType != NULL ) {
+    if ( lockType != nullptr ) {
         lockFd = irods::server_api_call(
                      DATA_OBJ_LOCK_AN,
                      rsComm,
                      dataObjInp,
-                     NULL,
-                     ( void** ) NULL,
-                     NULL );
+                     nullptr,
+                     ( void** ) nullptr,
+                     nullptr );
         if ( lockFd > 0 ) {
             /* rm it so it won't be done again causing deadlock */
             rmKeyVal( &dataObjInp->condInput, LOCK_TYPE_KW );
@@ -171,9 +171,9 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
                     DATA_OBJ_UNLOCK_AN,
                     rsComm,
                     dataObjInp,
-                    NULL,
-                    ( void** ) NULL,
-                    NULL );
+                    nullptr,
+                    ( void** ) nullptr,
+                    nullptr );
 
             }
         }
@@ -192,9 +192,9 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
                     DATA_OBJ_UNLOCK_AN,
                     rsComm,
                     dataObjInp,
-                    NULL,
-                    ( void** ) NULL,
-                    NULL );
+                    nullptr,
+                    ( void** ) nullptr,
+                    nullptr );
 
 
             }
@@ -215,16 +215,16 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
                     DATA_OBJ_UNLOCK_AN,
                     rsComm,
                     dataObjInp,
-                    NULL,
-                    ( void** ) NULL,
-                    NULL );
+                    nullptr,
+                    ( void** ) nullptr,
+                    nullptr );
 
             }
             return status;
         }
     }
 
-    dataObjInfo_t * compDataObjInfo = NULL;
+    dataObjInfo_t * compDataObjInfo = nullptr;
     if ( getStructFileType( dataObjInfoHead->specColl ) >= 0 ) {
         /* special coll. Nothing to do */
     }
@@ -243,9 +243,9 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
                 DATA_OBJ_UNLOCK_AN,
                 rsComm,
                 dataObjInp,
-                NULL,
-                ( void** ) NULL,
-                NULL );
+                nullptr,
+                ( void** ) nullptr,
+                nullptr );
         }
         freeAllDataObjInfo( dataObjInfoHead );
         return status;
@@ -270,9 +270,9 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
                         DATA_OBJ_UNLOCK_AN,
                         rsComm,
                         dataObjInp,
-                        NULL,
-                        ( void** ) NULL,
-                        NULL );
+                        nullptr,
+                        ( void** ) nullptr,
+                        nullptr );
                 }
                 return status;
             }
@@ -284,18 +284,18 @@ _rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataO
      * For read, compDataObjInfo should be NULL. */
     dataObjInfo_t * tmpDataObjInfo = dataObjInfoHead;
 
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         dataObjInfo_t * nextDataObjInfo = tmpDataObjInfo->next;
-        tmpDataObjInfo->next = NULL;
+        tmpDataObjInfo->next = nullptr;
 
         int l1descInx = status = _rsDataObjOpenWithObjInfo( rsComm, dataObjInp, phyOpenFlag, tmpDataObjInfo );
 
         if ( l1descInx >= 0 ) {
-            if ( compDataObjInfo != NULL ) {
+            if ( compDataObjInfo != nullptr ) {
                 L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
             }
 
-            dataObjInfo_t *otherDataObjInfo = NULL;
+            dataObjInfo_t *otherDataObjInfo = nullptr;
             queDataObjInfo( &otherDataObjInfo, nextDataObjInfo, 0, 1 ); // JMC - backport 4542
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
 
@@ -347,7 +347,7 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
      * For copy and replicate, the calling routine should modify this
      * dataSize */
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, replStatus, -1 );
-    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, PURGE_CACHE_KW ) != nullptr ) {
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
 
@@ -365,7 +365,7 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
 
         /* open for put or get. May do "dataInclude" */
-        if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL
+        if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != nullptr
                 && dataObjInfo->dataSize <= single_buff_sz ) {
             status = 0;
         }
@@ -516,7 +516,7 @@ applyPreprocRuleForOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // make resource properties available as rule session variables
     irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-    status = applyRule( "acPreprocForDataObjOpen", NULL, &rei, NO_SAVE_REI );
+    status = applyRule( "acPreprocForDataObjOpen", nullptr, &rei, NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
 
@@ -547,9 +547,9 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     std::string resc_name;
 
-    if ( getValByKey( condInput, DEST_RESC_NAME_KW ) == NULL &&
-            getValByKey( condInput, BACKUP_RESC_NAME_KW ) == NULL &&
-            getValByKey( condInput, DEF_RESC_NAME_KW ) == NULL ) {
+    if ( getValByKey( condInput, DEST_RESC_NAME_KW ) == nullptr &&
+            getValByKey( condInput, BACKUP_RESC_NAME_KW ) == nullptr &&
+            getValByKey( condInput, DEF_RESC_NAME_KW ) == nullptr ) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
@@ -595,7 +595,7 @@ createEmptyRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
     regReplicaInp.srcDataObjInfo = *dataObjInfoHead;
     regReplicaInp.destDataObjInfo = myDataObjInfo;
-    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != nullptr ) {
         addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     }
     status = rsRegReplica( rsComm, &regReplicaInp );
@@ -625,8 +625,8 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = requeDataObjInfoByDestResc( dataObjInfoHead, &dataObjInp->condInput, 1, 1 );
 
     /* status < 0 means there is no copy in the DEST_RESC */
-    if ( status < 0 && ( *dataObjInfoHead )->specColl == NULL &&
-            getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) != NULL ) {
+    if ( status < 0 && ( *dataObjInfoHead )->specColl == nullptr &&
+            getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW ) != nullptr ) {
 
         /* we don't have a copy, so create an empty dataObjInfo */
         status = createEmptyRepl( rsComm, dataObjInp, dataObjInfoHead );
@@ -642,7 +642,7 @@ procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = 0;
     }
 
-    if ( *compDataObjInfo != NULL ) {
+    if ( *compDataObjInfo != nullptr ) {
         dequeDataObjInfo( dataObjInfoHead, *compDataObjInfo );
     }
     return status;

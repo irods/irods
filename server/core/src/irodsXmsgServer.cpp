@@ -23,7 +23,7 @@ main( int argc, char **argv ) {
     int c;
     int runMode = SERVER;
     int flagval = 0;
-    char *logDir = NULL;
+    char *logDir = nullptr;
     char *tmpStr;
     int logFd;
 
@@ -45,13 +45,13 @@ main( int argc, char **argv ) {
 
     /* Handle option to log sql commands */
     tmpStr = getenv( SP_LOG_SQL );
-    if ( tmpStr != NULL ) {
+    if ( tmpStr != nullptr ) {
         rodsLogSqlReq( 1 );
     }
 
     /* Set the logging level */
     tmpStr = getenv( SP_LOG_LEVEL );
-    if ( tmpStr != NULL ) {
+    if ( tmpStr != nullptr ) {
         int i;
         i = atoi( tmpStr );
         rodsLogLevel( i );
@@ -164,7 +164,7 @@ xmsgServerMain() {
         // send a 'we failed to negotiate' message here??
         // or use the error stack rule engine thingie
         irods::log( PASS( ret ) );
-        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, nullptr, 0 );
         cleanupAndExit( ret.code() );
 
     }
@@ -183,7 +183,7 @@ xmsgServerMain() {
         svrComm.sock = sockOpenForInConn(
                         &svrComm,
                         &xmsgPort,
-                        NULL,
+                        nullptr,
                         SOCK_STREAM );
     } catch ( const irods::exception& e ) {
         irods::log( irods::error(e) );
@@ -205,7 +205,7 @@ xmsgServerMain() {
     while ( 1 ) {       /* infinite loop */
         FD_SET( svrComm.sock, &sockMask );
         while ( ( numSock = select( svrComm.sock + 1, &sockMask,
-                                    ( fd_set * ) NULL, ( fd_set * ) NULL, ( struct timeval * ) NULL ) ) < 0 ) {
+                                    ( fd_set * ) nullptr, ( fd_set * ) nullptr, ( struct timeval * ) nullptr ) ) < 0 ) {
 
             if ( errno == EINTR ) {
                 rodsLog( LOG_NOTICE, "xmsgServerMain: select() interrupted" );

@@ -52,7 +52,7 @@ remoteFileRmdir( rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
                  rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileRmdir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -91,11 +91,11 @@ int _rsFileRmdir(
         // recursive. This is a very dangerous operation. curently
         // it is only used to remove cache directory of structured
         // files
-        struct rodsDirent* myFileDirent = 0;
+        struct rodsDirent* myFileDirent = nullptr;
 
         // if it is not a cache dir, return an error as we only do this
         // for cache dirs at the moment.
-        if ( strstr( _rmdir_inp->dirName, CACHE_DIR_STR ) == NULL ) {
+        if ( strstr( _rmdir_inp->dirName, CACHE_DIR_STR ) == nullptr ) {
             rodsLog( LOG_ERROR, "_rsFileRmdir: recursive rm of non cachedir path %s",
                      _rmdir_inp->dirName );
             return SYS_INVALID_FILE_PATH;

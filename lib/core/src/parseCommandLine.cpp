@@ -42,7 +42,7 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
     /* Set all flags and pointers to false/null */
     memset( rodsArgs, 0, sizeof( rodsArguments_t ) );
 
-    if ( argv != NULL && argv[0] != NULL ) {
+    if ( argv != nullptr && argv[0] != nullptr ) {
         /* set SP_OPTION to argv[0] so it can be passed to server */
         char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
         *child = '\0';
@@ -428,9 +428,9 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             break;
         case 's':
             rodsArgs->sizeFlag = True;
-            if ( optarg != NULL ) {
+            if ( optarg != nullptr ) {
                 /* irsync uses sizeFlag for sync but has no size value */
-                rodsArgs->size = strtoll( optarg, 0, 0 );
+                rodsArgs->size = strtoll( optarg, nullptr, 0 );
             }
             break;
         case 'S':

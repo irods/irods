@@ -93,10 +93,10 @@ int
 setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
                    char * restartPath, objType_t objType, keyValPair_t * condInput,
                    int deleteFlag ) {
-    if ( restartPath != NULL && deleteFlag > 0 ) {
+    if ( restartPath != nullptr && deleteFlag > 0 ) {
         if ( objType == DATA_OBJ_T ) {
-            if ( ( condInput == NULL ||
-                    getValByKey( condInput, FORCE_FLAG_KW ) == NULL ) &&
+            if ( ( condInput == nullptr ||
+                    getValByKey( condInput, FORCE_FLAG_KW ) == nullptr ) &&
                     ( conn->fileRestart.info.status != FILE_RESTARTED ||
                       strcmp( conn->fileRestart.info.objPath, restartPath ) != 0 ) ) {
                 dataObjInp_t dataObjInp;
@@ -162,18 +162,18 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     int i;
     int status;
     int savedStatus = 0;
-    rodsPath_t *targPath = 0;
+    rodsPath_t *targPath = nullptr;
     dataObjInp_t dataObjOprInp;
     bulkOprInp_t bulkOprInp;
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     if ( myRodsArgs->ticket == True ) {
-        if ( myRodsArgs->ticketString == NULL ) {
+        if ( myRodsArgs->ticketString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
             return USER__NULL_INPUT_ERR;
@@ -201,7 +201,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
     }
 
     /* initialize the progress struct */
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
         for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
             targPath = &rodsPathInp->targPath[i];
@@ -263,7 +263,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
             else {
                 status = putDirUtil( myConn, rodsPathInp->srcPath[i].outPath,
                                      targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
-                                     &bulkOprInp, &rodsRestart, NULL );
+                                     &bulkOprInp, &rodsRestart, nullptr );
             }
         }
         else {
@@ -334,7 +334,7 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "putFileUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -348,10 +348,10 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         rstrcpy( conn->operProgress.curFileName, srcPath, MAX_NAME_LEN );
         conn->operProgress.curFileSize = srcSize;
         conn->operProgress.curFileSizeDone = 0;
@@ -397,11 +397,11 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 
     if ( status >= 0 ) {
         if ( rodsArgs->verbose == True ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, dataObjOprInp->objPath, srcSize, srcPath,
                          &startTime, &endTime );
         }
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.totalNumFilesDone++;
             conn->operProgress.totalFileSizeDone += srcSize;
         }
@@ -416,12 +416,12 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 rodsRestart_t *rodsRestart ) {
     char *tmpStr;
 
-    if ( rodsArgs == NULL ) { // JMC cppcheck - nullptr
+    if ( rodsArgs == nullptr ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR, "initCondForPut :: NULL rodsArgs" );
         return -1;
     }
 
-    if ( dataObjOprInp == NULL ) {
+    if ( dataObjOprInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForPut: NULL dataObjOprInp input" );
         return USER__NULL_INPUT_ERR;
@@ -438,7 +438,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->bulk == True ) {
-        if ( bulkOprInp == NULL ) {
+        if ( bulkOprInp == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL bulkOprInp input" );
             return USER__NULL_INPUT_ERR;
@@ -460,7 +460,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->dataType == True ) {
-        if ( rodsArgs->dataTypeString == NULL ) {
+        if ( rodsArgs->dataTypeString == nullptr ) {
             addKeyVal( &dataObjOprInp->condInput, DATA_TYPE_KW, "generic" );
         }
         else {
@@ -500,7 +500,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 #endif
 
     if ( rodsArgs->physicalPath == True ) {
-        if ( rodsArgs->physicalPathString == NULL ) {
+        if ( rodsArgs->physicalPathString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL physicalPathString error" );
             return USER__NULL_INPUT_ERR;
@@ -522,7 +522,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -537,7 +537,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         /* use rodsDefResource but set the DEF_RESC_NAME_KW instead.
          * Used by dataObjCreate. Will only make a new replica only if
          * DEST_RESC_NAME_KW is set */
@@ -568,11 +568,11 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjOprInp->condInput, VERY_VERBOSE_KW, "" );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
@@ -649,11 +649,11 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE );
     }
 
-    if ( rodsArgs->metadata_string != NULL && strlen( rodsArgs->metadata_string ) != 0 ) {
+    if ( rodsArgs->metadata_string != nullptr && strlen( rodsArgs->metadata_string ) != 0 ) {
         addKeyVal( &dataObjOprInp->condInput, METADATA_INCLUDED_KW, rodsArgs->metadata_string );
     }
 
-    if ( rodsArgs->acl_string != NULL && strlen( rodsArgs->acl_string ) != 0 ) {
+    if ( rodsArgs->acl_string != nullptr && strlen( rodsArgs->acl_string ) != 0 ) {
         addKeyVal( &dataObjOprInp->condInput, ACL_INCLUDED_KW, rodsArgs->acl_string );
     }
 
@@ -667,7 +667,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             bulkOprInfo_t *bulkOprInfo ) {
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
 
-    if ( srcDir == NULL || targColl == NULL ) {
+    if ( srcDir == nullptr || targColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "putDirUtil: NULL srcDir or targColl input" );
         return USER__NULL_INPUT_ERR;
@@ -712,7 +712,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     int bulkFlag = NON_BULK_OPR;
-    if ( bulkOprInfo != NULL ) {
+    if ( bulkOprInfo != nullptr ) {
         bulkFlag = bulkOprInfo->flags;
     }
 
@@ -908,9 +908,9 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                           bulkOprInfo.phyBunDir );
         }
         clearBulkOprInfo( &bulkOprInfo );
-        if ( bulkOprInfo.bytesBuf.buf != NULL ) {
+        if ( bulkOprInfo.bytesBuf.buf != nullptr ) {
             free( bulkOprInfo.bytesBuf.buf );
-            bulkOprInfo.bytesBuf.buf = NULL;
+            bulkOprInfo.bytesBuf.buf = nullptr;
         }
 
     }
@@ -956,7 +956,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
         return status;
     }
 
-    status = myRead( in_fd, bufPtr, srcSize, &bytesRead, NULL );
+    status = myRead( in_fd, bufPtr, srcSize, &bytesRead, nullptr );
     if ( status != srcSize ) {
         if ( status >= 0 ) {
             status = SYS_COPY_LEN_ERR - errno;
@@ -974,8 +974,8 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
     bulkOprInfo->size += srcSize;
     bulkOprInfo->bytesBuf.len = bulkOprInfo->size;
 
-    if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != NULL ||
-            getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
+    if ( getValByKey( &bulkOprInp->condInput, REG_CHKSUM_KW ) != nullptr ||
+            getValByKey( &bulkOprInp->condInput, VERIFY_CHKSUM_KW ) != nullptr ) {
         char chksumStr[NAME_LEN];
 
         rodsEnv env;
@@ -997,7 +997,7 @@ bulkPutFileUtil( rcComm_t *conn, char *srcPath, char *targPath,
                                              bulkOprInfo->size, bulkOprInp );
     }
     else {
-        status = fillAttriArrayOfBulkOprInp( targPath, createMode, NULL,
+        status = fillAttriArrayOfBulkOprInp( targPath, createMode, nullptr,
                                              bulkOprInfo->size, bulkOprInp );
     }
     if ( status < 0 ) {
@@ -1030,16 +1030,16 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
     struct timeval startTime, endTime;
     int status = 0;
 
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
+    if ( bulkOprInfo == nullptr || bulkOprInfo->count <= 0 ) {
         return 0;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     /* send it */
-    if ( bulkOprInfo->bytesBuf.buf != NULL ) {
+    if ( bulkOprInfo->bytesBuf.buf != nullptr ) {
         status = rcBulkDataObjPut( conn, bulkOprInp, &bulkOprInfo->bytesBuf );
     }
     /* reset the row count */
@@ -1051,12 +1051,12 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
     if ( status >= 0 ) {
         if ( rodsArgs->verbose == True ) {
             printf( "Bulk upload %d files.\n", bulkOprInfo->count );
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, bulkOprInfo->cachedTargPath,
                          bulkOprInfo->size, bulkOprInfo->cachedTargPath,
                          &startTime, &endTime );
         }
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             rstrcpy( conn->operProgress.curFileName,
                      bulkOprInfo->cachedTargPath, MAX_NAME_LEN );
             conn->operProgress.totalNumFilesDone +=  bulkOprInfo->count;
@@ -1070,7 +1070,7 @@ sendBulkPut( rcComm_t *conn, bulkOprInp_t *bulkOprInp,
 
 int
 clearBulkOprInfo( bulkOprInfo_t *bulkOprInfo ) {
-    if ( bulkOprInfo == NULL || bulkOprInfo->count <= 0 ) {
+    if ( bulkOprInfo == nullptr || bulkOprInfo->count <= 0 ) {
         return 0;
     }
     bulkOprInfo->bytesBuf.len = 0;

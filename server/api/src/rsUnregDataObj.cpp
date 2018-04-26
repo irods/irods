@@ -16,14 +16,14 @@
 int
 rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     dataObjInfo_t *dataObjInfo;
 
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
     status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )dataObjInfo->objPath,
                                  &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsServerHost ) { // JMC cppcheck - nullptr
         return status;
     }
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
@@ -74,7 +74,7 @@ _rsUnregDataObj( rsComm_t *rsComm, unregDataObj_t *unregDataObjInp ) {
 
         status = chlUnregDataObj( rsComm, dataObjInfo, condInput );
         if ( status < 0 ) {
-            char* sys_error = NULL;
+            char* sys_error = nullptr;
             const char* rods_error = rodsErrorName( status, &sys_error );
             std::stringstream msg;
             msg << __FUNCTION__;

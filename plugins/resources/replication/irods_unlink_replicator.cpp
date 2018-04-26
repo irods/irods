@@ -47,7 +47,7 @@ namespace irods {
                     addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
                     int status = rsDataObjUnlink( _ctx.comm(), &dataObjInp );
                     // CAT_NO_ROWS_FOUND is okay if the file being unlinked is a registered file in which case there are no replicas
-                    char* sys_error = NULL ;
+                    char* sys_error = nullptr ;
                     const char* rods_error = rodsErrorName( status, &sys_error );
                     result = ASSERT_ERROR( status >= 0 || status == CAT_NO_ROWS_FOUND, status,
                                            "Failed to unlink the object: \"%s\" from the resource: \"%s\" - %s %s.",

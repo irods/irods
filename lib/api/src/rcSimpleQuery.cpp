@@ -47,8 +47,8 @@ int
 rcSimpleQuery( rcComm_t *conn, simpleQueryInp_t *simpleQueryInp,
                simpleQueryOut_t **simpleQueryOut ) {
     int status;
-    status = procApiRequest( conn, SIMPLE_QUERY_AN,  simpleQueryInp, NULL,
-                             ( void ** ) simpleQueryOut, NULL );
+    status = procApiRequest( conn, SIMPLE_QUERY_AN,  simpleQueryInp, nullptr,
+                             ( void ** ) simpleQueryOut, nullptr );
 
     return status;
 }

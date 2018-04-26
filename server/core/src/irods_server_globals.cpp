@@ -14,13 +14,13 @@ extern irods::resource_manager resc_mgr;
 #define CACHE_DIR_STR "cacheDir"
 
 int LogFd = -1;                 /* the log file descriptor */
-char *CurLogfileName = NULL;    /* the path of the current logfile */
+char *CurLogfileName = nullptr;    /* the path of the current logfile */
 char ProcLogDir[MAX_NAME_LEN];
 
-rodsServerHost_t *LocalServerHost = NULL;
-rodsServerHost_t *ServerHostHead = NULL;
-rodsServerHost_t *HostConfigHead = NULL;
-zoneInfo_t *ZoneInfoHead = NULL;
+rodsServerHost_t *LocalServerHost = nullptr;
+rodsServerHost_t *ServerHostHead = nullptr;
+rodsServerHost_t *HostConfigHead = nullptr;
+zoneInfo_t *ZoneInfoHead = nullptr;
 int RescGrpInit = 0;    /* whether initRescGrp has been called */
 
 /* global fileDesc */
@@ -42,11 +42,11 @@ char KerberosName[MAX_NAME_LEN];
 /* The stat of the Agent initialization */
 
 int InitialState = INITIAL_NOT_DONE;
-rsComm_t *ThisComm = NULL;
+rsComm_t *ThisComm = nullptr;
 
 int IcatConnState = INITIAL_NOT_DONE;
 
-specCollCache_t *SpecCollCacheHead = NULL;
+specCollCache_t *SpecCollCacheHead = nullptr;
 
 //structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
 #ifdef TAR_STRUCT_FILE

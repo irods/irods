@@ -61,7 +61,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // call generic plugin loader
-        database* db = 0;
+        database* db = nullptr;
         error ret = load_plugin< database >(
                         db,
                         _plugin_name,

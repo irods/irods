@@ -110,11 +110,11 @@ int tautologyLtBase( ExprType *a, ExprType *b ) {
     if ( getNodeType( a ) == T_INT && getNodeType( b ) == T_DOUBLE ) {
         return 1;
     }
-    if ( getNodeType( a ) == T_IRODS && getNodeType( b ) == T_IRODS && ( a->text == NULL || b->text == NULL || strcmp( a->text, b->text ) == 0 ) ) {
+    if ( getNodeType( a ) == T_IRODS && getNodeType( b ) == T_IRODS && ( a->text == nullptr || b->text == nullptr || strcmp( a->text, b->text ) == 0 ) ) {
         return 1;
     }
     int i;
-    if ( a->exprType != 0 && TYPE( a ) == T_VAR ) {
+    if ( a->exprType != nullptr && TYPE( a ) == T_VAR ) {
         for ( i = 0; i < a->exprType->degree; i++ ) {
             if ( typeEqSyntatic( a->exprType->subtrees[i], b ) ) {
                 return 1;
@@ -138,11 +138,11 @@ int occursIn( ExprType *var, ExprType *type ) {
     }
 }
 ExprType* getEquivalenceClassRep( ExprType *varOrBase, Hashtable *equivalence ) {
-    ExprType *equiv1 = NULL, *equiv2;
+    ExprType *equiv1 = nullptr, *equiv2;
     char name[128];
     equiv2 = varOrBase;
     int ref = 0;
-    while ( equiv2 != NULL ) {
+    while ( equiv2 != nullptr ) {
         equiv1 = equiv2;
         equiv2 = ( ExprType * ) lookupFromHashTable( equivalence, getBaseTypeOrTVarId( equiv1, name ) );
         ref ++;
@@ -299,20 +299,20 @@ void doNarrow( Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **n
     Node *retl[MAX_NUM_DISJUNCTS], *retr[MAX_NUM_DISJUNCTS];
     int i, k;
     for ( i = 0; i < ln; i++ ) {
-        retl[i] = NULL;
+        retl[i] = nullptr;
     }
     for ( k = 0; k < rn; k++ ) {
-        retr[k] = NULL;
+        retr[k] = nullptr;
     }
     for ( k = 0; k < rn; k++ ) {
         for ( i = 0; i < ln; i++ ) {
             if ( applyBaseTypeRule( l[i], r[k], flex ) == TAUTOLOGY ) {
                 retl[i] = l[i];
                 retr[k] = r[k];
-                if ( getNodeType( l[i] ) == T_IRODS && l[i]->text == NULL ) {
+                if ( getNodeType( l[i] ) == T_IRODS && l[i]->text == nullptr ) {
                     retl[i] = retr[k];
                 }
-                if ( getNodeType( r[k] ) == T_IRODS && r[k]->text == NULL ) {
+                if ( getNodeType( r[k] ) == T_IRODS && r[k]->text == nullptr ) {
                     retr[k] = retl[i];
                 }
                 /*	break;*/
@@ -321,13 +321,13 @@ void doNarrow( Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **n
     }
     *nln = 0;
     for ( i = 0; i < ln; i++ ) {
-        if ( retl[i] != NULL ) {
+        if ( retl[i] != nullptr ) {
             nl[( *nln )++] = retl[i];
         }
     }
     *nrn = 0;
     for ( k = 0; k < rn; k++ ) {
-        if ( retr[k] != NULL ) {
+        if ( retr[k] != nullptr ) {
             nr[( *nrn )++] = retr[k];
         }
     }
@@ -457,7 +457,7 @@ int isBaseType( ExprType *t ) {
 
 int applyBaseTypeRule( ExprType *tca, ExprType *tcb, int flex ) {
     return ( flex && tautologyLtBase( tca, tcb ) ) ||
-           ( !flex && ( ( getNodeType( tca ) == T_IRODS && getNodeType( tcb ) == T_IRODS && ( tca->text == NULL || tcb->text == NULL ) ) ||
+           ( !flex && ( ( getNodeType( tca ) == T_IRODS && getNodeType( tcb ) == T_IRODS && ( tca->text == nullptr || tcb->text == nullptr ) ) ||
                         typeEqSyntatic( tca, tcb ) ) );
 }
 
@@ -553,7 +553,7 @@ Satisfiability solveConstraints( List *typingConstraints, Hashtable *typingEnv, 
         typingConstraintsToString(typingConstraints, buf0, 1024);
         printf("solving constraints: %s\n", buf0);
     */
-    ListNode *nextNode = NULL;
+    ListNode *nextNode = nullptr;
     do {
         Satisfiability sat = simplify( typingConstraints, typingEnv, errmsg, errnode, r );
         if ( sat == ABSURDITY ) {
@@ -561,7 +561,7 @@ Satisfiability solveConstraints( List *typingConstraints, Hashtable *typingEnv, 
         }
         int changed = 0;
         nextNode = typingConstraints->head;
-        while ( nextNode != NULL && !changed ) {
+        while ( nextNode != nullptr && !changed ) {
             TypingConstraint *tc = ( TypingConstraint * )nextNode->value;
             /*
                         char buf2[1024], buf3[1024];
@@ -612,11 +612,11 @@ Satisfiability solveConstraints( List *typingConstraints, Hashtable *typingEnv, 
             /* printVarTypeEnvToStdOut(typingEnv); */
         }
     }
-    while ( nextNode != NULL );
+    while ( nextNode != nullptr );
     if ( !consistent( typingConstraints, typingEnv, r ) ) {
         return ABSURDITY;
     }
-    return typingConstraints->head == NULL ? TAUTOLOGY : CONTINGENCY;
+    return typingConstraints->head == nullptr ? TAUTOLOGY : CONTINGENCY;
 }
 
 int consistent( List*, Hashtable*, Region* ) {
@@ -636,7 +636,7 @@ Satisfiability simplify( List *typingConstraints, Hashtable *typingEnv, rError_t
         ln = typingConstraints->head;
         /*typingConstraintsToString(typingConstraints, buf, 1024);
         printf("constraints: \n%s\n\n", buf);*/
-        while ( ln != NULL ) {
+        while ( ln != nullptr ) {
             TypingConstraint *tc = ( TypingConstraint * )ln->value;
             switch ( simplifyLocally( TC_A( tc ), TC_B( tc ), 0, TC_NODE( tc ), typingEnv, equivalence, simpleTypingConstraints, r ) ) {
             case TAUTOLOGY:
@@ -672,7 +672,7 @@ Satisfiability simplify( List *typingConstraints, Hashtable *typingEnv, rError_t
         printf("env: \n%s\n", buf);*/
         typingConstraints->head = simpleTypingConstraints->head;
         typingConstraints->tail = simpleTypingConstraints->tail;
-        simpleTypingConstraints->head = simpleTypingConstraints->tail = NULL;
+        simpleTypingConstraints->head = simpleTypingConstraints->tail = nullptr;
     }
     while ( changed < typingEnv->len );
 
@@ -700,7 +700,7 @@ ExprType *getElemType( ExprType *type, Region *r ) {
     else if ( strcmp( type->text, KeyValPair_MS_T ) == 0 ) {
         return newSimpType( T_STRING, r );
     }
-    return NULL;
+    return nullptr;
 }
 /*
  * param templa a template type which this type must conform to in order to be used in a base rule.
@@ -770,7 +770,7 @@ ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
             return dereference( T_CONS_TYPE_ARG( derefedType, 0 ), var_type_table, r );
         }
         else {
-            return NULL;
+            return nullptr;
         }
     case T_VAR:
         if ( T_VAR_NUM_DISJUNCTS( derefedType ) == 0 ) { /* not a union type */
@@ -789,7 +789,7 @@ ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
 
         unified = unifyTVarL( derefedType, newTVar2( 6, disjuncts, r ), var_type_table, r );
         if ( getNodeType( unified ) == T_ERROR ) {
-            return NULL;
+            return nullptr;
         }
         if ( unified->nodeType == T_VAR ) { /* more than one possible types */
             Node *disjunctsElem[4];
@@ -810,7 +810,7 @@ ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
 
     case T_TUPLE:
         if ( T_CONS_ARITY( derefedType ) != 2 ) {
-            return NULL;
+            return nullptr;
         }
         comp0 = dereference( T_CONS_TYPE_ARG( derefedType, 0 ), var_type_table, r );
         comp1 = dereference( T_CONS_TYPE_ARG( derefedType, 1 ), var_type_table, r );
@@ -818,14 +818,14 @@ ExprType* isIterable( ExprType *type, Hashtable* var_type_table, Region *r ) {
                 strcmp( T_CONS_TYPE_NAME( comp0 ), GenQueryInp_MS_T ) != 0 ||
                 getNodeType( comp1 ) != T_IRODS ||
                 strcmp( T_CONS_TYPE_NAME( comp1 ), GenQueryOut_MS_T ) != 0 ) {
-            return NULL;
+            return nullptr;
         }
         return newIRODSType( KeyValPair_MS_T, r );
 
     case T_DYNAMIC:
         return type;
     default:
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -834,7 +834,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
     /*printTree(node, 0); */
     int i;
     char *localErrorMsg;
-    ExprType *res3 = NULL;
+    ExprType *res3 = nullptr;
     /*char buf[1024];*/
     /*printf("typeing %s\n",fn); */
     /*printVarTypeEnvToStdOut(var_type_table); */
@@ -851,10 +851,10 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
         char* varname = arg->subtrees[0]->text;
         ExprType *varType0 = ( ExprType * )lookupFromHashTable( var_type_table, varname );
         ExprType *varType;
-        ExprType *collType = varType0 == NULL ? NULL : dereference( varType0, var_type_table, r );
-        if ( collType != NULL ) {
+        ExprType *collType = varType0 == nullptr ? nullptr : dereference( varType0, var_type_table, r );
+        if ( collType != nullptr ) {
             varType = isIterable( collType, var_type_table, r );
-            if ( varType == NULL ) {
+            if ( varType == nullptr ) {
                 /* error if res is not an iterable type */
                 RE_ERROR2( 1, "foreach is applied to a non collection type" );
             }
@@ -863,7 +863,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
             varType = newTVar( r );
             collType = newCollType( varType, r );
         }
-        if ( varType0 == NULL ) {
+        if ( varType0 == nullptr ) {
             insertIntoHashTable( var_type_table, varname, varType );
         }
         else {
@@ -915,7 +915,7 @@ ExprType* typeFunction3( Node* node, int dynamictyping, Env* funcDesc, Hashtable
                     printf("start typing %s\n", fn);
                     printTreeDeref(node, 0, var_type_table, r);
         */
-        ExprType *t = NULL;
+        ExprType *t = nullptr;
         if ( getVararg( fType ) != OPTION_VARARG_ONCE ) {
             /* generate instance of vararg tuple so that no vararg tuple goes into typing constraints */
             int fixParamN = paramType->degree - 1;
@@ -1022,7 +1022,7 @@ ExprType* typeTypeAscription( Node *expr, int dynamictyping, Env *funcDesc, Hash
         }
 
         ExprType *t = unifyWith( exprType, ascType, varTypes, r );
-        if ( t == NULL ) {
+        if ( t == nullptr ) {
                 *errnode = expr;
                 snprintf( errmsgbuf, ERR_MSG_LEN, "type error: cannot unify source %s and target %s", typeToString(exprType, varTypes, typebuf, ERR_MSG_LEN), typeToString(ascType, varTypes, typebuf2, ERR_MSG_LEN));
                 generateErrMsg( errmsgbuf, NODE_EXPR_POS( ( *errnode ) ), ( *errnode )->base, errbuf );
@@ -1033,9 +1033,9 @@ ExprType* typeTypeAscription( Node *expr, int dynamictyping, Env *funcDesc, Hash
 }
 
 ExprType* typeExpression3( Node *expr, int dynamictyping, Env *funcDesc, Hashtable *varTypes, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r ) {
-    ExprType *res = NULL;
+    ExprType *res = nullptr;
     ExprType **components;
-    ExprType* t = NULL;
+    ExprType* t = nullptr;
     int i;
     expr->option |= OPTION_TYPED;
     switch ( getNodeType( expr ) ) {
@@ -1049,7 +1049,7 @@ ExprType* typeExpression3( Node *expr, int dynamictyping, Env *funcDesc, Hashtab
         return expr->exprType = dynamictyping ? newSimpType( T_DYNAMIC, r ) : newSimpType( T_STRING, r );
     case TK_VAR:
         t = ( ExprType * )lookupFromHashTable( varTypes, expr->text );
-        if ( t == NULL ) {
+        if ( t == nullptr ) {
             /* define new variable */
             t = newTVar( r );
             insertIntoHashTable( varTypes, expr->text, t );
@@ -1058,12 +1058,12 @@ ExprType* typeExpression3( Node *expr, int dynamictyping, Env *funcDesc, Hashtab
         return expr->exprType = t;
     case TK_TEXT:
         if ( strcmp( expr->text, "nop" ) == 0 ) {
-            return expr->exprType = newFuncType( newTupleType( 0, NULL, r ), newSimpType( T_INT, r ), r );
+            return expr->exprType = newFuncType( newTupleType( 0, nullptr, r ), newSimpType( T_INT, r ), r );
         }
         else {
             /* not a variable, evaluate as a function */
             FunctionDesc *fDesc;
-            if ( funcDesc != NULL && ( fDesc = ( FunctionDesc* )lookupFromEnv( funcDesc, expr->text ) ) != NULL && fDesc->exprType != NULL ) {
+            if ( funcDesc != nullptr && ( fDesc = ( FunctionDesc* )lookupFromEnv( funcDesc, expr->text ) ) != nullptr && fDesc->exprType != nullptr ) {
                 return expr->exprType = dupType( fDesc->exprType, r );
             }
             else {
@@ -1174,13 +1174,13 @@ ExprType* typeExpression3( Node *expr, int dynamictyping, Env *funcDesc, Hashtab
  *
  */
 void postProcessCoercion( Node *expr, Hashtable *varTypes, rError_t *errmsg, Node **errnode, Region *r ) {
-    expr->coercionType = expr->coercionType == NULL ? NULL : instantiate( expr->coercionType, varTypes, 0, r );
-    expr->exprType = expr->exprType == NULL ? NULL : instantiate( expr->exprType, varTypes, 0, r );
+    expr->coercionType = expr->coercionType == nullptr ? nullptr : instantiate( expr->coercionType, varTypes, 0, r );
+    expr->exprType = expr->exprType == nullptr ? nullptr : instantiate( expr->exprType, varTypes, 0, r );
     int i;
     for ( i = 0; i < expr->degree; i++ ) {
         postProcessCoercion( expr->subtrees[i], varTypes, errmsg, errnode, r );
     }
-    if ( expr->coercionType != NULL && expr->exprType != NULL ) {
+    if ( expr->coercionType != nullptr && expr->exprType != nullptr ) {
         /*char buf[128];*/
         /*typeToString(expr->coercionType, NULL, buf, 128);
         printf("%s", buf);*/

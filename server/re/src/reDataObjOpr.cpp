@@ -93,7 +93,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
 
     RE_TEST_MACRO( "    Calling msiDataObjCreate" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjCreate: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -117,7 +117,7 @@ msiDataObjCreate( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjCreate: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -201,12 +201,12 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
                 ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    char *outBadKeyWd = NULL;
+    char *outBadKeyWd = nullptr;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjOpen" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjOpen: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -229,7 +229,7 @@ msiDataObjOpen( msParam_t *inpParam, msParam_t *outParam,
     }
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjOpen: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -296,7 +296,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
 
     RE_TEST_MACRO( "    Calling msiDataObjClose" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjClose: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -304,7 +304,7 @@ msiDataObjClose( msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei )
 
     rsComm = rei->rsComm;
 
-    if ( inpParam == NULL ) {
+    if ( inpParam == nullptr ) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjClose: input inpParam is NULL" );
@@ -384,11 +384,11 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
                  ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     openedDataObjInp_t dataObjLseekInp, *myDataObjLseekInp;
-    fileLseekOut_t *dataObjLseekOut = NULL;
+    fileLseekOut_t *dataObjLseekOut = nullptr;
 
     RE_TEST_MACRO( "    Calling msiDataObjLseek" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjLseek: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -396,7 +396,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rsComm = rei->rsComm;
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjLseek: input inpParam1 is NULL" );
@@ -425,7 +425,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
-    if ( inpParam2 != NULL ) {
+    if ( inpParam2 != nullptr ) {
         if ( strcmp( inpParam2->type, INT_MS_T ) == 0 ) {
             myDataObjLseekInp->offset = *( int * )inpParam2->inOutStruct;
         }
@@ -433,7 +433,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
             /* str input */
             if ( strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
                 myDataObjLseekInp->offset = strtoll( ( char* )inpParam2->inOutStruct,
-                                                     0, 0 );
+                                                     nullptr, 0 );
             }
         }
         else if ( strcmp( inpParam2->type, DOUBLE_MS_T ) == 0 ) {
@@ -448,7 +448,7 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
         }
     }
 
-    if ( inpParam3 != NULL ) {
+    if ( inpParam3 != nullptr ) {
         /* str input */
         if ( strcmp( inpParam3->type, STR_MS_T ) == 0 ) {
             if ( strcmp( ( char * ) inpParam3->inOutStruct, "SEEK_SET" ) == 0 ) {
@@ -489,8 +489,8 @@ msiDataObjLseek( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     rei->status = rsDataObjLseek( rsComm, myDataObjLseekInp, &dataObjLseekOut );
-    if ( rei->status >= 0 && outParam != NULL ) {
-        fillMsParam( outParam, NULL, DataObjLseekOut_MS_T, dataObjLseekOut, NULL );
+    if ( rei->status >= 0 && outParam != nullptr ) {
+        fillMsParam( outParam, nullptr, DataObjLseekOut_MS_T, dataObjLseekOut, nullptr );
     }
     else {
         free( dataObjLseekOut );
@@ -541,12 +541,12 @@ int
 msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     openedDataObjInp_t dataObjReadInp, *myDataObjReadInp;
-    bytesBuf_t *dataObjReadOutBBuf = NULL;
+    bytesBuf_t *dataObjReadOutBBuf = nullptr;
     int myInt;
 
     RE_TEST_MACRO( "    Calling msiDataObjRead" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRead: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -554,7 +554,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
 
     rsComm = rei->rsComm;
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjRead: input inpParam1 is NULL" );
@@ -579,7 +579,7 @@ msiDataObjRead( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
         }
     }
 
-    if ( inpParam2 != NULL ) {
+    if ( inpParam2 != nullptr ) {
         myInt = parseMspForPosInt( inpParam2 );
 
         if ( myInt < 0 ) {
@@ -652,13 +652,13 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm_t *rsComm;
     openedDataObjInp_t dataObjWriteInp, *myDataObjWriteInp;
     int myInt;
-    bytesBuf_t tmpBBuf, *myBBuf = NULL;
+    bytesBuf_t tmpBBuf, *myBBuf = nullptr;
     execCmdOut_t *myExecCmdOut;
     msParam_t *mP;
 
     RE_TEST_MACRO( "    Calling msiDataObjWrite" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiDataObjWrite: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -666,8 +666,8 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm = rei->rsComm;
 
 
-    if ( inpParam1 == NULL || ( inpParam1->inpOutBuf == NULL &&
-                                inpParam1->inOutStruct == NULL ) ) {
+    if ( inpParam1 == nullptr || ( inpParam1->inpOutBuf == nullptr &&
+                                inpParam1->inOutStruct == nullptr ) ) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL" );
@@ -692,16 +692,16 @@ msiDataObjWrite( msParam_t *inpParam1, msParam_t *inpParam2,
         }
     }
 
-    if ( inpParam2 != NULL ) {
+    if ( inpParam2 != nullptr ) {
         if ( ( strcmp( ( char * )inpParam2->inOutStruct, "stdout" ) == 0 ) ||
                 ( strcmp( ( char * ) inpParam2->inOutStruct, "stderr" ) == 0 ) ) {
-            if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == NULL ) {
+            if ( ( mP = getMsParamByLabel( rei->msParamArray, "ruleExecOut" ) ) == nullptr ) {
                 return NO_VALUES_FOUND;
             }
             myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
             if ( strcmp( ( char * ) inpParam2->inOutStruct, "stdout" ) == 0 ) {
                 free( inpParam2->inOutStruct );
-                inpParam2->inOutStruct = 0;
+                inpParam2->inOutStruct = nullptr;
                 if ( myExecCmdOut->stdoutBuf.len > 0 ) {
                     inpParam2->inOutStruct =  strdup( ( char * ) myExecCmdOut->stdoutBuf.buf );
                 }
@@ -808,12 +808,12 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
                   ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    char *outBadKeyWd = NULL;
+    char *outBadKeyWd = nullptr;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjUnlink" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjUnlink: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -836,7 +836,7 @@ msiDataObjUnlink( msParam_t *inpParam, msParam_t *outParam,
     }
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjUnlink: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -934,13 +934,13 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                 msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    transferStat_t *transStat = NULL;
+    transferStat_t *transStat = nullptr;
     char *outBadKeyWd;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjRepl" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRepl: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -966,7 +966,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjRepl: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -986,7 +986,7 @@ msiDataObjRepl( msParam_t *inpParam1, msParam_t *msKeyValStr,
         clearKeyVal( &myDataObjInp->condInput );
     }
 
-    if ( transStat != NULL ) {
+    if ( transStat != nullptr ) {
         free( transStat );
     }
 
@@ -1061,13 +1061,13 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm_t *rsComm;
     dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
     dataObjInp_t *myDataObjInp;
-    transferStat_t *transStat = NULL;
+    transferStat_t *transStat = nullptr;
     char *outBadKeyWd;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjCopy" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjCopy: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1101,7 +1101,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjCopy: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -1122,7 +1122,7 @@ msiDataObjCopy( msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     rei->status = rsDataObjCopy( rsComm, myDataObjCopyInp, &transStat );
-    if ( transStat != NULL ) {
+    if ( transStat != nullptr ) {
         free( transStat );
     }
 
@@ -1205,14 +1205,14 @@ int
 msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = nullptr;
     msParamArray_t *myMsParamArray;
     char *outBadKeyWd;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjPut" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjPut: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1251,7 +1251,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
                   LOCAL_PATH_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjPut: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -1271,7 +1271,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
     memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
 
     rei->status = addMsParam( myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
-                              ( void * ) dataObjInp, NULL );
+                              ( void * ) dataObjInp, nullptr );
 
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -1285,7 +1285,7 @@ msiDataObjPut( msParam_t *inpParam1, msParam_t *inpParam2,
 
     /* tell the client to do the put */
     rei->status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
+                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, nullptr );
 
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
@@ -1357,14 +1357,14 @@ int
 msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
                msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = nullptr;
     msParamArray_t *myMsParamArray;
-    char *outBadKeyWd = NULL;
+    char *outBadKeyWd = nullptr;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjGet" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjGet: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1392,7 +1392,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   LOCAL_PATH_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjGet: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -1412,7 +1412,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
     memset( myMsParamArray, 0, sizeof( msParamArray_t ) );
 
     rei->status = addMsParam( myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
-                              ( void * ) dataObjInp, NULL );
+                              ( void * ) dataObjInp, nullptr );
 
     if ( rei->status < 0 ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -1427,7 +1427,7 @@ msiDataObjGet( msParam_t *inpParam1, msParam_t *msKeyValStr,
 
     /* tell the client to do the get */
     rei->status = sendAndRecvBranchMsg( rsComm, rsComm->apiInx,
-                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, NULL );
+                                        SYS_SVR_TO_CLI_MSI_REQUEST, ( void * ) myMsParamArray, nullptr );
 
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
@@ -1487,14 +1487,14 @@ int
 msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                   msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    char *chksum = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
+    char *chksum = nullptr;
     char *outBadKeyWd;
     int validKwFlags;
 
     RE_TEST_MACRO( "    Calling msiDataObjChksum" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjChksum: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1516,7 +1516,7 @@ msiDataObjChksum( msParam_t *inpParam1, msParam_t *msKeyValStr,
                    OBJ_PATH_FLAG | VERIFY_CHKSUM_FLAG;
     if ( ( rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr,
                          myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd ) ) < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiDataObjChksum: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -1592,12 +1592,12 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
                  msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
                  msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    transferStat_t *transStat = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
+    transferStat_t *transStat = nullptr;
 
     RE_TEST_MACRO( "    Calling msiDataObjPhymv" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjPhymv: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1644,7 +1644,7 @@ msiDataObjPhymv( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rei->status = rsDataObjPhymv( rsComm, myDataObjInp, &transStat );
 
-    if ( transStat != NULL ) {
+    if ( transStat != nullptr ) {
         free( transStat );
     }
 
@@ -1706,11 +1706,11 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
                   msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     dataObjCopyInp_t dataObjRenameInp, *myDataObjRenameInp;
-    dataObjInp_t *myDataObjInp = NULL;
+    dataObjInp_t *myDataObjInp = nullptr;
 
     RE_TEST_MACRO( "    Calling msiDataObjRename" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRename: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1738,7 +1738,7 @@ msiDataObjRename( msParam_t *inpParam1, msParam_t *inpParam2,
         return rei->status;
     }
 
-    if ( inpParam3 != NULL ) {
+    if ( inpParam3 != nullptr ) {
         int myInt;
         myInt = parseMspForPosInt( inpParam3 );
         if ( myInt > 0 ) {
@@ -1806,11 +1806,11 @@ msiDataObjTrim( msParam_t *inpParam1, msParam_t *inpParam2,
                 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
                 msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
 
     RE_TEST_MACRO( "    Calling msiDataObjTrim" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjTrim: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1915,7 +1915,7 @@ msiCollCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 
     RE_TEST_MACRO( "    Calling msiCollCreate" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiCollCreate: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2009,7 +2009,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
 
     RE_TEST_MACRO( "    Calling msiRmColl" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiRmColl: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2031,7 +2031,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
                    FORCE_FLAG_FLAG | COLL_NAME_FLAG;
     if ( ( rei->status = parseMsKeyValStrForCollInp( msKeyValStr,
                          myRmCollInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd ) ) < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiRmColl: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -2047,7 +2047,7 @@ msiRmColl( msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
 
     addKeyVal( &myRmCollInp->condInput, RECURSIVE_OPR__KW, "" );
 
-    rei->status = rsRmColl( rsComm, myRmCollInp, NULL );
+    rei->status = rsRmColl( rsComm, myRmCollInp, nullptr );
 
     if ( rei->status >= 0 ) {
         fillIntInMsParam( outParam, rei->status );
@@ -2114,11 +2114,11 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
                ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
 
     RE_TEST_MACRO( "    Calling msiPhyPathReg" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiPhyPathReg: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2210,11 +2210,11 @@ msiPhyPathReg( msParam_t *inpParam1, msParam_t *inpParam2,
 int
 msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
 
     RE_TEST_MACRO( "    Calling msiObjStat" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiObjStat: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2232,11 +2232,11 @@ msiObjStat( msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei ) {
         return rei->status;
     }
 
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
     rei->status = rsObjStat( rsComm, myDataObjInp, &rodsObjStatOut );
 
     if ( rei->status >= 0 ) {
-        fillMsParam( outParam, NULL, RodsObjStat_MS_T, rodsObjStatOut, NULL );
+        fillMsParam( outParam, nullptr, RodsObjStat_MS_T, rodsObjStatOut, nullptr );
     }
     else {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
@@ -2300,15 +2300,15 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
                  msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
                  ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
-    dataObjInp_t dataObjInp, *myDataObjInp = NULL;
-    msParamArray_t *outParamArray = NULL;
+    dataObjInp_t dataObjInp, *myDataObjInp = nullptr;
+    msParamArray_t *outParamArray = nullptr;
     char *rsyncMode;
     char *targCollection, *tmpPtr;
     char targPath[MAX_NAME_LEN];
 
     RE_TEST_MACRO( "    Calling msiDataObjRsync" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRsync: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2349,7 +2349,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
      * the local file. Could ask the client to do a chksum first */
 
     rsyncMode = getValByKey( &myDataObjInp->condInput, RSYNC_MODE_KW );
-    if ( rsyncMode == NULL ) {
+    if ( rsyncMode == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiDataObjRsync: RSYNC_MODE_KW input is missing" );
         rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
@@ -2367,7 +2367,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     else if ( strcmp( rsyncMode, IRODS_TO_COLLECTION ) == 0 ) {
         targCollection = getValByKey( &myDataObjInp->condInput,
                                       RSYNC_DEST_PATH_KW );
-        if ( targCollection == NULL ) {
+        if ( targCollection == nullptr ) {
             rodsLog( LOG_ERROR,
                      "msiDataObjRsync:  RSYNC_DEST_PATH_KW input for %s is missing",
                      myDataObjInp->objPath );
@@ -2375,7 +2375,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
             return rei->status;
         }
         tmpPtr = strchr( myDataObjInp->objPath + 1, '/' );
-        if ( tmpPtr == NULL ) {
+        if ( tmpPtr == nullptr ) {
             rodsLog( LOG_ERROR,
                      "msiDataObjRsync:  problem parsing %s", myDataObjInp->objPath );
             rei->status = USER_INPUT_PATH_ERR;
@@ -2388,7 +2388,7 @@ msiDataObjRsync( msParam_t *inpParam1, msParam_t *inpParam2,
 
     rei->status = rsDataObjRsync( rsComm, myDataObjInp, &outParamArray );
 
-    if ( outParamArray != NULL ) {
+    if ( outParamArray != nullptr ) {
         clearMsParamArray( outParamArray, 1 );
         free( outParamArray );
     }
@@ -2454,12 +2454,12 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp;
     char *rsyncMode;
-    char *srcColl = NULL;
-    char *destColl = NULL;
+    char *srcColl = nullptr;
+    char *destColl = nullptr;
 
     RE_TEST_MACRO( "    Calling msiCollRsync" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiCollRsync: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2472,7 +2472,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     /* parse inpParam1 */
     srcColl = parseMspForStr( inpParam1 );
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rei->status = SYS_INVALID_FILE_PATH;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam1 error. status = %d", rei->status );
@@ -2482,7 +2482,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
     /* parse inpParam2 */
     destColl = parseMspForStr( inpParam2 );
 
-    if ( destColl == NULL ) {
+    if ( destColl == nullptr ) {
         rei->status = SYS_INVALID_FILE_PATH;
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiCollRsync: input inpParam2 error. status = %d", rei->status );
@@ -2507,7 +2507,7 @@ msiCollRsync( msParam_t *inpParam1, msParam_t *inpParam2,
      * the local file. Could ask the client to do a chksum first */
 
     rsyncMode = getValByKey( &dataObjInp.condInput, RSYNC_MODE_KW );
-    if ( rsyncMode == NULL ) {
+    if ( rsyncMode == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiCollRsync: RSYNC_MODE_KW input is missing" );
         rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
@@ -2548,7 +2548,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int handleInx;
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
     char destChildPath[MAX_NAME_LEN];
-    msParamArray_t *outParamArray = NULL;
+    msParamArray_t *outParamArray = nullptr;
     int status = 0;
     int status1 = 0;
 
@@ -2573,7 +2573,7 @@ _rsCollRsync( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             addKeyVal( &dataObjInp->condInput, RSYNC_DEST_PATH_KW,
                        destChildPath );
             status = rsDataObjRsync( rsComm, dataObjInp, &outParamArray );
-            if ( outParamArray != NULL ) {
+            if ( outParamArray != nullptr ) {
                 clearMsParamArray( outParamArray, 1 );
                 free( outParamArray );
             }
@@ -2661,12 +2661,12 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
             ruleExecInfo_t *rei ) {
     rsComm_t *rsComm;
     execCmd_t execCmdInp, *myExecCmdInp;
-    execCmdOut_t *execCmdOut = NULL;
+    execCmdOut_t *execCmdOut = nullptr;
     char *tmpPtr;
 
     RE_TEST_MACRO( "    Calling msiExecCmd" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiExecCmd: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2684,15 +2684,15 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
         return rei->status;
     }
 
-    if ( ( tmpPtr = parseMspForStr( inpParam2 ) ) != NULL ) {
+    if ( ( tmpPtr = parseMspForStr( inpParam2 ) ) != nullptr ) {
         rstrcpy( myExecCmdInp->cmdArgv, tmpPtr, HUGE_NAME_LEN );
     }
 
-    if ( ( tmpPtr = parseMspForStr( inpParam3 ) ) != NULL ) {
+    if ( ( tmpPtr = parseMspForStr( inpParam3 ) ) != nullptr ) {
         rstrcpy( myExecCmdInp->execAddr, tmpPtr, LONG_NAME_LEN );
     }
 
-    if ( ( tmpPtr = parseMspForStr( inpParam4 ) ) != NULL ) {
+    if ( ( tmpPtr = parseMspForStr( inpParam4 ) ) != nullptr ) {
         rstrcpy( myExecCmdInp->hintPath, tmpPtr, MAX_NAME_LEN );
     }
 
@@ -2711,8 +2711,8 @@ msiExecCmd( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
         clearKeyVal( &myExecCmdInp->condInput );
     }
 
-    if ( execCmdOut != NULL ) {	/* something was written to it */
-        fillMsParam( outParam, NULL, ExecCmdOut_MS_T, execCmdOut, NULL );
+    if ( execCmdOut != nullptr ) {	/* something was written to it */
+        fillMsParam( outParam, nullptr, ExecCmdOut_MS_T, execCmdOut, nullptr );
     }
 
     if ( rei->status < 0 ) {
@@ -2801,7 +2801,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     RE_TEST_MACRO( "    Calling msiCollRepl" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiCollRepl: inp rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -2829,7 +2829,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
                   DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd );
 
     if ( rei->status < 0 ) {
-        if ( outBadKeyWd != NULL ) {
+        if ( outBadKeyWd != nullptr ) {
             rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                                 "msiCollRepl: input keyWd - %s error. status = %d",
                                 outBadKeyWd, rei->status );
@@ -2846,7 +2846,7 @@ msiCollRepl( msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status,
     /************************ API SERVER CALL **************************/
 
     /* Call rsCollRepl() */
-    rei->status = rsCollRepl( rsComm, collInp, NULL );
+    rei->status = rsCollRepl( rsComm, collInp, nullptr );
 
     /*************************** OUTPUT PACKAGING ***********************/
 
@@ -2905,7 +2905,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 
     RE_TEST_MACRO( " Calling msiTarFileExtract" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiTarFileExtract: input rei or rsComm is NULL" );
         if ( rei ) {
@@ -2920,7 +2920,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
     extract from inpParam1 the tar file object path: tarFilePath
     and from inpParam2 the collection target: colTarget */
 
-    if ( inpParam1 == NULL || inpParam2 == NULL ) {
+    if ( inpParam1 == nullptr || inpParam2 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiTarFileExtract: input Param1 and/or Param2 are NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
@@ -2956,7 +2956,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
         return rei->status;
     }
 
-    if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
+    if ( inpParam3 != nullptr && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam3->inOutStruct, "null" ) != 0 ) {
         addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
                    ( char * ) inpParam3->inOutStruct );
@@ -2965,7 +2965,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
                    ( char * ) inpParam3->inOutStruct );
     }
 
-    if ( rei->doi != NULL ) { /* rei->doi may not exist */
+    if ( rei->doi != nullptr ) { /* rei->doi may not exist */
         /* retrieve the input object data_type in order to rollback in case
         * of a tar extraction problem */
         snprintf( origDataType, sizeof( origDataType ), "%s", rei->doi->dataType );
@@ -2982,7 +2982,7 @@ msiTarFileExtract( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 
     /* tar file extraction */
     rei->status = rsStructFileExtAndReg( rsComm, myStructFileExtAndRegInp );
-    if ( rei->status < 0 && rei->doi != NULL ) {
+    if ( rei->status < 0 && rei->doi != nullptr ) {
         rodsLog( LOG_ERROR, "msiTarFileExtract: tar file extraction failed" );
         /* switch back to the original input object data_type as tar
         * extraction failed */
@@ -3044,7 +3044,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
 
     RE_TEST_MACRO( " Calling msiTarFileCreate" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiTarFileCreate: input rei or rsComm is NULL" );
         if ( rei ) {
@@ -3059,7 +3059,7 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
     extract from inpParam1 the tar file object path: tarFilePath
     and from inpParam2 the target collection: colTarget */
 
-    if ( inpParam1 == NULL || inpParam2 == NULL ) {
+    if ( inpParam1 == nullptr || inpParam2 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiTarFileCreate: input Param1 and/or Param2 are NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
@@ -3095,13 +3095,13 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
         return rei->status;
     }
 
-    if ( inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
+    if ( inpParam3 != nullptr && strcmp( inpParam3->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam3->inOutStruct, "null" ) != 0 ) {
         addKeyVal( &myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
                    ( char * ) inpParam3->inOutStruct );
     }
 
-    if ( inpParam4 != NULL && strcmp( inpParam4->type, STR_MS_T ) == 0 &&
+    if ( inpParam4 != nullptr && strcmp( inpParam4->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam4->inOutStruct, "force" ) == 0 ) {
         addKeyVal( &myStructFileExtAndRegInp->condInput, FORCE_FLAG_KW, "" );
     }
@@ -3165,7 +3165,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
 
     RE_TEST_MACRO( " Calling msiPhyBundleColl" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiPhyBundleColl: input rei or rsComm is NULL" );
         if ( rei ) {
@@ -3181,7 +3181,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     and from inpParam2 the target collection: colTarget */
 
 
-    if ( inpParam1 == NULL ) {
+    if ( inpParam1 == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiPhyBundleColl: input Param1 is NULL" );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
@@ -3215,7 +3215,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         return rei->status;
     }
 
-    if ( inpParam2 != NULL && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
+    if ( inpParam2 != nullptr && strcmp( inpParam2->type, STR_MS_T ) == 0 &&
             strcmp( ( char * ) inpParam2->inOutStruct, "null" ) != 0 ) {
         /* parse the input parameter which is: <string> or <string>++++N=<int>.... */
         std::vector<std::string> tokens;

@@ -48,7 +48,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // get the rods error and errno string
-        char* errno_str = NULL;
+        char* errno_str = nullptr;
         const char* irods_err = rodsErrorName( code_, &errno_str );
 
         // =-=-=-=-=-=-=-

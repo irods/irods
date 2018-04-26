@@ -53,7 +53,7 @@ remoteFileClose( rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
     int status;
     fileCloseInp_t remFileCloseInp;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileClose: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

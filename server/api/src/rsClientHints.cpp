@@ -99,7 +99,7 @@ int _rsClientHints(
 
     }
 
-    bytesBuf_t* ies_buf = 0;
+    bytesBuf_t* ies_buf = nullptr;
     int status = rsIESClientHints(
                      _comm,
                      &ies_buf );
@@ -133,7 +133,7 @@ int _rsClientHints(
     json_object_set_new(client_hints, "hash_scheme", json_string( hash.c_str() ) );
     json_object_set_new(client_hints, "match_hash_policy", json_string( hash_policy.c_str() ) );
 
-    json_t* plugins = 0;
+    json_t* plugins = nullptr;
     ret = irods::get_plugin_array(plugins);
     if (!ret.ok()) {
         irods::log(PASS(ret));

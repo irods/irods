@@ -22,8 +22,8 @@
 int
 rcFileRmdir( rcComm_t *conn, fileRmdirInp_t *fileRmdirInp ) {
     int status;
-    status = procApiRequest( conn, FILE_RMDIR_AN,  fileRmdirInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_RMDIR_AN,  fileRmdirInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

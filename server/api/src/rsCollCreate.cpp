@@ -32,11 +32,11 @@
 int
 rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     ruleExecInfo_t rei;
     collInfo_t collInfo;
-    specCollCache_t *specCollCache = NULL;
-    dataObjInfo_t *dataObjInfo = NULL;
+    specCollCache_t *specCollCache = nullptr;
+    dataObjInfo_t *dataObjInfo = nullptr;
 
     irods::error ret = validate_logical_path( collCreateInp->collName );
     if ( !ret.ok() ) {
@@ -51,14 +51,14 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
                  MASTER_RCAT,
                  ( const char* )collCreateInp->collName,
                  &rodsServerHost );
-    if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
+    if ( status < 0 || rodsServerHost == nullptr ) { // JMC cppcheck
         return status;
     }
 
     if ( rodsServerHost->localFlag == LOCAL_HOST ) {
         initReiWithCollInp( &rei, rsComm, collCreateInp, &collInfo );
 
-        status = applyRule( "acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acPreprocForCollCreate", nullptr, &rei, NO_SAVE_REI );
 
         if ( status < 0 ) {
             if ( rei.status < 0 ) {
@@ -71,7 +71,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         }
 
         if ( getValByKey( &collCreateInp->condInput, RECURSIVE_OPR__KW ) !=
-                NULL ) {
+                nullptr ) {
             status = rsMkCollR( rsComm, "/", collCreateInp->collName );
             return status;
         }
@@ -100,7 +100,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
             else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
                 /* for STRUCT_FILE_COLL to make a directory in the structFile, the
                  * COLLECTION_TYPE_KW must be set */
-                if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+                if ( dataObjInfo != nullptr && dataObjInfo->specColl != nullptr &&
                         dataObjInfo->specColl->collClass == LINKED_COLL ) {
                     /*  should not be here because if has been translated */
                     return SYS_COLL_LINK_PATH_ERR;
@@ -112,14 +112,14 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
                 return status;
             }
             else {
-                if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
+                if ( isColl( rsComm, collCreateInp->collName, nullptr ) >= 0 ) {
                     return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
                 }
                 status = _rsRegColl( rsComm, collCreateInp );
             }
             rei.status = status;
             if ( status >= 0 ) {
-                rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
+                rei.status = applyRule( "acPostProcForCollCreate", nullptr, &rei,
                                         NO_SAVE_REI );
 
                 if ( rei.status < 0 ) {
@@ -147,7 +147,7 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
 int
 l3Mkdir( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo ) {
-    if ( NULL == dataObjInfo ) {
+    if ( nullptr == dataObjInfo ) {
         return SYS_NULL_INPUT;
     }
 

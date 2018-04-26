@@ -1,7 +1,7 @@
 #include "irods_re_ruleexistshelper.hpp"
 #include "irods_log.hpp"
 
-RuleExistsHelper* RuleExistsHelper::_instance = 0;
+RuleExistsHelper* RuleExistsHelper::_instance = nullptr;
 
 RuleExistsHelper* RuleExistsHelper::Instance() {
     if (!_instance) {

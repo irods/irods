@@ -20,7 +20,7 @@ namespace irods {
 
     error
     Hasher::update( const std::string& _data ) {
-        if ( NULL == _strategy ) {
+        if ( nullptr == _strategy ) {
             return ERROR( SYS_UNINITIALIZED, "Update called on a hasher that has not been initialized" );
         }
         if ( !_stored_digest.empty() ) {
@@ -33,7 +33,7 @@ namespace irods {
 
     error
     Hasher::digest( std::string& _messageDigest ) {
-        if ( NULL == _strategy ) {
+        if ( nullptr == _strategy ) {
             return ERROR( SYS_UNINITIALIZED, "Digest called on a hasher that has not been initialized" );
         }
         if ( _stored_digest.empty() ) {

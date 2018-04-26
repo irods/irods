@@ -1,6 +1,6 @@
 #include "irods_re_namespaceshelper.hpp"
 
-NamespacesHelper* NamespacesHelper::_instance = 0;
+NamespacesHelper* NamespacesHelper::_instance = nullptr;
 std::vector<std::string> NamespacesHelper::namespaces {};
 
 NamespacesHelper* NamespacesHelper::Instance() {

@@ -301,7 +301,7 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     if ( message_len > 0 && message[message_len - 1] == '\n' ) {
 #ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
-        if ( myError != NULL ) {
+        if ( myError != nullptr ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s", prefix, message );
             addRErrorMsg( myError, status, errMsg );
@@ -314,7 +314,7 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     else {
 #ifndef windows_platform
         fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix, message );
-        if ( myError != NULL ) {
+        if ( myError != nullptr ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s\n", prefix, message );
             addRErrorMsg( myError, status, errMsg );
@@ -395,7 +395,7 @@ rodsErrorName( int errorValue, char **subName ) {
  */
 void
 rodsLogErrorOld( int level, int rodsErrorCode, char *textStr ) {
-    char *errSubName = NULL;
+    char *errSubName = nullptr;
 
     if ( level < verbosityLevel ) {
         return;
@@ -420,7 +420,7 @@ rodsLogErrorOld( int level, int rodsErrorCode, char *textStr ) {
  */
 void
 rodsLogError( int level, int rodsErrorCode, char *formatStr, ... ) {
-    char *errSubName = NULL;
+    char *errSubName = nullptr;
     va_list ap;
 
     if ( level > verbosityLevel ) {
@@ -516,11 +516,11 @@ generateLogTimestamp( char *ts, int tsLen ) {
     struct tm utc;
     char timestamp[TIME_LEN];
 
-    if ( ts == NULL ) {
+    if ( ts == nullptr ) {
         return;
     }
 
-    gettimeofday( &tv, NULL );
+    gettimeofday( &tv, nullptr );
     gmtime_r( &tv.tv_sec, &utc );
     strftime( timestamp, TIME_LEN, "%Y%m%dT%H%M%S", &utc );
 

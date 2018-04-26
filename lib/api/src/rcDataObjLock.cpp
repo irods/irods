@@ -70,8 +70,8 @@
 int
 rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    status = procApiRequest( conn, DATA_OBJ_LOCK_AN,  dataObjInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, DATA_OBJ_LOCK_AN,  dataObjInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }
@@ -79,8 +79,8 @@ rcDataObjLock( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
 int
 rcDataObjUnlock( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    status = procApiRequest( conn, DATA_OBJ_UNLOCK_AN,  dataObjInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, DATA_OBJ_UNLOCK_AN,  dataObjInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

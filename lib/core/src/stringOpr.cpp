@@ -14,45 +14,45 @@
 
 char *rmemmove( void *dest, const void *src, int strLen, int maxLen ) {
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    if ( dest == nullptr || src == nullptr ) {
+        return nullptr;
     }
 
     if ( strLen > maxLen ) {
-        return NULL;
+        return nullptr;
     }
 
-    if ( memmove( dest, src, strLen ) != NULL ) {
+    if ( memmove( dest, src, strLen ) != nullptr ) {
         return ( char* )dest;
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }
 
 char *rmemcpy( void *dest, const void *src, int strLen, int maxLen ) {
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    if ( dest == nullptr || src == nullptr ) {
+        return nullptr;
     }
 
     if ( strLen > maxLen ) {
-        return NULL;
+        return nullptr;
     }
 
-    if ( memcpy( dest, src, strLen ) != NULL ) {
+    if ( memcpy( dest, src, strLen ) != nullptr ) {
         return ( char* )dest;
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }
 
 char *rstrcpy( char *dest, const char *src, int maxLen ) {
     // snprintf with logging on fail
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    if ( dest == nullptr || src == nullptr ) {
+        return nullptr;
     }
     int status = snprintf( dest, maxLen, "%s", src );
 
@@ -64,11 +64,11 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
                  "rstrcpy not enough space in dest, slen:%d, maxLen:%d, stacktrace:\n%s",
                  status, maxLen, irods::stacktrace().dump().c_str());
         rodsLog( LOG_DEBUG, "rstrcpy arguments dest [%s] src [%s]", dest, src );
-        return NULL;
+        return nullptr;
     }
     else {
         rodsLog( LOG_ERROR, "rstrcpy encountered an encoding error." );
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -81,8 +81,8 @@ char *rstrcat( char *dest, const char *src, int maxLen ) {
 
     int dlen, slen;
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    if ( dest == nullptr || src == nullptr ) {
+        return nullptr;
     }
 
     dlen = strlen( dest );
@@ -93,7 +93,7 @@ char *rstrcat( char *dest, const char *src, int maxLen ) {
                  "rstrcat not enough space in dest, slen:%d, dlen:%d, maxLen:%d, stacktrace:\n%s",
                  slen, dlen, maxLen, irods::stacktrace().dump().c_str() );
         rodsLog( LOG_DEBUG, "rstrcat arguments dest [%s] src [%s]", dest, src );
-        return NULL;
+        return nullptr;
     }
 
     return strncat( dest, src, slen );
@@ -107,8 +107,8 @@ char *rstrncat( char *dest, const char *src, int srcLen, int maxLen ) {
 
     int dlen, slen;
 
-    if ( dest == NULL || src == NULL ) {
-        return NULL;
+    if ( dest == nullptr || src == nullptr ) {
+        return nullptr;
     }
 
     dlen = strlen( dest );
@@ -119,7 +119,7 @@ char *rstrncat( char *dest, const char *src, int srcLen, int maxLen ) {
                  "rstrncat not enough space in dest, slen:%d, dlen:%d, maxLen:%d, stacktrace:\n%s",
                  slen, dlen, maxLen, irods::stacktrace().dump().c_str() );
         rodsLog( LOG_DEBUG, "rstrncat arguments: dest [%s] src [%s]", dest, src );
-        return NULL;
+        return nullptr;
     }
 
     return strncat( dest, src, slen );
@@ -143,7 +143,7 @@ rSplitStr( const char *inStr, char* outStr1, size_t maxOutLen1,
 
     /* copy the second str */
     size_t copy_start = base_string.size() == index_of_first_key ? base_string.size() : index_of_first_key + 1;
-    if ( rstrcpy( outStr2, base_string.substr( copy_start ).c_str(), maxOutLen2 ) == NULL ) {
+    if ( rstrcpy( outStr2, base_string.substr( copy_start ).c_str(), maxOutLen2 ) == nullptr ) {
         return USER_STRLEN_TOOLONG;
     }
     return 0;
@@ -294,7 +294,7 @@ trimQuotes( char * s ) {
 
 int
 checkStringForSystem( const char * inString ) {
-    if ( inString == NULL ) {
+    if ( inString == nullptr ) {
         return 0;
     }
     if ( boost::regex_match( inString, boost::regex( "[a-zA-Z0-9,./ ]*" ) ) ) {
@@ -311,7 +311,7 @@ checkStringForSystem( const char * inString ) {
  */
 int
 checkStringForEmailAddress( const char * inString ) {
-    if ( inString == NULL ) {
+    if ( inString == nullptr ) {
         return 0;
     }
     if ( boost::regex_match( inString, boost::regex( "[-a-zA-Z0-9,./+*_@]*" ) ) ) {

@@ -29,13 +29,13 @@
 int
 rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
     dataObjInfo_t *tmpDataObjInfo;
     char *accessPerm;
     int retVal = 0;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
     int myTime = 0;
     char *tmpStr;
     int myAge;
@@ -59,9 +59,9 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     // we know that the redirection decision has already been made
     std::string       hier;
     int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
+    rodsServerHost_t* host  =  nullptr;
     char* hier_char = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    if ( hier_char == NULL ) {
+    if ( hier_char == nullptr ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
         irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
@@ -81,11 +81,11 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
     } // if keyword
 
-    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != nullptr ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
-        accessPerm = NULL;
+        accessPerm = nullptr;
     }
     else {
         accessPerm = ACCESS_DELETE_OBJECT;
@@ -105,18 +105,18 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return status;
     }
 
-    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, AGE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getValByKey( &dataObjInp->condInput, AGE_KW ) ) != nullptr ) {
         myAge = atoi( tmpStr );
         /* age value is in minutes */
         if ( myAge > 0 ) {
-            myTime = time( 0 ) - myAge * 60;
+            myTime = time( nullptr ) - myAge * 60;
         }
     }
 
     tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    while ( tmpDataObjInfo != nullptr ) {
         if ( myTime == 0 || atoi( tmpDataObjInfo->dataModify ) <= myTime ) {
-            if ( getValByKey( &dataObjInp->condInput, DRYRUN_KW ) == NULL ) {
+            if ( getValByKey( &dataObjInp->condInput, DRYRUN_KW ) == nullptr ) {
                 status = dataObjUnlinkS( rsComm, dataObjInp, tmpDataObjInfo );
                 if ( status < 0 ) {
                     if ( retVal == 0 ) {

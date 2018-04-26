@@ -154,7 +154,7 @@ cllCloseEnv( icatSessionStruct *icss ) {
     SQLRETURN stat = SQLFreeEnv( icss->environPtr );
 
     if ( stat == SQL_SUCCESS ) {
-        icss->environPtr = NULL;
+        icss->environPtr = nullptr;
     }
     else {
         rodsLog( LOG_ERROR, "cllCloseEnv: SQLFreeEnv failed" );
@@ -204,7 +204,7 @@ cllConnect( icatSessionStruct *icss ) {
         SQLINTEGER sqlcode;
         SQLCHAR buffer[SQL_MAX_MESSAGE_LENGTH + 1];
         SQLSMALLINT length;
-        while ( SQLError( icss->environPtr, myHdbc , 0, sqlstate, &sqlcode, buffer,
+        while ( SQLError( icss->environPtr, myHdbc , nullptr, sqlstate, &sqlcode, buffer,
                           SQL_MAX_MESSAGE_LENGTH + 1, &length ) == SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate );
             rodsLog( LOG_ERROR, "cllConnect:  Native Error Code: %ld\n", sqlcode );
@@ -353,7 +353,7 @@ cllDisconnect( icatSessionStruct *icss ) {
 
     stat = SQLFreeHandle( SQL_HANDLE_DBC, icss->connectPtr );
     if ( stat == SQL_SUCCESS ) {
-        icss->connectPtr = NULL;
+        icss->connectPtr = nullptr;
     }
     else {
         rodsLog( LOG_ERROR, "cllDisconnect: SQLFreeHandle failed for connect: %d", stat );
@@ -577,7 +577,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
     int statementNumber = -1;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
-        if ( icss->stmtPtr[i] == 0 ) {
+        if ( icss->stmtPtr[i] == nullptr ) {
             statementNumber = i;
         }
     }
@@ -646,7 +646,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         SQL_UINT_OR_ULEN precision;
         SQLSMALLINT scale;
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
-                               &colNameLen, &colType, &precision, &scale, NULL );
+                               &colNameLen, &colType, &precision, &scale, nullptr );
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResult: SQLDescribeCol failed: %d",
                      stat );
@@ -656,7 +656,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         columnLength[i] = precision;
         SQL_INT_OR_LEN displaysize;
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
-                                NULL, 0, NULL, &displaysize ); // JMC :: fixed for odbc
+                                nullptr, 0, nullptr, &displaysize ); // JMC :: fixed for odbc
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR,
                      "cllExecSqlWithResult: SQLColAttributes failed: %d",
@@ -744,7 +744,7 @@ cllExecSqlWithResultBV(
 
     int statementNumber = -1;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
-        if ( icss->stmtPtr[i] == 0 ) {
+        if ( icss->stmtPtr[i] == nullptr ) {
             statementNumber = i;
         }
     }
@@ -825,7 +825,7 @@ cllExecSqlWithResultBV(
         SQL_UINT_OR_ULEN precision;
         SQLSMALLINT scale;
         stat = SQLDescribeCol( hstmt, i + 1, colName, sizeof( colName ),
-                               &colNameLen, &colType, &precision, &scale, NULL );
+                               &colNameLen, &colType, &precision, &scale, nullptr );
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR, "cllExecSqlWithResultBV: SQLDescribeCol failed: %d",
                      stat );
@@ -835,7 +835,7 @@ cllExecSqlWithResultBV(
         columnLength[i] = precision;
         SQL_INT_OR_LEN  displaysize;
         stat = SQLColAttribute( hstmt, i + 1, SQL_COLUMN_DISPLAY_SIZE,
-                                NULL, 0, NULL, &displaysize ); // JMC :: changed to SQLColAttribute for odbc update
+                                nullptr, 0, nullptr, &displaysize ); // JMC :: changed to SQLColAttribute for odbc update
         if ( stat != SQL_SUCCESS ) {
             rodsLog( LOG_ERROR,
                      "cllExecSqlWithResultBV: SQLColAttributes failed: %d",
@@ -957,7 +957,7 @@ int
 cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
 
     icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
-    if ( myStatement == NULL ) { /* already freed */
+    if ( myStatement == nullptr ) { /* already freed */
         return 0;
     }
 
@@ -970,7 +970,7 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
 
     free( myStatement );
 
-    icss->stmtPtr[statementNumber] = NULL; /* indicate that the statement is free */
+    icss->stmtPtr[statementNumber] = nullptr; /* indicate that the statement is free */
 
     return 0;
 }
@@ -986,9 +986,9 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
 
     for ( int i = 0; i < myStatement->numOfCols; i++ ) {
         free( myStatement->resultValue[i] );
-        myStatement->resultValue[i] = NULL;
+        myStatement->resultValue[i] = nullptr;
         free( myStatement->resultColName[i] );
-        myStatement->resultColName[i] = NULL;
+        myStatement->resultColName[i] = nullptr;
     }
     return 0;
 }

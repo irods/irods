@@ -11,7 +11,7 @@ int rsExecMyRule(
     execMyRuleInp_t* _exec_inp,
     msParamArray_t** _out_arr ) {
 
-    if ( _exec_inp == NULL ) {
+    if ( _exec_inp == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsExecMyRule error. NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -68,11 +68,11 @@ int rsExecMyRule(
     }
 
     ruleExecInfo_t rei;
-    initReiWithDataObjInp( &rei, _comm, NULL );
+    initReiWithDataObjInp( &rei, _comm, nullptr );
     rei.condInputData = &_exec_inp->condInput;
 
     /* need to have a non zero inpParamArray for execMyRule to work */
-    if ( _exec_inp->inpParamArray == NULL ) {
+    if ( _exec_inp->inpParamArray == nullptr ) {
         _exec_inp->inpParamArray =
             ( msParamArray_t * ) malloc( sizeof( msParamArray_t ) );
         memset( _exec_inp->inpParamArray, 0, sizeof( msParamArray_t ) );
@@ -108,7 +108,7 @@ int rsExecMyRule(
     trimMsParamArray( rei.msParamArray, _exec_inp->outParamDesc );
 
     *_out_arr = rei.msParamArray;
-    rei.msParamArray = NULL;
+    rei.msParamArray = nullptr;
 
     if ( err.code() < 0 ) {
         rodsLog( LOG_ERROR,
@@ -125,7 +125,7 @@ remoteExecMyRule( rsComm_t *_comm, execMyRuleInp_t *_exec_inp,
                   msParamArray_t **_out_arr, rodsServerHost_t *rods_svr_host ) {
     int status;
 
-    if ( rods_svr_host == NULL ) {
+    if ( rods_svr_host == nullptr ) {
         rodsLog( LOG_ERROR,
                  "remoteExecMyRule: Invalid rods_svr_host" );
         return SYS_INVALID_SERVER_HOST;

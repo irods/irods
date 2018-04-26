@@ -10,6 +10,6 @@ int rcGetHierFromLeafId(
     return procApiRequest(
                _comm,
                GET_HIER_FROM_LEAF_ID_AN,
-               _inp, NULL,
-               (void**)_out, NULL);
+               _inp, nullptr,
+               (void**)_out, nullptr);
 }

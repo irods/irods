@@ -16,7 +16,7 @@ int TotalTrimmed = 0;
 int
 trimUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -75,9 +75,9 @@ int
 trimDataObjUtil( rcComm_t *conn, char *srcPath,
                  rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp ) {
     int status = 0;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "trimDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
@@ -123,7 +123,7 @@ initCondForTrim( rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp ) {
     char tmpStr[NAME_LEN];
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForTrim: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -131,7 +131,7 @@ initCondForTrim( rodsArguments_t *rodsArgs,
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -175,7 +175,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     collHandle_t collHandle;
     collEnt_t collEnt;
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "trimCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;
@@ -200,7 +200,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                  srcColl, status );
         return status;
     }
-    if ( collHandle.rodsObjStat->specColl != NULL &&
+    if ( collHandle.rodsObjStat->specColl != nullptr &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no trim for mounted coll */
         rclCloseCollection( &collHandle );
@@ -227,7 +227,7 @@ trimCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 childDataObjInp.specColl = &collEnt.specColl;
             }
             else {
-                childDataObjInp.specColl = NULL;
+                childDataObjInp.specColl = nullptr;
             }
             int status = trimCollUtil( conn, collEnt.collName, myRodsEnv,
                                    rodsArgs, &childDataObjInp );

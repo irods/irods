@@ -40,12 +40,12 @@ rcConnect( const char *rodsHost, int rodsPort, const char *userName, const char 
 #endif
 
 #ifndef windows_platform
-    if ( reconnFlag != RECONN_TIMEOUT && getenv( RECONNECT_ENV ) != NULL ) {
+    if ( reconnFlag != RECONN_TIMEOUT && getenv( RECONNECT_ENV ) != nullptr ) {
         reconnFlag = RECONN_TIMEOUT;
     }
 #endif
 
-    conn = _rcConnect( rodsHost, rodsPort, userName, rodsZone, NULL, NULL,
+    conn = _rcConnect( rodsHost, rodsPort, userName, rodsZone, nullptr, nullptr,
                        errMsg, 0, reconnFlag );
 
     return conn;
@@ -71,11 +71,11 @@ rcComm_t* _rcConnect(
     conn->thread_ctx = ( thread_context* ) malloc( sizeof( thread_context ) );
     memset( conn->thread_ctx, 0, sizeof( thread_context ) );
 
-    if ( errMsg != NULL ) {
+    if ( errMsg != nullptr ) {
         memset( errMsg, 0, sizeof( rErrMsg_t ) );
     }
 
-    if ( ( tmpStr = getenv( IRODS_PROT ) ) != NULL ) {
+    if ( ( tmpStr = getenv( IRODS_PROT ) ) != nullptr ) {
         conn->irodsProt = ( irodsProt_t )atoi( tmpStr );
     }
     else {
@@ -86,39 +86,39 @@ rcComm_t* _rcConnect(
                           clientUserName, clientRodsZone, &conn->clientUser, &conn->proxyUser );
 
     if ( status < 0 ) {
-        if ( errMsg != NULL ) {
+        if ( errMsg != nullptr ) {
             errMsg->status = status;
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setUserInfo failed\n" );
         }
-        if ( conn->thread_ctx != NULL ) {
+        if ( conn->thread_ctx != nullptr ) {
             delete  conn->thread_ctx->reconnThr;
             delete  conn->thread_ctx->lock;
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
         free( conn );
-        return NULL;
+        return nullptr;
     }
 
     status = setRhostInfo( conn, rodsHost, rodsPort );
 
     if ( status < 0 ) {
-        if ( errMsg != NULL ) {
+        if ( errMsg != nullptr ) {
             rodsLogError( LOG_ERROR, status,
                           "_rcConnect: setRhostInfo error, IRODS_HOST is probably not set correctly" );
             errMsg->status = status;
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: setRhostInfo failed\n" );
         }
-        if ( conn->thread_ctx != NULL ) {
+        if ( conn->thread_ctx != nullptr ) {
             delete  conn->thread_ctx->reconnThr;
             delete  conn->thread_ctx->lock;
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
         free( conn );
-        return NULL;
+        return nullptr;
     }
     status = connectToRhost( conn, connectCnt, reconnFlag );
 
@@ -135,24 +135,24 @@ rcComm_t* _rcConnect(
         rodsLogError( LOG_ERROR, status,
                       "_rcConnect: connectToRhost error, server on %s:%d is probably down",
                       conn->host, conn->portNum );
-        if ( errMsg != NULL ) {
+        if ( errMsg != nullptr ) {
             errMsg->status = status;
             snprintf( errMsg->msg, ERR_MSG_LEN - 1,
                       "_rcConnect: connectToRhost failed\n" );
         }
-        if ( conn->thread_ctx != NULL ) {
+        if ( conn->thread_ctx != nullptr ) {
             delete  conn->thread_ctx->reconnThr;
             delete  conn->thread_ctx->lock;
             delete  conn->thread_ctx->cond;
             free( conn->thread_ctx );
         }
         free( conn );
-        return NULL;
+        return nullptr;
     }
 
 #ifndef windows_platform
     if ( reconnFlag == RECONN_TIMEOUT &&
-            conn->svrVersion != NULL &&
+            conn->svrVersion != nullptr &&
             conn->svrVersion->reconnPort > 0 ) {
         if ( isLoopbackAddress( conn->svrVersion->reconnAddr ) ||
                 strcmp( conn->svrVersion->reconnAddr , "0.0.0.0" ) == 0 ||
@@ -168,7 +168,7 @@ rcComm_t* _rcConnect(
         }
         catch ( const boost::thread_resource_error& ) {
             rodsLog( LOG_ERROR, "failure initializing the boost thread context in _rcConnect" );
-            return NULL;
+            return nullptr;
         }
     }
 #endif
@@ -184,7 +184,7 @@ setUserInfo(
     userInfo_t *clientUser, userInfo_t *proxyUser ) {
 
     rstrcpy( proxyUser->userName, proxyUserName, NAME_LEN );
-    if ( clientUserName != NULL ) {
+    if ( clientUserName != nullptr ) {
         rstrcpy( clientUser->userName, clientUserName, NAME_LEN );
     }
     else if ( char * myUserName = getenv( CLIENT_USER_NAME_KEYWD ) ) {
@@ -195,7 +195,7 @@ setUserInfo(
     }
 
     rstrcpy( proxyUser->rodsZone, proxyRodsZone, NAME_LEN );
-    if ( clientRodsZone != NULL ) {
+    if ( clientRodsZone != nullptr ) {
         rstrcpy( clientUser->rodsZone, clientRodsZone, NAME_LEN );
     }
     else if ( char * myRodsZone = getenv( CLIENT_RODS_ZONE_KEYWD ) ) {
@@ -212,7 +212,7 @@ int
 setRhostInfo( rcComm_t *conn, const char *rodsHost, int rodsPort ) {
     int status;
 
-    if ( rodsHost == NULL || strlen( rodsHost ) == 0 ) {
+    if ( rodsHost == nullptr || strlen( rodsHost ) == 0 ) {
         return USER_RODS_HOST_EMPTY;
     }
 
@@ -242,7 +242,7 @@ int rcDisconnect(
     rcComm_t* _conn ) {
     // =-=-=-=-=-=-=-
     // check for invalid param
-    if ( _conn == NULL ) {
+    if ( _conn == nullptr ) {
         return 0;
     }
 
@@ -260,7 +260,7 @@ int rcDisconnect(
     ret = sendRodsMsg(
               net_obj,
               RODS_DISCONNECT_T,
-              NULL, NULL, NULL, 0,
+              nullptr, nullptr, nullptr, 0,
               _conn->irodsProt );
 #ifdef RODS_CLERVER
     if ( !ret.ok() ) {
@@ -318,7 +318,7 @@ int
 freeRcComm( rcComm_t *conn ) {
     int status;
 
-    if ( conn == NULL ) {
+    if ( conn == nullptr ) {
         return 0;
     }
 
@@ -331,24 +331,24 @@ freeRcComm( rcComm_t *conn ) {
 int
 cleanRcComm( rcComm_t *conn ) {
 
-    if ( conn == NULL ) {
+    if ( conn == nullptr ) {
         return 0;
     }
 
     freeRError( conn->rError );
-    conn->rError = NULL;
+    conn->rError = nullptr;
 
-    if ( conn->svrVersion != NULL ) {
+    if ( conn->svrVersion != nullptr ) {
         free( conn->svrVersion );
-        conn->svrVersion = NULL;
+        conn->svrVersion = nullptr;
     }
-    if ( conn->thread_ctx != NULL ) {
+    if ( conn->thread_ctx != nullptr ) {
         delete  conn->thread_ctx->reconnThr;
         delete  conn->thread_ctx->lock;
         delete  conn->thread_ctx->cond;
     }
     free( conn->thread_ctx );
-    conn->thread_ctx = NULL;
+    conn->thread_ctx = nullptr;
 
     return 0;
 }
@@ -357,9 +357,9 @@ rcComm_t *
 rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg ) {
     rcComm_t *conn;
 
-    if ( myRodsEnv == NULL ) {
+    if ( myRodsEnv == nullptr ) {
         fprintf( stderr, "rcConnectXmsg: NULL myRodsEnv input\n" );
-        return NULL;
+        return nullptr;
     }
 
     conn = rcConnect( myRodsEnv->xmsgHost, myRodsEnv->xmsgPort,
@@ -373,16 +373,16 @@ void
 cliReconnManager( rcComm_t *conn ) {
     struct sockaddr_in remoteAddr;
     reconnMsg_t reconnMsg;
-    reconnMsg_t *reconnMsgOut = NULL;
-    if ( conn == NULL || conn->svrVersion == NULL ||
+    reconnMsg_t *reconnMsgOut = nullptr;
+    if ( conn == nullptr || conn->svrVersion == nullptr ||
             conn->svrVersion->reconnPort <= 0 ) {
         return;
     }
 
-    conn->reconnTime = time( 0 ) + RECONN_TIMEOUT_TIME;
+    conn->reconnTime = time( nullptr ) + RECONN_TIMEOUT_TIME;
 
     while ( !conn->exit_flg ) { /* JMC */
-        time_t curTime = time( 0 );
+        time_t curTime = time( nullptr );
 
         if ( curTime < conn->reconnTime ) {
             rodsSleep( conn->reconnTime - curTime, 0 );
@@ -485,8 +485,8 @@ cliReconnManager( rcComm_t *conn ) {
 
         conn->agentState = reconnMsgOut->procState;
         free( reconnMsgOut );
-        reconnMsgOut = NULL;
-        conn->reconnTime = time( 0 ) + RECONN_TIMEOUT_TIME;
+        reconnMsgOut = nullptr;
+        conn->reconnTime = time( nullptr ) + RECONN_TIMEOUT_TIME;
         if ( conn->clientState == PROCESSING_STATE ) {
             rodsLog( LOG_DEBUG,
                      "cliReconnManager: svrSwitchConnect. cliState = %d,agState=%d",
@@ -509,7 +509,7 @@ cliChkReconnAtSendStart( rcComm_t *conn ) {
         printf( "cliChkReconnAtSendStart - null conn\n" );
         return SYS_INVALID_INPUT_PARAM;
     }
-    if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
+    if ( conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
         boost::unique_lock<boost::mutex> boost_lock;
         try {
@@ -538,7 +538,7 @@ cliChkReconnAtSendStart( rcComm_t *conn ) {
 
 int
 cliChkReconnAtSendEnd( rcComm_t *conn ) {
-    if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
+    if ( conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
         boost::unique_lock<boost::mutex> boost_lock;
         try {
@@ -560,7 +560,7 @@ cliChkReconnAtSendEnd( rcComm_t *conn ) {
 
 int
 cliChkReconnAtReadStart( rcComm_t *conn ) {
-    if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
+    if ( conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
         boost::unique_lock<boost::mutex> boost_lock;
         try {
@@ -578,7 +578,7 @@ cliChkReconnAtReadStart( rcComm_t *conn ) {
 
 int
 cliChkReconnAtReadEnd( rcComm_t *conn ) {
-    if ( conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0 ) {
+    if ( conn->svrVersion != nullptr && conn->svrVersion->reconnPort > 0 ) {
         /* handle reconn */
         boost::unique_lock<boost::mutex> boost_lock;
         try {

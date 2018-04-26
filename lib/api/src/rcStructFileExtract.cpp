@@ -23,7 +23,7 @@ int
 rcStructFileExtract( rcComm_t *conn, structFileOprInp_t *structFileOprInp ) {
     int status;
     status = procApiRequest( conn, STRUCT_FILE_EXTRACT_AN,
-                             structFileOprInp, NULL, ( void ** ) NULL, NULL );
+                             structFileOprInp, nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

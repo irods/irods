@@ -188,7 +188,7 @@ int verifyChksumLocFile(
     }
 
     char chksumBuf[CHKSUM_LEN];
-    if ( chksumStr == NULL ) {
+    if ( chksumStr == nullptr ) {
         chksumStr = chksumBuf;
     }
 
@@ -229,7 +229,7 @@ rcChksumLocFile( char *fileName, char *chksumFlag, keyValPair_t *condInput, cons
     char chksumStr[NAME_LEN];
     int status;
 
-    if ( condInput == NULL || chksumFlag == NULL || fileName == NULL ) {
+    if ( condInput == nullptr || chksumFlag == nullptr || fileName == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rcChksumLocFile: NULL input" );
         return USER__NULL_INPUT_ERR;

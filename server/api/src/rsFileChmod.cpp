@@ -55,7 +55,7 @@ remoteFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
                  rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileChmod: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

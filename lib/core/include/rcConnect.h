@@ -230,7 +230,7 @@ cleanRcComm( rcComm_t *conn );
 /* XXXX putting clientLogin here for now. Should be in clientLogin.h */
 #ifdef __cplusplus
 int
-clientLogin( rcComm_t *conn, const char* _context = 0, const char* _scheme_override = 0 );
+clientLogin( rcComm_t *conn, const char* _context = nullptr, const char* _scheme_override = nullptr );
 #else
 int
 clientLogin( rcComm_t *conn, const char* _context, const char* _scheme_override );

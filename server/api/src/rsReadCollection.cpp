@@ -34,7 +34,7 @@ rsReadCollection( rsComm_t*, int *handleInxInp,
 
     if ( status < 0 ) {
         free( *collEnt );
-        *collEnt = NULL;
+        *collEnt = nullptr;
     }
 
     return status;

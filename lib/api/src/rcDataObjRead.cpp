@@ -69,8 +69,8 @@ int
 rcDataObjRead( rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
                bytesBuf_t *dataObjReadOutBBuf ) {
     int status;
-    status = procApiRequest( conn, DATA_OBJ_READ_AN,  dataObjReadInp, NULL,
-                             ( void ** ) NULL, dataObjReadOutBBuf );
+    status = procApiRequest( conn, DATA_OBJ_READ_AN,  dataObjReadInp, nullptr,
+                             ( void ** ) nullptr, dataObjReadOutBBuf );
 
     return status;
 }

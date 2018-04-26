@@ -36,12 +36,12 @@ int
 rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
               msParamArray_t **outParamArray ) {
 
-    int status = procApiRequest( conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL,
-                                 ( void ** )outParamArray, NULL );
+    int status = procApiRequest( conn, EXEC_MY_RULE_AN, execMyRuleInp, nullptr,
+                                 ( void ** )outParamArray, nullptr );
 
     while ( status == SYS_SVR_TO_CLI_MSI_REQUEST ) {
         /* it is a server request */
-        msParam_t *myParam = NULL, *putParam = NULL;
+        msParam_t *myParam = nullptr, *putParam = nullptr;
 
         if ( ( myParam = putParam = getMsParamByLabel( *outParamArray, CL_PUT_ACTION ) ) ||
                 ( myParam = getMsParamByLabel( *outParamArray, CL_GET_ACTION ) ) ) {
@@ -73,12 +73,12 @@ rcExecMyRule( rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
         /* free outParamArray */
         clearMsParamArray( *outParamArray, 1 );
         free( *outParamArray );
-        *outParamArray = NULL;
+        *outParamArray = nullptr;
 
         /* read the reply from the earlier call */
 
         status = branchReadAndProcApiReply( conn, EXEC_MY_RULE_AN,
-                                            ( void ** )outParamArray, NULL );
+                                            ( void ** )outParamArray, nullptr );
         if ( status < 0 ) {
             rodsLogError( LOG_DEBUG, status,
                           "rcExecMyRule: readAndProcApiReply failed. status = %d",

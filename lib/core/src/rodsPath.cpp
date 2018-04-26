@@ -52,7 +52,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
     char tmpStr[MAX_NAME_LEN];
 
 
-    if ( rodsPath == NULL ) {
+    if ( rodsPath == nullptr ) {
         fprintf( stderr, "parseRodsPath: NULL rodsPath input\n" );
         return USER__NULL_INPUT_ERR;
     }
@@ -60,7 +60,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
     rodsPath->objType = UNKNOWN_OBJ_T;
     rodsPath->objState = UNKNOWN_ST;
 
-    if ( myRodsEnv == NULL && rodsPath->inPath[0] != '/' ) {
+    if ( myRodsEnv == nullptr && rodsPath->inPath[0] != '/' ) {
         fprintf( stderr, "parseRodsPath: NULL myRodsEnv input\n" );
         return USER__NULL_INPUT_ERR;
     }
@@ -112,7 +112,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     /* take out any "//" */
 
-    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "//" ) ) != NULL ) {
+    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "//" ) ) != nullptr ) {
         //    rstrcpy (tmpPtr1 + 1, tmpPtr1 + 2, MAX_NAME_LEN);
         rstrcpy( tmpStr, tmpPtr1 + 2, MAX_NAME_LEN );
         rstrcpy( tmpPtr1 + 1, tmpStr, MAX_NAME_LEN );
@@ -120,7 +120,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     /* take out any "/./" */
 
-    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "/./" ) ) != NULL ) {
+    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "/./" ) ) != nullptr ) {
         //    rstrcpy (tmpPtr1 + 1, tmpPtr1 + 3, MAX_NAME_LEN);
         rstrcpy( tmpStr, tmpPtr1 + 3, MAX_NAME_LEN );
         rstrcpy( tmpPtr1 + 1, tmpStr, MAX_NAME_LEN );
@@ -128,7 +128,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     /* take out any /../ */
 
-    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "/../" ) ) != NULL ) {
+    while ( ( tmpPtr1 = strstr( rodsPath->outPath, "/../" ) ) != nullptr ) {
         /* go back */
         tmpPtr2 = tmpPtr1 - 1;
         while ( *tmpPtr2 != '/' ) {
@@ -151,7 +151,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     tmpPtr1 = rodsPath->outPath + len;
 
-    if ( ( tmpPtr2 = strstr( tmpPtr1 - 3, "/.." ) ) != NULL ) {
+    if ( ( tmpPtr2 = strstr( tmpPtr1 - 3, "/.." ) ) != nullptr ) {
         /* go back */
         tmpPtr2 -= 1;
         while ( *tmpPtr2 != '/' ) {
@@ -177,7 +177,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
     /* take out "/." */
 
-    if ( ( tmpPtr2 = strstr( tmpPtr1 - 2, "/." ) ) != NULL ) {
+    if ( ( tmpPtr2 = strstr( tmpPtr1 - 2, "/." ) ) != nullptr ) {
         *tmpPtr2 = '\0';
         rodsPath->objType = COLL_OBJ_T;
         if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
@@ -210,7 +210,7 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
 
 int
 parseLocalPath( rodsPath_t *rodsPath ) {
-    if ( rodsPath == NULL ) {
+    if ( rodsPath == nullptr ) {
         fprintf( stderr, "parseLocalPath: NULL rodsPath input\n" );
         return USER__NULL_INPUT_ERR;
     }
@@ -259,7 +259,7 @@ addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath ) {
     rodsPath_t *newSrcPath, *newTargPath;
     int newNumSrc;
 
-    if ( rodsPathInp == NULL || inPath == NULL ) {
+    if ( rodsPathInp == nullptr || inPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "addSrcInPath: NULL input" );
         return USER__NULL_INPUT_ERR;
@@ -358,7 +358,7 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
 
     nInput = argc - optInd;
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         rodsLog( LOG_ERROR, "parseCmdLinePath: NULL rodsPathInp input" );
         return USER__NULL_INPUT_ERR;
     }
@@ -432,7 +432,7 @@ getLastPathElement( char *inInPath, char *lastElement ) {
     int len;
     char *tmpPtr1, *tmpPtr2;
 
-    if ( inInPath == NULL ) {
+    if ( inInPath == nullptr ) {
         *lastElement = '\0';
         return 0;
     }
@@ -481,11 +481,11 @@ getLastPathElement( char *inInPath, char *lastElement ) {
 
 void
 clearRodsPath( rodsPath_t *rodsPath ) {
-    if ( rodsPath == NULL ) {
+    if ( rodsPath == nullptr ) {
         return;
     }
 
-    if ( rodsPath->rodsObjStat == NULL ) {
+    if ( rodsPath->rodsObjStat == nullptr ) {
         return;
     }
 

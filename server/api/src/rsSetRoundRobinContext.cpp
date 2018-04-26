@@ -78,11 +78,11 @@ int rsSetRoundRobinContext(
     // =-=-=-=-=-=-=-
     // get the server host struct for the icat,
     // determine if we are it.  if not redirect.
-    rodsServerHost_t* server_host = 0;
+    rodsServerHost_t* server_host = nullptr;
     int status = getAndConnRcatHost(
         _comm,
         MASTER_RCAT,
-        ( const char* )NULL,
+        ( const char* )nullptr,
         &server_host );
     if ( status < 0 ) {
         rodsLog(
@@ -115,9 +115,9 @@ int rsSetRoundRobinContext(
             server_host->conn,
             SET_RR_CTX_AN,
             _inp,
-            NULL,
-            ( void** ) NULL,
-            NULL );
+            nullptr,
+            ( void** ) nullptr,
+            nullptr );
         if ( status < 0 ) {
             replErrorStack(
                 server_host->conn->rError,

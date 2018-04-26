@@ -24,8 +24,8 @@ int
 rcSubStructFileLseek( rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
                       fileLseekOut_t **subStructFileLseekOut ) {
     int status;
-    status = procApiRequest( conn, SUB_STRUCT_FILE_LSEEK_AN, subStructFileLseekInp, NULL,
-                             ( void ** ) subStructFileLseekOut, NULL );
+    status = procApiRequest( conn, SUB_STRUCT_FILE_LSEEK_AN, subStructFileLseekInp, nullptr,
+                             ( void ** ) subStructFileLseekOut, nullptr );
 
     return status;
 }

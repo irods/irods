@@ -8,21 +8,21 @@
 
 #include <assert.h>
 
-Hashtable *coreRuleFuncMapDefIndex = NULL;
-Hashtable *appRuleFuncMapDefIndex = NULL;
-Hashtable *microsTableIndex = NULL;
+Hashtable *coreRuleFuncMapDefIndex = nullptr;
+Hashtable *appRuleFuncMapDefIndex = nullptr;
+Hashtable *microsTableIndex = nullptr;
 
 void clearIndex( Hashtable **ruleIndex ) {
-    if ( *ruleIndex != NULL ) {
+    if ( *ruleIndex != nullptr ) {
         deleteHashTable( *ruleIndex, free_const );
-        *ruleIndex = NULL;
+        *ruleIndex = nullptr;
     }
 }
 /**
  * returns 0 if out of memory
  */
 int createRuleStructIndex( ruleStruct_t *inRuleStrct, Hashtable *ruleIndex ) {
-    if ( ruleIndex == NULL ) {
+    if ( ruleIndex == nullptr ) {
         return 0;
     }
     for ( int i = 0; i < inRuleStrct->MaxNumOfRules; i++ ) {
@@ -47,7 +47,7 @@ int createCondIndex( Region *r ) {
 
         struct bucket *resumingBucket = b;
 
-        while ( resumingBucket != NULL ) {
+        while ( resumingBucket != nullptr ) {
 
             FunctionDesc *fd = ( FunctionDesc * ) resumingBucket->value;
             resumingBucket = resumingBucket->next;
@@ -62,15 +62,15 @@ int createCondIndex( Region *r ) {
 
             RuleIndexListNode *currIndexNode = ruleIndexList->head;
 
-            while ( currIndexNode != NULL ) {
+            while ( currIndexNode != nullptr ) {
                 Hashtable *processedStrs = newHashTable2( MAX_NUM_RULES * 2, r );
                 RuleIndexListNode *startIndexNode = currIndexNode;
-                RuleIndexListNode *finishIndexNode = NULL;
+                RuleIndexListNode *finishIndexNode = nullptr;
                 int groupCount = 0;
-                Node *condExp = NULL;
-                Node *params = NULL;
+                Node *condExp = nullptr;
+                Node *params = nullptr;
 
-                while ( currIndexNode != NULL ) {
+                while ( currIndexNode != nullptr ) {
                     RuleDesc *rd = getRuleDesc( currIndexNode->ruleIndex );
                     Node *ruleNode = rd->node;
                     if ( !(
@@ -97,13 +97,13 @@ int createCondIndex( Region *r ) {
                         break;
                     }
                     char *strVal = ruleCond->subtrees[1]->subtrees[1]->text;
-                    if ( lookupFromHashTable( processedStrs, strVal ) != NULL /* no repeated string */
+                    if ( lookupFromHashTable( processedStrs, strVal ) != nullptr /* no repeated string */
                        ) {
                         finishIndexNode = currIndexNode;
                         break;
                     }
                     int i;
-                    if ( condExp == NULL ) {
+                    if ( condExp == nullptr ) {
                         condExp = ruleCond->subtrees[1]->subtrees[0];
                         params = ruleNode->subtrees[0]->subtrees[0];
 
@@ -167,16 +167,16 @@ int createCondIndex( Region *r ) {
 
 }
 void insertIntoRuleIndexList( RuleIndexList *rd, RuleIndexListNode *prev, CondIndexVal *civ, Region *r ) {
-    if ( prev == NULL ) {
+    if ( prev == nullptr ) {
         RuleIndexListNode *n = newRuleIndexListNode2( civ, prev, rd->head, r );
         rd->head = n;
-        if ( rd->tail == NULL ) {
+        if ( rd->tail == nullptr ) {
             rd->tail = n;
         }
     }
     else {
         RuleIndexListNode *n = newRuleIndexListNode2( civ, prev, prev->next, r );
-        if ( prev->next == NULL ) {
+        if ( prev->next == nullptr ) {
             rd->tail = n;
         }
         prev->next = n;
@@ -184,10 +184,10 @@ void insertIntoRuleIndexList( RuleIndexList *rd, RuleIndexListNode *prev, CondIn
 }
 void removeNodeFromRuleIndexList2( RuleIndexList *rd, int i ) {
     RuleIndexListNode *n = rd->head;
-    while ( n != NULL && n->ruleIndex != i ) {
+    while ( n != nullptr && n->ruleIndex != i ) {
         n = n->next;
     }
-    if ( n != NULL ) {
+    if ( n != nullptr ) {
         removeNodeFromRuleIndexList( rd, n );
     }
 }
@@ -198,21 +198,21 @@ void removeNodeFromRuleIndexList( RuleIndexList *rd, RuleIndexListNode *n ) {
     if ( n == rd->tail ) {
         rd->tail = n->next;
     }
-    if ( n->next != NULL ) {
+    if ( n->next != nullptr ) {
         n->next->prev = n->prev;
     }
-    if ( n->prev != NULL ) {
+    if ( n->prev != nullptr ) {
         n->prev->next = n->next;
     }
 }
 void appendRuleNodeToRuleIndexList( RuleIndexList *list, int i, Region *r ) {
-    RuleIndexListNode *listNode = newRuleIndexListNode( i, list->tail, NULL, r );
+    RuleIndexListNode *listNode = newRuleIndexListNode( i, list->tail, nullptr, r );
     list->tail ->next = listNode;
     list->tail = listNode;
 
 }
 void prependRuleNodeToRuleIndexList( RuleIndexList *list, int i, Region *r ) {
-    RuleIndexListNode *listNode = newRuleIndexListNode( i, NULL, list->head, r );
+    RuleIndexListNode *listNode = newRuleIndexListNode( i, nullptr, list->head, r );
     listNode->next = list->head;
     list->head = listNode;
 
@@ -226,14 +226,14 @@ int createRuleNodeIndex( RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, R
     for ( i = 0; i < inRuleSet->len; i++ ) {
         RuleDesc *rd = inRuleSet->rules[i];
         Node *ruleNode = rd->node;
-        if ( ruleNode == NULL ) {
+        if ( ruleNode == nullptr ) {
             continue;
         }
         RuleType ruleType = rd->ruleType;
         if ( ruleType == RK_REL || ruleType == RK_FUNC ) {
             char *key = ruleNode->subtrees[0]->text;
             FunctionDesc *fd = ( FunctionDesc * ) lookupFromHashTable( ruleIndex, key );
-            if ( fd != NULL ) {
+            if ( fd != nullptr ) {
                 /*				printf("adding %s\n", key);*/
                 if ( getNodeType( fd ) == N_FD_RULE_INDEX_LIST ) {
                     RuleIndexList *list = FD_RULE_INDEX_LIST( fd );
@@ -241,7 +241,7 @@ int createRuleNodeIndex( RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, R
                 }
                 else if ( getNodeType( fd ) == N_FD_EXTERNAL ) {
                     /* combine N_FD_EXTERNAL with N_FD_RULE_LIST */
-                    if ( updateInHashTable( ruleIndex, key, newRuleIndexListFD( newRuleIndexList( key, i + offset, r ), fd->exprType, r ) ) == 0 ) {
+                    if ( updateInHashTable( ruleIndex, key, newRuleIndexListFD( newRuleIndexList( key, i + offset, r ), fd->exprType, r ) ) == nullptr ) {
                         return 0;
                     }
                 }
@@ -252,7 +252,7 @@ int createRuleNodeIndex( RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, R
             }
             else {
                 /*				printf("inserting %s\n", key);*/
-                if ( insertIntoHashTable( ruleIndex, key, newRuleIndexListFD( newRuleIndexList( key, i + offset, r ), NULL, r ) ) == 0 ) {
+                if ( insertIntoHashTable( ruleIndex, key, newRuleIndexListFD( newRuleIndexList( key, i + offset, r ), nullptr, r ) ) == 0 ) {
                     return 0;
                 }
             }
@@ -267,7 +267,7 @@ int createRuleNodeIndex( RuleSet *inRuleSet, Hashtable *ruleIndex, int offset, R
 int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
     clearIndex( ruleIndex );
     *ruleIndex = newHashTable( MAX_NUM_OF_DVARS * 2 );
-    if ( *ruleIndex == NULL ) {
+    if ( *ruleIndex == nullptr ) {
         return 0;
     }
     for ( int i = 0; i < inFuncStrct->MaxNumOfFMaps; i++ ) {
@@ -277,7 +277,7 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
 
         if ( 0 == insertIntoHashTable( *ruleIndex, key, value ) ) {
             deleteHashTable( *ruleIndex, free_const );
-            *ruleIndex = NULL;
+            *ruleIndex = nullptr;
             free( value );
             return 0;
         }
@@ -289,16 +289,16 @@ int createFuncMapDefIndex( rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex ) {
 /* find the ith RuleIndexListNode */
 int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexListNode **node ) {
     int k = i;
-    if ( ruleIndex != NULL ) {
+    if ( ruleIndex != nullptr ) {
         FunctionDesc *fd = ( FunctionDesc * )lookupFromHashTable( ruleIndex->current, action );
-        if ( fd != NULL ) {
+        if ( fd != nullptr ) {
             if ( getNodeType( fd ) != N_FD_RULE_INDEX_LIST ) {
                 return NO_MORE_RULES_ERR;
             }
             RuleIndexList *l = FD_RULE_INDEX_LIST( fd );
             RuleIndexListNode *b = l->head;
             while ( k != 0 ) {
-                if ( b != NULL ) {
+                if ( b != nullptr ) {
                     b = b->next;
                     k--;
                 }
@@ -306,7 +306,7 @@ int findNextRuleFromIndex( Env *ruleIndex, const char *action, int i, RuleIndexL
                     break;
                 }
             }
-            if ( b != NULL ) {
+            if ( b != nullptr ) {
                 *node = b;
                 return 0;
             }
@@ -337,11 +337,11 @@ int findNextRule2( const char *action,  int i, RuleIndexListNode **node ) {
 int mapExternalFuncToInternalProc2( char *funcName ) {
     int *i;
 
-    if ( appRuleFuncMapDefIndex != NULL && ( i = ( int * )lookupFromHashTable( appRuleFuncMapDefIndex, funcName ) ) != NULL ) {
+    if ( appRuleFuncMapDefIndex != nullptr && ( i = ( int * )lookupFromHashTable( appRuleFuncMapDefIndex, funcName ) ) != nullptr ) {
         strcpy( funcName, appRuleFuncMapDef.func2CMap[*i] );
         return 1;
     }
-    if ( coreRuleFuncMapDefIndex != NULL && ( i = ( int * )lookupFromHashTable( coreRuleFuncMapDefIndex, funcName ) ) != NULL ) {
+    if ( coreRuleFuncMapDefIndex != nullptr && ( i = ( int * )lookupFromHashTable( coreRuleFuncMapDefIndex, funcName ) ) != nullptr ) {
         strcpy( funcName, coreRuleFuncMapDef.func2CMap[*i] );
         return 1;
     }
@@ -350,7 +350,7 @@ int mapExternalFuncToInternalProc2( char *funcName ) {
 int actionTableLookUp2( char *action ) {
     int *i;
 
-    if ( ( i = ( int * )lookupFromHashTable( microsTableIndex, action ) ) != NULL ) {
+    if ( ( i = ( int * )lookupFromHashTable( microsTableIndex, action ) ) != nullptr ) {
         return *i;
     }
 
@@ -370,7 +370,7 @@ char *convertRuleNameArityToKey( char *ruleName, int arity ) {
 RuleIndexList *newRuleIndexList( char *ruleName, int ruleIndex, Region *r ) {
     RuleIndexList *list = ( RuleIndexList * )region_alloc( r, sizeof( RuleIndexList ) );
     list->ruleName = cpStringExt( ruleName, r );
-    list->head = list->tail = newRuleIndexListNode( ruleIndex, NULL, NULL, r );
+    list->head = list->tail = newRuleIndexListNode( ruleIndex, nullptr, nullptr, r );
     return list;
 }
 

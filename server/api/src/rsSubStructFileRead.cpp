@@ -17,7 +17,7 @@ rsSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileRea
     remoteFlag = resolveHost( &subStructFileReadInp->addr, &rodsServerHost );
 
     if ( subStructFileReadInp->len > 0 ) {
-        if ( subStructFileReadOutBBuf->buf == NULL ) {
+        if ( subStructFileReadOutBBuf->buf == nullptr ) {
             subStructFileReadOutBBuf->buf = malloc( subStructFileReadInp->len );
         }
     }
@@ -52,7 +52,7 @@ remoteSubStructFileRead( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFil
                          bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileRead: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

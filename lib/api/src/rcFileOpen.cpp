@@ -29,8 +29,8 @@ rcFileOpen( rcComm_t *conn, fileOpenInp_t *fileOpenInp ) {
         fileOpenInp->flags = fileOpenInp->flags | 0x200;
     }
 #endif
-    status = procApiRequest( conn, FILE_OPEN_AN, fileOpenInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, FILE_OPEN_AN, fileOpenInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

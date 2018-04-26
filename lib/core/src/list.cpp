@@ -5,27 +5,27 @@
 
 List *newList( Region *r ) {
     List *l = ( List * )region_alloc( r, sizeof( List ) );
-    l->head = l->tail = NULL;
+    l->head = l->tail = nullptr;
     l->size = 0;
     return l;
 }
 
 List *newListNoRegion() {
     List *l = ( List * )malloc( sizeof( List ) );
-    l->head = l->tail = NULL;
+    l->head = l->tail = nullptr;
     l->size = 0;
     return l;
 }
 
 ListNode *newListNodeNoRegion( void *value ) {
     ListNode *l = ( ListNode * )malloc( sizeof( ListNode ) );
-    l->next = NULL;
+    l->next = nullptr;
     l->value = value;
     return l;
 }
 ListNode *newListNode( void *value, Region *r ) {
     ListNode *l = ( ListNode * )region_alloc( r, sizeof( ListNode ) );
-    l->next = NULL;
+    l->next = nullptr;
     l->value = value;
     return l;
 }
@@ -33,7 +33,7 @@ ListNode *newListNode( void *value, Region *r ) {
 
 void listAppendNoRegion( List *list, void *value ) {
     ListNode *ln = newListNodeNoRegion( value );
-    if ( list->head != NULL ) {
+    if ( list->head != nullptr ) {
         list->tail = list->tail->next = ln;
     }
     else {
@@ -44,7 +44,7 @@ void listAppendNoRegion( List *list, void *value ) {
 }
 void listAppend( List *list, void *value, Region *r ) {
     ListNode *ln = newListNode( value, r );
-    if ( list->head != NULL ) {
+    if ( list->head != nullptr ) {
         list->tail = list->tail->next = ln;
     }
     else {
@@ -55,7 +55,7 @@ void listAppend( List *list, void *value, Region *r ) {
 
 void listAppendToNode( List *list, ListNode *node, void *value, Region *r ) {
     ListNode *ln = newListNode( value, r );
-    if ( node->next != NULL ) {
+    if ( node->next != nullptr ) {
         ln->next = node->next;
         node->next = ln;
     }
@@ -66,10 +66,10 @@ void listAppendToNode( List *list, ListNode *node, void *value, Region *r ) {
 }
 
 void listRemove( List *list, ListNode *node ) {
-    ListNode *prev = NULL, *curr = list->head;
-    while ( curr != NULL ) {
+    ListNode *prev = nullptr, *curr = list->head;
+    while ( curr != nullptr ) {
         if ( curr == node ) {
-            if ( prev == NULL ) {
+            if ( prev == nullptr ) {
                 list->head = node->next;
             }
             else {
@@ -89,7 +89,7 @@ void listRemove( List *list, ListNode *node ) {
 }
 void listRemoveNoRegion2( List *l, void *v ) {
     ListNode *node = l->head;
-    while ( node != NULL ) {
+    while ( node != nullptr ) {
         if ( node->value == v ) {
             listRemoveNoRegion( l, node );
             break;
@@ -98,10 +98,10 @@ void listRemoveNoRegion2( List *l, void *v ) {
     }
 }
 void listRemoveNoRegion( List *list, ListNode *node ) {
-    ListNode *prev = NULL, *curr = list->head;
-    while ( curr != NULL ) {
+    ListNode *prev = nullptr, *curr = list->head;
+    while ( curr != nullptr ) {
         if ( curr == node ) {
-            if ( prev == NULL ) {
+            if ( prev == nullptr ) {
                 list->head = node->next;
             }
             else {
@@ -124,7 +124,7 @@ void deleteListNoRegion( List *list ) {
     free( list );
 }
 void clearListNoRegion( List *list ) {
-    while ( list->head != NULL ) {
+    while ( list->head != nullptr ) {
         listRemoveNoRegion( list, list->head );
     }
 }

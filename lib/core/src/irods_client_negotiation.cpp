@@ -413,7 +413,7 @@ namespace irods {
         cs_neg_t&                  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // pack the negotiation message
-        bytesBuf_t* cs_neg_buf = 0;
+        bytesBuf_t* cs_neg_buf = nullptr;
         int status = packStruct( &_cs_neg_msg,
                                  &cs_neg_buf,
                                  "CS_NEG_PI",
@@ -428,7 +428,7 @@ namespace irods {
         irods::error ret = sendRodsMsg( _ptr,
                                         RODS_CS_NEG_T,
                                         cs_neg_buf,
-                                        0, 0, 0,
+                                        nullptr, nullptr, 0,
                                         XML_PROT );
         freeBBuf( cs_neg_buf );
         if ( !ret.ok() ) {
@@ -467,7 +467,7 @@ namespace irods {
                   &struct_buf,
                   &data_buf,
                   &error_buf,
-                  XML_PROT, 0 );
+                  XML_PROT, nullptr );
         if ( !ret.ok() ) {
             return PASS( ret );
 
@@ -483,7 +483,7 @@ namespace irods {
             if ( strcmp( msg_header.type, RODS_VERSION_T ) == 0 ) {
                 // =-=-=-=-=-=-=-
                 // unpack the version struct to check the status
-                version_t* version = 0;
+                version_t* version = nullptr;
                 int status = unpackStruct(
                                  struct_buf.buf,
                                  ( void ** )( static_cast<void *>( &version ) ),
@@ -540,7 +540,7 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // check that we did not get any data with the message
         if ( msg_header.bsLen != 0 ) {
-            if ( data_buf.buf != NULL ) {
+            if ( data_buf.buf != nullptr ) {
                 free( data_buf.buf );
             }
             rodsLog( LOG_NOTICE,
@@ -563,7 +563,7 @@ namespace irods {
         // check that we did get an appropriately sized message
         if ( msg_header.msgLen > ( int ) sizeof( irods::cs_neg_t ) * 2 ||
                 msg_header.msgLen <= 0 ) {
-            if ( struct_buf.buf != NULL ) {
+            if ( struct_buf.buf != nullptr ) {
                 free( struct_buf.buf );
             }
             std::stringstream msg;
@@ -573,7 +573,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // do an unpack into our out variable using the xml protocol
-        cs_neg_t* tmp_cs_neg = 0;
+        cs_neg_t* tmp_cs_neg = nullptr;
         int status = unpackStruct( struct_buf.buf,
                                    ( void ** )( static_cast<void *>( &tmp_cs_neg ) ),
                                    "CS_NEG_PI",

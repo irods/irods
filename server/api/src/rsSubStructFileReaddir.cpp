@@ -43,7 +43,7 @@ remoteSubStructFileReaddir( rsComm_t *rsComm, subStructFileFdOprInp_t *subStruct
                             rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileReaddir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

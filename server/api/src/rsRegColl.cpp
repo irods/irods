@@ -15,9 +15,9 @@
 int
 rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     dataObjInp_t dataObjInp;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
 
 
     memset( &dataObjInp, 0, sizeof( dataObjInp ) );
@@ -25,8 +25,8 @@ rsRegColl( rsComm_t *rsComm, collInp_t *regCollInp ) {
     rstrcpy( dataObjInp.objPath, regCollInp->collName, MAX_NAME_LEN );
     status = rsObjStat( rsComm, &dataObjInp, &rodsObjStatOut );
     if ( status >= 0 ) {
-        if ( rodsObjStatOut != NULL ) {
-            if ( rodsObjStatOut->specColl != NULL ) { // JMC cppcheck null ptr ref
+        if ( rodsObjStatOut != nullptr ) {
+            if ( rodsObjStatOut->specColl != nullptr ) { // JMC cppcheck null ptr ref
                 rodsLog( LOG_ERROR,
                          "rsRegColl: Reg path %s is in spec coll",
                          dataObjInp.objPath );
@@ -89,12 +89,12 @@ _rsRegColl( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
         rstrcpy( collInfo.collName, collCreateInp->collName, MAX_NAME_LEN );
 
-        if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_TYPE_KW ) ) != NULL ) {
+        if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_TYPE_KW ) ) != nullptr ) {
             rstrcpy( collInfo.collType, tmpStr, NAME_LEN );
-            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO1_KW ) ) != NULL ) {
+            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO1_KW ) ) != nullptr ) {
                 rstrcpy( collInfo.collInfo1, tmpStr, NAME_LEN );
             }
-            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO2_KW ) ) != NULL ) {
+            if ( ( tmpStr = getValByKey( &collCreateInp->condInput, COLLECTION_INFO2_KW ) ) != nullptr ) {
                 rstrcpy( collInfo.collInfo2, tmpStr, NAME_LEN );
             }
         }

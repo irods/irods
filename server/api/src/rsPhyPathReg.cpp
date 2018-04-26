@@ -50,7 +50,7 @@
 /* holds a struct that describes pathname match patterns
    to exclude from registration. Needs to be global due
    to the recursive dirPathReg() calls. */
-static pathnamePatterns_t *ExcludePatterns = NULL;
+static pathnamePatterns_t *ExcludePatterns = nullptr;
 
 /* function to read pattern file from a data server */
 pathnamePatterns_t *
@@ -74,7 +74,7 @@ int
 rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     int status;
 
-    if ( getValByKey( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW ) != NULL &&
+    if ( getValByKey( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW ) != nullptr &&
             rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         return SYS_NO_API_PRIV;
     }
@@ -86,7 +86,7 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 int
 irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     int status;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     int remoteFlag;
     rodsHostAddr_t addr;
 
@@ -105,7 +105,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
         return status;
 
     }
-    else  if ( coll_type != NULL && strcmp( coll_type, LINK_POINT_STR ) == 0 ) {
+    else  if ( coll_type != nullptr && strcmp( coll_type, LINK_POINT_STR ) == 0 ) {
         status = linkCollReg( rsComm, phyPathRegInp );
         return status;
 
@@ -116,7 +116,7 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     // otherwise determine a resource hierarchy given dst hier or default resource
     std::string hier;
     char*       tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
-    if ( NULL == tmp_hier ) {
+    if ( nullptr == tmp_hier ) {
         // =-=-=-=-=-=-=-
         // if no hier is provided, determine if a resource was specified
         char* dst_resc = getValByKey( &phyPathRegInp->condInput, DEST_RESC_NAME_KW );
@@ -302,7 +302,7 @@ remotePhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                   rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_ERROR,
                  "remotePhyPathReg: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -328,14 +328,14 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                const char *_resc_name, rodsServerHost_t *rodsServerHost ) {
     int status = 0;
     fileOpenInp_t chkNVPathPermInp;
-    char *tmpFilePath = 0;
+    char *tmpFilePath = nullptr;
     char filePath[MAX_NAME_LEN];
     dataObjInfo_t dataObjInfo;
-    char *tmpStr = NULL;
+    char *tmpStr = nullptr;
     int chkType = 0; // JMC - backport 4774
-    char *excludePatternFile = 0;
+    char *excludePatternFile = nullptr;
 
-    if ( ( tmpFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) ) == NULL ) {
+    if ( ( tmpFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "_rsPhyPathReg: No filePath input for %s",
                  phyPathRegInp->objPath );
         return SYS_INVALID_FILE_PATH;
@@ -365,7 +365,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         irods::log(PASS(ret));
     }
 
-    if ( getValByKey( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW ) == NULL &&
+    if ( getValByKey( &phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW ) == nullptr &&
             ( chkType = getchkPathPerm( rsComm, phyPathRegInp, &dataObjInfo ) ) != NO_CHK_PATH_PERM ) { // JMC - backport 4774
 
         memset( &chkNVPathPermInp, 0, sizeof( chkNVPathPermInp ) );
@@ -392,22 +392,22 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         }
     }
 
-    if ( getValByKey( &phyPathRegInp->condInput, COLLECTION_KW ) != NULL ) {
+    if ( getValByKey( &phyPathRegInp->condInput, COLLECTION_KW ) != nullptr ) {
         excludePatternFile = getValByKey( &phyPathRegInp->condInput, EXCLUDE_FILE_KW );
-        if ( excludePatternFile != NULL ) {
+        if ( excludePatternFile != nullptr ) {
             ExcludePatterns = readPathnamePatternsFromFile( rsComm,
                               excludePatternFile,
                               resc_hier );
         }
 
         status = dirPathReg( rsComm, phyPathRegInp, filePath, _resc_name );
-        if ( excludePatternFile != NULL ) {
+        if ( excludePatternFile != nullptr ) {
             freePathnamePatterns( ExcludePatterns );
-            ExcludePatterns = NULL;
+            ExcludePatterns = nullptr;
         }
 
     }
-    else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != NULL && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
+    else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != nullptr && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
         rodsLong_t resc_id = 0;
         ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
         if(!ret.ok()) {
@@ -426,7 +426,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
     }
     else {
-        if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
+        if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != nullptr ) {
             status = filePathRegRepl( rsComm, phyPathRegInp, filePath, _resc_name );
         }
         else {
@@ -440,7 +440,7 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  const char *_resc_name ) {
-    dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
+    dataObjInfo_t destDataObjInfo, *dataObjInfoHead = nullptr;
     regReplica_t regReplicaInp;
     int status;
 
@@ -464,7 +464,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         // we perhaps did not match the hier string but
         // we can still continue as we have a good copy
         // for a read
-        if ( NULL == dataObjInfoHead ) {
+        if ( nullptr == dataObjInfoHead ) {
             return status; // JMC cppcheck - nullptr
         }
     }
@@ -481,12 +481,12 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
-    if ( getValByKey( &phyPathRegInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
+    if ( getValByKey( &phyPathRegInp->condInput, SU_CLIENT_USER_KW ) != nullptr ) {
         addKeyVal( &regReplicaInp.condInput, SU_CLIENT_USER_KW, "" );
         addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     }
     else if ( getValByKey( &phyPathRegInp->condInput,
-                           ADMIN_KW ) != NULL ) {
+                           ADMIN_KW ) != nullptr ) {
         addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     }
     status = rsRegReplica( rsComm, &regReplicaInp );
@@ -502,7 +502,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
     memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
 
     int status;
-    char *chksum = NULL;
+    char *chksum = nullptr;
     initDataObjInfoWithInp( &dataObjInfo, phyPathRegInp );
 
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
@@ -531,9 +531,9 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         return status;
     }
 
-    if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
-         ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) ) {
-        chksum = 0;
+    if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != nullptr ) ||
+         ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != nullptr ) ) {
+        chksum = nullptr;
         status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
@@ -560,7 +560,7 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         // make resource properties available as rule session variables
         irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-        rei.status = applyRule( "acPostProcForFilePathReg", NULL, &rei,
+        rei.status = applyRule( "acPostProcForFilePathReg", nullptr, &rei,
                                 NO_SAVE_REI );
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
@@ -583,8 +583,8 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     int dirFd;
     dataObjInp_t subPhyPathRegInp;
     fileReaddirInp_t fileReaddirInp;
-    rodsDirent_t *rodsDirent = NULL;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsDirent_t *rodsDirent = nullptr;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
     int forceFlag;
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
@@ -603,9 +603,9 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsObjStatOut ) { // JMC cppcheck - nullptr
         freeRodsObjStat( rodsObjStatOut );
-        rodsObjStatOut = NULL;
+        rodsObjStatOut = nullptr;
         memset( &collCreateInp, 0, sizeof( collCreateInp ) );
         rstrcpy( collCreateInp.collName, phyPathRegInp->objPath,
                  MAX_NAME_LEN );
@@ -644,14 +644,14 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             return status;
         }
     }
-    else if ( rodsObjStatOut->specColl != NULL ) {
+    else if ( rodsObjStatOut->specColl != nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "mountFileDir: %s already mounted", phyPathRegInp->objPath );
         return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
-    rodsObjStatOut = NULL;
+    rodsObjStatOut = nullptr;
 
     memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
 
@@ -670,7 +670,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     fileReaddirInp.fileInx = dirFd;
 
-    if ( getValByKey( &phyPathRegInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+    if ( getValByKey( &phyPathRegInp->condInput, FORCE_FLAG_KW ) != nullptr ) {
         forceFlag = 1;
     }
     else {
@@ -679,7 +679,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     while ( ( status = rsFileReaddir( rsComm, &fileReaddirInp, &rodsDirent ) ) >= 0 ) {
 
-        if ( NULL == rodsDirent || strlen( rodsDirent->d_name ) == 0 ) {
+        if ( nullptr == rodsDirent || strlen( rodsDirent->d_name ) == 0 ) {
             free( rodsDirent );
             break;
         }
@@ -724,7 +724,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         fileStatInp.addr = fileOpendirInp.addr;
         rstrcpy( fileStatInp.rescHier, resc_hier, MAX_NAME_LEN );
 
-        rodsStat_t *myStat = NULL;
+        rodsStat_t *myStat = nullptr;
         status = rsFileStat( rsComm, &fileStatInp, &myStat );
 
         if ( status != 0 ) {
@@ -738,7 +738,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         if ( ( myStat->st_mode & S_IFREG ) != 0 ) { /* a file */
             if ( forceFlag > 0 ) {
                 /* check if it already exists */
-                if ( isData( rsComm, subPhyPathRegInp.objPath, NULL ) >= 0 ) {
+                if ( isData( rsComm, subPhyPathRegInp.objPath, nullptr ) >= 0 ) {
                     free( myStat );
                     free( rodsDirent ); // JMC - backport 4835
                     continue;
@@ -748,7 +748,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             subPhyPathRegInp.dataSize = myStat->st_size;
             std::string reg_func_name;
 
-            if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
+            if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != nullptr ) {
                 reg_func_name = "filePathRegRepl";
                 status = filePathRegRepl( rsComm, &subPhyPathRegInp, fileStatInp.fileName, _resc_name );
             }
@@ -792,8 +792,8 @@ int mountFileDir( rsComm_t*     rsComm,
     collInp_t collCreateInp;
     int status;
     fileStatInp_t fileStatInp;
-    rodsStat_t *myStat = NULL;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsStat_t *myStat = nullptr;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
@@ -816,20 +816,20 @@ int mountFileDir( rsComm_t*     rsComm,
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) {
+    if ( status < 0 || nullptr == rodsObjStatOut ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_NOTICE, "mountFileDir collstat failed." );
         return status; // JMC cppcheck - nullptr
     }
 
-    if ( rodsObjStatOut->specColl != NULL ) {
+    if ( rodsObjStatOut->specColl != nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "mountFileDir: %s already mounted", phyPathRegInp->objPath );
         return SYS_MOUNT_MOUNTED_COLL_ERR;
     }
     freeRodsObjStat( rodsObjStatOut );
-    rodsObjStatOut = NULL;
+    rodsObjStatOut = nullptr;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
@@ -898,7 +898,7 @@ int mountFileDir( rsComm_t*     rsComm,
         if ( getLogPathFromPhyPath( filePath, rescVaultPath, outLogPath ) >= 0 &&
                 strcmp( outLogPath, phyPathRegInp->objPath ) != 0 ) {
             /* log path not the same as input objPath */
-            if ( isColl( rsComm, outLogPath, NULL ) >= 0 ) {
+            if ( isColl( rsComm, outLogPath, nullptr ) >= 0 ) {
                 modAccessControlInp_t modAccessControl;
                 /* it is a real collection. better set the collection
                  * to read-only mode because any modification to files
@@ -926,14 +926,14 @@ int
 unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     int status;
     collInp_t modCollInp;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == rodsObjStatOut ) { // JMC cppcheck - nullptr
         free( rodsObjStatOut );
         return status;
     }
-    else if ( rodsObjStatOut->specColl == NULL ) {
+    else if ( rodsObjStatOut->specColl == nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "unmountFileDir: %s not mounted", phyPathRegInp->objPath );
@@ -949,7 +949,7 @@ unmountFileDir( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     freeRodsObjStat( rodsObjStatOut );
-    rodsObjStatOut = NULL;
+    rodsObjStatOut = nullptr;
 
     memset( &modCollInp, 0, sizeof( modCollInp ) );
     rstrcpy( modCollInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN );
@@ -972,14 +972,14 @@ int structFileReg(
     collInp_t        collCreateInp;
     int              status         = 0;
     int              len            = 0;
-    char*            collType       = NULL;
-    char*            structFilePath = NULL;
-    dataObjInfo_t*   dataObjInfo    = NULL;
-    rodsObjStat_t*   rodsObjStatOut = NULL;
-    specCollCache_t* specCollCache  = NULL;
+    char*            collType       = nullptr;
+    char*            structFilePath = nullptr;
+    dataObjInfo_t*   dataObjInfo    = nullptr;
+    rodsObjStat_t*   rodsObjStatOut = nullptr;
+    specCollCache_t* specCollCache  = nullptr;
 
     if ( ( structFilePath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) )
-            == NULL ) {
+            == nullptr ) {
         rodsLog( LOG_ERROR,
                  "structFileReg: No structFilePath input for %s",
                  phyPathRegInp->objPath );
@@ -987,7 +987,7 @@ int structFileReg(
     }
 
     collType = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW );
-    if ( collType == NULL ) {
+    if ( collType == nullptr ) {
         rodsLog( LOG_ERROR,
                  "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
                  dataObjInp.objPath );
@@ -1013,12 +1013,12 @@ int structFileReg(
     }
 
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
-    if ( status < 0 || NULL == rodsObjStatOut ) {
+    if ( status < 0 || nullptr == rodsObjStatOut ) {
         free( rodsObjStatOut );
         return status;    // JMC cppcheck - nullptr
     }
 
-    if ( rodsObjStatOut->specColl != NULL ) {
+    if ( rodsObjStatOut->specColl != nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
                  "structFileReg: %s already mounted", phyPathRegInp->objPath );
@@ -1026,7 +1026,7 @@ int structFileReg(
     }
 
     freeRodsObjStat( rodsObjStatOut );
-    rodsObjStatOut = NULL;
+    rodsObjStatOut = nullptr;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
@@ -1039,7 +1039,7 @@ int structFileReg(
     /* user need to have write permission */
     dataObjInp.openFlags = O_WRONLY;
     status = getDataObjInfoIncSpecColl( rsComm, &dataObjInp, &dataObjInfo );
-    if ( status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == dataObjInfo ) { // JMC cppcheck - nullptr
         int myStatus;
         /* try to make one */
         dataObjInp.condInput = phyPathRegInp->condInput;
@@ -1095,8 +1095,8 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     subFile_t subFile;
     specColl_t specColl;
 
-    if ( rsComm == NULL || collection == NULL || collType == NULL ||
-            resc_hier == NULL ) {
+    if ( rsComm == nullptr || collection == nullptr || collType == nullptr ||
+            resc_hier == nullptr ) {
         return 0;
     }
 
@@ -1140,7 +1140,7 @@ structFileSupport( rsComm_t *rsComm, char *collection, char *collType,
     rstrcpy( subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile", MAX_NAME_LEN );
     rstrcpy( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
 
-    rodsStat_t *myStat = NULL;
+    rodsStat_t *myStat = nullptr;
     status = rsSubStructFileStat( rsComm, &subFile, &myStat );
     free( myStat );
     return status != SYS_NOT_SUPPORTED;
@@ -1150,14 +1150,14 @@ int
 linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     collInp_t collCreateInp;
     int status;
-    char *linkPath = NULL;
+    char *linkPath = nullptr;
     char *collType;
     int len;
-    rodsObjStat_t *rodsObjStatOut = NULL;
-    specCollCache_t *specCollCache = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
+    specCollCache_t *specCollCache = nullptr;
 
     if ( ( linkPath = getValByKey( &phyPathRegInp->condInput, FILE_PATH_KW ) )
-            == NULL ) {
+            == nullptr ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: No linkPath input for %s",
                  phyPathRegInp->objPath );
@@ -1165,7 +1165,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     collType = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW );
-    if ( collType == NULL || strcmp( collType, LINK_POINT_STR ) != 0 ) {
+    if ( collType == nullptr || strcmp( collType, LINK_POINT_STR ) != 0 ) {
         rodsLog( LOG_ERROR,
                  "linkCollReg: Bad COLLECTION_TYPE_KW for linkPath %s",
                  phyPathRegInp->objPath );
@@ -1208,7 +1208,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     status = collStat( rsComm, phyPathRegInp, &rodsObjStatOut );
     if ( status < 0 ) {
         freeRodsObjStat( rodsObjStatOut );
-        rodsObjStatOut = NULL;
+        rodsObjStatOut = nullptr;
         /* does not exist. make one */
         collInp_t collCreateInp;
         memset( &collCreateInp, 0, sizeof( collCreateInp ) );
@@ -1229,7 +1229,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     if ( rodsObjStatOut && // JMC cppcheck - nullptr
-            rodsObjStatOut->specColl != NULL &&
+            rodsObjStatOut->specColl != nullptr &&
             rodsObjStatOut->specColl->collClass != LINKED_COLL ) {
         freeRodsObjStat( rodsObjStatOut );
         rodsLog( LOG_ERROR,
@@ -1239,7 +1239,7 @@ linkCollReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     }
 
     freeRodsObjStat( rodsObjStatOut );
-    rodsObjStatOut = NULL;
+    rodsObjStatOut = nullptr;
 
     if ( isCollEmpty( rsComm, phyPathRegInp->objPath ) == False ) {
         rodsLog( LOG_ERROR,
@@ -1279,8 +1279,8 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
     int buf_len, fd;
     pathnamePatterns_t *pp;
 
-    if ( rsComm == NULL || filename == NULL || resc_hier == NULL ) {
-        return NULL;
+    if ( rsComm == nullptr || filename == nullptr || resc_hier == nullptr ) {
+        return nullptr;
     }
 
 
@@ -1290,7 +1290,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
     irods::error ret = irods::get_loc_for_hier_string( resc_hier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "readPathnamePatternsFromFile - failed in get_loc_for_hier_string", ret ) );
-        return NULL;
+        return nullptr;
     }
 
     memset( &fileStatInp, 0, sizeof( fileStatInp ) );
@@ -1303,7 +1303,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
             rodsLog( LOG_DEBUG, "readPathnamePatternsFromFile: can't stat %s. status = %d",
                      fileStatInp.fileName, status );
         }
-        return NULL;
+        return nullptr;
     }
     buf_len = stbuf->st_size;
     free( stbuf );
@@ -1318,14 +1318,14 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
         rodsLog( LOG_NOTICE,
                  "readPathnamePatternsFromFile: can't open %s for reading. status = %d",
                  fileOpenInp.fileName, fd );
-        return NULL;
+        return nullptr;
     }
 
     memset( &fileReadBuf, 0, sizeof( fileReadBuf ) );
     fileReadBuf.buf = malloc( buf_len );
-    if ( fileReadBuf.buf == NULL ) {
+    if ( fileReadBuf.buf == nullptr ) {
         rodsLog( LOG_NOTICE, "readPathnamePatternsFromFile: could not malloc buffer" );
-        return NULL;
+        return nullptr;
     }
 
     memset( &fileReadInp, 0, sizeof( fileReadInp ) );
@@ -1341,7 +1341,7 @@ readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* resc_hier 
         rodsLog( LOG_NOTICE, "readPathnamePatternsFromFile: could not read %s. status = %d",
                  fileOpenInp.fileName, status );
         free( fileReadBuf.buf );
-        return NULL;
+        return nullptr;
     }
 
     pp = readPathnamePatterns( ( char* )fileReadBuf.buf, buf_len );

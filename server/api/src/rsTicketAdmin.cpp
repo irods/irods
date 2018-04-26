@@ -16,7 +16,7 @@ rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
 
     rodsLog( LOG_DEBUG, "ticketAdmin" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )nullptr, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }
@@ -66,7 +66,7 @@ _rsTicketAdmin( rsComm_t *rsComm, ticketAdminInp_t *ticketAdminInp ) {
         rei.rsComm = rsComm;
         rei.uoic = &rsComm->clientUser;
         rei.uoip = &rsComm->proxyUser;
-        status = applyRule( "acTicketPolicy", NULL, &rei, NO_SAVE_REI );
+        status = applyRule( "acTicketPolicy", nullptr, &rei, NO_SAVE_REI );
         rodsLog( LOG_DEBUG, "debug ticket rule status:%d", status );
         if ( status != 0 ) {
             return status;

@@ -29,7 +29,7 @@ int rsIESClientHints(
     int status = getAndConnRcatHost(
                      _comm,
                      MASTER_RCAT,
-                     ( const char* )NULL,
+                     ( const char* )nullptr,
                      &rods_host );
     if ( status < 0 ) {
         return status;
@@ -116,7 +116,7 @@ irods::error get_query_array(
     spec_inp.continueInx = 0;
     spec_inp.sql = "ls";
 
-    genQueryOut_t* gen_out = 0;
+    genQueryOut_t* gen_out = nullptr;
     int status = rsSpecificQuery(
                      _comm,
                      &spec_inp,
@@ -174,7 +174,7 @@ int _rsIESClientHints(
 
     json_object_set_new(ies_hints, "strict_acls", json_string( acls.c_str() ) );
 
-    json_t* query_arr = 0;
+    json_t* query_arr = nullptr;
     ret = get_query_array( _comm, query_arr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );

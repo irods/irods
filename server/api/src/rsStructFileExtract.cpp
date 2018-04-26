@@ -34,8 +34,8 @@ rsStructFileExtract( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
     // we know that the redirection decision has already been made
     std::string       hier;
     int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
-    if ( getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    rodsServerHost_t* host  =  nullptr;
+    if ( getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         irods::error ret = irods::resource_redirect( irods::OPEN_OPERATION, rsComm,
                            &dataObjInp, hier, host, local );
         if ( !ret.ok() ) {
@@ -81,7 +81,7 @@ remoteStructFileExtract( rsComm_t *rsComm,
                          structFileOprInp_t *structFileOprInp, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteStructFileExtract: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -108,9 +108,9 @@ int _rsStructFileExtract( rsComm_t*           _comm,
                           structFileOprInp_t* _struct_inp ) {
     // =-=-=-=-=-=-=-
     // pointer check
-    if ( _comm                 == NULL ||
-            _struct_inp           == NULL ||
-            _struct_inp->specColl == NULL ) {
+    if ( _comm                 == nullptr ||
+            _struct_inp           == nullptr ||
+            _struct_inp->specColl == nullptr ) {
         rodsLog( LOG_ERROR, "_rsStructFileExtract: NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }

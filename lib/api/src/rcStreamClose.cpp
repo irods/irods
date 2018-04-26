@@ -31,8 +31,8 @@
 int
 rcStreamClose( rcComm_t *conn, fileCloseInp_t *fileCloseInp ) {
     int status;
-    status = procApiRequest( conn, STREAM_CLOSE_AN, fileCloseInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, STREAM_CLOSE_AN, fileCloseInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

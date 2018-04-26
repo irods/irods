@@ -87,14 +87,14 @@
 int
 rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
-    msParamArray_t *outParamArray = NULL;
+    msParamArray_t *outParamArray = nullptr;
     char *locFilePath;
 
     status = _rcDataObjRsync( conn, dataObjInp, &outParamArray );
 
     if ( status == SYS_SVR_TO_CLI_PUT_ACTION ) {
         if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                          RSYNC_DEST_PATH_KW ) ) == NULL ) {
+                                          RSYNC_DEST_PATH_KW ) ) == nullptr ) {
             return USER_INPUT_PATH_ERR;
         }
         else {
@@ -109,7 +109,7 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     }
     else if ( status == SYS_SVR_TO_CLI_GET_ACTION ) {
         if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                          RSYNC_DEST_PATH_KW ) ) == NULL ) {
+                                          RSYNC_DEST_PATH_KW ) ) == nullptr ) {
             return USER_INPUT_PATH_ERR;
         }
         else {
@@ -124,14 +124,14 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     }
 
     /* below is for backward compatibility */
-    while ( status == SYS_SVR_TO_CLI_MSI_REQUEST && outParamArray != NULL ) {
+    while ( status == SYS_SVR_TO_CLI_MSI_REQUEST && outParamArray != nullptr ) {
         /* it is a server request */
         msParam_t *myMsParam;
-        dataObjInp_t *dataObjInp = NULL;
+        dataObjInp_t *dataObjInp = nullptr;
         int l1descInx;
 
         myMsParam = getMsParamByLabel( outParamArray, CL_ZONE_OPR_INX );
-        if ( myMsParam == NULL ) {
+        if ( myMsParam == nullptr ) {
             l1descInx = -1;
         }
         else {
@@ -139,11 +139,11 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
         }
 
         if ( ( myMsParam = getMsParamByLabel( outParamArray, CL_PUT_ACTION ) )
-                != NULL ) {
+                != nullptr ) {
 
             dataObjInp = ( dataObjInp_t * ) myMsParam->inOutStruct;
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                              RSYNC_DEST_PATH_KW ) ) == NULL ) {
+                                              RSYNC_DEST_PATH_KW ) ) == nullptr ) {
                 if ( l1descInx >= 0 ) {
                     rcOprComplete( conn, l1descInx );
                 }
@@ -162,10 +162,10 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
             }
         }
         else if ( ( myMsParam = getMsParamByLabel( outParamArray,
-                                CL_GET_ACTION ) ) != NULL ) {
+                                CL_GET_ACTION ) ) != nullptr ) {
             dataObjInp = ( dataObjInp_t * ) myMsParam->inOutStruct;
             if ( ( locFilePath = getValByKey( &dataObjInp->condInput,
-                                              RSYNC_DEST_PATH_KW ) ) == NULL ) {
+                                              RSYNC_DEST_PATH_KW ) ) == nullptr ) {
                 if ( l1descInx >= 0 ) {
                     rcOprComplete( conn, l1descInx );
                 }
@@ -191,18 +191,18 @@ rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
                 rcOprComplete( conn, SYS_SVR_TO_CLI_MSI_NO_EXIST );
             }
         }
-        if ( dataObjInp != NULL ) {
+        if ( dataObjInp != nullptr ) {
             clearKeyVal( &dataObjInp->condInput );
         }
         /* free outParamArray */
         clearMsParamArray( outParamArray, 1 );
         free( outParamArray );
-        outParamArray = NULL;
+        outParamArray = nullptr;
 
         /* read the reply from the eariler call */
 
         status = branchReadAndProcApiReply( conn, DATA_OBJ_RSYNC_AN,
-                                            ( void ** )( static_cast< void * >( &outParamArray ) ), NULL );
+                                            ( void ** )( static_cast< void * >( &outParamArray ) ), nullptr );
         if ( status < 0 ) {
             rodsLogError( LOG_DEBUG, status,
                           "rcDataObjRsync: readAndProcApiReply failed. status = %d",
@@ -218,8 +218,8 @@ _rcDataObjRsync( rcComm_t *conn, dataObjInp_t *dataObjInp,
                  msParamArray_t **outParamArray ) {
     int status;
 
-    status = procApiRequest( conn, DATA_OBJ_RSYNC_AN, dataObjInp, NULL,
-                             ( void ** )outParamArray, NULL );
+    status = procApiRequest( conn, DATA_OBJ_RSYNC_AN, dataObjInp, nullptr,
+                             ( void ** )outParamArray, nullptr );
 
     return status;
 }

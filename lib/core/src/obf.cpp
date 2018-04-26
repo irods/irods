@@ -114,10 +114,10 @@ obfSetDebug( int opt ) {
 
 int
 obfiGetFilename( char *fileName ) {
-    char *envVar = NULL;
+    char *envVar = nullptr;
 
     envVar = getRodsEnvAuthFileName();
-    if ( envVar != NULL && *envVar != '\0' ) {
+    if ( envVar != nullptr && *envVar != '\0' ) {
         strcpy( fileName, envVar );
         return 0;
     }
@@ -136,7 +136,7 @@ obfiGetFilename( char *fileName ) {
 #else
     envVar =  getenv( "HOME" );
 #endif
-    if ( envVar == NULL ) {
+    if ( envVar == nullptr ) {
         return ENVIRONMENT_VAR_HOME_NOT_DEFINED;
     }
     strncpy( fileName, envVar, MAX_NAME_LEN );
@@ -188,7 +188,7 @@ obfGetPw( char *pw ) {
 
     isTemp = 0;
     cp = strstr( myPwD, TMP_FLAG );
-    if ( cp != 0 ) {
+    if ( cp != nullptr ) {
         isTemp = 1;
         *cp = '\0';
     }
@@ -223,7 +223,7 @@ obfRmPw( int opt ) {
     if ( opt == 0 ) {
         printf( "Remove %s?:", fileName );
         const char *fgets_ret = fgets( inbuf, MAX_NAME_LEN, stdin );
-        if ( fgets_ret == NULL || strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
+        if ( fgets_ret == nullptr || strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
             return 0;
         }
     }
@@ -304,7 +304,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
         }
 
         printf( "Enter your current iRODS password:" );
-        if ( NULL == fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin ) ) {
+        if ( nullptr == fgets( inbuf, MAX_PASSWORD_LEN + 50, stdin ) ) {
             // end of line reached or no input
         }
 
@@ -463,7 +463,7 @@ obfiOpenOutFile( const char *fileName, int fileOpt ) {
         }
         if ( fileOpt > 0 ) {
             printf( "Overwrite '%s'?:", fileName );
-            if ( NULL == fgets( inbuf, MAX_NAME_LEN, stdin ) ) {
+            if ( nullptr == fgets( inbuf, MAX_NAME_LEN, stdin ) ) {
                 // end of line reached or no input
             }
             i = strlen( inbuf );
@@ -508,7 +508,7 @@ int obfiTimeval() {
 
     struct timeval nowtime;
 
-    ( void )gettimeofday( &nowtime, ( struct timezone * )0 );
+    ( void )gettimeofday( &nowtime, ( struct timezone * )nullptr );
     sec = nowtime.tv_sec;
 
     val = sec;
@@ -573,7 +573,7 @@ obfiEncode( const char *in, char *out, int extra ) {
      get a pseudo random number
     */
 
-    ( void )gettimeofday( &nowtime, ( struct timezone * )0 );
+    ( void )gettimeofday( &nowtime, ( struct timezone * )nullptr );
     rval = nowtime.tv_usec & 0xf;
 
     /*
@@ -1127,7 +1127,7 @@ obfEncodeByKeyV2( const char *in, const char *key, const char *key2, char *out )
     /*
      get a pseudo random number
     */
-    ( void )gettimeofday( &nowtime, ( struct timezone * )0 );
+    ( void )gettimeofday( &nowtime, ( struct timezone * )nullptr );
     rval = nowtime.tv_usec & 0x1f;
     myIn[0] += rval; /* and add it to the leading character */
 

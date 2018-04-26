@@ -89,7 +89,7 @@ namespace irods{
         error err;
         struct all_resources {
             all_resources() {
-                rNew = make_region(0, NULL);
+                rNew = make_region(0, nullptr);
                 memset(msParams,0 ,sizeof(msParam_t[10]));
             }
             ~all_resources() {

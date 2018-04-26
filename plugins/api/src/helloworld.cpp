@@ -135,7 +135,7 @@ extern "C" {
                                     int( rsComm_t*,helloInp_t*,helloOut_t**)>(
                                         rs_hello_world), // operation
 								"api_hello_world",    // operation name
-                                0,  // null clear fcn
+                                nullptr,  // null clear fcn
                                 (funcPtr)CALL_HELLOINP_HELLO_OUT
                               };
         // =-=-=-=-=-=-=-

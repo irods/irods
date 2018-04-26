@@ -27,7 +27,7 @@ addIntParamToArray( msParamArray_t *msParamArray, char *label, int inpInt ) {
 
     myInt = ( int * )malloc( sizeof( int ) );
     *myInt = inpInt;
-    status = addMsParamToArray( msParamArray, label, INT_MS_T, myInt, NULL, 0 );
+    status = addMsParamToArray( msParamArray, label, INT_MS_T, myInt, nullptr, 0 );
     return status;
 }
 
@@ -49,7 +49,7 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
     msParam_t **newParam;
     int len, newLen;
 
-    if ( msParamArray == NULL || label == NULL ) {
+    if ( msParamArray == nullptr || label == nullptr ) {
         rodsLog( LOG_ERROR,
                  "addMsParam: NULL msParamArray or label input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -58,7 +58,7 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
     len = msParamArray->len;
 
     for ( int i = 0; i < len; i++ ) {
-        if ( msParamArray->msParam[i]->label == NULL ) {
+        if ( msParamArray->msParam[i]->label == nullptr ) {
             continue;
         }
         if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
@@ -94,7 +94,7 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
         for ( int i = 0; i < len; i++ ) {
             newParam[i] = msParamArray->msParam[i];
         }
-        if ( msParamArray->msParam != NULL ) {
+        if ( msParamArray->msParam != nullptr ) {
             free( msParamArray->msParam );
         }
         msParamArray->msParam = newParam;
@@ -112,8 +112,8 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
             rodsLogError( LOG_ERROR, status, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__ );
             return status;
         }
-        msParamArray->msParam[len]->label = label ? strdup(label) : NULL;
-        msParamArray->msParam[len]->type = type ? strdup( type ) : NULL;
+        msParamArray->msParam[len]->label = label ? strdup(label) : nullptr;
+        msParamArray->msParam[len]->type = type ? strdup( type ) : nullptr;
         msParamArray->msParam[len]->inpOutBuf = replBytesBuf(inpOutBuf);
     }
     msParamArray->len++;
@@ -123,7 +123,7 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
 
 int
 replMsParamArray( msParamArray_t *in, msParamArray_t *out) {
-    if ( in == NULL || out == NULL ) {
+    if ( in == nullptr || out == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     memset( out, 0, sizeof( msParamArray_t ) );
@@ -150,7 +150,7 @@ replMsParamArray( msParamArray_t *in, msParamArray_t *out) {
 
 int
 replMsParam( msParam_t *in, msParam_t *out ) {
-    if ( in == NULL  || out == NULL ) {
+    if ( in == nullptr  || out == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -159,23 +159,23 @@ replMsParam( msParam_t *in, msParam_t *out ) {
         rodsLogError( LOG_ERROR, status, "Error when calling replInOutStruct in %s", __PRETTY_FUNCTION__ );
         return status;
     }
-    out->label = in->label ? strdup(in->label) : NULL;
-    out->type = in->type ? strdup(in->type) : NULL;
+    out->label = in->label ? strdup(in->label) : nullptr;
+    out->type = in->type ? strdup(in->type) : nullptr;
     out->inpOutBuf = replBytesBuf(in->inpOutBuf);
     return 0;
 }
 
 int
 replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
-    if (outStruct == NULL) {
+    if (outStruct == nullptr) {
         rodsLogError( LOG_ERROR, SYS_INTERNAL_NULL_INPUT_ERR, "replInOutStruct was called with a null pointer in outStruct");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    if (inStruct == NULL) {
-        *outStruct = NULL;
+    if (inStruct == nullptr) {
+        *outStruct = nullptr;
         return 0;
     }
-    if (type == NULL) {
+    if (type == nullptr) {
         rodsLogError( LOG_ERROR, SYS_INTERNAL_NULL_INPUT_ERR, "replInOutStruct was called with a null pointer in type");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -185,13 +185,13 @@ replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
     }
     bytesBuf_t *packedResult;
     int status = packStruct( inStruct, &packedResult, type,
-                            NULL, 0, NATIVE_PROT );
+                            nullptr, 0, NATIVE_PROT );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "replInOutStruct: packStruct error for type %s", type );
         return status;
     }
     status = unpackStruct( packedResult->buf,
-                            outStruct, type, NULL, NATIVE_PROT );
+                            outStruct, type, nullptr, NATIVE_PROT );
     freeBBuf( packedResult );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "replInOutStruct: unpackStruct error for type %s", type );
@@ -202,8 +202,8 @@ replInOutStruct( void *inStruct, void **outStruct, const char *type ) {
 
 bytesBuf_t*
 replBytesBuf( const bytesBuf_t* in) {
-    if (in == NULL || in->len == 0) {
-        return NULL;
+    if (in == nullptr || in->len == 0) {
+        return nullptr;
     }
     bytesBuf_t* out = (bytesBuf_t*)malloc(sizeof(bytesBuf_t));
     out->len = in->len;
@@ -217,12 +217,12 @@ replBytesBuf( const bytesBuf_t* in) {
 int
 fillMsParam( msParam_t *msParam, const char *label,
              const char *type, void *inOutStruct, bytesBuf_t *inpOutBuf ) {
-    if ( label != NULL ) {
+    if ( label != nullptr ) {
         msParam->label = strdup( label );
     }
 
-    msParam->type = type ? strdup( type ) : NULL;
-    if ( inOutStruct != NULL && msParam->type != NULL &&
+    msParam->type = type ? strdup( type ) : nullptr;
+    if ( inOutStruct != nullptr && msParam->type != nullptr &&
             strcmp( msParam->type, STR_MS_T ) == 0 ) {
         msParam->inOutStruct = ( void * ) strdup( ( char * )inOutStruct );
     }
@@ -236,7 +236,7 @@ fillMsParam( msParam_t *msParam, const char *label,
 
 void
 fillIntInMsParam( msParam_t *msParam, const int val ) {
-    if ( msParam != NULL ) {
+    if ( msParam != nullptr ) {
         msParam->inOutStruct = malloc( sizeof( int ) );
         *(int*)(msParam->inOutStruct) = val;
         msParam->type = strdup( INT_MS_T );
@@ -245,7 +245,7 @@ fillIntInMsParam( msParam_t *msParam, const int val ) {
 
 void
 fillFloatInMsParam( msParam_t *msParam, const float val ) {
-    if ( msParam != NULL ) {
+    if ( msParam != nullptr ) {
         msParam->inOutStruct = malloc( sizeof( float ) );
         *(float*)(msParam->inOutStruct) = val;
         msParam->type = strdup( FLOAT_MS_T );
@@ -254,7 +254,7 @@ fillFloatInMsParam( msParam_t *msParam, const float val ) {
 
 void
 fillDoubleInMsParam( msParam_t *msParam, const rodsLong_t val ) {
-    if ( msParam != NULL ) {
+    if ( msParam != nullptr ) {
         msParam->inOutStruct = malloc( sizeof( rodsLong_t ) );
         *(rodsLong_t*)(msParam->inOutStruct) = val;
         msParam->type = strdup( DOUBLE_MS_T );
@@ -263,7 +263,7 @@ fillDoubleInMsParam( msParam_t *msParam, const rodsLong_t val ) {
 
 void
 fillCharInMsParam( msParam_t *msParam, const char val ) {
-    if ( msParam != NULL ) {
+    if ( msParam != nullptr ) {
         msParam->inOutStruct = malloc( sizeof( float ) );
         *(float*)(msParam->inOutStruct) = val;
         msParam->type = strdup( FLOAT_MS_T );
@@ -272,8 +272,8 @@ fillCharInMsParam( msParam_t *msParam, const char val ) {
 
 void
 fillStrInMsParam( msParam_t *msParam, const char *str ) {
-    if ( msParam != NULL ) {
-        msParam->inOutStruct = str ? strdup( str ) : NULL;
+    if ( msParam != nullptr ) {
+        msParam->inOutStruct = str ? strdup( str ) : nullptr;
         msParam->type = strdup( STR_MS_T );
     }
 }
@@ -281,7 +281,7 @@ fillStrInMsParam( msParam_t *msParam, const char *str ) {
 
 void
 fillBufLenInMsParam( msParam_t *msParam, int len, bytesBuf_t *bytesBuf ) {
-    if ( msParam != NULL ) {
+    if ( msParam != nullptr ) {
         msParam->inOutStruct = malloc( sizeof( int ) );
         *(int*)(msParam->inOutStruct) = len;
         msParam->inpOutBuf = bytesBuf;
@@ -297,7 +297,7 @@ printMsParam( msParamArray_t *outParamArray ) {
     int i, j;
     msParam_t *msParam;
 
-    if ( outParamArray == NULL ) {
+    if ( outParamArray == nullptr ) {
         return 0;
     }
 
@@ -322,9 +322,9 @@ writeMsParam( char *buf, int len, msParam_t *msParam ) {
     buf[0] = '\0';
 
 
-    if ( msParam->label != NULL &&
-            msParam->type != NULL &&
-            msParam->inOutStruct != NULL ) {
+    if ( msParam->label != nullptr &&
+            msParam->type != nullptr &&
+            msParam->inOutStruct != nullptr ) {
         if ( strcmp( msParam->type, STR_MS_T ) == 0 ) {
             snprintf( &buf[strlen( buf )], len - strlen( buf ), "%s: %s\n", msParam->label, ( char * ) msParam->inOutStruct );
         }
@@ -351,16 +351,16 @@ writeMsParam( char *buf, int len, msParam_t *msParam ) {
         else if ( strcmp( msParam->type, ExecCmdOut_MS_T ) == 0 ) {
             execCmdOut_t *execCmdOut;
             execCmdOut = ( execCmdOut_t * ) msParam->inOutStruct;
-            if ( execCmdOut->stdoutBuf.buf != NULL ) {
+            if ( execCmdOut->stdoutBuf.buf != nullptr ) {
                 snprintf( &buf[strlen( buf )], len - strlen( buf ), "STDOUT = %s", ( char * ) execCmdOut->stdoutBuf.buf );
             }
-            if ( execCmdOut->stderrBuf.buf != NULL ) {
+            if ( execCmdOut->stderrBuf.buf != nullptr ) {
                 snprintf( &buf[strlen( buf )], len - strlen( buf ), "STRERR = %s", ( char * ) execCmdOut->stderrBuf.buf );
             }
         }
     }
 
-    if ( msParam->inpOutBuf != NULL ) {
+    if ( msParam->inpOutBuf != nullptr ) {
         snprintf( &buf[strlen( buf )], len - strlen( buf ), "    outBuf: buf length = %d\n", msParam->inpOutBuf->len );
     }
 
@@ -372,8 +372,8 @@ msParam_t *
 getMsParamByLabel( msParamArray_t *msParamArray, const char *label ) {
     int i;
 
-    if ( msParamArray == NULL || msParamArray->msParam == NULL || label == NULL ) {
-        return NULL;
+    if ( msParamArray == nullptr || msParamArray->msParam == nullptr || label == nullptr ) {
+        return nullptr;
     }
 
     for ( i = 0; i < msParamArray->len; i++ ) {
@@ -381,15 +381,15 @@ getMsParamByLabel( msParamArray_t *msParamArray, const char *label ) {
             return msParamArray->msParam[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 msParam_t *
 getMsParamByType( msParamArray_t *msParamArray, const char *type ) {
     int i;
 
-    if ( msParamArray == NULL || msParamArray->msParam == NULL || type == NULL ) {
-        return NULL;
+    if ( msParamArray == nullptr || msParamArray->msParam == nullptr || type == nullptr ) {
+        return nullptr;
     }
 
     for ( i = 0; i < msParamArray->len; i++ ) {
@@ -397,15 +397,15 @@ getMsParamByType( msParamArray_t *msParamArray, const char *type ) {
             return msParamArray->msParam[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void
 *getMspInOutStructByLabel( msParamArray_t *msParamArray, const char *label ) {
     int i;
 
-    if ( msParamArray == NULL || label == NULL ) {
-        return NULL;
+    if ( msParamArray == nullptr || label == nullptr ) {
+        return nullptr;
     }
 
     for ( i = 0; i < msParamArray->len; i++ ) {
@@ -413,14 +413,14 @@ void
             return msParamArray->msParam[i]->inOutStruct;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int
 rmMsParamByLabel( msParamArray_t *msParamArray, const char *label, int freeStruct ) {
     int i, j;
 
-    if ( msParamArray == NULL || label == NULL ) {
+    if ( msParamArray == nullptr || label == nullptr ) {
         return 0;
     }
 
@@ -443,7 +443,7 @@ int
 clearMsParamArray( msParamArray_t *msParamArray, int freeStruct ) {
     int i;
 
-    if ( msParamArray == NULL ) {
+    if ( msParamArray == nullptr ) {
         return 0;
     }
 
@@ -452,7 +452,7 @@ clearMsParamArray( msParamArray_t *msParamArray, int freeStruct ) {
         free( msParamArray->msParam[i] );
     }
 
-    if ( msParamArray->len > 0 && msParamArray->msParam != NULL ) {
+    if ( msParamArray->len > 0 && msParamArray->msParam != nullptr ) {
         free( msParamArray->msParam );
         memset( msParamArray, 0, sizeof( msParamArray_t ) );
     }
@@ -462,18 +462,18 @@ clearMsParamArray( msParamArray_t *msParamArray, int freeStruct ) {
 
 int
 clearMsParam( msParam_t *msParam, int freeStruct ) {
-    if ( msParam == NULL ) {
+    if ( msParam == nullptr ) {
         return 0;
     }
 
-    if ( msParam->label != NULL ) {
+    if ( msParam->label != nullptr ) {
         free( msParam->label );
     }
-    if ( msParam->inOutStruct != NULL && ( freeStruct > 0 ||
-                                           ( msParam->type != NULL && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
+    if ( msParam->inOutStruct != nullptr && ( freeStruct > 0 ||
+                                           ( msParam->type != nullptr && strcmp( msParam->type, STR_MS_T ) == 0 ) ) ) {
         free( msParam->inOutStruct );
     }
-    if ( msParam->type != NULL ) {
+    if ( msParam->type != nullptr ) {
         free( msParam->type );
     }
 
@@ -485,17 +485,17 @@ clearMsParam( msParam_t *msParam, int freeStruct ) {
 /* clears everything but the label */
 int
 resetMsParam( msParam_t * msParam ) {
-    if ( msParam == NULL ) {
+    if ( msParam == nullptr ) {
         return 0;
     }
 
-    msParam->type = NULL;
+    msParam->type = nullptr;
 
-    if ( msParam->inOutStruct != NULL ) {
+    if ( msParam->inOutStruct != nullptr ) {
         free( msParam->inOutStruct );
     }
 
-    if ( msParam->inpOutBuf != NULL ) {
+    if ( msParam->inpOutBuf != nullptr ) {
         freeBBuf( msParam->inpOutBuf );
     }
 
@@ -511,13 +511,13 @@ trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
     char *value;
     msParam_t **msParam;
 
-    if ( msParamArray == NULL ) {
+    if ( msParamArray == nullptr ) {
         return 0;
     }
 
     memset( &strArray, 0, sizeof( strArray ) );
 
-    if ( outParamDesc != NULL && strlen( outParamDesc ) > 0 ) {
+    if ( outParamDesc != nullptr && strlen( outParamDesc ) > 0 ) {
         status = parseMultiStr( outParamDesc, &strArray );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
@@ -540,7 +540,7 @@ trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
 
         match = 0;
         nullType = 0;
-        if ( msParam[i]->type == NULL || strlen( msParam[i]->type ) == 0 ) {
+        if ( msParam[i]->type == nullptr || strlen( msParam[i]->type ) == 0 ) {
             nullType = 1;
         }
         else {
@@ -567,7 +567,7 @@ trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
             i++;
         }
     }
-    if ( value != NULL ) {
+    if ( value != nullptr ) {
         free( value );
     }
 
@@ -592,9 +592,9 @@ trimMsParamArray( msParamArray_t * msParamArray, char * outParamDesc ) {
 int
 parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
                        dataObjInp_t **outDataObjInp, int outputToCache ) {
-    *outDataObjInp = NULL;
+    *outDataObjInp = nullptr;
 
-    if ( inpParam == NULL ) {
+    if ( inpParam == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjInp: input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -602,7 +602,7 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
-        if ( dataObjInpCache == NULL ) {
+        if ( dataObjInpCache == nullptr ) {
             rodsLog( LOG_ERROR,
                      "parseMspForDataObjInp: input dataObjInpCache is NULL" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -619,7 +619,7 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
         if ( outputToCache == 1 ) {
             dataObjInp_t *tmpDataObjInp;
             tmpDataObjInp = ( dataObjInp_t * )inpParam->inOutStruct;
-            if ( dataObjInpCache == NULL ) {
+            if ( dataObjInpCache == nullptr ) {
                 rodsLog( LOG_ERROR,
                          "parseMspForDataObjInp: input dataObjInpCache is NULL" );
                 return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -640,14 +640,14 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
         char *dVal, *cVal;
         keyValPair_t *kW;
         kW = ( keyValPair_t * )inpParam->inOutStruct;
-        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
+        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == nullptr ) {
             return USER_PARAM_TYPE_ERR;
         }
-        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
+        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == nullptr ) {
             return USER_PARAM_TYPE_ERR;
         }
 
-        if ( dataObjInpCache == NULL ) {
+        if ( dataObjInpCache == nullptr ) {
             rodsLog( LOG_ERROR,
                      "parseMspForDataObjInp: input dataObjInpCache is NULL" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -672,9 +672,9 @@ parseMspForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInpCache,
 int
 parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
                     collInp_t **outCollInp, int outputToCache ) {
-    *outCollInp = NULL;
+    *outCollInp = nullptr;
 
-    if ( inpParam == NULL ) {
+    if ( inpParam == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMspForCollInp: input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -682,7 +682,7 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
 
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
         /* str input */
-        if ( collInpCache == NULL ) {
+        if ( collInpCache == nullptr ) {
             collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
         }
         memset( collInpCache, 0, sizeof( collInp_t ) );
@@ -697,7 +697,7 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
         if ( outputToCache == 1 ) {
             collInp_t *tmpCollInp;
             tmpCollInp = ( collInp_t * )inpParam->inOutStruct;
-            if ( collInpCache == NULL ) {
+            if ( collInpCache == nullptr ) {
                 collInpCache = ( collInp_t * )malloc( sizeof( collInp_t ) );
             }
             *collInpCache = *tmpCollInp;
@@ -722,8 +722,8 @@ parseMspForCollInp( msParam_t * inpParam, collInp_t * collInpCache,
 int
 parseMspForDataObjCopyInp( msParam_t * inpParam,
                            dataObjCopyInp_t * dataObjCopyInpCache, dataObjCopyInp_t **outDataObjCopyInp ) {
-    *outDataObjCopyInp = NULL;
-    if ( inpParam == NULL ) {
+    *outDataObjCopyInp = nullptr;
+    if ( inpParam == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMspForDataObjCopyInp: input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -750,10 +750,10 @@ parseMspForDataObjCopyInp( msParam_t * inpParam,
         char *dVal, *cVal;
         keyValPair_t *kW;
         kW = ( keyValPair_t * )inpParam->inOutStruct;
-        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == NULL ) {
+        if ( ( dVal = getValByKey( kW, "DATA_NAME" ) ) == nullptr ) {
             return USER_PARAM_TYPE_ERR;
         }
-        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == NULL ) {
+        if ( ( cVal = getValByKey( kW, "COLL_NAME" ) ) == nullptr ) {
             return USER_PARAM_TYPE_ERR;
         }
         memset( dataObjCopyInpCache, 0, sizeof( dataObjCopyInp_t ) );
@@ -777,7 +777,7 @@ parseMspForDataObjCopyInp( msParam_t * inpParam,
 int
 parseMspForCondInp( msParam_t * inpParam, keyValPair_t * condInput,
                     char * condKw ) {
-    if ( inpParam != NULL ) {
+    if ( inpParam != nullptr ) {
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
             /* str input */
             if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 ) {
@@ -801,7 +801,7 @@ parseMspForCondInp( msParam_t * inpParam, keyValPair_t * condInput,
 
 int
 parseMspForCondKw( msParam_t * inpParam, keyValPair_t * condInput ) {
-    if ( inpParam != NULL ) {
+    if ( inpParam != nullptr ) {
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
             /* str input */
             if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) != 0 &&
@@ -823,11 +823,11 @@ int
 parseMspForPhyPathReg( msParam_t * inpParam, keyValPair_t * condInput ) {
     char *tmpStr;
 
-    if ( inpParam != NULL ) {
+    if ( inpParam != nullptr ) {
         if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
             tmpStr = ( char * ) inpParam->inOutStruct;
             /* str input */
-            if ( tmpStr != NULL && strlen( tmpStr ) > 0 &&
+            if ( tmpStr != nullptr && strlen( tmpStr ) > 0 &&
                     strcmp( tmpStr, "null" ) != 0 ) {
                 if ( strcmp( tmpStr, COLLECTION_KW ) == 0 ) {
                     addKeyVal( condInput, COLLECTION_KW, "" );
@@ -887,19 +887,19 @@ parseMspForPosInt( msParam_t * inpParam ) {
 
 char *
 parseMspForStr( msParam_t * inpParam ) {
-    if ( inpParam == NULL || inpParam->inOutStruct == NULL ) {
-        return NULL;
+    if ( inpParam == nullptr || inpParam->inOutStruct == nullptr ) {
+        return nullptr;
     }
 
     if ( strcmp( inpParam->type, STR_MS_T ) != 0 ) {
         rodsLog( LOG_ERROR,
                  "parseMspForStr: inpParam type %s is not STR_MS_T",
                  inpParam->type );
-        return NULL;
+        return nullptr;
     }
 
     if ( strcmp( ( char * ) inpParam->inOutStruct, "null" ) == 0 ) {
-        return NULL;
+        return nullptr;
     }
 
     return ( char * )( inpParam->inOutStruct );
@@ -908,7 +908,7 @@ parseMspForStr( msParam_t * inpParam ) {
 int
 parseMspForFloat( msParam_t * inpParam, float * floatout ) {
 
-    if ( inpParam == NULL || floatout == NULL ) {
+    if ( inpParam == nullptr || floatout == nullptr ) {
         return SYS_NULL_INPUT;
     }
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -919,7 +919,7 @@ parseMspForFloat( msParam_t * inpParam, float * floatout ) {
 #if defined(solaris_platform)
         *floatout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
 #else
-        *floatout = strtof( ( const char* )inpParam->inOutStruct, NULL );
+        *floatout = strtof( ( const char* )inpParam->inOutStruct, nullptr );
 #endif
     }
     else if ( strcmp( inpParam->type, INT_MS_T ) == 0 ||
@@ -938,7 +938,7 @@ parseMspForFloat( msParam_t * inpParam, float * floatout ) {
 int
 parseMspForDouble( msParam_t * inpParam, double * doubleout ) {
 
-    if ( inpParam == NULL || doubleout == NULL ) {
+    if ( inpParam == nullptr || doubleout == nullptr ) {
         return SYS_NULL_INPUT;
     }
     if ( strcmp( inpParam->type, STR_MS_T ) == 0 ) {
@@ -949,7 +949,7 @@ parseMspForDouble( msParam_t * inpParam, double * doubleout ) {
 #if defined(solaris_platform)
         *doubleout = ( float )strtod( ( const char* )inpParam->inOutStruct, NULL );
 #else
-        *doubleout = strtof( ( const char* )inpParam->inOutStruct, NULL );
+        *doubleout = strtof( ( const char* )inpParam->inOutStruct, nullptr );
 #endif
     }
     else if ( strcmp( inpParam->type, DOUBLE_MS_T ) == 0 ) {
@@ -967,8 +967,8 @@ parseMspForDouble( msParam_t * inpParam, double * doubleout ) {
 int
 parseMspForExecCmdInp( msParam_t * inpParam,
                        execCmd_t * execCmdInpCache, execCmd_t **ouExecCmdInp ) {
-    *ouExecCmdInp = NULL;
-    if ( inpParam == NULL ) {
+    *ouExecCmdInp = nullptr;
+    if ( inpParam == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMspForExecCmdInp: input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -996,7 +996,7 @@ int
 getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
     execCmdOut_t *execCmdOut;
 
-    if ( inpExecCmdOut == NULL ) {
+    if ( inpExecCmdOut == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getStdoutInExecCmdOut input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1004,7 +1004,7 @@ getStdoutInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
 
     if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
         execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-        if ( execCmdOut == NULL ) {
+        if ( execCmdOut == nullptr ) {
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         *outStr = ( char * ) malloc( execCmdOut->stdoutBuf.len + 1 );
@@ -1024,7 +1024,7 @@ int
 getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
     execCmdOut_t *execCmdOut;
 
-    if ( inpExecCmdOut == NULL ) {
+    if ( inpExecCmdOut == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getStderrInExecCmdOut input inpParam is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1032,7 +1032,7 @@ getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
 
     if ( strcmp( inpExecCmdOut->type, ExecCmdOut_MS_T ) == 0 ) {
         execCmdOut = ( execCmdOut_t * ) inpExecCmdOut->inOutStruct;
-        if ( execCmdOut == NULL ) {
+        if ( execCmdOut == nullptr ) {
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
         *outStr = ( char * ) malloc( execCmdOut->stderrBuf.len + 1 );
@@ -1050,7 +1050,7 @@ getStderrInExecCmdOut( msParam_t * inpExecCmdOut, char **outStr ) {
 
 int
 initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) {
-    if ( inpStr == NULL || parsedMsKeyValStr == NULL ) {
+    if ( inpStr == nullptr || parsedMsKeyValStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1066,12 +1066,12 @@ initParsedMsKeyValStr( char * inpStr, parsedMsKeyValStr_t * parsedMsKeyValStr ) 
 
 int
 clearParsedMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
-    if ( parsedMsKeyValStr == NULL ) {
+    if ( parsedMsKeyValStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "clearParsedMsKeyValStr: input parsedMsKeyValStr is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    if ( parsedMsKeyValStr->inpStr != NULL ) {
+    if ( parsedMsKeyValStr->inpStr != nullptr ) {
         free( parsedMsKeyValStr->inpStr );
     }
 
@@ -1091,7 +1091,7 @@ getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
     char *tmpEndPtr;
     char *equalPtr;
 
-    if ( parsedMsKeyValStr == NULL ) {
+    if ( parsedMsKeyValStr == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getNextKeyValFromMsKeyValStr: input parsedMsKeyValStr is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1101,7 +1101,7 @@ getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
     }
 
     if ( ( tmpEndPtr = strstr( parsedMsKeyValStr->curPtr, MS_INP_SEP_STR ) ) !=
-            NULL ) {
+            nullptr ) {
         /* NULL terminate the str we are trying to parse */
         *tmpEndPtr = '\0';
     }
@@ -1113,7 +1113,7 @@ getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
         return NO_MORE_RESULT;
     }
 
-    if ( ( equalPtr = strstr( parsedMsKeyValStr->curPtr, "=" ) ) != NULL ) {
+    if ( ( equalPtr = strstr( parsedMsKeyValStr->curPtr, "=" ) ) != nullptr ) {
         *equalPtr = '\0';
         parsedMsKeyValStr->kwPtr = parsedMsKeyValStr->curPtr;
         if ( equalPtr + 1 == tmpEndPtr ) {
@@ -1125,7 +1125,7 @@ getNextKeyValFromMsKeyValStr( parsedMsKeyValStr_t * parsedMsKeyValStr ) {
         }
     }
     else {
-        parsedMsKeyValStr->kwPtr = NULL;
+        parsedMsKeyValStr->kwPtr = nullptr;
         parsedMsKeyValStr->valPtr = parsedMsKeyValStr->curPtr;
     }
 
@@ -1152,7 +1152,7 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
     int status;
 
 
-    if ( inpParam == NULL || dataObjInp == NULL ) {
+    if ( inpParam == nullptr || dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForDataObjInp: input inpParam or dataObjInp is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1166,8 +1166,8 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
 
     condInput = &dataObjInp->condInput;
 
-    if ( outBadKeyWd != NULL ) {
-        *outBadKeyWd = NULL;
+    if ( outBadKeyWd != nullptr ) {
+        *outBadKeyWd = nullptr;
     }
 
     if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
@@ -1175,8 +1175,8 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
     }
 
     while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-        if ( parsedMsKeyValStr.kwPtr == NULL ) {
-            if ( hintForMissingKw == NULL ) {
+        if ( parsedMsKeyValStr.kwPtr == nullptr ) {
+            if ( hintForMissingKw == nullptr ) {
                 status = NO_KEY_WD_IN_MS_INP_STR;
                 rodsLogError( LOG_ERROR, status,
                               "parseMsKeyValStrForDataObjInp: no keyWd for %s",
@@ -1197,7 +1197,7 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
         }
         if ( ( status = chkDataObjInpKw( parsedMsKeyValStr.kwPtr,
                                          validKwFlags ) ) < 0 ) {
-            if ( outBadKeyWd != NULL ) {
+            if ( outBadKeyWd != nullptr ) {
                 *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
             }
             return status;
@@ -1208,25 +1208,25 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
             continue;
         }
         else if ( status == OPEN_FLAGS_FLAG ) {
-            if ( strstr( parsedMsKeyValStr.valPtr, "O_RDWR" ) != NULL ) {
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_RDWR" ) != nullptr ) {
                 dataObjInp->openFlags |= O_RDWR;
             }
-            else if ( strstr( parsedMsKeyValStr.valPtr, "O_WRONLY" ) != NULL ) {
+            else if ( strstr( parsedMsKeyValStr.valPtr, "O_WRONLY" ) != nullptr ) {
                 dataObjInp->openFlags |= O_WRONLY;
             }
-            else if ( strstr( parsedMsKeyValStr.valPtr, "O_RDONLY" ) != NULL ) {
+            else if ( strstr( parsedMsKeyValStr.valPtr, "O_RDONLY" ) != nullptr ) {
                 dataObjInp->openFlags |= O_RDONLY;
             }
-            if ( strstr( parsedMsKeyValStr.valPtr, "O_CREAT" ) != NULL ) {
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_CREAT" ) != nullptr ) {
                 dataObjInp->openFlags |= O_CREAT;
             }
-            if ( strstr( parsedMsKeyValStr.valPtr, "O_TRUNC" ) != NULL ) {
+            if ( strstr( parsedMsKeyValStr.valPtr, "O_TRUNC" ) != nullptr ) {
                 dataObjInp->openFlags |= O_TRUNC;
             }
             continue;
         }
         else if ( status == DATA_SIZE_FLAGS ) {
-            dataObjInp->dataSize =  strtoll( parsedMsKeyValStr.valPtr, 0, 0 );
+            dataObjInp->dataSize =  strtoll( parsedMsKeyValStr.valPtr, nullptr, 0 );
             continue;
         }
         else if ( status == NUM_THREADS_FLAG ) {
@@ -1259,7 +1259,7 @@ int
 chkDataObjInpKw( char * keyWd, int validKwFlags ) {
     int i;
 
-    if ( keyWd == NULL ) {
+    if ( keyWd == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     for ( i = 0; i < NumDataObjInpKeyWd; i++ ) {
@@ -1286,7 +1286,7 @@ parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
     int status;
 
 
-    if ( inpParam == NULL || collInp == NULL ) {
+    if ( inpParam == nullptr || collInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForCollInp: input inpParam or collInp is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1300,8 +1300,8 @@ parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
 
     condInput = &collInp->condInput;
 
-    if ( outBadKeyWd != NULL ) {
-        *outBadKeyWd = NULL;
+    if ( outBadKeyWd != nullptr ) {
+        *outBadKeyWd = nullptr;
     }
 
     if ( ( status = initParsedMsKeyValStr( msKeyValStr, &parsedMsKeyValStr ) ) < 0 ) {
@@ -1309,8 +1309,8 @@ parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
     }
 
     while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-        if ( parsedMsKeyValStr.kwPtr == NULL ) {
-            if ( hintForMissingKw == NULL ) {
+        if ( parsedMsKeyValStr.kwPtr == nullptr ) {
+            if ( hintForMissingKw == nullptr ) {
                 status = NO_KEY_WD_IN_MS_INP_STR;
                 rodsLogError( LOG_ERROR, status,
                               "parseMsKeyValStrForCollInp: no keyWd for %s",
@@ -1331,7 +1331,7 @@ parseMsKeyValStrForCollInp( msParam_t * inpParam, collInp_t * collInp,
         }
         if ( ( status = chkCollInpKw( parsedMsKeyValStr.kwPtr,
                                       validKwFlags ) ) < 0 ) {
-            if ( outBadKeyWd != NULL ) {
+            if ( outBadKeyWd != nullptr ) {
                 *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
             }
             return status;
@@ -1363,7 +1363,7 @@ int
 chkCollInpKw( char * keyWd, int validKwFlags ) {
     int i;
 
-    if ( keyWd == NULL ) {
+    if ( keyWd == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     for ( i = 0; i < NumCollInpKeyWd; i++ ) {
@@ -1385,17 +1385,17 @@ int
 addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
                    msParam_t * msKeyValStr ) {
 
-    if ( ( keyStr == NULL && valStr == NULL ) || msKeyValStr == NULL ) {
+    if ( ( keyStr == nullptr && valStr == nullptr ) || msKeyValStr == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( msKeyValStr->type == NULL ) {
-        fillStrInMsParam( msKeyValStr, NULL );
+    if ( msKeyValStr->type == nullptr ) {
+        fillStrInMsParam( msKeyValStr, nullptr );
     }
 
     char *keyPtr = parseMspForStr( keyStr );
     int keyLen;
-    if ( keyPtr == NULL || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
+    if ( keyPtr == nullptr || strcmp( keyPtr, MS_NULL_STR ) == 0 ) {
         keyLen = 0;
     }
     else {
@@ -1404,7 +1404,7 @@ addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
 
     char *valPtr = parseMspForStr( valStr );
     int valLen;
-    if ( valPtr == NULL || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
+    if ( valPtr == nullptr || strcmp( valPtr, MS_NULL_STR ) == 0 ) {
         valLen = 0;
     }
     else {
@@ -1416,7 +1416,7 @@ addKeyValToMspStr( msParam_t * keyStr, msParam_t * valStr,
 
     char *oldKeyValPtr = parseMspForStr( msKeyValStr );
     char *newKeyValPtr, *tmpPtr;
-    if ( oldKeyValPtr == NULL ) {
+    if ( oldKeyValPtr == nullptr ) {
         int newLen = valLen + keyLen + 10;
         newKeyValPtr = ( char * )malloc( newLen );
         *newKeyValPtr = '\0';
@@ -1448,7 +1448,7 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
         structFileExtAndRegInp_t * structFileExtAndRegInp,
         char * hintForMissingKw, int validKwFlags, char **outBadKeyWd ) {
 
-    if ( inpParam == NULL || structFileExtAndRegInp == NULL ) {
+    if ( inpParam == nullptr || structFileExtAndRegInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "parseMsKeyValStrForStructFile:inpParam or structFileInp is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1462,7 +1462,7 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
     keyValPair_t *condInput = &structFileExtAndRegInp->condInput;
 
     if ( outBadKeyWd ) {
-        *outBadKeyWd = NULL;
+        *outBadKeyWd = nullptr;
     }
 
     parsedMsKeyValStr_t parsedMsKeyValStr;
@@ -1472,8 +1472,8 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
     }
 
     while ( getNextKeyValFromMsKeyValStr( &parsedMsKeyValStr ) >= 0 ) {
-        if ( parsedMsKeyValStr.kwPtr == NULL ) {
-            if ( hintForMissingKw == NULL ) {
+        if ( parsedMsKeyValStr.kwPtr == nullptr ) {
+            if ( hintForMissingKw == nullptr ) {
                 status = NO_KEY_WD_IN_MS_INP_STR;
                 rodsLogError( LOG_ERROR, status,
                               "parseMsKeyValStrForStructFileExtAndRegInp: no keyWd for %s",
@@ -1493,7 +1493,7 @@ parseMsKeyValStrForStructFileExtAndRegInp( msParam_t * inpParam,
         }
         if ( ( status = chkStructFileExtAndRegInpKw( parsedMsKeyValStr.kwPtr,
                         validKwFlags ) ) < 0 ) {
-            if ( outBadKeyWd != NULL ) {
+            if ( outBadKeyWd != nullptr ) {
                 *outBadKeyWd = strdup( parsedMsKeyValStr.kwPtr );
             }
             clearParsedMsKeyValStr( &parsedMsKeyValStr );
@@ -1531,7 +1531,7 @@ int
 chkStructFileExtAndRegInpKw( char * keyWd, int validKwFlags ) {
     int i;
 
-    if ( keyWd == NULL ) {
+    if ( keyWd == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
     for ( i = 0; i < NumStructFileExtAndRegInpKeyWd; i++ ) {
@@ -1556,8 +1556,8 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
     int status, i;
     char *value;
 
-    if ( inBuf == NULL || strcmp( inBuf, "null" ) == 0 ) {
-        inpParamArray = NULL;
+    if ( inBuf == nullptr || strcmp( inBuf, "null" ) == 0 ) {
+        inpParamArray = nullptr;
         return 0;
     }
 
@@ -1567,7 +1567,7 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "parseMsParamFromIRFile: parseMultiStr error, status = %d", status );
-        inpParamArray = NULL;
+        inpParamArray = nullptr;
         return status;
     }
     value = strArray.value;
@@ -1575,7 +1575,7 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
     for ( i = 0; i < strArray.len; i++ ) {
         char *valPtr = &value[i * strArray.size];
         char *tmpPtr;
-        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
+        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != nullptr ) {
             *tmpPtr = '\0';
             tmpPtr++;
             if ( *tmpPtr == '\\' ) {
@@ -1583,7 +1583,7 @@ parseMsParamFromIRFile( msParamArray_t * inpParamArray, char * inBuf ) {
             }
             char *param = strdup( tmpPtr );
             addMsParam( inpParamArray, valPtr, STR_MS_T,
-                        param, NULL );
+                        param, nullptr );
 
         }
         else {

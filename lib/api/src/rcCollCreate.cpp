@@ -57,8 +57,8 @@
 int
 rcCollCreate( rcComm_t *conn, collInp_t *collCreateInp ) {
     int status;
-    status = procApiRequest( conn, COLL_CREATE_AN,  collCreateInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, COLL_CREATE_AN,  collCreateInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

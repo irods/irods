@@ -231,7 +231,7 @@ irods::error native_auth_client_request(
         return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid plugin context." );
     }
 
-    authRequestOut_t* auth_request = NULL;
+    authRequestOut_t* auth_request = nullptr;
     int status = rcAuthRequest( _comm, &auth_request );
     if ( status < 0 ) {
         if ( auth_request ) {
@@ -291,7 +291,7 @@ irods::error native_auth_agent_request(
             // cache the challenge in the server for later usage
             _rsSetAuthRequestGetChallenge( buf );
 
-            if ( _ctx.comm()->auth_scheme != NULL ) {
+            if ( _ctx.comm()->auth_scheme != nullptr ) {
                 free( _ctx.comm()->auth_scheme );
             }
             _ctx.comm()->auth_scheme = strdup( irods::AUTH_NATIVE_SCHEME.c_str() );
@@ -363,14 +363,14 @@ irods::error native_auth_agent_response(
         return PASSMSG( "Invalid plugin context.", ret );
     }
 
-    if ( NULL == _resp ) {
+    if ( nullptr == _resp ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid response or comm pointers." );
     }
 
     int status;
     char *bufp;
     authCheckInp_t authCheckInp;
-    authCheckOut_t *authCheckOut = NULL;
+    authCheckOut_t *authCheckOut = nullptr;
     rodsServerHost_t *rodsServerHost;
 
     char digest[RESPONSE_LEN + 2];
@@ -402,12 +402,12 @@ irods::error native_auth_agent_response(
         status = rcAuthCheck( rodsServerHost->conn, &authCheckInp, &authCheckOut );
         /* not likely we need this connection again */
         rcDisconnect( rodsServerHost->conn );
-        rodsServerHost->conn = NULL;
+        rodsServerHost->conn = nullptr;
     }
 
-    if ( status >= 0 && NULL != authCheckOut ) {
+    if ( status >= 0 && nullptr != authCheckOut ) {
         if ( rodsServerHost->localFlag != LOCAL_HOST ) {
-            if ( authCheckOut->serverResponse == NULL ) {
+            if ( authCheckOut->serverResponse == nullptr ) {
                 rodsLog( LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field" );
                 if ( requireServerAuth ) {
                     ret = ERROR( REMOTE_SERVER_AUTH_NOT_PROVIDED, "Authentication disallowed. no serverResponse field." );
@@ -558,8 +558,8 @@ irods::error native_auth_agent_response(
         ret = ERROR( status, "rcAuthCheck failed." );
     }
 
-    if ( authCheckOut != NULL ) {
-        if ( authCheckOut->serverResponse != NULL ) {
+    if ( authCheckOut != nullptr ) {
+        if ( authCheckOut->serverResponse != nullptr ) {
             free( authCheckOut->serverResponse );
         }
         free( authCheckOut );

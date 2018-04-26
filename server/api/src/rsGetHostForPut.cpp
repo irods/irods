@@ -30,7 +30,7 @@ int rsGetHostForPut(
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
     std::string       hier;
-    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
         irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
                            dataObjInp, hier );
         if ( !ret.ok() ) {

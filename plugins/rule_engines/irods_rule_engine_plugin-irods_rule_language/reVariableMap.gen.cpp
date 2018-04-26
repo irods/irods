@@ -388,11 +388,11 @@ int getValFromKeyValPair( char *varMap, keyValPair_t *rei, Res **varValue, Regio
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, KeyValPair_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, KeyValPair_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -437,11 +437,11 @@ int setValFromKeyValPair( char *varMap, keyValPair_t **inrei, Res *newVarValue )
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -480,7 +480,7 @@ ExprType *getVarTypeFromKeyValPair( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( KeyValPair_MS_T, r );
     }
 
@@ -521,11 +521,11 @@ int getValFromDataObjInfo( char *varMap, dataObjInfo_t *rei, Res **varValue, Reg
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataObjInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, DataObjInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -802,11 +802,11 @@ int setValFromDataObjInfo( char *varMap, dataObjInfo_t **inrei, Res *newVarValue
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -1048,7 +1048,7 @@ ExprType *getVarTypeFromDataObjInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( DataObjInfo_MS_T, r );
     }
 
@@ -1292,11 +1292,11 @@ int getValFromCollInfo( char *varMap, collInfo_t *rei, Res **varValue, Region *r
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, CollInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, CollInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -1461,11 +1461,11 @@ int setValFromCollInfo( char *varMap, collInfo_t **inrei, Res *newVarValue ) {
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -1609,7 +1609,7 @@ ExprType *getVarTypeFromCollInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( CollInfo_MS_T, r );
     }
 
@@ -1755,11 +1755,11 @@ int getValFromRuleExecInfo( char *varMap, ruleExecInfo_t *rei, Res **varValue, R
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RuleExecInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, RuleExecInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -1911,11 +1911,11 @@ int setValFromRuleExecInfo( char *varMap, ruleExecInfo_t **inrei, Res *newVarVal
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -2048,7 +2048,7 @@ ExprType *getVarTypeFromRuleExecInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( RuleExecInfo_MS_T, r );
     }
 
@@ -2182,11 +2182,11 @@ int getValFromRsComm( char *varMap, rsComm_t *rei, Res **varValue, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RsComm_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, RsComm_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -2455,11 +2455,11 @@ int setValFromRsComm( char *varMap, rsComm_t **inrei, Res *newVarValue ) {
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -2694,7 +2694,7 @@ ExprType *getVarTypeFromRsComm( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( RsComm_MS_T, r );
     }
 
@@ -2931,11 +2931,11 @@ int getValFromDataObjInp( char *varMap, dataObjInp_t *rei, Res **varValue, Regio
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataObjInp_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, DataObjInp_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3028,11 +3028,11 @@ int setValFromDataObjInp( char *varMap, dataObjInp_t **inrei, Res *newVarValue )
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3113,7 +3113,7 @@ ExprType *getVarTypeFromDataObjInp( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( DataObjInp_MS_T, r );
     }
 
@@ -3196,11 +3196,11 @@ int getValFromDataOprInp( char *varMap, dataOprInp_t *rei, Res **varValue, Regio
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, DataOprInp_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, DataOprInp_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3293,11 +3293,11 @@ int setValFromDataOprInp( char *varMap, dataOprInp_t **inrei, Res *newVarValue )
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3378,7 +3378,7 @@ ExprType *getVarTypeFromDataOprInp( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( DataOprInp_MS_T, r );
     }
 
@@ -3461,11 +3461,11 @@ int getValFromAuthInfo( char *varMap, authInfo_t *rei, Res **varValue, Region *r
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, AuthInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, AuthInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3534,11 +3534,11 @@ int setValFromAuthInfo( char *varMap, authInfo_t **inrei, Res *newVarValue ) {
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3598,7 +3598,7 @@ ExprType *getVarTypeFromAuthInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( AuthInfo_MS_T, r );
     }
 
@@ -3660,11 +3660,11 @@ int getValFromUserOtherInfo( char *varMap, userOtherInfo_t *rei, Res **varValue,
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, UserOtherInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, UserOtherInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3717,11 +3717,11 @@ int setValFromUserOtherInfo( char *varMap, userOtherInfo_t **inrei, Res *newVarV
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3767,7 +3767,7 @@ ExprType *getVarTypeFromUserOtherInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( UserOtherInfo_MS_T, r );
     }
 
@@ -3815,11 +3815,11 @@ int getValFromUserInfo( char *varMap, userInfo_t *rei, Res **varValue, Region *r
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, UserInfo_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, UserInfo_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3888,11 +3888,11 @@ int setValFromUserInfo( char *varMap, userInfo_t **inrei, Res *newVarValue ) {
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -3952,7 +3952,7 @@ ExprType *getVarTypeFromUserInfo( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( UserInfo_MS_T, r );
     }
 
@@ -4014,11 +4014,11 @@ int getValFromVersion( char *varMap, version_t *rei, Res **varValue, Region *r )
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, Version_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, Version_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4087,11 +4087,11 @@ int setValFromVersion( char *varMap, version_t **inrei, Res *newVarValue ) {
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4151,7 +4151,7 @@ ExprType *getVarTypeFromVersion( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( Version_MS_T, r );
     }
 
@@ -4213,11 +4213,11 @@ int getValFromRodsHostAddr( char *varMap, rodsHostAddr_t *rei, Res **varValue, R
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, RodsHostAddr_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, RodsHostAddr_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4270,11 +4270,11 @@ int setValFromRodsHostAddr( char *varMap, rodsHostAddr_t **inrei, Res *newVarVal
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4320,7 +4320,7 @@ ExprType *getVarTypeFromRodsHostAddr( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( RodsHostAddr_MS_T, r );
     }
 
@@ -4368,11 +4368,11 @@ int getValFromFileOpenInp( char *varMap, fileOpenInp_t *rei, Res **varValue, Reg
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
-        i = getPtrLeafValue( varValue, ( void * ) rei, NULL, FileOpenInp_MS_T, r );
+    if ( varMap == nullptr ) {
+        i = getPtrLeafValue( varValue, ( void * ) rei, nullptr, FileOpenInp_MS_T, r );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4457,11 +4457,11 @@ int setValFromFileOpenInp( char *varMap, fileOpenInp_t **inrei, Res *newVarValue
 
     rei = *inrei;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         i = setStructPtrLeafValue( ( void** )inrei, newVarValue );
         return i;
     }
-    if ( rei == NULL ) {
+    if ( rei == nullptr ) {
         return NULL_VALUE_ERR;
     }
 
@@ -4535,7 +4535,7 @@ ExprType *getVarTypeFromFileOpenInp( char *varMap, Region *r ) {
     char *varMapCPtr;
     int i;
 
-    if ( varMap == NULL ) {
+    if ( varMap == nullptr ) {
         return newIRODSType( FileOpenInp_MS_T, r );
     }
 

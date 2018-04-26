@@ -76,15 +76,15 @@ freeFileDesc( int fileInx ) {
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    if ( FileDesc[fileInx].fileName != NULL ) {
+    if ( FileDesc[fileInx].fileName != nullptr ) {
         free( FileDesc[fileInx].fileName );
     }
 
-    if ( FileDesc[fileInx].objPath != NULL ) {
+    if ( FileDesc[fileInx].objPath != nullptr ) {
         free( FileDesc[fileInx].objPath );
     }
 
-    if ( FileDesc[fileInx].rescHier != NULL ) {
+    if ( FileDesc[fileInx].rescHier != nullptr ) {
         free( FileDesc[fileInx].rescHier );
     }
 
@@ -267,7 +267,7 @@ int chkEmptyDir(
     int status = 0;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
-    struct rodsDirent* myFileDirent = 0;
+    struct rodsDirent* myFileDirent = nullptr;
 
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin
@@ -396,7 +396,7 @@ chkFilePathPerm( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     }
 
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "chkFilePathPerm: NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -532,7 +532,7 @@ filePathTypeInResc(
     const std::string&  fileName,
     const std::string&  rescHier ) {
     fileStatInp_t fileStatInp;
-    rodsStat_t *myStat = NULL;
+    rodsStat_t *myStat = nullptr;
     int status;
 
     // =-=-=-=-=-=-=-
@@ -555,7 +555,7 @@ filePathTypeInResc(
     rstrcpy( fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     status = rsFileStat( rsComm, &fileStatInp, &myStat );
 
-    if ( status < 0 || NULL == myStat ) {
+    if ( status < 0 || nullptr == myStat ) {
         return status;    // JMC cppcheck - nullptr
     }
     if ( myStat->st_mode & S_IFREG ) {

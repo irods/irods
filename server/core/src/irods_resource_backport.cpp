@@ -302,7 +302,7 @@ namespace irods {
                                 std::string&       _resc_name ) {
         // =-=-=-=-=-=-=
         // quick error check
-        if ( _resc_list.empty() && NULL == _cond_input ) {
+        if ( _resc_list.empty() && nullptr == _cond_input ) {
             return ERROR( USER_NO_RESC_INPUT_ERR, "no user input" );
         }
 
@@ -316,14 +316,14 @@ namespace irods {
         if ( "null"   != _resc_list &&
                 "forced" == _option    &&
                 _comm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            _cond_input = NULL;
+            _cond_input = nullptr;
         }
         else if ( _cond_input ) {
-            char* name = NULL;
-            if ( ( name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW ) ) == NULL &&
-                    ( name = getValByKey( _cond_input, DEST_RESC_NAME_KW ) ) == NULL &&
-                    ( name = getValByKey( _cond_input, DEF_RESC_NAME_KW ) ) == NULL &&
-                    ( name = getValByKey( _cond_input, RESC_NAME_KW ) ) == NULL ) {
+            char* name = nullptr;
+            if ( ( name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW ) ) == nullptr &&
+                    ( name = getValByKey( _cond_input, DEST_RESC_NAME_KW ) ) == nullptr &&
+                    ( name = getValByKey( _cond_input, DEF_RESC_NAME_KW ) ) == nullptr &&
+                    ( name = getValByKey( _cond_input, RESC_NAME_KW ) ) == nullptr ) {
                 // =-=-=-=-=-=-=-
                 // no conditional input resource
             }
@@ -434,7 +434,7 @@ namespace irods {
         keyValPair_t* _cond_input,
         std::string& _out ) {
         if ( _resc_name.empty() ) {
-            char* name = 0;
+            char* name = nullptr;
             name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW );
             if ( name ) {
                 _out = std::string( name );
@@ -599,7 +599,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // get the rods server host info for the child resc
-        rodsServerHost_t* host = NULL;
+        rodsServerHost_t* host = nullptr;
         ret = get_resource_property< rodsServerHost_t* >( resc_id, RESOURCE_HOST, host );
         if ( !ret.ok() ) {
             std::stringstream msg;
@@ -610,7 +610,7 @@ namespace irods {
         }
 
         // Check for null host.
-        if ( host == NULL ) {
+        if ( host == nullptr ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Host from hierarchy string: \"";

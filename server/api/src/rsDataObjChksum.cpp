@@ -75,7 +75,7 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
     dataObjInfo_t *dataObjInfoHead;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, dataObjChksumInp->objPath, &specCollCache, &dataObjChksumInp->condInput );
 
@@ -92,7 +92,7 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
     else {
         // =-=-=-=-=-=-=-
         // determine the resource hierarchy if one is not provided
-        if ( getValByKey( &dataObjChksumInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        if ( getValByKey( &dataObjChksumInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
             std::string       hier;
             irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
                                rsComm, dataObjChksumInp, hier );
@@ -123,13 +123,13 @@ int
 _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                   char **outChksumStr, dataObjInfo_t **dataObjInfoHead ) {
 
-    *dataObjInfoHead = NULL;
-    *outChksumStr = NULL;
+    *dataObjInfoHead = nullptr;
+    *outChksumStr = nullptr;
 
-    bool allFlag = getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != NULL;
-    bool verifyFlag = getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL;
-    bool forceFlag = getValByKey( &dataObjInp->condInput, FORCE_CHKSUM_KW ) != NULL;
-    const bool shouldVerifyVaultSizeEqualsDatabaseSize = getValByKey( &dataObjInp->condInput, VERIFY_VAULT_SIZE_EQUALS_DATABASE_SIZE_KW ) != NULL;
+    bool allFlag = getValByKey( &dataObjInp->condInput, CHKSUM_ALL_KW ) != nullptr;
+    bool verifyFlag = getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != nullptr;
+    bool forceFlag = getValByKey( &dataObjInp->condInput, FORCE_CHKSUM_KW ) != nullptr;
+    const bool shouldVerifyVaultSizeEqualsDatabaseSize = getValByKey( &dataObjInp->condInput, VERIFY_VAULT_SIZE_EQUALS_DATABASE_SIZE_KW ) != nullptr;
 
     int status_getDataObjInfoIncSpecColl = getDataObjInfoIncSpecColl( rsComm, dataObjInp, dataObjInfoHead );
     if ( status_getDataObjInfoIncSpecColl < 0 ) {
@@ -212,7 +212,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 addKeyVal( &tmpDataObjInfo->condInput, ADMIN_KW, "" );
             }
 
-            char *tmpChksumStr = 0;
+            char *tmpChksumStr = nullptr;
             if ( strlen( tmpDataObjInfo->chksum ) == 0 ) {
                 /* need to chksum no matter what */
                 status = dataObjChksumAndRegInfo( rsComm, tmpDataObjInfo,
@@ -240,7 +240,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             if ( status < 0 ) {
                 return status;
             }
-            if ( tmpDataObjInfo->replStatus > 0 && *outChksumStr == NULL ) {
+            if ( tmpDataObjInfo->replStatus > 0 && *outChksumStr == nullptr ) {
                 *outChksumStr = tmpChksumStr;
             }
             else {
@@ -251,7 +251,7 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 free( tmpChksumStr );
             }
         } while ( (tmpDataObjInfo = tmpDataObjInfo->next) );
-        if ( *outChksumStr == NULL ) {
+        if ( *outChksumStr == nullptr ) {
             *outChksumStr = strdup( ( *dataObjInfoHead )->chksum );
         }
         if (status >= 0 && verifyStatus < 0) {
@@ -277,7 +277,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return status;
     }
 
-    if ( dataObjInfo->specColl != NULL ) {
+    if ( dataObjInfo->specColl != nullptr ) {
         return status;
     }
 
@@ -286,7 +286,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     // set pdmo flag so that chksum doesn't trigger file operations
     addKeyVal( &regParam, IN_PDMO_KW, "" );
     // Make sure admin flag is set as appropriate
-    if ( NULL != getValByKey( &dataObjInfo->condInput, ADMIN_KW ) ) {
+    if ( nullptr != getValByKey( &dataObjInfo->condInput, ADMIN_KW ) ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
@@ -316,7 +316,7 @@ verifyDatObjChksum( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                  dataObjInfo->objPath, status );
         return status;
     }
-    if ( *outChksumStr == NULL ) {
+    if ( *outChksumStr == nullptr ) {
         rodsLog( LOG_ERROR, "verifyDatObjChksum: outChkSumStr is null." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }

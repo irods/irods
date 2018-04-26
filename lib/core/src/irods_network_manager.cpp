@@ -59,7 +59,7 @@ namespace irods {
         const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // call generic plugin loader
-        network* net = 0;
+        network* net = nullptr;
         error ret = load_plugin< network >(
                         net,
                         _plugin_name,

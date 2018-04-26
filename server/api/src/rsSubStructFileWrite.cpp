@@ -45,7 +45,7 @@ remoteSubStructFileWrite( rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFi
                           bytesBuf_t *subStructFileWriteOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileWrite: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

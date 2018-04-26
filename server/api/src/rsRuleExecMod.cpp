@@ -14,7 +14,7 @@ rsRuleExecMod( rsComm_t *rsComm, ruleExecModInp_t *ruleExecModInp ) {
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )nullptr, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

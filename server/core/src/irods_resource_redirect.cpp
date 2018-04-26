@@ -448,10 +448,10 @@ namespace irods {
 
 	int status = 0;
 	if ( _obj_inp->oprType == REPLICATE_OPR ) {
-	    status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
+	    status = applyRule( "acSetRescSchemeForRepl", nullptr, &rei, NO_SAVE_REI );
 	}
 	else {
-	    status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
+	    status = applyRule( "acSetRescSchemeForCreate", nullptr, &rei, NO_SAVE_REI );
 	}
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
@@ -536,11 +536,11 @@ namespace irods {
         // pass that along and bail as it is not a data object, or if
         // it is just a not-so-special collection then we continue with
         // processing the operation, as this may be a create op
-        rodsObjStat_t *rodsObjStatOut = NULL;
+        rodsObjStat_t *rodsObjStatOut = nullptr;
         int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
         file_obj->logical_path( _data_obj_inp->objPath );
         if ( spec_stat >= 0 ) {
-            if ( rodsObjStatOut->specColl != NULL ) {
+            if ( rodsObjStatOut->specColl != nullptr ) {
                 _out_hier = rodsObjStatOut->specColl->rescHier;
                 freeRodsObjStat( rodsObjStatOut );
                 return SUCCESS();
@@ -558,7 +558,7 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // assign the keyword in an order, if it applies
-        char* key_word = 0;
+        char* key_word = nullptr;
         if ( resc_name ) {
             key_word = resc_name;
         }
@@ -636,7 +636,7 @@ namespace irods {
 
                 // free current list
                 freeAllDataObjInfo(*_data_obj_info);
-                *_data_obj_info = NULL;
+                *_data_obj_info = nullptr;
 
                 // get updated list
                 int status = getDataObjInfoIncSpecColl(
@@ -646,9 +646,9 @@ namespace irods {
 
                 // error checks
                 if ( status < 0 ) {
-                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, 0, 0 );
+                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, nullptr, 0 );
                 }
-                if ( 0 == *_data_obj_info || status < 0 ) {
+                if ( nullptr == *_data_obj_info || status < 0 ) {
                     if ( *_data_obj_info ) {
                         freeAllDataObjInfo( *_data_obj_info );
                     }
@@ -729,7 +729,7 @@ namespace irods {
 
                 // free current list
                 freeAllDataObjInfo(*_data_obj_info);
-                *_data_obj_info = NULL;
+                *_data_obj_info = nullptr;
 
                 // get updated list
                 int status = getDataObjInfoIncSpecColl(
@@ -739,9 +739,9 @@ namespace irods {
 
                 // error checks
                 if ( status < 0 ) {
-                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, 0, 0 );
+                    status = getDataObjInfo( _comm, _data_obj_inp, _data_obj_info, nullptr, 0 );
                 }
-                if ( 0 == *_data_obj_info || status < 0 ) {
+                if ( nullptr == *_data_obj_info || status < 0 ) {
                     if ( *_data_obj_info ) {
                         freeAllDataObjInfo( *_data_obj_info );
                     }
@@ -831,12 +831,12 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // get the host property from the last resc and get the
         // host name from that host
-        rodsServerHost_t* last_resc_host = NULL;
+        rodsServerHost_t* last_resc_host = nullptr;
         error err = get_resource_property< rodsServerHost_t* >(
                         resc_id,
                         RESOURCE_HOST,
                         last_resc_host );
-        if ( !err.ok() || NULL == last_resc_host ) {
+        if ( !err.ok() || nullptr == last_resc_host ) {
             std::stringstream msg;
             msg << "resource_redirect :: failed in get_resource_property call ";
             msg << "for [" << resc_hier << "]";
@@ -876,7 +876,7 @@ namespace irods {
         if ( match_flg ) {
             _out_hier = resc_hier;
             _out_flag = LOCAL_HOST;
-            _out_host = 0;
+            _out_host = nullptr;
             return SUCCESS();
         }
 

@@ -203,7 +203,7 @@ irods::error readMsgHeader(
 
     // =-=-=-=-=-=-=-
     // unpack the header message, always use XML_PROT for the header
-    msgHeader_t* out_header = 0;
+    msgHeader_t* out_header = nullptr;
     int status = unpackStruct(
                      static_cast<void*>( tmp_buf ),
                      ( void ** )( static_cast< void * >( &out_header ) ),
@@ -393,7 +393,7 @@ sockOpenForInConn( rsComm_t *rsComm, int *portNum, char **addr, int proto ) {
         return status;
     }
 
-    if ( addr != NULL ) {
+    if ( addr != nullptr ) {
         *addr = ( char * )malloc( sizeof( char ) * LONG_NAME_LEN );
         gethostname( *addr, LONG_NAME_LEN );
     }
@@ -437,7 +437,7 @@ irods::error writeMsgHeader(
     const msgHeader_t*        _header ) {
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header
-    bytesBuf_t* header_buf = 0;
+    bytesBuf_t* header_buf = nullptr;
     int status = packStruct(
                      static_cast<const void *>( _header ),
                      &header_buf,
@@ -445,7 +445,7 @@ irods::error writeMsgHeader(
                      RodsPackTable,
                      0, XML_PROT );
     if ( status < 0 ||
-            0 == header_buf ) {
+            nullptr == header_buf ) {
         return ERROR( status, "packstruct error" );
     }
 
@@ -506,7 +506,7 @@ irods::error readVersion(
     memset( &bsBBuf, 0, sizeof( bsBBuf ) );
     memset( &errorBBuf, 0, sizeof( errorBBuf ) );
     ret = readMsgBody( _ptr, &myHeader, &inputStructBBuf, &bsBBuf,
-                       &errorBBuf, XML_PROT, NULL );
+                       &errorBBuf, XML_PROT, nullptr );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -676,7 +676,7 @@ connectToRhostPortal( char *rodsHost, int rodsPort,
     }
 
     myCookie = htonl( cookie );
-    nbytes = myWrite( sock, &myCookie, sizeof( myCookie ), NULL );
+    nbytes = myWrite( sock, &myCookie, sizeof( myCookie ), nullptr );
 
     if ( nbytes != sizeof( myCookie ) ) {
         CLOSE_SOCK( sock );
@@ -924,7 +924,7 @@ connectToRhostWithTout(struct sockaddr *sin ) {
             fd_set myset;
             FD_ZERO( &myset );
             FD_SET( sock, &myset );
-            status = select( sock + 1, NULL, &myset, NULL, &tv );
+            status = select( sock + 1, nullptr, &myset, nullptr, &tv );
             if ( status < 0 ) {
                 if ( errno != EINTR ) {
                     rodsLog( LOG_NOTICE,
@@ -1080,7 +1080,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     startupPack_t startupPack;
     int status;
     char *tmpStr;
-    bytesBuf_t *startupPackBBuf = NULL;
+    bytesBuf_t *startupPackBBuf = nullptr;
 
     /* setup the startup pack */
 
@@ -1096,7 +1096,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
     rstrcpy( startupPack.relVersion, RODS_REL_VERSION,  NAME_LEN );
     rstrcpy( startupPack.apiVersion, RODS_API_VERSION,  NAME_LEN );
 
-    if ( ( tmpStr = getenv( SP_OPTION ) ) != NULL ) {
+    if ( ( tmpStr = getenv( SP_OPTION ) ) != nullptr ) {
         rstrcpy( startupPack.option, tmpStr, NAME_LEN );
     }
     else {
@@ -1152,7 +1152,7 @@ sendStartupPack( rcComm_t *conn, int connectCnt, int reconnFlag ) {
               net_obj,
               RODS_CONNECT_T,
               startupPackBBuf,
-              NULL, NULL, 0,
+              nullptr, nullptr, 0,
               XML_PROT );
     freeBBuf( startupPackBBuf );
     if ( !ret.ok() ) {
@@ -1173,7 +1173,7 @@ irods::error sendVersion(
     int                 cookie ) {
     version_t myVersion;
     int status;
-    bytesBuf_t *versionBBuf = NULL;
+    bytesBuf_t *versionBBuf = nullptr;
 
 
     /* setup the version struct */
@@ -1182,7 +1182,7 @@ irods::error sendVersion(
     myVersion.status = versionStatus;
     rstrcpy( myVersion.relVersion, RODS_REL_VERSION,  NAME_LEN );
     rstrcpy( myVersion.apiVersion, RODS_API_VERSION,  NAME_LEN );
-    if ( reconnAddr != NULL ) {
+    if ( reconnAddr != nullptr ) {
         myVersion.reconnPort = reconnPort;
         rstrcpy( myVersion.reconnAddr, reconnAddr, LONG_NAME_LEN );
         myVersion.cookie = cookie;
@@ -1206,7 +1206,7 @@ irods::error sendVersion(
                            _ptr,
                            RODS_VERSION_T,
                            versionBBuf,
-                           NULL, NULL, 0,
+                           nullptr, nullptr, 0,
                            XML_PROT );
     freeBBuf( versionBBuf );
     if ( !ret.ok() ) {
@@ -1279,7 +1279,7 @@ irods::error readReconMsg(
     int status;
     msgHeader_t myHeader;
     memset( &myHeader, 0, sizeof( myHeader ) );
-    irods::error ret = readMsgHeader( _ptr, &myHeader, NULL );
+    irods::error ret = readMsgHeader( _ptr, &myHeader, nullptr );
     if ( !ret.ok() ) {
         return PASSMSG( "read msg header error", ret );
     }
@@ -1295,7 +1295,7 @@ irods::error readReconMsg(
               &bsBBuf,
               &errorBBuf,
               XML_PROT,
-              NULL );
+              nullptr );
     if ( !ret.ok() ) {
         return PASS( ret );
     }
@@ -1316,7 +1316,7 @@ irods::error readReconMsg(
     }
 
     if ( myHeader.bsLen != 0 ) {
-        if ( bsBBuf.buf != NULL ) {
+        if ( bsBBuf.buf != nullptr ) {
             free( bsBBuf.buf );
         }
         rodsLog( LOG_NOTICE, "readReconMsg: myHeader.bsLen = %d is not 0",
@@ -1324,7 +1324,7 @@ irods::error readReconMsg(
     }
 
     if ( myHeader.errorLen != 0 ) {
-        if ( errorBBuf.buf != NULL ) {
+        if ( errorBBuf.buf != nullptr ) {
             free( errorBBuf.buf );
         }
         rodsLog( LOG_NOTICE,
@@ -1333,7 +1333,7 @@ irods::error readReconMsg(
     }
 
     if ( myHeader.msgLen <= 0 ) {
-        if ( inputStructBBuf.buf != NULL ) {
+        if ( inputStructBBuf.buf != nullptr ) {
             free( inputStructBBuf.buf );
         }
         rodsLog( LOG_NOTICE,
@@ -1368,13 +1368,13 @@ irods::error sendReconnMsg(
     reconnMsg_t*        _msg ) {
     // =-=-=-=-=-=-=-
     // trap invalid param
-    if ( _msg == NULL ) {
+    if ( _msg == nullptr ) {
         return ERROR( USER__NULL_INPUT_ERR, "null msg buf" );
     }
 
     // =-=-=-=-=-=-=-
     // pack outgoing message - alway use XML for version
-    bytesBuf_t* recon_buf = NULL;
+    bytesBuf_t* recon_buf = nullptr;
     int status = packStruct(
                      static_cast<void*>( _msg ),
                      &recon_buf,
@@ -1391,8 +1391,8 @@ irods::error sendReconnMsg(
                            _ptr,
                            RODS_RECONNECT_T,
                            recon_buf,
-                           NULL,
-                           NULL,
+                           nullptr,
+                           nullptr,
                            0,
                            XML_PROT );
     freeBBuf( recon_buf );
@@ -1520,7 +1520,7 @@ int
 redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp,
                        rodsEnv *myEnv, int reconnFlag ) {
     int status;
-    char *outHost = NULL;
+    char *outHost = nullptr;
 
     if ( dataObjInp->oprType == PUT_OPR ) {
         status = rcGetHostForPut( *conn, dataObjInp, &outHost );
@@ -1535,7 +1535,7 @@ redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp,
         return 0;
     }
 
-    if ( status < 0 || outHost == NULL || strcmp( outHost, THIS_ADDRESS ) == 0 ) {
+    if ( status < 0 || outHost == nullptr || strcmp( outHost, THIS_ADDRESS ) == 0 ) {
         return status;
     }
 
@@ -1546,7 +1546,7 @@ redirectConnToRescSvr( rcComm_t **conn, dataObjInp_t *dataObjInp,
 int
 rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag ) {
     int status;
-    rcComm_t *newConn = NULL;
+    rcComm_t *newConn = nullptr;
     rErrMsg_t errMsg;
 
     bzero( &errMsg, sizeof( errMsg ) );
@@ -1554,7 +1554,7 @@ rcReconnect( rcComm_t **conn, char *newHost, rodsEnv *myEnv, int reconnFlag ) {
     newConn =  rcConnect( newHost, myEnv->rodsPort, myEnv->rodsUserName,
                           myEnv->rodsZone, reconnFlag, &errMsg );
 
-    if ( newConn != NULL ) {
+    if ( newConn != nullptr ) {
         status = clientLogin( newConn );
         if ( status != 0 ) {
             rcDisconnect( newConn );

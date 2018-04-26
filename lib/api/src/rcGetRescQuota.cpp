@@ -33,8 +33,8 @@ int
 rcGetRescQuota( rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp,
                 rescQuota_t **rescQuota ) {
     int status;
-    status = procApiRequest( conn, GET_RESC_QUOTA_AN,  getRescQuotaInp, NULL,
-                             ( void ** ) rescQuota, NULL );
+    status = procApiRequest( conn, GET_RESC_QUOTA_AN,  getRescQuotaInp, nullptr,
+                             ( void ** ) rescQuota, nullptr );
 
     return status;
 }

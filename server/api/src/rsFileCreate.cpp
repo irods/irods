@@ -72,7 +72,7 @@ remoteFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     int fileInx;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileCreate: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

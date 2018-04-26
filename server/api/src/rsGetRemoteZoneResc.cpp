@@ -40,7 +40,7 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status = 0;
     bool do_sort = false;  // only on open
     std::string oper = irods::CREATE_OPERATION;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
     if ( strcmp( remoteOprType, REMOTE_OPEN ) == 0 ) {
         status = getDataObjInfoIncSpecColl(
                      rsComm,

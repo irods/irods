@@ -20,7 +20,7 @@ rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
     dataObjInp_t dataObjInp;
 
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -31,7 +31,7 @@ rmtrashUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
         char *myZoneName;
         char myZoneType[MAX_NAME_LEN];
 
-        if ( myRodsArgs->zoneName != NULL ) {
+        if ( myRodsArgs->zoneName != nullptr ) {
             myZoneName = myRodsArgs->zoneName;
         }
         else {
@@ -127,14 +127,14 @@ rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
     int status = 0;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rmtrashDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
@@ -142,8 +142,8 @@ rmtrashDataObjUtil( rcComm_t *conn, char *srcPath,
     status = rcDataObjUnlink( conn, dataObjInp );
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
-        printTiming( conn, dataObjInp->objPath, -1, NULL,
+        ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
+        printTiming( conn, dataObjInp->objPath, -1, nullptr,
                      &startTime, &endTime );
     }
 
@@ -155,7 +155,7 @@ initCondForRmtrash( rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjInp, collInp_t *collInp ) {
     char tmpStr[NAME_LEN];
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForRmtrash: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -164,7 +164,7 @@ initCondForRmtrash( rodsArguments_t *rodsArgs,
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( collInp, 0, sizeof( collInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -204,7 +204,7 @@ rmtrashCollUtil( rcComm_t *conn, char *srcColl,
                  rodsArguments_t *rodsArgs, collInp_t *collInp ) {
     int status;
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rmtrashCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;

@@ -95,7 +95,7 @@ freeSpecCollDesc( int specCollInx ) {
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    if ( SpecCollDesc[specCollInx].dataObjInfo != NULL ) {
+    if ( SpecCollDesc[specCollInx].dataObjInfo != nullptr ) {
         freeDataObjInfo( SpecCollDesc[specCollInx].dataObjInfo );
     }
 
@@ -108,7 +108,7 @@ int
 closeAllL1desc( rsComm_t *rsComm ) {
     int i;
 
-    if ( rsComm == NULL ) {
+    if ( rsComm == nullptr ) {
         return 0;
     }
     for ( i = 3; i < NUM_L1_DESC; i++ ) {
@@ -128,20 +128,20 @@ freeL1desc( int l1descInx ) {
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    if ( L1desc[l1descInx].dataObjInfo != NULL ) {
+    if ( L1desc[l1descInx].dataObjInfo != nullptr ) {
         freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
     }
 
-    if ( L1desc[l1descInx].otherDataObjInfo != NULL ) {
+    if ( L1desc[l1descInx].otherDataObjInfo != nullptr ) {
         freeAllDataObjInfo( L1desc[l1descInx].otherDataObjInfo );
     }
 
-    if ( L1desc[l1descInx].replDataObjInfo != NULL ) {
+    if ( L1desc[l1descInx].replDataObjInfo != nullptr ) {
         freeDataObjInfo( L1desc[l1descInx].replDataObjInfo );
     }
 
     if ( L1desc[l1descInx].dataObjInpReplFlag == 1 &&
-            L1desc[l1descInx].dataObjInp != NULL ) {
+            L1desc[l1descInx].dataObjInp != nullptr ) {
         clearDataObjInp( L1desc[l1descInx].dataObjInp );
         free( L1desc[l1descInx].dataObjInp );
     }
@@ -165,14 +165,14 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
 
     condInput = &dataObjInp->condInput;
     char* in_pdmo = getValByKey( condInput, IN_PDMO_KW );
-    if ( in_pdmo != NULL ) {
+    if ( in_pdmo != nullptr ) {
         rstrcpy( L1desc[l1descInx].in_pdmo, in_pdmo, MAX_NAME_LEN );
     }
     else {
         rstrcpy( L1desc[l1descInx].in_pdmo, "", MAX_NAME_LEN );
     }
 
-    if ( dataObjInp != NULL ) {
+    if ( dataObjInp != nullptr ) {
         /* always repl the .dataObjInp */
         L1desc[l1descInx].dataObjInp = ( dataObjInp_t* )malloc( sizeof( dataObjInp_t ) );
         replDataObjInp( dataObjInp, L1desc[l1descInx].dataObjInp );
@@ -180,22 +180,22 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
     }
     else {
         /* XXXX this can be a problem in rsDataObjClose */
-        L1desc[l1descInx].dataObjInp = NULL;
+        L1desc[l1descInx].dataObjInp = nullptr;
     }
 
     L1desc[l1descInx].dataObjInfo = dataObjInfo;
-    if ( dataObjInp != NULL ) {
+    if ( dataObjInp != nullptr ) {
         L1desc[l1descInx].oprType = dataObjInp->oprType;
     }
     L1desc[l1descInx].replStatus = replStatus;
     L1desc[l1descInx].dataSize = dataSize;
-    if ( condInput != NULL && condInput->len > 0 ) {
-        if ( ( tmpPtr = getValByKey( condInput, REG_CHKSUM_KW ) ) != NULL ) {
+    if ( condInput != nullptr && condInput->len > 0 ) {
+        if ( ( tmpPtr = getValByKey( condInput, REG_CHKSUM_KW ) ) != nullptr ) {
             L1desc[l1descInx].chksumFlag = REG_CHKSUM;
             rstrcpy( L1desc[l1descInx].chksum, tmpPtr, NAME_LEN );
         }
         else if ( ( tmpPtr = getValByKey( condInput, VERIFY_CHKSUM_KW ) ) !=
-                  NULL ) {
+                  nullptr ) {
             L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
             rstrcpy( L1desc[l1descInx].chksum, tmpPtr, NAME_LEN );
         }
@@ -206,15 +206,15 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
 
 int
 initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
-    char *rescName = 0, *dataType = 0, *filePath = 0;
-    keyValPair_t *condInput = 0;
+    char *rescName = nullptr, *dataType = nullptr, *filePath = nullptr;
+    keyValPair_t *condInput = nullptr;
 
     condInput = &dataObjInp->condInput;
     memset( dataObjInfo, 0, sizeof( dataObjInfo_t ) );
     rstrcpy( dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN );
 
     rescName = getValByKey( condInput, RESC_NAME_KW );
-    if ( rescName != NULL ) {
+    if ( rescName != nullptr ) {
         rstrcpy( dataObjInfo->rescName, rescName, NAME_LEN );
     }
 
@@ -234,7 +234,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
     snprintf( dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode );
 
     dataType = getValByKey( condInput, DATA_TYPE_KW );
-    if ( dataType != NULL ) {
+    if ( dataType != nullptr ) {
         rstrcpy( dataObjInfo->dataType, dataType, NAME_LEN );
     }
     else {
@@ -242,7 +242,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
     }
 
     filePath = getValByKey( condInput, FILE_PATH_KW );
-    if ( filePath != NULL ) {
+    if ( filePath != nullptr ) {
         rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
     }
 
@@ -293,7 +293,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         }
     }
 
-    if ( getValByKey( condInput, NO_PARA_OP_KW ) != NULL ) {
+    if ( getValByKey( condInput, NO_PARA_OP_KW ) != nullptr ) {
         /* client specify no para opr */
         return 1;
     }
@@ -327,7 +327,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             }
 
             // PEP
-            status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
+            status = applyRule( "acSetNumThreads", nullptr, &rei, NO_SAVE_REI );
 
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -342,7 +342,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                     free(rei.condInputData);
                     return 0;
                 }
-                else if ( numDestThr == 1 && srcRescHier == NULL &&
+                else if ( numDestThr == 1 && srcRescHier == nullptr &&
                           isLocalHost( location.c_str() ) ) {
                     /* one thread and resource on local host */
                     clearKeyVal(rei.condInputData);
@@ -381,7 +381,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
             }
 
             // PEP
-            status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
+            status = applyRule( "acSetNumThreads", nullptr, &rei, NO_SAVE_REI );
 
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
@@ -403,7 +403,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     if ( numDestThr > 0 ) {
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
-        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
+        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != nullptr ) {
             return 1;
         }
         else {
@@ -413,7 +413,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     if ( numSrcThr > 0 ) {
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
-        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != NULL ) {
+        if ( getValByKey( condInput, RBUDP_TRANSFER_KW ) != nullptr ) {
             return 1;
         }
         else {
@@ -421,7 +421,7 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         }
     }
     /* should not be here. do one with no resource */
-    status = applyRule( "acSetNumThreads", NULL, &rei, NO_SAVE_REI );
+    status = applyRule( "acSetNumThreads", nullptr, &rei, NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
     if ( status < 0 ) {
@@ -488,15 +488,15 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
         dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
         dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
     }
-    if ( getValByKey( &dataObjInp->condInput, STREAMING_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, STREAMING_KW ) != nullptr ) {
         addKeyVal( &dataOprInp->condInput, STREAMING_KW, "" );
     }
 
-    if ( getValByKey( &dataObjInp->condInput, NO_PARA_OP_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, NO_PARA_OP_KW ) != nullptr ) {
         addKeyVal( &dataOprInp->condInput, NO_PARA_OP_KW, "" );
     }
 
-    if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, RBUDP_TRANSFER_KW ) != nullptr ) {
 
         /* only do unix fs */
         // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
@@ -514,17 +514,17 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
         }
     }
 
-    if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, VERY_VERBOSE_KW ) != nullptr ) {
         addKeyVal( &dataOprInp->condInput, VERY_VERBOSE_KW, "" );
     }
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, RBUDP_SEND_RATE_KW ) ) !=
-            NULL ) {
+            nullptr ) {
         addKeyVal( &dataOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
     }
 
     if ( ( tmpStr = getValByKey( &dataObjInp->condInput, RBUDP_PACK_SIZE_KW ) ) !=
-            NULL ) {
+            nullptr ) {
         addKeyVal( &dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
@@ -561,7 +561,7 @@ initDataObjInfoForRepl(
 int
 convL3descInx( int l3descInx ) {
     if ( l3descInx <= 2 || FileDesc[l3descInx].inuseFlag == 0 ||
-            FileDesc[l3descInx].rodsServerHost == NULL ) {
+            FileDesc[l3descInx].rodsServerHost == nullptr ) {
         return l3descInx;
     }
 
@@ -612,7 +612,7 @@ int freeCollHandle( int handleInx ) {
 
 int
 rsInitQueryHandle( queryHandle_t *queryHandle, rsComm_t *rsComm ) {
-    if ( queryHandle == NULL || rsComm == NULL ) {
+    if ( queryHandle == nullptr || rsComm == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -647,7 +647,7 @@ allocAndSetL1descForZoneOpr( int remoteL1descInx, dataObjInp_t *dataObjInp,
     bzero( dataObjInfo, sizeof( dataObjInfo_t ) );
     rstrcpy( dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN );
 
-    if ( openStat != NULL ) {
+    if ( openStat != nullptr ) {
         dataObjInfo->dataSize = openStat->dataSize;
         rstrcpy( dataObjInfo->dataMode, openStat->dataMode, SHORT_STR_LEN );
         rstrcpy( dataObjInfo->dataType, openStat->dataType, NAME_LEN );

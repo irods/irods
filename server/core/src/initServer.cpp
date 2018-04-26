@@ -64,7 +64,7 @@ initServerInfo( int processType, rsComm_t * rsComm) {
         /* que the local zone */
         status = queZone(
                 zone_name.c_str(),
-                zone_port, NULL, NULL );
+                zone_port, nullptr, nullptr );
         if ( status < 0 ) {
             rodsLog(
                     LOG_DEBUG,
@@ -193,7 +193,7 @@ initRcatServerHostByFile() {
     try {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
-        rodsServerHost_t* tmp_host = 0;
+        rodsServerHost_t* tmp_host = nullptr;
         snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", boost::any_cast<const std::string&>(irods::get_server_property<const std::vector<boost::any>>(irods::CFG_CATALOG_PROVIDER_HOSTS_KW)[0]).c_str() );
         int rem_flg = resolveHost(
                           &addr,
@@ -217,7 +217,7 @@ initRcatServerHostByFile() {
     try {
         rodsHostAddr_t    addr;
         memset( &addr, 0, sizeof( addr ) );
-        rodsServerHost_t* tmp_host = 0;
+        rodsServerHost_t* tmp_host = nullptr;
         snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<const std::string>(irods::CFG_IRODS_XMSG_HOST_KW).c_str() );
         int rem_flg = resolveHost(
                           &addr,
@@ -316,10 +316,10 @@ initZone( rsComm_t *rsComm ) {
     }
 
     rodsServerHost_t *tmpRodsServerHost;
-    rodsServerHost_t *masterServerHost = NULL;
-    rodsServerHost_t *slaveServerHost = NULL;
+    rodsServerHost_t *masterServerHost = nullptr;
+    rodsServerHost_t *slaveServerHost = nullptr;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     int status, i;
     sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
     char *tmpZoneName, *tmpZoneType, *tmpZoneConn;//, *tmpZoneComment;
@@ -335,7 +335,7 @@ initZone( rsComm_t *rsComm ) {
     /* configure the local zone first or rsGenQuery would not work */
 
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
             tmpRodsServerHost->zoneInfo = ZoneInfoHead;
             masterServerHost = tmpRodsServerHost;
@@ -367,31 +367,31 @@ initZone( rsComm_t *rsComm ) {
         return status;
     }
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "initZone: NULL genQueryOut" );
         return CAT_NO_ROWS_FOUND;
     }
 
-    if ( ( zoneName = getSqlResultByInx( genQueryOut, COL_ZONE_NAME ) ) == NULL ) {
+    if ( ( zoneName = getSqlResultByInx( genQueryOut, COL_ZONE_NAME ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == NULL ) {
+    if ( ( zoneType = getSqlResultByInx( genQueryOut, COL_ZONE_TYPE ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_TYPE failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( zoneConn = getSqlResultByInx( genQueryOut, COL_ZONE_CONNECTION ) ) == NULL ) {
+    if ( ( zoneConn = getSqlResultByInx( genQueryOut, COL_ZONE_CONNECTION ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_CONNECTION failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( zoneComment = getSqlResultByInx( genQueryOut, COL_ZONE_COMMENT ) ) == NULL ) {
+    if ( ( zoneComment = getSqlResultByInx( genQueryOut, COL_ZONE_COMMENT ) ) == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "initZone: getSqlResultByInx for COL_ZONE_COMMENT failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -451,7 +451,7 @@ initZone( rsComm_t *rsComm ) {
         /* REMOTE_ICAT is always on a remote host even if it is one the same
          * host, but will be on different port */
         tmpRodsServerHost->localFlag = REMOTE_HOST; // JMC - bacport 4562
-        queZone( tmpZoneName, addr.portNum, tmpRodsServerHost, NULL );
+        queZone( tmpZoneName, addr.portNum, tmpRodsServerHost, nullptr );
     }
 
     freeGenQueryOut( &genQueryOut );
@@ -487,7 +487,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
     rei.rsComm = rsComm;
 
     if ( ProcessType == AGENT_PT ) {
-        status = applyRule( "acChkHostAccessControl", NULL, &rei,
+        status = applyRule( "acChkHostAccessControl", nullptr, &rei,
                             NO_SAVE_REI );
 
         if ( status < 0 ) {
@@ -509,7 +509,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
                              &rsComm->reconnAddr, SOCK_STREAM );
         if ( rsComm->reconnSock < 0 ) {
             rsComm->reconnPort = 0;
-            rsComm->reconnAddr = NULL;
+            rsComm->reconnAddr = nullptr;
         }
         else {
             rsComm->cookie = ( int )( irods::getRandom<unsigned int>() >> 1 );
@@ -534,7 +534,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
     myComm.clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
     rei.rsComm = &myComm;
 
-    status = applyRule( "acSetPublicUserPolicy", NULL, &rei, NO_SAVE_REI );
+    status = applyRule( "acSetPublicUserPolicy", nullptr, &rei, NO_SAVE_REI );
 
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
@@ -598,13 +598,13 @@ void
 rsPipeSignalHandler( int ) {
     time_t curTime;
 
-    if ( ThisComm == NULL || ThisComm->reconnSock <= 0 ) {
+    if ( ThisComm == nullptr || ThisComm->reconnSock <= 0 ) {
         rodsLog( LOG_NOTICE,
                  "caught a broken pipe signal and exiting" );
         cleanupAndExit( SYS_CAUGHT_SIGNAL );
     }
     else {
-        curTime = time( 0 );
+        curTime = time( nullptr );
         if ( curTime - LastBrokenPipeTime < BROKEN_PIPE_INT ) {
             BrokenPipeCnt ++;
             if ( BrokenPipeCnt > MAX_BROKEN_PIPE_CNT ) {
@@ -793,24 +793,24 @@ daemonize( int runMode, int logFd ) {
 
 int
 logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
+    char *logFile = nullptr;
 #ifdef SYSLOG
     int logFd = 0;
 #else
     int logFd;
 #endif
 
-    if ( runMode == SINGLE_PASS && logDir == NULL ) {
+    if ( runMode == SINGLE_PASS && logDir == nullptr ) {
         return 1;
     }
 
-    if ( logFileName == NULL ) {
+    if ( logFileName == nullptr ) {
         fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     getLogfileName( &logFile, logDir, logFileName );
-    if ( NULL == logFile ) { // JMC cppcheck - nullptr
+    if ( nullptr == logFile ) { // JMC cppcheck - nullptr
         fprintf( stderr, "logFileOpen: unable to open log file" );
         return -1;
     }
@@ -837,7 +837,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     snprintf( tmpStr2, LONG_NAME_LEN, "%s=%d", IRODS_PROT, NATIVE_PROT );
     putenv( tmpStr2 );
 
-    if ( startupPack != NULL ) {
+    if ( startupPack != nullptr ) {
         rsComm->connectCnt = startupPack->connectCnt;
         rsComm->irodsProt = startupPack->irodsProt;
         rsComm->reconnFlag = startupPack->reconnFlag;
@@ -863,7 +863,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     }
     else {      /* have to depend on env variable */
         tmpStr = getenv( SP_NEW_SOCK );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_NEW_SOCK );
@@ -872,7 +872,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rsComm->sock = atoi( tmpStr );
 
         tmpStr = getenv( SP_CONNECT_CNT );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_CONNECT_CNT );
@@ -881,7 +881,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rsComm->connectCnt = atoi( tmpStr ) + 1;
 
         tmpStr = getenv( SP_PROTOCOL );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_PROTOCOL );
@@ -890,7 +890,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rsComm->irodsProt = ( irodsProt_t )atoi( tmpStr );
 
         tmpStr = getenv( SP_RECONN_FLAG );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_RECONN_FLAG );
@@ -899,7 +899,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rsComm->reconnFlag = atoi( tmpStr );
 
         tmpStr = getenv( SP_PROXY_USER );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_PROXY_USER );
@@ -911,7 +911,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         }
 
         tmpStr = getenv( SP_PROXY_RODS_ZONE );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_PROXY_RODS_ZONE );
@@ -920,7 +920,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rstrcpy( rsComm->proxyUser.rodsZone, tmpStr, NAME_LEN );
 
         tmpStr = getenv( SP_CLIENT_USER );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_CLIENT_USER );
@@ -932,7 +932,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         }
 
         tmpStr = getenv( SP_CLIENT_RODS_ZONE );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_CLIENT_RODS_ZONE );
@@ -941,7 +941,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rstrcpy( rsComm->clientUser.rodsZone, tmpStr, NAME_LEN );
 
         tmpStr = getenv( SP_REL_VERSION );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "getstartupPackFromEnv: env %s does not exist",
                     SP_REL_VERSION );
@@ -950,7 +950,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rstrcpy( rsComm->cliVersion.relVersion, tmpStr, NAME_LEN );
 
         tmpStr = getenv( SP_API_VERSION );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_API_VERSION );
@@ -959,7 +959,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         rstrcpy( rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN );
 
         tmpStr = getenv( SP_OPTION );
-        if ( tmpStr == NULL ) {
+        if ( tmpStr == nullptr ) {
             rodsLog( LOG_NOTICE,
                     "initRsCommWithStartupPack: env %s does not exist",
                     SP_OPTION );
@@ -975,7 +975,7 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
     }
 
     tmpStr = inet_ntoa( rsComm->remoteAddr.sin_addr );
-    if ( tmpStr == NULL || *tmpStr == '\0' ) {
+    if ( tmpStr == nullptr || *tmpStr == '\0' ) {
         tmpStr = "UNKNOWN";
     }
     rstrcpy( rsComm->clientAddr, tmpStr, NAME_LEN );
@@ -1001,7 +1001,7 @@ construct_controlled_user_set(const std::unordered_map<std::string, boost::any>&
 int
 chkAllowedUser( const char *userName, const char *rodsZone ) {
 
-    if ( userName == NULL || rodsZone == NULL ) {
+    if ( userName == nullptr || rodsZone == nullptr ) {
         return SYS_USER_NOT_ALLOWED_TO_CONN;
     }
 
@@ -1072,13 +1072,13 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 int
 queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
         irodsPosition_t position ) {
-    if ( agentProc == NULL || agentProcHead == NULL ) {
+    if ( agentProc == nullptr || agentProcHead == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( *agentProcHead == NULL ) {
+    if ( *agentProcHead == nullptr ) {
         *agentProcHead = agentProc;
-        agentProc->next = NULL;
+        agentProc->next = nullptr;
         return 0;
     }
 
@@ -1088,11 +1088,11 @@ queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
     }
     else {
         agentProc_t *tmpAgentProc = *agentProcHead;
-        while ( tmpAgentProc->next != NULL ) {
+        while ( tmpAgentProc->next != nullptr ) {
             tmpAgentProc = tmpAgentProc->next;
         }
         tmpAgentProc->next = agentProc;
-        agentProc->next = NULL;
+        agentProc->next = nullptr;
     }
     return 0;
 }
@@ -1119,7 +1119,7 @@ purgeLockFileDir( int chkLockFlag ) {
     }
 
     DIR *dirPtr = opendir( lock_dir.c_str() );
-    if ( dirPtr == NULL ) {
+    if ( dirPtr == nullptr ) {
         rodsLog( LOG_ERROR,
                 "purgeLockFileDir: opendir error for %s, errno = %d",
                 lock_dir.c_str(), errno );
@@ -1127,8 +1127,8 @@ purgeLockFileDir( int chkLockFlag ) {
     }
     bzero( &myflock, sizeof( myflock ) );
     myflock.l_whence = SEEK_SET;
-    purgeTime = time( 0 ) - LOCK_FILE_PURGE_TIME;
-    while ( ( myDirent = readdir( dirPtr ) ) != NULL ) {
+    purgeTime = time( nullptr ) - LOCK_FILE_PURGE_TIME;
+    while ( ( myDirent = readdir( dirPtr ) ) != nullptr ) {
         if ( strcmp( myDirent->d_name, "." ) == 0 ||
                 strcmp( myDirent->d_name, ".." ) == 0 ) {
             continue;

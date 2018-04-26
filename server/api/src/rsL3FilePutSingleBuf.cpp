@@ -23,7 +23,7 @@ rsL3FilePutSingleBuf( rsComm_t *rsComm, int *l1descInx,
     int bytesWritten;
 
     if ( dataObjInBBuf->len >= 0 ) {
-        if ( L1desc[*l1descInx].remoteZoneHost != NULL ) {
+        if ( L1desc[*l1descInx].remoteZoneHost != nullptr ) {
             bytesWritten = rcL3FilePutSingleBuf(
                                L1desc[*l1descInx].remoteZoneHost->conn,
                                L1desc[*l1descInx].remoteL1descInx, dataObjInBBuf );

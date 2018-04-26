@@ -14,7 +14,7 @@ namespace irods {
 
     class Hasher {
         public:
-            Hasher() : _strategy( NULL ) {}
+            Hasher() : _strategy( nullptr ) {}
 
             error init( const HashStrategy* );
             error update( const std::string& );

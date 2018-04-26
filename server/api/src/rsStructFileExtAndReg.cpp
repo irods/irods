@@ -54,13 +54,13 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     char phyBunDir[MAX_NAME_LEN];
     int flags = 0;
 
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, structFileExtAndRegInp->objPath, &specCollCache,
                        &structFileExtAndRegInp->condInput );
 
     resolveLinkedPath( rsComm, structFileExtAndRegInp->collection,
-                       &specCollCache, NULL );
+                       &specCollCache, nullptr );
 
     if ( !isSameZone( structFileExtAndRegInp->objPath,
                       structFileExtAndRegInp->collection ) ) {
@@ -93,8 +93,8 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     // we know that the redirection decision has already been made
     std::string       hier;
     int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
-    if ( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
+    rodsServerHost_t* host  =  nullptr;
+    if ( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == nullptr ) {
         irods::error ret = irods::resource_redirect( irods::OPEN_OPERATION, rsComm,
                            &dataObjInp, hier, host, local );
         if ( !ret.ok() ) {
@@ -176,7 +176,7 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
         return status;
     }
 
-    status = chkCollForExtAndReg( rsComm, structFileExtAndRegInp->collection, NULL );
+    status = chkCollForExtAndReg( rsComm, structFileExtAndRegInp->collection, nullptr );
 
     if ( status < 0 ) {
         return status;
@@ -211,18 +211,18 @@ rsStructFileExtAndReg( rsComm_t *rsComm,
     }
 
     if ( getValByKey( &structFileExtAndRegInp->condInput, FORCE_FLAG_KW )
-            != NULL ) {
+            != nullptr ) {
         flags = flags | FORCE_FLAG_FLAG;
     }
     if ( getValByKey( &structFileExtAndRegInp->condInput, BULK_OPR_KW )
-            != NULL ) {
+            != nullptr ) {
 
         status = bulkRegUnbunSubfiles( rsComm, resc_name, rescHier,
-                                       structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
+                                       structFileExtAndRegInp->collection, phyBunDir, flags, nullptr );
     }
     else {
         status = regUnbunSubfiles( rsComm, resc_name, dataObjInfo->rescHier,
-                                   structFileExtAndRegInp->collection, phyBunDir, flags, NULL );
+                                   structFileExtAndRegInp->collection, phyBunDir, flags, nullptr );
     }
 
     if ( status == CAT_NO_ROWS_FOUND ) {
@@ -244,7 +244,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
                      rodsObjStat_t **rodsObjStatOut ) {
     dataObjInp_t dataObjInp;
     int status;
-    rodsObjStat_t *myRodsObjStat = NULL;
+    rodsObjStat_t *myRodsObjStat = nullptr;
 
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, collection, MAX_NAME_LEN );
@@ -262,13 +262,13 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
         }
     }
 
-    if ( status < 0 || NULL == myRodsObjStat ) { // JMC cppcheck - nullptr
+    if ( status < 0 || nullptr == myRodsObjStat ) { // JMC cppcheck - nullptr
         rodsLog( LOG_ERROR,
                  "chkCollForExtAndReg: collStat of %s error. status = %d",
                  dataObjInp.objPath, status );
         return status;
     }
-    else if ( myRodsObjStat->specColl != NULL &&
+    else if ( myRodsObjStat->specColl != nullptr &&
               myRodsObjStat->specColl->collClass != MOUNTED_COLL ) {
         /* only do mounted coll */
         freeRodsObjStat( myRodsObjStat );
@@ -278,7 +278,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
         return SYS_STRUCT_FILE_INMOUNTED_COLL;
     }
 
-    if ( myRodsObjStat->specColl == NULL ) {
+    if ( myRodsObjStat->specColl == nullptr ) {
         status = checkCollAccessPerm( rsComm, collection, ACCESS_DELETE_OBJECT );
     }
     else {
@@ -293,7 +293,7 @@ chkCollForExtAndReg( rsComm_t *rsComm, char *collection,
         freeRodsObjStat( myRodsObjStat );
     }
     else {
-        if ( rodsObjStatOut != NULL ) {
+        if ( rodsObjStatOut != nullptr ) {
             *rodsObjStatOut = myRodsObjStat;
         }
         else {
@@ -518,7 +518,7 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
         snprintf( tmpStr, MAX_NAME_LEN, "%lld", dataSize );
         addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
         addKeyVal( &regParam, ALL_REPL_STATUS_KW, tmpStr );
-        snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
+        snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( nullptr ) );
         addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
 
         modDataObjMetaInp.dataObjInfo = &dataObjInfo;
@@ -544,7 +544,7 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
         rstrcpy( dataObjInp.objPath, dataObjInfo.objPath, MAX_NAME_LEN );
         initReiWithDataObjInp( &rei, rsComm, &dataObjInp );
         rei.doi = &dataObjInfo;
-        rei.status = applyRule( "acPostProcForTarFileReg", NULL, &rei,
+        rei.status = applyRule( "acPostProcForTarFileReg", nullptr, &rei,
                                 NO_SAVE_REI );
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);

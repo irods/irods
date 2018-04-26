@@ -34,8 +34,8 @@ int
 rcGetXmsgTicket( rcComm_t *conn, getXmsgTicketInp_t *getXmsgTicketInp,
                  xmsgTicketInfo_t **outXmsgTicketInfo ) {
     int status;
-    status = procApiRequest( conn, GET_XMSG_TICKET_AN, getXmsgTicketInp, NULL,
-                             ( void ** ) outXmsgTicketInfo, NULL );
+    status = procApiRequest( conn, GET_XMSG_TICKET_AN, getXmsgTicketInp, nullptr,
+                             ( void ** ) outXmsgTicketInfo, nullptr );
 
     return status;
 }

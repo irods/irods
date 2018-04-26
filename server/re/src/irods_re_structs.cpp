@@ -141,11 +141,11 @@ int applyRuleWithInOutVars(
 }
 
 void freeCmdExecOut( execCmdOut_t *ruleExecOut ) {
-    if ( ruleExecOut != NULL ) {
-        if ( ruleExecOut->stdoutBuf.buf != 0 ) {
+    if ( ruleExecOut != nullptr ) {
+        if ( ruleExecOut->stdoutBuf.buf != nullptr ) {
             free( ruleExecOut->stdoutBuf.buf );
         }
-        if ( ruleExecOut->stderrBuf.buf != 0 ) {
+        if ( ruleExecOut->stderrBuf.buf != nullptr ) {
             free( ruleExecOut->stderrBuf.buf );
         }
         free( ruleExecOut );
@@ -159,7 +159,7 @@ initReiWithDataObjInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
     memset( rei, 0, sizeof( ruleExecInfo_t ) );
     rei->doinp = dataObjInp;
     rei->rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei->uoic = &rsComm->clientUser;
         rei->uoip = &rsComm->proxyUser;
     }
@@ -191,7 +191,7 @@ initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
         rstrcpy( collInfo->collName, collCreateInp->collName, MAX_NAME_LEN );
     }
     rei->rsComm = rsComm;
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei->uoic = &rsComm->clientUser;
         rei->uoip = &rsComm->proxyUser;
     }
@@ -209,17 +209,17 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
     int fd, i;
     // =-=-=-=-=-=-=-
 
-    if ( writeId != NULL && strcmp( writeId, "serverLog" ) == 0 ) {
+    if ( writeId != nullptr && strcmp( writeId, "serverLog" ) == 0 ) {
         rodsLog( LOG_NOTICE, "writeString: inString = %s", writeStr );
         return 0;
     }
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4619
-    if ( writeId != NULL && writeId[0] == '/' ) {
+    if ( writeId != nullptr && writeId[0] == '/' ) {
         /* writing to an existing iRODS file */
 
-        if ( rei == NULL || rei->rsComm == NULL ) {
+        if ( rei == nullptr || rei->rsComm == nullptr ) {
             rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
@@ -237,7 +237,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
         openedDataObjInp.l1descInx = fd;
         openedDataObjInp.offset = 0;
         openedDataObjInp.whence = SEEK_END;
-        fileLseekOut_t *dataObjLseekOut = NULL;
+        fileLseekOut_t *dataObjLseekOut = nullptr;
         i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
         free( dataObjLseekOut );
         if ( i < 0 ) {
@@ -263,11 +263,11 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
 
     // =-=-=-=-=-=-=-
 
-    msParam_t * mP = NULL;
+    msParam_t * mP = nullptr;
     msParamArray_t * inMsParamArray = rei->msParamArray;
     execCmdOut_t *myExecCmdOut;
-    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-            ( mP->inOutStruct != NULL ) ) {
+    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != nullptr ) &&
+            ( mP->inOutStruct != nullptr ) ) {
         if ( !strcmp( mP->type, STR_MS_T ) ) {
             myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
             memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
@@ -281,8 +281,8 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
     else {
         myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
         memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-        if ( mP == NULL ) {
-            addMsParam( inMsParamArray, "ruleExecOut", ExecCmdOut_MS_T, myExecCmdOut, NULL );
+        if ( mP == nullptr ) {
+            addMsParam( inMsParamArray, "ruleExecOut", ExecCmdOut_MS_T, myExecCmdOut, nullptr );
         }
         else {
             mP->inOutStruct = myExecCmdOut;
@@ -296,7 +296,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
            return i;
     ****/
 
-    if ( writeId != NULL ) {
+    if ( writeId != nullptr ) {
         if ( !strcmp( writeId, "stdout" ) ) {
             appendToByteBuf( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
         }
@@ -313,14 +313,14 @@ int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
     char *writeId;
     char *writeStr;
 
-    if ( where->inOutStruct == NULL ) {
+    if ( where->inOutStruct == nullptr ) {
         writeId = where->label;
     }
     else {
         writeId = ( char* )where->inOutStruct;
     }
 
-    if ( inString->inOutStruct == NULL ) {
+    if ( inString->inOutStruct == nullptr ) {
         writeStr = strdup( ( char * ) inString->label );
     }
     else {
@@ -336,11 +336,11 @@ int
 touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
     int status = 0;
 
-    if ( myRei == NULL || rsComm == NULL ) {
+    if ( myRei == nullptr || rsComm == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( myRei->rsComm != NULL ) {
+    if ( myRei->rsComm != nullptr ) {
         free( myRei->rsComm );
     }
 
@@ -348,10 +348,10 @@ touchupPackedRei( rsComm_t *rsComm, ruleExecInfo_t *myRei ) {
     /* copy the clientUser. proxyUser is assumed to be in rsComm already */
     rsComm->clientUser = *( myRei->uoic );
 
-    if ( myRei->doi != NULL ) {
-        if ( myRei->doi->next != NULL ) {
+    if ( myRei->doi != nullptr ) {
+        if ( myRei->doi->next != nullptr ) {
             free( myRei->doi->next );
-            myRei->doi->next = NULL;
+            myRei->doi->next = nullptr;
         }
     }
 
@@ -363,7 +363,7 @@ unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
            bytesBuf_t *packedReiBBuf ) {
     int status;
 
-    if ( packedReiBBuf == NULL || rei == NULL ) {
+    if ( packedReiBBuf == nullptr || rei == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -402,7 +402,7 @@ packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( myArgc > 0 && ( myArgv == NULL || *myArgv == NULL ) ) {
+    if ( myArgc > 0 && ( myArgv == nullptr || *myArgv == nullptr ) ) {
         rodsLog( LOG_ERROR,
                  "packReiAndArg: NULL myArgv input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -436,7 +436,7 @@ unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
     int status;
     /*ruleExecInfo_t *myRei;*/
 
-    if ( packedReiAndArgBBuf == NULL || reiAndArg == NULL ) {
+    if ( packedReiAndArgBBuf == nullptr || reiAndArg == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 

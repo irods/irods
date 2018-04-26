@@ -40,8 +40,8 @@ int rsApiHandler(
     bytesBuf_t* bsBBuf ) {
     int apiInx;
     int status = 0;
-    char *myInStruct = NULL;
-    void *myOutStruct = NULL;
+    char *myInStruct = nullptr;
+    void *myOutStruct = nullptr;
     bytesBuf_t myOutBsBBuf;
     int retVal = 0;
     int numArg = 0;
@@ -64,7 +64,7 @@ int rsApiHandler(
         rodsLog( LOG_ERROR,
                  "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber );
         /* cannot use sendApiReply because it does not know apiInx */
-        sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL, NULL, NULL,
+        sendRodsMsg( net_obj, RODS_API_REPLY_T, nullptr, nullptr, nullptr,
                      apiInx, rsComm->irodsProt );
         return apiInx;
     }
@@ -88,7 +88,7 @@ int rsApiHandler(
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
 
     /* some sanity check */
-    if ( inputStructBBuf->len > 0 && RsApiTable[apiInx]->inPackInstruct == NULL ) {
+    if ( inputStructBBuf->len > 0 && RsApiTable[apiInx]->inPackInstruct == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: input struct error 1 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
@@ -96,7 +96,7 @@ int rsApiHandler(
         return SYS_API_INPUT_ERR;
     }
 
-    if ( inputStructBBuf->len <= 0 && RsApiTable[apiInx]->inPackInstruct != NULL ) {
+    if ( inputStructBBuf->len <= 0 && RsApiTable[apiInx]->inPackInstruct != nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsApiHandler: input struct error 2 for apiNumber %d", apiNumber );
         sendApiReply( rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct,
@@ -133,7 +133,7 @@ int rsApiHandler(
         return SYS_API_INPUT_ERR;
     }
 
-    if ( RsApiTable[apiInx]->inPackInstruct != NULL ) {
+    if ( RsApiTable[apiInx]->inPackInstruct != nullptr ) {
         myArgv[numArg] = myInStruct;
         numArg++;
     };
@@ -143,7 +143,7 @@ int rsApiHandler(
         numArg++;
     };
 
-    if ( RsApiTable[apiInx]->outPackInstruct != NULL ) {
+    if ( RsApiTable[apiInx]->outPackInstruct != nullptr ) {
         myArgv[numArg] = ( void * ) &myOutStruct;
         numArg++;
     };
@@ -196,13 +196,13 @@ int rsApiHandler(
 
     // =-=-=-=-=-=-=-
     // clear the incoming packing instruction
-    if ( myInStruct != NULL ) {
+    if ( myInStruct != nullptr ) {
         if ( RsApiTable[apiInx]->clearInStruct ) {
             RsApiTable[apiInx]->clearInStruct( myInStruct );
         }
 
         free( myInStruct );
-        myInStruct = NULL;
+        myInStruct = nullptr;
     }
 
     if ( retVal >= 0 && status < 0 ) {
@@ -221,18 +221,18 @@ sendAndProcApiReply( rsComm_t * rsComm, int apiInx, int status,
     retval = sendApiReply( rsComm, apiInx, status, myOutStruct, myOutBsBBuf );
 
     clearBBuf( myOutBsBBuf );
-    if ( myOutStruct != NULL ) {
+    if ( myOutStruct != nullptr ) {
         free( myOutStruct );
     }
     freeRErrorContent( &rsComm->rError );
 
     /* check for portal operation */
 
-    if ( rsComm->portalOpr != NULL ) {
+    if ( rsComm->portalOpr != nullptr ) {
         handlePortalOpr( rsComm );
         clearKeyVal( &rsComm->portalOpr->dataOprInp.condInput );
         free( rsComm->portalOpr );
-        rsComm->portalOpr = NULL;
+        rsComm->portalOpr = nullptr;
     }
 
     return retval;
@@ -242,9 +242,9 @@ int
 sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
               void * myOutStruct, bytesBuf_t * myOutBsBBuf ) {
     int status = 0;
-    bytesBuf_t *outStructBBuf = NULL;
+    bytesBuf_t *outStructBBuf = nullptr;
     bytesBuf_t *myOutStructBBuf;
-    bytesBuf_t *rErrorBBuf = NULL;
+    bytesBuf_t *rErrorBBuf = nullptr;
     bytesBuf_t *myRErrorBBuf;
 
     svrChkReconnAtSendStart( rsComm );
@@ -266,7 +266,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
 
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
-    if ( RsApiTable[apiInx]->outPackInstruct != NULL && myOutStruct != NULL ) {
+    if ( RsApiTable[apiInx]->outPackInstruct != nullptr && myOutStruct != nullptr ) {
 
         status = packStruct( ( char * ) myOutStruct, &outStructBBuf,
                              ( char* )RsApiTable[apiInx]->outPackInstruct, RodsPackTable, FREE_POINTER,
@@ -275,8 +275,8 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "sendApiReply: packStruct error, status = %d", status );
-            sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
-                         NULL, NULL, status, rsComm->irodsProt );
+            sendRodsMsg( net_obj, RODS_API_REPLY_T, nullptr,
+                         nullptr, nullptr, status, rsComm->irodsProt );
             svrChkReconnAtSendEnd( rsComm );
             return status;
         }
@@ -284,11 +284,11 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         myOutStructBBuf = outStructBBuf;
     }
     else {
-        myOutStructBBuf = NULL;
+        myOutStructBBuf = nullptr;
     }
 
     if ( RsApiTable[apiInx]->outBsFlag == 0 ) {
-        myOutBsBBuf = NULL;
+        myOutBsBBuf = nullptr;
     }
 
     if ( rsComm->rError.len > 0 ) {
@@ -298,8 +298,8 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
                      "sendApiReply: packStruct error, status = %d", status );
-            sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
-                         NULL, NULL, status, rsComm->irodsProt );
+            sendRodsMsg( net_obj, RODS_API_REPLY_T, nullptr,
+                         nullptr, nullptr, status, rsComm->irodsProt );
             svrChkReconnAtSendEnd( rsComm );
             freeBBuf( outStructBBuf );
             freeBBuf( rErrorBBuf );
@@ -309,7 +309,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
         myRErrorBBuf = rErrorBBuf;
     }
     else {
-        myRErrorBBuf = NULL;
+        myRErrorBBuf = nullptr;
     }
     ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf,
                        myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt );
@@ -357,7 +357,7 @@ chkApiVersion( int apiInx ) {
     char *cliApiVersion;
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
-    if ( ( cliApiVersion = getenv( SP_API_VERSION ) ) != NULL ) {
+    if ( ( cliApiVersion = getenv( SP_API_VERSION ) ) != nullptr ) {
         if ( strcmp( cliApiVersion, RsApiTable[apiInx]->apiVersion ) != 0 ) {
             rodsLog( LOG_ERROR,
                      "chkApiVersion:Client's API Version %s does not match Server's %s",
@@ -412,11 +412,11 @@ chkApiPermission( rsComm_t * rsComm, int apiInx ) {
 static
 int
 apply_acPostProcForParallelTransferReceived(rsComm_t *rsComm) {
-    if (rsComm == NULL) {
+    if (rsComm == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL rsComm");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    if (rsComm->portalOpr == NULL) {
+    if (rsComm->portalOpr == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL rsComm->portalOpr");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -428,7 +428,7 @@ apply_acPostProcForParallelTransferReceived(rsComm_t *rsComm) {
     }
 
     const char* resource_hierarchy = FileDesc[l3_index].rescHier;
-    if (resource_hierarchy == NULL) {
+    if (resource_hierarchy == nullptr) {
         rodsLog(LOG_ERROR, "apply_acPostProcForParallelTransferReceived: NULL resource_hierarchy");
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -460,7 +460,7 @@ handlePortalOpr( rsComm_t * rsComm ) {
     int oprType;
     int status;
 
-    if ( rsComm == NULL || rsComm->portalOpr == NULL ) {
+    if ( rsComm == nullptr || rsComm->portalOpr == nullptr ) {
         return 0;
     }
 
@@ -533,7 +533,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         } // while 1
     }
     else {
-        ret = readMsgHeader( net_obj, &myHeader, NULL );
+        ret = readMsgHeader( net_obj, &myHeader, nullptr );
     }
 
     if ( !ret.ok() ) {
@@ -548,7 +548,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
                      rsComm->clientState, rsComm->agentState );
             svrSwitchConnect( rsComm );
             boost_lock.unlock();
-            ret = readMsgHeader( net_obj, &myHeader, NULL );
+            ret = readMsgHeader( net_obj, &myHeader, nullptr );
             if ( !ret.ok() ) {
                 svrChkReconnAtReadEnd( rsComm );
                 return savedStatus;
@@ -561,7 +561,7 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
     } // if !ret.ok()
 
     ret = readMsgBody( net_obj, &myHeader, &inputStructBBuf,
-                       &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL );
+                       &bsBBuf, &errorBBuf, rsComm->irodsProt, nullptr );
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         svrChkReconnAtReadEnd( rsComm );
@@ -678,7 +678,7 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
     int status;
 
     status = sendAndProcApiReply( rsComm, rsComm->apiInx,
-                                  SYS_SVR_TO_CLI_COLL_STAT, collOprStat, NULL );
+                                  SYS_SVR_TO_CLI_COLL_STAT, collOprStat, nullptr );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status,
                       "svrSendCollOprStat: sendAndProcApiReply failed. status = %d",
@@ -688,9 +688,9 @@ _svrSendCollOprStat( rsComm_t * rsComm, collOprStat_t * collOprStat ) {
 
     /* read 4 bytes */
     if (irods::CS_NEG_USE_SSL == rsComm->negotiation_results) {
-        status = sslRead(rsComm->sock, static_cast<void*>(&myBuf), 4, NULL, NULL, rsComm->ssl);
+        status = sslRead(rsComm->sock, static_cast<void*>(&myBuf), 4, nullptr, nullptr, rsComm->ssl);
     } else {
-        status = myRead(rsComm->sock, static_cast<void*>(&myBuf), 4, NULL, NULL );
+        status = myRead(rsComm->sock, static_cast<void*>(&myBuf), 4, nullptr, nullptr );
     }
 
     if ( status < 0 ) {
@@ -713,9 +713,9 @@ svrSendZoneCollOprStat( rsComm_t * rsComm, rcComm_t * conn,
         else {
             int myBuf = htonl( status );
             if (irods::CS_NEG_USE_SSL == conn->negotiation_results) {
-                sslWrite(static_cast<void*>(&myBuf), 4, NULL, conn->ssl);
+                sslWrite(static_cast<void*>(&myBuf), 4, nullptr, conn->ssl);
             } else {
-                myWrite(conn->sock, static_cast<void*>(&myBuf), 4, NULL );
+                myWrite(conn->sock, static_cast<void*>(&myBuf), 4, nullptr );
             }
             break;
         }

@@ -50,13 +50,13 @@ int _rsGetRescQuota(
     rescQuota_t**      rescQuota ) {
     int status = 0;
 
-    genQueryOut_t* genQueryOut = NULL;
+    genQueryOut_t* genQueryOut = nullptr;
 
-    if ( rescQuota == NULL ) {
+    if ( rescQuota == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    *rescQuota = NULL;
+    *rescQuota = nullptr;
 
     status = getQuotaByResc(
                  rsComm,
@@ -87,11 +87,11 @@ int getQuotaByResc(
     char condition1[MAX_NAME_LEN];
     char condition2[MAX_NAME_LEN];
 
-    if ( genQueryOut == NULL ) {
+    if ( genQueryOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    *genQueryOut = NULL;
+    *genQueryOut = nullptr;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
 
     genQueryInp.options = QUOTA_QUERY;
@@ -104,7 +104,7 @@ int getQuotaByResc(
         &genQueryInp.sqlCondInp,
         COL_USER_NAME,
         condition1 );
-    if ( rescName != NULL && strlen( rescName ) > 0 ) {
+    if ( rescName != nullptr && strlen( rescName ) > 0 ) {
         snprintf(
             condition2,
             MAX_NAME_LEN, "%s",
@@ -136,33 +136,33 @@ int queRescQuota(
     rescQuota_t *tmpRescQuota;
 
     if ( ( quotaLimit = getSqlResultByInx( genQueryOut, COL_QUOTA_LIMIT ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( quotaOver = getSqlResultByInx( genQueryOut, COL_QUOTA_OVER ) ) == NULL ) {
+    if ( ( quotaOver = getSqlResultByInx( genQueryOut, COL_QUOTA_OVER ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( rescName = getSqlResultByInx( genQueryOut, COL_R_RESC_NAME ) ) == NULL ) {
+    if ( ( rescName = getSqlResultByInx( genQueryOut, COL_R_RESC_NAME ) ) == nullptr ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaRescId = getSqlResultByInx( genQueryOut, COL_QUOTA_RESC_ID ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaUserId = getSqlResultByInx( genQueryOut, COL_QUOTA_USER_ID ) ) ==
-            NULL ) {
+            nullptr ) {
         rodsLog( LOG_ERROR,
                  "queRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
@@ -194,10 +194,10 @@ int fillRescQuotaStruct(
 
     bzero( rescQuota, sizeof( rescQuota_t ) );
 
-    rescQuota->quotaLimit = strtoll( tmpQuotaLimit, 0, 0 );
-    rescQuota->quotaOverrun = strtoll( tmpQuotaOver, 0, 0 );
+    rescQuota->quotaLimit = strtoll( tmpQuotaLimit, nullptr, 0 );
+    rescQuota->quotaOverrun = strtoll( tmpQuotaOver, nullptr, 0 );
 
-    if ( strtoll( tmpQuotaRescId, 0, 0 ) > 0 ) {
+    if ( strtoll( tmpQuotaRescId, nullptr, 0 ) > 0 ) {
         /* quota by resource */
         rstrcpy( rescQuota->rescName, tmpRescName, NAME_LEN );
     }
@@ -247,7 +247,7 @@ int setRescQuota(
         _comm->clientUser.userName,
         _comm->clientUser.rodsZone );
 
-    rescQuota_t *total_quota = NULL;
+    rescQuota_t *total_quota = nullptr;
     status = rsGetRescQuota(
                  _comm,
                  &get_resc_quota_inp,
@@ -273,7 +273,7 @@ int setRescQuota(
         _resc_name,
         NAME_LEN );
 
-    rescQuota_t *resc_quota = NULL;
+    rescQuota_t *resc_quota = nullptr;
     status = rsGetRescQuota(
                  _comm,
                  &get_resc_quota_inp,
@@ -337,10 +337,10 @@ int updatequotaOverrun(
 int chkRescQuotaPolicy( rsComm_t *rsComm ) {
     if ( RescQuotaPolicy == RESC_QUOTA_UNINIT ) {
         ruleExecInfo_t rei;
-        initReiWithDataObjInp( &rei, rsComm, NULL );
+        initReiWithDataObjInp( &rei, rsComm, nullptr );
         int status = applyRule(
                          "acRescQuotaPolicy",
-                         NULL, &rei,
+                         nullptr, &rei,
                          NO_SAVE_REI );
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);

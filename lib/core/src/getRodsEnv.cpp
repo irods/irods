@@ -404,7 +404,7 @@ extern "C" {
 
         }
 
-        char* val = 0;
+        char* val = nullptr;
 
         val = getenv( "irodsSSLCACertificatePath" );
         if ( val ) {
@@ -728,9 +728,9 @@ extern "C" {
       find the next delimited token and terminate the string with matching quotes
     */
     char *findNextTokenAndTerm( char *inPtr ) {
-        char *myPtr = 0;
-        char *savePtr = 0;
-        char *nextPtr = 0;
+        char *myPtr = nullptr;
+        char *savePtr = nullptr;
+        char *nextPtr = nullptr;
         int whiteSpace = 0;
         myPtr = inPtr;
         whiteSpace = 1;

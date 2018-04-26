@@ -14,7 +14,7 @@ int
 rsRcvXmsg( rsComm_t*, rcvXmsgInp_t *rcvXmsgInp,
            rcvXmsgOut_t **rcvXmsgOut ) {
     int status;
-    irodsXmsg_t *irodsXmsg = NULL;
+    irodsXmsg_t *irodsXmsg = nullptr;
     /*
     status = getIrodsXmsgByMsgNum (rcvXmsgInp->rcvTicket,
       rcvXmsgInp->msgNumber, &irodsXmsg);

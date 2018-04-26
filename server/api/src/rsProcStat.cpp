@@ -59,17 +59,17 @@ int
 _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
              genQueryOut_t **procStatOut ) {
     int status = -1;
-    rodsServerHost_t *rodsServerHost = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
     int remoteFlag = -1;
     rodsHostAddr_t addr;
     procStatInp_t myProcStatInp;
-    char *tmpStr = NULL;
+    char *tmpStr = nullptr;
 
-    if ( getValByKey( &procStatInp->condInput, ALL_KW ) != NULL ) {
+    if ( getValByKey( &procStatInp->condInput, ALL_KW ) != nullptr ) {
         status = _rsProcStatAll( rsComm, procStatOut );
         return status;
     }
-    if ( getValByKey( &procStatInp->condInput, EXEC_LOCALLY_KW ) != NULL ) {
+    if ( getValByKey( &procStatInp->condInput, EXEC_LOCALLY_KW ) != nullptr ) {
         status = localProcStat( procStatInp, procStatOut );
         return status;
     }
@@ -80,7 +80,7 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
         rstrcpy( addr.hostAddr, procStatInp->addr, LONG_NAME_LEN );
         remoteFlag = resolveHost( &addr, &rodsServerHost );
     }
-    else if ( ( tmpStr = getValByKey( &procStatInp->condInput, RESC_NAME_KW ) ) != NULL ) {
+    else if ( ( tmpStr = getValByKey( &procStatInp->condInput, RESC_NAME_KW ) ) != nullptr ) {
         std::string resc_name( tmpStr );
         irods::error ret = SUCCESS();
 
@@ -117,7 +117,7 @@ _rsProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     }
     else {
         /* do the IES server */
-        remoteFlag = getRcatHost( MASTER_RCAT, NULL, &rodsServerHost );
+        remoteFlag = getRcatHost( MASTER_RCAT, nullptr, &rodsServerHost );
     }
     if ( remoteFlag < 0 ) {
         rodsLog( LOG_ERROR,
@@ -142,12 +142,12 @@ _rsProcStatAll( rsComm_t *rsComm,
     rodsServerHost_t *tmpRodsServerHost;
     procStatInp_t myProcStatInp;
     int status;
-    genQueryOut_t *singleProcStatOut = NULL;
+    genQueryOut_t *singleProcStatOut = nullptr;
     int savedStatus = 0;
 
     bzero( &myProcStatInp, sizeof( myProcStatInp ) );
     tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         irods::error err = irods::get_host_status_by_host_info( tmpRodsServerHost );
         if ( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
@@ -165,15 +165,15 @@ _rsProcStatAll( rsComm_t *rsComm,
                 savedStatus = status;
             }
 
-            if ( singleProcStatOut != NULL ) {
-                if ( *procStatOut == NULL ) {
+            if ( singleProcStatOut != nullptr ) {
+                if ( *procStatOut == nullptr ) {
                     *procStatOut = singleProcStatOut;
                 }
                 else {
                     catGenQueryOut( *procStatOut, singleProcStatOut, MAX_PROC_STAT_CNT );
                     freeGenQueryOut( &singleProcStatOut );
                 }
-                singleProcStatOut = NULL;
+                singleProcStatOut = nullptr;
             }
 
         } // if up
@@ -262,13 +262,13 @@ remoteProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     int status;
     procLog_t procLog;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_ERROR,
                  "remoteProcStat: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ( procStatInp == NULL || procStatOut == NULL ) {
+    if ( procStatInp == nullptr || procStatOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -277,7 +277,7 @@ remoteProcStat( rsComm_t *rsComm, procStatInp_t *procStatInp,
     if ( status >= 0 ) {
         status = rcProcStat( rodsServerHost->conn, procStatInp, procStatOut );
     }
-    if ( status < 0 && *procStatOut == NULL ) {
+    if ( status < 0 && *procStatOut == nullptr ) {
         /* add an empty entry */
         initProcStatOut( procStatOut, 1 );
         bzero( &procLog, sizeof( procLog ) );
@@ -292,7 +292,7 @@ int
 initProcStatOut( genQueryOut_t **procStatOut, int numProc ) {
     genQueryOut_t *myProcStatOut;
 
-    if ( procStatOut == NULL || numProc <= 0 ) {
+    if ( procStatOut == nullptr || numProc <= 0 ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -365,7 +365,7 @@ int
 addProcToProcStatOut( procLog_t *procLog, genQueryOut_t *procStatOut ) {
     int rowCnt;
 
-    if ( procLog == NULL || procStatOut == NULL ) {
+    if ( procLog == nullptr || procStatOut == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
     rowCnt = procStatOut->rowCnt;

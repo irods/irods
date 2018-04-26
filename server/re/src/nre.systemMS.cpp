@@ -161,7 +161,7 @@ int _delayExec( const char *inActionCall, const char *recoveryActionCall,
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i;
     /* char action[MAX_ACTION_SIZE]; */
-    bytesBuf_t *packedReiAndArgBBuf = NULL;
+    bytesBuf_t *packedReiAndArgBBuf = nullptr;
 
     RE_TEST_MACRO( "    Calling _delayExec" );
 
@@ -169,8 +169,8 @@ int _delayExec( const char *inActionCall, const char *recoveryActionCall,
         delayCondition,
         rei->pluginInstanceName);
 
-    args[0] = NULL;
-    args[1] = NULL;
+    args[0] = nullptr;
+    args[1] = nullptr;
     /* Pack Rei and Args */
     i = packReiAndArg( rei, args, 0, &packedReiAndArgBBuf );
     if ( i < 0 ) {
@@ -235,13 +235,13 @@ static int carryOverMsParam(
 
     int i;
     msParam_t *mP, *mPt;
-    if ( sourceMsParamArray == NULL ) {
+    if ( sourceMsParamArray == nullptr ) {
         return 0;
     }
 
     for ( i = 0; i < sourceMsParamArray->len ; i++ ) {
         mPt = sourceMsParamArray->msParam[i];
-        if ( ( mP = getMsParamByLabel( targetMsParamArray, mPt->label ) ) != NULL ) {
+        if ( ( mP = getMsParamByLabel( targetMsParamArray, mPt->label ) ) != nullptr ) {
             free( mP->inpOutBuf );
             int status = replInOutStruct(mPt->inOutStruct, &mP->inOutStruct, mPt->type);
             if ( status < 0 ) {
@@ -298,7 +298,7 @@ static int carryOverMsParam(
 int remoteExec( msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei ) {
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *tmpParamArray, *aParamArray;
-    msParamArray_t *outParamArray = NULL;
+    msParamArray_t *outParamArray = nullptr;
     char tmpStr[LONG_NAME_LEN];
 
     memset( &execMyRuleInp, 0, sizeof( execMyRuleInp ) );
@@ -388,7 +388,7 @@ doForkExec( char *prog, char *arg1 ) {
         for ( i = 0; i < 100; i++ ) {
             close( i );
         }
-        i = execl( prog, prog, arg1, ( char * ) 0 );
+        i = execl( prog, prog, arg1, ( char * ) nullptr );
         printf( "execl failed %d\n", i );
         return 0;
     }
@@ -500,20 +500,20 @@ msiFreeBuffer( msParam_t* memoryParam, ruleExecInfo_t *rei ) {
         msParam_t *mP = nullptr;
         msParamArray_t *inMsParamArray;
         inMsParamArray = rei->msParamArray;
-        if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-                ( mP->inOutStruct != NULL ) ) {
+        if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != nullptr ) &&
+                ( mP->inOutStruct != nullptr ) ) {
             execCmdOut_t *myExecCmdOut = ( execCmdOut_t * ) mP->inOutStruct;
             if ( !strcmp( ( char* )memoryParam->inOutStruct, "stdout" ) ) {
-                if ( myExecCmdOut->stdoutBuf.buf != NULL ) {
+                if ( myExecCmdOut->stdoutBuf.buf != nullptr ) {
                     free( myExecCmdOut->stdoutBuf.buf );
-                    myExecCmdOut->stdoutBuf.buf = NULL;
+                    myExecCmdOut->stdoutBuf.buf = nullptr;
                     myExecCmdOut->stdoutBuf.len = 0;
                 }
             }
             if ( !strcmp( ( char* )memoryParam->inOutStruct, "stderr" ) ) {
-                if ( myExecCmdOut->stderrBuf.buf != NULL ) {
+                if ( myExecCmdOut->stderrBuf.buf != nullptr ) {
                     free( myExecCmdOut->stderrBuf.buf );
-                    myExecCmdOut->stderrBuf.buf = NULL;
+                    myExecCmdOut->stderrBuf.buf = nullptr;
                     myExecCmdOut->stderrBuf.len = 0;
                 }
             }
@@ -618,19 +618,19 @@ msiGetDiffTime( msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3
     RE_TEST_MACRO( "    Calling msiGetDiffTime" )
 
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* Check for proper input */
-    if ( ( parseMspForStr( inpParam1 ) == NULL ) ) {
+    if ( ( parseMspForStr( inpParam1 ) == nullptr ) ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input inpParam1 is NULL" );
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( ( parseMspForStr( inpParam2 ) == NULL ) ) {
+    if ( ( parseMspForStr( inpParam2 ) == nullptr ) ) {
         rodsLog( LOG_ERROR, "msiGetDiffTime: input inpParam2 is NULL" );
         return USER__NULL_INPUT_ERR;
     }
@@ -706,7 +706,7 @@ msiGetSystemTime( msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei 
     RE_TEST_MACRO( "    Calling msiGetSystemTime" )
 
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiGetSystemTime: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -770,14 +770,14 @@ msiHumanToSystemTime( msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *
 
 
     /* microservice check */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiHumanToSystemTime: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
 
     /* parse inpParam (date input string) */
-    if ( ( hr_time = parseMspForStr( inpParam ) ) == NULL ) {
+    if ( ( hr_time = parseMspForStr( inpParam ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiHumanToSystemTime: parseMspForStr error for input param." );
         return rei->status;
     }
@@ -837,7 +837,7 @@ msiStrToBytesBuf( msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t* ) {
     bytesBuf_t *outBuf;
 
     /* parse str_msp */
-    if ( ( inStr = parseMspForStr( str_msp ) ) == NULL ) {
+    if ( ( inStr = parseMspForStr( str_msp ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiStrToBytesBuf: input str_msp is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -907,7 +907,7 @@ msiBytesBufToStr( msParam_t* buf_msp, msParam_t* str_msp, ruleExecInfo_t* ) {
     }
 
     /*check buf_msp */
-    if ( buf_msp == NULL || buf_msp->inOutStruct == NULL ) {
+    if ( buf_msp == nullptr || buf_msp->inOutStruct == nullptr ) {
         rodsLog( LOG_ERROR, "msiBytesBufToStr: input buf_msp is NULL." );
         return USER__NULL_INPUT_ERR;
     }
@@ -976,7 +976,7 @@ msiListEnabledMS(
 
 
     /* Sanity test */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiListEnabledMS: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -1014,7 +1014,7 @@ msiListEnabledMS(
     }
 
     /* Send results out to outKVPairs */
-    fillMsParam( outKVPairs, NULL, KeyValPair_MS_T, results, NULL );
+    fillMsParam( outKVPairs, nullptr, KeyValPair_MS_T, results, nullptr );
 
     return 0;
 }
@@ -1068,7 +1068,7 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
     RE_TEST_MACRO( "    Calling msiGetFormattedSystemTime" );
 
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR,
                  "msiGetFormattedSystemTime: input rei or rsComm is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -1080,7 +1080,7 @@ msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam,
         getNowStr( tStr );
     }
     else {
-        myTime = time( NULL );
+        myTime = time( nullptr );
         mytm = localtime( &myTime );
 
         snprintf( tStr, TIME_LEN, dateFormat,

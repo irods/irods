@@ -35,8 +35,8 @@
 int
 rcGeneralRowPurge( rcComm_t *conn, generalRowPurgeInp_t *generalRowPurgeInp ) {
     int status;
-    status = procApiRequest( conn, GENERAL_ROW_PURGE_AN,  generalRowPurgeInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, GENERAL_ROW_PURGE_AN,  generalRowPurgeInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

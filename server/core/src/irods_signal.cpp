@@ -23,8 +23,8 @@ extern "C" {
         struct sigaction action;
         memset(&action, 0, sizeof(action));
         action.sa_handler = segv_handler;
-        sigaction( SIGSEGV, &action, 0 );
-        sigaction( SIGABRT, &action, 0 );
-        sigaction( SIGINT, &action, 0 );
+        sigaction( SIGSEGV, &action, nullptr );
+        sigaction( SIGABRT, &action, nullptr );
+        sigaction( SIGINT, &action, nullptr );
     }
 }

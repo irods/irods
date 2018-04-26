@@ -12,7 +12,7 @@ char *
 getLogDir() {
     char *myDir;
 
-    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
+    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) nullptr ) {
         return myDir;
     }
     return DEF_LOG_DIR;
@@ -52,7 +52,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 
     /* Put together the full pathname of the logFile */
 
-    if ( logDir == NULL ) {
+    if ( logDir == nullptr ) {
         snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
     }
     else {
@@ -63,7 +63,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 
 
 
-    LogfileLastChkTime = myTime = time( 0 );
+    LogfileLastChkTime = myTime = time( nullptr );
     mytm = localtime( &myTime );
     const int rotation_time = get_log_file_rotation_time();
 
@@ -73,7 +73,7 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4793
-    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
+    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == nullptr ) {
         logfilePattern = DEF_LOGFILE_PATTERN;
     }
     mytm->tm_mday = tm_mday;
@@ -87,10 +87,10 @@ getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
 int
 chkLogfileName( const char *logDir, const char *logFileName ) {
     time_t myTime;
-    char *logFile = NULL;
+    char *logFile = nullptr;
     int i;
 
-    myTime = time( 0 );
+    myTime = time( nullptr );
     if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
         /* not time yet */
         return 0;
@@ -98,7 +98,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
 
     getLogfileName( &logFile, logDir, logFileName );
 
-    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
+    if ( CurLogfileName != nullptr && strcmp( CurLogfileName, logFile ) == 0 ) {
         free( logFile );
         return 0;
     }
@@ -114,7 +114,7 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
         lseek( i, 0, SEEK_END );
     }
 
-    if ( CurLogfileName != NULL ) {
+    if ( CurLogfileName != nullptr ) {
         free( CurLogfileName );
     }
 

@@ -28,7 +28,7 @@ namespace irods {
                        "empty name" );
         }
 
-        if ( 0 == _resc.get() ) {
+        if ( nullptr == _resc.get() ) {
             return ERROR(
                        SYS_INVALID_INPUT_PARAM,
                        "null resource pointer" );

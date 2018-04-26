@@ -23,7 +23,7 @@ int
 rcFileStageToCache( rcComm_t *conn, fileStageSyncInp_t *fileStageToCacheInp ) {
     int status;
     status = procApiRequest( conn, FILE_STAGE_TO_CACHE_AN,
-                             fileStageToCacheInp, NULL, ( void ** ) NULL, NULL );
+                             fileStageToCacheInp, nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

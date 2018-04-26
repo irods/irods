@@ -61,8 +61,8 @@ int writeLine( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei ) {
     char *ptr;
     char *writeId = ( char * ) where->inOutStruct;
 
-    if ( writeId != NULL && strcmp( writeId, "serverLog" ) == 0 &&
-            inString->inOutStruct != NULL ) {
+    if ( writeId != nullptr && strcmp( writeId, "serverLog" ) == 0 &&
+            inString->inOutStruct != nullptr ) {
         rodsLog( LOG_NOTICE, "writeLine: inString = %s\n", inString->inOutStruct );
         return 0;
     }
@@ -115,14 +115,14 @@ int writePosInt( msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei ) {
     char writeStr[LONG_NAME_LEN];
     int status;
 
-    if ( where->inOutStruct != NULL ) {
+    if ( where->inOutStruct != nullptr ) {
         writeId = ( char* )where->inOutStruct;
     }
     else {
         writeId = where->label;
     }
 
-    if ( inInt->inOutStruct != NULL ) {
+    if ( inInt->inOutStruct != nullptr ) {
         sprintf( writeStr, "%d", parseMspForPosInt( inInt ) );
     }
     else {
@@ -170,7 +170,7 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
     char *writeStr;
     int status;
 
-    if ( where->inOutStruct != NULL ) {
+    if ( where->inOutStruct != nullptr ) {
         writeId = ( char* )where->inOutStruct;
     }
     else {
@@ -189,7 +189,7 @@ int writeBytesBuf( msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei ) {
 
     status = _writeString( writeId, writeStr, rei );
 
-    if ( writeStr != NULL ) {
+    if ( writeStr != nullptr ) {
         free( writeStr );
     }
 
@@ -264,7 +264,7 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
 
 
     /* where are we writing to? */
-    if ( where->inOutStruct != NULL ) {
+    if ( where->inOutStruct != nullptr ) {
         writeId = ( char* )where->inOutStruct;
     }
     else {
@@ -273,7 +273,7 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
 
 
     /* get separator string or use default */
-    if ( ( sepStr = parseMspForStr( separator ) ) == NULL )  {
+    if ( ( sepStr = parseMspForStr( separator ) ) == nullptr )  {
         sepStr = "\t|\t";
     }
 
@@ -303,7 +303,7 @@ int writeKeyValPairs( msParam_t *where, msParam_t *inKVPair, msParam_t *separato
 
 
     /* free writeStr since its content has been copied somewhere else */
-    if ( writeStr != NULL ) {
+    if ( writeStr != nullptr ) {
         free( writeStr );
     }
 
@@ -423,13 +423,13 @@ readXMsg( msParam_t* inStreamId, msParam_t *inCondRead,
     int i;
     int sNum = 0;
     int mNum = 0;
-    char *hdr = NULL;
-    char *msg = NULL;
-    char *user = NULL;
-    char *addr = NULL;
+    char *hdr = nullptr;
+    char *msg = nullptr;
+    char *user = nullptr;
+    char *addr = nullptr;
     int streamId;
     xmsgTicketInfo_t *xmsgTicketInfo;
-    char *condRead = NULL;
+    char *condRead = nullptr;
     RE_TEST_MACRO( "    Calling readXMsg" );
 
     if ( !strcmp( inStreamId->type, XmsgTicketInfo_MS_T ) ) {

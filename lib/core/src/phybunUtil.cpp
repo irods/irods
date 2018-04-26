@@ -10,7 +10,7 @@
 int
 phybunUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
             rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -52,7 +52,7 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
                       structFileExtAndRegInp_t *phyBundleCollInp ) {
     char tmpStr[NAME_LEN]; // JMC - backport 4771
 
-    if ( phyBundleCollInp == NULL ) {
+    if ( phyBundleCollInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForPhybunOpr: NULL phyBundleCollInp input" );
         return USER__NULL_INPUT_ERR;
@@ -60,12 +60,12 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
 
     memset( phyBundleCollInp, 0, sizeof( structFileExtAndRegInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPhybunOpr: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -91,7 +91,7 @@ initCondForPhybunOpr( rodsArguments_t *rodsArgs,
     }
     // =-=-=-=-=-=-=
     // JMC - backport 4658
-    if ( rodsArgs->dataTypeString != NULL ) {
+    if ( rodsArgs->dataTypeString != nullptr ) {
         if ( strcmp( rodsArgs->dataTypeString, "t" ) == 0 ||
                 strcmp( rodsArgs->dataTypeString, TAR_DT_STR ) == 0 ||
                 strcmp( rodsArgs->dataTypeString, "tar" ) == 0 ) {

@@ -35,7 +35,7 @@ irods::error tcp_socket_read(
     // =-=-=-=-=-=-=-
     // local copy of time value?
     struct timeval timeout;
-    if ( _time_value != NULL ) {
+    if ( _time_value != nullptr ) {
         timeout = ( *_time_value );
     }
 
@@ -50,7 +50,7 @@ irods::error tcp_socket_read(
 
     while ( len_to_read > 0 ) {
         if ( nullptr != _time_value ) {
-            const int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+            const int status = select( _socket + 1, &set, nullptr, nullptr, &timeout );
             if ( status == 0 ) { // the select has timed out
                 return ERROR( SYS_SOCK_READ_TIMEDOUT, boost::format("socket timeout with [%d] bytes read") % _bytes_read);
             } else if ( status < 0 ) {
@@ -509,7 +509,7 @@ irods::error tcp_read_msg_body(
 
     // =-=-=-=-=-=-=-
     // read input buffer
-    if ( 0 != _input_struct_buf ) {
+    if ( nullptr != _input_struct_buf ) {
         if ( _header->msgLen > 0 ) {
             _input_struct_buf->buf = malloc( _header->msgLen + 1 );
 
@@ -536,7 +536,7 @@ irods::error tcp_read_msg_body(
 
     // =-=-=-=-=-=-=-
     // read error buffer
-    if ( 0 != _error_buf ) {
+    if ( nullptr != _error_buf ) {
         if ( _header->errorLen > 0 ) {
             _error_buf->buf = malloc( _header->errorLen + 1 );
             ret = read_bytes_buf(
@@ -558,11 +558,11 @@ irods::error tcp_read_msg_body(
 
     // =-=-=-=-=-=-=-
     // read bs buffer
-    if ( 0 != _bs_buf ) {
+    if ( nullptr != _bs_buf ) {
         if ( _header->bsLen > 0 ) {
             // do not repave bs buf as it can be
             // reused by the client
-            if ( _bs_buf->buf == NULL ) {
+            if ( _bs_buf->buf == nullptr ) {
                 _bs_buf->buf = malloc( _header->bsLen + 1 );
 
             }

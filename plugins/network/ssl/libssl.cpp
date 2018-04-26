@@ -113,13 +113,13 @@ static DH* ssl_get_dh2048() {
     auto *dh = DH_new();
 
     if ( !dh ) {
-        return NULL;
+        return nullptr;
     }
-    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), NULL );
-    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), NULL );
+    auto* p = BN_bin2bn( dh2048_p, sizeof( dh2048_p ), nullptr );
+    auto* g = BN_bin2bn( dh2048_g, sizeof( dh2048_g ), nullptr );
     if ( !p || !g ) {
         DH_free( dh );
-        return NULL;
+        return nullptr;
     }
     DH_set0_pqg(dh, p, nullptr, g);
     return dh;
@@ -131,21 +131,21 @@ static DH* ssl_get_dh2048() {
 static int ssl_load_hd_params(
     SSL_CTX* ctx,
     char*    file ) {
-    DH*  dhparams = 0;
-    BIO* bio      = 0;
+    DH*  dhparams = nullptr;
+    BIO* bio      = nullptr;
 
     if ( file ) {
         bio = BIO_new_file( file, "r" );
         if ( bio ) {
-            dhparams = PEM_read_bio_DHparams( bio, NULL, NULL, NULL );
+            dhparams = PEM_read_bio_DHparams( bio, nullptr, nullptr, nullptr );
             BIO_free( bio );
         }
     }
 
-    if ( dhparams == NULL ) {
+    if ( dhparams == nullptr ) {
         ssl_log_error( "ssl_load_hd_params: can't load DH parameter file. Falling back to built-ins." );
         dhparams = ssl_get_dh2048();
-        if ( dhparams == NULL ) {
+        if ( dhparams == nullptr ) {
             rodsLog( LOG_ERROR, "ssl_load_hd_params: can't load built-in DH params" );
             return -1;
         }
@@ -190,8 +190,8 @@ static SSL_CTX* ssl_init_context(
     char *certfile,
     char *keyfile ) {
     static int init_done = 0;
-    SSL_CTX *ctx = 0;
-    char *verify_server = 0;
+    SSL_CTX *ctx = nullptr;
+    char *verify_server = nullptr;
 
     rodsEnv env;
     int status = getRodsEnv( &env );
@@ -200,7 +200,7 @@ static SSL_CTX* ssl_init_context(
             LOG_ERROR,
             "ssl_init_context - failed in getRodsEnv : %d",
             status );
-        return NULL;
+        return nullptr;
 
     }
 
@@ -219,20 +219,20 @@ static SSL_CTX* ssl_init_context(
         if ( SSL_CTX_use_certificate_chain_file( ctx, certfile ) != 1 ) {
             ssl_log_error( "sslInit: couldn't read certificate chain file" );
             SSL_CTX_free( ctx );
-            return NULL;
+            return nullptr;
         }
         else {
             if ( SSL_CTX_use_PrivateKey_file( ctx, keyfile, SSL_FILETYPE_PEM ) != 1 ) {
                 ssl_log_error( "sslInit: couldn't read key file" );
                 SSL_CTX_free( ctx );
-                return NULL;
+                return nullptr;
             }
         }
     }
 
     /* set up CA paths and files here */
-    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : NULL;
-    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : NULL;
+    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : nullptr;
+    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : nullptr;
     if ( ca_path || ca_file ) {
         if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
             ssl_log_error( "sslInit: error loading CA certificate locations" );
@@ -260,7 +260,7 @@ static SSL_CTX* ssl_init_context(
     if ( SSL_CTX_set_cipher_list( ctx, SSL_CIPHER_LIST ) != 1 ) {
         ssl_log_error( "sslInit: couldn't set the cipher list (no valid ciphers)" );
         SSL_CTX_free( ctx );
-        return NULL;
+        return nullptr;
     }
 
     return ctx;
@@ -276,16 +276,16 @@ static SSL* ssl_init_socket(
     BIO* bio = BIO_new_socket(
                    _socket_handle,
                    BIO_NOCLOSE );
-    if ( bio == NULL ) {
+    if ( bio == nullptr ) {
         ssl_log_error( "sslInitSocket: BIO allocation error" );
-        return NULL;
+        return nullptr;
     }
 
     SSL* ssl = SSL_new( _ctx );
-    if ( ssl == NULL ) {
+    if ( ssl == nullptr ) {
         ssl_log_error( "sslInitSocket: couldn't create a new SSL socket" );
         BIO_free( bio );
-        return NULL;
+        return nullptr;
     }
     SSL_set_bio( ssl, bio, bio );
 
@@ -316,12 +316,12 @@ static int ssl_post_connection_check(
     }
 
     X509 *cert = SSL_get_peer_certificate( ssl );
-    if ( cert == NULL ) {
+    if ( cert == nullptr ) {
         /* no certificate presented */
         return 0;
     }
 
-    if ( peer == NULL ) {
+    if ( peer == nullptr ) {
         /* no hostname passed to verify */
         X509_free( cert );
         return 0;
@@ -330,7 +330,7 @@ static int ssl_post_connection_check(
     /* check if the peer name matches any of the subjectAltNames
        listed in the certificate */
     bool match = false;
-    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, NULL, NULL ));
+    auto* names = static_cast<STACK_OF(GENERAL_NAME)*>(X509_get_ext_d2i( cert, NID_subject_alt_name, nullptr, NULL ));
     int num_names = sk_GENERAL_NAME_num( names );
     for ( int i = 0; i < num_names; i++ ) {
         auto* name = sk_GENERAL_NAME_value( names, i );
@@ -394,7 +394,7 @@ irods::error ssl_socket_read(
         // =-=-=-=-=-=-=-
         // local copy of time value?
         struct timeval timeout;
-        if ( _time_value != NULL ) {
+        if ( _time_value != nullptr ) {
             timeout = ( *_time_value );
         }
 
@@ -413,8 +413,8 @@ irods::error ssl_socket_read(
 
             // =-=-=-=-=-=-=-
             // do a time out managed select of the socket fd
-            if ( SSL_pending( _ssl ) == 0 && NULL != _time_value ) {
-                int status = select( _socket + 1, &set, NULL, NULL, &timeout );
+            if ( SSL_pending( _ssl ) == 0 && nullptr != _time_value ) {
+                int status = select( _socket + 1, &set, nullptr, nullptr, &timeout );
                 if ( status == 0 ) {
                     // =-=-=-=-=-=-=-
                     // the select has timed out
@@ -647,8 +647,8 @@ irods::error ssl_client_stop(
             SSL_free( ssl );
             SSL_CTX_free( ctx );
 
-            ssl_obj->ssl( 0 );
-            ssl_obj->ssl_ctx( 0 );
+            ssl_obj->ssl( nullptr );
+            ssl_obj->ssl_ctx( nullptr );
         }
     }
 
@@ -674,7 +674,7 @@ irods::error ssl_client_start(
 
         // =-=-=-=-=-=-=-
         // set up SSL on our side of the socket
-        SSL_CTX* ctx = ssl_init_context( NULL, NULL );
+        SSL_CTX* ctx = ssl_init_context( nullptr, nullptr );
         std::string err_str = "failed to initialize SSL context";
         ssl_build_error_string( err_str );
         if ( ( result = ASSERT_ERROR( ctx, SSL_INIT_ERROR, err_str.c_str() ) ).ok() ) {
@@ -755,7 +755,7 @@ irods::error ssl_client_start(
                                         key_bbuf.len = key.size();
                                         key_bbuf.buf = &key[0];
                                         char msg_type[] = { "SHARED_SECRET" };
-                                        ret = sendRodsMsg( ssl_obj, msg_type, &key_bbuf, 0, 0, 0, XML_PROT );
+                                        ret = sendRodsMsg( ssl_obj, msg_type, &key_bbuf, nullptr, nullptr, 0, XML_PROT );
                                         if ( ( result = ASSERT_PASS( ret, "writeMsgHeader failed." ) ).ok() ) {
 
                                             // =-=-=-=-=-=-=-
@@ -871,7 +871,7 @@ irods::error ssl_agent_start(
                                 // =-=-=-=-=-=-=-
                                 // call interface to read message body
                                 bytesBuf_t msg_buf;
-                                ret = readMsgBody( ssl_obj, &msg_header, &msg_buf, 0, 0, XML_PROT, NULL );
+                                ret = readMsgBody( ssl_obj, &msg_header, &msg_buf, nullptr, nullptr, XML_PROT, nullptr );
                                 if ( ( result = ASSERT_PASS( ret, "Read message body failed." ) ).ok() ) {
 
                                     // =-=-=-=-=-=-=-
@@ -945,8 +945,8 @@ irods::error ssl_agent_stop(
             // clean up the SSL state
             SSL_free( ssl );
             SSL_CTX_free( ctx );
-            ssl_obj->ssl( 0 );
-            ssl_obj->ssl_ctx( 0 );
+            ssl_obj->ssl( nullptr );
+            ssl_obj->ssl_ctx( nullptr );
 
             rodsLog( LOG_DEBUG, "sslShutdown: shut down SSL connection" );
         }
@@ -1057,7 +1057,7 @@ irods::error ssl_send_rods_msg(
                 // =-=-=-=-=-=-=-
                 // send the message buffer
                 int bytes_written = 0;
-                if ( NULL != _msg_buf &&
+                if ( nullptr != _msg_buf &&
                         msg_header.msgLen > 0 ) {
                     if ( XML_PROT == _protocol &&
                             getRodsLogLevel() >= LOG_DEBUG8 ) {
@@ -1071,7 +1071,7 @@ irods::error ssl_send_rods_msg(
 
                     // =-=-=-=-=-=-=-
                     // send the error buffer
-                    if ( NULL != _error_buf &&
+                    if ( nullptr != _error_buf &&
                             msg_header.errorLen > 0 ) {
                         if ( XML_PROT == _protocol &&
                                 getRodsLogLevel() >= LOG_DEBUG8 ) {
@@ -1087,7 +1087,7 @@ irods::error ssl_send_rods_msg(
 
                         // =-=-=-=-=-=-=-
                         // send the stream buffer
-                        if ( NULL != _stream_bbuf &&
+                        if ( nullptr != _stream_bbuf &&
                                 msg_header.bsLen > 0 ) {
                             if ( XML_PROT == _protocol &&
                                     getRodsLogLevel() >= LOG_DEBUG8 ) {
@@ -1185,7 +1185,7 @@ irods::error ssl_read_msg_body(
 
             // =-=-=-=-=-=-=-
             // read input buffer
-            if ( 0 != _input_struct_buf ) {
+            if ( nullptr != _input_struct_buf ) {
                 if ( _header->msgLen > 0 ) {
                     _input_struct_buf->buf = malloc( _header->msgLen + 1 );
                     ret = read_bytes_buf( socket_handle, _header->msgLen, _input_struct_buf, _protocol, _time_val, ssl_obj->ssl() );
@@ -1206,7 +1206,7 @@ irods::error ssl_read_msg_body(
 
                 // =-=-=-=-=-=-=-
                 // read error buffer
-                if ( 0 != _error_buf ) {
+                if ( nullptr != _error_buf ) {
                     if ( _header->errorLen > 0 ) {
                         _error_buf->buf = malloc( _header->errorLen + 1 );
                         ret = read_bytes_buf( socket_handle, _header->errorLen, _error_buf, _protocol, _time_val, ssl_obj->ssl() );
@@ -1224,11 +1224,11 @@ irods::error ssl_read_msg_body(
 
                     // =-=-=-=-=-=-=-
                     // read bs buffer
-                    if ( 0 != _bs_buf ) {
+                    if ( nullptr != _bs_buf ) {
                         if ( _header->bsLen > 0 ) {
                             // do not repave bs buf as it can be
                             // reused by the client
-                            if ( _bs_buf->buf == NULL ) {
+                            if ( _bs_buf->buf == nullptr ) {
                                 _bs_buf->buf = malloc( _header->bsLen + 1 );
 
                             }

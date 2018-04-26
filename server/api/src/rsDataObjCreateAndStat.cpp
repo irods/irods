@@ -29,7 +29,7 @@ rsDataObjCreateAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         ( *openStat )->replNum = L1desc[status].dataObjInfo->replNum;
     }
     else {
-        *openStat = NULL;
+        *openStat = nullptr;
     }
 
     return status;

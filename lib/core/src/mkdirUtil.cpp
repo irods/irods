@@ -16,7 +16,7 @@ mkdirUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
     collInp_t collCreateInp;
 
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 

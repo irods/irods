@@ -31,8 +31,8 @@
 int
 rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp ) {
     int status;
-    status = procApiRequest( conn, RULE_EXEC_MOD_AN, ruleExecModInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, RULE_EXEC_MOD_AN, ruleExecModInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

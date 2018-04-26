@@ -33,14 +33,14 @@ int initExecCmdMutex() {
 int
 rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     int status;
-    dataObjInfo_t *dataObjInfoHead = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     rodsHostAddr_t addr;
     irods::error err = SUCCESS();
 
     ruleExecInfo_t rei;
-    initReiWithDataObjInp(&rei, rsComm, NULL);
+    initReiWithDataObjInp(&rei, rsComm, nullptr);
 
     const char* args[4] = {
         execCmdInp->cmd,
@@ -57,7 +57,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
     }
 
     /* some sanity check on the cmd path */
-    if ( strchr( execCmdInp->cmd, '/' ) != NULL ) {
+    if ( strchr( execCmdInp->cmd, '/' ) != nullptr ) {
         rodsLog( LOG_ERROR,
                  "rsExecCmd: bad cmd path %s", execCmdInp->cmd );
         return BAD_EXEC_CMD_PATH;
@@ -83,7 +83,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
         // determine the resource hierarchy if one is not provided
         std::string resc_hier;
         char*       resc_hier_ptr = getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW );
-        if ( resc_hier_ptr == NULL ) {
+        if ( resc_hier_ptr == nullptr ) {
             irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
                                rsComm, &dataObjInp, resc_hier );
             if ( !ret.ok() ) {
@@ -115,7 +115,7 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
 
         status = sortObjInfoForOpen( &dataObjInfoHead, &execCmdInp->condInput, 0 );
 
-        if ( status < 0 || NULL == dataObjInfoHead ) {
+        if ( status < 0 || nullptr == dataObjInfoHead ) {
             return status;    // JMC cppcheck nullptr
         }
 
@@ -185,7 +185,7 @@ remoteExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
                execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteExecCmd: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -203,7 +203,7 @@ remoteExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp,
                  execCmdInp->cmd, status );
     }
     else if ( status > 0 &&
-              getValByKey( &execCmdInp->condInput, STREAM_STDOUT_KW ) != NULL ) {
+              getValByKey( &execCmdInp->condInput, STREAM_STDOUT_KW ) != nullptr ) {
         int fileInx = status;
         ( *execCmdOut )->status = bindStreamToIRods( rodsServerHost, fileInx );
         if ( ( *execCmdOut )->status < 0 ) {
@@ -280,7 +280,7 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
         char *tmpStr;
         /* Indicate that the call came from internal rule */
         if ( ( tmpStr = getValByKey( &execCmdInp->condInput, EXEC_CMD_RULE_KW ) )
-                != NULL ) {
+                != nullptr ) {
             char *myStr = ( char* )malloc( NAME_LEN + 20 );
             snprintf( myStr, NAME_LEN + 20, "%s=%s", EXEC_CMD_RULE_KW, tmpStr );
             putenv( myStr );
@@ -330,7 +330,7 @@ _rsExecCmd( execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) {
     memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
 
     readToByteBuf( stdoutFd[0], &myExecCmdOut->stdoutBuf );
-    if ( getValByKey( &execCmdInp->condInput, STREAM_STDOUT_KW ) != NULL &&
+    if ( getValByKey( &execCmdInp->condInput, STREAM_STDOUT_KW ) != nullptr &&
             myExecCmdOut->stdoutBuf.len >= MAX_SZ_FOR_EXECMD_BUF ) {
         /* more to come. don't close stdoutFd. close stderrFd and statusFd
          * because the child is not done */
@@ -465,7 +465,7 @@ initCmdArg( char *av[], char *cmdArgv, char *cmdPath ) {
 
     /* put a NULL on the last one */
 
-    av[avInx] = NULL;
+    av[avInx] = nullptr;
 
     /* escaped quotes */
     for ( i = 0; i < avInx ; i++ ) {

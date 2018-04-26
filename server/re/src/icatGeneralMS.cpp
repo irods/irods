@@ -222,7 +222,7 @@ int msiCheckPermission( msParam_t* xperm, ruleExecInfo_t *rei ) {
     char *perm;
 
     perm = ( char * ) xperm->inOutStruct;
-    if ( strstr( rei->doi->dataAccess, perm ) != NULL ) {
+    if ( strstr( rei->doi->dataAccess, perm ) != nullptr ) {
         return 0;
     }
     else {
@@ -273,17 +273,17 @@ int msiCheckAccess( msParam_t *inObjName, msParam_t * inOperation,
 
     RE_TEST_MACRO( "  Calling msiCheckAccess" );
 
-    if ( inObjName == NULL || inObjName->inOutStruct == NULL ||
-            inObjName->type == NULL || strcmp( inObjName->type, STR_MS_T ) != 0 ) {
+    if ( inObjName == nullptr || inObjName->inOutStruct == nullptr ||
+            inObjName->type == nullptr || strcmp( inObjName->type, STR_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }
 
-    if ( inOperation == NULL || inOperation->inOutStruct == NULL ||
-            inOperation->type == NULL || strcmp( inOperation->type, STR_MS_T ) != 0 ) {
+    if ( inOperation == nullptr || inOperation->inOutStruct == nullptr ||
+            inOperation->type == nullptr || strcmp( inOperation->type, STR_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -478,13 +478,13 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
     char *acl, *path, *recursiveFlg, *user, uname[NAME_LEN], *zone;
     int recFlg, rc;
     modAccessControlInp_t modAccessControlInp;
-    rsComm_t *rsComm = 0; // JMC cppcheck - uninit var
+    rsComm_t *rsComm = nullptr; // JMC cppcheck - uninit var
 
     RE_TEST_MACRO( "    Calling msiSetACL" )
     /* the above line is needed for loop back testing using irule -i option */
 
-    if ( recursiveFlag == NULL || accessLevel == NULL || userName == NULL ||
-            pathName == NULL ) {
+    if ( recursiveFlag == nullptr || accessLevel == nullptr || userName == nullptr ||
+            pathName == nullptr ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
                             "msiSetACL: one of the input parameter is NULL" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -538,7 +538,7 @@ int msiSetACL( msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
     rsComm = rei->rsComm;
     modAccessControlInp.recursiveFlag = recFlg;
     modAccessControlInp.accessLevel = acl;
-    if ( strchr( user, '#' ) == NULL ) {
+    if ( strchr( user, '#' ) == nullptr ) {
         modAccessControlInp.userName = user;
         modAccessControlInp.zone = rei->uoic->rodsZone;
     }

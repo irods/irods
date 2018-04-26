@@ -24,8 +24,8 @@ int
 rcFileChksum( rcComm_t *conn, fileChksumInp_t *fileChksumInp,
               char **chksumStr ) {
     int status;
-    status = procApiRequest( conn, FILE_CHKSUM_AN,  fileChksumInp, NULL,
-                             ( void ** ) chksumStr, NULL );
+    status = procApiRequest( conn, FILE_CHKSUM_AN,  fileChksumInp, nullptr,
+                             ( void ** ) chksumStr, nullptr );
 
     return status;
 }

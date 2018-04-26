@@ -33,7 +33,7 @@ applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf,
     msParamArray_t msParamArray;
     memset( ( char* )&msParamArray, 0, sizeof( msParamArray_t ) );
 
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei2.rsComm = rsComm;
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
@@ -84,7 +84,7 @@ int rsDataObjWrite(
         return BAD_INPUT_DESC_INDEX;
     }
 
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         // =-=-=-=-=-=-=-
         // cross zone operation
         dataObjWriteInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
@@ -110,7 +110,7 @@ int rsDataObjWrite(
                 rsComm,
                 L1desc[l1descInx].dataObjInfo ) );
         char* pdmo_kw = getValByKey( &dataObjWriteInp->condInput, IN_PDMO_KW );
-        if ( pdmo_kw != NULL ) {
+        if ( pdmo_kw != nullptr ) {
             file_obj->in_pdmo( pdmo_kw );
         }
         irods::error ret = fileNotify(

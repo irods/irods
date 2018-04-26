@@ -140,7 +140,7 @@ int chlOpen() {
                                        irods::database > ( db_plug_ptr );
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call( 0,
+    ret = db->call( nullptr,
                     irods::DATABASE_OP_OPEN,
                     ptr );
 
@@ -204,7 +204,7 @@ int chlClose() {
 
     // =-=-=-=-=-=-=-
     // call the close operation on the plugin
-    ret = db->call( 0,
+    ret = db->call( nullptr,
                     irods::DATABASE_OP_CLOSE,
                     ptr );
 
@@ -255,7 +255,7 @@ int chlGetRcs(
 
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
-    ret = db->call< icatSessionStruct** >( 0,
+    ret = db->call< icatSessionStruct** >( nullptr,
                                            irods::DATABASE_OP_GET_RCS,
                                            ptr,
                                            _icss );
@@ -304,7 +304,7 @@ int chlGetLocalZone(
     // =-=-=-=-=-=-=-
     // call the get local zone operation on the plugin
     ret = db->call <
-          std::string* > ( 0,
+          std::string* > ( nullptr,
                                  irods::DATABASE_OP_GET_LOCAL_ZONE,
                                  ptr,
                                  &_zone );
@@ -4219,7 +4219,7 @@ int chlSpecificQuery(
     // call the operation on the plugin
     ret = db->call <
           specificQueryInp_t*,
-          genQueryOut_t* > ( 0,
+          genQueryOut_t* > ( nullptr,
                              irods::DATABASE_OP_SPECIFIC_QUERY,
                              ptr,
                              &_spec_query_inp,
@@ -4326,7 +4326,7 @@ int chlGetDistinctDataObjCountOnResource(
     // call the operation on the plugin
     ret = db->call <
           const char*,
-          long long* > ( 0,
+          long long* > ( nullptr,
                          irods::DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
                          ptr,
                          _resc_name.c_str(),
@@ -4383,7 +4383,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
           const std::string*,
           const std::string*,
           int,
-          dist_child_result_t* > ( 0,
+          dist_child_result_t* > ( nullptr,
                                    irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                                    ptr,
                                    &_parent,
@@ -4438,7 +4438,7 @@ int chlGetHierarchyForResc(
     ret = db->call <
           const std::string*,
           const std::string*,
-          std::string* > ( 0,
+          std::string* > ( nullptr,
                            irods::DATABASE_OP_GET_HIERARCHY_FOR_RESC,
                            ptr,
                            &_resc_name,
@@ -4551,7 +4551,7 @@ int chlGenQuery(
     // call the operation on the plugin
     ret = db->call <
           genQueryInp_t*,
-          genQueryOut_t* > ( 0,
+          genQueryOut_t* > ( nullptr,
                              irods::DATABASE_OP_GEN_QUERY,
                              ptr,
                              &_gen_query_inp,
@@ -4606,7 +4606,7 @@ int chlGenQueryAccessControlSetup(
           const char*,
           const char*,
           int,
-          int > ( 0,
+          int > ( nullptr,
                   irods::DATABASE_OP_GEN_QUERY_ACCESS_CONTROL_SETUP,
                   ptr,
                   _user,
@@ -4658,7 +4658,7 @@ int chlGenQueryTicketSetup(
     // call the operation on the plugin
     ret = db->call <
           const char*,
-          const char* > ( 0,
+          const char* > ( nullptr,
                           irods::DATABASE_OP_GEN_QUERY_TICKET_SETUP,
                           ptr,
                           _ticket,
@@ -4706,7 +4706,7 @@ int chlGeneralUpdate(
     // =-=-=-=-=-=-=-
     // call the operation on the plugin
     ret = db->call <
-          generalUpdateInp_t* > ( 0,
+          generalUpdateInp_t* > ( nullptr,
                                   irods::DATABASE_OP_GENERAL_UPDATE,
                                   ptr,
                                   &_update_inp );
@@ -4757,7 +4757,7 @@ int chlGetReplListForLeafBundles(
               size_t,
               const std::vector<leaf_bundle_t>*,
               dist_child_result_t* >(
-                  0,
+                  nullptr,
                   irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
                   ptr,
                   _count,

@@ -20,7 +20,7 @@ rsFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
     int remoteFlag;
     int retVal;
 
-    *fileLseekOut = NULL;
+    *fileLseekOut = nullptr;
 
     remoteFlag = getServerHostByFileInx( fileLseekInp->fileInx,
                                          &rodsServerHost );
@@ -54,7 +54,7 @@ remoteFileLseek( rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
                  fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileLseek: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

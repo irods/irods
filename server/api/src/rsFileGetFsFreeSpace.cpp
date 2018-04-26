@@ -21,7 +21,7 @@ rsFileGetFsFreeSpace( rsComm_t *rsComm,
     int remoteFlag;
     int status;
 
-    *fileGetFsFreeSpaceOut = NULL;
+    *fileGetFsFreeSpaceOut = nullptr;
 
     //remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileGetFsFreeSpaceInp->rescHier, remoteFlag, rodsServerHost );
@@ -61,7 +61,7 @@ remoteFileGetFsFreeSpace( rsComm_t *rsComm,
                           rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileGetFsFreeSpace: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

@@ -51,12 +51,12 @@ int msiGetValByKey( msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ru
 
     kvp = ( keyValPair_t* )inKVPair->inOutStruct;
     k = ( char* )inKey->inOutStruct;
-    if ( k == NULL ) {
+    if ( k == nullptr ) {
         k = inKey->label;
     }
 
     s = getValByKey( kvp, k );
-    if ( s == NULL ) {
+    if ( s == nullptr ) {
         return UNMATCHED_KEY_OR_INDEX;
     }
     fillStrInMsParam( outVal, s );
@@ -106,7 +106,7 @@ int msiPrintKeyValPair( msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *r
     RE_TEST_MACRO( "msiPrintKeyValPair" );
 
     m = 0;
-    s = NULL;
+    s = nullptr;
     k = ( keyValPair_t* )inkvpair->inOutStruct;
 
     for ( i = 0; i < k->len; i++ ) {
@@ -186,7 +186,7 @@ int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleE
     memset(kvp, 0, sizeof(keyValPair_t));
     for ( i = 0; i < strArray.len; i++ ) {
         valPtr = &value[i * strArray.size];
-        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != NULL ) {
+        if ( ( tmpPtr = strstr( valPtr, "=" ) ) != nullptr ) {
             *tmpPtr = '\0';
             tmpPtr++;
             j = addKeyVal( kvp, valPtr, tmpPtr );
@@ -239,8 +239,8 @@ int msiString2StrArray( msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecI
 
     RE_TEST_MACRO( "msiString2StrArray" );
 
-    if ( inBufferP == NULL || inBufferP->inOutStruct == NULL ||
-            inBufferP->type == NULL || strcmp( inBufferP->type, STR_MS_T ) != 0 ) {
+    if ( inBufferP == nullptr || inBufferP->inOutStruct == nullptr ||
+            inBufferP->type == nullptr || strcmp( inBufferP->type, STR_MS_T ) != 0 ) {
         return USER_PARAM_TYPE_ERR;
     }
 
@@ -357,7 +357,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     RE_TEST_MACRO( "    Calling msiAddKeyVal" )
 
     /* Sanity checks */
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if ( rei == nullptr || rei->rsComm == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddKeyVal: input rei or rsComm is NULL." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -366,7 +366,7 @@ int msiAddKeyVal( msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, rul
     /********************************** PARAM PARSING  *********************************/
 
     /* Parse key */
-    if ( ( key_str = parseMspForStr( key ) ) == NULL ) {
+    if ( ( key_str = parseMspForStr( key ) ) == nullptr ) {
         rodsLog( LOG_ERROR, "msiAddKeyVal: input key is NULL." );
         return USER__NULL_INPUT_ERR;
     }

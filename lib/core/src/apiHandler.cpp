@@ -147,7 +147,7 @@ namespace irods {
                 }
                 name = name.substr( 3 );
 
-                api_entry*  entry = 0;
+                api_entry*  entry = nullptr;
                 error ret = load_plugin< api_entry >(
                                 entry,
                                 name,

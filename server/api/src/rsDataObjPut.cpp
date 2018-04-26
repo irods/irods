@@ -49,7 +49,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status2;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
@@ -84,7 +84,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
         std::string       hier;
-        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == nullptr ) {
             irods::error ret = irods::resolve_resource_hierarchy(
                                    irods::CREATE_OPERATION, rsComm,
                                    dataObjInp, hier );
@@ -118,7 +118,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = _rcDataObjPut( rodsServerHost->conn, dataObjInp,
                                 dataObjInpBBuf, portalOprOut );
         if ( status < 0 ||
-                getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
+                getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != nullptr ) {
             return status;
         }
         else {
@@ -127,7 +127,7 @@ rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
              * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
              * rsComplete knows what to do */
             l1descInx = allocAndSetL1descForZoneOpr(
-                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
+                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, nullptr );
             if ( l1descInx < 0 ) {
                 return l1descInx;
             }
@@ -154,24 +154,24 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int retval;
     openedDataObjInp_t dataObjCloseInp;
     int allFlag;
-    transferStat_t *transStat = NULL;
+    transferStat_t *transStat = nullptr;
     dataObjInp_t replDataObjInp;
 
-    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, ALL_KW ) != nullptr ) {
         allFlag = 1;
     }
     else {
         allFlag = 0;
     }
 
-    if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != NULL ) {
+    if ( getValByKey( &dataObjInp->condInput, DATA_INCLUDED_KW ) != nullptr ) {
         /* single buffer put */
         status = l3DataPutSingleBuf( rsComm, dataObjInp, dataObjInpBBuf );
         if ( status >= 0 && allFlag == 1 ) {
             /* update the rest of copies */
             addKeyVal( &dataObjInp->condInput, UPDATE_REPL_KW, "" );
             status = rsDataObjRepl( rsComm, dataObjInp, &transStat );
-            if ( transStat != NULL ) {
+            if ( transStat != nullptr ) {
                 free( transStat );
             }
         }
@@ -225,7 +225,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* return portalOprOut to the client and wait for the rcOprComplete
      * call. That is when the parallel I/O is done */
     retval = sendAndRecvBranchMsg( rsComm, rsComm->apiInx, status,
-                                   ( void * ) * portalOprOut, NULL );
+                                   ( void * ) * portalOprOut, nullptr );
 
     if ( retval < 0 ) {
         memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
@@ -238,7 +238,7 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
     else if ( allFlag == 1 ) {
         rsDataObjRepl( rsComm, &replDataObjInp, &transStat );
-        if ( transStat != NULL ) {
+        if ( transStat != nullptr ) {
             free( transStat );
         }
         clearKeyVal( &replDataObjInp.condInput );
@@ -261,11 +261,11 @@ preProcParaPut( rsComm_t *rsComm, int l1descInx,
 
     initDataOprInp( &dataOprInp, l1descInx, PUT_OPR );
     /* add RESC_HIER_STR_KW for getNumThreads */
-    if ( L1desc[l1descInx].dataObjInfo != NULL ) {
+    if ( L1desc[l1descInx].dataObjInfo != nullptr ) {
         addKeyVal( &dataOprInp.condInput, RESC_HIER_STR_KW,
                    L1desc[l1descInx].dataObjInfo->rescHier );
     }
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         status =  remoteDataPut( rsComm, &dataOprInp, portalOprOut,
                                  L1desc[l1descInx].remoteZoneHost );
     }
@@ -337,8 +337,8 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
     int bytesWritten = l3FilePutSingleBuf( rsComm, l1descInx, dataObjInpBBuf );
     if ( bytesWritten >= 0 ) {
         if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY &&
-                myDataObjInfo->specColl == NULL &&
-                L1desc[l1descInx].remoteZoneHost == NULL ) {
+                myDataObjInfo->specColl == nullptr &&
+                L1desc[l1descInx].remoteZoneHost == nullptr ) {
 
             /* the check for remoteZoneHost host is not needed because
              * the put would have done in the remote zone. But it make
@@ -377,7 +377,7 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                     myDataObjInfo ) );
 
             char* pdmo_kw = getValByKey( &myDataObjInfo->condInput, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
+            if ( pdmo_kw != nullptr ) {
                 file_obj->in_pdmo( pdmo_kw );
             }
             irods::error ret = fileModified( rsComm, file_obj );
@@ -470,7 +470,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
     }
 
-    filePutOut_t* put_out = 0;
+    filePutOut_t* put_out = nullptr;
     prev_resc_hier = filePutInp.resc_hier_;
     bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf, &put_out );
 
@@ -492,7 +492,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         rstrcpy( filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
 
 
-        filePutOut_t* put_out = 0;
+        filePutOut_t* put_out = nullptr;
         bytesWritten = rsFilePut( rsComm, &filePutInp, dataObjInpBBuf, &put_out );
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy( dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN );

@@ -9,6 +9,6 @@ int rcExecRuleExpression(
     return procApiRequest(
                _comm,
                EXEC_RULE_EXPRESSION_AN,
-               _inp, NULL,
-               NULL, NULL);
+               _inp, nullptr,
+               nullptr, nullptr);
 }

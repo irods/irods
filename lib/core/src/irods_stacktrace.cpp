@@ -114,7 +114,7 @@ namespace irods {
             }
             char* name_buffer;
             int status;
-            name_buffer = abi::__cxa_demangle( name_symbol.c_str(), NULL, NULL, &status );
+            name_buffer = abi::__cxa_demangle( name_symbol.c_str(), nullptr, nullptr, &status );
             if ( status == 0 ) {
                 _rtn_name = name_buffer;
                 if ( !offset_string.empty() ) {

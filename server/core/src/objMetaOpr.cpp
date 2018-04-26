@@ -25,7 +25,7 @@
 int
 svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *junk = NULL;
+    genQueryOut_t *junk = nullptr;
     int status;
 
     if ( genQueryOut->continueInx <= 0 ) {
@@ -46,7 +46,7 @@ svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
 int
 isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[MAX_NAME_LEN];
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -66,13 +66,13 @@ isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
         sqlResult_t *dataIdRes;
 
         if ( ( dataIdRes = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "isData: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
-        if ( dataId != NULL ) {
-            *dataId = strtoll( dataIdRes->value, 0, 0 );
+        if ( dataId != nullptr ) {
+            *dataId = strtoll( dataIdRes->value, nullptr, 0 );
         }
     }
 
@@ -119,7 +119,7 @@ getPhyPath(
     // =-=-=-=-=-=-=-
     // perform a genquery to get the physical path of the data object
     // as the hier reolve does not do that for us
-    genQueryOut_t* gen_out = NULL;
+    genQueryOut_t* gen_out = nullptr;
     char tmp_str                [ MAX_NAME_LEN ];
     char logical_end_name       [ MAX_NAME_LEN ];
     char logical_parent_dir_name[ MAX_NAME_LEN ];
@@ -184,15 +184,15 @@ int
 isCollAllKinds( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
     dataObjInp_t dataObjInp;
     int status;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *rodsObjStatOut = nullptr;
 
     bzero( &dataObjInp, sizeof( dataObjInp ) );
     rstrcpy( dataObjInp.objPath, objName, MAX_NAME_LEN );
     status = collStatAllKinds( rsComm, &dataObjInp, &rodsObjStatOut );
-    if ( status >= 0 && collId != NULL && NULL != rodsObjStatOut ) { // JMC cppcheck - nullptr
-        *collId = strtoll( rodsObjStatOut->dataId, 0, 0 );
+    if ( status >= 0 && collId != nullptr && nullptr != rodsObjStatOut ) { // JMC cppcheck - nullptr
+        *collId = strtoll( rodsObjStatOut->dataId, nullptr, 0 );
     }
-    if ( rodsObjStatOut != NULL ) {
+    if ( rodsObjStatOut != nullptr ) {
         freeRodsObjStat( rodsObjStatOut );
     }
     return status;
@@ -201,7 +201,7 @@ isCollAllKinds( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
 int
 isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[MAX_NAME_LEN];
     int status;
 
@@ -215,14 +215,14 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
         sqlResult_t *collIdRes;
 
         if ( ( collIdRes = getSqlResultByInx( genQueryOut, COL_COLL_ID ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "isColl: getSqlResultByInx for COL_D_DATA_ID failed" );
             return UNMATCHED_KEY_OR_INDEX;
         }
 
-        if ( collId != NULL ) {
-            *collId = strtoll( collIdRes->value, 0, 0 );
+        if ( collId != nullptr ) {
+            *collId = strtoll( collIdRes->value, nullptr, 0 );
         }
     }
 
@@ -234,7 +234,7 @@ isColl( rsComm_t *rsComm, char *objName, rodsLong_t *collId ) {
 int
 isUser( rsComm_t *rsComm, char *objName ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[NAME_LEN];
     int status;
 
@@ -252,7 +252,7 @@ isUser( rsComm_t *rsComm, char *objName ) {
 int
 isResc( rsComm_t *rsComm, char *objName ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[NAME_LEN];
     int status;
 
@@ -281,10 +281,10 @@ isToken( rsComm_t*, char* ) {
 
 int
 getObjType( rsComm_t *rsComm, char *objName, char * objType ) {
-    if ( isData( rsComm, objName, NULL ) >= 0 ) {
+    if ( isData( rsComm, objName, nullptr ) >= 0 ) {
         strcpy( objType, "-d" );
     }
-    else if ( isColl( rsComm, objName, NULL ) >= 0 ) {
+    else if ( isColl( rsComm, objName, nullptr ) >= 0 ) {
         strcpy( objType, "-c" );
     }
     else if ( isResc( rsComm, objName ) == 0 ) {
@@ -371,7 +371,7 @@ setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
-        modAVUMetadataInp.arg5 = NULL;
+        modAVUMetadataInp.arg5 = nullptr;
         int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
         if ( status < 0 ) {
             return status;
@@ -382,7 +382,7 @@ setAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
 // =-=-=-=-=-=-=-
 int
 getStructFileType( specColl_t *specColl ) {
-    if ( specColl == NULL ) {
+    if ( specColl == nullptr ) {
         return -1;
     }
 
@@ -420,7 +420,7 @@ removeAVUMetadataFromKVPairs( rsComm_t *rsComm, char *objName, char *inObjType,
         modAVUMetadataInp.arg2 = objName;
         modAVUMetadataInp.arg3 = kVP->keyWord[i];
         modAVUMetadataInp.arg4 = kVP->value[i];
-        modAVUMetadataInp.arg5 = NULL;
+        modAVUMetadataInp.arg5 = nullptr;
         int status = rsModAVUMetadata( rsComm, &modAVUMetadataInp );
         if ( status < 0 ) {
             return status;
@@ -433,7 +433,7 @@ rodsLong_t
 getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
 
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[MAX_NAME_LEN];
     char tmpStr2[MAX_NAME_LEN];
     rodsLong_t status;
@@ -451,7 +451,7 @@ getTokenId( rsComm_t *rsComm, char *tokenNameSpace, char *tokenName ) {
         sqlResult_t *tokenIdRes;
 
         if ( ( tokenIdRes = getSqlResultByInx( genQueryOut, COL_TOKEN_ID ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "getTokenId: getSqlResultByInx for COL_TOKEN_ID failed" );
             freeGenQueryOut( &genQueryOut );
@@ -467,7 +467,7 @@ rodsLong_t
 getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
 
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[MAX_NAME_LEN];
     char tmpStr2[MAX_NAME_LEN];
     rodsLong_t status;
@@ -485,7 +485,7 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
         sqlResult_t *userIdRes;
 
         if ( ( userIdRes = getSqlResultByInx( genQueryOut, COL_USER_ID ) ) ==
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "getUserId: getSqlResultByInx for COL_USER_ID failed" );
             freeGenQueryOut( &genQueryOut );
@@ -501,7 +501,7 @@ getUserId( rsComm_t *rsComm, char *userName, char *zoneName ) {
 int
 checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operId ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t11[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -537,7 +537,7 @@ checkPermitForDataObject( rsComm_t *rsComm, char *objName, int userId, int operI
 int
 checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operId ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -567,7 +567,7 @@ checkPermitForCollection( rsComm_t *rsComm, char *objName, int userId, int operI
 int
 checkPermitForResource( rsComm_t *rsComm, char *objName, int userId, int operId ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char t1[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t2[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
     char t4[MAX_NAME_LEN]; // JMC cppcheck - snprintf out of bounds
@@ -635,7 +635,7 @@ checkPermissionByObjType( rsComm_t *rsComm, char *objName, char *objType, char *
 
         // Issue 3309 - iterate through user's groups and check for permission
         genQueryInp_t genQueryInp;
-        genQueryOut_t *genQueryOut = NULL;
+        genQueryOut_t *genQueryOut = nullptr;
         memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
         genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -708,11 +708,11 @@ int
 checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
                  char *filePath ) {
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char tmpStr[MAX_NAME_LEN];
     int status;
 
-    if ( rsComm == NULL || rescName == NULL || filePath == NULL ) {
+    if ( rsComm == nullptr || rescName == nullptr || filePath == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -742,7 +742,7 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
         int intReplNum;
         sqlResult_t *replNum;
         if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
-                NULL ) {
+                nullptr ) {
             freeGenQueryOut( &genQueryOut );
             rodsLog( LOG_ERROR,
                      "checkDupReplica: getSqlResultByInx COL_DATA_REPL_NUM failed" );
@@ -762,7 +762,7 @@ checkDupReplica( rsComm_t *rsComm, rodsLong_t dataId, char *rescName,
 int
 getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     int status;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     genQueryInp_t genQueryInp;
     int totalRowCount;
     char condStr[MAX_NAME_LEN];
@@ -782,7 +782,7 @@ getNumSubfilesInBunfileObj( rsComm_t *rsComm, char *objPath ) {
     addInxIval( &genQueryInp.selectInp, COL_DATA_SIZE, 1 );
 
     status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    if ( genQueryOut == NULL || status < 0 ) {
+    if ( genQueryOut == nullptr || status < 0 ) {
         freeGenQueryOut( &genQueryOut );
         clearGenQueryInp( &genQueryInp );
         if ( status == CAT_NO_ROWS_FOUND ) {

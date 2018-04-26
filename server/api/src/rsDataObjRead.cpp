@@ -28,7 +28,7 @@ applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, c
     msParamArray_t msParamArray;
     memset( ( char* )&msParamArray, 0, sizeof( msParamArray_t ) );
 
-    if ( rsComm != NULL ) {
+    if ( rsComm != nullptr ) {
         rei2.rsComm = rsComm;
         rei2.uoic = &rsComm->clientUser;
         rei2.uoip = &rsComm->proxyUser;
@@ -77,7 +77,7 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
         return BAD_INPUT_DESC_INDEX;
     }
 
-    if ( L1desc[l1descInx].remoteZoneHost != NULL ) {
+    if ( L1desc[l1descInx].remoteZoneHost != nullptr ) {
         /* cross zone operation */
         dataObjReadInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         bytesRead = rcDataObjRead( L1desc[l1descInx].remoteZoneHost->conn,

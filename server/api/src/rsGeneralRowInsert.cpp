@@ -16,7 +16,7 @@ rsGeneralRowInsert( rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 
     rodsLog( LOG_DEBUG, "generalRowInsert" );
 
-    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )NULL, &rodsServerHost );
+    status = getAndConnRcatHost( rsComm, MASTER_RCAT, ( const char* )nullptr, &rodsServerHost );
     if ( status < 0 ) {
         return status;
     }

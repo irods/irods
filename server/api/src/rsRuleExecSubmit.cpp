@@ -16,12 +16,12 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    *ruleExecId = NULL;
+    *ruleExecId = nullptr;
 
-    if ( ruleExecSubmitInp == NULL ||
-            ruleExecSubmitInp->packedReiAndArgBBuf == NULL ||
+    if ( ruleExecSubmitInp == nullptr ||
+            ruleExecSubmitInp->packedReiAndArgBBuf == nullptr ||
             ruleExecSubmitInp->packedReiAndArgBBuf->len <= 0 ||
-            ruleExecSubmitInp->packedReiAndArgBBuf->buf == NULL ) {
+            ruleExecSubmitInp->packedReiAndArgBBuf->buf == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsRuleExecSubmit error. NULL input" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -60,7 +60,7 @@ rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp,
     }
     else {
         if ( getValByKey( &ruleExecSubmitInp->condInput, EXEC_LOCALLY_KW ) !=
-                NULL ) {
+                nullptr ) {
             rodsLog( LOG_ERROR,
                      "rsRuleExecSubmit: reHost config error. reServer not running locally" );
             return SYS_CONFIG_FILE_ERR;
@@ -156,11 +156,11 @@ int
 getReiFilePath( char *reiFilePath, char *userName ) {
     char *myUserName;
 
-    if ( reiFilePath == NULL ) {
+    if ( reiFilePath == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    if ( userName == NULL || strlen( userName ) == 0 ) {
+    if ( userName == nullptr || strlen( userName ) == 0 ) {
         myUserName = DEF_REI_USER_NAME;
     }
     else {

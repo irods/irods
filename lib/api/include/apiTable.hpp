@@ -315,7 +315,7 @@ static irods::apidef_t client_api_table_inp[] = {
 #endif
     {
         GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
-        NULL, 0, "MiscSvrInfo_PI", 0,
+        nullptr, 0, "MiscSvrInfo_PI", 0,
         boost::any(std::function<int(rsComm_t*,miscSvrInfo_t**)>(RS_GET_MISC_SVR_INFO)),
         "api_get_misc_svr_info", irods::clearInStruct_noop,
         (funcPtr)CALL_MISCSVRINFOOUT
@@ -329,28 +329,28 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0,
+        "fileOpenInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileOpenInp_t*)>(RS_FILE_OPEN)),
         "api_file_open", clearFileOpenInp,
         (funcPtr)CALL_FILEOPENINP
     },
     {
         CHK_N_V_PATH_PERM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0,
+        "fileOpenInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileOpenInp_t*)>(RS_CHK_NV_PATH_PERM)),
         "api_check_nv_path_perm", clearFileOpenInp,
         (funcPtr)CALL_FILEOPENINP
     },
     {
         FILE_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileWriteInp_PI", 1, NULL, 0,
+        "fileWriteInp_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileWriteInp_t*,bytesBuf_t*)>(RS_FILE_WRITE)),
         "api_file_write", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEWRITEINP_BYTESBUFINP
     },
     {
         FILE_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileCloseInp_PI", 0, NULL, 0,
+        "fileCloseInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileCloseInp_t*)>(RS_FILE_CLOSE)),
         "api_file_close", irods::clearInStruct_noop,
         (funcPtr)CALL_FILECLOSEINP
@@ -364,35 +364,35 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileReadInp_PI", 0, NULL, 1,
+        "fileReadInp_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,fileReadInp_t*,bytesBuf_t*)>(RS_FILE_READ)),
         "api_file_read", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEREADINP_BYTESBUFOUT
     },
     {
         FILE_UNLINK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileUnlinkInp_PI", 0, NULL, 0,
+        "fileUnlinkInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileUnlinkInp_t*)>(RS_FILE_UNLINK)),
         "api_file_unlink", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEUNLINKINP
     },
     {
         FILE_MKDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileMkdirInp_PI", 0, NULL, 0,
+        "fileMkdirInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileMkdirInp_t*)>(RS_FILE_MKDIR)),
         "api_file_mkdir", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEMKDIRINP
     },
     {
         FILE_CHMOD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileChmodInp_PI", 0, NULL, 0,
+        "fileChmodInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileChmodInp_t*)>(RS_FILE_CHMOD)),
         "api_file_chmod", irods::clearInStruct_noop,
         (funcPtr)CALL_FILECHMODINP
     },
     {
         FILE_RMDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileRmdirInp_PI", 0, NULL, 0,
+        "fileRmdirInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileRmdirInp_t*)>(RS_FILE_RMDIR)),
         "api_file_rmdir", irods::clearInStruct_noop,
         (funcPtr)CALL_FILERMDIRINP
@@ -414,14 +414,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_OPENDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpendirInp_PI", 0, NULL, 0,
+        "fileOpendirInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileOpendirInp_t*)>(RS_FILE_OPENDIR)),
         "api_file_opendir", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEOPENDIRINP
     },
     {
         FILE_CLOSEDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileClosedirInp_PI", 0, NULL, 0,
+        "fileClosedirInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileClosedirInp_t*)>(RS_FILE_CLOSEDIR)),
         "api_file_closedir", irods::clearInStruct_noop,
         (funcPtr)CALL_FILECLOSEDIRINP
@@ -442,7 +442,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 0,
+        "fileOpenInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileOpenInp_t*)>(RS_FILE_TRUNCATE)),
         "api_file_truncate", clearFileOpenInp,
         (funcPtr)CALL_FILEOPENINP
@@ -456,14 +456,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileOpenInp_PI", 0, NULL, 1,
+        "fileOpenInp_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,fileOpenInp_t*,bytesBuf_t*)>(RS_FILE_GET)),
         "api_file_get", clearFileOpenInp,
         (funcPtr)CALL_FILEOPENINP_BYTESBUFOUT
     },
     {
         FILE_STAGE_TO_CACHE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "fileStageSyncInp_PI", 0, NULL, 0,
+        "fileStageSyncInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileStageSyncInp_t*)>(RS_FILE_STAGE_TO_CACHE)),
         "api_file_stage_to_cache", irods::clearInStruct_noop,
         (funcPtr)CALL_FILESTAGESYNCINP
@@ -477,28 +477,28 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_OBJ_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_CREATE)),
         "api_data_obj_create", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         DATA_OBJ_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_OPEN)),
         "api_data_obj_open", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         DATA_OBJ_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "OpenedDataObjInp_PI", 0, NULL, 1,
+        "OpenedDataObjInp_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*,bytesBuf_t*)>(RS_DATA_OBJ_READ)),
         "api_data_obj_read", irods::clearInStruct_noop,
         (funcPtr)CALL_OPENEDDATAOBJINP_BYTESBUFOUT
     },
     {
         DATA_OBJ_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "OpenedDataObjInp_PI", 1, NULL, 0,
+        "OpenedDataObjInp_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*,bytesBuf_t*)>(RS_DATA_OBJ_WRITE)),
         "api_data_obj_write", irods::clearInStruct_noop,
         (funcPtr)CALL_OPENEDDATAOBJINP_BYTESBUFOUT
@@ -506,7 +506,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_OBJ_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "OpenedDataObjInp_PI", 0, NULL, 0,
+        "OpenedDataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,openedDataObjInp_t*)>(RS_DATA_OBJ_CLOSE)),
         "api_data_obj_close", irods::clearInStruct_noop,
         (funcPtr)CALL_OPENEDDATAOBJINP
@@ -548,7 +548,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_OBJ_UNLINK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_UNLINK)),
         "api_data_obj_unlink", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
@@ -569,7 +569,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_COPY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataCopyInp_PI", 0, NULL, 0,
+        "DataCopyInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataCopyInp_t*)>(RS_DATA_COPY)),
         "api_data_copy", irods::clearInStruct_noop,
         (funcPtr)CALL_DATACOPYINP
@@ -583,7 +583,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         GENERAL_ADMIN_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "generalAdminInp_PI", 0, NULL, 0,
+        "generalAdminInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,generalAdminInp_t*)>(RS_GENERAL_ADMIN)),
         "api_general_admin", irods::clearInStruct_noop,
         (funcPtr)CALL_GENERALADMININP
@@ -597,7 +597,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
-        NULL, 0,  "authRequestOut_PI", 0,
+        nullptr, 0,  "authRequestOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,authRequestOut_t**)>(RS_AUTH_REQUEST)),
         "api_auth_request", irods::clearInStruct_noop,
         (funcPtr)CALL_AUTHREQUESTOUT
@@ -605,7 +605,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
-        "authResponseInp_PI", 0, NULL, 0,
+        "authResponseInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,authResponseInp_t*)>(RS_AUTH_RESPONSE)),
         "api_auth_response", clearAuthResponseInp,
         (funcPtr)CALL_AUTHRESPONSEINP
@@ -627,7 +627,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         END_TRANSACTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "endTransactionInp_PI", 0, NULL, 0,
+        "endTransactionInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,endTransactionInp_t*)>(RS_END_TRANSACTION)),
         "api_end_transaction", irods::clearInStruct_noop,
         (funcPtr)CALL_ENDTRANSACTIONINP
@@ -641,7 +641,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         TICKET_ADMIN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "ticketAdminInp_PI", 0, NULL, 0,
+        "ticketAdminInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,ticketAdminInp_t*)>(RS_TICKET_ADMIN)),
         "api_ticket_admin", irods::clearInStruct_noop,
         (funcPtr)CALL_TICKETADMININP
@@ -671,7 +671,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0,
+        "CollInpNew_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,collInp_t*)>(RS_OPEN_COLLECTION)),
         "api_open_collection", clearCollInp,
         (funcPtr)CALL_COLLINP
@@ -685,7 +685,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         USER_ADMIN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "userAdminInp_PI", 0, NULL, 0,
+        "userAdminInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,userAdminInp_t*)>(RS_USER_ADMIN)),
         "api_user_admin", irods::clearInStruct_noop,
         (funcPtr)CALL_USERADMININP
@@ -693,7 +693,7 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         GENERAL_ROW_INSERT_AN, RODS_API_VERSION,
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "generalRowInsertInp_PI", 0, NULL, 0,
+        "generalRowInsertInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,generalRowInsertInp_t*)>(RS_GENERAL_ROW_INSERT)),
         "api_general_row_insert", irods::clearInStruct_noop,
         (funcPtr)CALL_GENERALROWINSERTINP
@@ -701,14 +701,14 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         GENERAL_ROW_PURGE_AN, RODS_API_VERSION,
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "generalRowPurgeInp_PI", 0, NULL, 0,
+        "generalRowPurgeInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,generalRowPurgeInp_t*)>(RS_GENERAL_ROW_PURGE)),
         "api_general_row_purge", irods::clearInStruct_noop,
         (funcPtr)CALL_GENERALROWPURGEINP
     },
     {
         CLOSE_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "INT_PI", 0, NULL, 0,
+        "INT_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,int*)>(RS_CLOSE_COLLECTION)),
         "close_collection", irods::clearInStruct_noop,
         (funcPtr)CALL_INTP
@@ -729,28 +729,28 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         MOD_AVU_METADATA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "ModAVUMetadataInp_PI", 0, NULL, 0,
+        "ModAVUMetadataInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,modAVUMetadataInp_t*)>(RS_MOD_AVU_METADATA)),
         "api_mod_avu_metadata", clearModAVUMetadataInp,
         (funcPtr)CALL_MODAVUMETADATAINP
     },
     {
         MOD_ACCESS_CONTROL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "modAccessControlInp_PI", 0, NULL, 0,
+        "modAccessControlInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,modAccessControlInp_t*)>(RS_MOD_ACCESS_CONTROL)),
         "api_mod_access_control", irods::clearInStruct_noop,
         (funcPtr)CALL_MODACCESSCONTROLINP
     },
     {
         RULE_EXEC_MOD_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "RULE_EXEC_MOD_INP_PI", 0, NULL, 0,
+        "RULE_EXEC_MOD_INP_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,ruleExecModInp_t*)>(RS_RULE_EXEC_MOD)),
         "api_rule_exec_mod", irods::clearInStruct_noop,
         (funcPtr)CALL_RULEEXECMODINP
     },
     {
         GET_TEMP_PASSWORD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        NULL, 0,  "getTempPasswordOut_PI", 0,
+        nullptr, 0,  "getTempPasswordOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,getTempPasswordOut_t**)>(RS_GET_TEMP_PASSWORD)),
         "api_get_temp_password", irods::clearInStruct_noop,
         (funcPtr)CALL_GETTEMPPASSWORDOUT
@@ -758,14 +758,14 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         GENERAL_UPDATE_AN, RODS_API_VERSION,
         LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "GeneralUpdateInp_PI", 0, NULL, 0,
+        "GeneralUpdateInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,generalUpdateInp_t*)>(RS_GENERAL_UPDATE)),
         "api_general_update", irods::clearInStruct_noop,
         (funcPtr)CALL_GENERALUPDATEINP
     },
     {
         MOD_DATA_OBJ_META_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "ModDataObjMeta_PI", 0, NULL, 0,
+        "ModDataObjMeta_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,modDataObjMeta_t*)>(RS_MOD_DATA_OBJ_META)),
         "api_mod_data_obj_meta", clearModDataObjMetaInp,
         (funcPtr)CALL_MODDATAOBJMETAINP
@@ -779,7 +779,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         RULE_EXEC_DEL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, LOCAL_USER_AUTH,
-        "RULE_EXEC_DEL_INP_PI", 0, NULL, 0,
+        "RULE_EXEC_DEL_INP_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,ruleExecDelInp_t*)>(RS_RULE_EXEC_DEL)),
         "api_rule_exec_del", irods::clearInStruct_noop,
         (funcPtr)CALL_RULEEXECDELINP
@@ -793,14 +793,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         OPR_COMPLETE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "INT_PI", 0, NULL, 0,
+        "INT_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,int*)>(RS_OPR_COMPLETE)),
         "api_opr_complete", irods::clearInStruct_noop,
         (funcPtr)CALL_INTP
     },
     {
         DATA_OBJ_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjCopyInp_PI", 0, NULL, 0,
+        "DataObjCopyInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjCopyInp_t*)>(RS_DATA_OBJ_RENAME)),
         "api_data_obj_rename", clearDataObjCopyInp,
         (funcPtr)CALL_DATAOBJCOPYINP
@@ -821,7 +821,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         PHY_PATH_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_PHY_PATH_REG)),
         "api_phy_path_reg", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
@@ -835,7 +835,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_OBJ_TRIM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_TRIM)),
         "api_data_obj_trim", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
@@ -856,7 +856,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         STREAM_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "fileCloseInp_PI", 0, NULL, 0,
+        "fileCloseInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,fileCloseInp_t*)>(RS_STREAM_CLOSE)),
         "api_stream_close", irods::clearInStruct_noop,
         (funcPtr)CALL_FILECLOSEINP
@@ -870,56 +870,56 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         DATA_OBJ_LOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_LOCK)),
         "api_data_obj_lock", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         DATA_OBJ_UNLOCK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_UNLOCK)),
         "api_data_obj_unlock", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         SUB_STRUCT_FILE_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_CREATE)),
         "api_sub_struct_file_create", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
     },
     {
         SUB_STRUCT_FILE_OPEN_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_OPEN)),
         "api_sub_struct_file_open", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
     },
     {
         SUB_STRUCT_FILE_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, NULL, 1,
+        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,subStructFileFdOprInp_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_READ)),
         "api_sub_struct_file_read", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP_BYTESBUFOUT
     },
     {
         SUB_STRUCT_FILE_WRITE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "SubStructFileFdOpr_PI", 1, NULL, 0,
+        "SubStructFileFdOpr_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subStructFileFdOprInp_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_WRITE)),
         "api_sub_struct_file_write", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP_BYTESBUFOUT
     },
     {
         SUB_STRUCT_FILE_CLOSE_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subStructFileFdOprInp_t*)>(RS_SUB_STRUCT_FILE_CLOSE)),
         "api_sub_struct_file_close", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
     },
     {
         SUB_STRUCT_FILE_UNLINK_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_UNLINK)),
         "api_sub_struct_file_unlink", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
@@ -940,7 +940,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SUB_STRUCT_FILE_RENAME_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubStructFileRenameInp_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubStructFileRenameInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subStructFileRenameInp_t*)>(RS_SUB_STRUCT_FILE_RENAME)),
         "api_sub_struct_file_rename", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILERENAMEINP
@@ -954,28 +954,28 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         MOD_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0,
+        "CollInpNew_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,collInp_t*)>(RS_MOD_COLL)),
         "api_mod_coll", clearCollInp,
         (funcPtr)CALL_COLLINP
     },
     {
         SUB_STRUCT_FILE_MKDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_MKDIR)),
         "api_sub_struct_file_mkdir", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
     },
     {
         SUB_STRUCT_FILE_RMDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_RMDIR)),
         "api_sub_struct_file_rmdir", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
     },
     {
         SUB_STRUCT_FILE_OPENDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_OPENDIR)),
         "api_sub_struct_file_opendir", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
@@ -989,21 +989,21 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SUB_STRUCT_FILE_CLOSEDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH,
-        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, NULL, 0,
+        REMOTE_PRIV_USER_AUTH, "SubStructFileFdOpr_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subStructFileFdOprInp_t*)>(RS_SUB_STRUCT_FILE_CLOSEDIR)),
         "api_sub_struct_file_closedir", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBSTRUCTFILEFDOPRINP
     },
     {
         DATA_OBJ_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_DATA_OBJ_TRUNCATE)),
         "api_data_obj_truncate", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         SUB_STRUCT_FILE_TRUNCATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "SubFile_PI", 0, NULL, 0,
+        "SubFile_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*)>(RS_SUB_STRUCT_FILE_TRUNCATE)),
         "api_sub_struct_file_truncate", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP
@@ -1017,7 +1017,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SEND_XMSG_AN, RODS_API_VERSION, XMSG_SVR_ONLY, XMSG_SVR_ONLY,
-        "SendXmsgInp_PI", 0, NULL, 0,
+        "SendXmsgInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,sendXmsgInp_t*)>(RS_SEND_XMSG)),
         "api_send_xmsg", irods::clearInStruct_noop,
         (funcPtr)CALL_SENDXMSGINP
@@ -1031,63 +1031,63 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SUB_STRUCT_FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "SubFile_PI", 0, NULL, 1,
+        "SubFile_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,subFile_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_GET)),
         "api_sub_struct_file_get", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP_BYTESBUFOUT
     },
     {
         SUB_STRUCT_FILE_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "SubFile_PI", 1, NULL, 0,
+        "SubFile_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,subFile_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_PUT)),
         "api_sub_struct_file_put", irods::clearInStruct_noop,
         (funcPtr)CALL_SUBFILEINP_BYTESBUFOUT
     },
     {
         SYNC_MOUNTED_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_SYNC_MOUNTED_COLL)),
         "api_sync_mounted_coll", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
     },
     {
         STRUCT_FILE_SYNC_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "StructFileOprInp_PI", 0, NULL, 0,
+        "StructFileOprInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,structFileOprInp_t*)>(RS_STRUCT_FILE_SYNC)),
         "api_struct_file_sync", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEOPRINP
     },
     {
         COLL_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0,
+        "CollInpNew_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,collInp_t*)>(RS_COLL_CREATE)),
         "api_coll_create", clearCollInp,
         (funcPtr)CALL_COLLINP
     },
     {
         STRUCT_FILE_EXTRACT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "StructFileOprInp_PI", 0, NULL, 0,
+        "StructFileOprInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,structFileOprInp_t*)>(RS_STRUCT_FILE_EXTRACT)),
         "api_struct_file_extract", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEOPRINP
     },
     {
         STRUCT_FILE_EXT_AND_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "StructFileExtAndRegInp_PI", 0, NULL, 0,
+        "StructFileExtAndRegInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,structFileExtAndRegInp_t*)>(RS_STRUCT_FILE_EXT_AND_REG)),
         "api_struct_file_ext_and_reg", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEEXTANDREGINP
     },
     {
         STRUCT_FILE_BUNDLE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "StructFileExtAndRegInp_PI", 0, NULL, 0,
+        "StructFileExtAndRegInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,structFileExtAndRegInp_t*)>(RS_STRUCT_FILE_BUNDLE)),
         "api_struct_file_bundle", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEEXTANDREGINP
     },
     {
         CHK_OBJ_PERM_AND_STAT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "ChkObjPermAndStat_PI", 0, NULL, 0,
+        "ChkObjPermAndStat_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,chkObjPermAndStat_t*)>(RS_CHK_OBJ_PERM_AND_STAT)),
         "api_chk_obj_perm_and_stat", irods::clearInStruct_noop,
         (funcPtr)CALL_CHKOBJPERMANDSTATINP
@@ -1108,14 +1108,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         L3_FILE_GET_SINGLE_BUF_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "INT_PI", 0, NULL, 1,
+        "INT_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,int*,bytesBuf_t*)>(RS_L3_FILE_GET_SINGLE_BUF)),
         "api_l3_file_get_single_buf", irods::clearInStruct_noop,
         (funcPtr)CALL_INTINP_BYTESBUFOUT
     },
     {
         L3_FILE_PUT_SINGLE_BUF_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "INT_PI", 1, NULL, 0,
+        "INT_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,int*,bytesBuf_t*)>(RS_L3_FILE_PUT_SINGLE_BUF)),
         "api_l3_file_put_single_buf", irods::clearInStruct_noop,
         (funcPtr)CALL_INTINP_BYTESBUFOUT
@@ -1129,14 +1129,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         PHY_BUNDLE_COLL_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        "StructFileExtAndRegInp_PI", 0, NULL, 0,
+        "StructFileExtAndRegInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,structFileExtAndRegInp_t*)>(RS_PHY_BUNDLE_COLL)),
         "api_phy_bundle_coll", irods::clearInStruct_noop,
         (funcPtr)CALL_STRUCTFILEEXTANDREGINP
     },
     {
         UNBUN_AND_REG_PHY_BUNFILE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "DataObjInp_PI", 0, NULL, 0,
+        "DataObjInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,dataObjInp_t*)>(RS_UNBUN_AND_REG_PHY_BUNFILE)),
         "api_unbun_and_reg_phy_bunfile", clearDataObjInp,
         (funcPtr)CALL_DATAOBJINP
@@ -1164,7 +1164,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         BULK_DATA_OBJ_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "BulkOprInp_PI", 1, NULL, 0,
+        "BulkOprInp_PI", 1, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,bulkOprInp_t*,bytesBuf_t*)>(RS_BULK_DATA_OBJ_PUT)),
         "api_bulk_data_obj_put", clearBulkOprInp,
         (funcPtr)CALL_BULKOPRINP_BYTESBUFOUT
@@ -1178,14 +1178,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         STREAM_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "fileReadInp_PI", 0, NULL, 1,
+        "fileReadInp_PI", 0, nullptr, 1,
         boost::any(std::function<int(rsComm_t*,fileReadInp_t*,bytesBuf_t*)>(RS_STREAM_READ)),
         "api_stream_read", irods::clearInStruct_noop,
         (funcPtr)CALL_FILEREADINP_BYTESBUFOUT
     },
     {
         REG_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "CollInpNew_PI", 0, NULL, 0,
+        "CollInpNew_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,collInp_t*)>(RS_REG_COLL)),
         "api_reg_coll", clearCollInp,
         (funcPtr)CALL_COLLINP
@@ -1199,14 +1199,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         UNREG_DATA_OBJ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        "UnregDataObj_PI", 0, NULL, 0,
+        "UnregDataObj_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,unregDataObj_t*)>(RS_UNREG_DATA_OBJ)),
         "api_unreg_data_obj", clearUnregDataObj,
         (funcPtr)CALL_UNREGDATAOBJINP
     },
     {
         REG_REPLICA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        "RegReplica_PI", 0, NULL, 0,
+        "RegReplica_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,regReplica_t*)>(RS_REG_REPLICA)),
         "api_reg_replica", clearRegReplicaInp,
         (funcPtr)CALL_REGREPLICAINP
@@ -1221,7 +1221,7 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         SSL_START_AN, RODS_API_VERSION,
         NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
-        "sslStartInp_PI", 0, NULL, 0,
+        "sslStartInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,sslStartInp_t*)>(RS_SSL_START)),
         "api_ssl_start", irods::clearInStruct_noop,
         (funcPtr)CALL_SSLSTARTINP
@@ -1229,7 +1229,7 @@ static irods::apidef_t client_api_table_inp[] = {
     {
         SSL_END_AN, RODS_API_VERSION,
         NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
-        "sslEndInp_PI", 0, NULL, 0,
+        "sslEndInp_PI", 0, nullptr, 0,
         boost::any(std::function<int(rsComm_t*,sslEndInp_t*)>(RS_SSL_END)),
         "api_ssl_end", irods::clearInStruct_noop,
         (funcPtr)CALL_SSLENDINP
@@ -1250,28 +1250,28 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         ZONE_REPORT_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
-        NULL, 0,  "BytesBuf_PI", 0,
+        nullptr, 0,  "BytesBuf_PI", 0,
         boost::any(std::function<int(rsComm_t*,bytesBuf_t**)>(RS_ZONE_REPORT)),
         "api_zone_report", irods::clearInStruct_noop,
         (funcPtr)CALL_BYTESBUFOUT
     },
     {
         SERVER_REPORT_AN, RODS_API_VERSION, REMOTE_PRIV_USER_AUTH, REMOTE_PRIV_USER_AUTH,
-        NULL, 0,  "BytesBuf_PI", 0,
+        nullptr, 0,  "BytesBuf_PI", 0,
         boost::any(std::function<int(rsComm_t*,bytesBuf_t**)>(RS_SERVER_REPORT)),
         "api_server_report", irods::clearInStruct_noop,
         (funcPtr)CALL_BYTESBUFOUT
     },
     {
         CLIENT_HINTS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        NULL, 0,  "BytesBuf_PI", 0,
+        nullptr, 0,  "BytesBuf_PI", 0,
         boost::any(std::function<int(rsComm_t*,bytesBuf_t**)>(RS_CLIENT_HINTS)),
         "api_client_hints", irods::clearInStruct_noop,
         (funcPtr)CALL_BYTESBUFOUT
     },
     {
         IES_CLIENT_HINTS_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-        NULL, 0,  "BytesBuf_PI", 0,
+        nullptr, 0,  "BytesBuf_PI", 0,
         boost::any(std::function<int(rsComm_t*,bytesBuf_t**)>(RS_IES_CLIENT_HINTS)),
         "api_ies_client_hints", irods::clearInStruct_noop,
         (funcPtr)CALL_BYTESBUFOUT
@@ -1285,14 +1285,14 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SET_RR_CTX_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
-        "SetRoundRobinContextInp_PI", 0,  NULL, 0,
+        "SetRoundRobinContextInp_PI", 0,  nullptr, 0,
         boost::any(std::function<int(rsComm_t*,setRoundRobinContextInp_t*)>(RS_SET_ROUNDROBIN_CONTEXT)),
         "api_set_round_robin_context", irods::clearInStruct_noop,
         (funcPtr)CALL_SETROUNDROBINCONTEXTINP
     },
     {
         EXEC_RULE_EXPRESSION_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
-        "ExecRuleExpression_PI", 0,  NULL, 0,
+        "ExecRuleExpression_PI", 0,  nullptr, 0,
         boost::any(std::function<int(rsComm_t*,exec_rule_expression_t*)>(RS_EXEC_RULE_EXPRESSION)),
         "api_exec_rule_expression", irods::clearInStruct_noop,
         (funcPtr)CALL_EXECRULEEXPRESSIONINP

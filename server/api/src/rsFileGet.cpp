@@ -58,7 +58,7 @@ remoteFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
                bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteFileGet: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
@@ -99,7 +99,7 @@ int _rsFileGet(
         return fd;
     }
 
-    if ( _get_buf->buf == NULL ) {
+    if ( _get_buf->buf == nullptr ) {
         _get_buf->buf = malloc( len );
     }
 

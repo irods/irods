@@ -1048,7 +1048,7 @@ irods::error unix_file_opendir(
 
     // =-=-=-=-=-=-=-
     // trap error case with bad fd
-    if ( NULL == dir_ptr ) {
+    if ( nullptr == dir_ptr ) {
         int status = UNIX_FILE_CREATE_ERR - errsav;
         std::stringstream msg;
         msg << "Open error for \"";
@@ -1127,7 +1127,7 @@ irods::error unix_file_readdir(
 
         // =-=-=-=-=-=-=-
         // handle error cases
-        if ( ( result = ASSERT_ERROR( tmp_dirent != NULL, -1, "End of directory list reached." ) ).ok() ) {
+        if ( ( result = ASSERT_ERROR( tmp_dirent != nullptr, -1, "End of directory list reached." ) ).ok() ) {
 
             // =-=-=-=-=-=-=-
             // alloc dirent as necessary
@@ -1512,7 +1512,7 @@ irods::error unix_file_resolve_hierarchy(
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
-    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
+    if ( nullptr == _opr || nullptr == _curr_host || nullptr == _out_parser || nullptr == _out_vote ) {
         return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameter." );
     }
 

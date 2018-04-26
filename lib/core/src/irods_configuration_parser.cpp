@@ -139,7 +139,7 @@ namespace irods {
             {
                 std::vector<boost::any> vector;
                 size_t  idx = 0;
-                json_t* element = NULL;
+                json_t* element = nullptr;
                 json_array_foreach(_val, idx, element) {
                     try {
                         vector.push_back(convert_json(element));
@@ -153,8 +153,8 @@ namespace irods {
             case JSON_OBJECT:
             {
                 std::unordered_map<std::string, boost::any> map;
-                const char* key = NULL;
-                json_t*     subval = NULL;
+                const char* key = nullptr;
+                json_t*     subval = nullptr;
                 json_object_foreach( _val, key, subval ) {
                     try {
                         map.insert(std::pair<std::string, boost::any>(std::string(key), convert_json(subval)));

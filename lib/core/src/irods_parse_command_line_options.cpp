@@ -272,7 +272,7 @@ static int build_irods_path_structure(
 
     int numSrc = 0;
 
-    if ( _rods_paths == NULL ) {
+    if ( _rods_paths == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 

@@ -71,8 +71,8 @@ int
 rcDataObjCreateAndStat( rcComm_t *conn, dataObjInp_t *dataObjInp,
                         openStat_t **openStat ) {
     int status;
-    status = procApiRequest( conn, DATA_OBJ_CREATE_AND_STAT_AN, dataObjInp, NULL,
-                             ( void ** ) openStat, NULL );
+    status = procApiRequest( conn, DATA_OBJ_CREATE_AND_STAT_AN, dataObjInp, nullptr,
+                             ( void ** ) openStat, nullptr );
 
     return status;
 }

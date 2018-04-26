@@ -41,7 +41,7 @@ int rsAuthPluginRequest(
     }
 
     // set the auth_scheme in the comm
-    if ( _comm->auth_scheme != NULL ) {
+    if ( _comm->auth_scheme != nullptr ) {
         free( _comm->auth_scheme );
     }
     _comm->auth_scheme = strdup( auth_scheme.c_str() );

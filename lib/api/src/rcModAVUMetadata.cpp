@@ -41,7 +41,7 @@ int
 rcModAVUMetadata( rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp ) {
     int status;
     status = procApiRequest( conn, MOD_AVU_METADATA_AN, modAVUMetadataInp,
-                             NULL, ( void ** ) NULL, NULL );
+                             nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

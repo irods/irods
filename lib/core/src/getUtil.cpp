@@ -37,17 +37,17 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     int i = 0;
     int status = 0;
     int savedStatus = 0;
-    rodsPath_t *targPath = 0;
+    rodsPath_t *targPath = nullptr;
     dataObjInp_t dataObjOprInp;
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
     if ( myRodsArgs->ticket == True ) {
-        if ( myRodsArgs->ticketString == NULL ) {
+        if ( myRodsArgs->ticketString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
             return USER__NULL_INPUT_ERR;
@@ -70,7 +70,7 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     /* initialize the progress struct */
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
         for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
             targPath = &rodsPathInp->targPath[i];
@@ -112,13 +112,13 @@ getUtil( rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     for ( i = 0; i < rodsPathInp->numSrc; i++ ) {
         targPath = &rodsPathInp->targPath[i];
 
-        if ( rodsPathInp->srcPath[i].rodsObjStat != NULL &&
-                rodsPathInp->srcPath[i].rodsObjStat->specColl != NULL ) {
+        if ( rodsPathInp->srcPath[i].rodsObjStat != nullptr &&
+                rodsPathInp->srcPath[i].rodsObjStat->specColl != nullptr ) {
             dataObjOprInp.specColl =
                 rodsPathInp->srcPath[i].rodsObjStat->specColl;
         }
         else {
-            dataObjOprInp.specColl = NULL;
+            dataObjOprInp.specColl = nullptr;
         }
         if ( targPath->objType == LOCAL_FILE_T ) {
             rmKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW );
@@ -203,7 +203,7 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL || targPath == NULL ) {
+    if ( srcPath == nullptr || targPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getDataObjUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
@@ -217,10 +217,10 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         rstrcpy( conn->operProgress.curFileName, srcPath, MAX_NAME_LEN );
         conn->operProgress.curFileSize = srcSize;
         conn->operProgress.curFileSizeDone = 0;
@@ -248,12 +248,12 @@ getDataObjUtil( rcComm_t *conn, char *srcPath, char *targPath,
             myChmod( targPath, dataMode );
         }
         if ( rodsArgs->verbose == True ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, dataObjOprInp->objPath, srcSize,
-                         strcmp( targPath, STDOUT_FILE_NAME ) ? targPath : NULL,
+                         strcmp( targPath, STDOUT_FILE_NAME ) ? targPath : nullptr,
                          &startTime, &endTime );
         }
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.totalNumFilesDone++;
             conn->operProgress.totalFileSizeDone += srcSize;
         }
@@ -267,7 +267,7 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart ) {
     char *tmpStr;
 
-    if ( dataObjOprInp == NULL ) {
+    if ( dataObjOprInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForGet: NULL dataObjOprInp input" );
         return USER__NULL_INPUT_ERR;
@@ -275,7 +275,7 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
 
     memset( dataObjOprInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -316,7 +316,7 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -328,7 +328,7 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->ticket == True ) {
-        if ( rodsArgs->ticketString == NULL ) {
+        if ( rodsArgs->ticketString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForPut: NULL ticketString error" );
             return USER__NULL_INPUT_ERR;
@@ -349,11 +349,11 @@ initCondForGet( rcComm_t *conn, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjOprInp->condInput, VERY_VERBOSE_KW, "" );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
@@ -422,7 +422,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
     dataObjInp_t childDataObjInp;
     rcComm_t *conn;
 
-    if ( srcColl == NULL || targDir == NULL ) {
+    if ( srcColl == nullptr || targDir == nullptr ) {
         rodsLog( LOG_ERROR,
                  "getCollUtil: NULL srcColl or targDir input" );
         return USER__NULL_INPUT_ERR;
@@ -521,7 +521,7 @@ getCollUtil( rcComm_t **myConn, char *srcColl, char *targDir,
                 childDataObjInp.specColl = &collEnt.specColl;
             }
             else {
-                childDataObjInp.specColl = NULL;
+                childDataObjInp.specColl = nullptr;
             }
             int status = getCollUtil( myConn, collEnt.collName, targChildPath,
                                   myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart );

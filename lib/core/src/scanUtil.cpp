@@ -108,7 +108,7 @@ int
 scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
     int isColl, status;
     genQueryInp_t genQueryInp1, genQueryInp2;
-    genQueryOut_t *genQueryOut1 = NULL, *genQueryOut2 = NULL;
+    genQueryOut_t *genQueryOut1 = nullptr, *genQueryOut2 = nullptr;
     char condStr1[MAX_NAME_LEN], condStr2[MAX_NAME_LEN];
     char firstPart[MAX_NAME_LEN] = "";
 
@@ -195,9 +195,9 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         sqlResult_t *dataNameStruct = getSqlResultByInx( genQueryOut2, COL_DATA_NAME );
         sqlResult_t *collNameStruct = getSqlResultByInx( genQueryOut2, COL_COLL_NAME );
         sqlResult_t *rescIDStruct = getSqlResultByInx( genQueryOut2, COL_D_RESC_ID );
-        if ( dataPathStruct == NULL || dataSizeStruct == NULL || locStruct == NULL ||
-                zoneStruct == NULL || dataNameStruct == NULL || collNameStruct == NULL ||
-                rescIDStruct == NULL ) {
+        if ( dataPathStruct == nullptr || dataSizeStruct == nullptr || locStruct == nullptr ||
+                zoneStruct == nullptr || dataNameStruct == nullptr || collNameStruct == nullptr ||
+                rescIDStruct == nullptr ) {
             printf( "getSqlResultByInx returned null in statPhysFile." );
             return -1;
         }
@@ -213,7 +213,7 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         rstrcpy( fileStatInp.addr.hostAddr, loc, sizeof( fileStatInp.addr.hostAddr ) );
         rstrcpy( fileStatInp.addr.zoneName, zone, sizeof( fileStatInp.addr.zoneName ) );
         rstrcpy( fileStatInp.fileName, dataPath, sizeof( fileStatInp.fileName ) );
-        fileStatInp.rescId = strtoll( rescID, 0, 0 );
+        fileStatInp.rescId = strtoll( rescID, nullptr, 0 );
         snprintf( fileStatInp.objPath, sizeof( fileStatInp.objPath ), "%s/%s", collName, dataName );
         rodsStat_t *fileStatOut;
         int status = rcFileStat( conn, &fileStatInp, &fileStatOut );
@@ -236,7 +236,7 @@ int
 chkObjExist( rcComm_t *conn, const char *inpPath, const char *hostname ) {
     int status;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condStr[MAX_NAME_LEN];
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -272,7 +272,7 @@ int
 checkIsMount( rcComm_t *conn, const char *inpPath ) {
     int i, minLen, status, status1;
     genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
+    genQueryOut_t *genQueryOut = nullptr;
     char condStr[MAX_NAME_LEN], *dirMPath;
 
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );

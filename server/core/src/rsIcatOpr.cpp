@@ -26,7 +26,7 @@ connectRcat() {
     /* zone has not been initialized yet. can't use getRcatHost */
     tmpRodsServerHost = ServerHostHead;
 
-    while ( tmpRodsServerHost != NULL ) {
+    while ( tmpRodsServerHost != nullptr ) {
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ||
                 tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {

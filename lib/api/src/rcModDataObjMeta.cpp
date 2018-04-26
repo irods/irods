@@ -25,10 +25,10 @@ rcModDataObjMeta( rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp ) {
     dataObjInfo_t *srcNext;
 
     srcNext = modDataObjMetaInp->dataObjInfo->next;
-    modDataObjMetaInp->dataObjInfo->next = NULL;
+    modDataObjMetaInp->dataObjInfo->next = nullptr;
 
-    status = procApiRequest( conn, MOD_DATA_OBJ_META_AN, modDataObjMetaInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, MOD_DATA_OBJ_META_AN, modDataObjMetaInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     modDataObjMetaInp->dataObjInfo->next = srcNext;
 

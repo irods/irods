@@ -43,7 +43,7 @@ remoteSubStructFileClosedir( rsComm_t *rsComm, subStructFileFdOprInp_t *subStruc
                              rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteSubStructFileClosedir: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

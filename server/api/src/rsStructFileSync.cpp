@@ -17,7 +17,7 @@ rsStructFileSync( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp ) {
     int status;
 
     char* resc_hier =  getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW );
-    if ( resc_hier != NULL ) {
+    if ( resc_hier != nullptr ) {
         irods::error ret = irods::get_host_for_hier_string( resc_hier, remoteFlag, rodsServerHost );
         if ( !ret.ok() ) {
             irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
@@ -56,7 +56,7 @@ remoteStructFileSync( rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
                       rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteStructFileSync: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;

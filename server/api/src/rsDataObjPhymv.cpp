@@ -29,7 +29,7 @@ irods::error test_source_replica_for_write_permissions(
     std::string    _resc_hier,
     dataObjInfo_t* _data_obj_info ) {
     
-    while(_data_obj_info != NULL && _data_obj_info->rescHier != _resc_hier) {
+    while(_data_obj_info != nullptr && _data_obj_info->rescHier != _resc_hier) {
         _data_obj_info = _data_obj_info->next;
     }
 	if( !_comm || !_data_obj_info ) {
@@ -130,14 +130,14 @@ int
 rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 transferStat_t **transStat ) {
     int status = 0;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *oldDataObjInfoHead = NULL;
+    dataObjInfo_t *dataObjInfoHead = nullptr;
+    dataObjInfo_t *oldDataObjInfoHead = nullptr;
     ruleExecInfo_t rei;
     int multiCopyFlag = 0;
-    char *accessPerm = NULL;
+    char *accessPerm = nullptr;
     int remoteFlag = 0;
-    rodsServerHost_t *rodsServerHost = NULL;
-    specCollCache_t *specCollCache = NULL;
+    rodsServerHost_t *rodsServerHost = nullptr;
+    specCollCache_t *specCollCache = nullptr;
 
     resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput );
@@ -174,7 +174,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // determine hierarchy string
 	char* dest_hier_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     std::string dest_hier;
-    if ( NULL == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
+    if ( nullptr == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
         irods::error ret = irods::resolve_resource_hierarchy(
 			irods::CREATE_OPERATION,
 			rsComm,
@@ -222,7 +222,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // determine hierarchy string
 	char* resc_hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     std::string src_hier;
-    if ( NULL == resc_hier_kw || 0 == strlen(resc_hier_kw) ) {
+    if ( nullptr == resc_hier_kw || 0 == strlen(resc_hier_kw) ) {
         irods::error ret = irods::resolve_resource_hierarchy(
 		                       irods::OPEN_OPERATION,
 							   rsComm,
@@ -252,11 +252,11 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
     memset( *transStat, 0, sizeof( transferStat_t ) );
 
-    if( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
+    if( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != nullptr ) {
         if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
-        accessPerm = NULL;
+        accessPerm = nullptr;
     }
     else {
         accessPerm = ACCESS_DELETE_OBJECT;
@@ -279,7 +279,7 @@ rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 		dataObjInp );
     applyRule(
         "acSetMultiReplPerResc",
-        NULL,
+        nullptr,
         &rei,
         NO_SAVE_REI );
     clearKeyVal(rei.condInputData);
@@ -360,7 +360,7 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         /* use _rsDataObjReplS for the phymv */
         dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
         status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                  _resc_name, NULL, 0 );
+                                  _resc_name, nullptr, 0 );
 
         if ( multiCopyFlag == 0 ) {
             if ( status >= 0 ) {
@@ -385,7 +385,7 @@ _rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         transStat->numThreads = dataObjInp->numThreads;
     }
 
-    if ( NULL == srcDataObjInfo ) {
+    if ( nullptr == srcDataObjInfo ) {
         savedStatus = 0;
     }
 

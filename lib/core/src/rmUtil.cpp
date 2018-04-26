@@ -13,7 +13,7 @@
 int
 rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -68,14 +68,14 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rmDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
     rstrcpy( dataObjInp->objPath, srcPath, MAX_NAME_LEN );
@@ -83,8 +83,8 @@ rmDataObjUtil( rcComm_t *conn, char *srcPath,
     status = rcDataObjUnlink( conn, dataObjInp );
 
     if ( status >= 0 && rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
-        printTiming( conn, dataObjInp->objPath, -1, NULL,
+        ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
+        printTiming( conn, dataObjInp->objPath, -1, nullptr,
                      &startTime, &endTime );
     }
 
@@ -99,7 +99,7 @@ initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
     struct _timeb timebuffer;
 #endif
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForRm: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -108,7 +108,7 @@ initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
     memset( collInp, 0, sizeof( collInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -156,7 +156,7 @@ rmCollUtil( rcComm_t *conn, char *srcColl,
             rodsArguments_t *rodsArgs, collInp_t *collInp ) {
     int status;
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "rmCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;

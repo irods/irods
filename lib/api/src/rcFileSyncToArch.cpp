@@ -24,7 +24,7 @@ int
 rcFileSyncToArch( rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp, fileSyncOut_t** _fn ) {
     int status;
     status = procApiRequest( conn, FILE_SYNC_TO_ARCH_AN,
-                             fileSyncToArchInp, NULL, ( void** )_fn, NULL );
+                             fileSyncToArchInp, nullptr, ( void** )_fn, nullptr );
 
     return status;
 }

@@ -8,8 +8,8 @@
 int
 rcSslStart( rcComm_t *conn, sslStartInp_t *sslStartInp ) {
     int status;
-    status = procApiRequest( conn, SSL_START_AN,  sslStartInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, SSL_START_AN,  sslStartInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

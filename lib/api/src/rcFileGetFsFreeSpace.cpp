@@ -26,7 +26,7 @@ rcFileGetFsFreeSpace( rcComm_t *conn,
                       fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut ) {
     int status;
     status = procApiRequest( conn, FILE_GET_FS_FREE_SPACE_AN,
-                             fileGetFsFreeSpaceInp, NULL, ( void ** ) fileGetFsFreeSpaceOut, NULL );
+                             fileGetFsFreeSpaceInp, nullptr, ( void ** ) fileGetFsFreeSpaceOut, nullptr );
 
     return status;
 }

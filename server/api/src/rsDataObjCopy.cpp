@@ -36,7 +36,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     uint createMode;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    specCollCache_t *specCollCache = nullptr;
 
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
@@ -67,7 +67,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 
     if ( srcL1descInx < 0 ) {
         std::stringstream msg;
-        char* sys_error = NULL;
+        char* sys_error = nullptr;
         const char* rods_error = rodsErrorName( srcL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to open source object: \"";
@@ -109,7 +109,7 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     if ( destL1descInx < 0 ) {
         clearKeyVal( &destDataObjInp->condInput );
         std::stringstream msg;
-        char* sys_error = NULL;
+        char* sys_error = nullptr;
         const char* rods_error = rodsErrorName( destL1descInx, &sys_error );
         msg << __FUNCTION__;
         msg << " - Failed to create destination object: \"";
@@ -163,19 +163,19 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
     srcDataObjInp  = L1desc[srcL1descInx].dataObjInp;
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
-    if ( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+    if ( destDataObjInp == nullptr ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInp is NULL" );
         return -1;
     }
-    if ( destDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+    if ( destDataObjInfo == nullptr ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
         return -1;
     }
-    if ( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+    if ( srcDataObjInp == nullptr ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
         return -1;
     }
-    if ( srcDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+    if ( srcDataObjInfo == nullptr ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInfo is NULL" );
         return -1;
     }
@@ -188,8 +188,8 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
         /* has not been registered yet because of NO_OPEN_FLAG_KW */
         if ( status    >= 0                    &&
                 existFlag == 0                    &&
-                destDataObjInfo->specColl == NULL &&
-                L1desc[destL1descInx].remoteZoneHost == NULL ) {
+                destDataObjInfo->specColl == nullptr &&
+                L1desc[destL1descInx].remoteZoneHost == nullptr ) {
             /* If the dest is in remote zone, register in _rsDataObjClose there */
             status = svrRegDataObj( rsComm, destDataObjInfo );
             if ( status == CAT_UNKNOWN_COLLECTION ) {
@@ -210,8 +210,8 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
 
     }
     else {
-        if ( srcDataObjInfo != NULL ) {
-            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
+        if ( srcDataObjInfo != nullptr ) {
+            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, nullptr,
                                          destDataObjInfo->rescHier, srcDataObjInfo->rescHier, 0 );
 
         }

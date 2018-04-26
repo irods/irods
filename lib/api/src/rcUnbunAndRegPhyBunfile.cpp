@@ -23,7 +23,7 @@ int
 rcUnbunAndRegPhyBunfile( rcComm_t *conn, dataObjInp_t *dataObjInp ) {
     int status;
     status = procApiRequest( conn, UNBUN_AND_REG_PHY_BUNFILE_AN,  dataObjInp,
-                             NULL, ( void ** ) NULL, NULL );
+                             nullptr, ( void ** ) nullptr, nullptr );
 
     return status;
 }

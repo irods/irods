@@ -22,8 +22,8 @@
 int
 rcStructFileSync( rcComm_t *conn, structFileOprInp_t *structFileOprInp ) {
     int status;
-    status = procApiRequest( conn, STRUCT_FILE_SYNC_AN, structFileOprInp, NULL,
-                             ( void ** ) NULL, NULL );
+    status = procApiRequest( conn, STRUCT_FILE_SYNC_AN, structFileOprInp, nullptr,
+                             ( void ** ) nullptr, nullptr );
 
     return status;
 }

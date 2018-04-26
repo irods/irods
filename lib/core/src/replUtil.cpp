@@ -15,7 +15,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
           rodsPathInp_t *rodsPathInp ) {
 
 
-    if ( rodsPathInp == NULL ) {
+    if ( rodsPathInp == nullptr ) {
         return USER__NULL_INPUT_ERR;
     }
 
@@ -38,7 +38,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     /* initialize the progress struct */
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
         for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
             if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
@@ -98,17 +98,17 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
     int status;
     struct timeval startTime, endTime;
 
-    if ( srcPath == NULL ) {
+    if ( srcPath == nullptr ) {
         rodsLog( LOG_ERROR,
                  "replDataObjUtil: NULL srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsArgs->verbose == True ) {
-        ( void ) gettimeofday( &startTime, ( struct timezone * )0 );
+        ( void ) gettimeofday( &startTime, ( struct timezone * )nullptr );
     }
 
-    if ( gGuiProgressCB != NULL ) {
+    if ( gGuiProgressCB != nullptr ) {
         rstrcpy( conn->operProgress.curFileName, srcPath, MAX_NAME_LEN );
         conn->operProgress.curFileSize = srcSize;
         conn->operProgress.curFileSizeDone = 0;
@@ -122,11 +122,11 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
 
     if ( status >= 0 ) {
         if ( rodsArgs->verbose == True ) {
-            ( void ) gettimeofday( &endTime, ( struct timezone * )0 );
+            ( void ) gettimeofday( &endTime, ( struct timezone * )nullptr );
             printTiming( conn, dataObjInp->objPath,
-                         conn->transStat.bytesWritten, NULL, &startTime, &endTime );
+                         conn->transStat.bytesWritten, nullptr, &startTime, &endTime );
         }
-        if ( gGuiProgressCB != NULL ) {
+        if ( gGuiProgressCB != nullptr ) {
             conn->operProgress.totalNumFilesDone++;
             conn->operProgress.totalFileSizeDone += srcSize;
         }
@@ -138,10 +138,10 @@ replDataObjUtil( rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
 int
 initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                  dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart ) {
-    char *myResc = NULL;
+    char *myResc = nullptr;
     char *tmpStr;
 
-    if ( dataObjInp == NULL ) {
+    if ( dataObjInp == nullptr ) {
         rodsLog( LOG_ERROR,
                  "initCondForRepl: NULL dataObjInp input" );
         return USER__NULL_INPUT_ERR;
@@ -149,7 +149,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     memset( dataObjInp, 0, sizeof( dataObjInp_t ) );
 
-    if ( rodsArgs == NULL ) {
+    if ( rodsArgs == nullptr ) {
         return 0;
     }
 
@@ -177,7 +177,7 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
     }
 
     if ( rodsArgs->resource == True ) {
-        if ( rodsArgs->resourceString == NULL ) {
+        if ( rodsArgs->resourceString == nullptr ) {
             rodsLog( LOG_ERROR,
                      "initCondForRepl: NULL resourceString error" );
             return USER__NULL_INPUT_ERR;
@@ -188,13 +188,13 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                        rodsArgs->resourceString );
         }
     }
-    else if ( myRodsEnv != NULL && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
+    else if ( myRodsEnv != nullptr && strlen( myRodsEnv->rodsDefResource ) > 0 ) {
         myResc = myRodsEnv->rodsDefResource;
         addKeyVal( &dataObjInp->condInput, DEF_RESC_NAME_KW,
                    myRodsEnv->rodsDefResource );
     }
 
-    if ( myResc != NULL && rodsArgs->backupMode == True ) {
+    if ( myResc != nullptr && rodsArgs->backupMode == True ) {
         addKeyVal( &dataObjInp->condInput, BACKUP_RESC_NAME_KW,
                    myResc );
     }
@@ -213,11 +213,11 @@ initCondForRepl( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, VERY_VERBOSE_KW, "" );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_SEND_RATE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjInp->condInput, RBUDP_SEND_RATE_KW, tmpStr );
     }
 
-    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != NULL ) {
+    if ( ( tmpStr = getenv( RBUDP_PACK_SIZE_KW ) ) != nullptr ) {
         addKeyVal( &dataObjInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
 
@@ -262,7 +262,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN];
 
-    if ( srcColl == NULL ) {
+    if ( srcColl == nullptr ) {
         rodsLog( LOG_ERROR,
                  "replCollUtil: NULL srcColl input" );
         return USER__NULL_INPUT_ERR;
@@ -289,7 +289,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                  srcColl, status );
         return status;
     }
-    if ( collHandle.rodsObjStat->specColl != NULL &&
+    if ( collHandle.rodsObjStat->specColl != nullptr &&
             collHandle.rodsObjStat->specColl->collClass != LINKED_COLL ) {
         /* no repl for mounted coll */
         rclCloseCollection( &collHandle );
@@ -348,7 +348,7 @@ replCollUtil( rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv,
                 childDataObjInp.specColl = &collEnt.specColl;
             }
             else {
-                childDataObjInp.specColl = NULL;
+                childDataObjInp.specColl = nullptr;
             }
             int status = replCollUtil( conn, collEnt.collName, myRodsEnv,
                                    rodsArgs, &childDataObjInp, rodsRestart );

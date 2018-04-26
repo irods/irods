@@ -39,60 +39,60 @@ copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to ) {
         rstrcpy( to->pluginInstanceName, from->pluginInstanceName, MAX_NAME_LEN );
     }
 
-    if ( from->doi != NULL ) {
+    if ( from->doi != nullptr ) {
         to->doi = ( dataObjInfo_t * ) mallocAndZero( sizeof( dataObjInfo_t ) );
         copyDataObjInfo( from->doi, to->doi );
     }
     else {
-        to->doi = NULL;
+        to->doi = nullptr;
     }
 
-    if ( from->uoic != NULL ) {
+    if ( from->uoic != nullptr ) {
         to->uoic = ( userInfo_t* )mallocAndZero( sizeof( userInfo_t ) );
         copyUserInfo( from->uoic, to->uoic );
     }
     else {
-        to->uoic = NULL;
+        to->uoic = nullptr;
     }
 
-    if ( from->uoip != NULL ) {
+    if ( from->uoip != nullptr ) {
         to->uoip = ( userInfo_t* )mallocAndZero( sizeof( userInfo_t ) );
         copyUserInfo( from->uoip, to->uoip );
     }
     else {
-        to->uoip = NULL;
+        to->uoip = nullptr;
     }
 
-    if ( from->coi != NULL ) {
+    if ( from->coi != nullptr ) {
         to->coi = ( collInfo_t* )mallocAndZero( sizeof( collInfo_t ) );
         copyCollInfo( from->coi, to->coi );
     }
     else {
-        to->coi = NULL;
+        to->coi = nullptr;
     }
 
-    if ( from->uoio != NULL ) {
+    if ( from->uoio != nullptr ) {
         to->uoio = ( userInfo_t* )mallocAndZero( sizeof( userInfo_t ) );
         copyUserInfo( from->uoio, to->uoio );
     }
     else {
-        to->uoio = NULL;
+        to->uoio = nullptr;
     }
 
-    if ( from->condInputData != NULL ) {
+    if ( from->condInputData != nullptr ) {
         to->condInputData = ( keyValPair_t* )mallocAndZero( sizeof( keyValPair_t ) );
         copyKeyValPairStruct( from->condInputData, to->condInputData );
     }
     else {
-        to->condInputData = NULL;
+        to->condInputData = nullptr;
     }
 
-    if ( from->next != NULL ) {
+    if ( from->next != nullptr ) {
         to->next = ( ruleExecInfo_t* )mallocAndZero( sizeof( ruleExecInfo_t ) );
         copyRuleExecInfo( from->next, to->next );
     }
     else {
-        to->next = NULL;
+        to->next = nullptr;
     }
     return 0;
 }
@@ -105,35 +105,35 @@ freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
 }
 int
 freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
-    if ( rs->msParamArray != NULL && ( freeSpeialStructFlag & FREE_MS_PARAM ) > 0 ) {
+    if ( rs->msParamArray != nullptr && ( freeSpeialStructFlag & FREE_MS_PARAM ) > 0 ) {
         clearMsParamArray( rs->msParamArray, 1 );
         free( rs->msParamArray );
     }
 
-    if ( rs->doinp != NULL && ( freeSpeialStructFlag & FREE_DOINP ) > 0 ) {
+    if ( rs->doinp != nullptr && ( freeSpeialStructFlag & FREE_DOINP ) > 0 ) {
         clearDataObjInp( rs->doinp );
         free( rs->doinp );
     }
 
-    if ( rs->doi != NULL ) {
+    if ( rs->doi != nullptr ) {
         freeAllDataObjInfo( rs->doi );
     }
-    if ( rs->uoic != NULL ) {
+    if ( rs->uoic != nullptr ) {
         freeUserInfo( rs->uoic );
     }
-    if ( rs->uoip != NULL ) {
+    if ( rs->uoip != nullptr ) {
         freeUserInfo( rs->uoip );
     }
-    if ( rs->coi != NULL ) {
+    if ( rs->coi != nullptr ) {
         freeCollInfo( rs->coi );
     }
-    if ( rs->uoio != NULL ) {
+    if ( rs->uoio != nullptr ) {
         freeUserInfo( rs->uoio );
     }
-    if ( rs->condInputData != NULL ) {
+    if ( rs->condInputData != nullptr ) {
         freeKeyValPairStruct( rs->condInputData );
     }
-    if ( rs->next != NULL ) {
+    if ( rs->next != nullptr ) {
         freeRuleExecInfoStruct( rs->next, freeSpeialStructFlag );
     }
     return 0;
@@ -142,12 +142,12 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
 int
 copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to ) {
     *to = *from;
-    if ( from->next != NULL ) {
+    if ( from->next != nullptr ) {
         to->next = ( dataObjInfo_t* )mallocAndZero( sizeof( dataObjInfo_t ) );
         copyDataObjInfo( from->next, to->next );
     }
     else {
-        to->next = NULL;
+        to->next = nullptr;
     }
     return 0;
 }
@@ -156,12 +156,12 @@ copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to ) {
 int
 copyCollInfo( collInfo_t *from, collInfo_t *to ) {
     *to = *from;
-    if ( from->next != NULL ) {
+    if ( from->next != nullptr ) {
         to->next = ( collInfo_t* )mallocAndZero( sizeof( collInfo_t ) );
         copyCollInfo( from->next, to->next );
     }
     else {
-        to->next = NULL;
+        to->next = nullptr;
     }
     return 0;
 }
@@ -197,7 +197,7 @@ freeRescGrpInfo( rescGrpInfo_t *rs ) {
 
 int
 freeCollInfo( collInfo_t *rs ) {
-    if ( rs->next != NULL ) {
+    if ( rs->next != nullptr ) {
         freeCollInfo( rs->next );
     }
     free( rs );
@@ -263,7 +263,7 @@ packRei( ruleExecInfo_t *rei,
          bytesBuf_t **packedReiBBuf ) {
     int status;
 
-    if ( packedReiBBuf == NULL ) {
+    if ( packedReiBBuf == nullptr ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -305,7 +305,7 @@ popStack( strArray_t *strArray, char *value ) {
 
 int
 clearMsparamInRei( ruleExecInfo_t *rei ) {
-    if ( rei == NULL || rei->msParamArray == NULL ) {
+    if ( rei == nullptr || rei->msParamArray == nullptr ) {
         return 0;
     }
     /* need to use 0 on delStruct flag or core dump in when called by
@@ -313,7 +313,7 @@ clearMsparamInRei( ruleExecInfo_t *rei ) {
     clearMsParamArray( rei->msParamArray, 0 );
     free( rei->msParamArray );
 
-    rei->msParamArray = NULL;
+    rei->msParamArray = nullptr;
 
     return 0;
 }

@@ -44,7 +44,7 @@ rsChkNVPathPermByHost( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
     int remoteFlag;
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "rsChkNVPathPermByHost: Input NULL rodsServerHost" );
         return SYS_INTERNAL_NULL_INPUT_ERR;
@@ -78,7 +78,7 @@ remoteChkNVPathPerm( rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp,
                      rodsServerHost_t *rodsServerHost ) {
     int status;
 
-    if ( rodsServerHost == NULL ) {
+    if ( rodsServerHost == nullptr ) {
         rodsLog( LOG_NOTICE,
                  "remoteChkNVPathPerm: Invalid rodsServerHost" );
         return SYS_INVALID_SERVER_HOST;
