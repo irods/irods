@@ -27,9 +27,9 @@ namespace irods {
                 const uint32_t       _line_number,
                 const std::string&   _function_name );
             exception( const exception& );
-            virtual ~exception() throw();
+            ~exception() throw() override;
 
-            virtual const char* what() const throw();
+            const char* what() const throw() override;
 
             // accessors
             int64_t    code() const { return code_; }

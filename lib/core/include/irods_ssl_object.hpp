@@ -28,7 +28,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Destructors
-            virtual ~ssl_object();
+            ~ssl_object() override;
 
             // =-=-=-=-=-=-=-
             // Operators
@@ -39,21 +39,21 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // plugin interface name
-                plugin_ptr& );      // resolved plugin
+                plugin_ptr& ) override;      // resolved plugin
 
             // =-=-=-=-=-=-=-
             // convertion to client comm ptr
-            virtual error to_client( rcComm_t* );
+            error to_client( rcComm_t* ) override;
 
             // =-=-=-=-=-=-=-
             // convertion to client comm ptr
-            virtual error to_server( rsComm_t* );
+            error to_server( rsComm_t* ) override;
 
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             // =-=-=-=-=-=-=-
             // Accessors

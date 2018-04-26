@@ -707,7 +707,7 @@ class osauth_auth_plugin : public irods::auth {
                 _ctx ) {
         } // ctor
 
-        ~osauth_auth_plugin() {
+        ~osauth_auth_plugin() override {
         }
 
 }; // class osauth_auth_plugin

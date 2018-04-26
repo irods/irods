@@ -60,7 +60,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Destructor
-            virtual ~ms_table_entry();
+            ~ms_table_entry() override;
 
             /// =-=-=-=-=-=-=-
             /// @brief adaptor from old microservice sig to new plugin sign

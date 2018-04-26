@@ -1915,14 +1915,14 @@ class repl_resource : public irods::resource {
             } // ctor
 
         irods::error post_disconnect_maintenance_operation(
-            irods::pdmo_type& ) {
+            irods::pdmo_type& ) override {
             irods::error result = SUCCESS();
             // nothing to do
             return result;
         }
 
         irods::error need_post_disconnect_maintenance_operation(
-            bool& _flag ) {
+            bool& _flag ) override {
             irods::error result = SUCCESS();
             _flag = false;
             return result;

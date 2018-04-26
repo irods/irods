@@ -22,7 +22,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Destructors
-            virtual ~tcp_object();
+            ~tcp_object() override;
 
             // =-=-=-=-=-=-=-
             // Operators
@@ -33,13 +33,13 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // plugin interface
-                plugin_ptr& );      // resolved plugin instance
+                plugin_ptr& ) override;      // resolved plugin instance
 
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             // =-=-=-=-=-=-=-
             // Accessors

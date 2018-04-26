@@ -18,7 +18,7 @@ namespace irods {
             /// @brief Ctor
             auth_object( rError_t* _r_error );
             auth_object( const auth_object& );
-            virtual ~auth_object();
+            ~auth_object() override;
 
             /// @brief assignment operator
             virtual auth_object&  operator=( const auth_object& _rhs );
@@ -56,8 +56,8 @@ namespace irods {
             virtual bool operator==( const auth_object& _rhs ) const;
 
             /// @brief Plugin resolution operation
-            virtual error resolve( const std::string& _plugin_name, plugin_ptr& _plugin ) = 0;
-            virtual error get_re_vars( rule_engine_vars_t& ) = 0;
+            error resolve( const std::string& _plugin_name, plugin_ptr& _plugin ) override = 0;
+            error get_re_vars( rule_engine_vars_t& ) override = 0;
 
         protected:
             rError_t*   r_error_;

@@ -25,7 +25,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // Destructors
-            virtual ~database_object();
+            ~database_object() override;
 
             // =-=-=-=-=-=-=-
             // Operators
@@ -37,13 +37,13 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // plugin interface
-                plugin_ptr& ) = 0;  // resolved plugin
+                plugin_ptr& ) override = 0;  // resolved plugin
 
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             // =-=-=-=-=-=-=-
             // Accessors

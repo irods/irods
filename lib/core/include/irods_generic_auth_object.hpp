@@ -16,10 +16,10 @@ namespace irods {
         public:
             /// @brief Constructor
             generic_auth_object( const std::string& _type, rError_t* _r_error );
-            generic_auth_object( const generic_auth_object& _rhs ); virtual ~generic_auth_object();
+            generic_auth_object( const generic_auth_object& _rhs ); ~generic_auth_object() override;
 
             /// @brief Plugin resolution operator
-            virtual error resolve( const std::string& _name, plugin_ptr& _plugin ); // resolve plugin
+            error resolve( const std::string& _name, plugin_ptr& _plugin ) override; // resolve plugin
 
             /// @brief Comparison operator
             virtual bool operator==( const generic_auth_object& _rhs ) const;
@@ -28,7 +28,7 @@ namespace irods {
             virtual generic_auth_object& operator=( const generic_auth_object& _rhs ); 
             
             /// @brief serialize to key-value pairs
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
             
             /// @brief get the socket number
             virtual int sock( void ) const {

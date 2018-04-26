@@ -260,7 +260,7 @@ namespace irods {
     class api_entry_table : public lookup_table< api_entry_ptr, size_t, boost::hash< size_t > > {
         public:
             api_entry_table( apidef_t[], size_t );
-            ~api_entry_table();
+            ~api_entry_table() override;
 
     }; // class api_entry_table
 

@@ -766,7 +766,7 @@ class mockarchive_resource : public irods::resource {
         } // ctor
 
 
-        irods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+        irods::error need_post_disconnect_maintenance_operation( bool& _b ) override {
             _b = false;
             return SUCCESS();
         }
@@ -775,7 +775,7 @@ class mockarchive_resource : public irods::resource {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) override {
             return ERROR( -1, "nop" );
         }
 

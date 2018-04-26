@@ -24,7 +24,7 @@ namespace irods {
             /// @brief Ctor
             native_auth_object( rError_t* _r_error );
             native_auth_object( const native_auth_object& );
-            virtual ~native_auth_object();
+            ~native_auth_object() override;
 
             /// =-=-=-=-=-=-=-
             /// @brief assignment operator
@@ -36,13 +36,13 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief Plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // interface for which to resolve
-                plugin_ptr& );      // ptr to resolved plugin
+                plugin_ptr& ) override;      // ptr to resolved plugin
 
             /// =-=-=-=-=-=-=-
             /// @brief serialize object to key-value pairs
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             /// =-=-=-=-=-=-=-
             /// @brief accessors

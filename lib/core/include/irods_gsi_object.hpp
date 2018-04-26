@@ -19,7 +19,7 @@ namespace irods {
         public:
             /// @brief Constructor
             gsi_auth_object( rError_t* _r_error );
-            virtual ~gsi_auth_object();
+            ~gsi_auth_object() override;
 
             // Accessors
 
@@ -45,7 +45,7 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief serialize object to key-value pairs
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             // Mutators
 
@@ -72,7 +72,7 @@ namespace irods {
             // Methods
 
             /// @brief undocumented
-            error resolve( const std::string& _name, plugin_ptr& _plugin ); // resolve plugin
+            error resolve( const std::string& _name, plugin_ptr& _plugin ) override; // resolve plugin
 
             /// @brief Comparison operator
             bool operator==( const gsi_auth_object& _rhs ) const;

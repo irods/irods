@@ -1787,14 +1787,14 @@ class compound_resource : public irods::resource {
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
+        irods::error need_post_disconnect_maintenance_operation( bool& _flg ) override {
             _flg = false;
             return SUCCESS();
         }
 
         // =-=-=-=-=-=-
         // override from plugin_base
-        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) {
+        irods::error post_disconnect_maintenance_operation( irods::pdmo_type& ) override {
             return ERROR( -1, "nop" );
         }
 

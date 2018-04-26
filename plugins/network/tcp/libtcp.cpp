@@ -635,7 +635,7 @@ class tcp_network_plugin : public irods::network {
                 _ctx ) {
         } // ctor
 
-        ~tcp_network_plugin() {
+        ~tcp_network_plugin() override {
         }
 
 }; // class tcp_network_plugin

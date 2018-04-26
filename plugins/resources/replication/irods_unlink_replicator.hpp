@@ -13,9 +13,9 @@ namespace irods {
         public:
             /// @brief Constructs an unlink replicator with the specified unlinked child and with the specified resource.
             unlink_replicator( const std::string& _child, const std::string& _resource );
-            virtual ~unlink_replicator( void );
+            ~unlink_replicator( void ) override;
 
-            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
+            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper ) override;
         private:
             std::string child_;
             std::string resource_;

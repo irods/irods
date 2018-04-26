@@ -27,7 +27,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             /// @brief Destructor
-            virtual ~database() {
+            ~database() override {
             }
 
             // =-=-=-=-=-=-=-

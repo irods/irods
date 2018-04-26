@@ -23,7 +23,7 @@ namespace irods {
 
             }
 
-            virtual ~auth() {
+            ~auth() override {
             }
 
             auth(

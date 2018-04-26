@@ -10,15 +10,15 @@ namespace irods {
     class SHA256Strategy : public HashStrategy {
         public:
             SHA256Strategy() {};
-            virtual ~SHA256Strategy() {};
+            ~SHA256Strategy() override {};
 
-            virtual std::string name() const {
+            std::string name() const override {
                 return SHA256_NAME;
             }
-            virtual error init( boost::any& context ) const;
-            virtual error update( const std::string& data, boost::any& context ) const;
-            virtual error digest( std::string& messageDigest, boost::any& context ) const;
-            virtual bool isChecksum( const std::string& ) const;
+            error init( boost::any& context ) const override;
+            error update( const std::string& data, boost::any& context ) const override;
+            error digest( std::string& messageDigest, boost::any& context ) const override;
+            bool isChecksum( const std::string& ) const override;
 
     };
 }; // namespace irods

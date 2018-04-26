@@ -16,9 +16,9 @@ namespace irods {
                 const std::string& _root_resource,    // The name of the resource at the root of the hierarchy
                 const std::string& _current_resource, // The name of the resource at this level of hierarchy
                 const std::string& _child );          // The hierarchy of the child.
-            virtual ~create_write_replicator( void );
+            ~create_write_replicator( void ) override;
 
-            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper );
+            error replicate( plugin_context& _ctx, const child_list_t& _siblings, const object_oper& _object_oper ) override;
 
         private:
             std::string root_resource_;

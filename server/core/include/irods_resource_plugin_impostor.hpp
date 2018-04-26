@@ -10,8 +10,8 @@ namespace irods {
             impostor_resource(
                 const std::string& _inst_name,
                 const std::string& _context );
-            error need_post_disconnect_maintenance_operation( bool& _b );
-            error post_disconnect_maintenance_operation( pdmo_type& _op );
+            error need_post_disconnect_maintenance_operation( bool& _b ) override;
+            error post_disconnect_maintenance_operation( pdmo_type& _op ) override;
             static error report_error(
                 plugin_context& );
 

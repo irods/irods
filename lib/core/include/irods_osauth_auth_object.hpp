@@ -24,7 +24,7 @@ namespace irods {
             /// @brief Ctor
             osauth_auth_object( rError_t* _r_error );
             osauth_auth_object( const osauth_auth_object& );
-            virtual ~osauth_auth_object();
+            ~osauth_auth_object() override;
 
             /// =-=-=-=-=-=-=-
             /// @brief assignment operator
@@ -36,20 +36,20 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief Plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // interface for which to resolve
-                plugin_ptr& );      // ptr to resolved plugin
+                plugin_ptr& ) override;      // ptr to resolved plugin
 
             /// =-=-=-=-=-=-=-
             /// @brief serialize object to key-value pairs
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
             /// =-=-=-=-=-=-=-
             /// @brief accessors
-            std::string user_name() const {
+            std::string user_name() const override {
                 return user_name_;
             }
-            std::string zone_name() const {
+            std::string zone_name() const override {
                 return zone_name_;
             }
             std::string digest() const {
@@ -58,10 +58,10 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief mutators
-            void user_name( const std::string& _un ) {
+            void user_name( const std::string& _un ) override {
                 user_name_ = _un;
             }
-            void zone_name( const std::string& _zn ) {
+            void zone_name( const std::string& _zn ) override {
                 zone_name_ = _zn;
             }
             void digest( const std::string& _dd ) {

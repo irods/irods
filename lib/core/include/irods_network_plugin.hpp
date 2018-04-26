@@ -29,7 +29,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // public - dtor
-            virtual ~network( ) {
+            ~network( ) override {
             } // dtor
 
             // =-=-=-=-=-=-=-

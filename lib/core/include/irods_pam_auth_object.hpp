@@ -23,7 +23,7 @@ namespace irods {
             /// =-=-=-=-=-=-=-
             /// @brief Ctor
             pam_auth_object( rError_t* _r_error );
-            virtual ~pam_auth_object();
+            ~pam_auth_object() override;
             pam_auth_object( const pam_auth_object& );
 
             /// =-=-=-=-=-=-=-
@@ -36,13 +36,13 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief Plugin resolution operation
-            virtual error resolve(
+            error resolve(
                 const std::string&, // interface for which to resolve
-                plugin_ptr& );      // ptr to resolved plugin
+                plugin_ptr& ) override;      // ptr to resolved plugin
 
             /// =-=-=-=-=-=-=-
             /// @brief serialize object to key-value pairs
-            virtual error get_re_vars( rule_engine_vars_t& );
+            error get_re_vars( rule_engine_vars_t& ) override;
 
         private:
 
