@@ -61,6 +61,31 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixB1Vault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
+    def test_redirect_map_regeneration__3904(self):
+        # Setup
+        filecount = 50
+        dirname = "test_redirect_map_randomness__3904"
+        lib.create_directory_of_small_files(dirname, filecount)
+
+        self.admin.assert_icommand(['iput', '-r', dirname])
+
+        # Count the number of recipients of replicas
+        hier_ctr = {}
+        _,stdout,_ = self.admin.run_icommand(['ils', '-l', dirname])
+        lines = stdout.splitlines()
+        # Check all lines but the first one
+        for line in lines[1:]:
+            res = line.split()
+            hier_ctr[res[2]] = 'found_it'
+
+        # Ensure that a different set of replication targets resulted at least once
+        # If not, go buy a lottery ticket
+        self.assertTrue(len(hier_ctr) == 3, msg="only %d resources received replicas, expected 3" % len(hier_ctr))
+
+        # Cleanup
+        self.admin.assert_icommand(['irm', '-rf', dirname])
+        shutil.rmtree(dirname, ignore_errors=True)
+
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
