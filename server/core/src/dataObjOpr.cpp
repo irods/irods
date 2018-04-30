@@ -960,7 +960,7 @@ sortObjInfoForRepl(
     // to update is made already. However, we have to handle
     // the case where the resc_hier and dst_resc_hier are the same.
     *oldDataObjInfoHead = NULL;
-    if ( dst_resc_hier && strcmp( dst_resc_hier, resc_hier ) != 0 ) {
+    if ( resc_hier && dst_resc_hier && strcmp( dst_resc_hier, resc_hier ) != 0 ) {
         dataObjInfo_t* tmp_info = *dataObjInfoHead;
         dataObjInfo_t* prev_info = NULL;
         while ( tmp_info ) {

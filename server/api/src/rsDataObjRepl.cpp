@@ -47,6 +47,10 @@
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_random.hpp"
+#include "irods_string_tokenize.hpp"
+
+#include <vector>
+
 #include <boost/lexical_cast.hpp>
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
@@ -128,9 +132,9 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     // call redirect for our operation of choice to request the hier string appropriately
     std::string hier;
-    char*       tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    char* tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
 
-    if ( 0 == tmp_hier ) {
+    if ( !tmp_hier ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
         irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
@@ -273,37 +277,81 @@ _rsDataObjRepl(
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     char* dest_hier = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+    const bool update_requested = (getValByKey(&dataObjInp->condInput, UPDATE_REPL_KW) != nullptr);
+    bool update_replica = update_requested;
 
+    if (!dest_hier) {
+        // Get the destination resource that the client specified.
+        dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_NAME_KW);
+
+        // Only use the default resource if the client did not specify a
+        // destination resource to replicate to and they did not set the
+        // update flag [-U].
+        if (!dest_hier && !update_requested) {
+            dest_hier = getValByKey(&dataObjInp->condInput, DEF_RESC_NAME_KW);
+        }
+
+        if (dest_hier) {
+            std::vector<std::string> hier;
+
+            for (auto& object : dataObjInfoHead) {
+                hier.clear();
+                irods::string_tokenize(object.rescHier, ";", hier);
+
+                if (hier[0] == dest_hier) {
+                    update_replica = true;
+                    dest_hier = object.rescHier;
+                    break;
+                }
+
+                auto e = std::end(hier);
+
+                if (std::find(std::next(std::begin(hier)), e, dest_hier) != e) {
+                    return DIRECT_CHILD_ACCESS;
+                }
+            }
+        }
+    }
+    else {
+        // This block is needed because of compound resources.
+        // In [libcompound.cpp], the function [repl_object] is called when a file
+        // is modified under a compound resource. This triggers a sync. The [repl_object]
+        // function never sets the UPDATE_REPL_KW. Because of that, this block is needed
+        // to correctly determine if an update needs to take place or not.
+        update_replica = irods::is_hier_in_obj_info_list(dest_hier, dataObjInfoHead);
+    }
+
+    // If [dest_hier] is not null, then the replica matching [dest_hier] will appear
+    // at the head of the list. The list it appears in is determined by whether it is
+    // current or stale.
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__ );
         return status;
     }
 
-    // =-=-=-=-=-=-=-
-    // if a resc is specified and it has a stale copy then we should just treat this as an update
-    // also consider the 'update' keyword as that might also have some bearing on updates
-    if ( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey( &dataObjInp->condInput, UPDATE_REPL_KW ) != NULL ) {
+    if (update_replica) {
+        // =-=-=-=-=-=-=-
+        // if a resc is specified and it has a stale copy then we should just treat this as an update
+        // also consider the 'update' keyword as that might also have some bearing on updates
+        if ( ( !multiCopyFlag && oldDataObjInfoHead ) || update_requested ) {
+            /* update old repl to new repl */
+            status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat );
 
-        /* update old repl to new repl */
-        status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat );
-
-        if ( status >= 0 && outDataObjInfo != NULL ) {
-            *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
-            outDataObjInfo->next = NULL;
-        }
-        else {
-            if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
+            if ( status >= 0 && outDataObjInfo != NULL ) {
+                *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
+                outDataObjInfo->next = NULL;
+            }
+            else if ( status < 0 && status != DIRECT_ARCHIVE_ACCESS ) {
                 rodsLog( LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__ );
             }
-        }
 
-        freeAllDataObjInfo( dataObjInfoHead );
-        freeAllDataObjInfo( oldDataObjInfoHead );
+            freeAllDataObjInfo( dataObjInfoHead );
+            freeAllDataObjInfo( oldDataObjInfoHead );
 
-        return status;
-
-    } // repl update
+            return status;
+        } // repl update
+    }
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
@@ -328,8 +376,7 @@ _rsDataObjRepl(
     }
 
     if ( multiCopyFlag == 0 ) { // JMC - backport 4594
-
-        /* if one copy per resource, see if a good copy already exist,
+        /* if one copy per resource, see if a good copy already exists,
          * If it does, the copy is returned in destDataObjInfo.
          * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
          ( target resources remained are left in &myRescGrpInfo.
@@ -355,7 +402,8 @@ _rsDataObjRepl(
 
             return 0;
         }
-        else if ( status < 0 ) {
+
+        if ( status < 0 ) {
             freeAllDataObjInfo( dataObjInfoHead );
             freeAllDataObjInfo( oldDataObjInfoHead );
             freeAllDataObjInfo( destDataObjInfo ); // JMC - backport 4494
@@ -364,8 +412,7 @@ _rsDataObjRepl(
             return status;
         }
         /* NO_GOOD_COPY drop through here */
-
-    } // if multicopy flg
+    } // if multicopy flag
 
     status = applyPreprocRuleForOpen( rsComm, dataObjInp, &dataObjInfoHead );
     if ( status < 0 ) {
