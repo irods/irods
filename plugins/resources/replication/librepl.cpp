@@ -1323,38 +1323,30 @@ extern "C" {
         irods::resource_plugin_context& _ctx,
         const redirect_map_t& _redirect_map,
         const std::string     _child_list_prop ) {
-        irods::error result = SUCCESS();
-        irods::error ret;
-
-        // Check for an existing child list property. If it exists assume it is correct and do nothing.
-        // This assumes that redirect always resolves to the same child. Is that ok? - hcj
+        // loop over all of the children in the map except the first (selected) and add them to a vector
         child_list_t repl_vector;
-        ret = _ctx.prop_map().get<child_list_t>( _child_list_prop, repl_vector );
-        if ( !ret.ok() ) {
-
-            // loop over all of the children in the map except the first (selected) and add them to a vector
-            redirect_map_t::const_iterator it = _redirect_map.begin();
-            for ( ++it; it != _redirect_map.end(); ++it ) {
-                // JMC - need to consider the vote here as if it is 0 the child
-                //       is down and should not get a replica
-                std::string hier;
-                it->second.str( hier );
-                if ( it->first > 0 ) {
-                    irods::hierarchy_parser parser = it->second;
-                    repl_vector.push_back( parser );
-                }
-            }
-
-            // add the resulting vector as a property of the resource
-            irods::error ret = _ctx.prop_map().set<child_list_t>( _child_list_prop, repl_vector );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to store the repl child list as a property.";
-                result = PASSMSG( msg.str(), ret );
+        redirect_map_t::const_iterator it = _redirect_map.begin();
+        for ( ++it; it != _redirect_map.end(); ++it ) {
+            // JMC - need to consider the vote here as if it is 0 the child
+            //       is down and should not get a replica
+            std::string hier;
+            it->second.str( hier );
+            if ( it->first > 0 ) {
+                irods::hierarchy_parser parser = it->second;
+                repl_vector.push_back( parser );
             }
         }
-        return result;
+
+        // add the resulting vector as a property of the resource
+        irods::error ret = _ctx.prop_map().set<child_list_t>( _child_list_prop, repl_vector );
+        if ( !ret.ok() ) {
+            return PASSMSG(
+                       (boost::format(
+                        "[%s] - Failed to store the repl child list as a property.") %
+                        __FUNCTION__).str(), ret );
+        }
+
+        return SUCCESS();
     }
 
     /// @brief Selects a child from the vector of parsers based on host access
