@@ -17,15 +17,19 @@ from .. import lib
 class Test_iScan(ResourceBase, unittest.TestCase):
 
     def setUp(self):
+        super(Test_iScan, self).setUp()
         self.dirname1 = 'dir_3681-1'
         self.dirname2 = 'dir_3681-2'
         lib.create_directory_of_small_files(self.dirname1,2)
         lib.create_directory_of_small_files(self.dirname2,2)
-        super(Test_iScan, self).setUp()
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'pt', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt', self.testresc])
 
     def tearDown(self):
         shutil.rmtree(os.path.abspath(self.dirname1), ignore_errors=True)
         shutil.rmtree(os.path.abspath(self.dirname2), ignore_errors=True)
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'pt', self.testresc])
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'pt'])
         super(Test_iScan, self).tearDown()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Reads Vault')
