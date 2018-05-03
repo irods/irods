@@ -24,7 +24,6 @@
 #include "irods_object_oper.hpp"
 #include "irods_replicator.hpp"
 #include "irods_create_write_replicator.hpp"
-#include "irods_unlink_replicator.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_repl_rebalance.hpp"
@@ -195,11 +194,7 @@ extern "C" {
                 if ( oper.operation() != create_oper && oper.operation() != write_oper ) {
                     mismatched = true;
                 }
-            } /*else if(_oper == unlink_oper) {
-                if(oper.operation() != unlink_oper) {
-                    mismatched = true;
-                }
-            }*/
+            }
 
             result = ASSERT_ERROR( !mismatched, INVALID_OPERATION,
                                    "Existing object operation: \"%s\" does not match current operation: \"%s\".",
@@ -317,81 +312,6 @@ extern "C" {
         }
         else {
 
-        }
-        return result;
-    }
-
-    irods::error replReplicateUnlink(
-        irods::resource_plugin_context& _ctx ) {
-        irods::error result = SUCCESS();
-        irods::error ret;
-
-        // get the list of objects that need to be replicated
-        object_list_t object_list;
-        ret = _ctx.prop_map().get<object_list_t>( object_list_prop, object_list );
-        if ( !ret.ok() && ret.code() != KEY_NOT_FOUND ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to get object list for replication.";
-            result = PASSMSG( msg.str(), ret );
-        }
-        else if ( object_list.size() > 0 ) {
-            // get the child list
-            child_list_t child_list;
-            ret = _ctx.prop_map().get<child_list_t>( child_list_prop, child_list );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to retrieve child list from repl resource.";
-                result = PASSMSG( msg.str(), ret );
-            }
-            else {
-                // get the root resource name as well as the child hierarchy string
-                std::string root_resc;
-                std::string child;
-                ret = get_selected_hierarchy( _ctx, child, root_resc );
-                if ( !ret.ok() ) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to determine the root resource and selected hierarchy.";
-                    result = PASSMSG( msg.str(), ret );
-                }
-                else if ( false ) { // We no longer replicate unlink operations. Too dangerous deleting user data. Plus hopefully the
-                    // API handles this. - harry
-
-                    // Get the name of the current resource
-                    std::string current_resc;
-                    ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, current_resc );
-                    if ( ( result = ASSERT_PASS( ret, "Failed to get the resource name." ) ).ok() ) {
-
-                        // create an unlink replicator
-                        irods::unlink_replicator oper_repl( child, current_resc );
-
-                        // create a replicator
-                        irods::replicator replicator( &oper_repl );
-
-                        // call replicate
-                        ret = replicator.replicate( _ctx, child_list, object_list );
-                        if ( !ret.ok() ) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to replicate the unlink operation to the siblings.";
-                            result = PASSMSG( msg.str(), ret );
-                        }
-                        else {
-
-                            // update the object list in the properties
-                            ret = _ctx.prop_map().set<object_list_t>( object_list_prop, object_list );
-                            if ( !ret.ok() ) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to update the object list in the properties.";
-                                result = PASSMSG( msg.str(), ret );
-                            }
-                        }
-                    }
-                }
-            }
         }
         return result;
     }
