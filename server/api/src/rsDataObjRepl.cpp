@@ -64,6 +64,13 @@
 int
 rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                transferStat_t **transStat ) {
+    auto* src_resc_name = getValByKey(&dataObjInp->condInput, RESC_NAME_KW); // -S
+    auto* replica_number = getValByKey(&dataObjInp->condInput, REPL_NUM_KW); // -n
+
+    if (src_resc_name && replica_number) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
