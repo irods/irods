@@ -22,9 +22,72 @@ class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irepl_with_U_and_R_options__issue_3659(self):
-        self.admin.assert_icommand(['irepl', 'dummyFile', '-U', '-R', 'demoResc'],
-                                   'STDERR_SINGLELINE',
-                                   'ERROR: irepl: -R and -U cannot be used together')
+        filename = 'test_file_issue_3659.txt'
+        lib.make_file(filename, 1024)
+
+        hostname = IrodsConfig().client_environment['irods_host']
+        replicas = 6
+
+        # Create resources [resc_{0..5}].
+        for i in range(replicas):
+            vault = os.path.join(self.admin.local_session_dir, 'issue_3659_storage_vault_' + str(i))
+            path = hostname + ':' + vault
+            self.admin.assert_icommand('iadmin mkresc resc_{0} unixfilesystem {1}'.format(i, path), 'STDOUT', 'unixfilesystem')
+
+        self.admin.assert_icommand('iput -R resc_0 {0}'.format(filename))
+
+        # Replicate the file across the remaining resources.
+        for i in range(1, replicas):
+            self.admin.assert_icommand('irepl -R resc_{0} {1}'.format(i, filename))
+
+        # Make all replicas stale except one.
+        self.admin.assert_icommand('iput -fR resc_0 {0}'.format(filename))
+
+        # Verify that all replicas are stale except the one under [resc_0].
+        self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_0', '&'])
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_1', '&'])
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_2', '&'])
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_3', '&'])
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_4', '&'])
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_5', '&'])
+
+        # Main Tests.
+
+        # Test 1: Update the replica under resc_1.
+        self.admin.assert_icommand('irepl -UR resc_1 {0}'.format(filename))
+        self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_1', '&'])
+
+        # Test 2: Update the replica under resc_2 using any replica under resc_1.
+        self.admin.assert_icommand('irepl -S resc_1 -UR resc_2 {0}'.format(filename))
+        self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_2', '&'])
+
+        # Test 3: Update the replica under resc_3 using replica 1.
+        self.admin.assert_icommand('irepl -n1 -UR resc_3 {0}'.format(filename))
+        self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_3', '&'])
+
+        # Test 4: Update the replica under resc_4 using the stale replica under resc_5.
+        self.admin.assert_icommand('irepl -S resc_5 -UR resc_4 {0}'.format(filename))
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_4', '&'])
+
+        # Test 5: Update the replica under resc_4 using the stale replica under resc_5.
+        self.admin.assert_icommand('irepl -n5 -UR resc_4 {0}'.format(filename))
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['resc_4', '&'])
+
+        # Test 6: Invalid resource name.
+        self.admin.assert_icommand('irepl -UR invalid_resc {0}'.format(filename), 'STDERR', 'SYS_RESC_DOES_NOT_EXIST')
+
+        # Test 7: Incompatible parameters.
+        self.admin.assert_icommand('irepl -S resc_2 -n5 -UR resc_5 {0}'.format(filename), 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
+        # Test 8: Update a replica that does not exist under the destination resource.
+        self.admin.assert_icommand('irepl -UR demoResc {0}'.format(filename))
+        self.admin.assert_icommand_fail('ils -l {0}'.format(filename), 'STDOUT_SINGLELINE', ['demoResc', '&'])
+
+        # Clean up.
+        self.admin.assert_icommand('irm -rf {0}'.format(filename))
+
+        for i in range(replicas):
+            self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_irepl_not_honoring_R_option__issue_3885(self):
