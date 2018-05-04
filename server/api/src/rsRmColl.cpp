@@ -34,6 +34,13 @@
 int
 rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
           collOprStat_t **collOprStat ) {
+    auto* recurse = getValByKey(&rmCollInp->condInput, RECURSIVE_OPR__KW);
+    auto* replica_number = getValByKey(&rmCollInp->condInput, REPL_NUM_KW);
+
+    if (recurse && replica_number) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     int status;
     ruleExecInfo_t rei;
     collInfo_t collInfo;
