@@ -43,7 +43,7 @@
 int
 rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     // Deprecation messages must be handled by doing the following.
-    // The native rule engine will free any memory in the rError stack.
+    // The native rule engine may erase all messages in the rError array.
     // The only way to guarantee that messages are received by the client
     // is to add them to the rError array when the function returns.
     irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
@@ -51,6 +51,13 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             addRErrorMsg(&rsComm->rError, DEPRECATED_PARAMETER, "-n is deprecated.  Please use itrim instead.");
         }
     }};
+
+    auto* recurse = getValByKey(&dataObjUnlinkInp->condInput, RECURSIVE_OPR__KW);
+    auto* replica_number = getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW);
+
+    if (recurse && replica_number) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
 
     int status;
     ruleExecInfo_t rei;
