@@ -27,3 +27,12 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
         self.admin.assert_icommand('iput {0}'.format(filename))
         self.admin.assert_icommand('irm -n0 {0}'.format(filename), 'STDOUT', '-n is deprecated.')
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_disallow_simultaneous_usage_of_options_r_and_n__issue_3661(self):
+        filename = 'test_file_issue_3661.txt'
+        filename_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.make_file(filename_path, 1024)
+
+        self.admin.assert_icommand('iput {0}'.format(filename_path))
+        self.admin.assert_icommand('irm -rn0 {0}'.format(filename), 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
