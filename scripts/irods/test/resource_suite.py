@@ -1139,7 +1139,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("iadmin modresc {itrimReplResc} rebalance".format(**locals()), 'EMPTY')
 
         # trim the file
-        rc, _, _ = self.user0.assert_icommand("itrim -S {resc2} {filename}".format(**locals()), 'STDERR_SINGLELINE', "ERROR: trimUtil: trim error")
+        rc, _, _ = self.user0.assert_icommand("itrim -n0 {resc2} {filename}".format(**locals()), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
         self.assertNotEqual(rc, 0, 'itrim should have non-zero error code on trim failure')
 
         #local cleanup
