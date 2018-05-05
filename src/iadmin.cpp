@@ -43,44 +43,37 @@ void usage( char *subOpt );
 */
 int
 printSimpleQuery( char *buf ) {
-
-    std::vector< std::string > tokens;
+    std::vector<std::string> tokens;
     irods::string_tokenize( buf, "\n", tokens );
-    std::vector< std::string >::iterator itr = tokens.begin();
-    for ( ; itr != tokens.end(); ++itr ) {
-        // =-=-=-=-=-=-=-
+
+    for (const auto& token : tokens) {
         // explicitly filter out the resource class
-        if ( std::string::npos == itr->find( "resc_class" ) ) {
-            // =-=-=-=-=-=-=-
-            // determine if the token is of a time that needs
-            // converted from unix time to a human readable form
-            if ( std::string::npos != itr->find( "_ts" ) ) {
-                // =-=-=-=-=-=-=-
-                // tokenize based on the ':' delimiter this time
-                // to convert the time
-                std::vector< std::string > time_tokens;
-                irods::string_tokenize( *itr, ":", time_tokens );
-                if ( time_tokens.size() != 2 ) {
-                    std::cout << "printSimpleQuery - incorrect number of tokens "
-                              << "for case of time conversion" << std::endl;
-                    return -1;
-                }
-                else {
-                    char local_time[TIME_LEN];
-                    getLocalTimeFromRodsTime( time_tokens[1].c_str(), local_time );
-                    std::cout << time_tokens[0] << " " << local_time << std::endl;
-                }
+        if ( std::string::npos != token.find( "resc_class" ) ) {
+            continue;
+        }
 
-            }
-            else {
-                // =-=-=-=-=-=-=-
-                // simply print out the token
-                std::cout << *itr << std::endl;
+        // determine if the token is of a time that needs
+        // converted from unix time to a human readable form.
+        if ( std::string::npos != token.find( "_ts:" ) ) {
+            // tokenize based on the ':' delimiter to convert
+            // the time.
+            std::vector<std::string> time_tokens;
+            irods::string_tokenize( token, ":", time_tokens );
+
+            if ( time_tokens.size() != 2 ) {
+                std::cout << "printSimpleQuery - incorrect number of tokens "
+                             "for case of time conversion\n";
+                return -1;
             }
 
-        } // if not resc_class
-
-    } // for itr
+            char local_time[TIME_LEN];
+            getLocalTimeFromRodsTime( time_tokens[1].c_str(), local_time );
+            std::cout << time_tokens[0] << ": " << local_time << '\n';
+        }
+        else {
+            std::cout << token << '\n';
+        }
+    }
 
     return 0;
 }
