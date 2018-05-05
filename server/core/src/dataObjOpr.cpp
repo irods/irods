@@ -1562,17 +1562,7 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
 int
 resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
                     keyValPair_t *condInput ) {
-    const auto* resc_name = getValByKey(condInput, RESC_NAME_KW);         // -S
-    const auto* repl_number_string = getValByKey(condInput, REPL_NUM_KW); // -n
-
-    if (resc_name && repl_number_string) {
-        return USER_INCOMPATIBLE_PARAMS;
-    }
-
-    if (resc_name && !contains_replica(*dataObjInfoHead, resc_name)) {
-        return USER_INVALID_RESC_INPUT;
-    }
-
+    const auto* repl_number_string = getValByKey(condInput, REPL_NUM_KW);
     int repl_number = -1;
 
     if (repl_number_string) {
@@ -1636,7 +1626,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
         else {
             /* don't trim anything */
             freeAllDataObjInfo( *dataObjInfoHead );
-            *dataObjInfoHead = NULL; // JMC cppcheck - nullptr
+            *dataObjInfoHead = nullptr; // JMC cppcheck - nullptr
             freeAllDataObjInfo( oldDataObjInfoHead );
             return 0;
         }
@@ -1649,13 +1639,22 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
 
     freeAllDataObjInfo( *dataObjInfoHead );
     freeAllDataObjInfo( oldDataObjInfoHead );
-    *dataObjInfoHead = oldDataObjInfoHead = NULL;
+    *dataObjInfoHead = oldDataObjInfoHead = nullptr;
 
     const auto total_good_repls = matchedInfoCnt + unmatchedInfoCnt;
 
-    if ( ( tmpStr = getValByKey( condInput, COPIES_KW ) ) != NULL ) {
-        minCnt = atoi( tmpStr );
-        if ( minCnt <= 0 ) {
+    if ((tmpStr = getValByKey(condInput, COPIES_KW))) {
+        try {
+            minCnt = std::stoi(tmpStr);
+        }
+        catch (const std::invalid_argument& e) {
+            minCnt = DEF_MIN_COPY_CNT;
+        }
+        catch (const std::out_of_range& e) {
+            minCnt = DEF_MIN_COPY_CNT;
+        }
+
+        if (minCnt <= 0) {
             minCnt = DEF_MIN_COPY_CNT;
         }
         else if (minCnt > total_good_repls) {
@@ -1745,6 +1744,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
             queDataObjInfo( dataObjInfoHead, matchedOldDataObjInfo, 0, 1 );
         }
     }
+
     return 0;
 }
 

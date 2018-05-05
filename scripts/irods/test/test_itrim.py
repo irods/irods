@@ -54,9 +54,9 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
         self.admin.assert_icommand('itrim -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
 
-        self.admin.assert_icommand('itrim -S invalid_resc {0}'.format(filename), 'STDERR', 'status = -361000 USER_INVALID_RESC_INPUT')
-        self.admin.assert_icommand('itrim -n999 {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
-        self.admin.assert_icommand('itrim -n-1 {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
+        self.admin.assert_icommand('itrim -S invalid_resc {0}'.format(filename), 'STDERR', 'status = -78000 SYS_RESC_DOES_NOT_EXIST')
+        self.admin.assert_icommand('itrim -n999 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
+        self.admin.assert_icommand('itrim -n-1 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
         self.admin.assert_icommand('itrim -nX {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
 
         # No error cases.
