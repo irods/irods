@@ -78,7 +78,7 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                                           myRodsArgs, &dataObjOprInp );
         }
         else if ( srcType == LOCAL_FILE_T && targType == DATA_OBJ_T ) {
-            if ( isPathSymlink( myRodsArgs, srcPath->outPath ) > 0 ) {
+            if (is_symlink({srcPath->outPath})) {
                 continue;
             }
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
@@ -740,7 +740,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     srcDir = srcPath->outPath;
     targColl = targPath->outPath;
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+    if (is_symlink({srcDir})) {
         return 0;
     }
 
@@ -776,7 +776,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         path p = itr->path();
         snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-        if ( isPathSymlink( rodsArgs, mySrcPath.outPath ) > 0 ) {
+        if (is_symlink({mySrcPath.outPath})) {
             continue;
         }
 
