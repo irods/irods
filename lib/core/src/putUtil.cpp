@@ -240,9 +240,10 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         targPath = &rodsPathInp->targPath[i];
 
         if ( targPath->objType == DATA_OBJ_T ) {
-            if ( isPathSymlink( myRodsArgs, rodsPathInp->srcPath[i].outPath ) > 0 ) {
+            if (boost::filesystem::is_symlink({rodsPathInp->srcPath[i].outPath})) {
                 continue;
             }
+
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
             status = putFileUtil( conn, rodsPathInp->srcPath[i].outPath,
                                   targPath->outPath, rodsPathInp->srcPath[i].size,
@@ -673,7 +674,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+    if (boost::filesystem::is_symlink({srcDir})) {
         return 0;
     }
 
@@ -712,6 +713,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     int bulkFlag = NON_BULK_OPR;
+
     if ( bulkOprInfo != NULL ) {
         bulkFlag = bulkOprInfo->flags;
     }
@@ -719,6 +721,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     int savedStatus = 0;
     boost::system::error_code ec;
     boost::filesystem::directory_iterator it(srcDirPath, ec), end;
+
     if (ec && it == end) {
         rodsLog( LOG_ERROR, "Error ecountered when processing directory %s for put: %s", srcDirPath.c_str(), ec.message().c_str());
         savedStatus = ec.value();
@@ -728,29 +731,29 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 rodsLog( LOG_ERROR, "Error ecountered when processing directory %s for put: %s", srcDirPath.c_str(), ec.message().c_str());
                 continue;
             }
-            boost::filesystem::path p = it->path();
-            snprintf( srcChildPath, MAX_NAME_LEN, "%s",
-                    p.c_str() );
 
-            if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) {
+            boost::filesystem::path p = it->path();
+            snprintf( srcChildPath, MAX_NAME_LEN, "%s", p.c_str() );
+
+            if (boost::filesystem::is_symlink({srcChildPath})) {
                 continue;
             }
+
             if ( !exists( p ) ) {
-                rodsLog( LOG_ERROR,
-                        "putDirUtil: stat error for %s, errno = %d\n",
-                        srcChildPath, errno );
+                rodsLog( LOG_ERROR, "putDirUtil: stat error for %s, errno = %d\n", srcChildPath, errno );
                 return USER_INPUT_PATH_ERR;
             }
 
             if ( is_symlink( p ) ) {
                 boost::filesystem::path cp = read_symlink( p );
-                snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s",
-                        srcDir, cp.c_str() );
+                snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s", srcDir, cp.c_str() );
                 p = boost::filesystem::path( srcChildPath );
             }
+
             rodsLong_t dataSize = 0;
             dataObjOprInp->createMode = getPathStMode( p.c_str() );
             objType_t childObjType;
+
             if ( is_regular_file( p ) ) {
                 childObjType = DATA_OBJ_T;
                 dataSize = file_size( p );
@@ -759,22 +762,21 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 childObjType = COLL_OBJ_T;
             }
             else {
-                rodsLog( LOG_ERROR,
-                        "putDirUtil: unknown local path type for %s",
-                        srcChildPath );
+                rodsLog( LOG_ERROR, "putDirUtil: unknown local path type for %s", srcChildPath );
                 savedStatus = USER_INPUT_PATH_ERR;
                 continue;
             }
+
             boost::filesystem::path childPath = p.filename();
-            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s",
-                    targColl, childPath.c_str() );
+            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s", targColl, childPath.c_str() );
+
             if ( childObjType == DATA_OBJ_T ) {
-                if ( bulkFlag == BULK_OPR_SMALL_FILES &&
-                        file_size( p ) > MAX_BULK_OPR_FILE_SIZE ) {
+                const auto f_size = file_size(p);
+
+                if ( bulkFlag == BULK_OPR_SMALL_FILES && f_size > MAX_BULK_OPR_FILE_SIZE ) {
                     continue;
                 }
-                else if ( bulkFlag == BULK_OPR_LARGE_FILES &&
-                        file_size( p ) <= MAX_BULK_OPR_FILE_SIZE ) {
+                else if ( bulkFlag == BULK_OPR_LARGE_FILES && f_size <= MAX_BULK_OPR_FILE_SIZE ) {
                     continue;
                 }
             }
@@ -786,7 +788,8 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 /* restart failed */
                 return status;
             }
-            else if ( status == 0 ) {
+
+            if ( status == 0 ) {
                 if ( bulkFlag == BULK_OPR_SMALL_FILES &&
                         ( rodsRestart->restartState & LAST_PATH_MATCHED ) != 0 ) {
                     /* enable foreFlag one time */

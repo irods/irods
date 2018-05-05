@@ -4063,17 +4063,8 @@ getRandomArray( int **randomArray, int size ) {
 }
 
 int
-isPathSymlink( rodsArguments_t * rodsArgs, const char * myPath ) {
-    path p( myPath );
-    if ( rodsArgs != NULL && rodsArgs->link != True ) {
-        return 0;
-    }
-    if ( exists( p ) && is_symlink( p ) ) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+isPathSymlink( rodsArguments_t* rodsArgs, const char* myPath ) {
+    return is_symlink({myPath}) ? 1 : 0;
 }
 
 void
