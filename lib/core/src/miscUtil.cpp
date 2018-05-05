@@ -1968,7 +1968,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
     int status = 0;
     char srcChildPath[MAX_NAME_LEN];
 
-    if ( isPathSymlink( rodsArgs, srcDir ) > 0 ) {
+    if (is_symlink({srcDir})) {
         return 0;
     }
 
@@ -1986,7 +1986,7 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
         snprintf( srcChildPath, MAX_NAME_LEN, "%s",
                   p.c_str() );
 
-        if ( isPathSymlink( rodsArgs, srcChildPath ) > 0 ) {
+        if (is_symlink({srcChildPath})) {
             return 0;
         } // JMC cppcheck - resource
 
