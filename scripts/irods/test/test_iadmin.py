@@ -1303,6 +1303,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin rmresc pt0')
         self.admin.assert_icommand('iadmin rmresc pt1')
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_print_full_username__issue_3170(self):
+        username = 'issue_3170_username_ts'
+        self.admin.assert_icommand('iadmin mkuser {0} rodsuser'.format(username))
+        self.admin.assert_icommand('iadmin lu {0}'.format(username), 'STDOUT', 'user_name: {0}'.format(username))
+        self.admin.assert_icommand('iadmin rmuser {0}'.format(username))
+
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -1356,3 +1363,4 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(self.vault_warning_message in stdout)
         # Changing vault should have failed, so make sure it has not changed
         self.admin.assert_icommand(['ilsresc', '-l', self.resc_name], 'STDOUT_SINGLELINE', 'vault: ' + self.good_vault)
+
