@@ -28,6 +28,12 @@
 
 int
 rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
+    if (getValByKey(&dataObjInp->condInput, RESC_NAME_KW) && // -S
+        getValByKey(&dataObjInp->condInput, REPL_NUM_KW))    // -n
+    {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *tmpDataObjInfo;
@@ -64,7 +70,7 @@ rsDataObjTrim( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     if ( hier_char == NULL ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal( &dataObjInp->condInput, IN_REPL_KW, "" );
-        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
+        irods::error ret = irods::resource_redirect( irods::UNLINK_OPERATION, rsComm,
                            dataObjInp, hier, host, local );
         if ( !ret.ok() ) {
             std::stringstream msg;

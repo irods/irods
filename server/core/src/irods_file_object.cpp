@@ -280,50 +280,57 @@ namespace irods {
         _file_obj->size( _data_obj_inp->dataSize );
 
         // handle the case where we are being called as part of a pdmo
-        char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
+        const char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
+
         if ( in_pdmo ) {
             _file_obj->in_pdmo( in_pdmo );
         }
 
         // =-=-=-=-=-=-=-
         // if a repl is requested, cache that fact
-        char* repl_num_ptr = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
-        std::string repl_num;
-        if ( repl_num_ptr ) {
-            repl_num = repl_num_ptr;
-            //rmKeyVal( &_data_obj_inp->condInput, REPL_NUM_KW );
-        }
+        const char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
 
         // =-=-=-=-=-=-=-
         // handle requested repl number
-        if ( !repl_num.empty() ) {
-            _file_obj->repl_requested( atoi( repl_num.c_str() ) );
-
-            addKeyVal(
-                &_data_obj_inp->condInput,
-                REPL_NUM_KW,
-                repl_num.c_str() );
+        if (repl_num) {
+            try {
+                _file_obj->repl_requested(std::stoi(repl_num));
+            }
+            catch (const std::invalid_argument& e) {
+                return ERROR(USER_INVALID_REPLICA_INPUT, "invalid replica number argument");
+            }
+            catch (const std::out_of_range& e) {
+                return ERROR(USER_INVALID_REPLICA_INPUT, "replica number is out of range");
+            }
         }
 
         // =-=-=-=-=-=-=-
         // make a call to build the linked list
-        dataObjInfo_t* head_ptr = 0;
+        dataObjInfo_t* head_ptr = nullptr;
 
         int status = getDataObjInfoIncSpecColl( _comm, _data_obj_inp, &head_ptr );
-        if ( 0 == head_ptr || status < 0 ) {
+
+        if ( !head_ptr || status < 0 ) {
             if ( head_ptr ) {
                 freeAllDataObjInfo( head_ptr );
             }
 
-            char* sys_error = NULL;
+            if (repl_num && status == CAT_NO_ROWS_FOUND) {
+                return ERROR(SYS_REPLICA_DOES_NOT_EXIST, "replica does not exist");
+            }
+
+            char* sys_error = nullptr;
             const char* rods_error = rodsErrorName( status, &sys_error );
+
             std::stringstream msg;
             msg << "failed in call to getDataObjInfoIncSpecColl";
             msg << " for [";
             msg << _data_obj_inp->objPath;
             msg << "] ";
             msg << rods_error << " " << sys_error;
+
             free( sys_error );
+
             return ERROR( status, msg.str() );
         }
 
