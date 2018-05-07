@@ -857,7 +857,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixBVault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unixAVault", ignore_errors=True)
 
-    def test_weighted_passthrough(self):
+    def test_weighted_passthru(self):
         filename = "some_local_file.txt"
         filepath = lib.create_local_testfile(filename)
 
@@ -874,7 +874,7 @@ class Test_Resource_WeightedPassthru(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=0.01'")
         self.admin.assert_icommand("iget " + filename + " - ", 'STDOUT_SINGLELINE', "TESTFILE")
 
-    def test_weighted_passthrough__2789(self):
+    def test_weighted_passthru__2789(self):
 
         ### write=1.0;read=1.0
         self.admin.assert_icommand("iadmin modresc w_pt context 'write=1.0;read=1.0'")
@@ -3513,6 +3513,49 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix1RescVault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(lib.get_irods_top_level_dir() + "/unix3RescVault", ignore_errors=True)
+
+    def test_open_write_close_for_repl__3909(self):
+        # Create local test file of a certain expected size
+        filename = 'some_local_file.txt'
+        filepath = lib.create_local_testfile(filename)
+        expected_size_in_bytes = 9
+        test_string = 'a' * expected_size_in_bytes
+        with open(filepath, 'w') as f:
+            f.write(test_string)
+
+        # Put test file into replication resource and verify
+        self.admin.assert_icommand(['iput', filepath])
+        self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [str(expected_size_in_bytes), ' & ', filename])
+
+        # Create a rule file to open data object, write a string to it, and close it
+        logical_path = os.path.join( self.admin.session_collection, filename )
+        write_string = 'b' * (expected_size_in_bytes + 1)
+        parameters = {}
+        parameters['logical_path'] = logical_path
+        parameters['write_string'] = write_string
+        rule_file_path = 'test_open_write_close_for_repl__3909.r'
+        rule_str = '''
+test_open_write_close {{
+    msiDataObjOpen("objPath={logical_path}++++openFlags=O_WRONLY", *FD)
+    msiDataObjWrite(*FD, "{write_string}", *LEN)
+    msiDataObjClose(*FD, *status)
+}}
+
+#INPUT *data_obj_path="{logical_path}"
+INPUT null
+OUTPUT ruleExecOut
+'''.format(**parameters)
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        # Run rule on replicated data object and verify
+        self.admin.assert_icommand(['irule', '-F', rule_file_path])
+        self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [str(expected_size_in_bytes + 1), ' & ', filename])
+
+        # Clean up test files
+        self.admin.assert_icommand(['irm', '-f', logical_path])
+        os.unlink(filepath)
+        os.unlink(rule_file_path)
 
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_recursive_descent__ticket_3672(self):
