@@ -32,14 +32,26 @@
 #include "rsUnregDataObj.hpp"
 #include "rsRmColl.hpp"
 #include "rsRegDataObj.hpp"
+#include "rcMisc.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_at_scope_exit.hpp"
 
 int
 rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
+    // Deprecation messages must be handled by doing the following.
+    // The native rule engine will free any memory in the rError stack.
+    // The only way to guarantee that messages are received by the client
+    // is to add them to the rError array when the function returns.
+    irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
+        if (getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW)) {
+            addRErrorMsg(&rsComm->rError, DEPRECATED_PARAMETER, "-n is deprecated.  Please use itrim instead.");
+        }
+    }};
+
     int status;
     ruleExecInfo_t rei;
     int trashPolicy;
