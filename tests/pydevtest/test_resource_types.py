@@ -695,6 +695,33 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', stdin_string='yes\n')
         shutil.rmtree(lib.get_irods_top_level_dir() + "/demoRescVault", ignore_errors=True)
 
+    def test_unix_filesystem_free_space_on_root__3928(self):
+        free_space = '100'
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'path', '/demoRescVault'], 'STDOUT_SINGLELINE', 'Previous resource path')
+        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'free_space', free_space])
+
+        rule_file_path = 'test_free_space_on_root.r'
+        rule_str = '''
+test_free_space_on_root {{
+    msi_update_unixfilesystem_resource_free_space(*leaf_resource);
+}}
+
+INPUT *leaf_resource="demoResc"
+OUTPUT ruleExecOut
+        '''
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+
+        initial_log_size = lib.get_log_size('server')
+        rc,_,stderr = self.admin.assert_icommand_fail(['irule', '-F', rule_file_path])
+
+        self.admin.assert_icommand(['ilsresc', '-l', 'demoResc'], 'STDOUT_SINGLELINE', ['free space', free_space])
+        self.assertTrue(0 != rc)
+        self.assertTrue('status = -32000 SYS_INVALID_RESC_INPUT' in stderr)
+        self.assertTrue(1 == lib.count_occurrences_of_string_in_log('server', 'could not find existing non-root path from vault path', start_index=initial_log_size))
+
+        os.unlink(rule_file_path)
+
     def test_unix_filesystem_free_space__3306(self):
         filename = 'test_unix_filesystem_free_space__3306.txt'
         filesize = 3000000
