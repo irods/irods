@@ -756,7 +756,7 @@ namespace irods {
                     zmq::message_t req;
                     zmq_skt.recv( &req );
                     if ( 0 == req.size() ) {
-                        rodsLog(LOG_NOTICE, "Received empty request in control plane loop.");
+                        continue;
 
                     }
 
