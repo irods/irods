@@ -837,6 +837,15 @@ NEW_ERROR(OOI_JSON_INX_OUT_OF_RANGE,                   -2210000)
 NEW_ERROR(OOI_REVID_NOT_FOUND,                         -2211000)
 /** @} */
 
+/* Deprecation error codes */
+/** @defgroup deprecation_errors DEPRECATION ERRORs
+ *  @ingroup error_codes
+ *  ERROR Code Range 3,000,000 to 3,099,000
+ * @{
+ */
+NEW_ERROR(DEPRECATED_PARAMETER,                        -3000000)
+/** @} */
+
 /* XML parsing and TDS error */
 /** @defgroup xml_errors XML ERRORs
  *  @ingroup error_codes

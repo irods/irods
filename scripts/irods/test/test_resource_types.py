@@ -323,7 +323,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -662,7 +662,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -1128,7 +1128,7 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -1447,7 +1447,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -1958,7 +1958,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
                                         ["0 " + self.admin.default_resource, self.testfile])  # replica 0 should be gone
@@ -2587,7 +2587,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from grid
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from grid
         # replica 1 should be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["1 ", self.testfile])
         # replica 2 should be there
@@ -2688,7 +2688,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["4 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -3139,7 +3139,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + self.testfile)  # creates replica
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed twice
-        self.admin.assert_icommand("irm -n 0 " + self.testfile)  # remove original from cacheResc only
+        self.admin.assert_icommand("irm -n 0 " + self.testfile, 'STDOUT', 'deprecated')  # remove original from cacheResc only
         # replica 2 should still be there
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["4 " + self.testresc, self.testfile])
         self.admin.assert_icommand_fail("ils -L " + self.testfile, 'STDOUT_SINGLELINE',
@@ -3739,7 +3739,7 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 1 ", " & " + self.testfile])
         # should be listed 3x
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 2 ", " & " + self.testfile])
-        self.admin.assert_icommand("irm -n 1 " + self.testfile)  # try to remove one of the managed replicas
+        self.admin.assert_icommand("irm -n 1 " + self.testfile, 'STDOUT', 'deprecated')  # try to remove one of the managed replicas
         # should be listed 2x
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 0 ", " & " + self.testfile])
         # should not be listed
@@ -4672,7 +4672,7 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         # should be listed a third time
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', [" 2 ", " & " + self.testfile])
         # Remove one of the original replicas
-        self.admin.assert_icommand("irm -n 1 " + self.testfile)
+        self.admin.assert_icommand("irm -n 1 " + self.testfile, 'STDOUT', 'deprecated')
         # replicas 0 and 2 should be there (replica 0 goes to ufs2)
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["0 ", "ufs2", self.testfile])
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', ["2 " + self.testresc, self.testfile])
