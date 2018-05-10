@@ -50,6 +50,9 @@ namespace irods {
 /// @brief kw for storing proxy user priv
     static const std::string PROXY_USER_PRIV_KW( "proxy_user_priv" );
 
+/// @brief kw for storing enhanced logging setting 
+    static const std::string ENHANCED_LOGGING_KW( "enhanced_logging" );
+
     class server_properties {
 
         public:

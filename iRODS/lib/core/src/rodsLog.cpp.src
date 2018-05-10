@@ -9,10 +9,12 @@
 #endif
 #endif
 
+#include "irods_enhanced_logger.hpp"
 #include "rodsLog.h"
 #include "rodsErrorTable.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
+#include <boost/format.hpp>
 #include <time.h>
 #include <sys/time.h>
 
@@ -1359,7 +1361,7 @@ rodsLog( int level, const char *formatStr, ... ) {
 #endif
     int okToLog = 0;
 
-    char extraInfo[100];
+    std::string extraInfo;
 #ifdef windows_platform
     char nt_log_msg[2048];
 #endif
@@ -1388,10 +1390,10 @@ rodsLog( int level, const char *formatStr, ... ) {
     }
     va_end( ap );
 
-    extraInfo[0] = '\0';
 #ifndef windows_platform
     errOrOut = stdout;
 #endif
+    irods::enhanced_logger& elogger = irods::enhanced_logger::get_instance();
     if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
             ProcessType == RE_SERVER_PT ) {
         char timeBuf[100];
@@ -1399,7 +1401,10 @@ rodsLog( int level, const char *formatStr, ... ) {
         rstrcpy( timeBuf, ctime( &timeValue ), 90 );
         timeBuf[19] = '\0';
         myPid = getpid();
-        snprintf( extraInfo, 100 - 1, "%s pid:%d ", timeBuf + 4, myPid );
+        extraInfo = (boost::format("%s pid:%d ") % (timeBuf + 4) % myPid).str();
+        if (elogger.enabled()) {
+            extraInfo.append((boost::format("[%s] ") % elogger.message()).str().c_str());
+        }
     }
     else {
 #ifndef windows_platform
@@ -1467,18 +1472,18 @@ rodsLog( int level, const char *formatStr, ... ) {
 #endif
 #else
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s", extraInfo.c_str(), prefix, message );
 #else
-        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s", extraInfo.c_str(), prefix, message );
         rodsNtElog( nt_log_msg );
 #endif
 #endif
     }
     else {
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s\n", extraInfo.c_str(), prefix, message );
 #else
-        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo.c_str(), prefix, message );
         rodsNtElog( nt_log_msg );
 #endif
     }
@@ -1501,7 +1506,7 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     va_list ap;
     char errMsg[ERR_MSG_LEN];
 
-    char extraInfo[100];
+    std::string extraInfo;
 #ifdef windows_platform
     char nt_log_msg[2048];
 #endif
@@ -1523,8 +1528,8 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     }
     va_end( ap );
 
-    extraInfo[0] = '\0';
     errOrOut = stdout;
+    irods::enhanced_logger& elogger = irods::enhanced_logger::get_instance();
     if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
             ProcessType == RE_SERVER_PT ) {
         char timeBuf[100];
@@ -1532,7 +1537,10 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
         rstrcpy( timeBuf, ctime( &timeValue ), 90 );
         timeBuf[19] = '\0';
         myPid = getpid();
-        snprintf( extraInfo, 100 - 1, "%s pid:%d ", timeBuf + 4, myPid );
+        extraInfo = (boost::format("%s pid:%d ") % (timeBuf + 4) % myPid).str();
+        if (elogger.enabled()) {
+            extraInfo.append((boost::format("[%s] ") % elogger.message()).str().c_str());
+        }
     }
     else {
         if ( level <= LOG_ERROR || level == LOG_SQL ) {
@@ -1564,27 +1572,27 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
     }
     if ( message[strlen( message ) - 1] == '\n' ) {
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s", extraInfo.c_str(), prefix, message );
         if ( myError != NULL ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s", prefix, message );
             addRErrorMsg( myError, status, errMsg );
         }
 #else
-        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s", extraInfo.c_str(), prefix, message );
         rodsNtElog( nt_log_msg );
 #endif
     }
     else {
 #ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix, message );
+        fprintf( errOrOut, "%s%s: %s\n", extraInfo.c_str(), prefix, message );
         if ( myError != NULL ) {
             snprintf( errMsg, ERR_MSG_LEN,
                       "%s: %s\n", prefix, message );
             addRErrorMsg( myError, status, errMsg );
         }
 #else
-        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix, message );
+        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo.c_str(), prefix, message );
         rodsNtElog( nt_log_msg );
 #endif
     }

@@ -54,7 +54,9 @@ namespace irods {
                     addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
                     addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
 
-                    try { 
+                    rodsLog(LOG_DEBUG, "[%s] - repl [%s] to sibling [%s]", __FUNCTION__, dataObjInp.objPath, hierarchy_string.c_str());
+
+                    try {
                         const int status = data_obj_repl_with_retry( _ctx, dataObjInp );
                         char* sys_error = NULL;
                         char* rods_error = rodsErrorName( status, &sys_error );

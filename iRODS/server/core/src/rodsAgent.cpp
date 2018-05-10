@@ -4,6 +4,7 @@
 /* rodsAgent.cpp - The main code for rodsAgent
  */
 
+#include <boost/lexical_cast.hpp>
 #include <syslog.h>
 #include "rodsAgent.hpp"
 #include "reconstants.hpp"
@@ -20,6 +21,7 @@ static void NtAgentSetEnvsFromArgs( int ac, char **av );
 #include "irods_dynamic_cast.hpp"
 #include "irods_signal.hpp"
 #include "irods_client_server_negotiation.hpp"
+#include "irods_enhanced_logger.hpp"
 #include "irods_network_factory.hpp"
 #include "irods_auth_object.hpp"
 #include "irods_auth_factory.hpp"
@@ -230,6 +232,27 @@ main( int, char ** ) {
         irods::log( PASS( ret ) );
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         cleanupAndExit( status );
+    }
+
+    // Initialize instance of the enhanced logger with server config
+    int enhanced_logging;
+    ret = irods::get_server_property<int>(irods::ENHANCED_LOGGING_KW, enhanced_logging);
+    if (!ret.ok()) {
+        if (KEY_NOT_FOUND != ret.code()) {
+            irods::log(PASS(ret));
+            return ret.code();
+        }
+        enhanced_logging = 0;
+    }
+
+    irods::enhanced_logger& elogger = irods::enhanced_logger::get_instance();
+    elogger = irods::enhanced_logger(0 != enhanced_logging);
+    if (elogger.enabled()) {
+        elogger.add_info("client_user", rsComm.clientUser.userName);
+        elogger.add_info("proxy_user", rsComm.proxyUser.userName);
+        elogger.add_info("client_ip", rsComm.clientAddr);
+        elogger.add_info("agent_pid", boost::lexical_cast<std::string>(getpid()));
+        elogger.add_info("agent_host", rsComm.myEnv.rodsHost);
     }
 
     logAgentProc( &rsComm );
