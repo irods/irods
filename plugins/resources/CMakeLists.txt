@@ -34,7 +34,6 @@ set(IRODS_RESOURCE_PLUGIN_REPLICATION_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_repl_rebalance.cpp
   ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_repl_retry.cpp
   ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_replicator.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/resources/replication/irods_unlink_replicator.cpp
   ${CMAKE_SOURCE_DIR}/plugins/resources/replication/librepl.cpp
   )
 set(
