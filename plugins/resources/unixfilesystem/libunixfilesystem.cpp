@@ -536,10 +536,13 @@ extern "C" {
         }
 
         if (minimum_free_space > resource_free_space) {
+            rodsLog(LOG_NOTICE, "replica_exceeds_resource_free_space: minimum free space constraint [%s] > free space [%s] on resource [%s]", minimum_free_space_string.c_str(), resource_free_space_string.c_str(), resource_name.c_str());
             return true;
         }
 
         if (resource_free_space - minimum_free_space < static_cast<uint64_t>(_file_size)) {
+            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+            rodsLog(LOG_NOTICE, "replica_exceeds_resource_free_space: create replica [%s] of size [%ld] would violate minimum free space constraint [%s - %s] on resource [%s]", fco->logical_path().c_str(), _file_size, resource_free_space_string.c_str(), minimum_free_space_string.c_str(), resource_name.c_str());
             return true;
         }
 
@@ -1336,17 +1339,19 @@ extern "C" {
             // if the status is down, vote no.
             if ( INT_RESC_STATUS_DOWN == resc_status ) {
                 _out_vote = 0.0;
+                rodsLog(LOG_NOTICE, "unix_file_redirect_create: resource [%s] marked down, voting 0.0", _resc_name.c_str());
                 result.code( SYS_RESC_IS_DOWN );
                 // result = PASS( result );
             }
             else {
-                // vote no if the file size passes the high water mark
+                // vote no if the file size exceeds the minimum free space check
                 irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
                 rodsLong_t file_size = fco->size();
 
 
                 if (replica_exceeds_resource_free_space(_ctx, file_size)) {
                     _out_vote = 0.0;
+                    rodsLog(LOG_NOTICE, "unix_file_redirect_create: resource [%s] exceeds free space, voting 0.0", _resc_name.c_str());
                     return CODE(USER_FILE_TOO_LARGE);
                 }
 
@@ -1361,9 +1366,11 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // vote higher if we are on the same host
                     if ( _curr_host == host_name ) {
+                        rodsLog(LOG_DEBUG, "unix_file_redirect_create: resource [%s] found local replica, voting 1.0", _resc_name.c_str());
                         _out_vote = 1.0;
                     }
                     else {
+                        rodsLog(LOG_DEBUG, "unix_file_redirect_create: resource [%s] found good non-local replica, voting 0.5", _resc_name.c_str());
                         _out_vote = 0.5;
                     }
                 }

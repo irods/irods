@@ -18,6 +18,7 @@
 #include "irods_client_server_negotiation.hpp"
 
 #include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <setjmp.h>
@@ -30,6 +31,7 @@ jmp_buf Jenv;
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "irods_enhanced_logger.hpp"
 
 
 int rsApiHandler(
@@ -153,6 +155,7 @@ int rsApiHandler(
         numArg++;
     };
 
+    irods::enhanced_logger::get_instance().add_info("api_inx", boost::lexical_cast<std::string>(apiInx));
     if ( numArg == 0 ) {
         retVal = ( *myHandler )( rsComm );
     }

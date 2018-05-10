@@ -1252,6 +1252,7 @@ extern "C" {
             std::string hier;
             it->second.str( hier );
             if ( it->first > 0 ) {
+                rodsLog(LOG_DEBUG, "[%s] - [%s] added to child repl list", __FUNCTION__, hier.c_str());
                 irods::hierarchy_parser parser = it->second;
                 repl_vector.push_back( parser );
             }
@@ -1288,6 +1289,10 @@ extern "C" {
         irods::hierarchy_parser parser = it->second;
         *_out_parser = parser;
         *_out_vote = vote;
+
+        std::string hier;
+        parser.str(hier);
+        rodsLog(LOG_DEBUG, "[%s] - repl selected hier:[%s],vote:[%f]", __FUNCTION__, hier.c_str(), vote);
         if ( 0.0 == vote ) {
             return SUCCESS();
         }
