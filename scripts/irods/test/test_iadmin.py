@@ -1303,3 +1303,56 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iadmin rmresc pt0')
         self.admin.assert_icommand('iadmin rmresc pt1')
 
+class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
+
+    def setUp(self):
+        self.resc_name = 'warningresc'
+        self.host_warning_message = 'Warning, resource host address \'localhost\' will not work properly'
+        self.vault_error_message = 'ERROR: rcGeneralAdmin failed with error -813000 CAT_INVALID_RESOURCE_VAULT_PATH'
+        self.vault_warning_message = 'root directory cannot be used as vault path.'
+
+        # Ensure vault does not exist so the stat fails
+        self.good_vault = tempfile.mkdtemp()
+        shutil.rmtree(self.good_vault)
+
+        with session.make_session_for_existing_admin() as admin_session:
+            # Make resource with good host and vault path
+            admin_session.assert_icommand(['iadmin', 'mkresc', self.resc_name, 'unixfilesystem',
+                                           '{0}:{1}'.format(lib.get_hostname(), self.good_vault)],
+                                          'STDOUT_SINGLELINE', self.resc_name)
+        super(Test_Iadmin_Resources, self).setUp()
+
+    def tearDown(self):
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.run_icommand(['iadmin', 'rmresc', self.resc_name])
+        super(Test_Iadmin_Resources, self).tearDown()
+
+    def test_mkresc_host_path_warning_messages(self):
+        # Make resc with localhost and root vault
+        self.admin.assert_icommand(['iadmin', 'rmresc', self.resc_name])
+        stdout,stderr,rc = self.admin.run_icommand(['iadmin', 'mkresc', self.resc_name, 'unixfilesystem', 'localhost:/'])
+        # Should produce warnings and errors
+        self.assertTrue(0 != rc)
+        self.assertTrue(self.vault_error_message in stderr)
+        self.assertTrue(self.vault_warning_message in stdout)
+        self.assertTrue(self.host_warning_message in stdout)
+        # Should fail to create resource
+        self.admin.assert_icommand_fail('ilsresc', 'STDOUT_SINGLELINE', self.resc_name)
+
+        # Make resc with good vault path and localhost and ensure it is created
+        self.admin.assert_icommand(['iadmin', 'mkresc', self.resc_name, 'unixfilesystem', 'localhost:' + self.good_vault],
+                                   'STDOUT_SINGLELINE', self.host_warning_message)
+        self.admin.assert_icommand('ilsresc', 'STDOUT_SINGLELINE', self.resc_name)
+
+    def test_modresc_host_path_warning_messages(self):
+        # Change host to localhost and ensure that it was changed (check for warning)
+        self.admin.assert_icommand(['iadmin', 'modresc', self.resc_name, 'host', 'localhost'], 'STDOUT_SINGLELINE', self.host_warning_message)
+        self.admin.assert_icommand(['ilsresc', '-l', self.resc_name], 'STDOUT_SINGLELINE', 'location: localhost')
+
+        # Change vault to root and check for errors/warnings
+        stdout,stderr,rc = self.admin.run_icommand(['iadmin', 'modresc', self.resc_name, 'path', '/'])
+        self.assertTrue(0 != rc)
+        self.assertTrue(self.vault_error_message in stderr)
+        self.assertTrue(self.vault_warning_message in stdout)
+        # Changing vault should have failed, so make sure it has not changed
+        self.admin.assert_icommand(['ilsresc', '-l', self.resc_name], 'STDOUT_SINGLELINE', 'vault: ' + self.good_vault)
