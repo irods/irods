@@ -535,6 +535,17 @@ _resolveHostName(rsComm_t* _rsComm, const char* _hostAddress) {
     return 0;
 }
 
+// Returns success if path is not root; otherwise, generates an error
+irods::error
+verify_non_root_vault_path(irods::plugin_context& _ctx, const std::string& path) {
+    if (0 == path.compare("/")) {
+        const std::string error_message = "root directory cannot be used as vault path.";
+        addRErrorMsg(&_ctx.comm()->rError, 0, error_message.c_str());
+        return ERROR(CAT_INVALID_RESOURCE_VAULT_PATH, error_message.c_str() );
+    }
+    return SUCCESS();
+}
+
 // =-=-=-=-=-=-=-
 //
 irods::error _childIsValid(
@@ -4040,6 +4051,12 @@ irods::error db_reg_resc_op(
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
         _resolveHostName( _ctx.comm(), resc_input[irods::RESOURCE_LOCATION].c_str());
+    }
+
+    // Root dir is not a valid vault path
+    ret = verify_non_root_vault_path(_ctx, resc_input[irods::RESOURCE_PATH]);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
 
     getNowStr( myTime );
@@ -8426,6 +8443,12 @@ irods::error db_mod_resc_op(
     }
 
     if ( strcmp( _option, "path" ) == 0 ) {
+        // Root dir is not a valid vault path
+        ret = verify_non_root_vault_path(_ctx, std::string(_option_value));
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModResc SQL 10" );
         }
