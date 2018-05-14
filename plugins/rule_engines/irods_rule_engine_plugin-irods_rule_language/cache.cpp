@@ -36,7 +36,7 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
 
     MK_POINTER( &( ecopy->address ) );
     MK_POINTER( &( ecopy->pointers ) );
-    Hashtable *objectMap = newHashTable( 100 );
+    Hashtable *objectMap = newHashTable( size / 40 );
 
     MK_PTR( RuleSet, coreRuleSet );
     ecopy->coreRuleSetStatus = COMPRESSED;
