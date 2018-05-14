@@ -26,7 +26,7 @@ namespace irods {
 
         error result = SUCCESS();
         error last_error = SUCCESS();
-        if ( ( result = ASSERT_ERROR( _object_oper.operation() == create_oper || _object_oper.operation() == write_oper,
+        if ( ( result = ASSERT_ERROR( _object_oper.operation() == irods::CREATE_OPERATION || _object_oper.operation() == irods::WRITE_OPERATION,
                                       INVALID_OPERATION, "Performing create/write replication but objects operation is: \"%s\".",
                                       _object_oper.operation().c_str() ) ).ok() ) {
             // Generate a resource hierarchy string up to and including this resource
