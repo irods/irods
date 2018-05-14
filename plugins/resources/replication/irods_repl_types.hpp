@@ -24,16 +24,9 @@ struct child_comp {
 typedef std::multimap<float, irods::hierarchy_parser, child_comp> redirect_map_t;
 
 // define some constants
-const std::string child_list_prop = "child_list";
-const std::string write_child_list_prop = "write_child_list";
-const std::string object_list_prop = "object_list";
-const std::string need_pdmo_prop = "Need_PDMO";
-const std::string hierarchy_prop = "hierarchy";
-const std::string operation_type_prop = "operation_type";
-
-const std::string write_oper  = irods::WRITE_OPERATION;
-const std::string unlink_oper = irods::RESOURCE_OP_UNLINK;
-const std::string create_oper = irods::CREATE_OPERATION;
-const std::string rename_oper = irods::RESOURCE_OP_RENAME;
+const std::string CHILD_LIST_PROP{"child_list"};
+const std::string OBJECT_LIST_PROP{"object_list"};
+const std::string HIERARCHY_PROP{"hierarchy"};
+const std::string OPERATION_TYPE_PROP{"operation_type"};
 
 #endif // _IRODS_REPL_TYPES_HPP_
