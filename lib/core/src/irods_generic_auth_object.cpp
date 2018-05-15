@@ -75,6 +75,7 @@ namespace irods {
 
     error generic_auth_object::get_re_vars(
         rule_engine_vars_t& _kvp ) {
+        
         return SUCCESS(); 
     }
 }
