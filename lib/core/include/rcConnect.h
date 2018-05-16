@@ -239,6 +239,8 @@ int
 clientLoginPam( rcComm_t *conn, char *password, int ttl );
 int
 clientLoginTTL( rcComm_t *conn, int ttl );
+int 
+clientLoginOpenID( rcComm_t *_comm, const char  *_context );
 
 char *
 getSessionSignatureClientside();

@@ -26,6 +26,12 @@
 #include "checksum.hpp"
 #include "termiosUtil.hpp"
 
+
+#include "irods_kvp_string_parser.hpp"
+#include "irods_environment_properties.hpp"
+
+
+
 #include <openssl/md5.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -208,6 +214,373 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
     return obfSavePw( 0, 0, 0,  limitedPw );
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static int
+sslVerifyCallback( int ok, X509_STORE_CTX *store ) {
+    char data[256];
+
+    /* log any verification problems, even if we'll still accept the cert */
+    if ( !ok ) {
+        auto *cert = X509_STORE_CTX_get_current_cert( store );
+        int  depth = X509_STORE_CTX_get_error_depth( store );
+        int  err = X509_STORE_CTX_get_error( store );
+
+        rodsLog( LOG_NOTICE, "sslVerifyCallback: problem with certificate at depth: %i", depth );
+        X509_NAME_oneline( X509_get_issuer_name( cert ), data, 256 );
+        rodsLog( LOG_NOTICE, "sslVerifyCallback:   issuer = %s", data );
+        X509_NAME_oneline( X509_get_subject_name( cert ), data, 256 );
+        rodsLog( LOG_NOTICE, "sslVerifyCallback:   subject = %s", data );
+        rodsLog( LOG_NOTICE, "sslVerifyCallback:   err %i:%s", err,
+                 X509_verify_cert_error_string( err ) );
+    }
+    return ok;
+}
+
+static SSL_CTX*
+sslInit( char *certfile, char *keyfile ) {
+    static int init_done = 0;
+    rodsEnv env;
+    int status = getRodsEnv( &env );
+    if ( status < 0 ) {
+        rodsLog(
+            LOG_ERROR,
+            "sslInit - failed in getRodsEnv : %d",
+            status );
+        return NULL;
+    }
+    if ( !init_done ) {
+        SSL_library_init();
+        SSL_load_error_strings();
+        init_done = 1;
+    }
+
+    /* in our test programs we set up a null signal
+       handler for SIGPIPE */
+    /* signal(SIGPIPE, sslSigpipeHandler); */
+    SSL_CTX* ctx = SSL_CTX_new( SSLv23_method() );
+
+    SSL_CTX_set_options( ctx, SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_SINGLE_DH_USE );
+
+    /* load our keys and certificates if provided */
+    if ( certfile ) {
+        if ( SSL_CTX_use_certificate_chain_file( ctx, certfile ) != 1 ) {
+            rodsLog( LOG_ERROR,"sslInit: couldn't read certificate chain file" );
+            SSL_CTX_free( ctx );
+            return NULL;
+        }
+        else {
+            if ( SSL_CTX_use_PrivateKey_file( ctx, keyfile, SSL_FILETYPE_PEM ) != 1 ) {
+                rodsLog( LOG_ERROR,"sslInit: couldn't read key file" );
+                SSL_CTX_free( ctx );
+                return NULL;
+            }
+        }
+    }
+
+    /* set up CA paths and files here */
+    const char *ca_path = strcmp( env.irodsSSLCACertificatePath, "" ) ? env.irodsSSLCACertificatePath : NULL;
+    const char *ca_file = strcmp( env.irodsSSLCACertificateFile, "" ) ? env.irodsSSLCACertificateFile : NULL;
+    if ( ca_path || ca_file ) {
+        if ( SSL_CTX_load_verify_locations( ctx, ca_file, ca_path ) != 1 ) {
+            rodsLog( LOG_ERROR,"sslInit: error loading CA certificate locations" );
+        }
+    }
+    if ( SSL_CTX_set_default_verify_paths( ctx ) != 1 ) {
+        rodsLog( LOG_ERROR,"sslInit: error loading default CA certificate locations" );
+    }
+
+    /* Set up the default certificate verification */
+    /* if "none" is specified, we won't stop the SSL handshake
+       due to certificate error, but will log messages from
+       the verification callback */
+    const char* verify_server = env.irodsSSLVerifyServer;
+    if ( verify_server && !strcmp( verify_server, "none" ) ) {
+        SSL_CTX_set_verify( ctx, SSL_VERIFY_NONE, sslVerifyCallback );
+    }
+    else {
+        SSL_CTX_set_verify( ctx, SSL_VERIFY_PEER, sslVerifyCallback );
+    }
+    /* default depth is nine ... leave this here in case it needs modification */
+    SSL_CTX_set_verify_depth( ctx, 9 );
+
+    /* ciphers */
+    if ( SSL_CTX_set_cipher_list( ctx, SSL_CIPHER_LIST ) != 1 ) {
+        rodsLog( LOG_ERROR,"sslInit: couldn't set the cipher list (no valid ciphers)" );
+        SSL_CTX_free( ctx );
+        return NULL;
+    }
+
+    return ctx;
+}
+
+static SSL*
+sslInitSocket( SSL_CTX *ctx, int sock ) {
+    SSL *ssl;
+    BIO *bio;
+
+    bio = BIO_new_socket( sock, BIO_NOCLOSE );
+    if ( bio == NULL ) {
+        rodsLog( LOG_ERROR, "sslInitSocket: BIO allocation error" );
+        return NULL;
+    }
+    ssl = SSL_new( ctx );
+    if ( ssl == NULL ) {
+        rodsLog( LOG_ERROR,"sslInitSocket: couldn't create a new SSL socket" );
+        BIO_free( bio );
+        return NULL;
+    }
+    SSL_set_bio( ssl, bio, bio );
+
+    return ssl;
+}
+int ssl_write_msg( SSL* ssl, const std::string& msg )
+{
+    int msg_len = msg.size();
+    SSL_write( ssl, &msg_len, sizeof( msg_len ) );
+    SSL_write( ssl, msg.c_str(), msg_len );
+    return msg_len;
+}
+
+
+int ssl_read_msg( SSL* ssl, std::string& msg_out )
+{
+    const int READ_LEN = 256;
+    char buffer[READ_LEN + 1];
+    int n_bytes = 0;
+    int total_bytes = 0;
+    int data_len = 0;
+    SSL_read( ssl, &data_len, sizeof( data_len ) );
+    std::string msg;
+    // read that many bytes into our buffer
+    while ( total_bytes < data_len ) {
+        memset( buffer, 0, READ_LEN + 1 );
+        int bytes_remaining = data_len - total_bytes;
+        if ( bytes_remaining < READ_LEN ) {
+            // can read rest of data in one go
+            n_bytes = SSL_read( ssl, buffer, bytes_remaining );
+        }
+        else {
+            // read max bytes into buffer
+            n_bytes = SSL_read( ssl, buffer, READ_LEN );
+        }
+        if ( n_bytes == -1 ) {
+            // error reading
+            break;
+        }
+        if ( n_bytes == 0 ) {
+            // no more data
+            break;
+        }
+        std::cout << "received " + std::to_string( n_bytes ) + " bytes: " + std::string( buffer ) << std::endl;
+        msg.append( buffer );
+        total_bytes += n_bytes;
+    }
+    msg_out = msg;
+    return total_bytes;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//TODO remove temporary logging stuff
+#include <fstream>
+void write_log( const std::string& msg )
+{
+    std::ofstream logfile( "/tmp/davrodslog.log", std::ios::out | std::ios::app );
+    logfile << msg << std::endl;
+    logfile.close();
+}
+
+int clientLoginOpenID(
+        rcComm_t    *_comm,
+        const char  *_context )
+{
+    write_log( "entering clientLoginOpenID" );
+    //if ( _comm && _context ) { return 0; }
+    int status = 0;
+    if ( !_comm ) {
+        rodsLog( LOG_ERROR, "clientLoginOpenID: null comm" );
+        return -1;
+    }
+    if ( 1 == _comm->loggedIn ) {
+        rodsLog( LOG_ERROR, "clientLoginOpenID: already logged in" );
+        return 0;
+    }
+    const char *auth_scheme = "openid";
+    // =-=-=-=-=-=-=-
+    // construct an auth object given the scheme
+    irods::auth_object_ptr auth_obj;
+    irods::error ret = irods::auth_factory( auth_scheme, _comm->rError, auth_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        //return ret.code();
+        return -2;
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve an auth plugin given the auth object
+    irods::plugin_ptr ptr;
+    ret = auth_obj->resolve( irods::AUTH_INTERFACE, ptr );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        //return ret.code();
+        return -3;
+    }
+    irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
+    
+    
+    // =-=-=-=-=-=-=-
+    // call client side init
+    std::cout << "calling AUTH_CLIENT_START" << std::endl;
+    ret = auth_plugin->call <rcComm_t*, const char* > ( NULL, irods::AUTH_CLIENT_START, auth_obj, _comm, _context );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        //return ret.code();
+        return -4;
+    }
+    /*
+    // =-=-=-=-=-=-=-
+    // send an authentication request to the server
+    ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
+    if ( !ret.ok() ) {
+        printError(
+            _comm,
+            ret.code(),
+            ( char* )ret.result().c_str() );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=-
+    // establish auth context client side
+    ret = auth_plugin->call( NULL, irods::AUTH_ESTABLISH_CONTEXT, auth_obj );
+    if ( !ret.ok() ) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+    // =-=-=-=-=-=-=-
+    // send the auth response to the agent
+    ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_RESPONSE, auth_obj, _comm );
+    if ( !ret.ok() ) {
+        printError(
+            _comm,
+            ret.code(),
+            ( char* )ret.result().c_str() );
+        return ret.code();
+    }
+    */
+    // TODO use passed context arg instead
+    irods::kvp_map_t ctx_map;
+    std::string client_provider_cfg = irods::get_environment_property<std::string&>("openid_provider");
+    ctx_map["provider"] = client_provider_cfg;
+    ctx_map["session_id"] = "a37260939d97375a018cc2057fb744e604ebbee002beb963af27f6ffe35ba7d6";
+    std::string context_string = irods::escaped_kvp_string( ctx_map );
+
+    // TODO ensure context len is below struct limits here and in libopenid.cpp
+    authPluginReqInp_t req_in;
+    memset( &req_in, 0, sizeof( authPluginReqInp_t ) );
+    strncpy( req_in.context_, context_string.c_str(), context_string.size() + 1 );
+    
+    authPluginReqOut_t *req_out = NULL;
+    rodsLog( LOG_NOTICE, "calling rcAuthPluginRequest" );
+    status = rcAuthPluginRequest( _comm, &req_in, &req_out );
+    rodsLog( LOG_NOTICE, "rcAuthPluginRequest returned: %d", status );
+    write_log( "rcAuthPluginRequest returne: " + std::to_string( status ) );
+    if ( status < 0 ) {
+        return -5;
+    }
+    irods::kvp_map_t out_map;
+    irods::parse_escaped_kvp_string( req_out->result_, out_map );
+    if ( out_map.find( "port" ) == out_map.end()
+            || out_map.find( "nonce" ) == out_map.end() ) {
+        rodsLog( LOG_NOTICE, "map missing values: %s", req_out->result_ );
+        write_log( "map missing values: " + std::string( req_out->result_ ) );
+        return -6;
+    }
+    int portno = std::stoi( out_map["port"] );
+    std::string nonce = out_map["nonce"];
+    std::cout 
+        << "received comm info from server: port: [" + out_map["port"] + "], nonce: [" + out_map["nonce"] + "]"
+        << std::endl;
+    
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    struct hostent* server;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if ( sockfd < 0 ) {
+        perror( "socket" );
+        return -7;
+    }
+    std::string irods_env_host = irods::get_environment_property<std::string&>("irods_host"); // TODO error check
+    server = gethostbyname( irods_env_host.c_str() ); // TODO this only handles hostnames, not IP addresses. ok?
+    if ( server == NULL ) {
+        fprintf( stderr, "No host found for host: %s\n", irods_env_host.c_str() );
+        return -8;
+    }
+    memset( &serv_addr, 0, sizeof( serv_addr ) );
+    serv_addr.sin_family = AF_INET;
+    memcpy( server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length );
+    serv_addr.sin_port = htons( portno );
+    if ( connect( sockfd, (struct sockaddr*)&serv_addr, sizeof( serv_addr ) ) < 0 ) {
+        perror( "connect" );
+        return -9;
+    }
+    // turn on ssl
+    SSL_CTX *ctx = sslInit( NULL, NULL );
+    if ( !ctx ) {
+        rodsLog( LOG_ERROR, "could not initialize SSL context on client" );
+        close( sockfd );
+        return -10;
+    }
+    SSL* ssl = sslInitSocket( ctx, sockfd );
+    if ( !ssl ) {
+        rodsLog( LOG_ERROR, "could not initialize SSL on client socket" );
+        ERR_print_errors_fp( stdout );
+        close( sockfd );
+        return -11;
+    }
+    status = SSL_connect( ssl );
+    if ( status != 1 ) {
+        rodsLog( LOG_ERROR, "ssl connect error" );
+        SSL_free( ssl );
+        SSL_CTX_free( ctx );
+        close( sockfd );
+        return -12;
+    }
+    // TODO peer validation
+
+    // write nonce to server to verify that we are the same client that the auth req came from
+    ssl_write_msg( ssl, nonce );
+
+    // read first 4 bytes (data length)
+    std::string authorization_url_buf;
+    if ( ssl_read_msg( ssl, authorization_url_buf ) < 0 ) {
+        perror( "error reading url from socket" );
+        return -13;
+    }
+
+    SSL_free( ssl );
+    SSL_CTX_free( ctx );
+    close( sockfd );
+
+    // finished reading authorization url
+    // if the auth url is "true", session is already authorized, no user action needed
+    // TODO maybe find better way to signal a valid session,
+    // debug issue with using empty message as url
+    if ( authorization_url_buf.compare( "SUCCESS" ) == 0 ) {
+        std::cout << "Session is valid" << std::endl;
+    }
+    else {
+        std::cout << "session information was invalid" << std::endl;
+        return -14;
+        //std::cout << "OpenID Authorization URL: \n" << authorization_url_buf << std::endl;
+    }
+    // =-=-=-=-=-=-=-
+    // set the flag stating we are logged in
+    _comm->loggedIn = 1;
+
+    // =-=-=-=-=-=-=-
+    // win!
+    return 0;
+}
+
 /// =-=-=-=-=-=-=-
 /// @brief clientLogin provides the interface for authentication
 ///        plugins as well as defining the protocol or template
@@ -238,7 +611,6 @@ int clientLogin(
         // or irods env file configuration ( PAM )
         if ( _scheme_override && strlen( _scheme_override ) > 0 ) {
             auth_scheme = _scheme_override;
-
         }
         else {
             // =-=-=-=-=-=-=-
@@ -249,14 +621,11 @@ int clientLogin(
                 if ( getRodsEnv( &rods_env ) >= 0 ) {
                     if ( strlen( rods_env.rodsAuthScheme ) > 0 ) {
                         auth_scheme = rods_env.rodsAuthScheme;
-
                     }
                 }
-
             }
             else {
                 auth_scheme = auth_env_var;
-
             }
 
             // =-=-=-=-=-=-=-
@@ -271,11 +640,8 @@ int clientLogin(
             if ( irods::AUTH_PAM_SCHEME == auth_scheme ) {
                 auth_scheme = irods::AUTH_NATIVE_SCHEME;
             }
-
         } // if _scheme_override
-
     } // if client side auth
-
 
     // =-=-=-=-=-=-=-
     // construct an auth object given the scheme
