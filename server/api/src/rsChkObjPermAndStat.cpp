@@ -256,24 +256,29 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         }
 
         /* handle what's left */
-        if ( curCollEnt != NULL ) {
-            if ( curCopyGood == False ) {
-                status = replDataObjForBundle( rsComm, curCollEnt->collName,
-                                               curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
-                freeCollEntForChkColl( curCollEnt );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "chkCollForBundleOpr:%s does not have a good copy in %s",
-                             chkObjPermAndStatInp->objPath, resource );
+        if (NULL != curCollEnt) {
+            if (False == curCopyGood) {
+                status = replDataObjForBundle(rsComm,
+                                              curCollEnt->collName,
+                                              curCollEnt->dataName,
+                                              resource,
+                                              curCollEnt->resc_hier,
+                                              resc_hier,
+                                              0,
+                                              NULL);
+                freeCollEntForChkColl(curCollEnt);
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("[%s] does not have a good copy in [%s]") %
+                                          chkObjPermAndStatInp->objPath % resource).str().c_str())};
+                    irods::log(err);
                 }
             }
             else {
-                freeCollEntForChkColl( curCollEnt );
+                freeCollEntForChkColl(curCollEnt);
             }
         }
-
-        rsCloseCollection( rsComm, &handleInx );
-
+        rsCloseCollection(rsComm, &handleInx);
         return 0;
     } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;

@@ -131,10 +131,11 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                      "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
             return SYS_NO_RCAT_SERVER_ERR;
         } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
+            const auto err{ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
+                                 (boost::format("role not supported [%s]") %
+                                  svc_role.c_str()).str().c_str())};
+            irods::log(err);
+            return err.code();
         }
     }
 
@@ -199,10 +200,11 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                      "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
             return SYS_NO_RCAT_SERVER_ERR;
         } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
+            const auto err{ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
+                                 (boost::format("role not supported [%s]") %
+                                  svc_role.c_str()).str().c_str())};
+            irods::log(err);
+            return err.code();
         }
     }
     status = unlink( reiFilePath->value );
@@ -240,7 +242,10 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
             snprintf( errMsg, sizeof errMsg,
                       "rei file: %s",
                       reiFilePath->value );
-            addRErrorMsg( &rsComm->rError, 1, errMsg );
+            i = addRErrorMsg( &rsComm->rError, 1, errMsg );
+            if (i < 0) {
+                irods::log(ERROR(i, "addRErrorMsg failed"));
+            }
             if ( status == 0 ) {
                 /* return this error if no other error occurred */
                 status = unlinkStatus;
@@ -255,10 +260,10 @@ int _rsRuleExecDel( rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp ) {
                  "_rsRuleExecDel: chlDelRuleExec only in ICAT host" );
         return SYS_NO_RCAT_SERVER_ERR;
     } else {
-        rodsLog(
-            LOG_ERROR,
-            "role not supported [%s]",
-            svc_role.c_str() );
-        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        const auto err{ERROR(SYS_SERVICE_ROLE_NOT_SUPPORTED,
+                             (boost::format("role not supported [%s]") %
+                              svc_role.c_str()).str().c_str())};
+        irods::log(err);
+        return err.code();
     }
 }

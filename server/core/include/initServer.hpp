@@ -50,7 +50,7 @@ chkAllowedUser( const char *userName, const char *rodsZone );
 int
 setRsCommFromRodsEnv( rsComm_t *rsComm );
 int
-queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
+queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
               irodsPosition_t position );
 int
 purgeLockFileDir( int chkLockFlag );

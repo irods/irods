@@ -2054,7 +2054,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                       icatSessionStruct *icss, int continueFlag ) {
     int i, nCols;
     int userIx = -1, zoneIx = -1, accessIx = -1, dataIx = -1, collIx = -1;
-    int status;
     std::string zoneName;
 
     static char prevDataId[LONG_NAME_LEN];
@@ -2123,6 +2122,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         return CAT_INVALID_ARGUMENT;
     }
 
+    int status{};
     if ( dataIx >= 0 ) {
         if ( continueFlag == 1 ) {
             if ( strcmp( prevDataId,
@@ -2167,13 +2167,14 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
         }
-        cmlCheckDirId(
+        status = cmlCheckDirId(
             icss->stmtPtr[statementNum]->resultValue[collIx],
             genQueryInp.condInput.value[userIx],
             ( char* )zoneName.c_str(),
             genQueryInp.condInput.value[accessIx], icss );
+        prevStatus = status;
     }
-    return 0;
+    return status;
 }
 
 /* Save some pre-provided parameters if msiAclPolicy is STRICT.

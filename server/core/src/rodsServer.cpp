@@ -959,7 +959,7 @@ queConnectedAgentProc( int childPid, agentProc_t *connReq,
 
     boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
 
-    queAgentProc( connReq, agentProcHead, TOP_POS );
+    queueAgentProc( connReq, agentProcHead, TOP_POS );
 
     con_agent_lock.unlock();
 
@@ -1282,7 +1282,7 @@ addConnReqToQue( rsComm_t *rsComm, int sock ) {
 
     myConnReq->sock = sock;
     myConnReq->remoteAddr = rsComm->remoteAddr;
-    queAgentProc( myConnReq, &ConnReqHead, BOTTOM_POS );
+    queueAgentProc( myConnReq, &ConnReqHead, BOTTOM_POS );
 
     ReadReqCond.notify_all(); // NOTE:: check all vs one
     read_req_lock.unlock();
@@ -1412,7 +1412,7 @@ readWorkerTask() {
             rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", ret.code() );
             sendVersion( net_obj, ret.code(), 0, NULL, 0 );
             boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
-            queAgentProc( myConnReq, &BadReqHead, TOP_POS );
+            queueAgentProc( myConnReq, &BadReqHead, TOP_POS );
             bad_req_lock.unlock();
             mySockClose( newSock );
         }
@@ -1457,7 +1457,7 @@ readWorkerTask() {
 
             boost::unique_lock< boost::mutex > spwn_req_lock( SpawnReqCondMutex );
 
-            queAgentProc( myConnReq, &SpawnReqHead, BOTTOM_POS );
+            queueAgentProc( myConnReq, &SpawnReqHead, BOTTOM_POS );
 
             SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all
 

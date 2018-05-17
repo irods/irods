@@ -191,23 +191,33 @@ _rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
                 destDataObjInfo->specColl == NULL &&
                 L1desc[destL1descInx].remoteZoneHost == NULL ) {
             /* If the dest is in remote zone, register in _rsDataObjClose there */
-            status = svrRegDataObj( rsComm, destDataObjInfo );
-            if ( status == CAT_UNKNOWN_COLLECTION ) {
+            status = svrRegDataObj(rsComm, destDataObjInfo);
+            if (CAT_UNKNOWN_COLLECTION == status) {
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-                splitPathByKey( destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
-                svrRegDataObj( rsComm, destDataObjInfo );
-                rsMkCollR( rsComm, "/", parColl );
-                status = svrRegDataObj( rsComm, destDataObjInfo );
+                status = splitPathByKey(destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("splitPathByKey failed for [%s]") %
+                                          destDataObjInfo->objPath).str().c_str())};
+                    irods::log(err);
+                }
+                status = rsMkCollR(rsComm, "/", parColl);
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("rsMkCollR for [%s] failed") %
+                                          parColl).str().c_str())};
+                    irods::log(err);
+                }
+                status = svrRegDataObj(rsComm, destDataObjInfo);
             }
-            if ( status < 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
-                         destDataObjInfo->objPath, status );
+            if (status < 0) {
+                irods::log(LOG_NOTICE,
+                           (boost::format("[%s] - svrRegDataObj for [%s] failed, status = [%d]") %
+                            __FUNCTION__ % destDataObjInfo->objPath % status).str().c_str());
                 return status;
             }
         }
-
     }
     else {
         if ( srcDataObjInfo != NULL ) {

@@ -245,8 +245,11 @@ irods::error pam_auth_client_request(
         // copy over the resulting irods pam pasword
         // and cache the result in our auth object
         ptr->request_result( req_out->result_ );
-        obfSavePw( 0, 0, 0, req_out->result_ );
+        status = obfSavePw( 0, 0, 0, req_out->result_ );
         free( req_out );
+        if (status < 0) {
+            return ERROR(status, "obfSavePw failed");
+        }
         return SUCCESS();
 
     }
@@ -420,7 +423,10 @@ irods::error pam_auth_agent_request(
     // request the resulting irods password after the handshake
     char password_out[ MAX_NAME_LEN ];
     char* pw_ptr = &password_out[0];
-    chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
+    status = chlUpdateIrodsPamPassword( _ctx.comm(), const_cast< char* >( user_name.c_str() ), ttl, NULL, &pw_ptr );
+    if (status < 0) {
+        return ERROR(status, "failed updating iRODS pam password");
+    }
 
     // =-=-=-=-=-=-=-
     // set the result for communication back to the client

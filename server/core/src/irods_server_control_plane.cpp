@@ -1120,7 +1120,6 @@ namespace irods {
         boost::optional<const std::string&> encryption_algorithm;
         buffer_crypt::array_t shared_secret;
         try {
-            get_server_property<const int>(port_prop_);
             num_hash_rounds = get_server_property<const int>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW);
             encryption_algorithm.reset(get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW));
             const auto& key = get_server_property<const std::string>(CFG_SERVER_CONTROL_PLANE_KEY);
