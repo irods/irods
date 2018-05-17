@@ -409,7 +409,15 @@ runQueuedRuleExec( rcComm_t *rcComm, reExec_t *reExec,
     int thrInx;
 
     inx = -1;
-    while ( time( NULL ) <= endTime && ( thrInx = allocReThr( reExec ) ) >= 0 ) {
+    while ( time( NULL ) <= endTime ) {
+	if ( ( thrInx = allocReThr( reExec ) ) < 0 ) {
+	    if ( reExec->doFork == 0 || waitAndFreeReThr( rcComm, reExec ) < 0 ) {
+		break;
+	    }
+	    /* another job can be run */
+	    continue;
+	}
+
         myRuleExecInp = &reExec->reExecProc[thrInx].ruleExecSubmitInp;
         if ( ( inx = getNextQueuedRuleExec( genQueryOut, inx + 1,
                                             myRuleExecInp, reExec, jobType ) ) < 0 ) {
