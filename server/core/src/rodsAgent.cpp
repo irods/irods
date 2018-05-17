@@ -83,7 +83,6 @@ static void set_agent_process_name(const InformationRequiredToSafelyRenameProces
 }
 
 int receiveDataFromServer( int conn_tmp_socket ) {
-    int status;
     ssize_t num_bytes;
     char in_buf[1024];
     memset( in_buf, 0, 1024 );
@@ -97,7 +96,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         num_bytes = recv( conn_tmp_socket, &in_buf, 1024, 0 );
 
         if ( num_bytes < 0 ) {
-            rodsLog( LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]", errno, strerror( errno ) );
+            rodsLog( LOG_ERROR, "Error receiving data from rodsServer, errno = [%d][%s]", errno, strerror( errno ) );
             return SYS_SOCK_READ_ERR;
         } else if ( num_bytes == 0 ) {
             rodsLog( LOG_ERROR, "Received 0 bytes from rodsServer" );
@@ -115,7 +114,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
                 // Send acknowledgement that all data has been received
                 num_bytes = send ( conn_tmp_socket, ack_buffer, strlen(ack_buffer) + 1, 0 );
                 if ( num_bytes < 0 ) {
-                    rodsLog( LOG_ERROR, "Error sending acknowledgment to rodsServer, errno = [%d]", errno, strerror( errno ) );
+                    rodsLog( LOG_ERROR, "Error sending acknowledgment to rodsServer, errno = [%d][%s]", errno, strerror( errno ) );
                     return SYS_SOCK_READ_ERR;
                 }
 
@@ -138,8 +137,12 @@ int receiveDataFromServer( int conn_tmp_socket ) {
             std::string lhs = tmpStr.substr(0, i);
             std::string rhs = tmpStr.substr(i+1, tmpStr.size());
 
-            setenv( lhs.c_str(), rhs.c_str(), 1 );
-
+            int status{setenv(lhs.c_str(), rhs.c_str(), 1)};
+            if (status < 0) {
+                irods::log(ERROR(SYS_INTERNAL_ERR,
+                                 (boost::format("setenv([%s],[%s],1) failed with errno = [%d][%s]") %
+                                  lhs.c_str() % rhs.c_str() % errno % strerror(errno)).str().c_str()));
+            }
             tokenized_strings = strtok(NULL, ";");
         }
     }
@@ -164,8 +167,13 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         return SYS_SOCK_READ_ERR;
     }
 
-    setenv( SP_NEW_SOCK, socket_buf, 1 );
-    status = close( conn_tmp_socket );
+    int status{setenv(SP_NEW_SOCK, socket_buf, 1)};
+    if (status < 0) {
+        irods::log(ERROR(SYS_INTERNAL_ERR,
+                         (boost::format("setenv([%s],[%s],1) failed with errno = [%d][%s]") %
+                          SP_NEW_SOCK % socket_buf % errno % strerror(errno)).str().c_str()));
+    }
+    status = close(conn_tmp_socket);
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
     }
@@ -314,14 +322,16 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 // Delete socket if it already exists
                 unlink( tmp_socket_addr.sun_path );
 
-                if ( bind( tmp_socket, (struct sockaddr*) &tmp_socket_addr, len ) == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_BIND_ERR;
+                if (-1 == bind(tmp_socket, (struct sockaddr*) &tmp_socket_addr, len) ) {
+                    const auto err{ERROR(SYS_SOCK_BIND_ERR, "Unable to bind socket in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
 
-                if ( listen( tmp_socket, 5) == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_LISTEN_ERR;
+                if (-1 == listen(tmp_socket, 5)) {
+                    const auto err{ERROR(SYS_SOCK_LISTEN_ERR, "Failed to set up socket for listening in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
 
                 // Send acknowledgement that socket has been created
@@ -330,9 +340,10 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 send ( conn_socket, ack_buffer, len, 0 );
 
                 conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
-                if ( conn_tmp_socket == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_ACCEPT_ERR;
+                if (-1 == conn_tmp_socket) {
+                    const auto err{ERROR(SYS_SOCK_ACCEPT_ERR, "Failed to accept client socket in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
             }
 
@@ -342,7 +353,12 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 // Child process - reload properties and receive data from server process
                 irods::environment_properties::instance().capture();
 
-                receiveDataFromServer( conn_tmp_socket );
+                status = receiveDataFromServer(conn_tmp_socket);
+                if (status < 0) {
+                    const auto err{ERROR(status, "Error in receiveDataFromServer")};
+                    irods::log(err);
+                    //return err.code();
+                }
 
                 irods::server_properties::instance().capture();
 

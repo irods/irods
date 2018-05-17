@@ -254,10 +254,19 @@ _rsDataObjRepl(
         accessPerm = ACCESS_READ_OBJECT;
     }
 
-    initReiWithDataObjInp( &rei, rsComm, dataObjInp );
-    applyRule( "acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI );
+    initReiWithDataObjInp(&rei, rsComm, dataObjInp);
+    status = applyRule("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     clearKeyVal(rei.condInputData);
     free(rei.condInputData);
+    if (status < 0) {
+        if (rei.status < 0) {
+            status = rei.status;
+        }
+        const auto err{ERROR(status, "acSetMultiReplPerResc failed")};
+        irods::log(err);
+        return err.code();
+    }
+
     if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
         multiCopyFlag = 1;
     }

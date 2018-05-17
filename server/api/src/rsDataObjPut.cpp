@@ -236,12 +236,15 @@ _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             clearKeyVal( &replDataObjInp.condInput );
         }
     }
-    else if ( allFlag == 1 ) {
-        rsDataObjRepl( rsComm, &replDataObjInp, &transStat );
-        if ( transStat != NULL ) {
-            free( transStat );
+    else if (1 == allFlag) {
+        status = rsDataObjRepl(rsComm, &replDataObjInp, &transStat);
+        free(transStat);
+        clearKeyVal(&replDataObjInp.condInput);
+        if (status < 0) {
+            const auto err{ERROR(status, "rsDataObjRepl failed")};
+            irods::log(err);
+            return err.code();
         }
-        clearKeyVal( &replDataObjInp.condInput );
     }
 
     /* already send the client the status */

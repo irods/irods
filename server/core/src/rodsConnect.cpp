@@ -106,32 +106,49 @@ getRcatHost( int rcatType, const char *rcatZoneHint,
     }
 }
 
-rodsServerHost_t *
-mkServerHost( char *myHostAddr, char *zoneName ) {
-    rodsServerHost_t* tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
-    memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
+rodsServerHost_t*
+mkServerHost(char *myHostAddr, char *zoneName) {
+    if (NULL == myHostAddr || NULL == zoneName) {
+        irods::log(ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "bad params."));
+        return NULL;
+    }
 
-    /* XXXXX need to lookup the zone table when availiable */
-    if ( queHostName( tmpRodsServerHost, myHostAddr, 0 ) < 0 ) {
-        free( tmpRodsServerHost );
+    rodsServerHost_t* tmpRodsServerHost{(rodsServerHost_t*)malloc(sizeof(rodsServerHost_t))};
+    memset(tmpRodsServerHost, 0, sizeof(rodsServerHost_t));
+
+    /* XXXXX need to lookup the zone table when available */
+    int status{queueHostName(tmpRodsServerHost, myHostAddr, 0)};
+    if (status < 0) {
+        irods::log(ERROR(status, "queueHostName failed"));
+        free(tmpRodsServerHost);
         return NULL;
     }
 
     tmpRodsServerHost->localFlag = UNKNOWN_HOST_LOC;
 
-    if( queAddr( tmpRodsServerHost, myHostAddr ) < 0 ||
-        matchHostConfig( tmpRodsServerHost ) < 0 ||
-        getZoneInfo( zoneName, ( zoneInfo_t ** )( static_cast< void * >( &tmpRodsServerHost->zoneInfo ) ) ) < 0 ) {
+    status = queueAddr(tmpRodsServerHost, myHostAddr);
+    if (status < 0) {
+        irods::log(ERROR(status, "queueAddr failed"));
         free( tmpRodsServerHost );
         return NULL;
     }
-    else {
-        return tmpRodsServerHost;
+    status = matchHostConfig(tmpRodsServerHost);
+    if (status < 0) {
+        irods::log(ERROR(status, "matchHostConfig failed"));
+        free( tmpRodsServerHost );
+        return NULL;
     }
+    status = getZoneInfo(zoneName, (zoneInfo_t**)(static_cast<void*>(&tmpRodsServerHost->zoneInfo)));
+    if(status < 0) {
+        irods::log(ERROR(status, "getZoneInfo failed"));
+        free( tmpRodsServerHost );
+        return NULL;
+    }
+    return tmpRodsServerHost;
 }
 
 int
-queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
+queueAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
     if ( rodsServerHost == NULL || myHostName == NULL ) {
         return 0;
     }
@@ -144,7 +161,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
         if (ret_get_canonical_name != 0) {
             if ( ProcessType == SERVER_PT ) {
                 rodsLog( LOG_NOTICE,
-                         "queAddr: get_canonical_name error for [%s], status [%d]",
+                         "queueAddr: get_canonical_name error for [%s], status [%d]",
                          myHostName, ret_get_canonical_name);
             }
             return SYS_GET_HOSTNAME_ERR;
@@ -157,7 +174,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
             /* XXXXXX may want to mark resource down later */
         }
         if ( strcasecmp( myHostName, canonicalName ) != 0 ) {
-            queHostName( rodsServerHost, canonicalName, 0 );
+            queueHostName( rodsServerHost, canonicalName, 0 );
         }
     }
 
@@ -165,7 +182,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
 }
 
 int
-queHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag ) {
+queueHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag ) {
     hostName_t *myHostName, *lastHostName;
     hostName_t *tmpHostName;
 
@@ -200,7 +217,7 @@ queHostName( rodsServerHost_t *rodsServerHost, const char *myName, int topFlag )
 }
 
 int
-queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
+queueRodsServerHost( rodsServerHost_t **rodsServerHostHead,
                    rodsServerHost_t *myRodsServerHost ) {
     rodsServerHost_t *lastRodsServerHost, *tmpRodsServerHost;
 
@@ -221,7 +238,7 @@ queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
     return 0;
 }
 
-int queZone(
+int queueZone(
     const char*       zoneName,
     int               portNum,
     rodsServerHost_t* masterServerHost,
@@ -252,7 +269,7 @@ int queZone(
         }
         else {
             rodsLog( LOG_ERROR,
-                     "queZone:  Bad input portNum %d for %s", portNum, zoneName );
+                     "queueZone:  Bad input portNum %d for %s", portNum, zoneName );
             free( myZoneInfo );
             return SYS_INVALID_SERVER_HOST;
         }
@@ -281,7 +298,7 @@ int queZone(
 
     if ( masterServerHost == NULL ) {
         rodsLog( LOG_DEBUG,
-                 "queZone:  masterServerHost for %s is NULL", zoneName );
+                 "queueZone:  masterServerHost for %s is NULL", zoneName );
         return SYS_INVALID_SERVER_HOST;
     }
     else {
@@ -302,7 +319,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
         tmpRodsServerHost = HostConfigHead;
         while ( tmpRodsServerHost != NULL ) {
             if ( tmpRodsServerHost->localFlag == LOCAL_HOST ) {
-                status = queConfigName( tmpRodsServerHost, myRodsServerHost );
+                status = queueConfigName( tmpRodsServerHost, myRodsServerHost );
                 return status;
             }
             tmpRodsServerHost = tmpRodsServerHost->next;
@@ -325,7 +342,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
                 while ( tmpHostName != NULL ) {
                     if ( strcmp( tmpHostName->name, tmpConfigName->name ) == 0 ) {
                         myRodsServerHost->localFlag = tmpRodsServerHost->localFlag;
-                        queConfigName( tmpRodsServerHost, myRodsServerHost );
+                        queueConfigName( tmpRodsServerHost, myRodsServerHost );
                         return 0;
                     }
                     tmpHostName = tmpHostName->next;
@@ -340,7 +357,7 @@ matchHostConfig( rodsServerHost_t *myRodsServerHost ) {
 }
 
 int
-queConfigName( rodsServerHost_t *configServerHost,
+queueConfigName( rodsServerHost_t *configServerHost,
                rodsServerHost_t *myRodsServerHost ) {
     hostName_t *tmpHostName = configServerHost->hostName;
     int cnt = 0;
@@ -348,10 +365,10 @@ queConfigName( rodsServerHost_t *configServerHost,
     while ( tmpHostName != NULL ) {
         if ( cnt == 0 ) {
             /* queue the first one on top */
-            queHostName( myRodsServerHost, tmpHostName->name, 1 );
+            queueHostName( myRodsServerHost, tmpHostName->name, 1 );
         }
         else {
-            queHostName( myRodsServerHost, tmpHostName->name, 0 );
+            queueHostName( myRodsServerHost, tmpHostName->name, 0 );
         }
         cnt ++;
         tmpHostName = tmpHostName->next;
@@ -413,9 +430,9 @@ resolveHost( rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost ) {
         tmpRodsServerHost->localFlag = REMOTE_HOST;
     }
 
-    int status = queRodsServerHost( &ServerHostHead, tmpRodsServerHost );
+    int status = queueRodsServerHost( &ServerHostHead, tmpRodsServerHost );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "resolveHost - queRodsServerHost failed." );
+        rodsLog( LOG_ERROR, "resolveHost - queueRodsServerHost failed." );
     }
     *rodsServerHost = tmpRodsServerHost;
 

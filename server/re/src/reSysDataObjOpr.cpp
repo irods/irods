@@ -469,7 +469,6 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
-    int status;
     RE_TEST_MACRO( "    Calling msiSetDataType" )
 
     rei->status = 0;
@@ -482,14 +481,40 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN] = "";
-    splitPathByKey( dataObjInfoHead->objPath, logicalCollName, sizeof( logicalCollName ), logicalFileName, sizeof( logicalFileName ), '/' );
+    int status{splitPathByKey(dataObjInfoHead->objPath,
+                              logicalCollName,
+                              sizeof(logicalCollName),
+                              logicalFileName,
+                              sizeof(logicalFileName),
+                              '/')};
+    if (status < 0) {
+        const auto err{ERROR(status,
+                             (boost::format("splitPathByKey failed for [%s]") %
+                              dataObjInfoHead->objPath).str().c_str())};
+        irods::log(err);
+        return err.code();
+    }
+
     if ( strlen( logicalFileName ) <= 0 ) {
         return 0;
     }
 
     char logicalFileNameNoExtension[MAX_NAME_LEN] = "";
     char logicalFileNameExt[MAX_NAME_LEN] = "";
-    splitPathByKey( logicalFileName, logicalFileNameNoExtension, sizeof( logicalFileNameNoExtension ), logicalFileNameExt, sizeof( logicalFileNameExt ), '.' );
+    status = splitPathByKey(logicalFileName,
+                            logicalFileNameNoExtension,
+                            sizeof(logicalFileNameNoExtension),
+                            logicalFileNameExt,
+                            sizeof(logicalFileNameExt),
+                            '.');
+    if (status < 0) {
+        const auto err{ERROR(status,
+                             (boost::format("splitPathByKey failed for [%s]") %
+                              dataObjInfoHead->objPath).str().c_str())};
+        irods::log(err);
+        return err.code();
+    }
+
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return 0;
     }
@@ -523,7 +548,12 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
         return 0;
     }
 
-    svrCloseQueryOut( rei->rsComm, genQueryOut );
+    status = svrCloseQueryOut(rei->rsComm, genQueryOut);
+    if (status < 0) {
+        const auto err{ERROR(status, "svrCloseQueryOut failed")};
+        irods::log(err);
+        return err.code();
+    }
 
     /* register it */
     keyValPair_t regParam;
@@ -538,9 +568,11 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     modDataObjMetaInp.dataObjInfo = dataObjInfoHead;
     modDataObjMetaInp.regParam = &regParam;
 
-    rsModDataObjMeta( rei->rsComm, &modDataObjMetaInp );
-
-    return 0;
+    status = rsModDataObjMeta(rei->rsComm, &modDataObjMetaInp);
+    if (status < 0) {
+        irods::log(ERROR(status, "rsModDataObjMeta failed"));
+    }
+    return status;
 }
 
 /**

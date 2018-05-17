@@ -44,40 +44,51 @@ svrCloseQueryOut( rsComm_t *rsComm, genQueryOut_t *genQueryOut ) {
 }
 
 int
-isData( rsComm_t *rsComm, char *objName, rodsLong_t *dataId ) {
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[MAX_NAME_LEN];
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    int status;
-
-    splitPathByKey( objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/' );
-    memset( &genQueryInp, 0, sizeof( genQueryInp_t ) );
-    snprintf( tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr );
-    addInxIval( &genQueryInp.selectInp, COL_D_DATA_ID, 1 );
-    snprintf( tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName );
-    addInxVal( &genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr );
-    addInxIval( &genQueryInp.selectInp, COL_COLL_ID, 1 );
-    genQueryInp.maxRows = 2;
-    status = rsGenQuery( rsComm, &genQueryInp, &genQueryOut );
-    if ( status >= 0 ) {
-        sqlResult_t *dataIdRes;
-
-        if ( ( dataIdRes = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) ==
-                NULL ) {
-            rodsLog( LOG_ERROR,
-                     "isData: getSqlResultByInx for COL_D_DATA_ID failed" );
-            return UNMATCHED_KEY_OR_INDEX;
-        }
-        if ( dataId != NULL ) {
-            *dataId = strtoll( dataIdRes->value, 0, 0 );
-        }
+isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId) {
+    char logicalEndName[MAX_NAME_LEN]{};
+    char logicalParentDirName[MAX_NAME_LEN]{};
+    auto status{splitPathByKey(objName, logicalParentDirName, MAX_NAME_LEN, logicalEndName, MAX_NAME_LEN, '/')};
+    if (status < 0) {
+        const auto err{ERROR(status,
+                             (boost::format("splitPathByKey failed for [%s]") %
+                              objName).str().c_str())};
+        irods::log(err);
+        return err.code();
     }
 
-    freeGenQueryOut( &genQueryOut );
-    clearGenQueryInp( &genQueryInp );
+    genQueryInp_t genQueryInp{};
+    genQueryOut_t *genQueryOut{};
+    char tmpStr[MAX_NAME_LEN]{};
+    memset(&genQueryInp, 0, sizeof(genQueryInp_t));
+
+    snprintf(tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName);
+    addInxVal(&genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr);
+    addInxIval(&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+
+    snprintf(tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
+    addInxVal(&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
+    addInxIval(&genQueryInp.selectInp, COL_COLL_ID, 1);
+    genQueryInp.maxRows = 2;
+
+    status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+    if (status < 0) {
+        freeGenQueryOut(&genQueryOut);
+        clearGenQueryInp(&genQueryInp);
+        return status;
+    }
+
+    sqlResult_t *dataIdRes{getSqlResultByInx(genQueryOut, COL_D_DATA_ID)};
+    if (NULL == dataIdRes) {
+        const auto err{ERROR(UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_D_DATA_ID failed")};
+        irods::log(err);
+        return err.code();
+    }
+    if (NULL != dataId) {
+        *dataId = strtoll(dataIdRes->value, 0, 0);
+    }
+
+    freeGenQueryOut(&genQueryOut);
+    clearGenQueryInp(&genQueryInp);
     return status;
 }
 
