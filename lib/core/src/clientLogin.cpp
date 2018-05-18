@@ -220,10 +220,9 @@ int clientLoginTTL( rcComm_t *Conn, int ttl ) {
  */
 static int
 sslVerifyCallback( int ok, X509_STORE_CTX *store ) {
-    char data[256];
-
     /* log any verification problems, even if we'll still accept the cert */
     if ( !ok ) {
+        char data[256];
         auto *cert = X509_STORE_CTX_get_current_cert( store );
         int  depth = X509_STORE_CTX_get_error_depth( store );
         int  err = X509_STORE_CTX_get_error( store );
@@ -394,7 +393,6 @@ int clientLoginOpenID(
         const char  *_context,
         int reprompt )
 {
-    int status = 0;
     if ( !_comm ) {
         rodsLog( LOG_ERROR, "clientLoginOpenID: null comm" );
         return -1;
@@ -479,7 +477,7 @@ int clientLoginOpenID(
         strncpy( req_in.auth_scheme_, auth_scheme.c_str(), auth_scheme.size() + 1 );
 
         authPluginReqOut_t *req_out = NULL;
-        status = rcAuthPluginRequest( _comm, &req_in, &req_out );
+        int status = rcAuthPluginRequest( _comm, &req_in, &req_out );
         if ( status < 0 ) {
             return -7;
         }
