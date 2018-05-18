@@ -58,7 +58,7 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
         self.dhparams_pem_path = os.path.join(self.admin.local_session_dir, 'dhparams.pem')
 
     def create_ssl_files(self):
-        lib.execute_command('openssl genrsa -out %s' % (self.ssl_key_path))
+        lib.execute_command(['openssl', 'genrsa', '-out', self.ssl_key_path, '1024'])
         lib.execute_command('openssl req -batch -new -x509 -key %s -out %s -days 365' % (self.ssl_key_path, self.ssl_crt_path))
         lib.execute_command('openssl dhparam -2 -out %s 1024' % (self.dhparams_pem_path))
 
