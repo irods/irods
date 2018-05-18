@@ -82,7 +82,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         server_csr_path = os.path.join(irods_config.irods_directory, 'test', 'server.csr')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
         dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
         lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
@@ -135,7 +135,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
         server_csr_path = os.path.join(irods_config.irods_directory, 'test', 'server.csr')
         chain_pem_path = os.path.join(irods_config.irods_directory, 'test', 'chain.pem')
         dhparams_pem_path = os.path.join(irods_config.irods_directory, 'test', 'dhparams.pem')
-        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path])
+        lib.execute_command(['openssl', 'genrsa', '-out', server_key_path, '1024'])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-key', server_key_path, '-out', server_csr_path])
         lib.execute_command(['openssl', 'req', '-batch', '-new', '-x509', '-key', server_key_path, '-out', chain_pem_path, '-days', '365'])
         lib.execute_command(['openssl', 'dhparam', '-2', '-out', dhparams_pem_path, '1024'])  # normally 2048, but smaller size here for speed
