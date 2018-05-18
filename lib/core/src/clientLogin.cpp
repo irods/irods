@@ -382,19 +382,20 @@ int ssl_read_msg( SSL* ssl, std::string& msg_out )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //TODO remove temporary logging stuff
 #include <fstream>
+
 void write_log( const std::string& msg )
 {
     std::ofstream logfile( "/tmp/davrodslog.log", std::ios::out | std::ios::app );
-    logfile << msg << std::endl;
+    logfile << "write_log: " << msg << std::endl;
     logfile.close();
 }
 
 int clientLoginOpenID(
         rcComm_t    *_comm,
-        const char  *_context )
+        const char  *_context,
+        int reprompt )
 {
-    write_log( "entering clientLoginOpenID" );
-    //if ( _comm && _context ) { return 0; }
+    write_log( "entering clientLoginOpenID: " + std::string( _context ? _context : "" ) );
     int status = 0;
     if ( !_comm ) {
         rodsLog( LOG_ERROR, "clientLoginOpenID: null comm" );
@@ -425,8 +426,7 @@ int clientLoginOpenID(
         return -3;
     }
     irods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< irods::auth >( ptr );
-    
-    
+
     // =-=-=-=-=-=-=-
     // call client side init
     std::cout << "calling AUTH_CLIENT_START" << std::endl;
@@ -436,24 +436,126 @@ int clientLoginOpenID(
         //return ret.code();
         return -4;
     }
-    /*
-    // =-=-=-=-=-=-=-
-    // send an authentication request to the server
-    ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
-    if ( !ret.ok() ) {
-        printError(
-            _comm,
-            ret.code(),
-            ( char* )ret.result().c_str() );
-        return ret.code();
-    }
 
-    // =-=-=-=-=-=-=-
-    // establish auth context client side
-    ret = auth_plugin->call( NULL, irods::AUTH_ESTABLISH_CONTEXT, auth_obj );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
+    // if reprompt, do a login flow which reprompts
+    if ( reprompt ) {
+        // =-=-=-=-=-=-=-
+        // send an authentication request to the server
+        ret = auth_plugin->call <rcComm_t* > ( NULL, irods::AUTH_CLIENT_AUTH_REQUEST, auth_obj, _comm );
+        if ( !ret.ok() ) {
+            printError(
+                _comm,
+                ret.code(),
+                ( char* )ret.result().c_str() );
+            return ret.code();
+        }
+    }
+    else {
+        irods::kvp_map_t ctx_map;
+        std::string client_provider_cfg = irods::get_environment_property<std::string&>("openid_provider");
+        ctx_map["provider"] = client_provider_cfg;
+        ctx_map["session_id"] = _context ? _context : "";
+        ctx_map["a_user"] = _comm->proxyUser.userName;
+        std::string context_string = irods::escaped_kvp_string( ctx_map );
+
+        // TODO ensure context len is below struct limits here and in libopenid.cpp
+        authPluginReqInp_t req_in;
+        memset( &req_in, 0, sizeof( authPluginReqInp_t ) );
+        strncpy( req_in.context_, context_string.c_str(), context_string.size() + 1 );
+        // copy auth scheme to the req in
+        std::string auth_scheme = "openid";
+        strncpy( req_in.auth_scheme_, auth_scheme.c_str(), auth_scheme.size() + 1 );
+
+        authPluginReqOut_t *req_out = NULL;
+        status = rcAuthPluginRequest( _comm, &req_in, &req_out );
+        if ( status < 0 ) {
+            return -5;
+        }
+        irods::kvp_map_t out_map;
+        irods::parse_escaped_kvp_string( req_out->result_, out_map );
+        if ( out_map.find( "port" ) == out_map.end()
+            || out_map.find( "nonce" ) == out_map.end() ) {
+            rodsLog( LOG_NOTICE, "map missing values: %s", req_out->result_ );
+            return -6;
+        }
+        int portno = std::stoi( out_map["port"] );
+        std::string nonce = out_map["nonce"];
+        std::cout 
+            << "received comm info from server: port: [" + out_map["port"] + "], nonce: [" + out_map["nonce"] + "]"
+            << std::endl;
+
+        int sockfd;
+        struct sockaddr_in serv_addr;
+        struct hostent* server;
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if ( sockfd < 0 ) {
+            perror( "socket" );
+            return -7;
+        }
+        std::string irods_env_host = irods::get_environment_property<std::string&>("irods_host"); // TODO error check
+        server = gethostbyname( irods_env_host.c_str() ); // TODO this only handles hostnames, not IP addresses. ok?
+        if ( server == NULL ) {
+            fprintf( stderr, "No host found for host: %s\n", irods_env_host.c_str() );
+            return -8;
+        }
+        memset( &serv_addr, 0, sizeof( serv_addr ) );
+        serv_addr.sin_family = AF_INET;
+        memcpy( server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length );
+        serv_addr.sin_port = htons( portno );
+        if ( connect( sockfd, (struct sockaddr*)&serv_addr, sizeof( serv_addr ) ) < 0 ) {
+            perror( "connect" );
+            return -9;
+        }
+        // turn on ssl
+        SSL_CTX *ctx = sslInit( NULL, NULL );
+        if ( !ctx ) {
+            rodsLog( LOG_ERROR, "could not initialize SSL context on client" );
+            close( sockfd );
+            return -10;
+        }
+        SSL* ssl = sslInitSocket( ctx, sockfd );
+        if ( !ssl ) {
+            rodsLog( LOG_ERROR, "could not initialize SSL on client socket" );
+            ERR_print_errors_fp( stdout );
+            close( sockfd );
+            return -11;
+        }
+        status = SSL_connect( ssl );
+        if ( status != 1 ) {
+            rodsLog( LOG_ERROR, "ssl connect error" );
+            SSL_free( ssl );
+            SSL_CTX_free( ctx );
+            close( sockfd );
+            return -12;
+        }
+        // TODO peer validation
+
+        // write nonce to server to verify that we are the same client that the auth req came from
+        ssl_write_msg( ssl, nonce );
+
+        // read first 4 bytes (data length)
+        std::string authorization_url_buf;
+        if ( ssl_read_msg( ssl, authorization_url_buf ) < 0 ) {
+            perror( "error reading url from socket" );
+            return -13;
+        }   
+
+        SSL_free( ssl );
+        SSL_CTX_free( ctx );
+        close( sockfd );
+        // finished reading authorization url
+        // if the auth url is "SUCCESS", session is already authorized, no user action needed
+        // TODO maybe find better way to signal a valid session,
+        // debug issue with using empty message as url
+        if ( authorization_url_buf.compare( "SUCCESS" ) == 0 ) {
+            std::cout << "Session is valid" << std::endl;
+        }
+        else {
+            // for non reprompt, we just ignore the auth url
+            std::cout << "session information was invalid, received: ["
+                << authorization_url_buf << "]" << std::endl;
+            return -14;
+        }
     }
     // =-=-=-=-=-=-=-
     // send the auth response to the agent
@@ -465,113 +567,7 @@ int clientLoginOpenID(
             ( char* )ret.result().c_str() );
         return ret.code();
     }
-    */
-    // TODO use passed context arg instead
-    irods::kvp_map_t ctx_map;
-    std::string client_provider_cfg = irods::get_environment_property<std::string&>("openid_provider");
-    ctx_map["provider"] = client_provider_cfg;
-    ctx_map["session_id"] = "a37260939d97375a018cc2057fb744e604ebbee002beb963af27f6ffe35ba7d6";
-    std::string context_string = irods::escaped_kvp_string( ctx_map );
 
-    // TODO ensure context len is below struct limits here and in libopenid.cpp
-    authPluginReqInp_t req_in;
-    memset( &req_in, 0, sizeof( authPluginReqInp_t ) );
-    strncpy( req_in.context_, context_string.c_str(), context_string.size() + 1 );
-    
-    authPluginReqOut_t *req_out = NULL;
-    rodsLog( LOG_NOTICE, "calling rcAuthPluginRequest" );
-    status = rcAuthPluginRequest( _comm, &req_in, &req_out );
-    rodsLog( LOG_NOTICE, "rcAuthPluginRequest returned: %d", status );
-    write_log( "rcAuthPluginRequest returne: " + std::to_string( status ) );
-    if ( status < 0 ) {
-        return -5;
-    }
-    irods::kvp_map_t out_map;
-    irods::parse_escaped_kvp_string( req_out->result_, out_map );
-    if ( out_map.find( "port" ) == out_map.end()
-            || out_map.find( "nonce" ) == out_map.end() ) {
-        rodsLog( LOG_NOTICE, "map missing values: %s", req_out->result_ );
-        write_log( "map missing values: " + std::string( req_out->result_ ) );
-        return -6;
-    }
-    int portno = std::stoi( out_map["port"] );
-    std::string nonce = out_map["nonce"];
-    std::cout 
-        << "received comm info from server: port: [" + out_map["port"] + "], nonce: [" + out_map["nonce"] + "]"
-        << std::endl;
-    
-    int sockfd;
-    struct sockaddr_in serv_addr;
-    struct hostent* server;
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if ( sockfd < 0 ) {
-        perror( "socket" );
-        return -7;
-    }
-    std::string irods_env_host = irods::get_environment_property<std::string&>("irods_host"); // TODO error check
-    server = gethostbyname( irods_env_host.c_str() ); // TODO this only handles hostnames, not IP addresses. ok?
-    if ( server == NULL ) {
-        fprintf( stderr, "No host found for host: %s\n", irods_env_host.c_str() );
-        return -8;
-    }
-    memset( &serv_addr, 0, sizeof( serv_addr ) );
-    serv_addr.sin_family = AF_INET;
-    memcpy( server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length );
-    serv_addr.sin_port = htons( portno );
-    if ( connect( sockfd, (struct sockaddr*)&serv_addr, sizeof( serv_addr ) ) < 0 ) {
-        perror( "connect" );
-        return -9;
-    }
-    // turn on ssl
-    SSL_CTX *ctx = sslInit( NULL, NULL );
-    if ( !ctx ) {
-        rodsLog( LOG_ERROR, "could not initialize SSL context on client" );
-        close( sockfd );
-        return -10;
-    }
-    SSL* ssl = sslInitSocket( ctx, sockfd );
-    if ( !ssl ) {
-        rodsLog( LOG_ERROR, "could not initialize SSL on client socket" );
-        ERR_print_errors_fp( stdout );
-        close( sockfd );
-        return -11;
-    }
-    status = SSL_connect( ssl );
-    if ( status != 1 ) {
-        rodsLog( LOG_ERROR, "ssl connect error" );
-        SSL_free( ssl );
-        SSL_CTX_free( ctx );
-        close( sockfd );
-        return -12;
-    }
-    // TODO peer validation
-
-    // write nonce to server to verify that we are the same client that the auth req came from
-    ssl_write_msg( ssl, nonce );
-
-    // read first 4 bytes (data length)
-    std::string authorization_url_buf;
-    if ( ssl_read_msg( ssl, authorization_url_buf ) < 0 ) {
-        perror( "error reading url from socket" );
-        return -13;
-    }
-
-    SSL_free( ssl );
-    SSL_CTX_free( ctx );
-    close( sockfd );
-
-    // finished reading authorization url
-    // if the auth url is "true", session is already authorized, no user action needed
-    // TODO maybe find better way to signal a valid session,
-    // debug issue with using empty message as url
-    if ( authorization_url_buf.compare( "SUCCESS" ) == 0 ) {
-        std::cout << "Session is valid" << std::endl;
-    }
-    else {
-        std::cout << "session information was invalid" << std::endl;
-        return -14;
-        //std::cout << "OpenID Authorization URL: \n" << authorization_url_buf << std::endl;
-    }
     // =-=-=-=-=-=-=-
     // set the flag stating we are logged in
     _comm->loggedIn = 1;
