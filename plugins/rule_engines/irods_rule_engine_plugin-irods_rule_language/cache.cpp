@@ -21,7 +21,8 @@
  * This function returns NULL if it runs out of memory allocated between in *p and *p+size.
  * The rule engine status is also set to uninitialized. */
 Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
-    if ( size % REGION_ALIGNMENT != 0 ) { /* size should be divisible by ALIGNMENT */
+    /* size should be large enough and divisible by ALIGNMENT */
+    if (size < DEFAULT_BLOCK_SIZE || 0 != size % REGION_ALIGNMENT) {
         return NULL;
     }
 
@@ -36,7 +37,18 @@ Cache *copyCache( unsigned char **p, size_t size, Cache *ptr ) {
 
     MK_POINTER( &( ecopy->address ) );
     MK_POINTER( &( ecopy->pointers ) );
-    Hashtable *objectMap = newHashTable( size / 40 );
+
+    // objectMap will use a hash table size that is twice the number of objects being held (to favor speed).
+    // Example: The shared memory region has a size of SHMMAX (see shared_memory.hpp). SHMMAX == 30000000.
+    // The upper bound of the passed-in size is the shared memory region size.
+    // With an average compiled object size of 75 bytes (taken over sample of 9000 lines of rule code), SHMMAX / 75 = 400000 objects.
+    // The maximum size of the hash table should be twice the objects that can fit in shared memory (400000 * 2 = 800000).
+    // The ratio of the shared memory region size to the maximum hash table size is 30000000 / 800000 = 37.5
+    // Since the calculations are based on an average size, the ratio is rounded to 40 to avoid imbuing too much significance.
+    // The size of the hash table for a cache of the passed-in size, then, should be the size of the cache divided by the ratio.
+    // hashtable size upper limit == cache size upper limit / 40 == 30000000 / 40 < 800000
+    const int SHMEM_TO_MAX_HASHTABLE_SIZE_RATIO{40};
+    Hashtable *objectMap = newHashTable(size / SHMEM_TO_MAX_HASHTABLE_SIZE_RATIO);
 
     MK_PTR( RuleSet, coreRuleSet );
     ecopy->coreRuleSetStatus = COMPRESSED;
