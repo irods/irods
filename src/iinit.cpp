@@ -6,6 +6,7 @@
 #include "parseCommandLine.h"
 #include "rcMisc.h"
 #include "rodsClient.h"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 #include "irods_native_auth_object.hpp"
@@ -39,6 +40,7 @@ void usageTTL();
 
 #define TTYBUF_LEN 100
 #define UPDATE_TEXT_LEN NAME_LEN*10
+const char *AUTH_OPENID_SCHEME = "openid";
 
 /*
  Attempt to make the ~/.irods directory in case it doesn't exist (may
@@ -266,6 +268,9 @@ main( int argc, char **argv ) {
         ::tolower );
 
     int useGsi = 0;
+    if ( AUTH_OPENID_SCHEME == lower_scheme ) {
+        doPassword = 0;
+    }
     if ( irods::AUTH_GSI_SCHEME == lower_scheme ) {
         useGsi = 1;
         doPassword = 0;
@@ -341,39 +346,38 @@ main( int argc, char **argv ) {
         // if this succeeded, do the regular login below to check
         // that the generated password works properly.
     } // if pam
-
-    // =-=-=-=-=-=-=-
-    // since we might be using PAM
-    // and check that the user/password is OK
-    const char* auth_scheme = ( pam_flg ) ?
+    
+    if ( strcmp( my_env.rodsAuthScheme, AUTH_OPENID_SCHEME ) == 0 ) {
+        status = clientLoginOpenID( Conn, NULL, 1 );
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // since we might be using PAM
+        // and check that the user/password is OK
+        const char* auth_scheme = ( pam_flg ) ?
                               irods::AUTH_NATIVE_SCHEME.c_str() :
                               my_env.rodsAuthScheme;
-    status = clientLogin( Conn, 0, auth_scheme );
-    if ( status != 0 ) {
-
-
-        rcDisconnect( Conn );
-        return 7;
-    }
-
-    printErrorStack( Conn->rError );
-    if ( ttl > 0 && !pam_flg ) {
-        /* if doing non-PAM TTL, now get the
-        short-term password (after initial login) */
-        status = clientLoginTTL( Conn, ttl );
+        status = clientLogin( Conn, 0, auth_scheme );
         if ( status != 0 ) {
-
-
-            rcDisconnect( Conn );
-            return 8;
-        }
-        /* And check that it works */
-        status = clientLogin( Conn );
-        if ( status != 0 ) {
-
-
             rcDisconnect( Conn );
             return 7;
+        }
+
+        printErrorStack( Conn->rError );
+        if ( ttl > 0 && !pam_flg ) {
+            /* if doing non-PAM TTL, now get the
+            short-term password (after initial login) */
+            status = clientLoginTTL( Conn, ttl );
+            if ( status != 0 ) {
+                rcDisconnect( Conn );
+                return 8;
+            }
+            /* And check that it works */
+            status = clientLogin( Conn );
+            if ( status != 0 ) {
+                rcDisconnect( Conn );
+                return 7;
+            }
         }
     }
 
