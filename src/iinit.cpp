@@ -348,7 +348,18 @@ main( int argc, char **argv ) {
     } // if pam
     
     if ( strcmp( my_env.rodsAuthScheme, AUTH_OPENID_SCHEME ) == 0 ) {
-        status = clientLoginOpenID( Conn, NULL, 1 );
+        std::string client_provider_cfg;
+        try {
+            client_provider_cfg = irods::get_environment_property<std::string&>("openid_provider");
+        }
+        catch( const irods::error& e ) {
+            rodsLog( LOG_DEBUG, "openid_provider not defined" );
+            return 1;
+        }
+        irods::kvp_map_t ctx_map;
+        ctx_map["provider"] = client_provider_cfg;
+        std::string ctx_str = irods::escaped_kvp_string( ctx_map );
+        status = clientLoginOpenID( Conn, ctx_str.c_str(), 1 );
     }
     else {
         // =-=-=-=-=-=-=-
