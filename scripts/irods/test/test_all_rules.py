@@ -638,6 +638,7 @@ OUTPUT ruleExecOut
 
         self.rods_session.assert_icommand("irule -F " + rule_file);
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiCheckAccess_3309(self):
 
         data_obj_rule_file="test_msiCheckAccess_data_obj_3309.r"
