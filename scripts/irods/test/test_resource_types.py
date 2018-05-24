@@ -722,6 +722,7 @@ class Test_Resource_Unixfilesystem(ResourceSuite, ChunkyDevTest, unittest.TestCa
             admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
         shutil.rmtree(IrodsConfig().irods_directory + "/demoRescVault", ignore_errors=True)
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_unix_filesystem_free_space_on_root__3928(self):
         free_space = '100'
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'path', '/demoRescVault'], 'STDOUT_SINGLELINE', 'Previous resource path')
