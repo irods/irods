@@ -870,7 +870,6 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     if ( strcmp( cmdToken[0], "moduser" ) == 0 ) {
         if ( strcmp( cmdToken[2], "password" ) == 0 ) {
             int i, len, lcopy;
-            char *key2;
             /* this is a random string used to pad, arbitrary, but must match
                the server side: */
             char rand[] = "1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs";
@@ -918,8 +917,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 #endif
 
             }
-            key2 = getSessionSignatureClientside();
-            obfEncodeByKeyV2( buf0, buf1, key2, buf2 );
+            obfEncodeByKey( buf0, buf1, buf2 );
             cmdToken[3] = buf2;
         }
         generalAdmin( 0, "modify", "user", cmdToken[1], cmdToken[2],
