@@ -15,6 +15,7 @@ from .. import lib
 from ..configuration import IrodsConfig
 
 class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_SSL, self).setUp()
@@ -23,6 +24,7 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
         super(Test_SSL, self).tearDown()
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_icommands_segfault_when_ssl_cert_hostname_not_matching__issue_3609(self):
         self.init_properties()
         self.create_ssl_files()
@@ -45,6 +47,8 @@ class Test_SSL(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
 
                 self.remove_files()
 
+    # NOTE: The methods below assume use of the native rule language rule engine plugin
+    # Please skip any additional tests using these methods unless the native rule language REP is in use by default
     def init_properties(self):
         self.admin = self.admin_sessions[0]
 
