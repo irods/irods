@@ -622,6 +622,7 @@ output ruleExecOut
             IrodsController().start()
 
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiServerMonPerf_default_3736(self):
         rule_file="test_msiServerMonPerf.r"
         rule_string= '''
