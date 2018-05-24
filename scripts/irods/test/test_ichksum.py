@@ -16,6 +16,7 @@ from .. import paths
 from ..configuration import IrodsConfig
 
 class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Ichksum, self).setUp()
@@ -96,6 +97,7 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichksum', filename], 'STDOUT_SINGLELINE', filename)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing")
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_ichksum_fails_with_dyn_pep__issue_3485(self):
         config = IrodsConfig()
 
