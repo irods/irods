@@ -3527,6 +3527,7 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
 
 class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
@@ -3560,6 +3561,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_open_write_close_for_repl__3909(self):
         # Create local test file of a certain expected size
         filename = 'some_local_file.txt'
