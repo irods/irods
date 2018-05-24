@@ -336,6 +336,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         os.unlink(rulefile7)
         os.unlink(rulefile8)
  
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_acPreProcForExecCmd__3867(self):
         with temporary_core_file() as core:
             core.add_rule('acPreProcForExecCmd(*cmd, *args, *addr, *hint){ writeLine("serverLog", "TEST_MARKER_test_acPreProcForExecCmd__3867")}')
