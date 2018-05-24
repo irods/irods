@@ -440,15 +440,18 @@ main( int argc, char **argv ) {
 void usage( char *prog ) {
     printf( "Creates a file containing your iRODS password in a scrambled form,\n" );
     printf( "to be used automatically by the icommands.\n" );
-    printf( "Usage: %s [-ehvVl] [--ttl TimeToLive]\n", prog );
+    printf( "Usage: %s [-ehvVl] [--ttl TimeToLive] [password]\n", prog );
     printf( " -e  echo the password as you enter it (normally there is no echo)\n" );
     printf( " -l  list the iRODS environment variables (only)\n" );
     printf( " -v  verbose\n" );
     printf( " -V  Very verbose\n" );
     printf( "--ttl ttl  set the password Time To Live (specified in hours)\n" );
     printf( "           Run 'iinit -h --ttl' for more\n" );
-
     printf( " -h  this help\n" );
+    printf( "\n" );
+    printf( "Note that the password will be in clear-text if provided via the\n" );
+    printf( "command line.  Providing the password this way will bypass the\n" );
+    printf( "password prompt.\n" );
     printReleaseInfo( "iinit" );
 }
 
