@@ -555,9 +555,9 @@ output ruleExecOut
             rule_string = '''def main(args, cb, rei):
     cb.writeLine("stdout", "from_prep")
 
-    input null
-    output ruleExecOut
-    '''
+input null
+output ruleExecOut
+'''
             with open(rule_file, 'wt') as f:
                 print(rule_string, file=f, end='')
 
@@ -604,9 +604,9 @@ output ruleExecOut
             rule_string = '''def main(args, cb, rei):
     cb.writeLine("stdout", "from_prep")
 
-    input null
-    output ruleExecOut
-    '''
+input null
+output ruleExecOut
+'''
             with open(rule_file, 'wt') as f:
                 print(rule_string, file=f, end='')
 
@@ -619,7 +619,7 @@ output ruleExecOut
             irods_config.server_config['plugin_configuration']['rule_engines'] = orig
             irods_config.commit(irods_config.server_config, irods_config.server_config_path, make_backup=True)
 
-            irodsController().start()
+            IrodsController().start()
 
 
     def test_msiServerMonPerf_default_3736(self):
