@@ -523,6 +523,7 @@ output ruleExecOut
         self.rods_session.assert_icommand(
             '''irule "*Err = errorcode(msiExecCmd('cmd', '', '', '', '', *Out)); msiGetStderrInExecCmdOut(*Out, *Stderr); writeLine('stdout', 'stderr: *Err*Stderr')" null ruleExecOut''', 'STDOUT_SINGLELINE', "stderr")
 
+    @unittest.skip('Delete this line upon resolving #3957')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_writeLine_config_last_3477(self):
         irods_config = IrodsConfig()
@@ -572,6 +573,7 @@ output ruleExecOut
 
             IrodsController().start()
 
+    @unittest.skip('Delete this line upon resolving #3957')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_writeLine_config_first_3477(self):
         irods_config = IrodsConfig()
