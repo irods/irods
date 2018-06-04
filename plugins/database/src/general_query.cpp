@@ -27,6 +27,9 @@
 #include "icatHighLevelRoutines.hpp"
 #include "mid_level.hpp"
 #include "low_level.hpp"
+#include "irods_virtual_path.hpp"
+#include <boost/algorithm/string.hpp>
+#include <string>
 
 extern int logSQLGenQuery;
 
@@ -1163,55 +1166,115 @@ checkCondition( char *condition ) {
     return 0;
 }
 
-
 /*
 add an IN clause to the whereSQL string for the Parent_Of option
  */
 int
-addInClauseToWhereForParentOf( char *inArg ) {
-    int i, len;
-    int nput = 0;
-    char tmpStr[MAX_SQL_SIZE_GQ];
+addInClauseToWhereForParentOf( char *inArg )
+{
+    // This vector holds all of the components of the path
+    // in the parameter inArg, with no slashes.
+    std::vector<std::string> paths;
 
-    // [#3913] silent failure of imkdir -p with long path containing white space
-    static char inStrings[MAX_SQL_SIZE_GQ*2];
-    int inStrIx = 0;
+    // The purpose of this vector of strings is to stick around until all
+    // references to the strings included are gone -- the cllBindVars[] array
+    // of pointers to null terminated strings is filled with these strings
+    // which cannot be removed until the next call to this function.
+    static std::vector<std::string> inStringVec;
+    static bool reset_vector = false;
 
-    if ( !rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-    len = strlen( inArg );
-    for ( i = 0; i < len + 1; i++ ) {
-        if ( inArg[i] == '/' || inArg[i] == '\0' ) {
-            int ncopy = i;
-            if ( nput == 0 ) {
-                ncopy++;
-            }
-            if ( nput == 0 ) {
-                if ( !rstrcat( whereSQL, "?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-            }
-            else {
-                if ( !rstrcat( whereSQL, ", ?", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
-            }
-            nput++;
+    // Save the current separator -- it's used in more than on place below
+    std::string separator(irods::get_virtual_path_separator());
 
-            /* Add the substing as a bind variable in case there are quotes */
-            tmpStr[0] = '\0';
-            rstrncat( tmpStr, inArg, ncopy, MAX_SQL_SIZE_GQ );
-            if ( !rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
-                           ( MAX_SQL_SIZE_GQ*2 ) - inStrIx ) ) {
-                return USER_STRLEN_TOOLONG;
+    // Making sure that the separator has a single char
+    if (separator.size() > 1)
+    {
+        rodsLog( LOG_ERROR, "irods::get_virtual_path_separator() returned a string with more than one character.");
+        return BAD_FUNCTION_CALL;
+    }
+
+    try
+    {
+        std::string stringInArg(const_cast<const char *>(inArg));
+
+        // The fourth parameter below will remove adjacent separators
+        boost::algorithm::split(paths, stringInArg, boost::is_any_of(separator), boost::algorithm::token_compress_on);
+    }
+    catch ( const boost::bad_function_call& )
+    {
+        rodsLog( LOG_ERROR, "boost::split threw boost::bad_function_call" );
+        return BAD_FUNCTION_CALL;
+    }
+
+    // Collect all the parameter path components in order
+    // from left to right.  Starting from the second call to
+    // this function, the vector is cleared as explained above.
+    if (reset_vector)
+    {
+        inStringVec.clear();
+    }
+    reset_vector = true;
+
+    // Put together all the paths included in the parameter path
+    // and save them in the static vector.  These strings will
+    // be assigned to the global bind variable array used
+    // in the WHERE clause.
+    //
+    // Thusly, the path "/tempZone/trash/home/public" for example, will become:
+    //
+    //           inStringVec[0] = /
+    //           inStringVec[1] = /tempZone
+    //           inStringVec[2] = /tempZone/trash
+    //           inStringVec[3] = /tempZone/trash/home
+    //           inStringVec[4] = /tempZone/trash/home/public
+    for (size_t si = 0; si < paths.size(); si++)
+    {
+        std::string path;
+        bool need_slash = false;
+
+        for (size_t j = 0; j <= si; j++)
+        {
+            if (paths[j].empty()) {
+                path += separator;
+                need_slash = false;
+            } else {
+                if (need_slash) {
+                    path += separator;
+                }
+                path += paths[j];
+                need_slash = true;
             }
-            inStrings[inStrIx + ncopy] = '\0';
-            if ( cllBindVarCount + 1 >= MAX_BIND_VARS ) {
-                return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
-            }
-            cllBindVars[cllBindVarCount++] = ( char * )&inStrings[inStrIx];
-            inStrIx = inStrIx + ncopy + 1;
+        }
+        inStringVec.push_back(path);
+    }
+
+    // Assemble the IN clause segment. Every path in inStringVec gets a '?'.
+    // This string ends up looking like this: "IN (?, ?, ?, ?, ?)" where
+    // the number of '?'s is equal to the number of paths in inStringVec.
+    std::string whereString(" IN (");
+    for (size_t si = 0; si < inStringVec.size(); si++)
+    {
+        if (si == 0) {
+            whereString += "?";
+        } else {
+            whereString += ", ?";
         }
     }
-    if ( !rstrcat( whereSQL, ")", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
+    whereString += ")";
+
+    if ( !rstrcat( whereSQL, whereString.c_str(), MAX_SQL_SIZE_GQ) ) { return USER_STRLEN_TOOLONG; }
+
+    if ( cllBindVarCount + inStringVec.size() >= MAX_BIND_VARS ) {
+        return CAT_BIND_VARIABLE_LIMIT_EXCEEDED;
+    }
+
+    // This assigns the static strings to the global bind variable array.
+    for (size_t si = 0; si < inStringVec.size(); si++)
+    {
+        cllBindVars[cllBindVarCount++] = inStringVec[si].c_str();
+    }
     return 0;
 }
-
 
 /*
 add an IN clause to the whereSQL string for a client IN request
