@@ -44,13 +44,20 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
         return SYS_INVALID_INPUT_PARAM;
     }
 
-    resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
+    // Issue 3913: retain status in case string too long
+    status = resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
                        &collCreateInp->condInput );
+
+    // Issue 3913: retain status in case string too long
+    if (status == USER_STRLEN_TOOLONG) {
+        return USER_STRLEN_TOOLONG;
+    }
     status = getAndConnRcatHost(
                  rsComm,
                  MASTER_RCAT,
                  ( const char* )collCreateInp->collName,
                  &rodsServerHost );
+
     if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
         return status;
     }
@@ -141,7 +148,6 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
     else {
         status = rcCollCreate( rodsServerHost->conn, collCreateInp );
     }
-
     return status;
 }
 

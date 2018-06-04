@@ -723,7 +723,7 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
     }
 
     addKeyVal( condInput, TRANSLATED_PATH_KW, "" );
-    while ( getSpecCollCache( rsComm, objPath, 0,  specCollCache ) >= 0 &&
+    while ( (status = getSpecCollCache( rsComm, objPath, 0,  specCollCache )) >= 0 &&
             ( *specCollCache )->specColl.collClass == LINKED_COLL ) {
         oldSpecCollCache = *specCollCache;
         if ( linkCnt++ >= MAX_LINK_CNT ) {
@@ -747,6 +747,10 @@ resolveLinkedPath( rsComm_t *rsComm, char *objPath,
     }
     if ( *specCollCache == NULL ) {
         *specCollCache = oldSpecCollCache;
+    }
+    // Issue 3913 - this failure must be bubbled up to the user
+    if (status == USER_STRLEN_TOOLONG) {
+        return USER_STRLEN_TOOLONG;
     }
     return linkCnt;
 }
