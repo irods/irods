@@ -1172,7 +1172,9 @@ addInClauseToWhereForParentOf( char *inArg ) {
     int i, len;
     int nput = 0;
     char tmpStr[MAX_SQL_SIZE_GQ];
-    static char inStrings[MAX_SQL_SIZE_GQ];
+
+    // [#3913] silent failure of imkdir -p with long path containing white space
+    static char inStrings[MAX_SQL_SIZE_GQ*2];
     int inStrIx = 0;
 
     if ( !rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
@@ -1195,7 +1197,7 @@ addInClauseToWhereForParentOf( char *inArg ) {
             tmpStr[0] = '\0';
             rstrncat( tmpStr, inArg, ncopy, MAX_SQL_SIZE_GQ );
             if ( !rstrcpy( ( char * )&inStrings[inStrIx], tmpStr,
-                           ( MAX_SQL_SIZE_GQ ) - inStrIx ) ) {
+                           ( MAX_SQL_SIZE_GQ*2 ) - inStrIx ) ) {
                 return USER_STRLEN_TOOLONG;
             }
             inStrings[inStrIx + ncopy] = '\0';
@@ -1541,7 +1543,7 @@ genqAppendAccessCheck() {
             cllBindVars[cllBindVarCount++] = accessControlZone;
             if ( !rstrcat( whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
         }
-        
+
         if ( strstr( selectSQL, "R_COLL_MAIN" ) != NULL ||
                 strstr( whereSQL, "R_COLL_MAIN" ) != NULL ) {
             if ( strlen( whereSQL ) > 6 ) {

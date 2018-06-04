@@ -207,6 +207,22 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     def test_local_imkdir_with_bad_option(self):
         self.admin.assert_icommand_fail("imkdir -z")  # run imkdir with bad option
 
+    def test_imkdir_long_path(self):
+        basecoll = "research-acceptatietestj"
+        longpath = basecoll + "/gfasgasgfisjafipkaweopfkpwkpvfksawdogkvloafsadlkskdjfdsajfkl asjd" + \
+                   "fuihbuihuiajujgfawnfuiaheuirfhsaduifhvnasindfuihawsuihseuihruiashdfjkashdjkfhajksdfdsaf/fa" + \
+                   "sdfwaguwioefhiuawshfuiwheafuihaweuifhuiawehfuihuwaeihfuihweauihfuihguiwhauighuiewhguahwseu" + \
+                   "ighuiaehguheuighuawghaeguihwguhuiwehheuahguiwsehghawsghuiashuigheui/sadgasdgadwsfjkasdj fh" + \
+                   "jkasdhjfjkasdfjjesawedfjjfdijkasdfjsdafjsadjkjksdajkasdjklfsadjkjklifr weierwiorweiorweior" + \
+                   "weiokjfdskjajlioeriorweiorwrewisdajkfdsfdasrweoiroerowakljsdlfklaskleiowiorewijasdfkljfdkl" + \
+                   "saiowropiewkliakl dfas/dafsfasdfjkfdsajikuadsfjkdsafjkdfsajkdfseajerwrrwareafldfadffdsafdr" + \
+                   "efwierioaiorioarifrfifdfakrw/dsdfsdf"
+
+        self.admin.assert_icommand("ils -l " + basecoll, 'STDERR_SINGLELINE',
+                   basecoll+" does not exist or user lacks access permission", desired_rc=4)
+        self.admin.assert_icommand("imkdir -p " + longpath)
+        self.admin.assert_icommand("ils -l " + basecoll, 'STDOUT_SINGLELINE', basecoll)  # should be listed
+
     ###################
     # ilocate
     ###################
