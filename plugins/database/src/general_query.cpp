@@ -1181,7 +1181,7 @@ addInClauseToWhereForParentOf( char *inArg ) {
     if ( !rstrcat( whereSQL, " IN (", MAX_SQL_SIZE_GQ ) ) { return USER_STRLEN_TOOLONG; }
     len = strlen( inArg );
     for ( i = 0; i < len + 1; i++ ) {
-        if ( inArg[i] == '/' || inArg[i] == ' ' || inArg[i] == '\0' ) {
+        if ( inArg[i] == '/' || inArg[i] == '\0' ) {
             int ncopy = i;
             if ( nput == 0 ) {
                 ncopy++;
