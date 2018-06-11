@@ -4229,62 +4229,6 @@ int chlSpecificQuery(
 
 } // chlSpecificQuery
 
-
-// =-=-=-=-=-=-=-
-// chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
-// replaces all r_data_main.resc_hier rows that match the old string with the new one.
-int chlSubstituteResourceHierarchies(
-    rsComm_t*   _comm,
-    const char* _old_hier,
-    const char* _new_hier ) {
-    // =-=-=-=-=-=-=-
-    // call factory for database object
-    irods::database_object_ptr db_obj_ptr;
-    irods::error ret = irods::database_factory(
-                           database_plugin_type,
-                           db_obj_ptr );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // resolve a plugin for that object
-    irods::plugin_ptr db_plug_ptr;
-    ret = db_obj_ptr->resolve(
-              irods::DATABASE_INTERFACE,
-              db_plug_ptr );
-    if ( !ret.ok() ) {
-        irods::log(
-            PASSMSG(
-                "failed to resolve database interface",
-                ret ) );
-        return ret.code();
-    }
-
-    // =-=-=-=-=-=-=-
-    // cast plugin and object to db and fco for call
-    irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast <
-                                        irods::first_class_object > ( db_obj_ptr );
-    irods::database_ptr           db = boost::dynamic_pointer_cast <
-                                       irods::database > ( db_plug_ptr );
-
-    // =-=-=-=-=-=-=-
-    // call the operation on the plugin
-    ret = db->call <
-          const char*,
-          const char* > (
-              _comm,
-              irods::DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
-              ptr,
-              _old_hier,
-              _new_hier );
-
-    return ret.code();
-
-} // chlSubstituteResourceHierarchies
-
-
 /// =-=-=-=-=-=-=-
 /// @brief return the distinct object count of a resource in a hierarchy
 int chlGetDistinctDataObjCountOnResource(

@@ -187,8 +187,6 @@ int chlUpdateIrodsPamPassword( rsComm_t *rsComm, const char *userName,
                                int timeToLive, const char *testTime,
                                char **irodsPassword );
 
-int chlSubstituteResourceHierarchies( rsComm_t *rsComm, const char *old_hier, const char *new_hier );
-
 /// =-=-=-=-=-=-=-
 /// @brief typedefs and prototype for query used for rebalancing operation
 typedef std::vector< rodsLong_t > dist_child_result_t;
