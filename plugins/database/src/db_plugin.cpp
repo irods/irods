@@ -922,74 +922,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
 
 } // _delColl
 
-// Modifies a given resource name in all resource hierarchies (i.e for all objects)
-// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
-static int _modRescInHierarchies( const std::string& old_resc, const std::string& new_resc ) {
-    char update_sql[MAX_SQL_SIZE];
-    int status = 0;
-    const char *sep = irods::hierarchy_parser::delimiter().c_str();
-    std::string std_conf_str;        // to store value of STANDARD_CONFORMING_STRINGS
-
-#if ORA_ICAT
-    // =-=-=-=-=-=-=-
-    // Oracle
-    snprintf( update_sql, MAX_SQL_SIZE,
-              "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3')",
-              sep, old_resc.c_str(), sep, new_resc.c_str() );
-
-
-#elif MY_ICAT
-    // =-=-=-=-=-=-=-
-    // MySQL
-    snprintf( update_sql, MAX_SQL_SIZE,
-              "update R_DATA_MAIN set resc_hier = PREG_REPLACE('/(^|(.+%s))%s($|(%s.+))/', '$1%s$3', resc_hier);",
-              sep, old_resc.c_str(), sep, new_resc.c_str() );
-#else
-    // =-=-=-=-=-=-=-
-    // PostgreSQL
-    // Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
-    irods::error ret = irods::get_catalog_property<std::string>( irods::STANDARD_CONFORMING_STRINGS, std_conf_str );
-    if ( !ret.ok() ) {
-        rodsLog( LOG_ERROR, "%s", ret.result().c_str() );
-    }
-
-    // =-=-=-=-=-=-=-
-    // Regex will look in r_data_main.resc_hier
-    // for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
-    // and replace them with new_resc, e.g:
-    // regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
-    // Backslashes must be escaped in older versions of Postgres
-
-    if ( std_conf_str == "on" ) {
-        // Default since Postgres 9.1
-        snprintf( update_sql, MAX_SQL_SIZE,
-                  "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
-                  sep, old_resc.c_str(), sep, new_resc.c_str() );
-    }
-    else {
-        // Older versions
-        snprintf( update_sql, MAX_SQL_SIZE,
-                  "update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
-                  sep, old_resc.c_str(), sep, new_resc.c_str() );
-    }
-
-#endif
-    // =-=-=-=-=-=-=-
-    // SQL update
-    status = cmlExecuteNoAnswerSql( update_sql, &icss );
-
-    // =-=-=-=-=-=-=-
-    // Log error. Rollback is done in calling function
-    if ( status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        std::stringstream ss;
-        ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
-        irods::log( LOG_NOTICE, ss.str() );
-        // _rollback("_modRescInHierarchies");
-    }
-
-    return status;
-}
-
 // =-=-=-=-=-=-=-
 // local function to delegate the response
 // verification to an authentication plugin
@@ -2521,7 +2453,6 @@ irods::error db_mod_data_obj_meta_op(
         std::stringstream repl_stream;
         repl_stream << _data_obj_info->replNum;
         rodsLong_t resc_id = 0;
-        std::string resc_hier;
         {
             std::vector<std::string> bindVars;
             bindVars.push_back( id_stream.str() );
@@ -2781,12 +2712,14 @@ irods::error db_reg_data_obj_op(
     cllBindVars[15] = myTime;
     cllBindVars[16] = data_expiry_ts;
     cllBindVars[17] = "EMPTY_RESC_NAME";
-    cllBindVarCount = 18;
+    cllBindVars[18] = "EMPTY_RESC_HIER";
+    cllBindVars[19] = "EMPTY_RESC_GROUP_NAME";
+    cllBindVarCount = 20;
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegDataObj SQL 6" );
     }
     status =  cmlExecuteNoAnswerSql(
-                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_id, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, data_expiry_ts, resc_name, resc_hier, resc_group_name) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -14113,83 +14046,6 @@ irods::error db_specific_query_op(
 
 } // db_specific_query_op
 
-irods::error db_substitute_resource_hierarchies_op(
-    irods::plugin_context& _ctx,
-    const char*            _old_hier,
-    const char*            _new_hier ) {
-    // =-=-=-=-=-=-=-
-    // check the context
-    irods::error ret = _ctx.valid();
-    if ( !ret.ok() ) {
-        return PASS( ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // get a postgres object from the context
-    /*irods::postgres_object_ptr pg;
-    ret = make_db_ptr( _ctx.fco(), pg );
-    if ( !ret.ok() ) {
-        return PASS( ret );
-
-    }*/
-
-    // =-=-=-=-=-=-=-
-    // extract the icss property
-//        icatSessionStruct icss;
-//        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    int status = 0;
-    char old_hier_partial[MAX_NAME_LEN];
-    irods::sql_logger logger( "chlSubstituteResourceHierarchies", logSQL );
-
-    logger.log();
-
-    // =-=-=-=-=-=-=-
-    // Sanity and permission checks
-    if ( !icss.status ) {
-        return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
-    }
-    if ( !_old_hier || !_new_hier ) {
-        return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "null parameter" );
-    }
-    if ( _ctx.comm()->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || _ctx.comm()->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-        return ERROR( CAT_INSUFFICIENT_PRIVILEGE_LEVEL, "insufficient privilege" );
-    }
-
-    // =-=-=-=-=-=-=-
-    // String to match partial hierarchies
-    snprintf( old_hier_partial, MAX_NAME_LEN, "%s%s%%", _old_hier, irods::hierarchy_parser::delimiter().c_str() );
-
-    // =-=-=-=-=-=-=-
-    // Update r_data_main
-    cllBindVars[cllBindVarCount++] = ( char* )_new_hier;
-    cllBindVars[cllBindVarCount++] = ( char* )_old_hier;
-    cllBindVars[cllBindVarCount++] = ( char* )_old_hier;
-    cllBindVars[cllBindVarCount++] = old_hier_partial;
-#if ORA_ICAT // Oracle
-    status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss );
-#else // Postgres and MySQL
-    status = cmlExecuteNoAnswerSql( "update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss );
-#endif
-
-    // Nothing was modified
-    if ( status == CAT_SUCCESS_BUT_WITH_NO_INFO ) {
-        return SUCCESS();
-    }
-
-    // =-=-=-=-=-=-=-
-    // Roll back if error
-    if ( status < 0 ) {
-        std::stringstream ss;
-        ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
-        irods::log( LOG_NOTICE, ss.str() );
-        _rollback( "chlSubstituteResourceHierarchies" );
-        return ERROR( status, "update failure" );
-    }
-
-    return SUCCESS();
-
-} // db_substitute_resource_hierarchies_op
-
 irods::error db_get_distinct_data_obj_count_on_resource_op(
     irods::plugin_context& _ctx,
     const char*            _resc_name,
@@ -15843,10 +15699,6 @@ irods::database* plugin_factory(
         DATABASE_OP_GEN_QUERY_TICKET_SETUP,
         function<error(plugin_context&,const char*,const char*)>(
             db_gen_query_ticket_setup_op ) );
-    pg->add_operation<const char*,const char*>(
-        DATABASE_OP_SUBSTITUTE_RESOURCE_HIERARCHIES,
-        function<error(plugin_context&,const char*,const char*)>(
-            db_substitute_resource_hierarchies_op ) );
     pg->add_operation<const char*,long long*>(
         DATABASE_OP_GET_DISTINCT_DATA_OBJ_COUNT_ON_RESOURCE,
         function<error(plugin_context&,const char*,long long*)>(
