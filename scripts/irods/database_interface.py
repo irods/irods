@@ -77,9 +77,7 @@ def database_already_in_use_by_irods(irods_config):
             else:
                 return False
 
-def setup_database_config(irods_config):
-    l = logging.getLogger(__name__)
-
+def get_database_type():
     if os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libpostgres.so')):
         db_type = 'postgres'
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libcockroachdb.so')):
@@ -89,7 +87,13 @@ def setup_database_config(irods_config):
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'liboracle.so')):
         db_type = 'oracle'
     else:
-        raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
+        raise IrodsError('Database type must be one of postgres, cockroachdb, mysql, or oracle.')
+    return db_type
+
+def setup_database_config(irods_config):
+    l = logging.getLogger(__name__)
+
+    db_type = get_database_type()
     l.debug('setup_database_config has been called with database type \'%s\'.', db_type)
 
     l.info('You are configuring an iRODS database plugin. '
