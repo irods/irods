@@ -1363,3 +1363,72 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(self.vault_warning_message in stdout)
         # Changing vault should have failed, so make sure it has not changed
         self.admin.assert_icommand(['ilsresc', '-l', self.resc_name], 'STDOUT_SINGLELINE', 'vault: ' + self.good_vault)
+
+class Test_Iadmin_Queries(resource_suite.ResourceBase, unittest.TestCase):
+
+    def setUp(self):
+        super(Test_Iadmin_Queries, self).setUp()
+
+    def tearDown(self):
+        super(Test_Iadmin_Queries, self).tearDown()
+
+    def test_add_and_remove_specific_query(self):
+        # setup
+        test_file = 'test_specific_query_file'
+        lib.make_file(test_file, 500)
+        specific_query = 'SELECT data_name FROM R_DATA_MAIN WHERE DATA_NAME = \'{}\';'.format(test_file)
+        query_name = 'test_asq'
+
+        # Make specific query and run before it returns any results
+        self.admin.assert_icommand(['iadmin', 'asq', specific_query, query_name])
+        self.admin.assert_icommand(['iquest', '--sql', 'ls'], 'STDOUT', query_name)
+        self.admin.assert_icommand(['iquest', '--sql', query_name], 'STDOUT', 'No rows found')
+
+        # Run specific query after results can be found
+        self.admin.assert_icommand(['iput', test_file])
+        self.admin.assert_icommand(['iquest', '--sql', query_name], 'STDOUT', test_file)
+
+        # Make sure specific query can be removed
+        self.admin.assert_icommand(['iadmin', 'rsq', query_name])
+        self.admin.assert_icommand_fail(['iquest', '--sql', 'ls'], 'STDOUT', query_name)
+        self.admin.assert_icommand(['iquest', '--sql', query_name], 'STDERR', 'CAT_UNKNOWN_SPECIFIC_QUERY')
+
+        # cleanup
+        self.admin.assert_icommand(['irm', '-f', test_file])
+        os.unlink(test_file)
+
+    def test_add_non_unique_specific_query(self):
+        specific_query = 'select * from r_data_main;'
+        query_name = 'unique_asq'
+
+        # Add specific query and confirm
+        self.admin.assert_icommand(['iadmin', 'asq', specific_query, query_name])
+        self.admin.assert_icommand(['iquest', '--sql', 'ls'], 'STDOUT', query_name)
+
+        # Try adding specific query with same name
+        _,out,_=self.admin.assert_icommand(['iadmin', 'asq', specific_query, query_name], 'STDERR', 'CAT_INVALID_ARGUMENT')
+        self.assertTrue('Alias is not unique' in out)
+        self.admin.assert_icommand(['iadmin', 'rsq', query_name])
+
+    def test_unused_r_data_main_columns(self):
+        # setup
+        test_file = 'test_unused_r_data_main_columns_file'
+        column_dict = {'resc_name': 'EMPTY_RESC_NAME',
+                       'resc_hier': 'EMPTY_RESC_HIER',
+                       'resc_group_name': 'EMPTY_RESC_GROUP_NAME'}
+        specific_query = 'SELECT {0} FROM R_DATA_MAIN WHERE data_name = \'{1}\';'.format(', '.join([key for key in column_dict.keys()]), test_file)
+        query_name = 'unused_columns_asq'
+        lib.make_file(test_file, 500)
+
+        # Run query and verify that output matches expected values for columns
+        self.admin.assert_icommand(['iput', test_file])
+        self.admin.assert_icommand(['iadmin', 'asq', specific_query, query_name])
+        self.admin.assert_icommand(['iquest', '--sql', 'ls'], 'STDOUT', query_name)
+        out,_,_=self.admin.run_icommand(['iquest', '--sql', query_name])
+        for key in column_dict.keys():
+            self.assertTrue(column_dict[key] in out)
+
+        # teardown
+        self.admin.assert_icommand(['iadmin', 'rsq', query_name])
+        self.admin.assert_icommand(['irm', '-f', test_file])
+        os.unlink(test_file)
