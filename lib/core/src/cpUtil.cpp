@@ -9,6 +9,7 @@
 #include "miscUtil.h"
 #include "cpUtil.h"
 #include "rcGlobalExtern.h"
+#include "irods_virtual_path.hpp"
 
 int
 cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
@@ -265,7 +266,7 @@ initCondForCp( rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
         }
     }
 
-    //dataObjCopyInp->destDataObjInp.createMode = 0600;		// seems unused, and caused https://github.com/irods/irods/issues/2085
+    //dataObjCopyInp->destDataObjInp.createMode = 0600;   // seems unused, and caused https://github.com/irods/irods/issues/2085
     dataObjCopyInp->destDataObjInp.openFlags = O_WRONLY;
 
     return 0;
@@ -296,9 +297,34 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         return USER_INPUT_OPTION_ERR;
     }
 
-    if (strstr(targColl, srcColl) == targColl) {
-        rodsLog(LOG_ERROR, "cpCollUtil: cannot copy collection %s into itself", srcColl);
-        return SAME_SRC_DEST_PATHS_ERR;
+    // Save the current separator -- it's used in more than on place below
+    std::string separator(irods::get_virtual_path_separator());
+
+    // Making sure that the separator has a single char
+    if (separator.size() > 1)
+    {
+        rodsLog( LOG_ERROR, "cpCollUtil: irods::get_virtual_path_separator() returned a string with more than one character.");
+        return BAD_FUNCTION_CALL;
+    }
+
+    // Issue #3962 - find out if both the beginning of the target and source
+    // (the /<zone>/... path) match, and that if the source logical path matches
+    // completely, that the end of the matched string in the target is either the
+    // end of the path string, or a "/" leading to another collection component.
+    if (strstr(targColl, srcColl) == targColl)
+    {
+        // At this point, we know that the source path completely matches the
+        // beginning of the target path.  Now look at the end of the target path:
+        size_t srclen = strlen(srcColl);
+
+        if (srclen == strlen(targColl) || targColl[srclen] == separator[0]) {
+            // We're here because the source and target paths are identical (proved
+            // by the fact that both string lengths are the same), or because the
+            // character in the target path just beyond the end of the strstr() comparison,
+            // is a separator ("/").
+            rodsLog(LOG_ERROR, "cpCollUtil: cannot copy collection %s into itself", srcColl);
+            return SAME_SRC_DEST_PATHS_ERR;
+        }
     }
 
     status = rclOpenCollection( conn, srcColl, 0, &collHandle );
@@ -351,7 +377,7 @@ cpCollUtil( rcComm_t *conn, char *srcColl, char *targColl,
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
             if ( ( status = splitPathByKey(
-                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, '/' ) ) < 0 ) {
+                                collEnt.collName, parPath, MAX_NAME_LEN, childPath, MAX_NAME_LEN, separator[0] ) ) < 0 ) {
                 rodsLogError( LOG_ERROR, status,
                               "cpCollUtil:: splitPathByKey for %s error, status = %d",
                               collEnt.collName, status );

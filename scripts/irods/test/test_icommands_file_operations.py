@@ -243,6 +243,18 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_source + "/", 'STDERR_SINGLELINE', 'SAME_SRC_DEST_PATHS_ERR')
 
+    def test_icp_collection_into_itself_3962(self):
+        base_name_source = "test_icp_r_3962"
+        file_names = set(self.iput_r_large_collection(
+            self.user0, base_name_source, file_count=10, file_size=100)[1])
+
+        base_name_target = base_name_source + "_1"
+        self.user0.assert_icommand("icp -r " + base_name_source + " " + base_name_target, "EMPTY")
+
+        # The above was the test case that failed before the bug fix.
+        # There is no need to test the ordinary icp -r onto itself, because
+        # of the previous test - test_icp_collection_into_itself.
+
     def test_irsync_r_dir_to_coll(self):
         base_name = "test_irsync_r_dir_to_coll"
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
