@@ -69,6 +69,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pack_table.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pam_auth_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_parse_command_line_options.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_path_recursion.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pluggable_auth_scheme.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_base.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_context.hpp

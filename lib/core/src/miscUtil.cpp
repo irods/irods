@@ -11,6 +11,8 @@
 #include "rcGlobalExtern.h"
 
 #include "irods_stacktrace.hpp"
+#include "irods_path_recursion.hpp"
+#include "irods_exception.hpp"
 
 #include "get_hier_from_leaf_id.h"
 
@@ -888,7 +890,7 @@ clearDataObjSqlResult( dataObjSqlResult_t *dataObjSqlResult ) {
         free( dataObjSqlResult->replNum.value );
     }
     if ( dataObjSqlResult->dataType.value != NULL ) {
-	    free( dataObjSqlResult->dataType.value );
+        free( dataObjSqlResult->dataType.value );
     }
     memset( dataObjSqlResult, 0, sizeof( dataObjSqlResult_t ) );
 
@@ -1418,9 +1420,9 @@ getNextCollMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             }
             if ( status < 0 ) {
                 collHandle->rowInx = 0;
-				genQueryInp->continueInx = 0;
-				collSqlResult->continueInx = 0;
-				freeGenQueryOut( &genQueryOut );
+                genQueryInp->continueInx = 0;
+                collSqlResult->continueInx = 0;
+                freeGenQueryOut( &genQueryOut );
                 return status;
             }
             else {
@@ -1582,8 +1584,8 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             }
             if ( status < 0 ) {
                 collHandle->rowInx = 0;
-				genQueryInp->continueInx = 0;
-				dataObjSqlResult->continueInx = 0;
+                genQueryInp->continueInx = 0;
+                dataObjSqlResult->continueInx = 0;
                 freeGenQueryOut( &genQueryOut );
                 return status;
             }
@@ -1968,8 +1970,14 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
     int status = 0;
     char srcChildPath[MAX_NAME_LEN];
 
-    if (is_symlink({srcDir})) {
-        return 0;
+    try {
+        if ( ! irods::is_path_valid_for_recursion(rodsArgs, srcDir) )
+        {
+            return 0;
+        }
+    } catch ( const irods::exception& _e ) {
+        rodsLog( LOG_ERROR, _e.client_display_what() );
+        return USER_INPUT_PATH_ERR;
     }
 
     path srcDirPath( srcDir );
@@ -1983,12 +1991,17 @@ getDirSizeForProgStat( rodsArguments_t *rodsArgs, char *srcDir,
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path p = itr->path();
-        snprintf( srcChildPath, MAX_NAME_LEN, "%s",
-                  p.c_str() );
+        snprintf( srcChildPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-        if (is_symlink({srcChildPath})) {
-            return 0;
-        } // JMC cppcheck - resource
+        try {
+            if ( ! irods::is_path_valid_for_recursion(rodsArgs, srcChildPath) )
+            {
+                return 0;
+            } // JMC cppcheck - resource
+        } catch ( const irods::exception& _e ) {
+            rodsLog( LOG_ERROR, _e.client_display_what() );
+            return USER_INPUT_PATH_ERR;
+        }
 
         if ( !exists( p ) ) {
             rodsLog( LOG_ERROR,
