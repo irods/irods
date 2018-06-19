@@ -715,6 +715,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_log.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pack_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_parse_command_line_options.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_path_recursion.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pluggable_auth_scheme.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_plugin_name_generator.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp
@@ -1019,6 +1020,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pack_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pam_auth_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_parse_command_line_options.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_path_recursion.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pluggable_auth_scheme.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_plugin_name_generator.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp

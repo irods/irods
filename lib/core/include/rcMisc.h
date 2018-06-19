@@ -286,8 +286,23 @@ int
 getNumFilesInDir( const char *mydir );
 int
 getRandomArray( int **randomArray, int size );
+
+// Issue 3988: replaces isPathSymlink() function below which is soon to be deprecated.
+// Returns:
+//         0  - treat the parameter path as NOT a symlink
+//         1  - treat the parameter path as a symlink
+//        <0 - Error code (message in the message stack)
 int
-isPathSymlink( rodsArguments_t *rodsArgs, const char *path );
+isPathSymlink_err( rodsArguments_t* rodsArgs, const char* path );
+
+// Issue 3988: will be DEPRECATED in a future release in favor of the
+// function above (isPathSymlink_err).  The isPathSymlink() function does not return error
+// codes, although it will print error messages as needed.
+// Returns:
+//         0  - treat the parameter path as NOT a symlink
+//         1  - treat the parameter path as a symlink
+int
+isPathSymlink( rodsArguments_t *rodsArgs, const char *path );        // DEPRECATED in a future release
 int
 getAttriInAttriArray( const char *objPath, genQueryOut_t *attriArray,
                       int *outDataMode, char **outChksum );

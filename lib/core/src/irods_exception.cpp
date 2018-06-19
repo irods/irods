@@ -1,5 +1,6 @@
 #include "irods_exception.hpp"
 #include "irods_stacktrace.hpp"
+#include "rodsLog.h"
 
 namespace irods {
 
@@ -41,33 +42,56 @@ namespace irods {
 
     } // ~exception
 
-    const char* exception::what() const throw() {
-        std::string message;
-        for ( size_t i = 0;
-                i < message_stack_.size();
-                ++i ) {
-            message += "        ";
-            message += message_stack_[i];
-            message += "\n";
+    // This "should not" be called from the icommands
+    const char* exception::what() const throw()
+    {
+           assemble_full_display_what();
+        return what_.c_str();
+    }
 
+    const char* exception::client_display_what() const throw()
+    {
+        assemble_client_display_what();
+        return what_.c_str();
+    }
+
+    // Modifies the what_ string for a full what() message
+    void exception::assemble_full_display_what() const throw()
+    {
+        std::stringstream what_ss;
+
+        what_ss << "iRODS Exception:"
+                << "\n    file: " << file_name_
+                << "\n    function: " << function_name_
+                << "\n    line: " << line_number_
+                << "\n    code: " << code_ << " (" << rodsErrorName( static_cast<int>(code_), NULL ) << ")"
+                << "\n    message:" << "\n";
+
+        for ( auto entry: message_stack_)
+        {
+            what_ss << "        " << entry << "\n";
         }
 
-        std::stringstream what_ss;
-        what_ss << "iRODS Exception:" << std::endl
-                << "    file: " << file_name_ << std::endl
-                << "    function: " << function_name_ << std::endl
-                << "    line: " << line_number_ << std::endl
-                << "    code: " << code_ << std::endl
-                << "    message:" << std::endl
-                << message
-                << "stack trace:" << std::endl
-                << "--------------" << std::endl
+        what_ss << "stack trace:" << "\n"
+                << "--------------" << "\n"
                 << stacktrace_.dump() << std::endl;
 
         what_ = what_ss.str();
+    }
 
-        return what_.c_str();
+    // Modifies the what_ string for a client display suitable what() message
+    void exception::assemble_client_display_what() const throw()
+    {
+        std::stringstream what_ss;
 
-    } // what
+        what_ss << rodsErrorName( static_cast<int>(code_), NULL ) << ": ";
+
+        for ( auto entry: message_stack_)
+        {
+            what_ss << entry << "\n";
+        }
+        what_ss << std::endl;
+        what_ = what_ss.str();
+    }
 
 }; // namespace irods
