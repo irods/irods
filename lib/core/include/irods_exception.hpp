@@ -29,7 +29,11 @@ namespace irods {
             exception( const exception& );
             virtual ~exception() throw();
 
+            // This is used internally, not in the icommands
             virtual const char* what() const throw();
+
+            // This should be used by icommands, instead of what()
+            virtual const char* client_display_what() const throw();
 
             // accessors
             int64_t    code() const { return code_; }
@@ -41,6 +45,11 @@ namespace irods {
 
             // mutators
             void add_message( const std::string& _m ) { message_stack_.push_back( _m ); }
+
+        private:
+            // Assemble the what_ string depending on what kind of what() was called...
+            void assemble_full_display_what() const throw();
+            void assemble_client_display_what() const throw();
 
         private:
             int64_t                   code_;

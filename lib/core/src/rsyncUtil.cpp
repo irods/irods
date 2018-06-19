@@ -14,10 +14,21 @@
 #include <sstream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <stdlib.h>
+
+// TODO:THIS NEEDS TO BE GONE (Issue 3997)
+//
+// Replace this with:
+// namespace fs = boost::filesystem;
+// within the scope of functions and
+// objects that need it.
 using namespace boost::filesystem;
 
 #include "irods_log.hpp"
 #include "irods_hasher_factory.hpp"
+#include "irods_path_recursion.hpp"
+#include "irods_exception.hpp"
 
 static int CurrentTime = 0;
 int
@@ -27,19 +38,23 @@ ageExceeded( int ageLimit, int myTime, char *objPath,
 int
 rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
            rodsPathInp_t *rodsPathInp ) {
+
     if ( rodsPathInp == NULL ) {
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = resolveRodsTarget( conn, rodsPathInp, RSYNC_OPR );
+    int status = 0;
+    int savedStatus = 0;
+
+    savedStatus = resolveRodsTarget( conn, rodsPathInp, RSYNC_OPR );
     if ( savedStatus < 0 ) {
-        rodsLogError( LOG_ERROR, savedStatus,
-                      "rsyncUtil: resolveRodsTarget" );
+        rodsLogError( LOG_ERROR, savedStatus, "rsyncUtil: resolveRodsTarget" );
         return savedStatus;
     }
 
     dataObjInp_t dataObjOprInp;
     dataObjCopyInp_t dataObjCopyInp;
+
     if ( rodsPathInp->srcPath[0].objType <= COLL_OBJ_T &&
             rodsPathInp->targPath[0].objType <= COLL_OBJ_T ) {
         initCondForIrodsToIrodsRsync( myRodsEnv, myRodsArgs, &dataObjCopyInp );
@@ -48,8 +63,17 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         initCondForRsync( myRodsEnv, myRodsArgs, &dataObjOprInp );
     }
 
-    for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+    // Issue 3988: Scan all physical source directories for loops before
+    // doing any actual file transfers.
+    irods::recursion_map_t pathmap;
 
+    status = irods::file_system_sanity_check( pathmap, myRodsArgs, rodsPathInp );
+    if (status < 0) {
+        return status;
+    }
+
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ )
+    {
         rodsPath_t * targPath = &rodsPathInp->targPath[i];
         rodsPath_t * srcPath = &rodsPathInp->srcPath[i];
         int srcType = srcPath->objType;
@@ -71,16 +95,23 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                 dataObjCopyInp.srcDataObjInp.specColl = NULL;
         }
 
-        int status = 0;
+        status = 0;
         if ( srcType == DATA_OBJ_T && targType == LOCAL_FILE_T ) {
             rmKeyVal( &dataObjOprInp.condInput, TRANSLATED_PATH_KW );
             status = rsyncDataToFileUtil( conn, srcPath, targPath,
                                           myRodsArgs, &dataObjOprInp );
         }
         else if ( srcType == LOCAL_FILE_T && targType == DATA_OBJ_T ) {
-            if (is_symlink({srcPath->outPath})) {
-                continue;
+            try {
+                if (! irods::is_path_valid_for_recursion(myRodsArgs, srcPath->outPath))
+                {
+                    continue;
+                }
+            } catch ( const irods::exception& _e ) {
+                rodsLog( LOG_ERROR, _e.client_display_what() );
+                status = USER_INPUT_PATH_ERR;
             }
+
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
             status = rsyncFileToDataUtil( conn, srcPath, targPath,
                                           myRodsArgs, &dataObjOprInp );
@@ -104,9 +135,10 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
                                              myRodsEnv, myRodsArgs, &dataObjOprInp );
             }
         }
-        else if ( srcType == LOCAL_DIR_T && targType == COLL_OBJ_T ) {
+        else if ( srcType == LOCAL_DIR_T && targType == COLL_OBJ_T )
+        {
             status = rsyncDirToCollUtil( conn, srcPath, targPath,
-                                         myRodsEnv, myRodsArgs, &dataObjOprInp );
+                                 myRodsEnv, myRodsArgs, &dataObjOprInp );
         }
         else if ( srcType == COLL_OBJ_T && targType == COLL_OBJ_T ) {
             addKeyVal( &dataObjCopyInp.srcDataObjInp.condInput,
@@ -196,7 +228,7 @@ rsyncDataToFileUtil( rcComm_t *conn, rodsPath_t *srcPath,
         // =-=-=-=-=-=-=-
         // extract scheme from checksum string
         std::string scheme;
-        irods::error ret = irods::get_hash_scheme_from_checksum( 
+        irods::error ret = irods::get_hash_scheme_from_checksum(
                                srcPath->chksum,
                                scheme );
         if ( !ret.ok() ) {
@@ -340,33 +372,33 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     if ( targPath->objState == NOT_EXIST_ST ) {
         putFlag = 1;
-		if( True == myRodsArgs->verifyChecksum ) {
-			status = rcChksumLocFile(
-			             srcPath->outPath,
-						 RSYNC_CHKSUM_KW,
-					     &dataObjOprInp->condInput,
-					     env.rodsDefaultHashScheme );
-			if ( status < 0 ) {
-				rodsLogError(
-				    LOG_ERROR,
-					status,
-					"rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
-					srcPath->outPath,
-					status );
-				return status;
-			}
-			else {
-				chksum = getValByKey(
-				             &dataObjOprInp->condInput,
-							 RSYNC_CHKSUM_KW );
-				if ( chksum != NULL ) {
-					addKeyVal(
-					    &dataObjOprInp->condInput,
-						VERIFY_CHKSUM_KW,
-						chksum );
-				}
-			}
-		}
+        if( True == myRodsArgs->verifyChecksum ) {
+            status = rcChksumLocFile(
+                         srcPath->outPath,
+                         RSYNC_CHKSUM_KW,
+                         &dataObjOprInp->condInput,
+                         env.rodsDefaultHashScheme );
+            if ( status < 0 ) {
+                rodsLogError(
+                    LOG_ERROR,
+                    status,
+                    "rsyncFileToDataUtil: rcChksumLocFile error for %s, status = %d",
+                    srcPath->outPath,
+                    status );
+                return status;
+            }
+            else {
+                chksum = getValByKey(
+                             &dataObjOprInp->condInput,
+                             RSYNC_CHKSUM_KW );
+                if ( chksum != NULL ) {
+                    addKeyVal(
+                        &dataObjOprInp->condInput,
+                        VERIFY_CHKSUM_KW,
+                        chksum );
+                }
+            }
+        }
     }
     else if ( myRodsArgs->sizeFlag == True ) {
         /* sync by size */
@@ -378,7 +410,7 @@ rsyncFileToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
         // =-=-=-=-=-=-=-
         // extract scheme from checksum string
         std::string scheme;
-        irods::error ret = irods::get_hash_scheme_from_checksum( 
+        irods::error ret = irods::get_hash_scheme_from_checksum(
                                targPath->chksum,
                                scheme );
         if ( !ret.ok() ) {
@@ -730,6 +762,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     dataObjInp_t *dataObjOprInp ) {
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
+    int status = 0;
 
     if ( srcPath == NULL || targPath == NULL ) {
         rodsLog( LOG_ERROR,
@@ -739,10 +772,6 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
     srcDir = srcPath->outPath;
     targColl = targPath->outPath;
-
-    if (is_symlink({srcDir})) {
-        return 0;
-    }
 
     if ( rodsArgs->recursive != True ) {
         rodsLog( LOG_ERROR,
@@ -756,6 +785,19 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
                  srcDir, errno );
+        return USER_INPUT_PATH_ERR;
+    }
+
+    try
+    {
+        if (! irods::is_path_valid_for_recursion(rodsArgs, srcDir))
+        {
+            return 0;
+        }
+    }
+    catch ( const irods::exception& _e )
+    {
+        rodsLog( LOG_ERROR, _e.client_display_what() );
         return USER_INPUT_PATH_ERR;
     }
 
@@ -776,14 +818,18 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         path p = itr->path();
         snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-        if (is_symlink({mySrcPath.outPath})) {
-            continue;
+        try {
+            if (! irods::is_path_valid_for_recursion(rodsArgs, mySrcPath.outPath))
+            {
+                continue;
+            }
+        } catch ( const irods::exception& _e ) {
+            rodsLog( LOG_ERROR, _e.client_display_what() );
+            return USER_INPUT_PATH_ERR;
         }
 
         if ( !exists( p ) ) {
-            rodsLog( LOG_ERROR,
-                     "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
-                     mySrcPath.outPath, errno );
+            rodsLog( LOG_ERROR, "rsyncDirToCollUtil: stat error for %s, errno = %d\n", mySrcPath.outPath, errno );
             return USER_INPUT_PATH_ERR;
         }
 
@@ -804,16 +850,14 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
             path cp = read_symlink( p );
             // Issue 3663 - If the path is FQDN, do not add srcDir on path
             if (cp.is_relative()) {
-                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-                        srcDir, cp.c_str() );
+                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s", srcDir, cp.c_str() );
             } else {
-                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", 
-                        cp.c_str() );
-            } 
+                snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", cp.c_str() );
+            }
             p = path( mySrcPath.outPath );
         }
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
-        int status = 0;
+        status = 0;
         if ( is_regular_file( p ) ) {
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
@@ -832,7 +876,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         else if ( is_directory( p ) ) {
             /* only do the sync if no -l option specified */
             if ( rodsArgs->longOption != True ) {
-            	status = mkCollR (conn, targColl, myTargPath.outPath);
+                status = mkCollR (conn, targColl, myTargPath.outPath);
             }
             if ( status < 0 ) {
                 rodsLogError( LOG_ERROR, status,
