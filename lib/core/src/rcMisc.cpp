@@ -26,14 +26,17 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <map>
 #include <openssl/md5.h>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_exception.hpp"
 #include "irods_log.hpp"
 #include "irods_random.hpp"
+#include "irods_path_recursion.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -43,6 +46,13 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
 #include <boost/generator_iterator.hpp>
+
+// TODO:THIS NEEDS TO BE GONE (Issue 3997)
+//
+// Replace this with:
+// namespace fs = boost::filesystem;
+// within the scope of functions and
+// objects that need it.
 using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
@@ -4062,9 +4072,55 @@ getRandomArray( int **randomArray, int size ) {
     return 0;
 }
 
+// isPathSymlink_err() replaces isPathSymlink() below, which is being deprecated.
+// Returns:
+//         0  - treat the parameter path as NOT a symlink
+//         1  - treat the parameter path as a symlink
+//        <0 - Error code (message in the message stack)
 int
-isPathSymlink( rodsArguments_t* rodsArgs, const char* myPath ) {
-    return is_symlink({myPath}) ? 1 : 0;
+isPathSymlink_err( rodsArguments_t* rodsArgs, const char* myPath )
+{
+    // This function (isPathSymlink) now uses the new
+    // is_path_valid_for_recursion() defined in irods_path_recursion.cpp/hpp.
+    try {
+        if (irods::is_path_valid_for_recursion(rodsArgs, myPath))
+        {
+            // treat this path like a symlink
+            return 0;
+        }
+        else
+        {
+            // treat this path like it's not a symlink, even if it is.
+            return 1;
+        }
+    } catch ( const irods::exception& _e ) {
+        rodsLog( LOG_ERROR, _e.client_display_what() );
+        // The soon-to-be deprecated version of isPathSymlink() returned
+        // 0 or 1, and no error condition.  This function returns
+        // a negative error code that can be checked for.
+        return _e.code();
+    }
+}
+
+// This function will be deprecated in a future release.
+// Please start using the function above this one instead.
+// This function loses errors, even as it prints them to
+// stderr. The new function above returns < 0 with error
+// numbers in addition to the old 0 or 1.
+int
+isPathSymlink( rodsArguments_t* rodsArgs, const char* myPath )
+{
+    int status = isPathSymlink_err(rodsArgs, myPath );
+
+    if (status < 0)
+    {
+        // Returning 1 here means that the path will not participate.
+        // This loses some information - but at least the error stack
+        // will contain the error message, and will be displayed
+        // to the user.
+        return 1;
+    }
+    return status;    // 0 or 1
 }
 
 void

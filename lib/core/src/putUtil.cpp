@@ -14,6 +14,8 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include "irods_server_properties.hpp"
+#include "irods_path_recursion.hpp"
+#include "irods_exception.hpp"
 #include "irods_random.hpp"
 #include "irods_log.hpp"
 
@@ -92,7 +94,10 @@ chkStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
 int
 setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
                    char * restartPath, objType_t objType, keyValPair_t * condInput,
-                   int deleteFlag ) {
+                   int deleteFlag )
+{
+    namespace fs = boost::filesystem;
+
     if ( restartPath != NULL && deleteFlag > 0 ) {
         if ( objType == DATA_OBJ_T ) {
             if ( ( condInput == NULL ||
@@ -117,9 +122,9 @@ setStateForResume( rcComm_t * conn, rodsRestart_t * rodsRestart,
         else if ( objType == LOCAL_FILE_T ) {
             if ( conn->fileRestart.info.status != FILE_RESTARTED ||
                     strcmp( conn->fileRestart.info.fileName, restartPath ) != 0 ) {
-                boost::filesystem::path path( restartPath );
-                if ( boost::filesystem::exists( path ) ) {
-                    int status = boost::filesystem::remove( path );
+                fs::path path( restartPath );
+                if ( fs::exists( path ) ) {
+                    int status = fs::remove( path );
                     if ( status < 0 ) {
                         irods::log( ERROR( status, "boost:filesystem::remove() failed." ) );
                     }
@@ -200,6 +205,15 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         rodsPathInp->resolved = True;
     }
 
+    // Issue 3988: Scan all physical source directories for loops before
+    // doing any actual file transfers.
+    irods::recursion_map_t pathmap;
+
+    status = irods::file_system_sanity_check( pathmap, myRodsArgs, rodsPathInp );
+    if (status < 0) {
+        return status;
+    }
+
     /* initialize the progress struct */
     if ( gGuiProgressCB != NULL ) {
         bzero( &conn->operProgress, sizeof( conn->operProgress ) );
@@ -213,8 +227,13 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                 }
             }
             else {
-                getDirSizeForProgStat( myRodsArgs,
-                                       rodsPathInp->srcPath[i].outPath, &conn->operProgress );
+                // This function does its own try/catch of irods::exception
+                // so just check for errors
+                status = getDirSizeForProgStat( myRodsArgs, rodsPathInp->srcPath[i].outPath, &conn->operProgress );
+                if (status < 0)
+                {
+                    return status;
+                }
             }
         }
     }
@@ -240,8 +259,15 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         targPath = &rodsPathInp->targPath[i];
 
         if ( targPath->objType == DATA_OBJ_T ) {
-            if (boost::filesystem::is_symlink({rodsPathInp->srcPath[i].outPath})) {
-                continue;
+
+            try {
+                if (! irods::is_path_valid_for_recursion(myRodsArgs, rodsPathInp->srcPath[i].outPath) )
+                {
+                    continue;
+                }
+            } catch ( const irods::exception& _e ) {
+                rodsLog( LOG_ERROR, _e.client_display_what() );
+                return USER_INPUT_PATH_ERR;
             }
 
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
@@ -265,9 +291,14 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                 status = putDirUtil( myConn, rodsPathInp->srcPath[i].outPath,
                                      targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
                                      &bulkOprInp, &rodsRestart, NULL );
+                if (status == USER_INPUT_PATH_ERR)
+                {
+                    return USER_INPUT_PATH_ERR;
+                }
             }
         }
-        else {
+        else
+        {
             /* should not be here */
             rodsLog( LOG_ERROR,
                      "putUtil: invalid put dest objType %d for %s",
@@ -414,7 +445,10 @@ putFileUtil( rcComm_t *conn, char *srcPath, char *targPath, rodsLong_t srcSize,
 int
 initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp,
-                rodsRestart_t *rodsRestart ) {
+                rodsRestart_t *rodsRestart )
+{
+    namespace fs = boost::filesystem;
+
     char *tmpStr;
 
     if ( rodsArgs == NULL ) { // JMC cppcheck - nullptr
@@ -507,7 +541,7 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
             return USER__NULL_INPUT_ERR;
         }
         else {
-            boost::filesystem::path slash( "/" );
+            fs::path slash( "/" );
             std::string preferred_slash = slash.make_preferred().native();
             if ( preferred_slash[0] != rodsArgs->physicalPathString[0] ) {
                 rodsLog(
@@ -665,17 +699,26 @@ int
 putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
             bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart,
-            bulkOprInfo_t *bulkOprInfo ) {
+            bulkOprInfo_t *bulkOprInfo )
+{
+    namespace fs = boost::filesystem;
+
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
+    int status = 0;
 
     if ( srcDir == NULL || targColl == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "putDirUtil: NULL srcDir or targColl input" );
+        rodsLog( LOG_ERROR, "putDirUtil: NULL srcDir or targColl input" );
         return USER__NULL_INPUT_ERR;
     }
 
-    if (boost::filesystem::is_symlink({srcDir})) {
-        return 0;
+    try {
+        if (! irods::is_path_valid_for_recursion(rodsArgs, srcDir))
+        {
+            return 0;
+        }
+    } catch ( const irods::exception& _e ) {
+        rodsLog( LOG_ERROR, _e.client_display_what() );
+        return USER_INPUT_PATH_ERR;
     }
 
     if ( rodsArgs->recursive != True ) {
@@ -700,7 +743,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
     }
 
     rcComm_t *conn = *myConn;
-    boost::filesystem::path srcDirPath( srcDir );
+    fs::path srcDirPath( srcDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
                  "putDirUtil: opendir local dir error for %s, errno = %d\n",
@@ -720,7 +763,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 
     int savedStatus = 0;
     boost::system::error_code ec;
-    boost::filesystem::directory_iterator it(srcDirPath, ec), end;
+    fs::directory_iterator it(srcDirPath, ec), end;
 
     if (ec && it == end) {
         rodsLog( LOG_ERROR, "Error ecountered when processing directory %s for put: %s", srcDirPath.c_str(), ec.message().c_str());
@@ -732,11 +775,17 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 continue;
             }
 
-            boost::filesystem::path p = it->path();
+            fs::path p = it->path();
             snprintf( srcChildPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-            if (boost::filesystem::is_symlink({srcChildPath})) {
-                continue;
+            try {
+                if (! irods::is_path_valid_for_recursion(rodsArgs, srcChildPath) )
+                {
+                    continue;
+                }
+            } catch ( const irods::exception& _e ) {
+                rodsLog( LOG_ERROR, _e.client_display_what() );
+                return USER_INPUT_PATH_ERR;
             }
 
             if ( !exists( p ) ) {
@@ -781,7 +830,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 }
             }
 
-            int status = chkStateForResume( conn, rodsRestart, targChildPath,
+            status = chkStateForResume( conn, rodsRestart, targChildPath,
                                             rodsArgs, childObjType, &dataObjOprInp->condInput, 1 );
 
             if ( status < 0 ) {
@@ -809,7 +858,7 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                     try {
                         status = putFileUtil( conn, srcChildPath, targChildPath,
                                             dataSize, rodsArgs, dataObjOprInp );
-                    } catch ( const boost::filesystem::filesystem_error& e ) {
+                    } catch ( const fs::filesystem_error& e ) {
                         rodsLog( LOG_ERROR, e.what() );
                         status = e.code().value();
                     }
@@ -844,11 +893,8 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 
             }
 
-            if ( status < 0 &&
-                    status != CAT_NO_ROWS_FOUND ) {
-                rodsLogError( LOG_ERROR, status,
-                            "putDirUtil: put %s failed. status = %d",
-                            srcChildPath, status );
+            if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+                rodsLogError( LOG_ERROR, status, "putDirUtil: put %s failed. status = %d", srcChildPath, status );
                 savedStatus = status;
                 if ( rodsRestart->fd > 0 ) {
                     break;
@@ -921,11 +967,14 @@ bulkPutDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
 }
 
 int
-getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir ) {
+getPhyBunDir( char *phyBunRootDir, char *userName, char *outPhyBunDir )
+{
+    namespace fs = boost::filesystem;
+
     while ( 1 ) {
         snprintf( outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%u", phyBunRootDir,
                   userName, irods::getRandom<unsigned int>() );
-        boost::filesystem::path p( outPhyBunDir );
+        fs::path p( outPhyBunDir );
         if ( !exists( p ) ) {
             break;
         }
