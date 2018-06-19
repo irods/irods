@@ -217,6 +217,8 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
         if ( status >= 0 ) {
             regReplicaInp->destDataObjInfo->replNum = status;
         }
+        status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+        return status;
     }
 
     if ( status >= 0 ) {
