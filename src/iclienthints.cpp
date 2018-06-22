@@ -36,7 +36,7 @@ void usage() {
 }
 
 int
-main( int _argc, char** ) {
+main( int _argc, char** argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
@@ -45,8 +45,20 @@ main( int _argc, char** ) {
         return 0;
     }
 
+    rodsArguments_t myRodsArgs;
+    char* optStr = "h";
+    int status = parseCmdLineOpt(_argc, argv, optStr, 0, &myRodsArgs);
+    if (status) {
+        printf("Use -h for help.\n");
+        exit(1);
+    }
+    if (True == myRodsArgs.help) {
+        usage();
+        exit(0);
+    }
+
     rodsEnv myEnv;
-    int status = getRodsEnv( &myEnv );
+    status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
         rodsLogError( LOG_ERROR, status, "main: getRodsEnv error. " );
         exit( 1 );

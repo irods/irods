@@ -30,13 +30,20 @@ typedef struct {
     otherOut_t _other;
 } helloOut_t;
 
-void usage();
-
 int
-main( int, char** ) {
+main( int argc, char** argv ) {
 
     signal( SIGPIPE, SIG_IGN );
 
+    if (NULL != argv && NULL != argv[0]) {
+        /* set SP_OPTION to argv[0] so it can be passed to server */
+        char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
+        *child = '\0';
+        splitPathByKey(argv[0], parent, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
+        if (*child != '\0') {
+            mySetenvStr(SP_OPTION, child);
+        }
+    }
 
     rodsEnv myEnv;
     int status = getRodsEnv( &myEnv );
