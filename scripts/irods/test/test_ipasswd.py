@@ -69,9 +69,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:'
                          ]
@@ -105,14 +105,33 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Invalid password. Aborting...'
                          ]
         self.user0.assert_icommand('ipasswd', 'STDOUT_MULTILINE', expected_lines,  input='apass\nxx\nxx\nxx\nxx\n', desired_rc=8)
+
+
+        ####################################
+        # Three retries of long password, then abort
+        #
+        expected_lines = [
+                            'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
+                            'Enter your current iRODS password:',
+                            'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
+                            'Enter your new iRODS password:',
+                            'Your password must be between 3 and 42 characters long.',
+                            'Enter your new iRODS password:',
+                            'Your password must be between 3 and 42 characters long.',
+                            'Enter your new iRODS password:',
+                            'Your password must be between 3 and 42 characters long.',
+                            'Invalid password. Aborting...'
+                         ]
+        password = "1234567890123456789012345678901234567890123"
+        self.user0.assert_icommand('ipasswd', 'STDOUT_MULTILINE', expected_lines,  input='apass\n' + password + '\n' + password + '\n' + password + '\n', desired_rc=8)
 
 
         ####################################
@@ -137,11 +156,11 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Invalid password. Aborting...'
                          ]
         self.user0.assert_icommand('ipasswd', 'STDOUT_MULTILINE', expected_lines,  input='apass\nxx\nxx\nxx\nnewapass\n', desired_rc=8)
@@ -155,9 +174,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:End of file encountered.'
                          ]
@@ -172,9 +191,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:',
                             'Entered passwords do not match'
@@ -251,9 +270,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:'
                          ]
@@ -287,11 +306,11 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Invalid password. Aborting...'
                          ]
         self.admin.assert_icommand('ipasswd', 'STDOUT_MULTILINE', expected_lines,  input='rods\nxx\nxx\nxx\nxx\n', desired_rc=8)
@@ -319,11 +338,11 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Invalid password. Aborting...'
                          ]
         self.admin.assert_icommand('ipasswd', 'STDOUT_MULTILINE', expected_lines,  input='rods\nxx\nxx\nxx\nnewrods\n', desired_rc=8)
@@ -337,9 +356,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:End of file encountered.'
                          ]
@@ -354,9 +373,9 @@ class Test_Ipasswd(resource_suite.ResourceBase, unittest.TestCase):
                             'Enter your current iRODS password:',
                             'WARNING: Error 25 disabling echo mode. Password will be displayed in plaintext.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
-                            'Your password must be at least 3 characters long.',
+                            'Your password must be between 3 and 42 characters long.',
                             'Enter your new iRODS password:',
                             'Reenter your new iRODS password:',
                             'Entered passwords do not match'
