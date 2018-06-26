@@ -7778,12 +7778,16 @@ irods::error db_mod_user_op(
         int i;
         char userIdStr[MAX_NAME_LEN];
         i = decodePw( _ctx.comm(), _new_value, decoded );
+        if (strlen(decoded) > MAX_PASSWORD_LEN - 8) {
+            return ERROR(PASSWORD_EXCEEDS_MAX_SIZE, "Password must be between 3 and 42 characters");
+        }
         int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
         if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
             int status3;
             status3 = addRErrorMsg( &_ctx.comm()->rError, 0,
                                     "acCheckPasswordStrength rule not found" );
         }
+
 
         if ( status2 ) {
             return ERROR( status2, "icatApplyRule failed" );

@@ -331,7 +331,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     if ( i < 1 ) {
         return NO_PASSWORD_ENTERED;
     }
-    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 2 ) {
+    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 8 ) {
         return PASSWORD_EXCEEDS_MAX_SIZE;
     }
     if ( inbuf[i - 1] == '\n' ) {
