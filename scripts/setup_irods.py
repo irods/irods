@@ -59,6 +59,7 @@ from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
+from irods.password_obfuscation import maximum_password_length
 
 def setup_server(irods_config, json_configuration_file=None):
     l = logging.getLogger(__name__)
@@ -432,7 +433,7 @@ def setup_client_environment(irods_config):
 
     irods_config.admin_password = irods.lib.prompt(
         'iRODS server\'s administrator password',
-        input_filter=irods.lib.character_count_filter(minimum=1, field='Admin password'),
+        input_filter=irods.lib.character_count_filter(minimum=3, maximum=maximum_password_length, field='Admin password'),
         echo=False)
 
     print('\n', end='')
