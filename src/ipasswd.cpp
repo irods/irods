@@ -142,7 +142,7 @@ main( int argc, char **argv ) {
     }
 
     len = 0;
-    for (int ntimes = 0 ; len < 3; ++ntimes) {
+    for (int ntimes = 0 ; len < 3 || len > MAX_PASSWORD_LEN - 8; ++ntimes) {
         if (ntimes == 3)
         {
 #ifdef WIN32
@@ -182,8 +182,8 @@ main( int argc, char **argv ) {
         printf( "\n" );
         strncpy( newPw, password.c_str(), MAX_PASSWORD_LEN );
         len = strlen( newPw );
-        if ( len < 3 ) {
-            printf( "Your password must be at least 3 characters long.\n" );
+        if ( len < 3  || len > MAX_PASSWORD_LEN - 8 ) {
+            printf( "Your password must be between 3 and 42 characters long.\n" );
         }
     }
 
