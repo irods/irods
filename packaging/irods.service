@@ -1,0 +1,20 @@
+[Unit]
+Description=iRODS Open Source Data Management Software
+After=network.target auditd.service
+
+[Service]
+EnvironmentFile=/etc/irods/service_account.config
+WorkingDirectory=/var/lib/irods
+User=irods
+Group=irods
+ExecStart=/var/lib/irods/irodsctl start
+ExecReload=/var/lib/irods/irodsctl restart
+ExecStop=/var/lib/irods/irodsctl stop
+KillMode=process
+Restart=on-failure
+RestartPreventExitStatus=255
+Type=forking
+
+[Install]
+WantedBy=multi-user.target
+Alias=irods.service
