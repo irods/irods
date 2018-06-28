@@ -1917,22 +1917,32 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
     }
     addKeyVal( &execMyRuleInp.condInput, "execCondition", params[1]->text );
 
-    rei->msParamArray = newMsParamArray();
-    int ret = convertEnvToMsParamArray( rei->msParamArray, env, errmsg, r );
+    execMyRuleInp.inpParamArray = newMsParamArray();
+    int ret = convertEnvToMsParamArray( execMyRuleInp.inpParamArray, env, errmsg, r );
     if ( ret != 0 ) {
         generateAndAddErrMsg( "error converting Env to MsParamArray", node, ret, errmsg );
         return newErrorRes( r, ret );
     }
-    execMyRuleInp.inpParamArray = rei->msParamArray;
 
+    // Add ruleExecOut to input param and execute rule
+    msParam_t* rule_exec_out{getMsParamByLabel(rei->msParamArray, "ruleExecOut")};
+    addMsParam(execMyRuleInp.inpParamArray, rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf);
     i = rsExecMyRule( rei->rsComm, &execMyRuleInp,  &outParamArray );
 
-    if ( outParamArray != NULL ) {
-        rei->msParamArray = outParamArray;
+    if (outParamArray) {
+        // Put ruleExecOut into rei->msParamArray
+        replMsParam(getMsParamByLabel(outParamArray, "ruleExecOut"), rule_exec_out);
+        addMsParam(rei->msParamArray, rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf);
+
+        // Remove ruleExecOut before storing param array to env
+        rmMsParamByLabel(outParamArray, "ruleExecOut", 1);
+        updateMsParamArrayToEnvAndFreeNonIRODSType(outParamArray, env, r);
+        deleteMsParamArray(outParamArray);
     }
-    updateMsParamArrayToEnvAndFreeNonIRODSType( rei->msParamArray, env, r );
-    deleteMsParamArray( rei->msParamArray );
-    rei->msParamArray = NULL;
+    else {
+        deleteMsParamArray(execMyRuleInp.inpParamArray);
+    }
+
     if ( i < 0 ) {
         return newErrorRes( r, i );
     }
