@@ -139,3 +139,63 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                     paths.server_log_path(), 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
                 assert 0 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
+
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    def test_batch_delay_processing__3941(self):
+        irodsctl = IrodsController()
+        server_config_filename = paths.server_config_path()
+
+        # Simple delay rule with a writeLine
+        expected_count = 10
+        rule_text = '''
+test_batch_delay_processing {{
+    for(*i = 0; *i < {expected_count}; *i = *i + 1) {{
+        delay("<PLUSET>0.1s</PLUSET>") {{
+            writeLine("serverLog", "delay *i");
+        }}
+    }}
+}}
+OUTPUT ruleExecOut
+'''.format(**locals())
+        rule_file = 'test_batch_delay_processing__3941.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+
+        # load server_config.json to inject new settings
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+        re_server_sleep_time = 5
+        svr_cfg['advanced_settings']['maximum_number_of_concurrent_rule_engine_server_processes'] = 2
+        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+        svr_cfg['advanced_settings']['rule_engine_server_execution_time_in_seconds'] = 120
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+        with lib.file_backed_up(server_config_filename):
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # Bounce server to apply setting
+            irodsctl.restart()
+
+            # Fire off rule and ensure the delay queue is correctly populated
+            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand(['irule', '-F', rule_file])
+            _,out,_ = self.admin.assert_icommand(['iqstat'], 'STDOUT', 'id     name')
+            actual_count = 0
+            for line in out.splitlines():
+                if 'writeLine' in line:
+                    actual_count += 1
+            self.assertTrue(expected_count == actual_count, msg='expected {expected_count} in delay queue, found {actual_count}'.format(**locals()))
+
+            # Wait for messages to get written out and ensure that all the messages were written to serverLog
+            time.sleep(re_server_sleep_time)
+            self.admin.assert_icommand(['iqstat'], 'STDOUT', 'No delayed rules pending for user')
+            actual_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = delay ', start_index=initial_size_of_server_log)
+            self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+
+        os.remove(rule_file)
+
+        # Bounce server to get back original settings
+        irodsctl.restart()
