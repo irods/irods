@@ -85,7 +85,6 @@ main( int argc, char **argv ) {
     rcComm_t *Conn;
     rErrMsg_t errMsg;
     int treatAsPathname = 0;
-    std::vector< std::string > collections;
 
     boost::program_options::variables_map _vm;
     status = parse_program_options( argc, argv, myRodsArgs, _vm);
@@ -95,14 +94,13 @@ main( int argc, char **argv ) {
         exit( 1 );
     }
 
-    treatAsPathname = _vm.count( "path_name" );
-    collections = _vm["directories"].as< std::vector< std::string > >();
-
-    if ( collections.empty() ) {
+    if (!_vm.count("directories")) {
         std::cout << "No collection names specified." << std::endl;
         std::cout << "Use -h for help." << std::endl;
         exit( 1 );
     }
+    treatAsPathname = _vm.count( "path_name" );
+    std::vector<std::string> collections = _vm["directories"].as< std::vector< std::string > >();
 
     status = getRodsEnv( &myEnv );
     
