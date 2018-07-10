@@ -221,9 +221,15 @@ getNextQueuedRuleExec( genQueryOut_t **inGenQueryOut,
         exeTimeStr = &exeTime->value[exeTime->len * i];
         ruleExecIdStr =  &ruleExecId->value[ruleExecId->len * i];
 
-        if ( ( jobType & RE_FAILED_STATUS ) == 0 &&
-                strcmp( exeStatusStr, RE_FAILED ) == 0 ) {
-            /* failed request */
+        // jobType indicates the type of jobs being executed on the queue
+        if (0 != (jobType & RE_FAILED_STATUS) &&
+            0 != strcmp(exeStatusStr, RE_FAILED)) {
+            // Only processing failed execution requests
+            continue;
+        }
+        else if (0 == (jobType & RE_FAILED_STATUS) &&
+                 0 == strcmp(exeStatusStr, RE_FAILED)) {
+            // Not processing failed execution requests
             continue;
         }
         else if ( atoi( exeTimeStr ) > time( 0 ) ) {
