@@ -18,6 +18,7 @@ import stat
 import subprocess
 import time
 import tempfile
+import ustrings
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -279,8 +280,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         lib.create_directory_of_small_files(dir2, tree2)
 
         # add files
-        self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1))
-        self.admin.assert_icommand("iput -R %s -r %s" % ("replB", dir2))
+        self.admin.assert_icommand("iput -R %s -r %s" % ("pt", dir1), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand("iput -R %s -r %s" % ("replB", dir2), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # debugging
         self.admin.assert_icommand("ils -L %s" % dir1, 'STDOUT_SINGLELINE', dir1)

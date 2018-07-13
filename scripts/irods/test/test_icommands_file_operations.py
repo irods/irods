@@ -9,17 +9,16 @@ import errno
 import inspect
 import logging
 import os
-import pprint
 import tempfile
 import time
 import shutil
+import ustrings
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file
 from .. import paths
 from .. import test
-from . import settings
 from .. import lib
 from . import resource_suite
 from .rule_texts_for_tests import rule_texts
@@ -43,7 +42,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
-        user_session.assert_icommand(['iput', '-r', local_dir])
+        user_session.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         rods_files = set(user_session.get_entries_in_collection(base_name))
         self.assertTrue(set(local_files) == rods_files,
                         msg="Files missing:\n" + str(set(local_files) - rods_files) + "\n\n" +
@@ -98,7 +97,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         base_name = 'test_dir_for_perms'
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, 30, 10)
-        self.admin.assert_icommand(['iput', '-r', local_dir])
+        self.admin.assert_icommand(['iput', '-r', local_dir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         ils_out, _, _ = self.admin.run_icommand(['ils', base_name])
         rods_files = [f for f in lib.get_object_names_from_entries(ils_out)]
 
@@ -137,7 +136,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # force remove collection
         self.user0.assert_icommand("irm -rf {coll_name}".format(**locals()), "EMPTY")
@@ -168,7 +167,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # look for occurences of debug sequences in the log
         rec_op_kw_string = 'DEBUG: unix_file_resolve_hierarchy: recursiveOpr = [1]'
@@ -260,7 +259,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         file_names = set(lib.make_large_local_tmp_dir(local_dir, file_count=1000, file_size=100))
 
-        self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "EMPTY")
+        self.user0.assert_icommand("irsync -r " + local_dir + " i:" + base_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         self.user0.assert_icommand("ils", 'STDOUT_SINGLELINE', base_name)
         rods_files = set(self.user0.get_entries_in_collection(base_name))
         self.assertTrue(file_names == rods_files,
@@ -342,7 +341,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # compare files at each level
         for dir, files in local_dirs.items():
@@ -378,7 +377,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # compare files at each level
         for dir, files in local_dirs.items():
@@ -415,7 +414,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # sync collections
         self.user0.assert_icommand("irsync -r i:{source_base_name} i:{dest_base_name}".format(**locals()), "EMPTY")
@@ -474,7 +473,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # sync collections
         self.user0.assert_icommand("irsync -r i:{source_base_name} i:{dest_base_name}".format(**locals()), "EMPTY")
@@ -532,7 +531,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -574,7 +573,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         # sync dir to coll
-        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "EMPTY")
+        self.user0.assert_icommand("irsync -r {local_dir} i:{base_name}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local coll
         shutil.rmtree(local_dir)
@@ -657,7 +656,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         dirname = self.admin.local_session_dir + '/files'
         # files less than 4200000 were failing to trigger the writeLine
         for filesize in range(5000, 6000000, 500000):
-            files = lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
+            lib.make_large_local_tmp_dir(dirname, number_of_files, filesize)
             # manipulate core.re and check the server log
             with temporary_core_file() as core:
                 time.sleep(1)  # remove once file hash fix is committed #2279
@@ -665,7 +664,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 time.sleep(1)  # remove once file hash fix is committed #2279
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                self.admin.assert_icommand(['iput', '-frb', dirname])
+                self.admin.assert_icommand(['iput', '-frb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
                 assert number_of_files == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
                 shutil.rmtree(dirname)
 
@@ -906,3 +905,4 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         os.unlink(filename1)
         os.unlink(filename2)
+
