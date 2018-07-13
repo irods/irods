@@ -794,9 +794,14 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             }
 
             if ( is_symlink( p ) ) {
-                boost::filesystem::path cp = read_symlink( p );
-                snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s", srcDir, cp.c_str() );
-                p = boost::filesystem::path( srcChildPath );
+                fs::path cp = read_symlink( p );
+                // Issue 4009 (similar to Issue 3663).
+                if (cp.is_relative()) {
+                    snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s", srcDir, cp.c_str() );
+                } else {
+                    snprintf( srcChildPath, MAX_NAME_LEN, "%s", cp.c_str() );
+                }
+                p = fs::path( srcChildPath );
             }
 
             rodsLong_t dataSize = 0;
