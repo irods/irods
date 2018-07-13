@@ -793,6 +793,11 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 return USER_INPUT_PATH_ERR;
             }
 
+            // Issue 4013 - moved this snprintf from below, in order to
+            // grab the short filename here, before the symlink is read,
+            // and uses the symlink target filename instead.
+            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s", targColl, p.filename().c_str() );
+
             if ( is_symlink( p ) ) {
                 fs::path cp = read_symlink( p );
                 // Issue 4009 (similar to Issue 3663).
@@ -820,9 +825,6 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
                 savedStatus = USER_INPUT_PATH_ERR;
                 continue;
             }
-
-            boost::filesystem::path childPath = p.filename();
-            snprintf( targChildPath, MAX_NAME_LEN, "%s/%s", targColl, childPath.c_str() );
 
             if ( childObjType == DATA_OBJ_T ) {
                 const auto f_size = file_size(p);
