@@ -124,12 +124,12 @@ irods::is_path_valid_for_recursion( boost::filesystem::path const & userpath,
         }
         else if (fs::is_directory( resolved ))
         {
-        	try {
-				// Adds the path to the usermap, if it's not there yet.
-				// Throws an irods::exception if a loop is found (there is
-				// already an instance of the path in usermap).
-				check_for_filesystem_loop(resolved, userpath, usermap);
-        	} catch ( const irods::exception & _e ) {
+            try {
+                // Adds the path to the usermap, if it's not there yet.
+                // Throws an irods::exception if a loop is found (there is
+                // already an instance of the path in usermap).
+                check_for_filesystem_loop(resolved, userpath, usermap);
+            } catch ( const irods::exception & _e ) {
                 return false;
             }
 
@@ -300,8 +300,6 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
     }
 
 #define DISPLAY_PREFLIGHT       true
-// #define DISPLAY_PREFLIGHT       getenv(irods::displaypreflight_env)
-// #define DISPLAY_PREFLIGHT    false
 
     if (dirvec.size() > 0)
     {
@@ -324,14 +322,14 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
             return USER_INPUT_OPTION_ERR;
         }
 
-        if (DISPLAY_PREFLIGHT) { std::cout << "Running sanity check... " << std::flush; }
+        if (DISPLAY_PREFLIGHT) { std::cout << "Running recursive pre-scan... " << std::flush; }
 
         if ((status = irods::scan_all_source_directories_for_loops(pathmap,
                                                                    dirvec,
                                                                    (rodsArgs->link == True? true: false))) < 0)
         {
             if (DISPLAY_PREFLIGHT) {
-                std::cout << "pre-flight complete... errors found.\n" << std::flush;
+                std::cout << "pre-scan complete... errors found.\n" << std::flush;
                 std::cout << "Aborting data transfer.\n" << std::flush;
             }
             if (getenv(irods::chrono_env)) {
@@ -340,7 +338,7 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
             return status;
         }
         if (DISPLAY_PREFLIGHT) {
-            std::cout << "pre-flight complete... " << std::flush;
+            std::cout << "pre-scan complete... " << std::flush;
             std::cout << "transferring data...\n" << std::flush;
         }
         if (getenv(irods::chrono_env)) {

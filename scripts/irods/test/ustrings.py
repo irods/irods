@@ -2,8 +2,8 @@
 # Well known (usual) strings
 
 def recurse_ok_string():
-        return 'Running sanity check... pre-flight complete... transferring data...'
+        return 'Running recursive pre-scan... pre-scan complete... transferring data...'
 
-def get_recurse_fail_string():
+def recurse_fail_string():
         return 'Aborting data transfer'
 

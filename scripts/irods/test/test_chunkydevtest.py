@@ -12,6 +12,7 @@ import time
 import shutil
 import random
 import subprocess
+import ustrings
 
 from . import session
 from .. import test
@@ -526,7 +527,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.copyfile(progname, mysfile)
 
         # iphybun test
-        self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp")
+        self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         self.admin.assert_icommand("iphybun -KR " + self.anotherresc + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
                                    irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
@@ -725,7 +726,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
                                    " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
-        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz")
+        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testz " + dir_w + "/testz")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)

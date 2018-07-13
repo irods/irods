@@ -61,9 +61,6 @@ namespace irods
     // exporting this env variable will actually allow the scantime result to be printed
     static const char *chrono_env = "IRODS_SCAN_TIME";
 
-    // exporting this env variable will squelch the new progress text
-    static const char *displaypreflight_env = "IRODS_PREFLIGHT_VERBOSE";
-
     class scantime
     {
         public:
