@@ -10,6 +10,7 @@ import sys
 import tempfile
 from threading import Timer
 import time
+import ustrings
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -77,7 +78,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         dirname = 'test_redirect_map_regeneration__3904'
         lib.create_directory_of_small_files(dirname, filecount)
 
-        self.admin.assert_icommand(['iput', '-r', dirname])
+        self.admin.assert_icommand(['iput', '-r', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # Count the number of recipients of replicas
         hier_ctr = {}
@@ -1792,7 +1793,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
@@ -1805,7 +1806,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
