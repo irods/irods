@@ -125,3 +125,51 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             os.chmod(os.path.join(bad_sub_dir, "bad_file"), stat.S_IWRITE)
             os.chmod(os.path.join(good_sub_dir, "bad_file"), stat.S_IWRITE)
 
+    #################################################################
+    # This iput involves a commandline parameter which is a symbolic
+    # link to itself.
+    #############################
+    def test_iput_symlink_to_self_on_commandline_4016(self):
+
+        ##################################
+        # All of these tests (should) produce the same behavior and results:
+        ########
+        test_list = [
+                        'iput -r {symtoself_path}',
+                        'iput -r {symtoself_path} {target_collection_path}',
+                        'iput -r {goodfile_path} {symtoself_path} {target_collection_path}',
+                    ]
+
+        goodfile = 'goodfile'
+        goodfile_path = os.path.join(self.user0.local_session_dir, goodfile)
+        lib.make_file(goodfile_path, 1)
+
+        symtoself = 'symtoself';
+        symtoself_path = os.path.join(self.user0.local_session_dir, symtoself)
+        lib.execute_command(['ln', '-s', symtoself, symtoself_path])
+
+        base_name = 'iput_symlink_to_self_on_commandline_4016'
+        target_collection = 'target_' + base_name
+        target_collection_path = '{self.user0.session_collection}/{target_collection}'.format(**locals())
+        self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
+
+        ##################################
+        # Iterate through each of the tests:
+        ########
+        for teststring in test_list:
+
+            # Run the command:
+            cmd = teststring.format(**locals())
+            stdout,stderr,_ = self.user0.run_icommand(cmd)
+
+            estr = 'Too many levels of symbolic links:'
+            self.assertIn(estr, stderr, '{cmd}: Expected stderr: "...{estr}...", got: "{stderr}"'.format(**locals()))
+
+            # Make sure the usage message is not present in the output
+            self.assertNotIn('Usage:', stdout, '{cmd}: Not expected in stdout: "Usage:", got: "{stdout}"'.format(**locals()))
+
+            # Make sure neither the loop link nor regular file is anywhere in this collection tree:
+            cmd = 'ils -lr {self.user0.session_collection}'.format(**locals())
+            self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', symtoself );
+            self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', goodfile );
+
