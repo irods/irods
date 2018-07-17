@@ -42,7 +42,17 @@ main( int argc, char **argv ) {
                     0,
                     &rodsPathInp );
     if ( p_err < 0 ) {
-        usage( stderr );
+
+        // Issue 4016: The return value SYS_NO_PATH_PERMISSION comes from a
+        // boost::filesystem exception being thrown, with a specific reason.
+        // The error message has already been displayed on stderr (for example,
+        // "... Too many levels of symbolic links: ...".  Adding a usage
+        // message which is over 100 lines long in addition, is confusing,
+        // and not useful to the user.
+        if (p_err != SYS_NO_PATH_PERMISSION)
+        {
+            usage( stderr );
+        }
         return EXIT_FAILURE;
 
     }
