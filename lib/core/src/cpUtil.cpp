@@ -18,7 +18,7 @@ cpUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
         return USER__NULL_INPUT_ERR;
     }
 
-    int savedStatus = resolveRodsTarget( conn, rodsPathInp, 1 );
+    int savedStatus = resolveRodsTarget( conn, rodsPathInp, PUT_OPR );
     if ( savedStatus < 0 ) {
         rodsLogError( LOG_ERROR, savedStatus,
                       "cpUtil: resolveRodsTarget error, status = %d", savedStatus );
