@@ -2460,97 +2460,124 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                          destPath->outPath );
                 return USER_INPUT_PATH_ERR;
             }
-            else if ( ( destPath->objType == COLL_OBJ_T ||
-                        destPath->objType == LOCAL_DIR_T ) &&
-                      destPath->objState == EXIST_ST ) {
-                /* the collection exist */
-                getLastPathElement( srcPath->inPath, srcElement );
-                if ( strlen( srcElement ) > 0 ) {
-                    if ( rodsPathInp->numSrc == 1 && oprType == RSYNC_OPR ) {
-                        getLastPathElement( destPath->inPath, destElement );
-                        /* RSYNC_OPR. Just use the same path */
-                        if ( strlen( destElement ) > 0 ) {
-                            rstrcpy( targPath->outPath, destPath->outPath,
-                                     MAX_NAME_LEN );
-                        }
+            else
+            {
+                // Issue 3997: First, find out if the destination is a
+                // non-existent collection, and create it if necessary.
+                if (destPath->objState != EXIST_ST && destPath->objType <= COLL_OBJ_T &&
+                    oprType != MOVE_OPR && rodsPathInp->numSrc != 1)
+                {
+                    // mkColl changes the values in destPath, so repopulate the structure
+                    status = mkColl( conn, destPath->outPath );
+                    if ( status < 0 ) {
+                        rodsLog( LOG_ERROR,
+                                 "resolveRodsTarget: Could not create collection %s", destPath->outPath );
+                        return status;
                     }
-                    if ( targPath->outPath[0] == '\0' ) {
-                        snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s",
-                                  destPath->outPath, srcElement );
-                        /* make the collection */
-                        if ( destPath->objType == COLL_OBJ_T ) {
-                            if ( oprType != MOVE_OPR ) {
-                                /* rename does not need to mkColl */
-                                if ( srcPath->objType <= COLL_OBJ_T ) {
-                                    status = mkColl( conn, destPath->outPath );
+                    getRodsObjType( conn, destPath );
+                    targPath->objState = EXIST_ST;
+                }
+                if ( ( destPath->objType == COLL_OBJ_T ||
+                            destPath->objType == LOCAL_DIR_T ) &&
+                          destPath->objState == EXIST_ST ) {
+                    /* the collection exist */
+                    getLastPathElement( srcPath->inPath, srcElement );
+                    if ( strlen( srcElement ) > 0 ) {
+                        if ( rodsPathInp->numSrc == 1 && oprType == RSYNC_OPR ) {
+                            getLastPathElement( destPath->inPath, destElement );
+                            /* RSYNC_OPR. Just use the same path */
+                            if ( strlen( destElement ) > 0 ) {
+                                rstrcpy( targPath->outPath, destPath->outPath,
+                                         MAX_NAME_LEN );
+                            }
+                        }
+                        if ( targPath->outPath[0] == '\0' ) {
+                            snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s",
+                                      destPath->outPath, srcElement );
+                            /* make the collection */
+                            if ( destPath->objType == COLL_OBJ_T ) {
+                                if ( oprType != MOVE_OPR ) {
+                                    /* rename does not need to mkColl */
+                                    if ( srcPath->objType <= COLL_OBJ_T ) {
+                                        status = mkColl( conn, destPath->outPath );
+                                    }
+                                    else {
+                                        status = mkColl( conn, targPath->outPath );
+                                    }
                                 }
                                 else {
-                                    status = mkColl( conn, targPath->outPath );
+                                    status = 0;
                                 }
                             }
                             else {
-                                status = 0;
+    #ifdef windows_platform
+                                status = iRODSNt_mkdir( targPath->outPath, 0750 );
+    #else
+                                status = mkdir( targPath->outPath, 0750 );
+    #endif
+                                if ( status < 0 && errno == EEXIST ) {
+                                    status = 0;
+                                }
+                            }
+                            if ( status < 0 ) {
+                                rodsLogError( LOG_ERROR, status,
+                                              "resolveRodsTarget: mkColl/mkdir for %s,status=%d",
+                                              targPath->outPath, status );
+                                return status;
                             }
                         }
-                        else {
-#ifdef windows_platform
-                            status = iRODSNt_mkdir( targPath->outPath, 0750 );
-#else
-                            status = mkdir( targPath->outPath, 0750 );
-#endif
-                            if ( status < 0 && errno == EEXIST ) {
-                                status = 0;
-                            }
-                        }
-                        if ( status < 0 ) {
-                            rodsLogError( LOG_ERROR, status,
-                                          "resolveRodsTarget: mkColl/mkdir for %s,status=%d",
-                                          targPath->outPath, status );
-                            return status;
-                        }
-                    }
-                }
-                else {
-                    rstrcpy( targPath->outPath, destPath->outPath,
-                             MAX_NAME_LEN );
-                }
-            }
-            else {
-                /* dest coll does not exist */
-                if ( destPath->objType <= COLL_OBJ_T ) {
-                    if ( oprType != MOVE_OPR ) {
-                        /* rename does not need to mkColl */
-                        status = mkColl( conn, destPath->outPath );
                     }
                     else {
-                        status = 0;
+                        rstrcpy( targPath->outPath, destPath->outPath,
+                                 MAX_NAME_LEN );
                     }
                 }
                 else {
-                    /* use destPath. targPath->outPath not defined.
-                     *  status = mkdir (targPath->outPath, 0750); */
-#ifdef windows_platform
-                    status = iRODSNt_mkdir( destPath->outPath, 0750 );
-#else
-                    status = mkdir( destPath->outPath, 0750 );
-#endif
+                    /* dest coll does not exist */
+                    if ( destPath->objType <= COLL_OBJ_T ) {
+                        if ( oprType != MOVE_OPR ) {
+                            /* rename does not need to mkColl */
+                            status = mkColl( conn, destPath->outPath );
+                        }
+                        else {
+                            status = 0;
+                        }
+                    }
+                    else {
+                        /* use destPath. targPath->outPath not defined.
+                         *  status = mkdir (targPath->outPath, 0750); */
+    #ifdef windows_platform
+                        status = iRODSNt_mkdir( destPath->outPath, 0750 );
+    #else
+                        status = mkdir( destPath->outPath, 0750 );
+    #endif
+                    }
+                    if ( status < 0 ) {
+                        return status;
+                    }
+                    if ( rodsPathInp->numSrc == 1 ) {
+                    if ( rodsPathInp->numSrc == 1 ) {
+                         rstrcpy( targPath->outPath, destPath->outPath,
+                                  MAX_NAME_LEN );
+                    }
+                    else {
+                        rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
+                                      "resolveRodsTarget: target %s does not exist",
+                                      destPath->outPath );
+                        return USER_FILE_DOES_NOT_EXIST;
+                    }
+                         rstrcpy( targPath->outPath, destPath->outPath,
+                                  MAX_NAME_LEN );
+                    }
+                    else {
+                        rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
+                                      "resolveRodsTarget: target %s does not exist",
+                                      destPath->outPath );
+                        return USER_FILE_DOES_NOT_EXIST;
+                    }
                 }
-                if ( status < 0 ) {
-                    return status;
-                }
-
-                if ( rodsPathInp->numSrc == 1 ) {
-                    rstrcpy( targPath->outPath, destPath->outPath,
-                             MAX_NAME_LEN );
-                }
-                else {
-                    rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
-                                  "resolveRodsTarget: target %s does not exist",
-                                  destPath->outPath );
-                    return USER_FILE_DOES_NOT_EXIST;
-                }
+                targPath->objState = EXIST_ST;
             }
-            targPath->objState = EXIST_ST;
         }
         else {          /* should not be here */
             if ( srcPath->objState == NOT_EXIST_ST ) {

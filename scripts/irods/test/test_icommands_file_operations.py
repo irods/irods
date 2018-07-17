@@ -906,3 +906,490 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         os.unlink(filename1)
         os.unlink(filename2)
 
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of irsync and iput, with a single source directory
+    # and a target collection which does not pre-exist.
+    ########
+    def test_target_not_exist_singlesource_3997(self):
+
+        ##################################
+        # All cases listed below create identical results: target 'dir1' is created.
+        ########
+        test_cases = [
+                        'iput -r {dir1path}',
+                        'iput -r {dir1path} {target1}',
+                        'irsync -r {dir1path} i:{target1}'
+        ]
+
+        base_name = 'target_not_exist_singlesource_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = dir1
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+                cmd = cmdstring.format(**locals())
+
+                ##################################
+                # Target collection exists or not based on runimkdir
+                # Single source directory command
+                # This means that the contents of dir1 will be
+                # placed directly under target_collection (recursively).
+                ########
+
+                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+
+                self.user0.assert_icommand( 'ils {target1}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '/{target1}/subdir1'.format(**locals()) ])
+
+                self.user0.assert_icommand( 'ils {target1}/subdir1'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                        [ '  0', '  1' ])
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                # Just to be paranoid, make sure it's really gone
+                self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of iput, with a single source directory
+    # and a target collection which does pre-exist.
+    ########
+    def test_iput_target_does_exist_singlesource_3997(self):
+
+        ##################################
+        # All cases listed below create identical results
+        # (leaving this in list form, in case additional cases show up).
+        ########
+        test_cases = [
+                        'iput -r {dir1path} {target1}',
+        ]
+
+        base_name = 'iput_target_does_exist_singlesource_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+
+                # Create the pre-existing collection
+                self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                cmd = cmdstring.format(**locals())
+
+                ##################################
+                # Target collection exists
+                # Single source directory command
+                # This means that the contents of dir1 will be
+                # placed directly under target_collection (recursively).
+                ########
+
+                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+
+                # Command creates source dir under existing collection
+                self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', dir1 )
+
+                self.user0.assert_icommand( 'ils {target1}/{dir1}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '/{target1}/{dir1}/subdir1'.format(**locals()) ])
+
+                self.user0.assert_icommand( 'ils {target1}/{dir1}/subdir1'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                        [ '  0', '  1' ])
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                # Just to be paranoid, make sure it's really gone
+                self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of irsync with a single source directory
+    # and a target collection which does pre-exist.
+    ########
+    def test_irsync_target_does_exist_singlesource_3997(self):
+
+        ##################################
+        # All cases listed below create identical results
+        # (leaving this in list form, in case additional cases show up).
+        ########
+        test_cases = [
+                        'irsync -r {dir1path} i:{target1}'
+        ]
+
+        base_name = 'irsync_target_does_exist_singlesource_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+
+                # Create the pre-existing collection
+                self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                cmd = cmdstring.format(**locals())
+
+                ##################################
+                # Target collection exists
+                # Single source directory command
+                # This means that the contents of dir1 will be
+                # placed directly under target_collection (recursively).
+                ########
+
+                self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+
+                self.user0.assert_icommand( 'ils {target1}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '/{target1}/subdir1'.format(**locals()) ])
+
+                self.user0.assert_icommand( 'ils {target1}/subdir1'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                        [ '  0', '  1' ])
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                # Just to be paranoid, make sure it's really gone
+                self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of irsync and iput with multiple source directories
+    # and a target collection which first does not exist, but then does (the testcases are run twice).
+    ########
+    def test_multiple_source_3997(self):
+
+        ##################################
+        # All cases listed below create identical results.
+        # The test cases are run twice each - with and without an imkdir first.
+        ########
+        test_cases = [
+                        'iput -r {dir1path} {dir2path} {target1}',
+                        'irsync -r {dir1path} {dir2path} i:{target1}',
+        ]
+
+        base_name = 'multiple_source_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir2 = 'dir2'
+            dir1path = os.path.join(local_dir, dir1)
+            dir2path = os.path.join(local_dir, dir2)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = dir1
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(dir2path,4)     # Four files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+                cmd = cmdstring.format(**locals())
+
+                for runimkdir in [ 'no', 'yes' ]:
+
+                    if runimkdir == 'yes':
+                        self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                    self.user0.assert_icommand(cmd, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+
+                    # Command creates source dir under existing collection
+                    self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_MULTILINE', [ dir1, dir2 ] )
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir1}'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                                [ '  0', '  1', '/{target1}/{dir1}/subdir1'.format(**locals()) ])
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir1}/subdir1'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                                [ '  0', '  1' ])
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir2}'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                                [ '  0', '  1', ' 2', ' 3' ] )
+
+                    self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                    # Just to be paranoid, make sure it's really gone
+                    self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+            shutil.rmtree(os.path.abspath(dir2path), ignore_errors=True)
+
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of icp, with a single collection
+    # and a target collection which does not pre-exist.
+    ########
+    def test_icp_target_not_exist_singlesource_3997(self):
+
+        ##################################
+        # All cases listed below create identical results
+        ########
+        test_cases = [
+                        'icp -r {dir1} {target1}'
+        ]
+
+        base_name = 'icp_target_not_exist_singlesource_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+
+                # This will create everything under collection dir1
+                self.user0.run_icommand('iput -r {dir1path}'.format(**locals()))
+
+                cmd = cmdstring.format(**locals())
+
+                ##################################
+                # Target collection exists or not based on runimkdir
+                # Single source directory command
+                # This means that the contents of dir1 will be
+                # placed directly under target_collection (recursively).
+                ########
+
+                # Successful icp is silent
+                self.user0.assert_icommand(cmd, "EMPTY")
+
+                self.user0.assert_icommand( 'ils {target1}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '/{target1}/subdir1'.format(**locals()) ])
+
+                self.user0.assert_icommand( 'ils {target1}/subdir1'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                        [ '  0', '  1' ])
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                # Just to be paranoid, make sure it's really gone
+                self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of icp, with a single collection
+    # and a target collection which does not pre-exist.
+    ########
+    def test_icp_target_does_exist_singlesource_3997(self):
+
+        ##################################
+        # All cases listed below create identical results
+        ########
+        test_cases = [
+                        'icp -r {dir1} {target1}'
+        ]
+
+        base_name = 'icp_target_does_exist_singlesource_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+
+                # This will create the target collection 'target1'
+                self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                # This will create everything under collection dir1
+                self.user0.run_icommand('iput -r {dir1path}'.format(**locals()))
+
+                cmd = cmdstring.format(**locals())
+
+                ##################################
+                # Target collection exists or not based on runimkdir
+                # Single source directory command
+                # This means that the contents of dir1 will be
+                # placed directly under target_collection (recursively).
+                ########
+
+                # Successful icp is silent
+                self.user0.assert_icommand(cmd, "EMPTY")
+
+                # Command creates source dir under existing collection
+                self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_MULTILINE', dir1 )
+
+                self.user0.assert_icommand( 'ils {target1}/{dir1}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '/{target1}/{dir1}/subdir1'.format(**locals()) ])
+
+                self.user0.assert_icommand( 'ils {target1}/{dir1}/subdir1'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                        [ '  0', '  1' ])
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                # Just to be paranoid, make sure it's really gone
+                self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+
+    ##################################
+    # Issue - 3997:
+    # This tests the functionality of icp, with a single collection
+    # and a target collection. Each case is run twice - once without preexisting
+    # target collection, and once after using imkdir to create the collection.
+    ########
+    def test_icp_multiple_src_3997(self):
+
+        ##################################
+        # All cases listed below create identical results
+        ########
+        test_cases = [
+                        'icp -r {dir1} {dir2} {target1}'
+        ]
+
+        base_name = 'icp_multiple_src_3997'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            dir1 = 'dir1'
+            dir2 = 'dir2'
+            dir1path = os.path.join(local_dir, dir1)
+            dir2path = os.path.join(local_dir, dir2)
+            subdir1 = os.path.join(dir1path, 'subdir1')
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(dir2path,4)     # Four files in this one
+            lib.create_directory_of_small_files(subdir1path,2)      # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            for cmdstring in test_cases:
+                for runimkdir in [ 'no', 'yes' ]:
+
+                    if runimkdir == 'yes':
+                        self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                    # This will create all data objects under collections dir1 and dir2
+                    self.user0.run_icommand('iput -r {dir1path}'.format(**locals()))
+                    self.user0.run_icommand('iput -r {dir2path}'.format(**locals()))
+
+                    cmd = cmdstring.format(**locals())
+
+                    ##################################
+                    # Target collection exists or not based on runimkdir
+                    # Single source directory command
+                    # This means that the contents of dir1 will be
+                    # placed directly under target_collection (recursively).
+                    ########
+
+                    # Successful icp is silent
+                    self.user0.assert_icommand(cmd, "EMPTY")
+
+                    # Command creates source dir under existing collection
+                    self.user0.assert_icommand( 'ils {target1}'.format(**locals()), 'STDOUT_MULTILINE', [ dir1, dir2 ] )
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir1}'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                                [ '  0', '  1', '/{target1}/{dir1}/subdir1'.format(**locals()) ])
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir2}'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                                [ '  0', '  1', '  2', '  3' ] )
+
+                    self.user0.assert_icommand( 'ils {target1}/{dir1}/subdir1'.format(**locals()),
+                                                'STDOUT_MULTILINE',
+                                            [ '  0', '  1' ])
+
+                    self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+                    # Just to be paranoid, make sure it's really gone
+                    self.user0.assert_icommand_fail( 'ils {target1}'.format(**locals()), 'STDOUT_SINGLELINE', target1 )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+

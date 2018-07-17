@@ -17,7 +17,7 @@
 
 #include <stdlib.h>
 
-// TODO:THIS NEEDS TO BE GONE (Issue 3997)
+// TODO:THIS NEEDS TO BE GONE (Issue 3995)
 //
 // Replace this with:
 // namespace fs = boost::filesystem;
