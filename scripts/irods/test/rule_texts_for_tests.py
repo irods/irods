@@ -426,6 +426,15 @@ def acSetRescSchemeForCreate(rule_args, callback, rei):
 #===== Test_Native_Rule_Engine_Plugin  =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin'] = {}
+
+rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_remote_rule_execution'] = '''
+def main(rule_args, callback, rei):
+    rule_code = "def main(rule_args, callback, rei):\\n    print('XXXX - PREP REMOTE EXEC TEST')"
+    callback.remoteExec('icat.example.org', '', rule_code, '')
+INPUT null
+OUTPUT ruleExecOut
+'''
+
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_network_pep'] = '''
 def pep_network_agent_start_pre(rule_args, callback, rei):
     rule_args[2] = 'THIS IS AN OUT VARIABLE'
@@ -464,7 +473,7 @@ def pep_api_hello_world_post(rule_args, callback, rei):
     hello_inp_string = ', '.join([k + '=' + hello_inp[k] for k in hello_inp])
     hello_out = rule_args[3]
     hello_out_string = ', '.join([k + '=' + hello_out[k] for k in hello_out])
-    callback.writeLine('serverLog', 'pep_api_hello_world_post - {0} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
+    callback.writeLine('serverLog', 'pep_api_hello_world_post - {1} {1} {2}, {3}'.format(rule_args[0], rule_args[1], hello_inp_string, hello_out_string))
 '''
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_out_string'] = '''
 def test(rule_args, callback, rei):
