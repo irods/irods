@@ -20,6 +20,39 @@ from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
 from ..controller import IrodsController
 
+
+
+
+
+
+def exec_icat_command(command):
+    import paramiko
+
+    hostname = 'icat.example.org'
+    port = 22
+    username = 'irods'
+    password = ''
+
+    print('Executing command on '+hostname+': ' + command)
+
+    s = paramiko.SSHClient()
+    s.load_system_host_keys()
+    s.connect(hostname, port, username, password)
+    (stdin, stdout, stderr) = s.exec_command(command)
+
+    ol = []
+    for l in stdout.readlines():
+        ol.append(l)
+
+    el = []
+    for l in stderr.readlines():
+        el.append(l)
+
+    s.close()
+
+    return ol, el
+
+
 class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Native_Rule_Engine_Plugin'
@@ -42,6 +75,64 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         for s in strings_to_check_for:
             count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), s, start_index=initial_size_of_server_log)
             assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
+
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
+    def test_remote_rule_execution(self):
+        # =-=-=-=-=-=-=-=-
+        # stat the icat log to get its current size
+        log_stat_cmd = 'stat -c%s ' + paths.server_log_path()
+        out, err = exec_icat_command(log_stat_cmd)
+
+        if len(err) > 0:
+            for l in err:
+                print('stderr: ' + l)
+            return
+
+        if len(out) <= 0:
+            print('ERROR: LOG SIZE EMPTY')
+            assert(0)
+
+        print('log size: ' + out[0])
+        initial_log_size = int(out[0])
+
+        # =-=-=-=-=-=-=-=-
+        # run the remote rule to write to the log
+        rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
+        print('Executing code:\n'+rule_code)
+        rule_file = 'test_remote_rule_execution.r'
+        with open(rule_file, 'wt') as f:
+            print(rule_code, file=f, end='')
+        out, _, _ = self.admin.run_icommand("irule -F " + rule_file)
+
+        # =-=-=-=-=-=-=-=-
+        # search for the position of the token in the remote log
+        token = 'XXXX - PREP REMOTE EXEC TEST'
+
+        log_search_cmd = 'grep -ob "' + token + '" ' + paths.server_log_path()
+        out, err = exec_icat_command(log_search_cmd)
+        if len(err) > 0:
+            for l in err:
+                print('stderr: ' + l)
+            assert(0)
+
+        if len(out) <= 0:
+            print('ERROR: TOKEN LOCATION EMPTY')
+            assert(0)
+
+        loc_str = out[-1].split(':')[0]
+        print('token location: ' + loc_str)
+
+        token_location = int(loc_str)
+
+        # =-=-=-=-=-=-=-=-
+        # compare initial log size to the location of the token in the file
+        # the token should be located in the file some place after the initial
+        # size of the file
+        if initial_log_size > token_location:
+            assert(0)
+        else:
+            assert(1)
 
     def test_network_pep(self):
         irodsctl = IrodsController()
@@ -140,7 +231,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                 assert 0 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
 
-    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER or plugin_name == 'irods_rule_engine_plugin-python', 'Skip for topology testing from resource server: reads server log')
     def test_batch_delay_processing__3941(self):
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
