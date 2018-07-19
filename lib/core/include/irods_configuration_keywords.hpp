@@ -14,6 +14,10 @@ namespace irods {
 
     const std::string CFG_DB_USERNAME_KW( "db_username" );
     const std::string CFG_DB_PASSWORD_KW( "db_password" );
+    const std::string CFG_DB_SSLMODE_KW( "db_sslmode" );
+    const std::string CFG_DB_SSLROOTCERT_KW( "db_sslrootcert" );
+    const std::string CFG_DB_SSLCERT_KW( "db_sslcert" );
+    const std::string CFG_DB_SSLKEY_KW( "db_sslkey" );
     const std::string CFG_ZONE_NAME_KW( "zone_name" );
     const std::string CFG_ZONE_KEY_KW( "zone_key" );
     const std::string CFG_NEGOTIATION_KEY_KW( "negotiation_key" );
