@@ -12,6 +12,7 @@ import shutil
 import socket
 import ustrings
 
+from .. import paths
 from .. import test
 from . import settings
 from . import session
@@ -998,52 +999,78 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
         test_session.assert_icommand(
             "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
 
-    def test_remote_writeLine_localzone_3722(self):
-        parameters = self.config.copy()
-        parameters['local_host'] = socket.gethostname()
-        rule_file = "test_rule_file.r"
+    def run_remote_writeLine_test(self, config, zone_info):
+        # Some inputs and expected values
+        localnum_before = 1
+        localnum_after = 3
+        localstring = 'one'
+        inputnum_before = 4
+        inputnum_after = 6
+        inputstring = 'four'
+        remotenum = 0
+        remotestring = 'zero'
+        expected_before_remote = 'stdout before remote: {0}, {1}, {2}, {3}'.format(
+            inputnum_before, inputstring, localnum_before, localstring)
+        expected_from_remote = 'stdout from remote: {0}, {1}, {2}, {3}, {4}, {5}'.format(
+            inputnum_before, inputstring, localnum_before, localstring, remotenum, remotestring)
+        expected_after_remote = 'stdout after remote: {0}, {1}, {2}, {3}'.format(
+            inputnum_after, inputstring, localnum_after, localstring)
 
-        # Write a line to the serverLog in the local zone using remote execution
+        if zone_info is 'local':
+            zone = config['local_zone']
+            host = socket.gethostname()
+            # TODO: Add support for remote with #4164
+            expected_from_remote_log = 'serverLog from remote: {0}, {1}, {2}, {3}, {4}, {5}'.format(
+                inputnum_before, inputstring, localnum_before, localstring, remotenum, remotestring)
+        else:
+            zone = config['remote_zone']
+            host = config['remote_host']
+
+        # Write a line to the serverLog in the local zone using remote execution block
         rule_string = '''
 myTestRule {{
-    remote("{local_host}", "<ZONE>{local_zone}</ZONE>") {{
-        writeLine("serverLog", "test_remote_writeLine_localzone_3722");
+    *localnum = {0};
+    *localstring = "{1}";
+    writeLine("stdout", "stdout before remote: *inputnum, *inputstring, *localnum, *localstring");
+    remote("{2}", "<ZONE>{3}</ZONE>") {{
+        *remotenum = {4};
+        *remotestring = "{5}";
+        writeLine("serverLog", "serverLog from remote: *inputnum, *inputstring, *localnum, *localstring, *remotenum, *remotestring");
+        writeLine("stdout", "stdout from remote: *inputnum, *inputstring, *localnum, *localstring, *remotenum, *remotestring");
+        *inputnum = *inputnum + 1
+        *localnum = *localnum + 1
     }}
+    *inputnum = *inputnum + 1
+    *localnum = *localnum + 1
+    writeLine("stdout", "stdout after remote: *inputnum, *inputstring, *localnum, *localstring");
 }}
-INPUT *myvar="hello"
+INPUT *inputnum={6}, *inputstring="{7}"
 OUTPUT ruleExecOut
-            '''.format( **parameters )
+            '''.format(localnum_before, localstring, host, zone, remotenum, remotestring, inputnum_before, inputstring)
 
+        rule_file = "test_rule_file.r"
         with open(rule_file, 'w') as f:
             f.write(rule_string)
 
+        # TODO: Add support for remote with #4164
+        if zone_info is 'local':
+            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+
         # Execute rule and ensure that output is empty (success)
-        test_session = self.user_sessions[0]
-        test_session.assert_icommand('irule -F ' + rule_file)
+        self.user_sessions[0].assert_icommand(['irule', '-F', rule_file], 'STDOUT_MULTILINE', [expected_before_remote, expected_from_remote, expected_after_remote])
+
+        # TODO: Add support for remote with #4164
+        if zone_info is 'local':
+            log_output_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), expected_from_remote_log, start_index=initial_log_size)
+            self.assertTrue(1 == log_output_count, msg='Expected 1 but found {}'.format(log_output_count))
         os.remove(rule_file)
+
+    def test_remote_writeLine_localzone_3722(self):
+        self.run_remote_writeLine_test(self.config.copy(), 'local')
 
     def test_remote_writeLine_remotezone_3722(self):
-        parameters = self.config.copy()
-        rule_file = "test_rule_file.r"
+        self.run_remote_writeLine_test(self.config.copy(), 'remote')
 
-        # Write a line to the serverLog in the remote zone using remote execution
-        rule_string = '''
-myTestRule {{
-    remote("{remote_host}", "<ZONE>{remote_zone}</ZONE>") {{
-        writeLine("serverLog", "test_remote_writeLine_remotezone_3722");
-    }}
-}}
-INPUT *myvar="hello"
-OUTPUT ruleExecOut
-            '''.format( **parameters )
-
-        with open(rule_file, 'w') as f:
-            f.write(rule_string)
-
-        # Execute rule and ensure that output is empty (success)
-        test_session = self.user_sessions[0]
-        test_session.assert_icommand('irule -F ' + rule_file)
-        os.remove(rule_file)
 
 class Test_Admin_Commands(unittest.TestCase):
 
