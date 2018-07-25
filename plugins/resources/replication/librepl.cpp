@@ -270,10 +270,10 @@ extern "C" {
         child_list_t child_list;
         ret = _ctx.prop_map().get<child_list_t>( CHILD_LIST_PROP, child_list );
         if ( !ret.ok() ) {
-            return PASSMSG(
-                       (boost::format(
-                        "[%s] - Failed to get child list for replication.") %
-                        __FUNCTION__).str(), ret );
+            irods::log(PASSMSG( (boost::format(
+                       "[%s] - Failed to get child list for replication.") %
+                       __FUNCTION__).str(), ret ));
+            return SUCCESS();
         }
 
         // get the root resource name as well as the child hierarchy string
