@@ -167,13 +167,19 @@ def get_two_task_for_oracle(db_config):
             db_config['db_port'],
             db_config['db_name'])
 
-def get_connection_string(db_config):
+def get_connection_string(db_config, irods_config):
     odbc_dict = {}
     odbc_dict['Password'] = db_config['db_password']
     odbc_dict['PWD'] = db_config['db_password']
     odbc_dict['Username'] = db_config['db_username']
     odbc_dict['User'] = db_config['db_username']
     odbc_dict['UID'] = db_config['db_username']
+    print ('**** irods_config.catalog_database_type: %s *****' % irods_config.catalog_database_type)
+    if irods_config.catalog_database_type == 'cockroachdb':
+        odbc_dict['sslrootcert'] = irods_config.database_config['sslrootcert']
+        odbc_dict['sslmode'] = 'require'
+        odbc_dict['ssl'] = 'true'
+
     keys = [k for k in odbc_dict.keys()]
 
     return ';'.join(itertools.chain(['DSN=iRODS Catalog'], ['%s=%s' % (k, odbc_dict[k]) for k in keys]))
@@ -184,7 +190,8 @@ def get_database_connection(irods_config):
         os.environ['TWO_TASK'] = get_two_task_for_oracle(irods_config.database_config)
         l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
 
-    connection_string = get_connection_string(irods_config.database_config)
+    connection_string = get_connection_string(irods_config.database_config, irods_config)
+    print('Connection String: %s' % connection_string)
     sync_odbc_ini(irods_config)
     os.environ['ODBCINI'] = irods_config.odbc_ini_path
     os.environ['ODBCSYSINI'] = '/etc'
