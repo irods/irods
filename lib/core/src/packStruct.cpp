@@ -384,20 +384,36 @@ resolvePackedItem( packItem_t &myPackedItem, const void *&inPtr, packOpr_t packO
 
     /* set up the pointer */
 
+    const void *ptr = inPtr;
     if ( myPackedItem.pointerType > 0 ) {
         if ( packOpr == PACK_OPR ) {
             /* align the address */
-            inPtr = ialignAddr( inPtr );
-            if ( inPtr != NULL ) {
-                myPackedItem.pointer = *static_cast<const void *const *>(inPtr);
+            ptr = ialignAddr( ptr );
+            if ( ptr != NULL ) {
+                myPackedItem.pointer = *static_cast<const void *const *>(ptr);
                 /* advance the pointer */
-                inPtr = static_cast<const char *>(inPtr) + sizeof(void *);
+                ptr = static_cast<const char *>(ptr) + sizeof(void *);
             }
             else {
                 myPackedItem.pointer = NULL;
             }
         }
     }
+
+    if ( strlen( myPackedItem.name ) == 0 ) {
+	if ( myPackedItem.pointerType == 0 || myPackedItem.pointer != NULL ) {
+	    rodsLog( LOG_ERROR,
+		     "resolvePackedItem: Cannot resolve %s",
+		     myPackedItem.strValue );
+	    return SYS_PACK_INSTRUCT_FORMAT_ERR;
+	}
+
+	/* NULL pointer of unknown type: pack it as a string pointer */
+	free( myPackedItem.name );
+	myPackedItem.name = strdup( "STR_PTR_PI" );
+    }
+    inPtr = ptr;
+
     return 0;
 }
 
@@ -625,7 +641,7 @@ resolveStrInItem( packItem_t &myPackedItem ) {
         }
     }
 
-    if ( tmpPackedItem == NULL || strlen( tmpPackedItem->strValue ) == 0 ) {
+    if ( tmpPackedItem == NULL ) {
         rodsLog( LOG_ERROR,
                  "resolveStrInItem: Cannot resolve %s in %s",
                  name, myPackedItem.name );
