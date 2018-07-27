@@ -174,7 +174,6 @@ def get_connection_string(db_config, irods_config):
     odbc_dict['Username'] = db_config['db_username']
     odbc_dict['User'] = db_config['db_username']
     odbc_dict['UID'] = db_config['db_username']
-    print ('**** irods_config.catalog_database_type: %s *****' % irods_config.catalog_database_type)
     if irods_config.catalog_database_type == 'cockroachdb':
         odbc_dict['sslrootcert'] = irods_config.database_config['sslrootcert']
         odbc_dict['sslmode'] = 'require'
@@ -191,7 +190,6 @@ def get_database_connection(irods_config):
         l.debug('set TWO_TASK For oracle to "%s"', os.environ['TWO_TASK'])
 
     connection_string = get_connection_string(irods_config.database_config, irods_config)
-    print('Connection String: %s' % connection_string)
     sync_odbc_ini(irods_config)
     os.environ['ODBCINI'] = irods_config.odbc_ini_path
     os.environ['ODBCSYSINI'] = '/etc'
