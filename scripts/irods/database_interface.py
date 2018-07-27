@@ -78,7 +78,6 @@ def database_already_in_use_by_irods(irods_config):
                 return False
 
 def setup_database_config(irods_config):
-    print('==== HOME is %s ====' % os.environ['HOME'])
     l = logging.getLogger(__name__)
 
     if os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libpostgres.so')):
@@ -138,8 +137,8 @@ def setup_database_config(irods_config):
 
         if db_type == 'cockroachdb':
             irods_config.database_config['sslrootcert'] = lib.default_prompt(
-                'Database Root SSL Cert file',
-                 default=[irods_config.database_config.get('sslrootcert', '/tmp/ca.crt')])
+                'Database Root SSL (CA) Cert file',
+                 default=[irods_config.database_config.get('sslrootcert', '')])
 
         confirmation_message = ''.join([
                 '\n',
@@ -150,7 +149,7 @@ def setup_database_config(irods_config):
                 'Database Port: %d\n',
                 'Database Name: %s\n' if irods_config.catalog_database_type != 'oracle' else 'Service Name:  %s\n',
                 'Database User: %s\n',
-                'Database Root SSL Cert file: %s\n' if db_type == 'cockroachdb' else '%s',
+                'Database Cert: %s\n' if db_type == 'cockroachdb' else '%s',
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
                     irods_config.catalog_database_type,
