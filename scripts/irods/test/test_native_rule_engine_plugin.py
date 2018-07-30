@@ -199,3 +199,51 @@ OUTPUT ruleExecOut
 
         # Bounce server to get back original settings
         irodsctl.restart()
+
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    def test_delay_block_with_output_param__3906(self):
+        irodsctl = IrodsController()
+        server_config_filename = paths.server_config_path()
+
+        # Simple delay rule with a writeLine
+        rule_text = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "delayed rule executed");
+    }}
+    *status = "rule queued";
+}}
+INPUT null
+OUTPUT *status
+'''.format(**locals())
+        rule_file = 'test_delay_with_output_param__3906.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+
+        # load server_config.json to inject new settings
+        with open(server_config_filename) as f:
+            svr_cfg = json.load(f)
+        re_server_sleep_time = 2
+        svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+
+        # dump to a string to repave the existing server_config.json
+        new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+        with lib.file_backed_up(server_config_filename):
+            # repave the existing server_config.json
+            with open(server_config_filename, 'w') as f:
+                f.write(new_server_config)
+
+            # Bounce server to apply setting
+            irodsctl.restart()
+
+            # Fire off rule and wait for message to get written out to serverLog
+            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+            time.sleep(re_server_sleep_time)
+            actual_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = delayed rule executed', start_index=initial_size_of_server_log)
+            self.assertTrue(1 == actual_count, msg='expected 1 occurrence in serverLog, found {actual_count}'.format(**locals()))
+
+        os.remove(rule_file)
+
+        # Bounce server to get back original settings
+        irodsctl.restart()
