@@ -9,4 +9,4 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq irods-externals-*
 
-script: export PATH=/opt/irods-externals/cmake3.5.2-0/bin:$PATH && mkdir build && cd build && cmake ../ && make package
+script: export PATH=/opt/irods-externals/cmake3.11.4-0/bin:$PATH && mkdir build && cd build && cmake ../ && make package
