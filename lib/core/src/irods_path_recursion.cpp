@@ -348,6 +348,55 @@ irods::file_system_sanity_check( irods::recursion_map_t& pathmap,
     return status;
 }
 
+// Issue 4006: disallow mixed files and directory sources with the
+// recursive (-r) option.
+int
+irods::disallow_file_dir_mix_on_command_line( rodsArguments_t const * const rodsArgs,
+                                                     rodsPathInp_t const * const rodsPathInp )
+{
+    // If the "-r" flag is not used, there's nothing to check.
+    if ( rodsArgs->recursive != True )
+    {
+        return 0;
+    }
+
+    std::vector<std::string> filevec;
+
+    // There cannot be any regular file sources on the command line
+    for ( int i = 0; i < rodsPathInp->numSrc; i++ )
+    {
+        if ( rodsPathInp->srcPath[i].objType == LOCAL_FILE_T )
+        {
+            filevec.push_back(const_cast<const char *>(rodsPathInp->srcPath[i].outPath));
+        }
+    }
+
+    if (filevec.size() == 0)
+    {
+        // No regular file sources found
+        return 0;
+    }
+    std::string strlist(filevec.size() > 1? "files " : "file ");
+
+    // make up the directory path list for the error message
+    size_t i = 0;
+    for (auto const& srcpath: filevec)
+    {
+        if (i != 0)
+        {
+            strlist += ", ";
+        }
+        strlist += "\"";
+        strlist += srcpath + "\"";
+         ++i;
+    }
+    rodsLog( LOG_ERROR,
+             "disallow_file_dir_mix_on_command_line: Cannot include regular %s on the command line with the \"-r\" flag.",
+             strlist.c_str() );
+    return USER_INPUT_OPTION_ERR;
+}
+
+
 // Class members for irods::scantime
 //
 irods::scantime::scantime() :
