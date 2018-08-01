@@ -120,6 +120,8 @@ rsyncUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             }
 
             dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
+            // Issue 4048: Make sure targpath->objState is set correctly
+            getRodsObjType( conn, targPath );
             status = rsyncFileToDataUtil( conn, srcPath, targPath,
                                           myRodsArgs, &dataObjOprInp );
         }
