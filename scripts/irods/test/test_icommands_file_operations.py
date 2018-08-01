@@ -1472,3 +1472,73 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         finally:
             shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
             shutil.rmtree(os.path.abspath(dir2path), ignore_errors=True)
+
+    #################################################################
+    # Issue 4048 - irsync was not transferring regular files when specified
+    # on the command line. When the regular files were inside directories, it
+    # was ok.  We are checking both irsync and iput for consistency.
+    #############################
+    def test_irsync_iput_regular_files_only_4048(self):
+
+        base_name = 'irsync_iput_regular_files_only_4048'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            ##################################
+            # Setup
+            ########
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = 'subdir1'
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,4)  # Four files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            ##################################
+            # Grouped tests (should) produce the same behavior and results:
+            ########
+            test_cases = [
+                            'irsync {dir1path}/0 {dir1path}/1 {subdir1path}/2 i:{target1}',
+                            'iput {dir1path}/0 {dir1path}/1 {subdir1path}/2 {target1}',
+                         ]
+
+            ##################################
+            # Transfer of multiple regular files to a target requires pre-existing target
+            # This first try should fail for all test cases
+            ########
+            for cmdstring in test_cases:
+
+                cmd = cmdstring.format(**locals())
+                _,stderr,_ = self.user0.run_icommand(cmd)
+
+                estr = 'ERROR: resolveRodsTarget: target {target1path} does not exist status = -310000 USER_FILE_DOES_NOT_EXIST'.format(**locals())
+                self.assertIn(estr, stderr, '{cmd}: Expected stderr: "...{estr}...", got: "{stderr}"'.format(**locals()))
+
+                self.user0.assert_icommand_fail( 'ils {target1path}'.format(**locals()), 'STDOUT_SINGLELINE', '{target1}'.format(**locals()) )
+
+            ##################################
+            # Transfer of multiple regular files to a target requires pre-existing target
+            # This time we'll create the target collection first
+            ########
+            for cmdstring in test_cases:
+
+                self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                cmd = cmdstring.format(**locals())
+                self.user0.assert_icommand(cmd, "EMPTY")
+
+                self.user0.assert_icommand( 'ils {target1path}'.format(**locals()),
+                                            'STDOUT_MULTILINE',
+                                            [ '  0', '  1', '  2' ] )
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
