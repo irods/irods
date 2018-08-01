@@ -190,7 +190,13 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
 
     status = initCondForPut( conn, myRodsEnv, myRodsArgs, &dataObjOprInp,
                              &bulkOprInp, &rodsRestart );
+    if ( status < 0 ) {
+        return status;
+    }
 
+    // Issue 4006: disallow mixed files and directory sources with the
+    // recursive (-r) option.
+    status = irods::disallow_file_dir_mix_on_command_line(myRodsArgs, rodsPathInp );
     if ( status < 0 ) {
         return status;
     }

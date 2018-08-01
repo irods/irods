@@ -1393,3 +1393,82 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         finally:
             shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
 
+
+    #################################################################
+    # Issue 4006 - can no longer have regular files on the command line
+    # when the -r flag is specified
+    #############################
+    def test_irsync_iput_file_dir_mix_with_recursive_4006(self):
+
+        base_name = 'irsync_iput_file_dir_mix_with_recursive_4006'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            ##################################
+            # Setup
+            ########
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = 'subdir1'
+            subdir1path = os.path.join(dir1path, subdir1)
+            dir2 = 'dir2'
+            dir2path = os.path.join(local_dir, dir2)
+
+            target1 = 'target1'
+            target1path='{self.user0.session_collection}/{target1}'.format(**locals())
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,4)  # Four files in this one
+            lib.create_directory_of_small_files(dir2path,2)     # Two files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            ##################################
+            # Grouped tests (should) produce the same behavior and results:
+            ########
+            test_cases = [
+                            'iput -r {dir1path}/0 {subdir1path} {target1}',
+                            'irsync -r {dir1path}/0 {subdir1path} i:{target1}',
+                            'iput -r {dir2path} {dir1path}/0 {subdir1path} {target1}',
+                            'irsync -r {dir2path} {dir1path}/0 {subdir1path} i:{target1}',
+                         ]
+
+            ##################################
+            # Mix directories and files should fail with nothing created in irods
+            ########
+            for cmdstring in test_cases:
+
+                cmd = cmdstring.format(**locals())
+                self.user0.assert_icommand(cmd, "STDERR_SINGLELINE", 'ERROR: disallow_file_dir_mix_on_command_line: Cannot include regular file')
+                self.user0.assert_icommand_fail( 'ils {target1path}'.format(**locals()), 'STDOUT_SINGLELINE', '{target1}'.format(**locals()) )
+
+                # Create the pre-existing collection
+                # self.user0.run_icommand('imkdir -p {target1path}'.format(**locals()))
+
+                self.user0.run_icommand('irm -rf {target1path}'.format(**locals()))
+
+            ##################################
+            # Grouped tests (should) produce the same behavior and results:
+            ########
+            test_cases = [
+                            'iput {dir1path}/0 {dir1path}/1 {target1}',
+                            'irsync {dir1path}/0 {dir1path}/1 i:{target1}',
+                         ]
+
+            ##################################
+            # Transfer of multiple regular files to a target requires pre-existing target
+            ########
+            for cmdstring in test_cases:
+
+                cmd = cmdstring.format(**locals())
+                _,stderr,_ = self.user0.run_icommand(cmd)
+
+                estr = 'ERROR: resolveRodsTarget: target {target1path} does not exist status = -310000 USER_FILE_DOES_NOT_EXIST'.format(**locals())
+                self.assertIn(estr, stderr, '{cmd}: Expected stderr: "...{estr}...", got: "{stderr}"'.format(**locals()))
+
+                self.user0.assert_icommand_fail( 'ils {target1path}'.format(**locals()), 'STDOUT_SINGLELINE', '{target1}'.format(**locals()) )
+
+        finally:
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+            shutil.rmtree(os.path.abspath(dir2path), ignore_errors=True)

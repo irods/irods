@@ -58,6 +58,11 @@ namespace irods
                                   rodsArguments_t const * const,
                                   rodsPathInp_t const * const);
 
+    // Issue 4006: disallow mixed files and directory sources with the
+    // recursive (-r) option.
+    int disallow_file_dir_mix_on_command_line( rodsArguments_t const * const rodsArgs,
+                                               rodsPathInp_t const * const rodsPathInp );
+
     // exporting this env variable will actually allow the scantime result to be printed
     static const char *chrono_env = "IRODS_SCAN_TIME";
 
