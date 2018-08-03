@@ -465,6 +465,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_generic_database_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_get_l1desc.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_linked_list_iterator.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_logger.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_logger.tpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_mysql_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_oracle_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_physical_object.hpp

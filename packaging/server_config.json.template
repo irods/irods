@@ -18,6 +18,18 @@
     "default_hash_scheme": "SHA256",
     "environment_variables": {},
     "federation": [],
+    "log_level": {
+        "agent": "warn",
+        "api": "warn",
+        "authorization": "warn",
+        "database": "warn",
+        "legacy": "warn",
+        "microservice": "warn",
+        "network": "warn",
+        "resource": "warn",
+        "rule_engine": "warn",
+        "server": "warn"
+    },
     "match_hash_policy": "compatible",
     "plugin_configuration": {
         "authentication" : {},

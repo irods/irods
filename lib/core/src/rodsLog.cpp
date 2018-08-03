@@ -21,8 +21,12 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include <time.h>
 #include <map>
 #include <string>
+#include <algorithm>
+#include <functional>
+#include <unordered_map>
 #include <sys/time.h>
 #include "irods_exception.hpp"
+#include "irods_logger.hpp"
 
 #ifndef windows_platform
 #include <unistd.h>
@@ -34,8 +38,6 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300
 #include <stdarg.h>
-
-
 
 static int verbosityLevel = LOG_ERROR;
 static int sqlVerbosityLevel = 0;
@@ -75,6 +77,52 @@ std::string create_log_error_prefix() {
     }
 
     return ret;
+}
+
+void forward_to_syslog(int _log_level, const std::string& _msg)
+{
+    if (CLIENT_PT == ::ProcessType)
+    {
+        return;
+    }
+
+    // clang-format off
+    using log_level   = int;
+    using msg_handler = std::function<void(const std::string&)>;
+    // clang-format on
+
+    namespace exp = irods::experimental;
+
+    static const auto trace = [](const auto& _msg) { exp::log::legacy::trace(_msg); };
+    static const auto debug = [](const auto& _msg) { exp::log::legacy::debug(_msg); };
+    static const auto info = [](const auto& _msg) { exp::log::legacy::info(_msg); };
+    static const auto warn = [](const auto& _msg) { exp::log::legacy::warn(_msg); };
+    static const auto error = [](const auto& _msg) { exp::log::legacy::error(_msg); };
+    static const auto critical = [](const auto& _msg) { exp::log::legacy::critical(_msg); };
+
+    // clang-format off
+    static const std::unordered_map<log_level, msg_handler> msg_handlers{
+        {LOG_DEBUG10,     trace},
+        {LOG_DEBUG9,      trace},
+        {LOG_DEBUG8,      trace},
+        {LOG_DEBUG7,      debug},
+        {LOG_DEBUG6,      debug},
+        {LOG_NOTICE,      info},
+        {LOG_WARNING,     warn},
+        {LOG_ERROR,       error},
+        {LOG_SYS_WARNING, critical},
+        {LOG_SYS_FATAL,   critical}
+    };
+    // clang-format on
+
+    if (const auto iter = msg_handlers.find(_log_level); std::end(msg_handlers) != iter)
+    {
+        (iter->second)(_msg);
+    }
+    else
+    {
+        info(_msg);
+    }
 }
 
 /*
@@ -220,6 +268,9 @@ rodsLog( int level, const char *formatStr, ... ) {
 #ifndef windows_platform
     fflush( errOrOut );
 #endif
+
+    forward_to_syslog(level, message);
+
     free( message );
 }
 
@@ -328,6 +379,9 @@ rodsLogAndErrorMsg( int level, rError_t *myError, int status,
 #ifndef windows_platform
     fflush( errOrOut );
 #endif
+
+    forward_to_syslog(level, message);
+
     free( message );
 }
 

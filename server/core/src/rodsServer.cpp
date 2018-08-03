@@ -7,6 +7,8 @@
 #include "initServer.hpp"
 #include "miscServerFunct.hpp"
 
+#include "irods_logger.hpp"
+
 #include <syslog.h>
 
 #include <pthread.h>
@@ -154,6 +156,14 @@ static void set_agent_spawner_process_name(const InformationRequiredToSafelyRena
 int
 main( int argc, char **argv )
 {
+    using ilog = irods::experimental::log;
+
+    ilog::init();
+
+    irods::server_properties::instance().capture();
+
+    ilog::server::set_level(ilog::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
+
     int c;
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];

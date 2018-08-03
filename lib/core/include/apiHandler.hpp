@@ -4,8 +4,6 @@
 /* apiHandler.h - header file for apiHandler.h
  */
 
-
-
 #ifndef API_HANDLER_HPP
 #define API_HANDLER_HPP
 
@@ -25,6 +23,13 @@
 #include "irods_re_namespaceshelper.hpp"
 #include "irods_re_plugin.hpp"
 #include "irods_re_ruleexistshelper.hpp"
+
+#ifdef IRODS_ENABLE_SYSLOG
+#include "irods_logger.hpp"
+#include "rcMisc.h"
+#include <type_traits>
+#include <typeinfo>
+#endif // IRODS_ENABLE_SYSLOG
 
 #include <functional>
 
@@ -71,7 +76,46 @@ namespace irods {
         api_call_adaptor( std::function<int(rsComm_t*, types_t...)> _fcn ): fcn_(_fcn) {
         }
 
-        irods::error operator()( irods::plugin_context&, rsComm_t* _comm, types_t... _t ) {
+        irods::error operator()( irods::plugin_context&, rsComm_t* _comm, types_t... _t )
+        {
+#ifdef IRODS_ENABLE_SYSLOG
+            bool logger_updated = false;
+
+            const auto update_logger = [&logger_updated](auto&& _arg)
+            {
+                // If there exists multiple objects containing verbose flags,
+                // then only allow one update.  What happens if subsequent calls
+                // are made (hopefully, the condition objects are passed through
+                // unchanged)?
+                if (logger_updated)
+                {
+                    return;
+                }
+
+                // _arg's type will be deduced as <type>& if it's an lvalue.
+                // For pointers, this means the type will we T*&.  Therefore, we
+                // must either remove the reference or add a reference so that
+                // std::is_same compares the correct types.
+                using T = std::remove_reference_t<decltype(_arg)>;
+
+                if constexpr (std::is_same_v<dataObjInp_t*, T>)
+                {
+                    logger_updated = true;
+                    const auto* value = getValByKey(&_arg->condInput, VERY_VERBOSE_KW);
+                    irods::experimental::log::write_to_error_object(value); 
+                }
+                else if constexpr (std::is_same_v<dataObjCopyInp_t*, T>)
+                {
+                    logger_updated = true;
+                    const auto* flag_0 = getValByKey(&_arg->srcDataObjInp.condInput, VERY_VERBOSE_KW);
+                    const auto* flag_1 = getValByKey(&_arg->destDataObjInp.condInput, VERY_VERBOSE_KW);
+                    irods::experimental::log::write_to_error_object(flag_0 && flag_1); 
+                }
+            };
+
+            (update_logger(std::forward<types_t>(_t)), ...);
+#endif // IRODS_ENABLE_SYSLOG
+
             int ret = fcn_( _comm, _t... );
             if( ret >= 0 ) {
                 return CODE( ret );

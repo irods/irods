@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <random>
 #include <openssl/md5.h>
 
 // =-=-=-=-=-=-=-
@@ -4065,7 +4066,9 @@ getRandomArray( int **randomArray, int size ) {
     for ( int i = 0; i < size; i++ ) {
         ( *randomArray )[i] = i + 1;
     }
-    std::random_shuffle( *randomArray, *randomArray + size );
+
+    static std::mt19937 urng{std::random_device{}()};
+    std::shuffle(*randomArray, *randomArray + size, urng);
 
     return 0;
 }

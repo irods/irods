@@ -40,6 +40,18 @@ namespace irods {
     const std::string CFG_SERVER_PORT_RANGE_START_KW( "server_port_range_start" );
     const std::string CFG_SERVER_PORT_RANGE_END_KW( "server_port_range_end" );
 
+    const std::string CFG_LOG_LEVEL_KW{"log_level"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_LEGACY_KW{"legacy"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_SERVER_KW{"server"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_KW{"agent"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW{"resource"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_DATABASE_KW{"database"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_AUTHORIZATION_KW{"authorization"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_API_KW{"api"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW{"microservice"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW{"network"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW{"rule_engine"};
+
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER(
         "maximum_size_for_single_buffer_in_megabytes" );
