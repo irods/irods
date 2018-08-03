@@ -30,11 +30,13 @@ endmacro()
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang6.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CPPZMQ cppzmq4.2.3-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ARCHIVE libarchive3.3.2-1)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(AVRO avro1.8.2-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(AVRO avropre190cpp17-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(BOOST boost1.67.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CLANG_RUNTIME clang-runtime6.0-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(JANSSON jansson2.7-0)
 IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ZMQ zeromq4-14.1.6-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(JSON json3.1.2-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(SPDLOG spdlog0.17.0-0)
 
 string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
 
@@ -55,12 +57,14 @@ endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic") # export-dynamic so stacktrace entries from executables have function names
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
 add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
 link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
+include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
+                    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+                    ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -78,7 +82,7 @@ set(IRODS_VERSION_MINOR "3")
 set(IRODS_VERSION_PATCH "0")
 set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION_PATCH}")
 
-set(IRODS_CXX_STANDARD 14)
+set(IRODS_CXX_STANDARD 17)
 
 set(IRODS_PLATFORM_STRING linux_platform)
 set(IRODS_COMPILE_DEFINITIONS ${IRODS_PLATFORM_STRING} _LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES _LARGEFILE64_SOURCE BOOST_SYSTEM_NO_DEPRECATED)
@@ -745,6 +749,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpBase_c.cpp
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpReceiver_c.cpp
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpSender_c.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp
   )
 add_library(
   irods_common
@@ -782,7 +787,7 @@ target_include_directories(
 set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
-target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(irods_common PRIVATE -Wno-write-strings)
 
 
@@ -1087,6 +1092,11 @@ set(
   IRODS_LIB_CLIENT_EXEC_SOURCES
   )
 
+set(
+  IRODS_SERVER_CORE_SOURCES
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp 
+  )
+
 add_library(
   RodsAPIs
   STATIC
@@ -1095,6 +1105,7 @@ add_library(
   ${IRODS_LIB_RBUDP_SOURCES}
   ${IRODS_LIB_HASHER_SOURCES}
   ${IRODS_LIB_CLIENT_EXEC_SOURCES}
+  ${IRODS_SERVER_CORE_SOURCES}
   )
 target_link_libraries(
   RodsAPIs
@@ -1126,7 +1137,7 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
 
 set(

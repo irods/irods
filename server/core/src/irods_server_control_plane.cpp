@@ -95,7 +95,7 @@ namespace irods {
         cmd.options[ SERVER_CONTROL_HOST_KW ]   = _host;
 
         // serialize using the generated avro class
-        std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
+        auto out = avro::memoryOutputStream();
         avro::EncoderPtr e = avro::binaryEncoder();
         e->init( *out );
         avro::encode( *e, cmd );
@@ -1154,7 +1154,7 @@ namespace irods {
         }
 
 
-        std::auto_ptr<avro::InputStream> in = avro::memoryInputStream(
+        auto in = avro::memoryInputStream(
                 static_cast<const uint8_t*>(
                     data_to_process.data() ),
                 data_to_process.size() );
