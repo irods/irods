@@ -14199,8 +14199,11 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     if (_bundles->empty()) {
         return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
-    if (!_invocation_timestamp || _invocation_timestamp->empty()) {
-        return ERROR(SYS_INVALID_INPUT_PARAM, "no invocation timestamp");
+    if (!_invocation_timestamp) {
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "invocation timestamp is NULL");
+    }
+    if (_invocation_timestamp->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "invocation timestamp is empty");
     }
 
     // capture list of child resc ids
