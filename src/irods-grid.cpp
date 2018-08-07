@@ -208,7 +208,7 @@ irods::error prepare_command_for_transport(
         _env.irodsCtrlPlaneEncryptionAlgorithm );
 
     // serialize using the generated avro class
-    std::auto_ptr< avro::OutputStream > out = avro::memoryOutputStream();
+    auto out = avro::memoryOutputStream();
     avro::EncoderPtr e = avro::binaryEncoder();
     e->init( *out );
     avro::encode( *e, _cmd );
