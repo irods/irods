@@ -1542,3 +1542,56 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         finally:
             shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
+
+
+    #################################################################
+    # Issue 4030 - failure to write to collection path "/" was providing
+    # insufficient detail in the error message to the user.
+    #############################
+    def test_writing_collection_under_slash_4030(self):
+
+        base_name = 'writing_collection_under_slash_4030'
+        local_dir = os.path.join(self.testing_tmp_dir, base_name)
+
+        try:
+            ##################################
+            # Setup
+            ########
+            dir1 = 'dir1'
+            dir1path = os.path.join(local_dir, dir1)
+            subdir1 = 'subdir1'
+            subdir1path = os.path.join(dir1path, subdir1)
+
+            target1 = '/'
+
+            lib.make_dir_p(local_dir)
+            lib.create_directory_of_small_files(dir1path,2)     # Two files in this one
+            lib.create_directory_of_small_files(subdir1path,4)  # Four files in this one
+
+            self.user0.run_icommand('icd {self.user0.session_collection}'.format(**locals()))
+
+            # We put a collection into irods so that we can run icp.
+            self.user0.assert_icommand('iput -r {dir1path}'.format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+
+            ##################################
+            # Grouped tests (should) produce the same behavior and results:
+            ########
+            test_cases = [
+                            'iput -r {dir1path} {target1}',
+                            'irsync -r {dir1path} i:{target1}',
+                            'icp -r {dir1} {target1}'
+                         ]
+
+            for cmdstring in test_cases:
+
+                cmd = cmdstring.format(**locals())
+                stdout,_,_ = self.user0.run_icommand(cmd)
+
+                estr = 'SYS_INVALID_INPUT_PARAM]  errno [] -- message [a valid zone name does not appear at the root of the object path'
+                self.assertIn(estr, stdout, '{cmd}: Expected stdout: "...{estr}...", got: "{stdout}"'.format(**locals()))
+
+        finally:
+            self.user0.run_icommand('irm -rf {dir1}'.format(**locals()))
+            shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
+
