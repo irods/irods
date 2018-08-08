@@ -40,6 +40,11 @@ rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
 
     irods::error ret = validate_logical_path( collCreateInp->collName );
     if ( !ret.ok() ) {
+        if ( rsComm->rError.len < MAX_ERROR_MESSAGES ) {
+            char error_msg[ERR_MSG_LEN];
+            snprintf(error_msg, ERR_MSG_LEN, "%s", ret.user_result().c_str());
+            addRErrorMsg( &rsComm->rError, ret.code(), error_msg );
+        }
         irods::log( ret );
         return SYS_INVALID_INPUT_PARAM;
     }
