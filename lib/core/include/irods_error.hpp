@@ -69,6 +69,7 @@ namespace irods {
             bool        status() const;
             long long   code() const;
             std::string result() const;
+            std::string user_result() const;
             bool        ok();          // deprecated since 4.0.3
             bool        ok() const;
 
@@ -92,6 +93,13 @@ namespace irods {
             std::string message_;
             std::vector< std::string > result_stack_;
             boost::optional< exception > exception_;
+
+            // These are hard-coded strings that are used in creating
+            // the strings that go in result_stack_, and that are searched
+            // for as such.  See static declarations in irods_error.cpp for initialization.
+            static const char *iRODS_token_;
+            static const char *colon_token_;
+            static const char *status_token_;
 
             // =-=-=-=-=-=-=-
             // Members

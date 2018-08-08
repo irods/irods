@@ -297,9 +297,9 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
                 status = putDirUtil( myConn, rodsPathInp->srcPath[i].outPath,
                                      targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
                                      &bulkOprInp, &rodsRestart, NULL );
-                if (status == USER_INPUT_PATH_ERR)
+                if (status == USER_INPUT_PATH_ERR || status == SYS_INVALID_INPUT_PARAM)
                 {
-                    return USER_INPUT_PATH_ERR;
+                    return status;
                 }
             }
         }
@@ -897,8 +897,11 @@ putDirUtil( rcComm_t **myConn, char *srcDir, char *targColl,
             else {        /* a directory */
                 status = mkColl( conn, targChildPath );
                 if ( status < 0 ) {
-                    rodsLogError( LOG_ERROR, status,
-                                "putDirUtil: mkColl error for %s", targChildPath );
+                    rodsLogError( LOG_ERROR, status, "putDirUtil: mkColl error for %s", targChildPath );
+                    if (status == SYS_INVALID_INPUT_PARAM)
+                    {
+                        return status;
+                    }
                 }
                 status = putDirUtil( myConn, srcChildPath, targChildPath,
                                     myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
