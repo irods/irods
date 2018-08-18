@@ -2475,11 +2475,10 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                         return status;
                     }
                     getRodsObjType( conn, destPath );
-                    targPath->objState = EXIST_ST;
                 }
                 if ( ( destPath->objType == COLL_OBJ_T ||
-                            destPath->objType == LOCAL_DIR_T ) &&
-                          destPath->objState == EXIST_ST ) {
+                       destPath->objType == LOCAL_DIR_T ) &&
+                       destPath->objState == EXIST_ST ) {
                     /* the collection exist */
                     getLastPathElement( srcPath->inPath, srcElement );
                     if ( strlen( srcElement ) > 0 ) {
@@ -2496,13 +2495,19 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                                       destPath->outPath, srcElement );
                             /* make the collection */
                             if ( destPath->objType == COLL_OBJ_T ) {
+
+                                /* rename does not need to mkColl */
                                 if ( oprType != MOVE_OPR ) {
-                                    /* rename does not need to mkColl */
-                                    if ( srcPath->objType <= COLL_OBJ_T ) {
-                                        status = mkColl( conn, destPath->outPath );
-                                    }
-                                    else {
-                                        status = mkColl( conn, targPath->outPath );
+                                    // destPath is a collection
+
+                                    // Issue 4057: When destPath is a collection (and we already know it
+                                    // exists in this block), make sure targPath is made if it is a collection.
+                                    if (targPath->objType == COLL_OBJ_T)
+                                    {
+                                        if ((status = mkColl( conn, targPath->outPath )) == 0)
+                                        {
+                                            targPath->objState = EXIST_ST;
+                                        }
                                     }
                                 }
                                 else {
@@ -2556,16 +2561,6 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                         return status;
                     }
                     if ( rodsPathInp->numSrc == 1 ) {
-                    if ( rodsPathInp->numSrc == 1 ) {
-                         rstrcpy( targPath->outPath, destPath->outPath,
-                                  MAX_NAME_LEN );
-                    }
-                    else {
-                        rodsLogError( LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
-                                      "resolveRodsTarget: target %s does not exist",
-                                      destPath->outPath );
-                        return USER_FILE_DOES_NOT_EXIST;
-                    }
                          rstrcpy( targPath->outPath, destPath->outPath,
                                   MAX_NAME_LEN );
                     }
