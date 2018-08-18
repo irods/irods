@@ -2685,6 +2685,10 @@ irods::error db_reg_data_obj_op(
     snprintf( dataSizeNum, MAX_NAME_LEN, "%lld", _data_obj_info->dataSize );
     getNowStr( myTime );
 
+    if (0 == strcmp(_data_obj_info->dataModify, "")) {
+        strcpy(_data_obj_info->dataModify, myTime);
+    }
+
     std::string resc_id_str = boost::lexical_cast<std::string>(_data_obj_info->rescId);
     cllBindVars[0] = dataIdNum;
     cllBindVars[1] = collIdNum;
@@ -2701,7 +2705,7 @@ irods::error db_reg_data_obj_op(
     cllBindVars[12] = _data_obj_info->chksum;
     cllBindVars[13] = _data_obj_info->dataMode;
     cllBindVars[14] = myTime;
-    cllBindVars[15] = myTime;
+    cllBindVars[15] = _data_obj_info->dataModify;
     cllBindVars[16] = data_expiry_ts;
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
