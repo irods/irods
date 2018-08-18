@@ -43,6 +43,8 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#include "boost/lexical_cast.hpp"
+
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
@@ -523,6 +525,17 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         irods::log(PASS(ret));
     }
 
+    const auto data_size_str{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
+    try {
+        if (NULL != data_size_str) {
+            dataObjInfo.dataSize = boost::lexical_cast<decltype(dataObjInfo.dataSize)>(data_size_str);
+        }
+    }
+    catch (boost::bad_lexical_cast&) {
+        rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
+        dataObjInfo.dataSize = 0;
+    }
+
     if ( dataObjInfo.dataSize <= 0 &&
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
@@ -532,6 +545,11 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
                  dataObjInfo.objPath, status );
         clearKeyVal( &dataObjInfo.condInput );
         return status;
+    }
+
+    const auto data_modify_str{getValByKey(&phyPathRegInp->condInput, DATA_MODIFY_KW)};
+    if (NULL != data_modify_str) {
+        strcpy(dataObjInfo.dataModify, data_modify_str);
     }
 
     if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
