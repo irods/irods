@@ -8,9 +8,11 @@
 #include "scanUtil.h"
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
+#include "rcMisc.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
 using namespace boost::filesystem;
 
 int
@@ -162,16 +164,19 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
 
     /* check if the physical file corresponding to the iRODS object does exist */
     status =  rcGenQuery( conn, &genQueryInp2, &genQueryOut2 );
-    if ( status == 0 ) {
+    if (0 == status) {
         status = statPhysFile( conn, genQueryOut2 );
     }
     else {
         printf( "Could not find the requested data object or collection in iRODS.\n" );
     }
-    while ( status == 0 && genQueryOut2->continueInx > 0 ) {
+
+    while ( (0 == status || getIrodsErrno(status) == UNIX_FILE_STAT_ERR)
+             && genQueryOut2->continueInx > 0)
+    {
         genQueryInp2.continueInx = genQueryOut2->continueInx;
         status = rcGenQuery( conn, &genQueryInp2, &genQueryOut2 );
-        if ( status == 0 ) {
+        if ( 0 == status ) {
             status = statPhysFile( conn, genQueryOut2 );
         }
     }
@@ -185,7 +190,8 @@ scanObjCol( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath ) {
 
 int
 statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
-    int rc = 0;
+
+    int rcPriv = 0, rcStat = 0, rcOther = 0;
 
     for ( int i = 0; i < genQueryOut2->rowCnt; i++ ) {
         sqlResult_t *dataPathStruct = getSqlResultByInx( genQueryOut2, COL_D_DATA_PATH );
@@ -201,6 +207,7 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
             printf( "getSqlResultByInx returned null in statPhysFile." );
             return -1;
         }
+
         char *dataPath = &dataPathStruct->value[dataPathStruct->len * i];
         char *loc = &locStruct->value[locStruct->len * i];
         char *zone = &zoneStruct->value[zoneStruct->len * i];
@@ -219,17 +226,28 @@ statPhysFile( rcComm_t *conn, genQueryOut_t *genQueryOut2 ) {
         int status = rcFileStat( conn, &fileStatInp, &fileStatOut );
         if ( SYS_NO_API_PRIV == status ) {
             printf( "User must be a rodsadmin to scan iRODS data objects.\n" );
-            rc = status;
+            rcPriv = status;
         }
         else if ( status < 0 ) {
-            printf( "Physical file %s on server %s is missing, corresponding to "
-                    "iRODS object %s/%s\n", dataPath, loc, collName, dataName );
-            rc = status;
+            if (getIrodsErrno(status) == UNIX_FILE_STAT_ERR) {
+              printf( "Physical file %s on server %s is missing, corresponding to "
+                      "iRODS object %s/%s\n", dataPath, loc, collName, dataName );
+              rcStat = status;
+            }
+            else {
+              rcOther = status;
+            }
         }
-    }
+    } // for each data object i = 0 to rowCnt-1
 
-    return rc;
+    /*
+     *    Prioritize the error returned
+     */
+    if (rcPriv != 0) { return rcPriv; }
+    else if (rcStat != 0) { return rcStat; }
+    else if (rcOther!= 0) { return rcOther; }
 
+    return 0;
 }
 
 int
