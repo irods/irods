@@ -19,6 +19,7 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         super(Test_iScan, self).setUp()
         self.dirname1 = 'dir_3681-1'
         self.dirname2 = 'dir_3681-2'
+        self.dirname3 = 'iscan_4029'
         lib.create_directory_of_small_files(self.dirname1,2)
         lib.create_directory_of_small_files(self.dirname2,2)
         self.admin.assert_icommand(['iadmin', 'mkresc', 'pt', 'passthru'], 'STDOUT_SINGLELINE', 'passthru')
@@ -27,9 +28,43 @@ class Test_iScan(ResourceBase, unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.abspath(self.dirname1), ignore_errors=True)
         shutil.rmtree(os.path.abspath(self.dirname2), ignore_errors=True)
+        shutil.rmtree(os.path.abspath(self.dirname3), ignore_errors=True)
         self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'pt', self.testresc])
         self.admin.assert_icommand(['iadmin', 'rmresc', 'pt'])
         super(Test_iScan, self).tearDown()
+
+    @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Registers a collection')
+    def test_iscan_4029(self):
+        identity_func = lambda x:x
+        missing_file_regex = re.compile(r'Physical\s+file\b.*\bmissing\b.*corresponding.*\bobject\b',re.I)
+        FILES_IN_DIR = 800
+        DELETE_AT_ONCE = 20
+        max_iter = FILES_IN_DIR // DELETE_AT_ONCE + 1
+        test_dir_path = os.path.abspath(self.dirname3)
+        test_coll_path = "/" + self.admin.zone_name + "/home/" + self.admin.username + "/" + os.path.split(test_dir_path)[-1]
+        if not os.path.isdir(test_dir_path):
+          lib.create_directory_of_small_files(test_dir_path,FILES_IN_DIR)
+        try:
+          self.admin.assert_icommand( ['ireg', '-C', test_dir_path, test_coll_path])
+          sorted_files = sorted(os.listdir(test_dir_path),key=int) # sort numerically
+          minfile,maxfile = map(int,(sorted_files[0], sorted_files[-1]))
+          files_deleted = 0
+          delete_N_files_at_end = lambda n,minf,maxf : [os.unlink(os.path.join(test_dir_path,str(x))) for x in
+            range(max(minf,maxf-n+1),maxf+1)]
+          while maxfile > minfile or max_iter > 0:
+            max_iter -= 1
+            delete_count = len(delete_N_files_at_end( DELETE_AT_ONCE, minfile, maxfile ))
+            maxfile -= delete_count
+            files_deleted += delete_count
+            _,out,_ = self.admin.run_icommand(["iscan","-rd",test_coll_path])
+            printed_lines = out.split('\n')
+            number_of_matching_messages = len(filter(identity_func, 
+              map(lambda line : missing_file_regex.match(line), printed_lines)))
+            self.assertEqual(number_of_matching_messages, files_deleted)
+        finally:
+          if os.path.isdir(test_dir_path):
+            shutil.rmtree(test_dir_path,  ignore_errors=True)
+            self.admin.assert_icommand("irm -fr " + test_coll_path)
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Reads Vault')
     def test_iscan_local_file(self):
