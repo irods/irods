@@ -29,6 +29,7 @@ class Test_iScan(ResourceBase, unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(os.path.abspath(self.dirname1), ignore_errors=True)
         shutil.rmtree(os.path.abspath(self.dirname2), ignore_errors=True)
+        shutil.rmtree(os.path.abspath(self.dirname3), ignore_errors=True)
         self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'pt', self.testresc])
         self.admin.assert_icommand(['iadmin', 'rmresc', 'pt'])
         super(Test_iScan, self).tearDown()
