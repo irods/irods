@@ -6,8 +6,8 @@ include ../iRODS/config/external_versions.txt
 
 MAKEFLAGS += --no-print-directory
 
-RENCI_FTP_EXTERNAL=ftp://ftp.renci.org/pub/irods/external
-RENCI_FTP_BUILD=ftp://ftp.renci.org/pub/irods/build
+RENCI_FTP_EXTERNAL=https://files.renci.org/pub/irods/external
+RENCI_FTP_BUILD=https://files.renci.org/pub/irods/build
 
 ifndef IRODS_FTP_EXTERNAL
 IRODS_FTP_EXTERNAL=$(RENCI_FTP_EXTERNAL)
