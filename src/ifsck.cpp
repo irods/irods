@@ -25,7 +25,7 @@ static int set_genquery_inp_from_physical_path_using_hostname(genQueryInp_t* gen
     return 0;
 }
 
-static int set_genquery_inp_from_physical_path_using_resource_hierarchy(genQueryInp_t* genquery_inp, const char* physical_path, const char* resource_hierarcy) {
+static int set_genquery_inp_from_physical_path_using_resource_hierarchy(genQueryInp_t* genquery_inp, const char* physical_path, const char* resource_hierarchy) {
     char condStr[MAX_NAME_LEN];
     memset(genquery_inp, 0, sizeof(*genquery_inp));
     addInxIval(&genquery_inp->selectInp, COL_DATA_NAME, 1);
@@ -36,7 +36,7 @@ static int set_genquery_inp_from_physical_path_using_resource_hierarchy(genQuery
 
     snprintf(condStr, sizeof(condStr), "='%s'", physical_path);
     addInxVal(&genquery_inp->sqlCondInp, COL_D_DATA_PATH, condStr);
-    snprintf(condStr, sizeof(condStr), "='%s'", resource_hierarcy);
+    snprintf(condStr, sizeof(condStr), "='%s'", resource_hierarchy);
     addInxVal(&genquery_inp->sqlCondInp, COL_D_RESC_HIER, condStr);
     return 0;
 }
@@ -129,17 +129,27 @@ main( int argc, char **argv ) {
 void
 usage() {
     char *msgs[] = {
-        "Usage: ifsck [-rhK] srcPhysicalFile|srcPhysicalDirectory ... ",
-        "Check if a local data object or a local collection content is",
-        "consistent in size (or optionally its checksum) with its",
+        "Usage: ifsck [-hKrR] srcPhysicalFile|srcPhysicalDirectory ... ",
+        " ",
+        "Check if a local file or local directory content is",
+        "consistent in size (and optionally its checksum) with its",
         "registered size (and optionally its checksum) in iRODS.",
-        "It allows to detect iRODS files which have been corrupted or",
-        "modified outside the iRODS framework on the local filesytem.",
-        "srcPhysicalFile or srcPhysicalDirectory must be a full path name.",
+        " ",
+        "Allows detection of managed data that has been corrupted or",
+        "modified outside the iRODS framework on the local filesystem.",
+        " ",
+        "srcPhysicalFile or srcPhysicalDirectory must be a fully qualified path.",
+        " ",
+        "To check files registered to the leaf of a resource hierarchy,",
+        "use the -R option with a full resource hierarchy (semicolon delimited):",
+        "  ifsck -R 'pt1;r1;s1' /localdir/full/path/to/file.txt",
+        " ",
         "Options are:",
-        " -K  verify the checksum of the local file wrt the one registered in iRODS.",
-        "     Only relevant if the checksum has been computed for the iRODS objects.",
-        " -r  recursive - scan local subdirectories",
+        " -K  verify the checksum of the local file against the one registered in iRODS.",
+        "     Ignored if the checksum has not already been calculated and stored.",
+        " -r  recursive - scan srcPhysicalDirectory and its local subdirectories",
+        " -R  rescHier - if provided, will match replicas on this leaf resource,",
+        "     rather than using the hostname of the root of each file's resolved hierarchy.",
         " -h  this help",
         ""
     };
