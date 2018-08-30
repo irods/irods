@@ -272,7 +272,9 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     rstrcpy( addr.hostAddr, location.c_str(), LONG_NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
 
-    if ( remoteFlag == LOCAL_HOST ) {
+    // We do not need to redirect if we do not need to stat the file which is to be registered
+    const auto size_kw{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
+    if ( size_kw || remoteFlag == LOCAL_HOST ) {
         irods::hierarchy_parser p;
         p.set_string(hier);
         std::string leaf_resc;
@@ -522,18 +524,20 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         irods::log(PASS(ret));
     }
 
-    const auto data_size_str{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
+    auto data_size_str{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
     try {
-        if (NULL != data_size_str) {
+        if (data_size_str) {
             dataObjInfo.dataSize = boost::lexical_cast<decltype(dataObjInfo.dataSize)>(data_size_str);
         }
     }
     catch (boost::bad_lexical_cast&) {
         rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
         dataObjInfo.dataSize = 0;
+        data_size_str = nullptr;
     }
 
-    if ( dataObjInfo.dataSize <= 0 &&
+    if ( nullptr == data_size_str &&
+         dataObjInfo.dataSize <= 0 &&
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) dataObjInfo.dataSize;
