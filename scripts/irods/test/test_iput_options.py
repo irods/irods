@@ -2,6 +2,7 @@ import os
 import re
 import stat
 import sys
+import ustrings
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -57,6 +58,10 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput -f --metadata "a;v1;u1" ' + filepath)
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'value: v1')
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'units: u1')
+
+    def test_iput_recursive_with_period__issue_2010(self):
+        self.user0.assert_icommand(['iput', '-r', './'], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+        self.user0.assert_icommand_fail('ils -l', 'STDOUT_SINGLELINE', '/.')
 
     def test_iput_checksum_zero_length_file__issue_3275(self):
         filename = 'test_iput_checksum_zero_length_file__issue_3275'
