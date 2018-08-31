@@ -105,6 +105,14 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(0)
 
+    univmss_template = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh.template')
+    with open(univmss_template) as f:
+        univmss_contents = f.read().replace('template-','')
+    univmss_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh')
+    with open(univmss_testing, 'w') as f:
+        f.write(univmss_contents)
+    os.chmod(univmss_testing, 0o744)
+
     test_identifiers = []
     if options.run_specific_test:
         test_identifiers.append(options.run_specific_test)
@@ -121,6 +129,9 @@ if __name__ == '__main__':
 
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
+
+    os.remove(univmss_testing)
+
     if not results.wasSuccessful():
         sys.exit(1)
 

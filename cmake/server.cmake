@@ -115,10 +115,17 @@ install(
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/irodsServerMonPerf
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/test_execstream.py
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/hello
-  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/univMSSInterface.sh
   DESTINATION ${IRODS_HOME_DIRECTORY}/msiExecCmd_bin
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
+  )
+
+install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/univMSSInterface.sh.template
+  DESTINATION ${IRODS_HOME_DIRECTORY}/msiExecCmd_bin
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
   )
 
 install(
