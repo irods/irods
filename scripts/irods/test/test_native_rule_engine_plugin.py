@@ -292,6 +292,7 @@ OUTPUT ruleExecOut
         irodsctl.restart()
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_block_with_output_param__3906(self):
         irodsctl = IrodsController()
         server_config_filename = paths.server_config_path()
