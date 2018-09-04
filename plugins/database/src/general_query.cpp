@@ -2181,7 +2181,7 @@ extern "C" int chl_gen_query_impl(
     char combinedSQL[MAX_SQL_SIZE_GQ];
     char countSQL[MAX_SQL_SIZE_GQ]; /* For Oracle, sql to get the count */
 
-    int status, statementNum;
+    int status, statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     int numOfCols;
     int attriTextLen;
     int totalLen;

@@ -628,7 +628,10 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         return -1;
     }
 
-    int statementNumber = -1;
+    // Issue 3862:  Set stmtNum to -1 and in cllFreeStatement if the stmtNum is negative do nothing
+    *stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
+
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
@@ -641,7 +644,9 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     }
 
     icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    memset( myStatement, 0, sizeof( icatStmtStrct ) );
     icss->stmtPtr[statementNumber] = myStatement;
+    *stmtNum = statementNumber;
 
     myStatement->stmtPtr = hstmt;
 
@@ -726,6 +731,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
 
         myStatement->resultValue[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultValue[i], 0, (int)columnLength[i] );
 
         strcpy( ( char * )myStatement->resultValue[i], "" );
 
@@ -741,11 +747,11 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultColName[i], 0, (int)columnLength[i] );
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
 
-    *stmtNum = statementNumber;
     return 0;
 }
 
@@ -787,7 +793,10 @@ cllExecSqlWithResultBV(
         return -1;
     }
 
-    int statementNumber = -1;
+    // Issue 3862:  Set stmtNum to -1 and in cllFreeStatement if the stmtNum is negative do nothing
+    *stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
+
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
@@ -800,7 +809,10 @@ cllExecSqlWithResultBV(
     }
 
     icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    memset( myStatement, 0, sizeof( icatStmtStrct ) );
     icss->stmtPtr[statementNumber] = myStatement;
+
+    *stmtNum = statementNumber;
 
     myStatement->stmtPtr = hstmt;
 
@@ -897,6 +909,7 @@ cllExecSqlWithResultBV(
         /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
 
         myStatement->resultValue[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultValue[i], 0, (int)columnLength[i] );
 
         myStatement->resultValue[i][0] = '\0';
         // =-=-=-=-=-=-=-
@@ -912,10 +925,11 @@ cllExecSqlWithResultBV(
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultColName[i], 0, (int)columnLength[i] );
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
-    *stmtNum = statementNumber;
+
     return 0;
 }
 
@@ -988,10 +1002,20 @@ cllCurrentValueString( const char *itemName, char *outString, int maxSize ) {
    corresponding resultValue array.
 */
 int
-cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
+cllFreeStatement( icatSessionStruct *icss, int& statementNumber ) {
+
+    // Issue 3862 - Statement number is set to negative until it is 
+    // created.  When the statement is freed it is again set to negative.
+    // Do not free when statementNumber is negative.  If this is called twice 
+    // by a client, after the first call the statementNumber will be negative
+    // and nothing will be done.
+    if (statementNumber < 0) {
+        return 0;
+    }
 
     icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
     if ( myStatement == NULL ) { /* already freed */
+        statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
         return 0;
     }
 
@@ -1005,6 +1029,7 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
     free( myStatement );
 
     icss->stmtPtr[statementNumber] = NULL; /* indicate that the statement is free */
+    statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
 
     return 0;
 }
