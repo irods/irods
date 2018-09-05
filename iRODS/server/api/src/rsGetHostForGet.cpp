@@ -28,48 +28,61 @@ int rsGetHostForGet(
     rsComm_t*     rsComm,
     dataObjInp_t* dataObjInp,
     char**        outHost ) {
-    // =-=-=-=-=-=-=-
-    // default behavior
-    *outHost = strdup( THIS_ADDRESS );
-
-    // =-=-=-=-=-=-=-
-    // working on the "home zone", determine if we need to redirect to a different
-    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
-    // we know that the redirection decision has already been made
-    if ( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
-        std::string       hier;
-        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                               dataObjInp, hier );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " :: failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjInp->objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
-            }
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
-            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
-        } // if keyword
-
-        // =-=-=-=-=-=-=-
-        // extract the host location from the resource hierarchy
-        std::string location;
-        irods::error ret = irods::get_loc_for_hier_string( hier, location );
-        if ( !ret.ok() ) {
-            irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_string", ret ) );
-            return -1;
+    rodsServerHost_t *rodsServerHost;
+    const int remoteFlag = getAndConnRemoteZone(rsComm, dataObjInp, &rodsServerHost, REMOTE_OPEN);
+    if (remoteFlag < 0) {
+        return remoteFlag;
+    }
+    else if (REMOTE_HOST == remoteFlag) {
+        const int status = rcGetHostForGet(rodsServerHost->conn, dataObjInp, outHost);
+        if (status < 0) {
+            return status;
         }
+    }
+    else {
+        // =-=-=-=-=-=-=-
+        // default behavior
+        *outHost = strdup( THIS_ADDRESS );
 
         // =-=-=-=-=-=-=-
-        // set the out variable
-        *outHost = strdup( location.c_str() );
+        // working on the "home zone", determine if we need to redirect to a different
+        // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+        // we know that the redirection decision has already been made
+        if ( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
+            std::string       hier;
+            if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+                irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
+                                   dataObjInp, hier );
+                if ( !ret.ok() ) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " :: failed in irods::resolve_resource_hierarchy for [";
+                    msg << dataObjInp->objPath << "]";
+                    irods::log( PASSMSG( msg.str(), ret ) );
+                    return ret.code();
+                }
+                // =-=-=-=-=-=-=-
+                // we resolved the redirect and have a host, set the hier str for subsequent
+                // api calls, etc.
+                addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-    } // if not a collection
+            } // if keyword
+
+            // =-=-=-=-=-=-=-
+            // extract the host location from the resource hierarchy
+            std::string location;
+            irods::error ret = irods::get_loc_for_hier_string( hier, location );
+            if ( !ret.ok() ) {
+                irods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_string", ret ) );
+                return -1;
+            }
+
+            // =-=-=-=-=-=-=-
+            // set the out variable
+            *outHost = strdup( location.c_str() );
+
+        } // if not a collection
+    }
 
     return 0;
 
