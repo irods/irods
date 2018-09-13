@@ -165,7 +165,7 @@ int cmlGetOneRowFromSqlBV( const char *sql,
                            int numOfCols,
                            std::vector<std::string> &bindVars,
                            icatSessionStruct *icss ) {
-    int stmtNum;
+    int stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     char updatedSql[MAX_SQL_SIZE + 1];
 
 //TODO: this should be a function, probably inside low-level icat
@@ -185,6 +185,7 @@ int cmlGetOneRowFromSqlBV( const char *sql,
     int status = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
                                          bindVars );
     if ( status != 0 ) {
+        cllFreeStatement(icss, stmtNum);
         if ( status <= CAT_ENV_ERR ) {
             return status;    /* already an iRODS error code */
         }
@@ -214,7 +215,7 @@ int cmlGetOneRowFromSql( const char *sql,
                          int cValSize[],
                          int numOfCols,
                          icatSessionStruct *icss ) {
-    int i, j, stmtNum;
+    int i, j, stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     char updatedSql[MAX_SQL_SIZE + 1];
 
 //TODO: this should be a function, probably inside low-level icat
@@ -236,6 +237,7 @@ int cmlGetOneRowFromSql( const char *sql,
     i = cllExecSqlWithResultBV( icss, &stmtNum, updatedSql,
                                 emptyBindVars );
     if ( i != 0 ) {
+        cllFreeStatement( icss, stmtNum );
         if ( i <= CAT_ENV_ERR ) {
             return ( i );   /* already an iRODS error code */
         }
@@ -267,7 +269,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
                            int maxCols,
                            std::vector<std::string> &bindVars,
                            icatSessionStruct *icss ) {
-    int i, j, stmtNum;
+    int i, j, stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     char updatedSql[MAX_SQL_SIZE + 1];
 
 //TODO: this should be a function, probably inside low-level icat
@@ -289,6 +291,7 @@ int cmlGetOneRowFromSqlV2( const char *sql,
                                 bindVars );
 
     if ( i != 0 ) {
+        cllFreeStatement( icss, stmtNum ); 
         if ( i <= CAT_ENV_ERR ) {
             return ( i );   /* already an iRODS error code */
         }
@@ -319,7 +322,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
                            int cValSize[],
                            int numOfCols,
                            icatSessionStruct *icss ) {
-    int i, j, stmtNum;
+    int i, j, stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     char updatedSql[MAX_SQL_SIZE + 1];
 
 //TODO: this should be a function, probably inside low-level icat
@@ -340,6 +343,7 @@ int cmlGetOneRowFromSqlV3( const char *sql,
     i = cllExecSqlWithResult( icss, &stmtNum, updatedSql );
 
     if ( i != 0 ) {
+        cllFreeStatement( icss, stmtNum );
         if ( i <= CAT_ENV_ERR ) {
             return ( i );   /* already an iRODS error code */
         }
@@ -370,7 +374,8 @@ int cmlFreeStatement( int statementNumber, icatSessionStruct *icss ) {
     return i;
 }
 
-
+/*
+ * caller must free on success */
 int cmlGetFirstRowFromSql( const char *sql,
                            int *statement,
                            int skipCount,
@@ -379,7 +384,8 @@ int cmlGetFirstRowFromSql( const char *sql,
     int i = cllExecSqlWithResult( icss, statement, sql );
 
     if ( i != 0 ) {
-        *statement = 0;
+        cllFreeStatement( icss, *statement );
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         if ( i <= CAT_ENV_ERR ) {
             return ( i );   /* already an iRODS error code */
         }
@@ -392,12 +398,12 @@ int cmlGetFirstRowFromSql( const char *sql,
             i = cllGetRow( icss, *statement );
             if ( i != 0 )  {
                 cllFreeStatement( icss, *statement );
-                *statement = 0;
+                *statement = UNINITIALIZED_STATEMENT_NUMBER;
                 return CAT_GET_ROW_ERR;
             }
             if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
-                i = cllFreeStatement( icss, *statement );
-                *statement = 0;
+                cllFreeStatement( icss, *statement );
+                *statement = UNINITIALIZED_STATEMENT_NUMBER;
                 return CAT_NO_ROWS_FOUND;
             }
         }
@@ -407,25 +413,26 @@ int cmlGetFirstRowFromSql( const char *sql,
     i = cllGetRow( icss, *statement );
     if ( i != 0 )  {
         cllFreeStatement( icss, *statement );
-        *statement = 0;
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
-        i = cllFreeStatement( icss, *statement );
-        *statement = 0;
+        cllFreeStatement( icss, *statement );
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         return CAT_NO_ROWS_FOUND;
     }
 
     return 0;
 }
 
-/* with bind-variables */
+/* with bind-variables 
+ * caller must free on success */
 int cmlGetFirstRowFromSqlBV( const char *sql,
                              std::vector<std::string> &bindVars,
                              int *statement,
                              icatSessionStruct *icss ) {
     if ( int status = cllExecSqlWithResultBV( icss, statement, sql, bindVars ) ) {
-        *statement = 0;
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         if ( status <= CAT_ENV_ERR ) {
             return status;    /* already an iRODS error code */
         }
@@ -433,17 +440,19 @@ int cmlGetFirstRowFromSqlBV( const char *sql,
     }
     if ( cllGetRow( icss, *statement ) ) {
         cllFreeStatement( icss, *statement );
-        *statement = 0;
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         return CAT_GET_ROW_ERR;
     }
     if ( icss->stmtPtr[*statement]->numOfCols == 0 ) {
         cllFreeStatement( icss, *statement );
-        *statement = 0;
+        *statement = UNINITIALIZED_STATEMENT_NUMBER;
         return CAT_NO_ROWS_FOUND;
     }
     return 0;
 }
 
+/*
+ * caller must free on success */
 int cmlGetNextRowFromStatement( int stmtNum,
                                 icatSessionStruct *icss ) {
     int i;
@@ -508,7 +517,7 @@ int cmlGetMultiRowStringValuesFromSql( const char *sql,
                                        std::vector<std::string> &bindVars,
                                        icatSessionStruct *icss ) {
 
-    int i, j, stmtNum;
+    int i, j, stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     int tsg; /* total strings gotten */
     char *pString;
 
@@ -518,6 +527,7 @@ int cmlGetMultiRowStringValuesFromSql( const char *sql,
 
     i = cllExecSqlWithResultBV( icss, &stmtNum, sql, bindVars );
     if ( i != 0 ) {
+        cllFreeStatement( icss, stmtNum );
         if ( i <= CAT_ENV_ERR ) {
             return ( i );   /* already an iRODS error code */
         }
@@ -552,6 +562,7 @@ int cmlGetMultiRowStringValuesFromSql( const char *sql,
             }
         }
     }
+    cllFreeStatement( icss, stmtNum );
     return 0;
 }
 
@@ -1189,7 +1200,7 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
                             const char *userName, const char *userZone,
                             icatSessionStruct *icss ) {
     int status;
-    int stmtNum;
+    int stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
     int hostOK = 0;
     int userOK = 0;
     int groupOK = 0;
@@ -1209,6 +1220,7 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
     }
     else {
         if ( status != 0 ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
@@ -1221,12 +1233,15 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
     if ( hostOK == 0 ) {
+        cllFreeStatement(icss, stmtNum);
         return CAT_TICKET_HOST_EXCLUDED;
     }
+    cllFreeStatement(icss, stmtNum);
 
     /* Now check on user restrictions */
     if ( logSQL_CML != 0 ) {
@@ -1238,10 +1253,12 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
                  "select user_name from R_TICKET_ALLOWED_USERS where ticket_id=?",
                  bindVars,  &stmtNum, icss );
     if ( status == CAT_NO_ROWS_FOUND ) {
+        cllFreeStatement(icss, stmtNum);
         userOK = 1;
     }
     else {
         if ( status != 0 ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
@@ -1264,12 +1281,15 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
     if ( userOK == 0 ) {
+        cllFreeStatement(icss, stmtNum);
         return CAT_TICKET_USER_EXCLUDED;
     }
+    cllFreeStatement(icss, stmtNum);
 
     /* Now check on group restrictions */
     if ( logSQL_CML != 0 ) {
@@ -1285,6 +1305,7 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
     }
     else {
         if ( status != 0 ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
@@ -1298,12 +1319,15 @@ cmlCheckTicketRestrictions( const char *ticketId, const char *ticketHost,
         }
         status = cmlGetNextRowFromStatement( stmtNum, icss );
         if ( status != 0 && status != CAT_NO_ROWS_FOUND ) {
+            cllFreeStatement(icss, stmtNum);
             return status;
         }
     }
     if ( groupOK == 0 ) {
+        cllFreeStatement(icss, stmtNum);
         return CAT_TICKET_GROUP_EXCLUDED;
     }
+    cllFreeStatement(icss, stmtNum);
     return 0;
 }
 
