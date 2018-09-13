@@ -1475,7 +1475,7 @@ int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, 
 int setOverQuota( rsComm_t *rsComm ) {
     int status;
     int rowsFound;
-    int statementNum;
+    int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     char myTime[50];
 
     /* For each defined group limit (if any), get a total usage on that
@@ -1562,6 +1562,8 @@ int setOverQuota( rsComm_t *rsComm ) {
         }
     }
 
+    cmlFreeStatement(statementNum, &icss);
+
     /* Handle group quotas on resources */
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "setOverQuota SQL 5" );
@@ -1592,6 +1594,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
+            cmlFreeStatement(statementNum, &icss);
             return status2;
         }
     }
@@ -1599,8 +1602,11 @@ int setOverQuota( rsComm_t *rsComm ) {
         status = 0;
     }
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return status;
     }
+
+    cmlFreeStatement(statementNum, &icss);
 
     /* Handle group quotas on total usage */
 #if ORA_ICAT
@@ -1649,6 +1655,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
+            cmlFreeStatement(statementNum, &icss);
             return status2;
         }
     }
@@ -1656,6 +1663,7 @@ int setOverQuota( rsComm_t *rsComm ) {
         status = 0;
     }
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return status;
     }
 
@@ -1664,6 +1672,7 @@ int setOverQuota( rsComm_t *rsComm ) {
        for each user into R_QUOTA_MAIN.  For now tho, this is not done and
        perhaps shouldn't be, to keep it a little less complicated. */
 
+    cmlFreeStatement(statementNum, &icss);
     return status;
 }
 
@@ -2873,7 +2882,7 @@ irods::error db_reg_replica_op(
     char tSQL[MAX_SQL_SIZE];
     char *cVal[30];
     int i;
-    int statementNumber;
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     int nextReplNum;
     char nextRepl[30];
     char theColls[] = "data_id, \
@@ -6008,7 +6017,7 @@ irods::error db_simple_query_op_vector(
     // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    int stmtNum, status, nCols, i, needToGet, didGet;
+    int stmtNum = UNINITIALIZED_STATEMENT_NUMBER, status, nCols, i, needToGet, didGet;
     int rowSize;
     int rows;
     int OK;
@@ -6167,6 +6176,7 @@ irods::error db_simple_query_op_vector(
                          "chlSimpleQuery cmlGetFirstRowFromSqlBV failure %d",
                          status );
             }
+            cmlFreeStatement(stmtNum, &icss);
             return ERROR( status, "cmlGetFirstRowFromSqlBV failure" );
         }
         didGet = 1;
@@ -6189,6 +6199,7 @@ irods::error db_simple_query_op_vector(
                     }
                     return CODE( 0 );
                 }
+                cmlFreeStatement(stmtNum, &icss);
                 return ERROR( status, "cmlGetNextRowFromStatement failed" );
             }
             if ( status < 0 ) {
@@ -6241,6 +6252,7 @@ irods::error db_simple_query_op_vector(
         }
     }
 
+    cmlFreeStatement(stmtNum, &icss);
     return SUCCESS();
 
 } // db_simple_query_op
@@ -12826,7 +12838,7 @@ irods::error db_check_quota_op(
        group per-resource, and group global.
     */
     int status;
-    int statementNum;
+    int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
 
     char mySQL[] = "select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
 
@@ -12845,6 +12857,7 @@ irods::error db_check_quota_op(
         rodsLog( LOG_NOTICE,
                  "chlCheckQuota - CAT_SUCCESS_BUT_WITH_NO_INFO" );
         *_quota_status = QUOTA_UNRESTRICTED;
+        cmlFreeStatement(statementNum, &icss);
         return SUCCESS();
     }
 
@@ -12852,10 +12865,12 @@ irods::error db_check_quota_op(
         rodsLog( LOG_NOTICE,
                  "chlCheckQuota - CAT_NO_ROWS_FOUND" );
         *_quota_status = QUOTA_UNRESTRICTED;
+        cmlFreeStatement(statementNum, &icss);
         return SUCCESS();
     }
 
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return ERROR( status, "check quota failed" );
     }
 
@@ -13853,7 +13868,7 @@ irods::error db_specific_query_op(
 
     char combinedSQL[MAX_SQL_SIZE];
 
-    int status, statementNum;
+    int status, statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     int numOfCols;
     int attriTextLen;
     int totalLen;
@@ -13931,6 +13946,7 @@ irods::error db_specific_query_op(
                          "chlSpecificQuery cmlGetFirstRowFromSql failure %d",
                          status );
             }
+            cmlFreeStatement(statementNum, &icss);
             return ERROR( status, "cmlGetFirstRowFromSql failure" );
         }
 
@@ -13963,6 +13979,7 @@ irods::error db_specific_query_op(
                 return SUCCESS();
             }
             if ( status < 0 ) {
+                cmlFreeStatement(statementNum, &icss);
                 return ERROR( status, "failed to get next row" );
             }
         }
@@ -13992,6 +14009,7 @@ irods::error db_specific_query_op(
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char * ) malloc( totalLen );
                 if ( tResult == NULL ) {
+                    cmlFreeStatement(statementNum, &icss);
                     return ERROR( SYS_MALLOC_ERR, "malloc error" );
                 }
                 memset( tResult, 0, totalLen );
@@ -14019,6 +14037,7 @@ irods::error db_specific_query_op(
                 int k;
                 tResult = ( char * ) malloc( totalLen );
                 if ( tResult == NULL ) {
+                    cmlFreeStatement(statementNum, &icss);
                     return ERROR( SYS_MALLOC_ERR, "failed to allocate result" );
                 }
                 memset( tResult, 0, totalLen );
@@ -14106,11 +14125,13 @@ irods::error db_get_distinct_data_obj_count_on_resource_op(
                      &statement_num,
                      0, &icss );
     if ( status != 0 ) {
+        cmlFreeStatement(statement_num, &icss);
         return ERROR( status, "cmlGetFirstRowFromSql failed" );
     }
 
     ( *_count ) = atol( icss.stmtPtr[ statement_num ]->resultValue[0] );
 
+    cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
 
 } // db_get_distinct_data_obj_count_on_resource_op
@@ -14198,6 +14219,7 @@ irods::error db_get_distinct_data_objs_missing_from_child_given_parent_op(
         }
 
         if ( status != 0 ) {
+            cmlFreeStatement(statement_num, &icss);
             return ERROR( status, "failed to get a row" );
         }
 
