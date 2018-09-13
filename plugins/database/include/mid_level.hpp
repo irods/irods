@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 
+const int UNINITIALIZED_STATEMENT_NUMBER = -1;
+
 int cmlOpen( icatSessionStruct *icss );
 
 int cmlClose( icatSessionStruct *icss );
