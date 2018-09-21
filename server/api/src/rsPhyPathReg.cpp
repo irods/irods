@@ -493,6 +493,11 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                            ADMIN_KW ) != NULL ) {
         addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     }
+    // Data size can be passed via DATA_SIZE_KW to save a stat later
+    const auto data_size_str = getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW);
+    if (nullptr != data_size_str) {
+        addKeyVal(&regReplicaInp.condInput, DATA_SIZE_KW, data_size_str);
+    }
     status = rsRegReplica( rsComm, &regReplicaInp );
     clearKeyVal( &regReplicaInp.condInput );
     freeAllDataObjInfo( dataObjInfoHead );
