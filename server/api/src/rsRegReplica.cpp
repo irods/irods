@@ -115,23 +115,30 @@ namespace irods {
             dataObjInfo_t* src_info = _reg_inp->srcDataObjInfo;
             dataObjInfo_t* dst_info = _reg_inp->destDataObjInfo;
 
-            const auto dst_size = get_file_size_from_filesystem(
-                                      _comm,
-                                      dst_info->objPath,
-                                      dst_info->rescHier,
-                                      dst_info->filePath);
+            // Check for data_size_kw
             keyValPair_t reg_param{};
-            std::string dst_size_str; 
-            if(UNKNOWN_FILE_SZ != dst_size &&
-               dst_size != src_info->dataSize) {
-                dst_info->dataSize = dst_size;
-                dst_size_str = boost::lexical_cast<std::string>(dst_size);
-                addKeyVal(
-                   &reg_param,
-                   DATA_SIZE_KW,
-                   dst_size_str.c_str());
+            auto data_size_str{getValByKey(&_reg_inp->condInput, DATA_SIZE_KW)};
+            try {
+                if (data_size_str) {
+                    addKeyVal(&reg_param, DATA_SIZE_KW, data_size_str);
+                    dst_info->dataSize = boost::lexical_cast<decltype(dst_info->dataSize)>(data_size_str);
+                }
             }
-            
+            catch (boost::bad_lexical_cast&) {
+                rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
+                dst_info->dataSize = 0;
+                data_size_str = nullptr;
+            }
+
+            if (nullptr == data_size_str) {
+                const auto dst_size = get_file_size_from_filesystem(_comm, dst_info->objPath, dst_info->rescHier, dst_info->filePath);
+                if(UNKNOWN_FILE_SZ != dst_size && dst_size != src_info->dataSize) {
+                    dst_info->dataSize = dst_size;
+                    const auto dst_size_str = boost::lexical_cast<std::string>(dst_size);
+                    addKeyVal(&reg_param, DATA_SIZE_KW, dst_size_str.c_str());
+                }
+            }
+
             // optional checksum verification, should one exist 
             // on the source replica
             std::string dst_checksum;
