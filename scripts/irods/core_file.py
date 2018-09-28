@@ -22,6 +22,16 @@ class CoreFile:
             raise IrodsError('unsupported rule engine for testing: {0}'.format(self.plugin_name))
         self.filepath = os.path.join(irods_config.core_re_directory, filename)
 
+    def prepend_to_imports(self, rule_text):
+
+        if not(isinstance(rule_text,str)) or not rule_text : return
+
+        if self.plugin_name == PYTHON_RULE_ENGINE_PLUGIN_NAME:
+            rule_text = rule_text.lstrip() + ("\n" if rule_text[-1:] != "\n" else "")
+            lib.prepend_string_to_file(rule_text, self.filepath)
+        else:
+            raise IrodsError('core rulebase cannot contain imports unless Python RE plugin installed')
+
     def add_rule(self, rule_text):
         if self.plugin_name == IRODS_RULE_LANGUAGE_RULE_ENGINE_PLUGIN_NAME:
             lib.prepend_string_to_file(rule_text, self.filepath)
