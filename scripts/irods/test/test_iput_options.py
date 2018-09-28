@@ -2,6 +2,7 @@ import os
 import re
 import stat
 import sys
+import shutil
 import ustrings
 
 if sys.version_info < (2, 7):
@@ -10,14 +11,18 @@ else:
     import unittest
 
 from .resource_suite import ResourceBase
+from ..configuration import IrodsConfig
 from .. import lib
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
     def setUp(self):
+        self.new_paths = []
         super(Test_iPut_Options, self).setUp()
 
     def tearDown(self):
+        for abs_path in self.new_paths:
+            shutil.rmtree(abs_path, ignore_errors = True)
         super(Test_iPut_Options, self).tearDown()
 
     def test_iput_options(self):
@@ -60,8 +65,18 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'units: u1')
 
     def test_iput_recursive_with_period__issue_2010(self):
-        self.user0.assert_icommand(['iput', '-r', './'], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
-        self.user0.assert_icommand_fail('ils -l', 'STDOUT_SINGLELINE', '/.')
+        try:
+            new_dir = 'dir_for_test_iput_recursive_with_period_2010'
+            home_dir = IrodsConfig().irods_directory
+            save_dir = os.getcwd()
+            os.chdir(home_dir)
+            lib.make_deep_local_tmp_dir(new_dir, depth=5, files_per_level=30, file_size=57)
+            self.new_paths.append(os.path.abspath(new_dir))
+            os.chdir(new_dir)
+            self.user0.assert_icommand(['iput', '-r', './'], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+            self.user0.assert_icommand_fail('ils -l', 'STDOUT_SINGLELINE', '/.')
+        finally:
+            os.chdir(save_dir)
 
     def test_iput_checksum_zero_length_file__issue_3275(self):
         filename = 'test_iput_checksum_zero_length_file__issue_3275'
