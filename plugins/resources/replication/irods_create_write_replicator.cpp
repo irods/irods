@@ -4,6 +4,8 @@
 #include "irods_repl_retry.hpp"
 #include "irods_stacktrace.hpp"
 
+#include <sstream>
+
 namespace irods {
 
     create_write_replicator::create_write_replicator(
@@ -46,6 +48,7 @@ namespace irods {
                     bzero( &dataObjInp, sizeof( dataObjInp ) );
                     rstrcpy( dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN );
                     dataObjInp.createMode = object.mode();
+                    dataObjInp.dataSize = object.size();
 
                     copyKeyVal( ( keyValPair_t* )&object.cond_input(), &dataObjInp.condInput );
                     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str() );
@@ -67,12 +70,25 @@ namespace irods {
                         // client side error stack
                         if ( !result.ok() ) {
                             last_error = result;
+                            
                             irods::log( result );
-                            addRErrorMsg(
-                                &_ctx.comm()->rError,
-                                result.code(),
-                                result.result().c_str() );
-                            result = SUCCESS();
+                            if (status == SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION) {
+
+                                std::stringstream repl_quota_error_ss;
+                                repl_quota_error_ss << "Failed to replicate the data object: " << object.logical_path() << 
+                                   " from resource: " << child_ << " to sibling: " << hierarchy_string << " - " << rods_error; 
+                                addRErrorMsg(
+                                    &_ctx.comm()->rError,
+                                    SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION,
+                                    repl_quota_error_ss.str().c_str() );
+                                result = SUCCESS();
+                            } else {
+                                addRErrorMsg(
+                                    &_ctx.comm()->rError,
+                                    result.code(),
+                                    result.result().c_str() );
+                                result = SUCCESS();
+                            }
                         }
                     }
                     catch ( const irods::exception& e ) {

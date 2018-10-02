@@ -24,6 +24,10 @@
 #include "irods_database_manager.hpp"
 #include "irods_database_constants.hpp"
 #include "irods_server_properties.hpp"
+#include "genQuery.h"
+#include "rsGenQuery.hpp"
+#include "rodsError.h"
+#include "rcMisc.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -3481,6 +3485,62 @@ int chlSetQuota(
         irods::log( PASS( ret ) );
         return ret.code();
     }
+
+    // Make sure the resource has a location and path; quotas
+    // on coordinating resources are not allowed. 
+    if (strncmp( _resc_name, "total", MAX_NAME_LEN ) != 0) {
+
+        // perform a genQuery to get location and path for resource
+        genQueryInp_t genQueryInp;
+        genQueryOut_t *genQueryOut = NULL;
+        memset( &genQueryInp, 0, sizeof( genQueryInp ) );
+
+        char condStr[MAX_NAME_LEN];
+        sqlResult_t *resource_location_sqlresult;
+        sqlResult_t *resource_vault_path_sqlresult;
+
+        snprintf( condStr, MAX_NAME_LEN, "='%s'", _resc_name);
+        addInxVal( &genQueryInp.sqlCondInp, COL_R_RESC_NAME, condStr );
+        addInxIval( &genQueryInp.selectInp, COL_R_LOC, 1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH, 1 );
+        genQueryInp.maxRows = 1;
+        int status =  rsGenQuery( _comm, &genQueryInp, &genQueryOut );
+        clearGenQueryInp( &genQueryInp );
+
+        if (status >= 0) {
+            resource_location_sqlresult = getSqlResultByInx( genQueryOut, COL_R_LOC);
+            resource_vault_path_sqlresult = getSqlResultByInx( genQueryOut, COL_R_VAULT_PATH);
+
+            bool location_path_not_found = false;
+
+            if (resource_location_sqlresult == nullptr || resource_vault_path_sqlresult == nullptr) {
+
+                location_path_not_found = true;
+
+            } else {
+
+                std::string resource_location(&resource_location_sqlresult->value[0]);
+                std::string resource_vault_path(&resource_vault_path_sqlresult->value[0]);
+
+
+                if (resource_location == irods::EMPTY_RESC_HOST &&
+                        resource_vault_path == irods::EMPTY_RESC_PATH) {
+                    location_path_not_found = true;
+                }
+            }
+
+            if (location_path_not_found) {
+
+                std::string error_msg = "Setting a quota on a resource without a location or path "
+                                        "(i.e. a coordinating resource) is not allowed.";
+                rodsLog(LOG_ERROR, "iadmin suq - %s - SYS_INVALID_INPUT_PARAM", error_msg.c_str());
+                addRErrorMsg( &_comm->rError, SYS_INVALID_INPUT_PARAM, error_msg.c_str());
+                return SYS_INVALID_INPUT_PARAM;
+            }
+
+        }
+    }
+    
 
     // =-=-=-=-=-=-=-
     // resolve a plugin for that object

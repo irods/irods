@@ -39,6 +39,7 @@
 #include "rsFileStageToCache.hpp"
 #include "rsFileSyncToArch.hpp"
 #include "rsUnbunAndRegPhyBunfile.hpp"
+#include "rsGetRescQuota.hpp"
 
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
@@ -166,7 +167,7 @@ rsDataObjRepl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( !tmp_dest_resc.empty() ) {
         addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, tmp_dest_resc.c_str() );
     }
-
+    
     // =-=-=-=-=-=-=-
     // performing a local replication
     *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
@@ -231,6 +232,7 @@ _rsDataObjRepl(
     dataObjInp_t *dataObjInp,
     transferStat_t *transStat,
     dataObjInfo_t *outDataObjInfo ) {
+
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
@@ -284,6 +286,7 @@ _rsDataObjRepl(
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     char* dest_hier = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+
     const bool update_requested = (getValByKey(&dataObjInp->condInput, UPDATE_REPL_KW) != nullptr);
     bool update_replica = update_requested;
 
@@ -327,6 +330,18 @@ _rsDataObjRepl(
         // to correctly determine if an update needs to take place or not.
         update_replica = irods::is_hier_in_obj_info_list(dest_hier, dataObjInfoHead);
     }
+
+    status = setRescQuota(
+                 rsComm,
+                 dataObjInp->objPath,
+                 dest_hier,
+                 dataObjInp->dataSize );
+
+    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
+        return SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION;
+    }
+
+   
 
     // If [dest_hier] is not null, then the replica matching [dest_hier] will appear
     // at the head of the list. The list it appears in is determined by whether it is
@@ -662,7 +677,6 @@ _rsDataObjReplS(
     int l1descInx;
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *myDestDataObjInfo = NULL;
-
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo,
                                     _root_resc_name, destDataObjInfo, updateFlag );
     if ( l1descInx < 0 ) {

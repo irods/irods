@@ -657,15 +657,5 @@ int getRescForCreate(
         _resc_name = rei.rescName;
     }
 
-    status = setRescQuota(
-                 _comm,
-                 _obj_inp->objPath,
-                 _resc_name.c_str(),
-                 _obj_inp->dataSize );
-    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
-        return SYS_RESC_QUOTA_EXCEEDED;
-    }
-
-
     return 0;
 }

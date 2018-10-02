@@ -20,6 +20,7 @@
 int
 rsGetRescQuota( rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
                 rescQuota_t **rescQuota ) {
+
     rodsServerHost_t *rodsServerHost;
     int status = 0;
 
@@ -48,6 +49,7 @@ int _rsGetRescQuota(
     rsComm_t*          rsComm,
     getRescQuotaInp_t* getRescQuotaInp,
     rescQuota_t**      rescQuota ) {
+
     int status = 0;
 
     genQueryOut_t* genQueryOut = NULL;
@@ -64,7 +66,7 @@ int _rsGetRescQuota(
                  getRescQuotaInp->rescName,
                  &genQueryOut );
     if ( status >= 0 ) {
-        queRescQuota( rescQuota, genQueryOut );
+        queueRescQuota( rescQuota, getRescQuotaInp->rescName, genQueryOut );
     }
 
     freeGenQueryOut( &genQueryOut );
@@ -125,8 +127,9 @@ int getQuotaByResc(
     return status;
 }
 
-int queRescQuota(
+int queueRescQuota(
     rescQuota_t**  rescQuotaHead,
+    char* targetRescName,
     genQueryOut_t* genQueryOut ) {
 
     sqlResult_t *quotaLimit, *quotaOver, *rescName, *quotaRescId, *quotaUserId;
@@ -138,47 +141,65 @@ int queRescQuota(
     if ( ( quotaLimit = getSqlResultByInx( genQueryOut, COL_QUOTA_LIMIT ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed" );
+                 "queueRescQuota: getSqlResultByInx for COL_QUOTA_LIMIT failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaOver = getSqlResultByInx( genQueryOut, COL_QUOTA_OVER ) ) == NULL ) {
         rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed" );
+                 "queueRescQuota: getSqlResultByInx for COL_QUOTA_OVER failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( rescName = getSqlResultByInx( genQueryOut, COL_R_RESC_NAME ) ) == NULL ) {
         rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed" );
+                 "queueRescQuota: getSqlResultByInx for COL_R_RESC_NAME failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaRescId = getSqlResultByInx( genQueryOut, COL_QUOTA_RESC_ID ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed" );
+                 "queueRescQuota: getSqlResultByInx for COL_QUOTA_RESC_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( quotaUserId = getSqlResultByInx( genQueryOut, COL_QUOTA_USER_ID ) ) ==
             NULL ) {
         rodsLog( LOG_ERROR,
-                 "queRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed" );
+                 "queueRescQuota: getSqlResultByInx for COL_QUOTA_USER_ID failed" );
         return UNMATCHED_KEY_OR_INDEX;
     }
 
+    // Issue 4089 - Reversing the order that the link list is built
+    // and also ignoring entries that are not for target resource
+    *rescQuotaHead = nullptr; 
+    rescQuota_t *tailRescQuota = nullptr;
     for ( i = 0; i < genQueryOut->rowCnt; i++ ) {
+
+        tmpRescName =  &rescName->value[rescName->len * i];
+
+        // Don't care if this isn't our resource
+        if (strncmp(tmpRescName, targetRescName, NAME_LEN) != 0) {
+            continue;
+        }
         tmpQuotaLimit =  &quotaLimit->value[quotaLimit->len * i];
         tmpQuotaOver =  &quotaOver->value[quotaOver->len * i];
-        tmpRescName =  &rescName->value[rescName->len * i];
         tmpQuotaRescId =  &quotaRescId->value[quotaRescId->len * i];
         tmpQuotaUserId =  &quotaUserId->value[quotaUserId->len * i];
         tmpRescQuota = ( rescQuota_t* )malloc( sizeof( rescQuota_t ) );
         fillRescQuotaStruct( tmpRescQuota, tmpQuotaLimit, tmpQuotaOver,
                              tmpRescName, tmpQuotaRescId, tmpQuotaUserId );
-        tmpRescQuota->next = *rescQuotaHead;
-        *rescQuotaHead = tmpRescQuota;
+        tmpRescQuota->next = nullptr;
+
+        if (*rescQuotaHead == nullptr) {
+            *rescQuotaHead = tmpRescQuota;
+        } else {
+            tailRescQuota->next = tmpRescQuota;
+        }
+
+        tailRescQuota = tmpRescQuota;
+
     }
 
     return 0;
@@ -213,15 +234,16 @@ int fillRescQuotaStruct(
 int setRescQuota(
     rsComm_t*   _comm,
     const char* _obj_path,
-    const char* _resc_name,
+    const char* _resc_hier,
     rodsLong_t  _data_size ) {
+
     int status = chkRescQuotaPolicy( _comm );
     if ( status != RESC_QUOTA_ON ) {
         return 0;
     }
 
     rodsLong_t resc_id = 0;
-    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_name,resc_id);
+    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_hier, resc_id);
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return ret.code();
@@ -246,7 +268,7 @@ int setRescQuota(
         NAME_LEN, "%s#%s",
         _comm->clientUser.userName,
         _comm->clientUser.rodsZone );
-
+ 
     rescQuota_t *total_quota = NULL;
     status = rsGetRescQuota(
                  _comm,
@@ -268,9 +290,18 @@ int setRescQuota(
     }
 
     // if no global enforcement was successful try per resource
+    
+    // get resource name from resc_id to name
+    std::string leaf_resc_name;
+    ret = resc_mgr.resc_id_to_name(resc_id, leaf_resc_name);
+    if (!ret.ok()) {
+        irods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     rstrcpy(
         get_resc_quota_inp.rescName,
-        _resc_name,
+        leaf_resc_name.c_str(),
         NAME_LEN );
 
     rescQuota_t *resc_quota = NULL;
@@ -347,7 +378,7 @@ int chkRescQuotaPolicy( rsComm_t *rsComm ) {
         if ( status < 0 ) {
             rodsLog(
                 LOG_ERROR,
-                "queRescQuota: acRescQuotaPolicy error status = %d",
+                "queueRescQuota: acRescQuotaPolicy error status = %d",
                 status );
             RescQuotaPolicy = RESC_QUOTA_OFF;
         }
