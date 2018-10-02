@@ -27,6 +27,25 @@ acAclPolicy {
     ON($userNameClient == "quickshare") { }
 }
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Quota_Issue4089'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Quota_Issue4089'] ['test_quota_default_replication_node_put_failure'] = '''
+acSetRescSchemeForCreate{
+    msiSetDefaultResc('repl', 'forced');
+}
+acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }
+'''
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Quota_Issue4089'] ['test_quota_default_replication_node_repl_failure'] = '''
+acSetRescSchemeForCreate{
+    msiSetDefaultResc('repl', 'forced');
+}
+acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Quota_Issue4089'] ['others'] = '''
+acRescQuotaPolicy {msiSetRescQuotaPolicy("on"); }
+'''
+
+
 
 #===== Test_ICommands_File_Operations =====
 

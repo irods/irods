@@ -63,7 +63,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_ibun__issue_3571(self):
         test_file = "ibun_test_file"
         lib.make_file(test_file, 1000)
-        
+
         tar_path = self.admin.session_collection + '/somefile.tar'
         dir_path = self.admin.session_collection + '/somedir'
 
@@ -1521,3 +1521,302 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         check_and_remove_rebalance_visibility_metadata(10); # try 10 times
         # fire parallel rebalance
         self.admin.assert_icommand("iadmin modresc repl rebalance")
+
+
+class Test_Quota_Issue4089(resource_suite.ResourceBase, unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_Quota_Issue4089'
+
+    def setUp(self):
+        super(Test_Quota_Issue4089, self).setUp()
+
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        self.admin.assert_icommand('iadmin mkresc repl replication', 'STDOUT_SINGLELINE', 'Creating')
+
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_a', 'passthru', '', 'write=1.0;read=1.0'], 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_b', 'passthru', '', 'write=.9;read=1.0'], 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'pt_c', 'passthru', '', 'write=.9;read=1.0'], 'STDOUT_SINGLELINE', 'Creating')
+
+        self.admin.assert_icommand('iadmin mkresc leaf_a unixfilesystem ' + hostname +
+                                   ':/tmp/irods/pydevtest_leaf_a', 'STDOUT_SINGLELINE', 'Creating')  # unix
+        self.admin.assert_icommand('iadmin mkresc leaf_b unixfilesystem ' + hostname +
+                                   ':/tmp/irods/pydevtest_leaf_b', 'STDOUT_SINGLELINE', 'Creating')  # unix
+        self.admin.assert_icommand('iadmin mkresc leaf_c unixfilesystem ' + hostname +
+                                   ':/tmp/irods/pydevtest_leaf_c', 'STDOUT_SINGLELINE', 'Creating')  # unix
+        self.admin.assert_icommand('iadmin mkresc standalone_resc unixfilesystem ' + hostname +
+                                   ':/tmp/irods/pydevtest_standalone_resc', 'STDOUT_SINGLELINE', 'Creating')  # unix
+
+
+        # now connect the tree
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'repl', 'pt_a'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'repl', 'pt_b'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'repl', 'pt_c'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt_a', 'leaf_a'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt_b', 'leaf_b'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'pt_c', 'leaf_c'])
+
+        # add low quotas on another user to make sure it doesn't impact the user under test
+        self.admin.assert_icommand(['iadmin', 'suq', self.user1.username, 'demoResc', '50'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user1.username, 'leaf_a', '50'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user1.username, 'leaf_b', '50'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user1.username, 'leaf_c', '50'])
+        self.admin.assert_icommand(['iadmin', 'suq', self.user1.username, 'total', '50'])
+
+        # add higher total quota on user and make sure this doesn't impact the lower quotas
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '20000'])
+
+        self.admin.assert_icommand('iadmin cu')
+
+    def tearDown(self):
+
+        super(Test_Quota_Issue4089, self).tearDown()
+
+        with session.make_session_for_existing_admin() as admin_session:
+
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'repl', 'pt_a'])
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'repl', 'pt_b'])
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'repl', 'pt_c'])
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'pt_a', 'leaf_a'])
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'pt_b', 'leaf_b'])
+            admin_session.run_icommand(['iadmin', 'rmchildfromresc', 'pt_c', 'leaf_c'])
+
+            admin_session.run_icommand(['iadmin', 'rmresc', 'leaf_a'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'leaf_b'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'leaf_c'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'pt_a'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'pt_b'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'pt_c'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'repl'])
+            admin_session.run_icommand(['iadmin', 'rmresc', 'standalone_resc'])
+
+    def test_quota_default_standalone_resource(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc', '3000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # second put should fail due to quota
+            self.user0.assert_icommand('iput %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'demoResc', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+    def test_quota_selected_standalone_resource(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'standalone_resc', '3000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput -R standalone_resc %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # second put should fail due to quota
+            self.user0.assert_icommand('iput -R standalone_resc %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'standalone_resc', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput -R standalone_resc %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+
+    def test_quota_default_replication_node_put_failure(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '3000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_b', '10000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_c', '10000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # make sure object and two replicas exist
+            self.user0.assert_icommand('ils -l f1', 'STDOUT_MULTILINE', ['repl;pt_a;leaf_a', 'repl;pt_b;leaf_b','repl;pt_c;leaf_c'])
+
+            # second put should fail due to quota
+            self.user0.assert_icommand('iput %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+
+    def test_quota_default_replication_node_repl_failure(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # set the default resource to repl and enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '10000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_b', '5000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_c', '3000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # restart the server to reread the new core.re
+            IrodsController().restart()
+
+            # first put should pass
+            self.user0.assert_icommand('iput %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # make sure the object and two replicas exist
+            self.user0.assert_icommand('ils -l f1', 'STDOUT_MULTILINE', ['repl;pt_a;leaf_a', 'repl;pt_b;leaf_b','repl;pt_c;leaf_c'])
+
+            # second put should fail to replicate to leaf_c
+            self.user0.assert_icommand('iput %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION')
+
+            # make sure the object and one replica exists
+            self.user0.assert_icommand('ils -l f2', 'STDOUT_MULTILINE', ['repl;pt_a;leaf_a', 'repl;pt_b;leaf_b'])
+
+            # third put should fail to replicate to leaf_b or leaf_c (also tests already over quota case)
+            self.user0.assert_icommand('iput %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION')
+
+            # make sure the one object exists
+            self.user0.assert_icommand('ils -l f3', 'STDOUT_MULTILINE', ['repl;pt_a;leaf_a'])
+
+
+    def test_quota_selected_replication_node_put_failure(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '3000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_b', '10000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_c', '10000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput -R repl %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # make sure object and two replicas exist
+            self.user0.assert_icommand('ils -l f1', 'STDOUT_MULTILINE', ['repl;pt_a;leaf_a', 'repl;pt_b;leaf_b','repl;pt_c;leaf_c'])
+
+            # second put should fail due to quota
+            self.user0.assert_icommand('iput -R repl %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput -R repl %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+    def test_total_quota_repl_node_put_failure(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '7000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_a', '20000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_b', '20000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'leaf_c', '20000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput -R repl %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # second put should fail due to total quota
+            self.user0.assert_icommand('iput -R repl %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput -R repl %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+
+    def test_total_quota_standalone_resource_put_failure(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '3000'])
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'standalone_resc', '20000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput -R standalone_resc %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # second put should fail due to total quota
+            self.user0.assert_icommand('iput -R demoResc %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput -R demoResc %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+
+    def test_total_quota_put_on_different_resources(self):
+
+        test_file = '2kfile'
+        lib.make_file(test_file, 2000)
+
+        # enable quota
+        with temporary_core_file() as core:
+            core.add_rule(rule_texts[self.plugin_name][self.class_name]['others'])
+
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '3000'])
+            self.admin.assert_icommand('iadmin cu')
+
+            # first put should pass
+            self.user0.assert_icommand('iput -R standalone_resc %s f1' % test_file)
+            self.admin.assert_icommand('iadmin cu')
+
+            # second put should fail as we've reached total quota
+            self.user0.assert_icommand('iput -R demoResc %s f2' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+            # test a put when we are already over quota
+            self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'total', '1000'])
+            self.admin.assert_icommand('iadmin cu')
+            self.user0.assert_icommand('iput -R demoResc %s f3' % test_file, 'STDERR_SINGLELINE', 'SYS_RESC_QUOTA_EXCEEDED')
+
+    def test_setting_quota_on_coordinating_resource_fails(self):
+
+        self.admin.assert_icommand(['iadmin', 'suq', self.user0.username, 'repl', '3000'], 'STDERR_SINGLELINE', 'SYS_INVALID_INPUT_PARAM')

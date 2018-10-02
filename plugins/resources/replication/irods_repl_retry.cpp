@@ -15,7 +15,7 @@ int irods::data_obj_repl_with_retry(
 
     transferStat_t* trans_stat{ nullptr };
     auto status{ rsDataObjRepl( _ctx.comm(), &dataObjInp, &trans_stat ) };
-    if ( 0 == status ) {
+    if ( 0 == status || SYS_RESC_QUOTA_EXCEEDED_ON_REPLICATION == status ) {
         free( trans_stat );
         return status;
     }

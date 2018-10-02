@@ -438,63 +438,54 @@ namespace irods {
     }
 
     int apply_policy_for_create_operation(
-	rsComm_t*     _comm,
-	dataObjInp_t* _obj_inp,
-	std::string&  _resc_name ) {
+        rsComm_t*     _comm,
+        dataObjInp_t* _obj_inp,
+        std::string&  _resc_name ) {
 
-	/* query rcat for resource info and sort it */
-	ruleExecInfo_t rei;
-	initReiWithDataObjInp( &rei, _comm, _obj_inp );
+        /* query rcat for resource info and sort it */
+        ruleExecInfo_t rei;
+        initReiWithDataObjInp( &rei, _comm, _obj_inp );
 
-	int status = 0;
-	if ( _obj_inp->oprType == REPLICATE_OPR ) {
-	    status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
-	}
-	else {
-	    status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
-	}
-    clearKeyVal(rei.condInputData);
-    free(rei.condInputData);
+        int status = 0;
+        if ( _obj_inp->oprType == REPLICATE_OPR ) {
+            status = applyRule( "acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI );
+        }
+        else {
+            status = applyRule( "acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI );
+        }
 
-	    if ( status < 0 ) {
+        // get resource name
+        if ( !strlen( rei.rescName ) ) {
+            irods::error set_err = irods::set_default_resource(
+                    _comm,
+                    "", "",
+                    &_obj_inp->condInput,
+                    _resc_name );
+            if ( !set_err.ok() ) {
+                irods::log( PASS( set_err ) );
+                return SYS_INVALID_RESC_INPUT;
+            }
+        }
+        else {
+            _resc_name = rei.rescName;
+        }
+
+        clearKeyVal(rei.condInputData);
+        free(rei.condInputData);
+
+        if ( status < 0 ) {
 		    if ( rei.status < 0 ) {
 			    status = rei.status;
 		    }
 
 		    rodsLog(
-				    LOG_NOTICE,
+				    LOG_ERROR,
 				    "getRescForCreate:acSetRescSchemeForCreate error for %s,status=%d",
 				    _obj_inp->objPath,
 				    status );
 
 		    return status;
 	    }
-
-	    // get resource name
-	    if ( !strlen( rei.rescName ) ) {
-		 irods::error set_err = irods::set_default_resource(
-				    _comm,
-				    "", "",
-				    &_obj_inp->condInput,
-				    _resc_name );
-		    if ( !set_err.ok() ) {
-			    irods::log( PASS( set_err ) );
-			    return SYS_INVALID_RESC_INPUT;
-		    }
-	    }
-	    else {
-		    _resc_name = rei.rescName;
-	    }
-
-	    status = setRescQuota(
-			    _comm,
-			    _obj_inp->objPath,
-			    _resc_name.c_str(),
-			    _obj_inp->dataSize );
-	    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
-		    return SYS_RESC_QUOTA_EXCEEDED;
-	    }
-
 
 	    return 0;
     }
@@ -676,7 +667,6 @@ namespace irods {
             /////////////////////////
             /////////////////////////
 
-
             return ret;
 
         }
@@ -770,6 +760,15 @@ namespace irods {
             }
             /////////////////////////
             /////////////////////////
+            status = setRescQuota(
+                    _comm,
+                    _data_obj_inp->objPath,
+                    _out_hier.c_str(),
+                    _data_obj_inp->dataSize );
+
+            if( status == SYS_RESC_QUOTA_EXCEEDED ) {
+                return ERROR(SYS_RESC_QUOTA_EXCEEDED, "quota exceeded");
+            }
 
             return ret;
 
