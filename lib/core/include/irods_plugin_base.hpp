@@ -147,105 +147,6 @@ namespace irods {
 
             }
 
-            error call(
-                rsComm_t*                     _comm,
-                const std::string&            _operation_name,
-                irods::first_class_object_ptr _fco ) {
-                using namespace std;
-                try{
-                    plugin_context ctx( _comm, properties_, _fco, "" );
-
-                    std::function<error(plugin_context&, std::string*)> adapted_fcn =
-                        [this,&_operation_name]
-                        (plugin_context& _ctx, std::string* _out_param ) {
-                        _ctx.rule_results( *_out_param );
-                        typedef std::function<error(plugin_context&)> fcn_t;
-                        fcn_t& fcn = boost::any_cast< fcn_t& >( operations_[ _operation_name ] );
-                        error ret = fcn( _ctx );
-                        *_out_param = _ctx.rule_results();
-                        return ret;
-                    };
-
-                    std::string out_param;
-                    #ifdef ENABLE_RE
-                    bool ret = false;
-                    bool pre_pep_failed = false;
-                    error op_err = SUCCESS();
-                    error saved_op_err = SUCCESS();
-                    error to_return_op_err = SUCCESS();
-                    ruleExecInfo_t rei;
-                    memset( &rei, 0, sizeof( rei ) );
-                    if (_comm) {
-                        rei.rsComm        = _comm;
-                        rei.uoic          = &_comm->clientUser;
-                        rei.uoip          = &_comm->proxyUser;
-                    }
-
-                    rule_engine_context_manager<
-                        unit,
-                        ruleExecInfo_t*,
-                        AUDIT_RULE > re_ctx_mgr(
-                                        re_plugin_globals->global_re_mgr,
-                                        &rei );
-
-                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                        std::string rule_name = ns + "pep_" + _operation_name + "_pre";
-                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
-                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
-                                if (!op_err.ok()) {
-                                    rodsLog(LOG_DEBUG, "Pre-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                    saved_op_err = op_err;
-                                    pre_pep_failed = true;
-                                }
-                            } else {
-                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
-                            }
-                        }
-                    }
-
-                    // If pre-pep fails, do not execute rule or post-pep
-                    if (pre_pep_failed) {
-                        rodsLog(LOG_DEBUG, "Pre-pep for operation [%s] failed, rule and post-pep not executed", _operation_name.c_str());
-                        return saved_op_err;
-                    }
-
-                    to_return_op_err = adapted_fcn( ctx, &out_param );
-
-                    // If rule call fails, do not execute post_pep
-                    if (!to_return_op_err.ok()) {
-                        rodsLog(LOG_DEBUG, "Operation [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
-                        return to_return_op_err;
-                    }
-
-                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                        std::string rule_name = ns + "pep_" + _operation_name + "_post";
-                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
-                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param );
-                                if (!op_err.ok()) {
-                                    rodsLog(LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                }
-                            } else {
-                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
-                            }
-                        }
-                    }
-
-                    return to_return_op_err;
-                    #else
-                    return adapted_fcn( ctx, &out_param );
-                    #endif
-                } catch ( const boost::bad_any_cast& ) {
-                    std::string msg( "failed for call - " );
-                    msg += _operation_name;
-                    return ERROR(
-                            INVALID_ANY_CAST,
-                            msg );
-                }
-
-            } // call
-
             template< typename... types_t >
             error call(
                 rsComm_t*                     _comm,
@@ -268,10 +169,6 @@ namespace irods {
 
                     std::string out_param;
                     #ifdef ENABLE_RE
-                    bool ret = false;
-                    bool pre_pep_failed = false;
-                    error op_err = SUCCESS();
-                    error saved_op_err = SUCCESS();
                     error to_return_op_err = SUCCESS();
                     ruleExecInfo_t rei;
                     memset( &rei, 0, sizeof( rei ) );
@@ -288,48 +185,73 @@ namespace irods {
                                         re_plugin_globals->global_re_mgr,
                                         &rei );
 
-                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                        std::string rule_name = ns + "pep_" + _operation_name + "_pre";
-                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
-                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                op_err = re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param, forward<types_t>(_t)... );
-                                if (!op_err.ok()) {
-                                    rodsLog(LOG_DEBUG, "Pre-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                    saved_op_err = op_err;
-                                    pre_pep_failed = true;
-                                }
-                            } else {
-                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
-                            }
+                    // invoke the pre-pep for this operation
+                    error pre_err = invoke_policy_enforcement_point(
+                                        re_ctx_mgr,
+                                        ctx,
+                                        &out_param,
+                                        _operation_name,
+                                        "pre",
+                                        std::forward<types_t>(_t)...);
+                    if(!pre_err.ok()) {
+                        out_param = "error="+std::to_string(pre_err.code()) + ";message="+pre_err.result();
+                        // if the pre-pep fails, invoke the exception pep
+                        error except_err = invoke_policy_enforcement_point(
+                                           re_ctx_mgr,
+                                           ctx,
+                                           &out_param,
+                                           _operation_name,
+                                           "except",
+                                           std::forward<types_t>(_t)...);
+                        if(!except_err.ok()) {
+                            irods::log(PASS(except_err));
                         }
+                        return pre_err;
                     }
 
-                    // If pre-pep fails, do not execute rule or post-pep
-                    if (pre_pep_failed) {
-                        rodsLog(LOG_DEBUG, "Pre-pep for operation [%s] failed, rule and post-pep not executed", _operation_name.c_str());
-                        return saved_op_err;
-                    }
-
-                    to_return_op_err = adapted_fcn( ctx, &out_param, forward<types_t>(_t)... );
-
-                    // If rule call fails, do not execute post_pep
-                    if (!to_return_op_err.ok()) {
-                        rodsLog(LOG_DEBUG, "Rule [%s] failed with error code [%d], post-pep not executed", _operation_name.c_str(), op_err.code());
+                    to_return_op_err = adapted_fcn(
+                                           ctx,
+                                           &out_param,
+                                           forward<types_t>(_t)...);
+                    if(!to_return_op_err.ok()) {
+                        // if the operation fails, invoke the exception pep
+                        out_param = "error="+std::to_string(to_return_op_err.code()) + ";message="+to_return_op_err.result();
+                        error except_err = invoke_policy_enforcement_point(
+                                               re_ctx_mgr,
+                                               ctx,
+                                               &out_param,
+                                               _operation_name,
+                                               "except",
+                                               forward<types_t>(_t)...);
+                        if(!except_err.ok()) {
+                            irods::log(PASS(except_err));
+                        }
                         return to_return_op_err;
                     }
 
-                    for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                        std::string rule_name = ns + "pep_" + _operation_name + "_post";
-                        if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
-                            if (re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                                re_ctx_mgr.exec_rule( rule_name, instance_name_, ctx, &out_param, forward<types_t>(_t)... );
-                                if (!op_err.ok()) {
-                                    rodsLog(LOG_DEBUG, "Post-pep rule [%s] failed with error code [%d]", rule_name.c_str(), op_err.code());
-                                }
-                            } else {
-                                rodsLog( LOG_DEBUG, "Rule [%s] passes regex test, but does not exist", rule_name.c_str() );
-                            }
+
+                    // invoke the post-pep for this operation
+                    error post_err = invoke_policy_enforcement_point(
+                                         re_ctx_mgr,
+                                         ctx,
+                                         &out_param,
+                                         _operation_name,
+                                         "post",
+                                         forward<types_t>(_t)...);
+                    if(!post_err.ok()) {
+                        out_param = "error="+std::to_string(post_err.code()) + ";message="+post_err.result();
+                        // if the post-pep fails, invoke the exception pep
+                        error except_err = invoke_policy_enforcement_point(
+                                               re_ctx_mgr,
+                                               ctx,
+                                               &out_param,
+                                               _operation_name,
+                                               "except",
+                                               forward<types_t>(_t)...);
+                        if(!except_err.ok()) {
+                            irods::log(PASS(except_err));
                         }
+                        return post_err;
                     }
 
                     return to_return_op_err;
@@ -395,6 +317,54 @@ namespace irods {
 
             maintenance_operation_t start_operation_;
             maintenance_operation_t stop_operation_;
+
+        private:
+            #ifdef ENABLE_RE
+            template<typename... types_t>
+            error invoke_policy_enforcement_point(
+                rule_engine_context_manager<
+                                    unit,
+                                    ruleExecInfo_t*,
+                                    AUDIT_RULE > _re_ctx_mgr,
+                plugin_context      _ctx,
+                std::string*        _out_param,
+                const std::string&  _operation_name,
+                const std::string&  _class,
+                types_t...          _t) {
+                bool ret = false;
+                error saved_op_err = SUCCESS();
+                for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
+                    std::string rule_name = ns + "pep_" + _operation_name + "_" + _class;
+
+                    if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                        if (_re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                            error op_err = _re_ctx_mgr.exec_rule(
+                                               rule_name,
+                                               instance_name_,
+                                               _ctx,
+                                               _out_param,
+                                               std::forward<types_t>(_t)...);
+                            if (!op_err.ok()) {
+                                rodsLog(
+                                    LOG_DEBUG,
+                                    "%s-pep rule [%s] failed with error code [%d]",
+                                    _class.c_str(),
+                                    rule_name.c_str(),
+                                    op_err.code());
+                                saved_op_err = op_err;
+                            }
+                        } else {
+                            rodsLog(
+                                LOG_DEBUG10,
+                                "Rule [%s] passes regex test, but does not exist",
+                                rule_name.c_str() );
+                        }
+                    }
+                }
+                return saved_op_err;
+
+            } // invoke_policy_enforcement_point
+            #endif
 
     }; // class plugin_base
 
