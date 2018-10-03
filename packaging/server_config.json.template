@@ -40,7 +40,7 @@
                         "regexes_for_supported_peps": [
                             "ac[^ ]*",
                             "msi[^ ]*",
-                            "[^ ]*pep_[^ ]*_(pre|post)"
+                            "[^ ]*pep_[^ ]*_(pre|post|except)"
                         ]
                 },
                 "shared_memory_instance" : "irods_rule_language_rule_engine"
