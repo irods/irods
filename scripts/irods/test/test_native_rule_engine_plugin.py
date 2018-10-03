@@ -76,6 +76,73 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), s, start_index=initial_size_of_server_log)
             assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
+       path = self.admin.get_vault_session_path('demoResc')
+
+       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+       os.unlink(os.path.join(path, 'bad_file'))
+       pre_pep_fail = """
+           pep_resource_open_pre(*INST, *CTX, *OUT) {
+               failmsg(-1, "PRE PEP FAIL")
+           }
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
+           }
+       """
+       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+
+       op_fail = """
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
+           }
+       """
+       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+
+       post_pep_fail = """
+           pep_resource_open_post(*INST, *CTX, *OUT) {
+               failmsg(-1, "POST PEP FAIL")
+           }
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
+           }
+       """
+       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_dynamic_policy_enforcement_point_exception_for_apis__4128(self):
+       path = self.admin.get_vault_session_path('demoResc')
+
+       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+       os.unlink(os.path.join(path, 'bad_file'))
+       pre_pep_fail = """
+           pep_api_data_obj_get_pre(*INST, *COMM, *INP, *PORT, *BUF) {
+               failmsg(-1, "PRE PEP FAIL")
+           }
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
+           }
+       """
+       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+
+       op_fail = """
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
+           }
+       """
+       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+
+       post_pep_fail = """
+           pep_api_data_obj_get_post(*INST, *COMM, *INP, *PORT, *BUF) {
+               failmsg(-1, "POST PEP FAIL")
+           }
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
+           }
+       """
+       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
     def test_remote_rule_execution(self):
