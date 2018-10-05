@@ -603,6 +603,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin_impostor.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_redirect.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_rs_comm_query.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_api_table.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_globals.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_negotiation.cpp

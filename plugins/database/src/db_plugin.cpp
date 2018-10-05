@@ -29,6 +29,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_virtual_path.hpp"
+#include "irods_rs_comm_query.hpp"
 #include "modAccessControl.h"
 #include "checksum.hpp"
 
@@ -5120,17 +5121,30 @@ irods::error db_mod_coll_op(
             addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
             return ERROR( CAT_UNKNOWN_COLLECTION, "unknown collection" );
         }
+
         if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
-            std::stringstream errMsg;
-            errMsg << "no permission to update collection '" << _coll_info->collName << "'";
-            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
-            return  ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
+            // Allows elevation of privileges (e.g. irods_rule_engine_plugin-update_collection_mtime).
+            if (irods::is_privileged_client(*_ctx.comm())) {
+                iVal = 0;
+            }
+            else {
+                std::stringstream errMsg;
+                errMsg << "no permission to update collection '" << _coll_info->collName << "'";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
+                return ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
+            }
         }
-        return ERROR( iVal, "cmlCheckDir failed" );
+
+        // If client privileges are elevated, then iVal must be checked again because
+        // it could have been modified (e.g. irods_rule_engine_plugin-update_collection_mtime).
+        if (iVal < 0) {
+            return ERROR( iVal, "cmlCheckDir failed" );
+        }
     }
 
     std::string tSQL( "update R_COLL_MAIN set " );
     count = 0;
+
     if ( strlen( _coll_info->collType ) > 0 ) {
         if ( strcmp( _coll_info->collType, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5142,6 +5156,7 @@ irods::error db_mod_coll_op(
         tSQL += "coll_type=? ";
         count++;
     }
+
     if ( strlen( _coll_info->collInfo1 ) > 0 ) {
         if ( strcmp( _coll_info->collInfo1, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5156,6 +5171,7 @@ irods::error db_mod_coll_op(
         tSQL += "coll_info1=? ";
         count++;
     }
+
     if ( strlen( _coll_info->collInfo2 ) > 0 ) {
         if ( strcmp( _coll_info->collInfo2, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5170,13 +5186,28 @@ irods::error db_mod_coll_op(
         tSQL += "coll_info2=? ";
         count++;
     }
+
+    if (strlen(_coll_info->collModify) > 0) {
+        cllBindVars[cllBindVarCount++] = _coll_info->collModify;
+
+        if (count > 0) {
+            tSQL += ',';
+        }
+
+        ++count;
+    }
+    else {
+        tSQL += ',';
+        getNowStr( myTime );
+        cllBindVars[cllBindVarCount++] = myTime;
+    }
+
     if ( count == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "count is 0" );
     }
-    getNowStr( myTime );
-    cllBindVars[cllBindVarCount++] = myTime;
+
     cllBindVars[cllBindVarCount++] = _coll_info->collName;
-    tSQL += ", modify_ts=? where coll_name=?";
+    tSQL += " modify_ts=? where coll_name=?";
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModColl SQL 1" );
