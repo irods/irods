@@ -250,7 +250,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
         _rn.c_str(),
         _ps.size());
 
-    ruleExecInfo_t * rei;
+    ruleExecInfo_t* rei;
     irods::error err;
     if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
         return err;
