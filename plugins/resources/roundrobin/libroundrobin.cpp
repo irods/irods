@@ -1236,7 +1236,7 @@ irods::error round_robin_file_rebalance(
 
     return SUCCESS();
 
-} // round_robin_file_rebalancec
+} // round_robin_file_rebalance
 
 // =-=-=-=-=-=-=-
 // interface for POSIX Open

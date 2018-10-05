@@ -1474,7 +1474,7 @@ irods::error non_blocking_file_rebalance(
     irods::plugin_context& _ctx ) {
     return SUCCESS();
 
-} // non_blocking_file_rebalancec
+} // non_blocking_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle non_blocking file system resources
