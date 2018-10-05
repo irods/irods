@@ -2654,7 +2654,7 @@ irods::error tar_file_notify(
     const std::string* ) {
     return SUCCESS();
 
-} // tar_file_rebalance
+} // tar_file_notify
 
 
 // =-=-=-=-=-=-=-
