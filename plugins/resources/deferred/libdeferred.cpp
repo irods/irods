@@ -842,7 +842,7 @@ irods::error deferred_file_rebalance(
 
     return SUCCESS();
 
-} // deferred_file_rebalancec
+} // deferred_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle unix file system resources
