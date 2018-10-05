@@ -66,6 +66,7 @@
 #define COLLECTION_TYPE_KW    "collectionType"
 #define COLLECTION_INFO1_KW    "collectionInfo1"
 #define COLLECTION_INFO2_KW    "collectionInfo2"
+#define COLLECTION_MTIME_KW    "collectionMtime"
 #define SEL_OBJ_TYPE_KW    "selObjType"
 #define STRUCT_FILE_OPR_KW    	"structFileOpr"
 #define ALL_MS_PARAM_KW    	"allMsParam"
