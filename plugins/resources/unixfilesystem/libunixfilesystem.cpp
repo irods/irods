@@ -1568,7 +1568,7 @@ irods::error unix_file_rebalance(
     irods::plugin_context& _ctx ) {
     return SUCCESS();
 
-} // unix_file_rebalancec
+} // unix_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle unix file system resources

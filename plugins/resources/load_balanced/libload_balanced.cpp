@@ -991,7 +991,7 @@ irods::error load_balanced_file_rebalance(
 
     return SUCCESS();
 
-} // load_balanced_file_rebalancec
+} // load_balanced_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle unix file system resources
