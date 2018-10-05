@@ -30,9 +30,15 @@ set(
   )
 
 set(
+  IRODS_RULE_ENGINE_PLUGIN-PASSTHROUGH_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-passthrough/libirods_rule_engine_plugin-passthrough.cpp
+  )
+
+set(
   IRODS_RULE_ENGINE_PLUGINS
   irods_rule_engine_plugin-irods_rule_language
   irods_rule_engine_plugin-cpp_default_policy
+  irods_rule_engine_plugin-passthrough
   )
 
 foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})

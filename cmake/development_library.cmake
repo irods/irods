@@ -80,6 +80,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_server_properties.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_ssl_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_stacktrace.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_state_table.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_string_tokenize.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_tcp_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_threads.hpp
