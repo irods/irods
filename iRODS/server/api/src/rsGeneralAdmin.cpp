@@ -10,6 +10,9 @@
 #include "reGlobalsExtern.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "reFuncDefs.hpp"
+#include "modAVUMetadata.h"
+#include "genQuery.h"
+
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -25,8 +28,164 @@
 #include "irods_resource_constants.hpp"
 #include "irods_load_plugin.hpp"
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/date_time.hpp>
+
 extern irods::resource_manager resc_mgr;
 
+int _check_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    // build genquery to find active or stale "rebalance operation" entries for this resource
+    genQueryOut_t* gen_out = NULL;
+    char tmp_str[MAX_NAME_LEN];
+    genQueryInp_t gen_inp;
+    memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
+
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", _resource_name.c_str() );
+    addInxVal( &gen_inp.sqlCondInp, COL_R_RESC_NAME, tmp_str );
+    snprintf( tmp_str, MAX_NAME_LEN, "='rebalance_operation'" );
+    addInxVal( &gen_inp.sqlCondInp, COL_META_RESC_ATTR_NAME, tmp_str );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_VALUE, 1 );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_UNITS, 1 );
+    gen_inp.maxRows = 1;
+    int status = rsGenQuery( _rsComm, &gen_inp, &gen_out );
+    // if existing entry found, report and exit
+    if ( status >= 0 ) {
+        sqlResult_t* hostname_and_pid;
+        sqlResult_t* timestamp;
+        if ( ( hostname_and_pid = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_VALUE ) ) == NULL ) {
+            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_VALUE failed", __FUNCTION__ );
+            return UNMATCHED_KEY_OR_INDEX;
+        }
+        if ( ( timestamp = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_UNITS ) ) == NULL ) {
+            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_UNITS failed", __FUNCTION__ );
+            return UNMATCHED_KEY_OR_INDEX;
+        }
+        std::stringstream msg;
+        msg << "A rebalance_operation on resource [";
+        msg << _resource_name.c_str();
+        msg << "] is still active (or stale) [";
+        msg << &hostname_and_pid->value[0];
+        msg << "] [";
+        msg << &timestamp->value[0];
+        msg << "]";
+        rodsLog( LOG_ERROR, "%s: %s", __FUNCTION__, msg.str().c_str() );
+        addRErrorMsg( &_rsComm->rError, REBALANCE_ALREADY_ACTIVE_ON_RESOURCE, msg.str().c_str() );
+        return REBALANCE_ALREADY_ACTIVE_ON_RESOURCE;
+    }
+    freeGenQueryOut( &gen_out );
+    clearGenQueryInp( &gen_inp );
+    return 0;
+}
+
+int _set_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    // get hostname
+    char hostname[MAX_NAME_LEN];
+    gethostname(hostname, MAX_NAME_LEN);
+    // get PID
+    std::string pidstring("INVALIDPID");
+    try {
+        pidstring = boost::lexical_cast<std::string>(getpid());
+    }
+    catch ( const boost::bad_lexical_cast& ) {
+        std::stringstream msg;
+        msg << "failed to cast pid to string";
+        irods::log( ERROR(SYS_INVALID_INPUT_PARAM, msg.str() ) );
+        addRErrorMsg( &_rsComm->rError, SYS_INVALID_INPUT_PARAM, msg.str().c_str() );
+    }
+
+    // get timestamp in defined format
+    const boost::posix_time::ptime timeUTC = boost::posix_time::second_clock::universal_time();
+    std::stringstream stream;
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
+    facet->format("%Y%m%dT%H%M%SZ");
+    stream.imbue(std::locale(std::locale::classic(), facet));
+    stream << timeUTC;
+    // add AVU to resource
+    modAVUMetadataInp_t modAVUMetadataInp;
+    memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+    modAVUMetadataInp.arg0 = strdup( "set" );
+    modAVUMetadataInp.arg1 = strdup( "-R" );
+    modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
+    modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
+    std::string value = std::string(hostname) + std::string(":") + pidstring;
+    modAVUMetadataInp.arg4 = strdup( value.c_str() );
+    std::string unit = stream.str();
+    modAVUMetadataInp.arg5 = strdup( unit.c_str() );
+    // do it
+    int status = rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
+    free( modAVUMetadataInp.arg0 );
+    free( modAVUMetadataInp.arg1 );
+    free( modAVUMetadataInp.arg2 );
+    free( modAVUMetadataInp.arg3 );
+    free( modAVUMetadataInp.arg4 );
+    free( modAVUMetadataInp.arg5 );
+    return status;
+}
+
+int _check_and_set_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    int status = _check_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
+    if (status < 0){
+        return status;
+    }
+    status = _set_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
+    if (status < 0){
+        return status;
+    }
+    return 0;
+}
+
+int _remove_rebalance_timestamp_avu_from_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+    // build genquery to find active or stale "rebalance operation" entries for this resource
+    genQueryOut_t* gen_out = NULL;
+    char tmp_str[MAX_NAME_LEN];
+    genQueryInp_t gen_inp;
+    memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
+
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", _resource_name.c_str() );
+    addInxVal( &gen_inp.sqlCondInp, COL_R_RESC_NAME, tmp_str );
+    snprintf( tmp_str, MAX_NAME_LEN, "='rebalance_operation'" );
+    addInxVal( &gen_inp.sqlCondInp, COL_META_RESC_ATTR_NAME, tmp_str );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_VALUE, 1 );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_UNITS, 1 );
+    gen_inp.maxRows = 1;
+    int status = rsGenQuery( _rsComm, &gen_inp, &gen_out );
+    // if existing entry found, report and exit
+    if ( status >= 0 ) {
+        // remove AVU from resource
+        modAVUMetadataInp_t modAVUMetadataInp;
+        memset( &modAVUMetadataInp, 0, sizeof( modAVUMetadataInp ) );
+        modAVUMetadataInp.arg0 = strdup( "rmw" );
+        modAVUMetadataInp.arg1 = strdup( "-R" );
+        modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
+        modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
+        modAVUMetadataInp.arg4 = strdup( "%" );
+        modAVUMetadataInp.arg5 = strdup( "%" );
+        // do it
+        status = rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
+        free( modAVUMetadataInp.arg0 );
+        free( modAVUMetadataInp.arg1 );
+        free( modAVUMetadataInp.arg2 );
+        free( modAVUMetadataInp.arg3 );
+        free( modAVUMetadataInp.arg4 );
+        free( modAVUMetadataInp.arg5 );
+        return status;
+    }
+    else {
+        return 0;
+    }
+}
 
 
 int
@@ -612,9 +771,13 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 irods::error ret = resc_mgr.resolve( args[0], resc );
                 if ( !ret.ok() ) {
                     irods::log( PASSMSG( "failed to resolve resource", ret ) );
-                    status = -1;
+                    status = ret.code();
                 }
                 else {
+                    int visibility_status = _check_and_set_rebalance_timestamp_avu_on_resource(rsComm, args[0]);
+                    if (visibility_status < 0){
+                        return visibility_status;
+                    }
                     // =-=-=-=-=-=-=-
                     // call the rebalance operation on the resource
                     irods::file_object_ptr obj( new irods::file_object() );
@@ -622,7 +785,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     if ( !ret.ok() ) {
                         irods::log( PASSMSG( "failed to rebalance resource", ret ) );
                         status = ret.code();
-
+                    }
+                    visibility_status = _remove_rebalance_timestamp_avu_from_resource(rsComm, args[0]);
+                    if (visibility_status < 0){
+                        return visibility_status;
                     }
 
                 }
