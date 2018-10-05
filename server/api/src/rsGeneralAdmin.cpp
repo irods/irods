@@ -265,7 +265,7 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
+        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPreProcForCreateResource error for %s, stat=%d",
                  resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
@@ -281,7 +281,7 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
+        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPostProcForCreateResource error for %s, stat=%d",
                  resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
@@ -429,7 +429,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForCreateToken error for %s.%s=%s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForCreateToken error for %s.%s=%s, stat=%d",
                          args[0], args[1], args[2], i );
                 return i;
             }
@@ -447,7 +447,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForCreateToken error for %s.%s=%s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForCreateToken error for %s.%s=%s, stat=%d",
                              args[0], args[1], args[2], i );
                     return i;
                 }
@@ -483,7 +483,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyUser error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -498,7 +498,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyUser error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyUser error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -525,7 +525,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyUserGroup error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -540,7 +540,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyUserGroup error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -608,7 +608,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyResource error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyResource error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -656,7 +656,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyResource error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyResource error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -758,7 +758,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForDeleteResource error for %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForDeleteResource error for %s, stat=%d",
                          resc_name.c_str(), i );
                 return i;
             }
@@ -771,7 +771,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForDeleteResource error for %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForDeleteResource error for %s, stat=%d",
                              resc_name.c_str(), i );
                     return i;
                 }
@@ -826,7 +826,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForDeleteToken error for %s.%s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForDeleteToken error for %s.%s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
