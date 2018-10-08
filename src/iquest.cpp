@@ -73,6 +73,7 @@ usage() {
         " iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"",
         " iquest \"select DATA_NAME,DATA_SIZE where DATA_SIZE BETWEEN '100000' '100200'\"",
         " iquest \"%s/%s %s\" \"SELECT COLL_NAME, DATA_NAME, DATA_CREATE_TIME WHERE COLL_NAME like '/tempZone/home/rods%' AND DATA_CREATE_TIME like '01508165%'\"",
+        " iquest \"%s/%s\" \"select COLL_NAME, DATA_NAME where DATA_RESC_NAME = 'replResc' and DATA_REPL_STATUS = '0'\"",
         ""
     };
     int i;
