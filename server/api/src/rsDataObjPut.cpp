@@ -369,29 +369,6 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
             L1desc[l1descInx].bytesWritten = bytesWritten;
         }
 
-        // special case of zero length files, trigger the fileModified
-        // operation for execution of coordinating resource logic
-        if ( 0 == dataObjInp->dataSize ) {
-            irods::file_object_ptr file_obj(
-                new irods::file_object(
-                    rsComm,
-                    myDataObjInfo ) );
-
-            char* pdmo_kw = getValByKey( &myDataObjInfo->condInput, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
-                file_obj->in_pdmo( pdmo_kw );
-            }
-            irods::error ret = fileModified( rsComm, file_obj );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "fileModified failed for [";
-                msg << myDataObjInfo->objPath;
-                msg << "]";
-                ret = PASSMSG( msg.str(), ret );
-                irods::log( ret );
-                status = ret.code();
-            }
-        }
     }
 
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;

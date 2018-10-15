@@ -365,7 +365,7 @@ _rsDataObjClose(
 
     /* note that bytesWritten only indicates whether the file has been written
      * to. Not necessarily the size of the file */
-    if ( L1desc[l1descInx].bytesWritten <= 0 &&
+    if ( L1desc[l1descInx].bytesWritten < 0 &&
             L1desc[l1descInx].oprType != REPLICATE_DEST &&
             L1desc[l1descInx].oprType != PHYMV_DEST &&
             L1desc[l1descInx].oprType != COPY_DEST ) {
