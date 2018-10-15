@@ -3,6 +3,7 @@ import re
 import stat
 import sys
 import ustrings
+import commands
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -11,6 +12,7 @@ else:
 
 from .resource_suite import ResourceBase
 from .. import lib
+from . import session
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
@@ -178,3 +180,41 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
             self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', symtoself );
             self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', goodfile );
 
+class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
+
+    def setUp(self):
+        super(Test_iPut_Options_Issue_3883, self).setUp()
+
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # create a compound resource tree
+        self.admin.assert_icommand('iadmin mkresc compoundresc3883 compound', 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand('iadmin mkresc cacheresc3883 unixfilesystem ' + hostname +
+                                   ':/tmp/irods/cacheresc3883', 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand('iadmin mkresc archiveresc3883 unixfilesystem ' + hostname +
+                                   ':/tmp/irods/archiveresc3883', 'STDOUT_SINGLELINE', 'Creating')
+
+        # now connect the tree
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'compoundresc3883', 'cacheresc3883', 'cache'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'compoundresc3883', 'archiveresc3883', 'archive'])
+
+    def tearDown(self):
+
+        super(Test_iPut_Options_Issue_3883, self).tearDown()
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['iadmin', 'rmchildfromresc', 'compoundresc3883', 'cacheresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmchildfromresc', 'compoundresc3883', 'archiveresc3883'])
+
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'compoundresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'cacheresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'archiveresc3883'])
+
+
+    def test_iput_zero_length_file_with_purge_and_checksum_3883(self):
+        filename = 'test_iput_zero_length_file_with_purge_and_checksum_3883'
+        lib.touch(filename)
+        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename])
+        self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
+        os.unlink(filename)
