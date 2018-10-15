@@ -1328,6 +1328,7 @@ acSetNumThreads() {
         self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name])
         _, out, _ = self.admin.run_icommand(['iadmin', 'lua', username])
         self.assertEqual(len(out.splitlines()), 1, 'iadmin lua returned more than one line')
+        self.admin.assert_icommand(['iadmin', 'rmuser', username])
 
     def test_aua_multiple_distinguished_name__issue_3620(self):
         username = 'issue_3620_user'
@@ -1341,6 +1342,7 @@ acSetNumThreads() {
         self.admin.assert_icommand(['iadmin', 'aua', username, authentication_name_1])
         _, out, _ = self.admin.assert_icommand(['iadmin', 'lua', username], 'STDOUT_MULTILINE', [username + ' ' + authentication_name_1, username + ' ' + authentication_name_2])
         self.assertEqual(len(out.splitlines()), 2, 'iadmin lua did not return exactly two lines')
+        self.admin.assert_icommand(['iadmin', 'rmuser', username])
 
 class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
 
@@ -1468,4 +1470,6 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         # make sure rebalance visibility metadata has been populated before removing it
         check_and_remove_rebalance_visibility_metadata(10); # try 10 times
         # fire parallel rebalance
+        self.admin.assert_icommand("iadmin modresc repl rebalance")
+        # clean up any leftover resc_objcount (only in 4.1)
         self.admin.assert_icommand("iadmin modresc repl rebalance")
