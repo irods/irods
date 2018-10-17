@@ -713,7 +713,7 @@ irods::error fileModified(
         else {
 
             // =-=-=-=-=-=-=-
-            // make the call to the "open" interface
+            // make the call to the "modified" interface
             resc = boost::dynamic_pointer_cast< irods::resource >( ptr );
             ret  = resc->call( _comm, irods::RESOURCE_OP_MODIFIED, _object );
             if ( !ret.ok() ) {
