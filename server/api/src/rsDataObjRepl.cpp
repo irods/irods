@@ -799,6 +799,8 @@ dataObjOpenForRepl(
         // set a open operation
         op_name = irods::WRITE_OPERATION;
 
+        L1desc[destL1descInx].openType = OPEN_FOR_WRITE_TYPE;
+
         /* update an existing copy */
         if ( inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0 ) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
@@ -827,6 +829,8 @@ dataObjOpenForRepl(
         // =-=-=-=-=-=-=-
         // set a creation operation
         op_name = irods::CREATE_OPERATION;
+
+        L1desc[destL1descInx].openType = CREATE_TYPE;
 
         initDataObjInfoForRepl( myDestDataObjInfo, srcDataObjInfo, _root_resc_name );
         replStatus = srcDataObjInfo->replStatus;
