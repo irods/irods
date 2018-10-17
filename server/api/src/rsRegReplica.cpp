@@ -220,7 +220,11 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
         }
     }
     else {
+        // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
+        addKeyVal(&regReplicaInp->condInput, IN_REPL_KW, "" );
         status = rcRegReplica( rodsServerHost->conn, regReplicaInp );
+        // Remove the keyword as we will want to replicate on this server (the consumer)
+        rmKeyVal(&regReplicaInp->condInput, IN_REPL_KW);
         if ( status >= 0 ) {
             regReplicaInp->destDataObjInfo->replNum = status;
         }
@@ -237,7 +241,9 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
              return _e.code();
         }
 
-        status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+        if (!getValByKey(&regReplicaInp->condInput, IN_REPL_KW)) {
+            status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+        }
     }
 
     return status;
@@ -323,7 +329,10 @@ int _call_file_modified_for_replica(
     if ( admin_kw != NULL ) {
         addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );;
     }
-
+    const auto open_type{getValByKey(&regReplicaInp->condInput, OPEN_TYPE_KW)};
+    if (open_type) {
+        addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
+    }
     irods::error ret = fileModified( rsComm, file_obj );
     if ( !ret.ok() ) {
         std::stringstream msg;

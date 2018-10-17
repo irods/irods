@@ -80,7 +80,6 @@
 const std::string NUM_REPL_KW( "num_repl" );
 const std::string READ_KW( "read" );
 const std::string READ_RANDOM_POLICY( "random" );
-const std::string OPERATION_KW( "operation" );
 
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
@@ -121,34 +120,20 @@ irods::error replGetNextRescInHier(
     const irods::hierarchy_parser& _parser,
     irods::plugin_context& _ctx,
     irods::resource_ptr& _ret_resc ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    std::string this_name;
-    ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, this_name );
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Failed to get resource name from property map.";
-        result = ERROR( -1, msg.str() );
+    std::string this_name{};
+    auto ret{_ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, this_name)};
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    else {
-        std::string child;
-        ret = _parser.next( this_name, child );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to get the next resource in the hierarchy.";
-            result = ERROR( -1, msg.str() );
-        }
-        else {
-            irods::resource_child_map* cmap_ref;
-            _ctx.prop_map().get< irods::resource_child_map* >(
-                irods::RESC_CHILD_MAP_PROP,
-                cmap_ref );
-            _ret_resc = ( *cmap_ref )[child].second;
-        }
+    std::string child{};
+    ret = _parser.next(this_name, child);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    return result;
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
+    _ret_resc = (*cmap_ref)[child].second;
+    return SUCCESS();
 }
 
 /// @brief Returns true if the specified object is in the specified object list
@@ -156,11 +141,9 @@ bool replObjectInList(
     const object_list_t& _object_list,
     const irods::file_object_ptr _object,
     irods::object_oper& _rtn_oper ) {
-    bool result = false;
-    object_list_t::const_iterator it;
-    for ( it = _object_list.begin(); !result && it != _object_list.end(); ++it ) {
-        irods::object_oper oper = *it;
-        if ( oper.object() == ( *_object.get() ) ) {
+    bool result{};
+    for (auto& oper : _object_list) {
+        if (oper.object() == (*_object.get())) {
             _rtn_oper = oper;
             result = true;
         }
@@ -222,46 +205,58 @@ irods::error replUpdateObjectAndOperProperties(
 
 irods::error get_selected_hierarchy(
     irods::plugin_context& _ctx,
-    std::string& _hier_string,
-    std::string& _root_resc) {
-    irods::hierarchy_parser selected_parser;
-    std::string operation;
-    irods::error ret{_ctx.prop_map().get<irods::hierarchy_parser>(HIERARCHY_PROP, selected_parser)};
+    irods::hierarchy_parser& _out_parser) {
+    // Need to make sure selected hierarchy contains this resource
+    std::string name{};
+    const auto ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name);
     if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to get the parser for the selected resource hierarchy.") %
-                    __FUNCTION__).str(), ret );
+        return PASS(ret);
     }
 
-    ret = selected_parser.str(_hier_string);
-    if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to get the hierarchy string from the parser.") %
-                    __FUNCTION__).str(), ret );
+    // Get selected hier from RESC_HIER_STR_KW, set at time of resolution
+    irods::hierarchy_parser selected_parser{};
+    bool resc_hier_in_keyword{};
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
+    if (file_obj->l1_desc_idx() > 0) {
+        const auto hier_str{getValByKey(&L1desc[file_obj->l1_desc_idx()].dataObjInp->condInput, RESC_HIER_STR_KW)};
+        if (!hier_str) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR,
+                         (boost::format(
+                          "[%s] - No hierarchy string found in keywords for file object.") %
+                          __FUNCTION__).str().c_str());
+        }
+        selected_parser.set_string(hier_str);
+        resc_hier_in_keyword = selected_parser.resc_in_hier(name);
     }
 
-    ret = selected_parser.first_resc(_root_resc);
-    if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to get the root resource from the parser.") %
-                    __FUNCTION__).str(), ret );
+    // Get resc hier from the file object directly if not in RESC_HIER_STR_KW
+    if (!resc_hier_in_keyword) {
+        const auto& selected_hier = file_obj->resc_hier();
+        if (selected_hier.empty()) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR,
+                         (boost::format(
+                          "[%s] - file object does not have a resource hierarchy.") %
+                          __FUNCTION__).str().c_str());
+        }
+        selected_parser.set_string(selected_hier);
+        if (!selected_parser.resc_in_hier(name)) {
+            return ERROR(HIERARCHY_ERROR,
+                         (boost::format(
+                          "[%s] - Replicating a file object which does not exist in this hierarchy.") %
+                          __FUNCTION__).str().c_str());
+        }
     }
+
+    _out_parser = selected_parser;
     return SUCCESS();
 }
 
-irods::error replReplicateCreateWrite(irods::plugin_context& _ctx) {
+irods::error replicate_create_write_operation(irods::plugin_context& _ctx) {
     object_list_t object_list_to_repl{};
     irods::error ret{_ctx.prop_map().get<object_list_t>(OBJECT_LIST_PROP, object_list_to_repl)};
     if (!ret.ok() && KEY_NOT_FOUND != ret.code()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to get object list for replication.") %
-                    __FUNCTION__).str(), ret );
+        return PASS(ret);
     }
-    
     if (object_list_to_repl.empty()) {
         return SUCCESS();
     }
@@ -269,30 +264,39 @@ irods::error replReplicateCreateWrite(irods::plugin_context& _ctx) {
     child_list_t child_list{};
     ret = _ctx.prop_map().get<child_list_t>(CHILD_LIST_PROP, child_list);
     if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to get child list for replication.") %
-                    __FUNCTION__).str(), ret );
+        return PASS(ret);
+    }
+    if (child_list.empty()) {
+        return SUCCESS();
     }
 
     // get the root resource name as well as the child hierarchy string
-    std::string root_resc{};
+    irods::hierarchy_parser selected_parser{};
+    ret = get_selected_hierarchy(_ctx, selected_parser);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
     std::string child{};
-    ret = get_selected_hierarchy(_ctx, child, root_resc);
+    ret = selected_parser.str(child);
     if (!ret.ok()) {
         return PASSMSG(
                    (boost::format(
-                    "[%s] - Failed to determine the root resource and selected hierarchy.") %
+                    "[%s] - Failed to get the hierarchy string from the parser.") %
+                    __FUNCTION__).str(), ret );
+    }
+    std::string root_resc{};
+    ret = selected_parser.first_resc(root_resc);
+    if (!ret.ok()) {
+        return PASSMSG(
+                   (boost::format(
+                    "[%s] - Failed to get the root resource from the parser.") %
                     __FUNCTION__).str(), ret );
     }
 
     std::string name{};
     ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name);
     if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Could not determine resource name.") %
-                    __FUNCTION__).str(), ret );
+        return PASS(ret);
     }
 
     irods::create_write_replicator oper_repl{root_resc, name, child};
@@ -307,13 +311,10 @@ irods::error replReplicateCreateWrite(irods::plugin_context& _ctx) {
 
     ret = _ctx.prop_map().set<object_list_t>(OBJECT_LIST_PROP, object_list_to_repl);
     if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to update the object list in the properties.") %
-                    __FUNCTION__).str(), ret );
+        return PASS(ret);
     }
     return SUCCESS();
-}
+} // replicate_create_write_operation
 
 //////////////////////////////////////////////////////////////////////
 // Actual operations
@@ -326,7 +327,7 @@ irods::error repl_file_registered(
     ret = replCheckParams< irods::file_object >( _ctx );
     if ( ( result = ASSERT_PASS( ret, "Error checking passed paramters." ) ).ok() ) {
 
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );;
+        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
         irods::hierarchy_parser parser;
         parser.set_string( file_obj->resc_hier() );
         irods::resource_ptr child;
@@ -376,57 +377,230 @@ irods::error repl_file_unregistered(
     return result;
 }
 
-// Called when a files entry is modified in the ICAT
-irods::error repl_file_modified(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    ret = replCheckParams< irods::file_object >( _ctx );
-    if ( ( result = ASSERT_PASS( ret, "Error checking passed parameters." ) ).ok() ) {
+irods::error proc_child_list_for_create_policy(irods::plugin_context& _ctx) {
+    size_t num_repl{};
+    irods::error ret = _ctx.prop_map().get<size_t>(NUM_REPL_KW, num_repl);
+    if(!ret.ok()) {
+        return SUCCESS();
+    }
 
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
-        irods::hierarchy_parser parser;
-        parser.set_string( file_obj->resc_hier() );
-        irods::resource_ptr child;
-        ret = replGetNextRescInHier( parser, _ctx, child );
-        if ( ( result = ASSERT_PASS( ret, "Failed to get the next resource in hierarchy." ) ).ok() ) {
+    child_list_t new_list{};
+    if(num_repl <= 1) {
+        ret = _ctx.prop_map().set<child_list_t>(CHILD_LIST_PROP, new_list);
+        if(!ret.ok()) {
+            return PASS(ret);
+        }
+        return SUCCESS();
+    }
 
-            ret = child->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
-            if ( ( result = ASSERT_PASS( ret, "Failed while calling child operation." ) ).ok() ) {
+    child_list_t child_list{};
+    ret = _ctx.prop_map().get<child_list_t>(CHILD_LIST_PROP, child_list);
+    if(!ret.ok()) {
+        return PASS(ret);
+    }
 
-                // only call the replication mechanism on create and write operations
-                std::string operation;
-                _ctx.prop_map().get<std::string>(OPERATION_KW, operation);
-                if(irods::CREATE_OPERATION != operation && irods::WRITE_OPERATION != operation) {
-                    return SUCCESS();
-                }
+    // decrement num_repl by 1 to count first replica
+    num_repl--;
 
-                irods::hierarchy_parser sub_parser;
-                sub_parser.set_string( file_obj->in_pdmo() );
-                std::string name;
-                ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, name );
-                if ( ( result = ASSERT_PASS( ret, "Failed to get the resource name." ) ).ok() ) {
-                    if ( !sub_parser.resc_in_hier( name ) ) {
+    if(num_repl < child_list.size()) {
+        bool pick_done{};
+        std::vector<size_t> picked_indicies{};
+        while(!pick_done) {
+             size_t rand_index{irods::getRandom<size_t>() % child_list.size()};
+             if(std::find(
+                 picked_indicies.begin(),
+                 picked_indicies.end(),
+                 rand_index) == picked_indicies.end()) {
+                 new_list.push_back(child_list[rand_index]);
+                 picked_indicies.push_back(rand_index);
+                 if(picked_indicies.size() >= num_repl) {
+                     pick_done = true;
+                 }
+             }
+        }
 
-                        std::string operation;
-                        if ( ( ret = _ctx.prop_map().get< std::string >( OPERATION_TYPE_PROP, operation ) ).ok() ) {
-                            if ( !( ret = replUpdateObjectAndOperProperties( _ctx, operation ) ).ok() ) {
-                                std::stringstream msg;
-                                msg << "Failed to select an appropriate child.";
-                                result = PASSMSG( msg.str(), ret );
-                            }
-                        }
+        // if we have an empty new_list, simply keep the old one
+        if(0 == new_list.size()) {
+            return SUCCESS();
+        }
 
-                        ret = replReplicateCreateWrite( _ctx );
-                        result = ASSERT_PASS( ret, "Failed to replicate create/write operation for object: \"%s\".",
-                                              file_obj->logical_path().c_str() );
-                    }
-                }
-            }
+        ret = _ctx.prop_map().set<child_list_t>(CHILD_LIST_PROP, new_list);
+        if(!ret.ok()) {
+            return PASS(ret);
         }
     }
-    return result;
-}
+
+    return SUCCESS();
+
+} // proc_child_list_for_create_policy
+
+irods::error create_replication_list(
+    irods::plugin_context& _ctx,
+    const std::string& operation) {
+    // Get selected hierarchy parser
+    irods::hierarchy_parser selected_parser{};
+    irods::error ret = get_selected_hierarchy(_ctx, selected_parser);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // Get hierarchy for current resource for use when resolving children
+    std::string name{};
+    ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+    std::string current_resc_hier_str{};
+    ret = selected_parser.str(current_resc_hier_str, name);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // Get list of children for this resource 
+    irods::resource_child_map* cmap_ref;
+    _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
+    if (cmap_ref->empty()) {
+        rodsLog(LOG_NOTICE, "[%s] - child map empty - nothing to do", __FUNCTION__);
+        return SUCCESS();
+    }
+
+    // Get current hostname for vote
+    char host_name_str[MAX_NAME_LEN];
+    if (gethostname(host_name_str, MAX_NAME_LEN) < 0) {
+        return ERROR(SYS_GET_HOSTNAME_ERR, "failed in gethostname");
+    }
+    const std::string host_name(host_name_str);
+
+    // Loop over children and create a list of hierarchies to which objects will be replicated
+    float out_vote{};
+    child_list_t repl_vector{};
+    for (auto& entry : *cmap_ref) {
+        auto child{entry.second.second};
+        std::string child_name{};
+        ret = child->get_property<std::string>(irods::RESOURCE_NAME, child_name);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+
+        // Don't repl to the selected hier
+        if (selected_parser.resc_in_hier(child_name)) {
+            continue;
+        }
+
+        // Resolve child and add to repl list based on vote
+        irods::hierarchy_parser parser{};
+        parser.set_string(current_resc_hier_str);
+        ret = child->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+                  _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), &operation, &host_name, &parser, &out_vote );
+        if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
+            return PASSMSG((boost::format(
+                            "[%s] - Failed calling redirect on the child \"%s\".") %
+                            __FUNCTION__ % entry.first).str(), ret);
+        }
+        else if (out_vote > 0.0) {
+            repl_vector.push_back(parser);
+        }
+    }
+
+    // add the resulting vector as a property of the resource
+    ret = _ctx.prop_map().set<child_list_t>(CHILD_LIST_PROP, repl_vector);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // Determine which children of the child list will receive replicas
+    if (irods::CREATE_OPERATION == operation) {
+        ret = proc_child_list_for_create_policy(_ctx);
+        if (!ret.ok()) {
+            return PASS(ret);
+        }
+    }
+
+    return SUCCESS();
+} // create_replication_list
+
+// Called when a files entry is modified in the ICAT
+irods::error repl_file_modified(irods::plugin_context& _ctx) {
+    // Make sure context is valid
+    irods::error ret{replCheckParams<irods::file_object>(_ctx)};
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // Get next resource on which to call file_modified
+    irods::file_object_ptr file_obj{boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco())};
+    irods::hierarchy_parser parser{};
+    parser.set_string(file_obj->resc_hier());
+    irods::resource_ptr child{};
+    ret = replGetNextRescInHier(parser, _ctx, child);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // Call file_modified on next resource in hierarchy
+    ret = child->call( _ctx.comm(), irods::RESOURCE_OP_MODIFIED, _ctx.fco() );
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+
+    // If this resource is in PDMO subparser, the operation is for someone else
+    std::string name;
+    ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+    irods::hierarchy_parser sub_parser{};
+    sub_parser.set_string(file_obj->in_pdmo());
+    if (sub_parser.resc_in_hier(name)) {
+        return SUCCESS();
+    }
+
+    // Get operation type based on reason for opening the file
+    const auto open_type_str{getValByKey(&file_obj->cond_input(), OPEN_TYPE_KW)};
+    if (nullptr == open_type_str) {
+        irods::log(LOG_DEBUG,
+                   (boost::format("[%s] - no OPEN_TYPE_KW value provided") %
+                    __FUNCTION__).str());
+        return SUCCESS();
+    }
+
+    std::string operation{};
+    try {
+        switch(std::stoi(open_type_str)) {
+            case CREATE_TYPE:
+                operation = irods::CREATE_OPERATION;
+                break;
+            case OPEN_FOR_WRITE_TYPE:
+                operation = irods::WRITE_OPERATION;
+                break;
+            default:
+                throw std::invalid_argument(open_type_str);
+        }
+    }
+    catch (const std::invalid_argument&) {
+        return ERROR(SYS_INVALID_INPUT_PARAM,
+                     (boost::format("[%s] - invalid OPEN_TYPE_KW value provided:[%s]") %
+                      __FUNCTION__ % open_type_str).str());
+    }
+
+    // Create child list and list of operations to replicate - then, replicate
+    ret = create_replication_list(_ctx, operation);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+    ret = replUpdateObjectAndOperProperties(_ctx, operation);
+    if (!ret.ok()) {
+        return PASS(ret);
+    }
+    ret = replicate_create_write_operation(_ctx);
+    if (!ret.ok()) {
+        return PASSMSG((boost::format(
+                    "[%s] - Failed to replicate create/write operation for object: \"%s\".") %
+                    __FUNCTION__ % file_obj->logical_path()).str(), ret);
+    }
+
+    return SUCCESS();
+} // repl_file_modified
 
 // =-=-=-=-=-=-=-
 // interface for POSIX create
@@ -1189,96 +1363,48 @@ irods::error repl_file_sync_to_arch(
 } // repl_file_sync_to_arch
 
 /// @brief Adds the current resource to the specified resource hierarchy
-irods::error replAddSelfToHierarchy(
+irods::error add_self_to_hierarchy(
     irods::plugin_context& _ctx,
     irods::hierarchy_parser& _parser ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
     std::string name;
-    ret = _ctx.prop_map().get<std::string>( irods::RESOURCE_NAME, name );
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Failed to get the resource name.";
-        result = PASSMSG( msg.str(), ret );
+    auto ret{_ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, name)};
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    else {
-        ret = _parser.add_child( name );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to add resource to hierarchy.";
-            result = PASSMSG( msg.str(), ret );
-        }
+    ret = _parser.add_child(name);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    return result;
-}
+    return SUCCESS();
+} // add_self_to_hierarchy
 
 /// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
-irods::error replRedirectToChildren(
+irods::error resolve_children(
     irods::plugin_context& _ctx,
     const std::string*             _operation,
     const std::string*             _curr_host,
     irods::hierarchy_parser&       _parser,
     redirect_map_t&                _redirect_map ) {
-    irods::error result = SUCCESS();
-    irods::error ret;
-    irods::resource_child_map::iterator it;
-    float out_vote;
 
     irods::resource_child_map* cmap_ref;
-    _ctx.prop_map().get< irods::resource_child_map* >(
-            irods::RESC_CHILD_MAP_PROP,
-            cmap_ref );
+    _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
 
-    for ( it = cmap_ref->begin(); result.ok() && it != cmap_ref->end(); ++it ) {
-        irods::hierarchy_parser parser( _parser );
-        irods::resource_ptr child = it->second.second;
-        ret = child->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
-                  _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _operation, _curr_host, &parser, &out_vote );
-        if ( !ret.ok() && ret.code() != CHILD_NOT_FOUND ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed calling redirect on the child \"" << it->first << "\"";
-            result = PASSMSG( msg.str(), ret );
+    float out_vote{};
+    for (auto& entry : *cmap_ref) {
+        auto parser{_parser};
+        const auto ret{entry.second.second->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
+                        _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _operation, _curr_host, &parser, &out_vote)};
+        if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
+            return PASSMSG((boost::format(
+                            "[%s] - Failed calling redirect on the child \"%s\".") %
+                            __FUNCTION__ % entry.first).str(), ret);
         }
         else {
-            _redirect_map.insert( std::pair<float, irods::hierarchy_parser>( out_vote, parser ) );
+            _redirect_map.insert(std::pair<float, irods::hierarchy_parser>(out_vote, parser));
         }
     }
-    return result;
-}
-
-/// @brief Creates a list of hierarchies to which this operation must be replicated, all children except the one on which we are
-/// operating.
-irods::error replCreateChildReplList(
-    irods::plugin_context& _ctx,
-    const redirect_map_t& _redirect_map) {
-    // loop over all of the children in the map except the first (selected) and add them to a vector
-    child_list_t repl_vector;
-    redirect_map_t::const_iterator it = _redirect_map.begin();
-    for ( ++it; it != _redirect_map.end(); ++it ) {
-        // JMC - need to consider the vote here as if it is 0 the child
-        //       is down and should not get a replica
-        std::string hier;
-        it->second.str( hier );
-        if ( it->first > 0 ) {
-            irods::hierarchy_parser parser = it->second;
-            repl_vector.push_back( parser );
-        }
-    }
-
-    // add the resulting vector as a property of the resource
-    irods::error ret = _ctx.prop_map().set<child_list_t>( CHILD_LIST_PROP, repl_vector );
-    if ( !ret.ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to store the repl child list as a property.") %
-                    __FUNCTION__).str(), ret );
-    }
-
     return SUCCESS();
-}
+} // resolve_children
 
 /// @brief honor the read context string keyword if present
 irods::error process_redirect_map_for_random_open(
@@ -1304,7 +1430,7 @@ irods::error process_redirect_map_for_random_open(
 } // process_redirect_map_for_random_open
 
 /// @brief Selects a child from the vector of parsers based on host access
-irods::error replSelectChild(
+irods::error select_child(
     irods::plugin_context&   _ctx,
     const std::string&       _operation,
     const redirect_map_t&    _redirect_map,
@@ -1316,144 +1442,27 @@ irods::error replSelectChild(
         return SUCCESS();
     }
 
-    irods::error ret{SUCCESS()};
+    // Enact read policy if specified
     if (irods::OPEN_OPERATION == _operation) {
-        std::string read_policy;
-        ret = _ctx.prop_map().get<std::string>(READ_KW, read_policy);
-        if(ret.ok() && READ_RANDOM_POLICY == read_policy) {
-            ret = process_redirect_map_for_random_open(
-                      _redirect_map,
-                      _out_parser,
-                      _out_vote);
-            if(!ret.ok()) {
+        std::string read_policy{};
+        auto ret{_ctx.prop_map().get<std::string>(READ_KW, read_policy)};
+        if (ret.ok() && READ_RANDOM_POLICY == read_policy) {
+            ret = process_redirect_map_for_random_open(_redirect_map, _out_parser, _out_vote);
+            if (!ret.ok()) {
                 return PASS(ret);
             }
             return SUCCESS();
         }
     }
 
+    // Select hierarchy and store vote value
     const auto& it{_redirect_map.begin()};
     const auto& vote{it->first};
     const auto& parser{it->second};
     *_out_parser = parser;
     *_out_vote = vote;
-    if (0.0 == vote) {
-        return SUCCESS();
-    }
-
-    ret = replCreateChildReplList(_ctx, _redirect_map);
-    if ( !ret.ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to add unselected children to the replication list.") %
-                    __FUNCTION__).str(), ret);
-    }
-
-    ret = _ctx.prop_map().set<irods::hierarchy_parser>(HIERARCHY_PROP, parser);
-    if (!ret.ok()) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to add hierarchy property to resource.") %
-                    __FUNCTION__).str(), ret);
-    }
     return SUCCESS();
-}
-
-/// @brief Make sure the requested operation on the requested file object is valid
-irods::error replValidOperation(
-    irods::plugin_context& _ctx ) {
-    irods::error result = SUCCESS();
-    // cast the first class object to a file object
-    try {
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( _ctx.fco() );
-        // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
-        if ( false && file_obj->repl_requested() >= 0 ) { // For migration we no longer have this restriction but will be added back later - harry
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Requesting replica: " << file_obj->repl_requested();
-            msg << "\tCannot request specific replicas from replicating resource.";
-            result = ERROR( INVALID_OPERATION, msg.str() );
-        }
-
-        else {
-            // if the api commands involve replication we have to error out since managing replicas is our job
-            char* in_repl = getValByKey( &file_obj->cond_input(), IN_REPL_KW );
-            if ( false && in_repl != NULL ) { // For migration we no longer have this restriction but might be added later. - harry
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Using repl or trim commands on a replication resource is not allowed. ";
-                msg << "Managing replicas is the job of the replication resource.";
-                result = ERROR( INVALID_OPERATION, msg.str() );
-            }
-        }
-    }
-    catch ( const std::bad_cast& ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Invalid first class object.";
-        result = ERROR( INVALID_FILE_OBJECT, msg.str() );
-    }
-
-
-    return result;
-}
-
-irods::error proc_child_list_for_create_policy(irods::plugin_context& _ctx) {
-    size_t num_repl = 0;
-    irods::error ret = _ctx.prop_map().get<size_t>(NUM_REPL_KW, num_repl);
-    if( !ret.ok() ) {
-        return SUCCESS();
-    }
-
-    child_list_t new_list;
-    if(num_repl <= 1) {
-        ret = _ctx.prop_map().set<child_list_t>(CHILD_LIST_PROP, new_list);
-        if(!ret.ok()) {
-            return PASS(ret);
-        }
-        return SUCCESS();
-    }
-
-    child_list_t child_list;
-    ret = _ctx.prop_map().get<child_list_t>(CHILD_LIST_PROP, child_list);
-    if(!ret.ok()) {
-        return PASS(ret);
-    }
-
-    // decrement num_repl by 1 to count first replica
-    num_repl--;
-
-    if( num_repl < child_list.size() ) {
-        bool pick_done = false;
-        std::vector<size_t> picked_indicies;
-        while( !pick_done ) {
-             size_t rand_index = irods::getRandom<size_t>() % child_list.size();
-             if(std::find(
-                 picked_indicies.begin(),
-                 picked_indicies.end(),
-                 rand_index) == picked_indicies.end()) {
-                 new_list.push_back(child_list[rand_index]);
-                 picked_indicies.push_back(rand_index);
-                 if(picked_indicies.size() >= num_repl) {
-                     pick_done = true;
-                 }
-             }
-        }
-
-        // if we have an empty new_list, simply keep the old one
-        if(new_list.size() == 0) {
-            return SUCCESS();
-        }
-
-        ret = _ctx.prop_map().set<child_list_t>(CHILD_LIST_PROP, new_list);
-        if(!ret.ok()) {
-            return PASS(ret);
-        }
-    }
-
-    return SUCCESS();
-
-} // proc_child_list_for_create_policy
+} // select_child
 
 /// @brief Determines which child should be used for the specified operation
 irods::error repl_file_resolve_hierarchy(
@@ -1462,63 +1471,32 @@ irods::error repl_file_resolve_hierarchy(
     const std::string*       _curr_host,
     irods::hierarchy_parser* _inout_parser,
     float*                   _out_vote ) {
-    if (NULL == _operation || NULL == _curr_host || NULL == _inout_parser || NULL == _out_vote) {
-        return ERROR( SYS_INVALID_INPUT_PARAM,
-                      (boost::format(
-                       "[%s]: null parameters passed to redirect") %
-                       __FUNCTION__).str().c_str() ); 
+    if (nullptr == _operation || nullptr == _curr_host || nullptr == _inout_parser || nullptr == _out_vote) {
+        return ERROR(SYS_INVALID_INPUT_PARAM,
+                     (boost::format(
+                      "[%s]: null parameters passed to redirect") %
+                      __FUNCTION__).str().c_str() ); 
     }
 
-    // store the operation for later decision making - issue #3525
-    _ctx.prop_map().set<std::string>(OPERATION_KW, *_operation);
-
-    irods::error ret;
-    irods::hierarchy_parser parser = *_inout_parser;
-    redirect_map_t redirect_map;
-    // Make sure this is a valid repl operation.
-    if ( !( ret = replValidOperation( _ctx ) ).ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Invalid operation on replicating resource.") %
-                    __FUNCTION__).str(), ret );
-    }
     // add ourselves to the hierarchy parser
-    else if ( !( ret = replAddSelfToHierarchy( _ctx, parser ) ).ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to add ourselves to the resource hierarchy.") %
-                    __FUNCTION__).str(), ret );
+    auto ret{add_self_to_hierarchy(_ctx, *_inout_parser)};
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    // call redirect on each child with the appropriate parser
-    else if ( !( ret = replRedirectToChildren( _ctx, _operation, _curr_host, parser, redirect_map ) ).ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to redirect to all children.") %
-                    __FUNCTION__).str(), ret );
+
+    // Resolve each one of our children and put into redirect_map
+    redirect_map_t redirect_map;
+    ret = resolve_children(_ctx, _operation, _curr_host, *_inout_parser, redirect_map);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    // foreach child parser determine the best to access based on host
-    else if ( !( ret = replSelectChild( _ctx, *_operation, redirect_map, _inout_parser, _out_vote ) ).ok() ) {
-        return PASSMSG(
-                   (boost::format(
-                    "[%s] - Failed to select an appropriate child.") %
-                    __FUNCTION__).str(), ret );
+
+    // Select a resolved hierarchy from redirect_map for the operation
+    ret = select_child(_ctx, *_operation, redirect_map, _inout_parser, _out_vote);
+    if (!ret.ok()) {
+        return PASS(ret);
     }
-    else if ( irods::WRITE_OPERATION  == ( *_operation ) ||
-              irods::CREATE_OPERATION == ( *_operation ) ) {
-        ret = _ctx.prop_map().set<std::string>(OPERATION_TYPE_PROP, *_operation);
-        if (!ret.ok()) {
-            return PASSMSG((boost::format(
-                            "[%s] - Failed to set operation_type property") %
-                            __FUNCTION__).str(), ret);
-        }
-        // Determine which children of the child list will receive replicas
-        if (irods::CREATE_OPERATION == *_operation) {
-            ret = proc_child_list_for_create_policy(_ctx);
-            if (!ret.ok()) {
-                return PASS(ret);
-            }
-        }
-    }
+
     return SUCCESS();
 } // repl_file_resolve_hierarchy
 
@@ -1591,11 +1569,6 @@ irods::error repl_file_notify(
     irods::plugin_context& _ctx,
     const std::string*               _opr ) {
     irods::error result = SUCCESS();
-    if ( irods::CREATE_OPERATION == ( *_opr ) ||
-            irods::WRITE_OPERATION  == ( *_opr ) ) {
-        result = ASSERT_PASS( _ctx.prop_map().set< std::string >( OPERATION_TYPE_PROP, *_opr ), "failed to set operation_type property" );
-    }
-
     irods::error ret = replCheckParams< irods::file_object >( _ctx );
     if ( !ret.ok() ) {
         std::stringstream msg;
