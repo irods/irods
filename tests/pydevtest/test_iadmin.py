@@ -1284,7 +1284,7 @@ acSetNumThreads() {
 
             debug_message = 'DEBUG: loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
             debug_message_count = lib.count_occurrences_of_string_in_log('server', debug_message, start_index=initial_size_of_server_log)
-            assert 1 == debug_message_count, debug_message_count
+            self.assertTrue(1 == debug_message_count, msg='Found {} messages in log but expected 1'.format(debug_message_count))
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         lib.restart_irods_server()
