@@ -91,6 +91,7 @@
 /* DATA_SIZE_KW already defined */
 #define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */
 #define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */
+#define OPEN_TYPE_KW   		"openType"
 #define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 #define NO_TRANSLATE_LINKPT_KW	"noTranslateMntpt"  /* don't translate mntpt */

@@ -484,6 +484,9 @@ regSubfile( rsComm_t *rsComm, const char *_resc_name, const char* rescHier,
                 rsComm,
                 &dataObjInfo ) );
 
+        std::stringstream open_type;
+        open_type << CREATE_TYPE;
+        addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type.str().c_str());
         irods::error ret = fileModified( rsComm, file_obj );
         if ( !ret.ok() ) {
             std::stringstream msg;

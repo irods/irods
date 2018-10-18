@@ -39,11 +39,19 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 #endif
     }
     else {
+        // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
+        addKeyVal( modDataObjMetaInp->regParam, IN_REPL_KW, "" );
         status = rcModDataObjMeta( rodsServerHost->conn, modDataObjMetaInp );
+        // Remove the keyword as we will want to replicate on this server (the consumer)
+        rmKeyVal(modDataObjMetaInp->regParam, IN_REPL_KW);
     }
 
     if ( status >= 0 ) {
-        status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+        char* open_type = getValByKey(modDataObjMetaInp->regParam, OPEN_TYPE_KW);
+        if (!getValByKey(modDataObjMetaInp->regParam, IN_REPL_KW) && open_type &&
+            (OPEN_FOR_WRITE_TYPE == std::atoi(open_type) || CREATE_TYPE == std::atoi(open_type))) {
+            status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+        }
     }
 
     return status;
@@ -213,7 +221,11 @@ int _call_file_modified_for_modification(
             char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
             if ( pdmo_kw != NULL ) {
                 file_obj->in_pdmo( pdmo_kw );
+            }
 
+            char* open_type = getValByKey(regParam, OPEN_TYPE_KW);
+            if ( open_type != NULL ) {
+                addKeyVal( (keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type );
             }
 
             irods::error ret = fileModified( rsComm, file_obj );
@@ -233,10 +245,15 @@ int _call_file_modified_for_modification(
         freeAllDataObjInfo( dataObjInfoHead );
     }
     else {
-        irods::file_object_ptr file_obj(
-            new irods::file_object(
-                rsComm,
-                dataObjInfo ) );
+        dataObjInp_t dataObjInp;
+        bzero( &dataObjInp, sizeof( dataObjInp ) );
+        rstrcpy( dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
+
+        // Construct file_obj twice because ctor gives some info that factory does not
+        irods::file_object_ptr file_obj(new irods::file_object(rsComm, dataObjInfo));
+        irods::error fac_err = file_object_factory( rsComm, &dataObjInp, file_obj);
+        // Factory overwrites rescHier with the resource which holds replica 0 - put it back
+        file_obj->resc_hier(dataObjInfo->rescHier);
 
         char* admin_kw = getValByKey( regParam, ADMIN_KW );
         if ( admin_kw != NULL ) {
@@ -246,6 +263,11 @@ int _call_file_modified_for_modification(
         char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
         if ( pdmo_kw != NULL ) {
             file_obj->in_pdmo( pdmo_kw );
+        }
+
+        char* open_type = getValByKey(regParam, OPEN_TYPE_KW);
+        if ( open_type != NULL ) {
+            addKeyVal( (keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type );
         }
         irods::error ret = fileModified( rsComm, file_obj );
         if ( !ret.ok() ) {

@@ -185,8 +185,10 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         /* use L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY instead */
         /* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
+        std::stringstream open_type;
+        open_type << CREATE_TYPE;
+        addKeyVal(&dataObjInp->condInput, OPEN_TYPE_KW, open_type.str().c_str());
         l1descInx = _rsDataObjCreate( rsComm, dataObjInp );
-
     }
     else if ( rodsObjStatOut->specColl != NULL &&
               rodsObjStatOut->objType == UNKNOWN_OBJ_T ) {
@@ -236,6 +238,9 @@ rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
             parser.set_string( hier );
             parser.first_resc( top_resc );
             addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, top_resc.c_str() );
+            std::stringstream open_type;
+            open_type << OPEN_FOR_WRITE_TYPE;
+            addKeyVal(&dataObjInp->condInput, OPEN_TYPE_KW, open_type.str().c_str());
             l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
 
         }

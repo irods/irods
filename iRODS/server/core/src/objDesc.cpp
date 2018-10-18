@@ -170,6 +170,11 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
         rstrcpy( L1desc[l1descInx].in_pdmo, "", MAX_NAME_LEN );
     }
 
+    char* open_type = getValByKey(condInput, OPEN_TYPE_KW);
+    if (open_type) {
+        L1desc[l1descInx].openType = std::atoi(open_type);
+    }
+
     if ( dataObjInp != NULL ) {
         /* always repl the .dataObjInp */
         L1desc[l1descInx].dataObjInp = ( dataObjInp_t* )malloc( sizeof( dataObjInp_t ) );
