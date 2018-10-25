@@ -152,6 +152,14 @@ Adding the following two empty static PEP definitions to `core.re` will satisfy 
     acPostProcForParallelTransferReceived(*leaf_resource) {}
     acPostProcForDataCopyReceived(*leaf_resource) {}
 
+## Overwriting to a down resource
+
+!!! error
+    HIERARCHY_ERROR -1803000
+
+This error can occur when the connected server is determining where to route an incoming read or write. In the case of an `iput -f` where the data object has only a single replica on a resource that is currently marked down, the list of available locations to route is empty.
+
+This error can also occur if the client is asking to connect to a malformed location or resource hierarchy.
 
 ## Orphan file behavior
 
