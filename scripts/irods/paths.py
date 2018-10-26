@@ -25,6 +25,9 @@ def scripts_directory():
     return os.path.dirname(os.path.dirname(os.path.abspath(
         inspect.stack()[0][1])))
 
+def test_directory():
+    return os.path.join(scripts_directory(), 'irods', 'test')
+
 def server_config_path():
     return os.path.join(
         config_directory(),

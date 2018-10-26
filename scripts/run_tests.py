@@ -21,6 +21,7 @@ from irods.configuration import IrodsConfig
 import irods.test
 import irods.test.settings
 import irods.log
+import irods.paths
 
 
 def run_irodsctl_with_arg(arg):
@@ -58,9 +59,30 @@ def optparse_callback_federation(option, opt_str, value, parser):
     if irods.test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4,2):
         irods.test.settings.FEDERATION.REMOTE_VAULT = '/var/lib/irods/iRODS/Vault'
 
+def is_testfile(filename):
+    name, ext = os.path.splitext(filename)
+    return name.startswith('test_') and ext == 'py'
+
+def get_plugin_tests():
+    additional_plugin_tests = []
+    root = irods.paths.test_directory()
+    for curdir, _, entries in os.walk(os.path.join(root, 'plugins')):
+        for entry in entries:
+            module = '.'.join(os.path.split(os.path.relpath(curdir, root)))
+            if is_testfile(entry):
+                additional_plugin_tests.append('.'.join([module, os.path.splitext(filename)[0]]))
+    return additional_plugin_tests
+
 def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
-    suites = [loader.loadTestsFromName('irods.test.' + name) for name in names] # test files used to be standalone python packages, now that they are in the irods python module, they cannot be loaded directly, but must be loaded with the full module path
+    suites = []
+    for name in names:
+        full_name = add_class_path_prefix(name)
+        try:
+            suite = loader.loadTestsFromName(full_name)
+            suites.append(suite)
+        except AttributeError:
+            raise ImportError("Could not load '" + full_name + "'. Please ensure the file exists and all imports (including imports in imported files) are valid.")
     super_suite = unittest.TestSuite(suites)
     if xml_output:
         import xmlrunner
@@ -90,6 +112,7 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
     parser.add_option('--run_specific_test', metavar='dotted name')
     parser.add_option('--run_python_suite', action='store_true')
+    parser.add_option('--run_plugin_tests', action='store_true')
     parser.add_option('--include_auth_tests', action='store_true')
     parser.add_option('--run_devtesty', action='store_true')
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
@@ -127,6 +150,8 @@ if __name__ == '__main__':
                                  'test_resource_configuration', 'test_control_plane', 'test_native_rule_engine_plugin', 'test_quotas',
                                  'test_ils', 'test_irmdir', 'test_ichksum', 'test_iquest', 'test_imeta_help', 'test_irepl', 'test_itrim',
                                  'test_irm'])
+    if options.run_plugin_tests:
+        test_identifiers.extend(get_plugin_tests())
 
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output)
     print(results)
