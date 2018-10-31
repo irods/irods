@@ -69,7 +69,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_without_negotiation(self):
-        lib.run_command('openssl genrsa -out server.key')
+        lib.run_command('openssl genrsa -out server.key 1024')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
         lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
@@ -117,7 +117,7 @@ class Test_Auth(resource_suite.ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(configuration.TOPOLOGY_FROM_RESOURCE_SERVER or configuration.USE_SSL, 'Topo from resource or SSL')
     def test_authentication_PAM_with_server_params(self):
-        lib.run_command('openssl genrsa -out server.key')
+        lib.run_command('openssl genrsa -out server.key 1024')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
         lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed

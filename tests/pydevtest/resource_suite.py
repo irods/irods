@@ -258,7 +258,7 @@ class ResourceSuite(ResourceBase):
     ###################
     @unittest.skipIf(configuration.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_ssl_iput_with_rods_env(self):
-        lib.run_command('openssl genrsa -out server.key')
+        lib.run_command('openssl genrsa -out server.key 1024')
         lib.run_command('openssl req -batch -new -key server.key -out server.csr')
         lib.run_command('openssl req -batch -new -x509 -key server.key -out chain.pem -days 365')
         lib.run_command('openssl dhparam -2 -out dhparams.pem 1024')  # normally 2048, but smaller size here for speed
@@ -298,7 +298,7 @@ class ResourceSuite(ResourceBase):
         # set up client and server side for ssl handshake
 
         # server side certificate setup
-        os.system("openssl genrsa -out server.key 2> /dev/null")
+        os.system("openssl genrsa -out server.key 1024 2> /dev/null")
         os.system("openssl req -batch -new -key server.key -out server.csr")
         os.system("openssl req -batch -new -x509 -key server.key -out server.crt -days 365")
         os.system("mv server.crt chain.pem")
