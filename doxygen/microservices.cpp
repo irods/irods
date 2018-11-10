@@ -116,16 +116,6 @@
   - #msiPrintGenQueryOutToBuffer - Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T
   - #msiDeleteUnusedAVUs - Deletes unused AVUs from the iCAT
 
- \subsection msixmsg XMessaging System Microservices
-  - #msiXmsgServerConnect - Connects to the XMessage Server as designate by iRODS Environment file/variable
-  - #msiXmsgCreateStream - Creates a new Message Stream
-  - #msiCreateXmsgInp  - Creates an Xmsg packet, given all information values
-  - #msiSendXmsg - Sends an Xmsg packet
-  - #msiRcvXmsg -  Receives an Xmsg packet
-  - #msiXmsgServerDisConnect  - Disconnects from the XMessage Server
-  - #readXMsg - Reads a message packet from an XMsgStream
-  - #writeXMsg - Writes a given string into an XMsgStream
-
  \subsection msistring String Manipulation Microservices
   - #msiStrlen   - Returns the length of a given string
   - #msiStrchop  - Removes the last character of a given string

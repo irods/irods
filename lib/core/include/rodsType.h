@@ -15,6 +15,8 @@
 #endif
 #include "rodsDef.h"
 
+// clang-format off
+
 #if defined(osx_platform)
 typedef int64_t rodsLong_t;
 typedef u_int64_t rodsULong_t;
@@ -74,5 +76,7 @@ typedef struct rodsDirent {
     unsigned int    d_namlen;       /* length of d_name */
     char            d_name[DIR_LEN];
 } rodsDirent_t;
+
+// clang-format on
 
 #endif	/* RODS_TYPE_H__ */

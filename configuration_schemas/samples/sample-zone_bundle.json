@@ -265,7 +265,6 @@
                     "server_control_plane_timeout_milliseconds": 10000,
                     "server_port_range_end": 20199,
                     "server_port_range_start": 20000,
-                    "xmsg_port": 1279,
                     "zone_auth_scheme": "native",
                     "zone_key": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                     "zone_name": "tempZone",

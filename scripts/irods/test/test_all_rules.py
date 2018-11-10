@@ -256,22 +256,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                     # print("skipping " + rulefile + " ----- ERA")
                     return False
 
-            # XMSG
-            names_to_skip = [
-                "rulemsiCreateXmsgInp",
-                "rulemsiRcvXmsg",
-                "rulemsiSendXmsg",
-                "rulemsiXmsgCreateStream",
-                "rulemsiXmsgServerConnect",
-                "rulemsiXmsgServerDisConnect",
-                "rulereadXMsg",
-                "rulewriteXMsg",
-            ]
-            for n in names_to_skip:
-                if n in rulefile:
-                    # print("skipping " + rulefile + " ----- XMSG")
-                    return False
-
             # FTP
             names_to_skip = [
                 "rulemsiFtpGet",

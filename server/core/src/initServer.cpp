@@ -217,26 +217,6 @@ initRcatServerHostByFile() {
         return e.code();
     }
 
-    // re host
-    // xmsg host
-    try {
-        rodsHostAddr_t    addr;
-        memset( &addr, 0, sizeof( addr ) );
-        rodsServerHost_t* tmp_host = 0;
-        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<const std::string>(irods::CFG_IRODS_XMSG_HOST_KW).c_str() );
-        int rem_flg = resolveHost(
-                          &addr,
-                          &tmp_host );
-        if ( rem_flg < 0 ) {
-            rodsLog( LOG_SYS_FATAL,
-                     "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                     addr.hostAddr,
-                     rem_flg );
-            return rem_flg;
-        }
-        tmp_host->xmsgHostFlag = 1;
-    } catch ( const irods::exception& e ) {}
-
     // slave icat host
 
     try {

@@ -95,7 +95,6 @@
 #include "rsGetRescQuota.hpp"
 #include "rsGetTempPassword.hpp"
 #include "rsGetTempPasswordForOther.hpp"
-#include "rsGetXmsgTicket.hpp"
 #include "rsIESClientHints.hpp"
 #include "rsL3FileGetSingleBuf.hpp"
 #include "rsL3FilePutSingleBuf.hpp"
@@ -111,7 +110,6 @@
 #include "rsPhyPathReg.hpp"
 #include "rsProcStat.hpp"
 #include "rsQuerySpecColl.hpp"
-#include "rsRcvXmsg.hpp"
 #include "rsReadCollection.hpp"
 #include "rsRegColl.hpp"
 #include "rsRegDataObj.hpp"
@@ -120,7 +118,6 @@
 #include "rsRuleExecDel.hpp"
 #include "rsRuleExecMod.hpp"
 #include "rsRuleExecSubmit.hpp"
-#include "rsSendXmsg.hpp"
 #include "rsServerReport.hpp"
 #include "rsSetRoundRobinContext.hpp"
 #include "rsSimpleQuery.hpp"
@@ -243,7 +240,6 @@
 #define RS_GET_RESC_QUOTA NULLPTR_FOR_CLIENT_TABLE(rsGetRescQuota)
 #define RS_GET_TEMP_PASSWORD NULLPTR_FOR_CLIENT_TABLE(rsGetTempPassword)
 #define RS_GET_TEMP_PASSWORD_FOR_OTHER NULLPTR_FOR_CLIENT_TABLE(rsGetTempPasswordForOther)
-#define RS_GET_XMSG_TICKET NULLPTR_FOR_CLIENT_TABLE(rsGetXmsgTicket)
 #define RS_IES_CLIENT_HINTS NULLPTR_FOR_CLIENT_TABLE(rsClientHints)
 #define RS_L3_FILE_GET_SINGLE_BUF NULLPTR_FOR_CLIENT_TABLE(rsL3FileGetSingleBuf)
 #define RS_L3_FILE_PUT_SINGLE_BUF NULLPTR_FOR_CLIENT_TABLE(rsL3FilePutSingleBuf)
@@ -259,7 +255,6 @@
 #define RS_PHY_PATH_REG NULLPTR_FOR_CLIENT_TABLE(rsPhyPathReg)
 #define RS_PROC_STAT NULLPTR_FOR_CLIENT_TABLE(rsProcStat)
 #define RS_QUERY_SPEC_COLL NULLPTR_FOR_CLIENT_TABLE(rsQuerySpecColl)
-#define RS_RCV_XMSG NULLPTR_FOR_CLIENT_TABLE(rsRcvXmsg)
 #define RS_READ_COLLECTION NULLPTR_FOR_CLIENT_TABLE(rsReadCollection)
 #define RS_REG_COLL NULLPTR_FOR_CLIENT_TABLE(rsRegColl)
 #define RS_REG_DATA_OBJ NULLPTR_FOR_CLIENT_TABLE(rsRegDataObj)
@@ -268,7 +263,6 @@
 #define RS_RULE_EXEC_DEL NULLPTR_FOR_CLIENT_TABLE(rsRuleExecDel)
 #define RS_RULE_EXEC_MOD NULLPTR_FOR_CLIENT_TABLE(rsRuleExecMod)
 #define RS_RULE_EXEC_SUBMIT NULLPTR_FOR_CLIENT_TABLE(rsRuleExecSubmit)
-#define RS_SEND_XMSG NULLPTR_FOR_CLIENT_TABLE(rsSendXmsg)
 #define RS_SERVER_REPORT NULLPTR_FOR_CLIENT_TABLE(rsServerReport)
 #define RS_SET_ROUNDROBIN_CONTEXT NULLPTR_FOR_CLIENT_TABLE(rsSetRoundRobinContext)
 #define RS_SIMPLE_QUERY NULLPTR_FOR_CLIENT_TABLE(rsSimpleQuery)
@@ -596,7 +590,7 @@ static irods::apidef_t client_api_table_inp[] = {
         (funcPtr)CALL_GENQUERYINP_GENQUERYOUT
     },
     {
-        AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         NULL, 0,  "authRequestOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,authRequestOut_t**)>(RS_AUTH_REQUEST)),
         "api_auth_request", irods::clearInStruct_noop,
@@ -604,7 +598,7 @@ static irods::apidef_t client_api_table_inp[] = {
 
     },
     {
-        AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
         "authResponseInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,authResponseInp_t*)>(RS_AUTH_RESPONSE)),
         "api_auth_response", clearAuthResponseInp,
@@ -656,7 +650,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         PAM_AUTH_REQUEST_AN, RODS_API_VERSION,
-        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        NO_USER_AUTH, NO_USER_AUTH,
         "pamAuthRequestInp_PI", 0,  "pamAuthRequestOut_PI", 0,
         boost::any(std::function<int(rsComm_t*,pamAuthRequestInp_t*,pamAuthRequestOut_t**)>(RS_PAM_AUTH_REQUEST)),
         "api_pam_auth_request", irods::clearInStruct_noop,
@@ -1009,27 +1003,6 @@ static irods::apidef_t client_api_table_inp[] = {
         (funcPtr)CALL_SUBFILEINP
     },
     {
-        GET_XMSG_TICKET_AN, RODS_API_VERSION, REMOTE_USER_AUTH | XMSG_SVR_ONLY, REMOTE_USER_AUTH | XMSG_SVR_ONLY,
-        "GetXmsgTicketInp_PI", 0, "XmsgTicketInfo_PI", 0,
-        boost::any(std::function<int(rsComm_t*,getXmsgTicketInp_t*,xmsgTicketInfo_t**)>(RS_GET_XMSG_TICKET)),
-        "api_get_xmsg_ticket", irods::clearInStruct_noop,
-        (funcPtr)CALL_GETXMSGTICKETINP_XMSGTICKETINFOOUT
-    },
-    {
-        SEND_XMSG_AN, RODS_API_VERSION, XMSG_SVR_ONLY, XMSG_SVR_ONLY,
-        "SendXmsgInp_PI", 0, NULL, 0,
-        boost::any(std::function<int(rsComm_t*,sendXmsgInp_t*)>(RS_SEND_XMSG)),
-        "api_send_xmsg", irods::clearInStruct_noop,
-        (funcPtr)CALL_SENDXMSGINP
-    },
-    {
-        RCV_XMSG_AN, RODS_API_VERSION, XMSG_SVR_ONLY, XMSG_SVR_ONLY,
-        "RcvXmsgInp_PI", 0, "RcvXmsgOut_PI", 0,
-        boost::any(std::function<int(rsComm_t*,rcvXmsgInp_t*,rcvXmsgOut_t**)>(RS_RCV_XMSG)),
-        "api_rcv_xmsg", irods::clearInStruct_noop,
-        (funcPtr)CALL_RCVXMSGINP_RCVXMSGOUT
-    },
-    {
         SUB_STRUCT_FILE_GET_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
         "SubFile_PI", 0, NULL, 1,
         boost::any(std::function<int(rsComm_t*,subFile_t*,bytesBuf_t*)>(RS_SUB_STRUCT_FILE_GET)),
@@ -1220,7 +1193,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SSL_START_AN, RODS_API_VERSION,
-        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        NO_USER_AUTH, NO_USER_AUTH,
         "sslStartInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,sslStartInp_t*)>(RS_SSL_START)),
         "api_ssl_start", irods::clearInStruct_noop,
@@ -1228,7 +1201,7 @@ static irods::apidef_t client_api_table_inp[] = {
     },
     {
         SSL_END_AN, RODS_API_VERSION,
-        NO_USER_AUTH | XMSG_SVR_ALSO, NO_USER_AUTH | XMSG_SVR_ALSO,
+        NO_USER_AUTH, NO_USER_AUTH,
         "sslEndInp_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,sslEndInp_t*)>(RS_SSL_END)),
         "api_ssl_end", irods::clearInStruct_noop,

@@ -240,9 +240,6 @@ int
 getSelVal( char *c );
 
 int
-clearSendXmsgInfo( sendXmsgInfo_t *sendXmsgInfo );
-
-int
 parseCachedStructFileStr( char *collInfo2, specColl_t *specColl );
 int
 makeCachedStructFileStr( char *collInfo2, specColl_t *specColl );

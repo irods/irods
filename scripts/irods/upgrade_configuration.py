@@ -273,7 +273,6 @@ def convert_legacy_configuration_to_json(irods_config):
             "server_control_plane_timeout_milliseconds": 10000,
             "server_port_range_end": legacy_irods_config.get('$SVR_PORT_RANGE_END', 20199),
             "server_port_range_start": legacy_irods_config.get('$SVR_PORT_RANGE_START', 20000),
-            "xmsg_port": 1279,
             "zone_auth_scheme": "native",
             "zone_key": legacy_server_config.get('LocalZoneSID', "TEMPORARY_zone_key"),
             "zone_name": legacy_irods_environment.get('irodsZone', 'tempZone'),
@@ -356,8 +355,6 @@ def convert_legacy_configuration_to_json(irods_config):
 
     #optional irods environment keys
     for old_key, new_key_and_type in {
-            "xmsgHost": ("irods_xmsg_host", str),
-            "xmsgPort": ("irods_xmsg_port", int),
             "irodsAuthScheme": ("irods_authentication_scheme", str),
             "irodsServerDn": ("irods_gsi_server_dn", str),
             "irodsLogLevel": ("irods_log_level", str),

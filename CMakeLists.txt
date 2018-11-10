@@ -306,7 +306,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetRescQuota.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetTempPassword.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetTempPasswordForOther.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetXmsgTicket.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcIESClientHints.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcL3FileGetSingleBuf.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcL3FilePutSingleBuf.cpp
@@ -322,7 +321,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcPhyPathReg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcProcStat.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcQuerySpecColl.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcReadCollection.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRegColl.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRegDataObj.cpp
@@ -331,7 +329,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecDel.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecSubmit.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcSendXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcServerReport.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSimpleQuery.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSpecificQuery.cpp
@@ -518,7 +515,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetRescQuota.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetTempPassword.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetTempPasswordForOther.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsGetXmsgTicket.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsIESClientHints.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsL3FileGetSingleBuf.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsL3FilePutSingleBuf.cpp
@@ -534,7 +530,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsPhyPathReg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsProcStat.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsQuerySpecColl.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsReadCollection.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRegColl.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRegDataObj.cpp
@@ -543,7 +538,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecDel.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecSubmit.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsSendXmsg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsServerReport.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSetRoundRobinContext.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSimpleQuery.cpp
@@ -584,6 +578,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/initServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_calling_functions.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_number_validator.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_collection_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_data_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_database_factory.cpp
@@ -621,7 +616,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsLog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/xmsgLib.cpp
   ${CMAKE_SOURCE_DIR}/server/drivers/src/fileDriver.cpp
   ${CMAKE_SOURCE_DIR}/server/icat/src/icatHighLevelRoutines.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/extractAvuMS.cpp
@@ -647,7 +641,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/reSysDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/sharedmemory.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/xmsgMS.cpp
   )
 add_library(
   irods_server
@@ -929,9 +922,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileReaddir.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileClosedir.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGeneralUpdate.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetXmsgTicket.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcSendXmsg.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileGet.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFilePut.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSyncMountedColl.cpp
@@ -1148,11 +1138,6 @@ set(
   )
 
 set(
-  IRODS_MAIN_EXECUTABLE_IRODSXMSGSERVER_SOURCES
-  ${CMAKE_SOURCE_DIR}/server/core/src/irodsXmsgServer.cpp
-  )
-
-set(
   IRODS_MAIN_EXECUTABLE_HOSTNAME_RESOLVES_TO_LOCAL_ADDRESS_SOURCES
   ${CMAKE_SOURCE_DIR}/server/core/src/hostname_resolves_to_local_address.cpp
   )
@@ -1161,7 +1146,6 @@ set(
   IRODS_MAIN_EXECUTABLES
 #  irodsAgent
   irodsServer
-  irodsXmsgServer
   hostname_resolves_to_local_address
   )
 
@@ -1521,7 +1505,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
-    irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
+    irodsServer irodsReServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()

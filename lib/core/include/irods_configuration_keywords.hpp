@@ -79,8 +79,6 @@ namespace irods {
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
     const std::string CFG_IRODS_HOST_KW( "irods_host" );
     const std::string CFG_IRODS_PORT_KW( "irods_port" );
-    const std::string CFG_IRODS_XMSG_HOST_KW( "xmsg_host" );
-    const std::string CFG_IRODS_XMSG_PORT_KW( "xmsg_port" );
     const std::string CFG_IRODS_HOME_KW( "irods_home" );
     const std::string CFG_IRODS_CWD_KW( "irods_cwd" );
     const std::string CFG_IRODS_AUTHENTICATION_SCHEME_KW(
@@ -153,7 +151,6 @@ namespace irods {
     const std::string CFG_ZONE_USER( "zone_user" );
     const std::string CFG_ZONE_PORT( "zone_port" );
     const std::string CFG_ZONE_AUTH_SCHEME( "zone_auth_scheme" );
-    const std::string CFG_XMSG_PORT( "xmsg_port" );
 
     // irods control plane values
     const std::string CFG_SERVER_CONTROL_PLANE_PORT(

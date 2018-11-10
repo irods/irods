@@ -17,8 +17,7 @@
         "hostname": {"type": "string"},
         "irods_server_pid": {"type": "integer"},
         "re_server_pid": {"type": "integer"},
-        "status": {"type": "string"},
-        "xmsg_server_pid": {"type": "integer"}
+        "status": {"type": "string"}
     },
-    "required": ["agents","hostname","irods_server_pid","re_server_pid","status","xmsg_server_pid"]
+    "required": ["agents","hostname","irods_server_pid","re_server_pid","status"]
 }

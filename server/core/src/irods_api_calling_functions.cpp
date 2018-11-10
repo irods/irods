@@ -866,42 +866,6 @@ int call_subStructFileFdOprInp_rodsDirentOut(
                    _out);
 }
 
-int call_getXmsgTicketInp_xmsgTicketInfoOut(
-    irods::api_entry*   _api,
-    rsComm_t*           _comm,
-    getXmsgTicketInp_t* _inp,
-    xmsgTicketInfo_t**  _out ) {
-    return _api->call_handler<
-               getXmsgTicketInp_t*,
-               xmsgTicketInfo_t**>(
-                   _comm,
-                   _inp,
-                   _out);
-}
-
-int call_sendXmsgInp(
-    irods::api_entry* _api,
-    rsComm_t*         _comm,
-    sendXmsgInp_t*    _inp ) {
-    return _api->call_handler<
-               sendXmsgInp_t*>(
-                   _comm,
-                   _inp);
-}
-
-int call_rcvXmsgInp_rcvXmsgOut(
-    irods::api_entry*   _api,
-    rsComm_t*           _comm,
-    rcvXmsgInp_t* _inp,
-    rcvXmsgOut_t**  _out ) {
-    return _api->call_handler<
-               rcvXmsgInp_t*,
-               rcvXmsgOut_t**>(
-                   _comm,
-                   _inp,
-                   _out);
-}
-
 int call_subFileInp_bytesBufOut(
     irods::api_entry*   _api,
     rsComm_t*           _comm,

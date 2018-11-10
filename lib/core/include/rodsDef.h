@@ -28,8 +28,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-
-
 #if defined(solaris_platform)
 #include <arpa/inet.h>
 #endif
@@ -49,6 +47,7 @@
 #include <netinet/tcp.h>
 #endif
 
+// clang-format off
 
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
@@ -78,7 +77,6 @@
 #define SERVER_PT	1	/* server process type */
 #define AGENT_PT	2	/* agent process type */
 #define RE_SERVER_PT	3	/* reServer type */
-#define XMSG_SERVER_PT	4	/* xmsgServer type */
 
 /* definition for rcat type */
 
@@ -369,5 +367,7 @@ typedef struct {
     char serverAddr[NAME_LEN];
     char progName[NAME_LEN];
 } procLog_t;
+
+// clang-format on
 
 #endif	// RODS_DEF_H__

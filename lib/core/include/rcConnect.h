@@ -247,8 +247,6 @@ getSessionSignatureClientside();
 
 int
 clientLoginWithPassword( rcComm_t *conn, char* password );
-rcComm_t *
-rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg );
 void
 cliReconnManager( rcComm_t *conn );
 int

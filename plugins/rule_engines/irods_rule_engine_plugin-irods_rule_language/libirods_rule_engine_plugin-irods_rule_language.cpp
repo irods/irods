@@ -201,10 +201,7 @@ irods::error start(irods::default_re_ctx&,const std::string& _instance_name ) {
 
 }
 
-int finalizeRuleEngine();
 irods::error stop(irods::default_re_ctx& _u, const std::string& _instance_name) {
-    (void) _u;
-    finalizeRuleEngine();
     return SUCCESS();
 }
 

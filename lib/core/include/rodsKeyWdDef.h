@@ -5,6 +5,8 @@
 #ifndef RODS_KEYWD_DEF_H__
 #define RODS_KEYWD_DEF_H__
 
+// clang-format off
+
 /* The following are the keyWord definition for the condInput key/value pair */
 
 #define ALL_KW 		"all" 		/* operation done on all replica */
@@ -292,7 +294,6 @@
 
 #define INSTANCE_NAME_KW "instance_name"
 
-
-
+// clang-format on
 
 #endif	// RODS_KEYWD_DEF_H__

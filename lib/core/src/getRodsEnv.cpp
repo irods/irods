@@ -205,10 +205,6 @@ extern "C" {
             _env->rodsHost );
 
         capture_string_property(
-            irods::CFG_IRODS_XMSG_HOST_KW,
-            _env->xmsgHost );
-
-        capture_string_property(
             irods::CFG_IRODS_HOME_KW,
             _env->rodsHome );
 
@@ -223,10 +219,6 @@ extern "C" {
         capture_integer_property(
             irods::CFG_IRODS_PORT_KW,
             _env->rodsPort );
-
-        capture_integer_property(
-            irods::CFG_IRODS_XMSG_PORT_KW,
-            _env->xmsgPort );
 
         capture_string_property(
             irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
@@ -481,20 +473,10 @@ extern "C" {
             env_var,
             _env->rodsHost );
 
-        env_var = irods::CFG_IRODS_XMSG_HOST_KW;
-        capture_string_env_var(
-            env_var,
-            _env->xmsgHost );
-
         env_var = irods::CFG_IRODS_PORT_KW;
         capture_integer_env_var(
             env_var,
             _env->rodsPort );
-
-        env_var = irods::CFG_IRODS_XMSG_PORT_KW;
-        capture_integer_env_var(
-            env_var,
-            _env->xmsgPort );
 
         env_var = irods::CFG_IRODS_HOME_KW;
         capture_string_env_var(

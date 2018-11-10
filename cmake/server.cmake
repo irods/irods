@@ -5,7 +5,6 @@ install(
 #  irodsAgent
   irodsServer
   irodsReServer
-  irodsXmsgServer
   hostname_resolves_to_local_address
   RUNTIME
   DESTINATION usr/sbin

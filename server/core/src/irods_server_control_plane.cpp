@@ -271,12 +271,6 @@ namespace irods {
             irods::log( PASS( ret ) );
         }
 
-        // kill the xmessage server
-        ret = kill_server( irods::XMSG_PID_KW );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-        }
-
         // actually shut down the server
         svr_state( server_state::STOPPED );
 
@@ -397,11 +391,6 @@ namespace irods {
             re_pid = get_server_property<const int>(irods::RE_PID_KW);
         } catch ( const irods::exception& ) {}
 
-        int xmsg_pid = 0;
-        try {
-            xmsg_pid = get_server_property<const int>(irods::XMSG_PID_KW);
-        } catch ( const irods::exception& ) {}
-
         int my_pid = getpid();
 
         json_t* obj = json_object();
@@ -414,7 +403,6 @@ namespace irods {
         json_object_set_new( obj, "hostname", json_string( my_env.rodsHost ) );
         json_object_set_new( obj, "irods_server_pid", json_integer( my_pid ) );
         json_object_set_new( obj, "re_server_pid", json_integer( re_pid ) );
-        json_object_set_new( obj, "xmsg_server_pid", json_integer( xmsg_pid ) );
 
         server_state& s = server_state::instance();
         json_object_set_new( obj, "status", json_string( s().c_str() ) );

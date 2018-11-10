@@ -132,11 +132,6 @@ def rule_engine_executable():
         server_bin_directory(),
         'irodsReServer')
 
-def xmsg_server_executable():
-    return os.path.join(
-        server_bin_directory(),
-        'irodsXmsgServer')
-
 def service_account_file_path():
     return os.path.join(config_directory(), 'service_account.config')
 

@@ -1258,26 +1258,6 @@ initServerMain( rsComm_t *svrComm ) {
         }
     }
 
-    rodsServerHost_t *xmsgServerHost = NULL;
-    getXmsgHost( &xmsgServerHost );
-    if ( xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST ) {
-        int xmsg_pid = RODS_FORK();
-        if ( 0 == xmsg_pid ) { // child
-            char *av[NAME_LEN];
-
-            close( svrComm->sock );
-            memset( av, 0, sizeof( av ) );
-            rodsLog( LOG_NOTICE, "Starting irodsXmsgServer" );
-            av[0] = "irodsXmsgServer";
-            execv( av[0], av );
-            exit( 1 );
-        }
-        else {
-            irods::set_server_property<int>( irods::XMSG_PID_KW, xmsg_pid );
-        }
-
-    }
-
     return 0;
 }
 

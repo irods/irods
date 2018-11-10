@@ -4,8 +4,6 @@
 /* rodsClient.h - common header file for rods client
  */
 
-
-
 #ifndef RODS_CLIENT_H__
 #define RODS_CLIENT_H__
 

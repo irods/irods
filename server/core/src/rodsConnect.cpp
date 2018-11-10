@@ -642,15 +642,6 @@ printZoneInfo() {
         exp::log::server::info({{"re_host", "error"}});
     }
 
-    if ( getXmsgHost( &tmpRodsServerHost ) >= 0 ) {
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "xmsgHost", tmpRodsServerHost->hostName->name );
-#else /* SYSLOG */
-        fprintf( stderr, "xmsgHost:  %s\n\n", tmpRodsServerHost->hostName->name );
-#endif /* SYSLOG */
-        exp::log::server::info({{"xmsg_host", tmpRodsServerHost->hostName->name}});
-    }
-
     return 0;
 }
 
@@ -1041,24 +1032,6 @@ getReHost( rodsServerHost_t **rodsServerHost ) {
 
     return status;
 }
-
-int
-getXmsgHost( rodsServerHost_t **rodsServerHost ) {
-    rodsServerHost_t *tmpRodsServerHost;
-
-    tmpRodsServerHost = ServerHostHead;
-    while ( tmpRodsServerHost != NULL ) {
-        if ( tmpRodsServerHost->xmsgHostFlag == 1 ) {
-            *rodsServerHost = tmpRodsServerHost;
-            return 0;
-        }
-        tmpRodsServerHost = tmpRodsServerHost->next;
-    }
-    *rodsServerHost = NULL;
-
-    return SYS_INVALID_SERVER_HOST;
-}
-
 
 /* getAndConnReHost - Get the irodsReServer host (result given in
  * rodsServerHost).

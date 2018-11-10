@@ -5,7 +5,6 @@
             "hostname": "awesome",
             "irods_server_pid": 1234,
             "re_server_pid": 1234,
-            "xmsg_server_pid": 1234,
             "status": "perfect",
             "agents": [
                 {
@@ -22,7 +21,6 @@
             "hostname": "again",
             "irods_server_pid": 12345,
             "re_server_pid": 12345,
-            "xmsg_server_pid": 12345,
             "status": "notsogood",
             "agents": [
                 {
