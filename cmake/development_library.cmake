@@ -74,6 +74,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_base.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_context.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_name_generator.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_query.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_random.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_serialization.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_server_properties.hpp
