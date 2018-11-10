@@ -17,7 +17,7 @@ const char * const icmds[] = {
     "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
-    "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "ixmsg", "izonereport"
+    "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "izonereport"
 };
 
 void usage();
@@ -72,7 +72,6 @@ printMainHelp() {
         "iticket      - create, delete, modify & list tickets (alternative access strings).",
         "itrim        - trim down the number of replicas of Data Objects.",
         "iuserinfo    - show information about your iRODS user account.",
-        "ixmsg        - send/receive iRODS xMessage System messages.",
         "izonereport  - generates a full diagnostic/backup report of your Zone.",
         " ",
         "For more information on a particular iCommand:",

@@ -85,7 +85,6 @@ set(
   iticket
   itrim
   iuserinfo
-  ixmsg
   izonereport
   )
 
