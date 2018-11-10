@@ -11,7 +11,6 @@
 #define RODS_LOGFILE        "rodsLog"
 #define RODS_SERVER_LOGFILE "rodsServerLog"
 #define RULE_EXEC_LOGFILE   "reLog"
-#define XMSG_SVR_LOGFILE    "xmsgLog"
 
 #define DEF_LOG_DIR "../../var/lib/irods/log"
 #define PROC_LOG_DIR_NAME "proc"

@@ -353,22 +353,6 @@ cleanRcComm( rcComm_t *conn ) {
     return 0;
 }
 
-rcComm_t *
-rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg ) {
-    rcComm_t *conn;
-
-    if ( myRodsEnv == NULL ) {
-        fprintf( stderr, "rcConnectXmsg: NULL myRodsEnv input\n" );
-        return NULL;
-    }
-
-    conn = rcConnect( myRodsEnv->xmsgHost, myRodsEnv->xmsgPort,
-                      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 0, errMsg );
-
-    return conn;
-}
-
-
 void
 cliReconnManager( rcComm_t *conn ) {
     struct sockaddr_in remoteAddr;

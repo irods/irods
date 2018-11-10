@@ -801,38 +801,6 @@ int call_subStructFileFdOprInp_rodsDirentOut(
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-int call_getXmsgTicketInp_xmsgTicketInfoOut(
-    irods::api_entry*,
-    rsComm_t*,
-    getXmsgTicketInp_t*,
-    xmsgTicketInfo_t**);
-#define CALL_GETXMSGTICKETINP_XMSGTICKETINFOOUT call_getXmsgTicketInp_xmsgTicketInfoOut
-#else
-#define CALL_GETXMSGTICKETINP_XMSGTICKETINFOOUT nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
-int call_sendXmsgInp(
-    irods::api_entry*,
-    rsComm_t*,
-    sendXmsgInp_t*);
-#define CALL_SENDXMSGINP call_sendXmsgInp
-#else
-#define CALL_SENDXMSGINP nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
-int call_rcvXmsgInp_rcvXmsgOut(
-    irods::api_entry*,
-    rsComm_t*,
-    rcvXmsgInp_t*,
-    rcvXmsgOut_t**);
-#define CALL_RCVXMSGINP_RCVXMSGOUT call_rcvXmsgInp_rcvXmsgOut
-#else
-#define CALL_RCVXMSGINP_RCVXMSGOUT nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
 int call_subFileInp_bytesBufOut(
     irods::api_entry*,
     rsComm_t*,

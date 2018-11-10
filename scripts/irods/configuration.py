@@ -404,10 +404,6 @@ class IrodsConfig(object):
         return paths.rule_engine_executable()
 
     @property
-    def xmsg_server_executable(self):
-        return paths.xmsg_server_executable()
-
-    @property
     def database_schema_update_directory(self):
         return paths.database_schema_update_directory()
 

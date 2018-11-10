@@ -63,8 +63,6 @@ packInstruct_t api_pack_table_init[] = {
     {"SubStructFileLseekInp_PI", SubStructFileLseekInp_PI, irods::clearInStruct_noop},
     {"SubStructFileRenameInp_PI", SubStructFileRenameInp_PI, irods::clearInStruct_noop},
     {"getTempPasswordOut_PI", getTempPasswordOut_PI, irods::clearInStruct_noop},
-    {"GetXmsgTicketInp_PI", GetXmsgTicketInp_PI, irods::clearInStruct_noop},
-    {"SendXmsgInp_PI", SendXmsgInp_PI, irods::clearInStruct_noop},
     {"StructFileOprInp_PI", StructFileOprInp_PI, irods::clearInStruct_noop},
     {"StructFileExtAndRegInp_PI", StructFileExtAndRegInp_PI, irods::clearInStruct_noop},
     {"ChkObjPermAndStat_PI", ChkObjPermAndStat_PI, irods::clearInStruct_noop},

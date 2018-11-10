@@ -147,8 +147,6 @@ def convert_hostaccesscontrol():
 legacy_key_map["irodsUserName"] = "irods_user_name"
 legacy_key_map["irodsHost"] = "irods_host"
 legacy_key_map["irodsPort"] = "irods_port"
-legacy_key_map["xmsgHost"] = "irods_xmsg_host"
-legacy_key_map["xmsgPort"] = "irods_xmsg_port"
 legacy_key_map["irodsHome"] = "irods_home"
 legacy_key_map["irodsCwd"] = "irods_cwd"
 legacy_key_map["irodsAuthScheme"] = "irods_authentication_scheme"
@@ -179,7 +177,6 @@ legacy_key_map["clientRodsZone"] = "irods_client_zone_name"
 
 # integer list
 should_be_integers.append('irods_port')
-should_be_integers.append('irods_xmsg_port')
 should_be_integers.append('irods_encryption_key_size')
 should_be_integers.append('irods_encryption_salt_size')
 should_be_integers.append('irods_encryption_num_hash_rounds')
@@ -234,7 +231,7 @@ def convert_irodsenv():
                         new_value = int(new_value)
                     container_name[new_key] = new_value
             # sniff the environment variables, and use them if defined (they take priority)
-            for x in ['irodsUserName', 'irodsHost', 'irodsPort', 'xmsgHost', 'xmsgPort', 'irodsHome',
+            for x in ['irodsUserName', 'irodsHost', 'irodsPort', 'irodsHome',
                       'irodsCwd', 'irodsAuthScheme', 'irodsDefResource', 'irodsZone', 'irodsServerDn', 'irodsLogLevel',
                       'irodsAuthFileName', 'irodsDebug', 'irodsClientServerPolicy', 'irodsClientServerNegotiation', 'irodsEncryptionKeySize',
                       'irodsEncryptionSaltSize', 'irodsEncryptionNumHashRounds', 'irodsEncryptionAlgorithm', 'irodsDefaultHashScheme',

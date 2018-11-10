@@ -64,7 +64,6 @@ typedef struct rodsServerHost {
     rcComm_t *conn;
     int rcatEnabled;
     int reHostFlag;
-    int xmsgHostFlag;
     int localFlag;
     int status;
     void *zoneInfo;
@@ -135,8 +134,6 @@ int
 resetRcatHost( int rcatType, const char *rcatZoneHint );
 int
 isLocalHost( const char *hostAddr );
-int
-getXmsgHost( rodsServerHost_t **rodsServerHost );
 int
 getLocalZoneInfo( zoneInfo_t **outZoneInfo );
 char *

@@ -126,7 +126,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsQuota.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsType.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsUser.h
-  ${CMAKE_SOURCE_DIR}/lib/core/include/rodsXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rsyncUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/scanUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/sockComm.h
@@ -231,7 +230,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/getRescQuota.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/getTempPassword.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/getTempPasswordForOther.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/getXmsgTicket.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/get_hier_from_leaf_id.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ies_client_hints.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/l3FileGetSingleBuf.h
@@ -248,7 +246,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/phyPathReg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/procStat.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/querySpecColl.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/rcvXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/readCollection.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regColl.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regDataObj.h
@@ -257,7 +254,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecDel.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecMod.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecSubmit.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/sendXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/server_report.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/set_round_robin_context.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/simpleQuery.h
@@ -381,7 +377,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetRescQuota.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPassword.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPasswordForOther.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetXmsgTicket.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsIESClientHints.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FileGetSingleBuf.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FilePutSingleBuf.hpp
@@ -397,7 +392,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsPhyPathReg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsProcStat.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsQuerySpecColl.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsRcvXmsg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsReadCollection.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRegColl.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRegDataObj.hpp
@@ -406,7 +400,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecDel.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecMod.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecSubmit.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsSendXmsg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsServerReport.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSetRoundRobinContext.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSimpleQuery.hpp
@@ -451,7 +444,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/fileOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/initServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsReServer.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/irodsXmsgServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_api_calling_functions.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_at_scope_exit.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_collection_object.hpp
@@ -500,7 +492,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/rsIcatOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rsLog.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/specColl.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/xmsgLib.hpp
   )
 
 set(

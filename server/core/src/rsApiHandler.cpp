@@ -31,13 +31,25 @@ jmp_buf Jenv;
 #include "irods_threads.hpp"
 #include "sockCommNetworkInterface.hpp"
 #include "irods_hierarchy_parser.hpp"
-
+#include "irods_api_number_validator.hpp"
+#include "irods_logger.hpp"
 
 int rsApiHandler(
     rsComm_t*   rsComm,
     int         apiNumber,
     bytesBuf_t* inputStructBBuf,
-    bytesBuf_t* bsBBuf ) {
+    bytesBuf_t* bsBBuf )
+{
+    if (auto [supported, ec] = irods::is_api_number_supported(apiNumber); !supported) {
+        irods::experimental::log::server::error({
+            {"msg", "unsupported api number"},
+            {"api_number", std::to_string(apiNumber)},
+            {"error_code", std::to_string(ec)}
+        });
+
+        return ec;
+    }
+
     int apiInx;
     int status = 0;
     char *myInStruct = NULL;
@@ -372,29 +384,9 @@ int
 chkApiPermission( rsComm_t * rsComm, int apiInx ) {
     int clientUserAuth;
     int proxyUserAuth;
-    int xmsgSvrOnly;
-    int xmsgSvrAlso;
 
     irods::api_entry_table& RsApiTable = irods::get_server_api_table();
     clientUserAuth = RsApiTable[apiInx]->clientUserAuth;
-
-    xmsgSvrOnly = clientUserAuth & XMSG_SVR_ONLY;
-    xmsgSvrAlso = clientUserAuth & XMSG_SVR_ALSO;
-
-    if ( ProcessType == XMSG_SERVER_PT ) {
-        if ( ( xmsgSvrOnly + xmsgSvrAlso ) == 0 ) {
-            rodsLog( LOG_ERROR,
-                     "chkApiPermission: xmsgServer not allowed to handle api %d",
-                     RsApiTable[apiInx]->apiNumber );
-            return SYS_NO_API_PRIV;
-        }
-    }
-    else if ( xmsgSvrOnly != 0 ) {
-        rodsLog( LOG_ERROR,
-                 "chkApiPermission: non xmsgServer not allowed to handle api %d",
-                 RsApiTable[apiInx]->apiNumber );
-        return SYS_NO_API_PRIV;
-    }
 
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 

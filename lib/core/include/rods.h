@@ -23,7 +23,6 @@
 #include "rodsGenQuery.h"
 #include "parseCommandLine.h"
 #include "obf.h"
-#include "rodsXmsg.h"
 #include "rcConnect.h"
 
 #ifdef _WIN32

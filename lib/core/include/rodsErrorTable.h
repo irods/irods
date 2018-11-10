@@ -10,9 +10,21 @@
  * @brief Defines ERRORS for iRODS server and agents
  */
 
-
 #ifndef RODS_ERROR_TABLE_H__
 #define RODS_ERROR_TABLE_H__
+
+/**
+ * IMPORTANT - END OF LIFE ERROR CODES
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Error codes having a prefix of "END_OF_LIFE_" must NEVER be used
+ * in new code.
+ *
+ * This prefix is an indicator to the implementer that the error code
+ * is no longer used by iRODS.
+ *
+ * These error codes only exist as placeholders.
+ */
 
 /**
  * @defgroup error_codes iRODS ERROR Codes
@@ -58,6 +70,8 @@ namespace {
 enum IRODS_ERROR_ENUM
 {
 #endif
+
+// clang-format off
 
 /* 1,000 - 299,000 - system type */
 /** @defgroup system_errors System ERRORs
@@ -125,9 +139,9 @@ NEW_ERROR(SYS_REG_OBJ_IN_SPEC_COLL,                    -57000)
 NEW_ERROR(SYS_DEST_SPEC_COLL_SUB_EXIST,                -58000)
 NEW_ERROR(SYS_SRC_DEST_SPEC_COLL_CONFLICT,             -59000)
 NEW_ERROR(SYS_UNKNOWN_SPEC_COLL_CLASS,                 -60000)
-NEW_ERROR(SYS_DUPLICATE_XMSG_TICKET,                   -61000)
-NEW_ERROR(SYS_UNMATCHED_XMSG_TICKET,                   -62000)
-NEW_ERROR(SYS_NO_XMSG_FOR_MSG_NUMBER,                  -63000)
+NEW_ERROR(END_OF_LIFE_SYS_DUPLICATE_XMSG_TICKET,       -61000) // EOL since iRODS v4.3.0
+NEW_ERROR(END_OF_LIFE_SYS_UNMATCHED_XMSG_TICKET,       -62000) // EOL since iRODS v4.3.0
+NEW_ERROR(END_OF_LIFE_SYS_NO_XMSG_FOR_MSG_NUMBER,      -63000) // EOL since iRODS v4.3.0
 NEW_ERROR(SYS_COLLINFO_2_FORMAT_ERR,                   -64000)
 NEW_ERROR(SYS_CACHE_STRUCT_FILE_RESC_ERR,              -65000)
 NEW_ERROR(SYS_NOT_SUPPORTED,                           -66000)
@@ -875,5 +889,7 @@ NEW_ERROR(SYS_NO_HANDLER_REPLY_MSG,                    -99999999)
 #ifndef MAKE_IRODS_ERROR_MAP
 };
 #endif
+
+// clang-format on
 
 #endif /* RODS_ERROR_TABLE_H__ */

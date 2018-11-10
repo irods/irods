@@ -113,10 +113,6 @@ const packInstruct_t RodsPackTable[] = {
     {"IntArray_PI", IntArray_PI, NULL},
     {"SpecColl_PI", SpecColl_PI, NULL},
     {"SubFile_PI", SubFile_PI, NULL},
-    {"XmsgTicketInfo_PI", XmsgTicketInfo_PI, NULL},
-    {"SendXmsgInfo_PI", SendXmsgInfo_PI, NULL},
-    {"RcvXmsgInp_PI", RcvXmsgInp_PI, NULL},
-    {"RcvXmsgOut_PI", RcvXmsgOut_PI, NULL},
     /* HDF5 PI */
     {"h5File_PI", h5File_PI, NULL},
     {"h5error_PI", h5error_PI, NULL},

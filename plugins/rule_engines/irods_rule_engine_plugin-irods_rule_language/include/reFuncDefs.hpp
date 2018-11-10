@@ -232,11 +232,6 @@ int readMsrvcStructFromFile( char *msrvcFileName, msrvcStruct_t* inMsrvcStruct )
 int writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
                          ruleExecInfo_t *rei );
 
-
-int _writeXMsg( int streamId, char *hdr, char *msg );
-int _readXMsg( int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg, char **user, char **addr );
-
-
 int _applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag );
 int _applyAllRules( char *inAction, msParamArray_t *inMsParamArray,
                     ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag );
