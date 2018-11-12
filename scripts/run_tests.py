@@ -77,7 +77,7 @@ def run_tests_from_names(names, buffer_test_output, xml_output):
     loader = unittest.TestLoader()
     suites = []
     for name in names:
-        full_name = add_class_path_prefix(name)
+        full_name = 'irods.test.' + name
         try:
             suite = loader.loadTestsFromName(full_name)
             suites.append(suite)
