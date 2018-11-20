@@ -41,11 +41,13 @@
 namespace {
     namespace irods_error_map_construction {
         std::map<const int, const std::string> irods_error_map;
+        std::map<const std::string, const int> irods_error_name_map;
 
         //We pass the variable as a const reference here to silence
         //unused variable warnings in a controlled manner
         int create_error( const std::string& err_name, const int err_code, const int& ) {
             irods_error_map.insert( std::pair<const int, const std::string>( err_code, err_name ) );
+            irods_error_name_map.insert( std::pair<const std::string, const int>( err_name, err_code ) );
             return err_code;
         }
     }
