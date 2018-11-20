@@ -1,6 +1,9 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
+#define MAKE_IRODS_ERROR_MAP
+#include "rodsErrorTable.h"
+const static std::map<const std::string, const int> irods_error_name_map = irods_error_map_construction::irods_error_name_map;
 #include "reFuncDefs.hpp"
 #include "utils.hpp"
 #include "restructs.hpp"
@@ -75,24 +78,31 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             res->exprType = newSimpType( T_UNSPECED, r );
             break;
         case TK_TEXT:
-            fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
-            if ( fd != NULL && fd->exprType != NULL ) {
-                int nArgs = 0;
-                ExprType *type = fd->exprType;
-                while ( getNodeType( type ) == T_CONS && strcmp( type->text, FUNC ) == 0 ) {
-                    type = type->subtrees[1];
-                    nArgs ++;
-                }
-                if ( nArgs == 0 ) {
-                    Node *appNode = newPartialApplication( expr, newTupleRes( 0, NULL, r ), 0, r );
-                    res = evaluateFunction3( appNode, applyAll, expr, env, rei, reiSaveFlag, errmsg, r );
-                }
-                else {
+            {
+                auto itr = irods_error_name_map.find(expr->text);
+                if(itr != irods_error_name_map.end()) {
                     res->exprType = newSimpType( T_UNSPECED, r );
+                } else {
+                    fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
+                    if ( fd != NULL && fd->exprType != NULL ) {
+                        int nArgs = 0;
+                        ExprType *type = fd->exprType;
+                        while ( getNodeType( type ) == T_CONS && strcmp( type->text, FUNC ) == 0 ) {
+                            type = type->subtrees[1];
+                            nArgs ++;
+                        }
+                        if ( nArgs == 0 ) {
+                            Node *appNode = newPartialApplication( expr, newTupleRes( 0, NULL, r ), 0, r );
+                            res = evaluateFunction3( appNode, applyAll, expr, env, rei, reiSaveFlag, errmsg, r );
+                        }
+                        else {
+                            res->exprType = newSimpType( T_UNSPECED, r );
+                        }
+                    }
+                    else {
+                        res->exprType = newSimpType( T_UNSPECED, r );
+                    }
                 }
-            }
-            else {
-                res->exprType = newSimpType( T_UNSPECED, r );
             }
             break;
 
@@ -169,24 +179,31 @@ Res* evaluateExpression3( Node *expr, int applyAll, int force, ruleExecInfo_t *r
             res = evaluateVar3( expr->text, expr, rei, env, errmsg, r );
             break;
         case TK_TEXT:
-            fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
-            if ( fd != NULL && fd->exprType != NULL ) {
-                int nArgs = 0;
-                ExprType *type = fd->exprType;
-                while ( getNodeType( type ) == T_CONS && strcmp( type->text, FUNC ) == 0 ) {
-                    type = type->subtrees[1];
-                    nArgs ++;
+            {
+                auto itr = irods_error_name_map.find(expr->text);
+                if(itr != irods_error_name_map.end()) {
+                    res = newIntRes(r, itr->second);
+                } else {
+                    fd = ( FunctionDesc * )lookupFromEnv( ruleEngineConfig.extFuncDescIndex, expr->text );
+                    if ( fd != NULL && fd->exprType != NULL ) {
+                        int nArgs = 0;
+                        ExprType *type = fd->exprType;
+                        while ( getNodeType( type ) == T_CONS && strcmp( type->text, FUNC ) == 0 ) {
+                            type = type->subtrees[1];
+                            nArgs ++;
+                        }
+                        if ( nArgs == 0 ) {
+                            Node *appNode = newPartialApplication( expr, newTupleRes( 0, NULL, r ), 0, r );
+                            res = evaluateFunction3( appNode, applyAll, expr, env, rei, reiSaveFlag, errmsg, r );
+                        }
+                        else {
+                            res = newFuncSymLink( expr->text, nArgs, r );
+                        }
+                    }
+                    else {
+                        res = newFuncSymLink( expr->text, 1, r );
+                    }
                 }
-                if ( nArgs == 0 ) {
-                    Node *appNode = newPartialApplication( expr, newTupleRes( 0, NULL, r ), 0, r );
-                    res = evaluateFunction3( appNode, applyAll, expr, env, rei, reiSaveFlag, errmsg, r );
-                }
-                else {
-                    res = newFuncSymLink( expr->text, nArgs, r );
-                }
-            }
-            else {
-                res = newFuncSymLink( expr->text, 1, r );
             }
             break;
 
@@ -538,6 +555,8 @@ Res *evaluateFunctionApplication( Node *func, Node *arg, int applyAll, Node *nod
     char errbuf[ERR_MSG_LEN];
     int discardResult = ( reiSaveFlag & DISCARD_EXPRESSION_RESULT ) != 0;
     switch ( getNodeType( func ) ) {
+    case N_VAL:
+        return func;
     case N_SYM_LINK:
     case N_PARTIAL_APPLICATION:
         res = newPartialApplication( func, arg, RES_FUNC_N_ARGS( func ) - 1, r );
