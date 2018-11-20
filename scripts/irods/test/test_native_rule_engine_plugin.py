@@ -408,3 +408,22 @@ OUTPUT *status
 
         # Bounce server to get back original settings
         irodsctl.restart()
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_SYS_NOT_SUPPORTED__4174(self):
+
+        rule_file = 'test_SYS_NOT_SUPPORTED__4174.r'
+        rule_string = '''
+test_SYS_NOT_SUPPORTED__4174_rule {
+    fail(SYS_NOT_SUPPORTED);
+}
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        self.admin.assert_icommand('irule -F ' + rule_file, 'STDERR_SINGLELINE','SYS_NOT_SUPPORTED')
+        os.unlink(rule_file)
+
