@@ -402,13 +402,19 @@ main( int argc, char **argv ) {
             rulegen = 1;
             if ( parameters.size() < 3 ) {
                 rodsLog( LOG_ERROR, "incomplete input" );
-                printf( "Use -h for help.\n" );
+                fprintf(stderr, "Use -h for help.\n" );
                 exit( 3 );
             }
             
             snprintf( execMyRuleInp.myRule, META_STR_LEN, "@external rule { %s }", parameters.at(0).c_str() );
             rstrcpy( cmdLineInput, parameters.at(1).c_str(), MAX_NAME_LEN );
-            parseParameters( argsMap, 1, &execMyRuleInp, cmdLineInput );
+
+            if (0 != parseParameters( argsMap, 1, &execMyRuleInp, cmdLineInput )) {
+                rodsLog (LOG_ERROR, "Invalid input parameter list specification");
+                fprintf( stderr, "Use -h for help.\n" );
+                exit(10);
+            }
+
             if ( parameters.at(2) != "null") {
                 rstrcpy( execMyRuleInp.outParamDesc, parameters.at(2).c_str(), LONG_NAME_LEN );
             }
@@ -563,12 +569,15 @@ parseParameters( boost::program_options::variables_map _vm, int ruleGen, execMyR
     memset( &strArray, 0, sizeof( strArray ) );
 
     status = splitMultiStr( inBuf, &strArray );
+
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "parseMsInputParam: parseMultiStr error, status = %d", status );
         execMyRuleInp->inpParamArray = NULL;
         return status;
     }
+
+    status = 0;
 
     resizeStrArray( &strArray, MAX_NAME_LEN );
     value = strArray.value;
@@ -711,10 +720,11 @@ parseParameters( boost::program_options::variables_map _vm, int ruleGen, execMyR
         else {
             rodsLog( LOG_ERROR,
                      "parseMsInputParam: inpParam %s format error", valPtr );
+            status = CAT_INVALID_ARGUMENT;
         }
     }
 
-    return 0;
+    return status;
 }
 
 void
