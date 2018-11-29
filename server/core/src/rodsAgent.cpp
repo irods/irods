@@ -436,7 +436,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         cleanupAndExit( status );
     }
 
-    irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
     irods::re_plugin_globals->global_re_mgr.call_start_operations();
 
@@ -565,7 +564,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     new_net_obj->to_server( &rsComm );
     cleanup();
-    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );
 
