@@ -107,10 +107,7 @@ namespace irods {
             }
 
             bool page_in_flight(const int row_idx_) {
-                if(row_idx_ < row_cnt()) {
-                    return true;
-                }
-                return false;
+                return (row_idx_ < row_cnt());
             }
 
             bool query_complete() {
@@ -141,6 +138,7 @@ namespace irods {
             }
 
             virtual int fetch_page() = 0;
+            virtual void reset_for_page_boundary() = 0;
             virtual ~query_impl_base() {
             }
 
@@ -160,36 +158,33 @@ namespace irods {
         class gen_query_impl : public query_impl_base {
             public:
             virtual ~gen_query_impl() {
-                // Close all statements for this query
-                gen_input_.continueInx = gen_output_->continueInx + 1;
+                // Close statements for this query
+                gen_input_.continueInx = gen_output_->continueInx;
                 freeGenQueryOut(&gen_output_);
                 gen_input_.maxRows = 0;
-                while (gen_input_.continueInx > 0) {
-                    auto err = query_helper::gen_query_fcn(
-                                   comm_,
-                                   &gen_input_,
-                                   &gen_output_);
-                    if (err < 0) {
-                        irods::log(ERROR(err, (boost::format(
-                                    "[%s] - Failed to close statement with continueInx [%d]") %
-                                    __FUNCTION__ % gen_input_.continueInx).str()));
-                        break;
-                    }
-                    gen_input_.continueInx--;
+                auto err = query_helper::gen_query_fcn(
+                               comm_,
+                               &gen_input_,
+                               &gen_output_);
+                if (CAT_NO_ROWS_FOUND != err && err < 0) {
+                    irods::log(ERROR(err, (boost::format(
+                                "[%s] - Failed to close statement with continueInx [%d]") %
+                                __FUNCTION__ % gen_input_.continueInx).str()));
                 }
             }
 
-            int fetch_page() {
+            void reset_for_page_boundary() override {
                 if(gen_output_) {
                     gen_input_.continueInx = gen_output_->continueInx;
                     freeGenQueryOut(&gen_output_);
                 }
+            }
 
-                int ret = query_helper::gen_query_fcn(
+            int fetch_page() override {
+                return query_helper::gen_query_fcn(
                            comm_,
                            &gen_input_,
                            &gen_output_);
-                return ret;
             } // fetch_page
 
             gen_query_impl(
@@ -218,37 +213,34 @@ namespace irods {
         class spec_query_impl : public query_impl_base {
             public:
             virtual ~spec_query_impl() {
-                // Close all statements for this query
-                spec_input_.continueInx = gen_output_->continueInx + 1;
+                // Close statement for this query
+                spec_input_.continueInx = gen_output_->continueInx;
                 freeGenQueryOut(&gen_output_);
                 spec_input_.maxRows = 0;
-                while (spec_input_.continueInx > 0) {
-                    auto err = query_helper::spec_query_fcn(
-                                   comm_,
-                                   &spec_input_,
-                                   &gen_output_);
-                    if (err < 0) {
-                        irods::log(ERROR(
-                                    err, (boost::format(
-                                    "[%s] - Failed to close statement with continueInx [%d]") %
-                                    __FUNCTION__ % spec_input_.continueInx).str()));
-                        break;
-                    }
-                    spec_input_.continueInx--;
+                auto err = query_helper::spec_query_fcn(
+                               comm_,
+                               &spec_input_,
+                               &gen_output_);
+                if (CAT_NO_ROWS_FOUND != err && err < 0) {
+                    irods::log(ERROR(
+                                err, (boost::format(
+                                "[%s] - Failed to close statement with continueInx [%d]") %
+                                __FUNCTION__ % spec_input_.continueInx).str()));
                 }
             }
 
-            int fetch_page() {
+            void reset_for_page_boundary() override {
                 if(gen_output_) {
                     spec_input_.continueInx = gen_output_->continueInx;
                     freeGenQueryOut(&gen_output_);
                 }
+            }
 
-                int ret = query_helper::spec_query_fcn(
+            int fetch_page() override {
+                return query_helper::spec_query_fcn(
                            comm_,
                            &spec_input_,
                            &gen_output_);
-                return ret;
             } // fetch_page
 
             spec_query_impl(
@@ -361,9 +353,13 @@ namespace irods {
                 return capture_results();
             }
 
+            void reset_for_page_boundary() {
+                row_idx_ = 0;
+                query_impl_->reset_for_page_boundary();
+            }
+
             void advance_query() {
                 row_idx_++;
-
                 if(query_impl_->page_in_flight(row_idx_)) {
                     return;
                 }
@@ -373,6 +369,7 @@ namespace irods {
                     return;
                 }
 
+                reset_for_page_boundary();
                 const int query_err = query_impl_->fetch_page();
                 if(query_err < 0) {
                     if(CAT_NO_ROWS_FOUND != query_err) {
