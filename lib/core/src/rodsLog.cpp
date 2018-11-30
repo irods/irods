@@ -408,7 +408,7 @@ rodsLogSql( const char *sql ) {
                                           myPid, sql );
 }
 void
-rodsLogSqlResult( char *stat ) {
+rodsLogSqlResult( const char *stat ) {
     myPid = getpid();
     if ( sqlVerbosityLevel ) rodsLog( LOG_SQL, "pid: %d result: %s",
                                           myPid, stat );
@@ -442,7 +442,7 @@ rodsErrorName( int errorValue, char **subName ) {
  rodsLogError can be called with the same arguments).
  */
 void
-rodsLogErrorOld( int level, int rodsErrorCode, char *textStr ) {
+rodsLogErrorOld( int level, int rodsErrorCode, const char *textStr ) {
     char *errSubName = NULL;
 
     if ( level < verbosityLevel ) {
@@ -467,7 +467,7 @@ rodsLogErrorOld( int level, int rodsErrorCode, char *textStr ) {
    variable arguments).
  */
 void
-rodsLogError( int level, int rodsErrorCode, char *formatStr, ... ) {
+rodsLogError( int level, int rodsErrorCode, const char *formatStr, ... ) {
     char *errSubName = NULL;
     va_list ap;
 

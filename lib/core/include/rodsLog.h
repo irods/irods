@@ -66,10 +66,10 @@ void rodsLogAndErrorMsg( int level, rError_t *myError, int status,
 void rodsLogLevel( int level );
 void rodsLogSqlReq( int onOrOff );
 void rodsLogSql( const char *sql );
-void rodsLogSqlResult( char *stat );
+void rodsLogSqlResult( const char *stat );
 const char *rodsErrorName( int errorValue, char **subName );
-void rodsLogErrorOld( int level, int errCode, char *textStr );
-void rodsLogError( int level, int errCode, char *formatStr, ... );
+void rodsLogErrorOld( int level, int errCode, const char *textStr );
+void rodsLogError( int level, int errCode, const char *formatStr, ... );
 int getRodsLogLevel();
 void generateLogTimestamp( char *ts, int tsLen );
 
