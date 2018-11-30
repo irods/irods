@@ -11,7 +11,7 @@
 const char * const icmds[] = {
     "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
     "ienv",
-    "ierror", "iexecmd", "iexit", "ifsck", "iget", "igroupadmin",
+    "ierror", "iexit", "ifsck", "iget", "igroupadmin",
     "ihelp", "iinit", "ils", "ilsresc",
     "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv",
     "ipasswd",
@@ -35,7 +35,6 @@ printMainHelp() {
         "icp          - copy a data-object (file) or Collection (directory) to another.",
         "ienv         - display current iRODS environment.",
         "ierror       - convert an iRODS error code to text.",
-        "iexecmd      - remotely execute special commands.",
         "iexit        - exit an iRODS session (opposite of iinit).",
         "ifsck        - check if local files/directories are consistent with the associated Data Objects/Collections in iRODS.",
         "iget         - get a file from iRODS.",
