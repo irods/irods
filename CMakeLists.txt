@@ -47,7 +47,6 @@ set(
   icp
   ienv
   ierror
-  iexecmd
   iexit
   ifsck
   iget
