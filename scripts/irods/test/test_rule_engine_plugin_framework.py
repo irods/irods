@@ -31,8 +31,6 @@ def delayAssert(a, interval=1, maxrep=100):
             break
     assert a()
 
-
-
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -84,15 +82,3 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'writeLine')
 
             delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Test_Plugin_Instance_Delay', start_index=initial_log_size))
-
-
-
-
-
-
-
-
-
-
-
-
