@@ -198,12 +198,11 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     int status;
     rsComm_t rsComm;
 
-    namespace exp = irods::experimental;
+    using log = irods::experimental::log;
 
-    // Attach the error stack object to the logger and release
-    // it once this function returns.
-    exp::log::set_error_object(&rsComm.rError);
-    irods::at_scope_exit at_scope_exit{[] { exp::log::set_error_object(nullptr); }};
+    // Attach the error stack object to the logger and release it once this function returns.
+    log::set_error_object(&rsComm.rError);
+    irods::at_scope_exit release_error_stack{[] { log::set_error_object(nullptr); }};
 
     signal( SIGINT, irodsAgentSignalExit );
     signal( SIGHUP, irodsAgentSignalExit );
@@ -371,9 +370,15 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
                 irods::server_properties::instance().capture();
 
-                using ilog = irods::experimental::log;
-
-                ilog::agent::set_level(ilog::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
+                log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
+                log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
+                log::resource::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW));
+                log::database::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DATABASE_KW));
+                log::auth::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AUTHORIZATION_KW));
+                log::api::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_API_KW));
+                log::msi::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW));
+                log::network::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_NETWORK_KW));
+                log::rule_engine::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW));
 
                 irods::error ret2 = setRECacheSaltFromEnv();
                 if ( !ret2.ok() ) {
