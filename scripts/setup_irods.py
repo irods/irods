@@ -89,6 +89,8 @@ def setup_server(irods_config, json_configuration_file=None):
 
     setup_service_account(irods_config, irods_user, irods_group)
 
+    setup_syslog_and_logrotate()
+
     #Do the rest of the setup as the irods user
     if os.getuid() == 0:
         irods.lib.switch_user(irods_config.irods_user, irods_config.irods_group)
@@ -130,7 +132,66 @@ def setup_server(irods_config, json_configuration_file=None):
 
     test_put(irods_config)
 
+    l.info(irods.lib.get_header('Log Configuration Notes'))
+    l.info(('The iRODS log file is managed by syslog and logrotate.\n'
+            'The locations of the log file and configuration files are listed below.\n\n'
+            '  Log File Path               : ' + log_file_path() + '\n'
+            '  Syslog Configuration Path   : ' + syslog_config_path() + '\n'
+            '  Logrotate Configuration Path: ' + logrotate_config_path() + '\n\n'
+            'iRODS will never touch these configuration files ever again. If you need\n'
+            'to make adjustments, you must do so manually.'))
+
     l.info(irods.lib.get_header('iRODS is installed and running'))
+
+def syslog_config_path():
+    return '/etc/rsyslog.d/5-irods.conf'
+
+def log_file_path():
+    return '/var/log/irods.log'
+
+def logrotate_config_path():
+    return '/etc/logrotate.d/irods'
+
+def setup_syslog_and_logrotate():
+    l = logging.getLogger(__name__)
+
+    irods_syslog_config_path = syslog_config_path()
+    irods_log_file_path = log_file_path()
+
+    l.info(irods.lib.get_header('Configuring Syslog and Logrotate'))
+
+    # Enable syslog support if the syslog config file for iRODS does not exist.
+    if not os.path.exists(irods_syslog_config_path):
+        l.info('Creating syslog configuration file for iRODS ...')
+        with open(irods_syslog_config_path, 'w') as f:
+            f.write(('$FileCreateMode 0644\n'
+                     '$Umask 0000\n'
+                     ':programname,startswith,"irodsServer"\t' + irods_log_file_path + '\n'
+                     '& stop\n'))
+        l.info('Restarting syslog ...')
+        irods.lib.execute_command(['service', 'rsyslog', 'restart'])
+    else:
+        l.info('Found syslog configuration file for iRODS.  Skipping ...')
+
+    irods_logrotate_config_path = logrotate_config_path()
+
+    # Configure logrotate support if the logrotate config file for iRODS does not exist.
+    if not os.path.exists(irods_logrotate_config_path):
+        l.info('Creating logrotate configuration file for iRODS ...\n')
+        with open(irods_logrotate_config_path, 'w') as f:
+            f.write((irods_log_file_path + ' {\n'
+                     '\tweekly\n'
+                     '\trotate 26\n'
+                     '\tcopytruncate\n'
+                     '\tdelaycompress\n'
+                     '\tcompress\n'
+                     '\tdateext\n'
+                     '\tnotifempty\n'
+                     '\tmissingok\n'
+                     '\tsu root root\n'
+                     '}\n'))
+    else:
+        l.info('Found logrotate configuration file for iRODS.  Skipping ...')
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)

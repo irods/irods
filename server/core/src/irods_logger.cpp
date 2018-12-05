@@ -9,7 +9,7 @@ namespace irods::experimental {
 void log::init() noexcept
 {
     static const char* id = "";
-    log_ = spdlog::syslog_logger("syslog", id, LOG_PID);
+    log_ = spdlog::syslog_logger("syslog", id, LOG_PID, LOG_LOCAL0);
     log_->set_level(spdlog::level::trace); // Log everything!
 }
 
