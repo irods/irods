@@ -1,11 +1,12 @@
 #ifndef IRODS_RE_PLUGIN_HPP
 #define IRODS_RE_PLUGIN_HPP
+
 #include "irods_error.hpp"
 #include "irods_load_plugin.hpp"
 #include "irods_lookup_table.hpp"
 #include "irods_re_structs.hpp"
+#include "irods_state_table.h"
 
-#include <boost/any.hpp>
 #include <iostream>
 #include <list>
 #include <vector>
@@ -13,6 +14,10 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <initializer_list>
+
+#include <boost/any.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace irods {
 
@@ -426,16 +431,33 @@ namespace irods {
 
     template <typename ER, typename EM, typename T, typename ...As>
     inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, const std::string& _rn, As &&... _ps) {
-        bool ret;
-        for(auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
-            error ruleExistsError = itr->re_->rule_exists(_rn, itr->re_ctx_, ret);
-            if (!ruleExistsError.ok()) {
-                return ruleExistsError;
+        // Iterate over the list of REPs. If the rule exists in one of the REPs,
+        // then execute that REP's rule code.
+        for (auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
+            bool rule_exists = false;
+
+            error err = itr->re_->rule_exists(_rn, itr->re_ctx_, rule_exists);
+
+            if (!err.ok()) {
+                return err;
             }
-            if (ret) {
-                return _er(*itr, _rn, std::forward<As>(_ps)...);
+
+            if (rule_exists) {
+                err = _er(*itr, _rn, std::forward<As>(_ps)...);
+
+                // Continue to the next rule engine plugin if the current REP
+                // returns either of the following:
+                // - SYS_NOT_SUPPORTED   : Signals to the REPF that the REP did nothing. 
+                // - RULE_ENGINE_CONTINUE: Signals to the REPF to continue with the next REP.
+                const std::initializer_list<int> continuation_codes = {SYS_NOT_SUPPORTED, RULE_ENGINE_CONTINUE};
+                const auto pred = [ec = err.code()](const auto _ec) { return _ec == ec; };
+
+                if (std::none_of(begin(continuation_codes), end(continuation_codes), pred)) {
+                    return err;
+                }
             }
         }
+
         return _em(_rn, std::forward<As>(_ps)...);
     }
 
@@ -457,6 +479,7 @@ namespace irods {
                 ret = false;
                 return SUCCESS();
             };
+
             return control(re_mgr_.re_packs_, er, em, _rn);
         }
     protected:
@@ -470,28 +493,45 @@ namespace irods {
     template<typename T, typename C>
     class rule_engine_context_manager<T,C,AUDIT_RULE> final : public rule_exists_manager<T,C> {
     public:
-        rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx) :
-                rule_exists_manager<T,C>{_re_mgr},
-                ctx_{_ctx},
-                rex_mgr_{std::make_shared<rule_engine_context_manager<T,C,DONT_AUDIT_RULE>>(_re_mgr, _ctx)} {}
-
+        rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx)
+            : rule_exists_manager<T,C>{_re_mgr}
+            , ctx_{_ctx}
+            , rex_mgr_{std::make_shared<rule_engine_context_manager<T,C,DONT_AUDIT_RULE>>(_re_mgr, _ctx)}
+        {
+        }
 
         template <typename ...As>
         error exec_rule(const std::string& _rn, As &&... _ps) {
             auto er = [this](re_pack_inp<T>& _itr, const std::string& _rn, decltype(_ps)... _ps) {
-                std::function<error(const std::string&, re_pack_inp<T>&, decltype(_ps)...)> fun =
-                [this](const std::string& _rn, re_pack_inp<T>& _itr, decltype(_ps)... _ps) {
+                using func_t = std::function<error(const std::string&, re_pack_inp<T>&, decltype(_ps)...)>;
+
+                func_t fun = [this](const std::string& _rn, re_pack_inp<T>& _itr, decltype(_ps)... _ps) {
                     return _itr.re_->template exec_rule<As...>(_rn, _itr.re_ctx_, std::forward<As >(_ps)..., callback(*this));
                 };
-                return this->rex_mgr_.call(_itr.instance_name_,std::string ("exec_rule"), fun, _rn, _itr, std::forward<As>(_ps)...);
+
+                return this->rex_mgr_.call(_itr.instance_name_,
+                                           std::string("exec_rule"),
+                                           fun, 
+                                           _rn, 
+                                           _itr, 
+                                           std::forward<As>(_ps)...);
             };
-            auto em = [this](const std::string& _rn, decltype(_ps) ... _ps) {
-                std::function<error(const std::string&, C&, decltype(_ps)...)> fun =
-                [this](const std::string& _rn, C& _ctx, decltype(_ps) ... _ps) {
+
+            auto em = [this](const std::string& _rn, decltype(_ps)... _ps) {
+                using func_t = std::function<error(const std::string&, C&, decltype(_ps)...)>;
+
+                func_t fun = [this](const std::string& _rn, C& _ctx, decltype(_ps)... _ps) {
                     return this->re_mgr_.ms_mgr_.exec_microservice(_rn, _ctx, std::forward<As>(_ps)...);
                 };
-                return this->rex_mgr_.call(std::string ("microservice_manager"),std::string ("exec_microservice"), fun, _rn, this->ctx_, std::forward<As>(_ps)...);
+
+                return this->rex_mgr_.call(std::string("microservice_manager"),
+                                           std::string("exec_microservice"), 
+                                           fun, 
+                                           _rn, 
+                                           this->ctx_, 
+                                           std::forward<As>(_ps)...);
             };
+
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
 
@@ -516,9 +556,8 @@ namespace irods {
             std::string msg( "instance not found [" );
             msg += _instance_name;
             msg += "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+
+            return ERROR(SYS_INVALID_INPUT_PARAM, msg);
         }
 
         error exec_rule_expression(
@@ -566,9 +605,11 @@ namespace irods {
             auto er = [this](re_pack_inp<T>& _itr, const std::string& _rn, decltype(_ps)... _ps) {
                 return _itr.re_->template exec_rule<As...>( _rn, _itr.re_ctx_, std::forward<As>(_ps)..., callback(*this));
             };
+
             auto em = [this](const std::string& _rn, decltype(_ps)... _ps) {
                 return this->re_mgr_.ms_mgr_.exec_microservice(_rn, this->ctx_, std::forward<As>(_ps)...);
             };
+
             return control(this->re_mgr_.re_packs_, er, em, _rn, std::forward<As>(_ps)...);
         }
 
