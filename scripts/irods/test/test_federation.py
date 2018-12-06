@@ -1329,3 +1329,93 @@ OUTPUT ruleExecOut
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
         os.remove(filepath)
+
+class Test_Recursive_Icp(SessionsMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(Test_Recursive_Icp, self).setUp()
+
+        # load federation settings in dictionary (all lower case)
+        self.config = {}
+        for key, val in test.settings.FEDERATION.__dict__.items():
+            if not key.startswith('__'):
+                self.config[key.lower()] = val
+        self.config['local_zone'] = self.user_sessions[0].zone_name
+
+        # Use 10 files; expected value is -1 due to 0-based indexing
+        self.file_count1 = 10
+        self.file_count2 = self.file_count1 * 2
+        self.local_dir1 = 'test_recursive_icp1'
+        self.local_dir2 = 'test_recursive_icp2'
+        lib.create_directory_of_small_files(self.local_dir1, self.file_count1)
+        lib.create_directory_of_small_files(self.local_dir2, self.file_count2)
+
+        test_session = self.user_sessions[0]
+        source_coll_name = 'source_coll'
+        self.local_source_coll = os.path.join(test_session.home_collection, source_coll_name)
+        test_session.assert_icommand(['imkdir', self.local_source_coll])
+
+        test_session.assert_icommand(['irsync', '-r', self.local_dir1, self.local_dir2, 'i:{}'.format(self.local_source_coll)], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+
+    def tearDown(self):
+        test_session = self.user_sessions[0]
+        test_session.assert_icommand(['irm', '-rf', self.local_source_coll])
+        shutil.rmtree(self.local_dir1)
+        shutil.rmtree(self.local_dir2)
+        super(Test_Recursive_Icp, self).tearDown()
+
+    # recursive icp of local source collection
+    def cp_recursive_local_source_test(self, source_coll, flat_coll=True, remote_zone=True, in_target=False):
+        test_session = self.user_sessions[0]
+        try:
+            # prepare names for home collection and target collection
+            if remote_zone:
+                home_coll = test_session.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
+            else:
+                home_coll = test_session.home_collection
+            target_coll = os.path.join(home_coll, 'cp_recursive_local_source_test')
+            # create target collection and copy source into it
+            test_session.assert_icommand(['imkdir', target_coll])
+            if in_target:
+                test_session.assert_icommand(['icd', target_coll])
+                test_session.assert_icommand(['icp', '-r', source_coll, '.'])
+            else:
+                test_session.assert_icommand(['icp', '-r', source_coll, target_coll])
+            # ensure all files are in the collection
+            test_session.assert_icommand(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count1 - 1)))
+            if flat_coll:
+                test_session.assert_icommand_fail(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count2 - 1)))
+            else:
+                test_session.assert_icommand(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count2 - 1)))
+        finally:
+            # cleanup
+            test_session.assert_icommand(['irm', '-rf', target_coll])
+
+    def test_icp_single_dir_localzone_in_home(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=False, in_target=False)
+
+    def test_icp_single_dir_localzone_in_target(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=False, in_target=True)
+
+    def test_icp_single_dir_remotezone_in_home(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=True, in_target=False)
+
+    def test_icp_single_dir_remotezone_in_target(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=True, in_target=True)
+
+    def test_icp_tree_localzone_in_home(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=False, in_target=False)
+
+    def test_icp_tree_localzone_in_target(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=False, in_target=True)
+
+    def test_icp_tree_remotezone_in_home(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=False)
+
+    def test_icp_tree_remotezone_in_target(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=True)
+
