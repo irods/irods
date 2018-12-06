@@ -866,13 +866,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(["imeta","rmw","-R",self.testresc,"rebalance_operation","%","%"])
         self.admin.assert_icommand(["imeta","rmw","-R","demoResc","rebalance_operation","%","%"])
 
-    def test_iexecmd(self):
-        test_file = "iput_test_file"
-        lib.make_file(test_file, 10)
-        self.admin.assert_icommand("iput %s foo" % test_file)
-        self.admin.assert_icommand(['iexecmd', '-p', self.admin.session_collection + '/foo', 'hello'], 'STDOUT_SINGLELINE', "Hello world  from irods")
-        self.admin.assert_icommand("irm -f foo")
-
     def test_ibun(self):
         test_file = "ibun_test_file"
         lib.make_file(test_file, 1000)
