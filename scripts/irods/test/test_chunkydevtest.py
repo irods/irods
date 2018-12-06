@@ -56,7 +56,6 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ipwd", 'STDOUT_SINGLELINE', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT_SINGLELINE', "ils")
         self.admin.assert_icommand("ierror -14000", 'STDOUT_SINGLELINE', "SYS_API_INPUT_ERR")
-        self.admin.assert_icommand("iexecmd hello", 'STDOUT_SINGLELINE', "Hello world")
         self.admin.assert_icommand("ips -v", 'STDOUT_SINGLELINE', "ips")
         self.admin.assert_icommand("iqstat", 'STDOUT_SINGLELINE', "No delayed rules pending for user " + self.admin.username)
 
@@ -619,7 +618,6 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ipwd", 'STDOUT_SINGLELINE', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT_SINGLELINE', "ils")
         self.admin.assert_icommand("ierror -14000", 'STDOUT_SINGLELINE', "SYS_API_INPUT_ERR")
-        self.admin.assert_icommand("iexecmd hello", 'STDOUT_SINGLELINE', "Hello world")
         self.admin.assert_icommand("ips -v", 'STDOUT_SINGLELINE', "ips")
         self.admin.assert_icommand("iqstat", 'STDOUT_SINGLELINE', "No delayed rules")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtest1")
