@@ -16,6 +16,8 @@ from ..configuration import IrodsConfig
 
 class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
     def setUp(self):
         super(Test_Rule_Engine_Plugin_Passthrough, self).setUp()
         self.admin = self.admin_sessions[0]
@@ -23,7 +25,7 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
     def tearDown(self):
         super(Test_Rule_Engine_Plugin_Passthrough, self).tearDown()
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_repf_continuation_using_passthrough_rep__issues_4147_4148_4179(self):
         config = IrodsConfig()
 
