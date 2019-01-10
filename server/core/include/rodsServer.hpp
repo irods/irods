@@ -69,9 +69,6 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead );
 int
 execAgent( int newSock, startupPack_t *startupPack );
 int
-queConnectedAgentProc( int childPid, agentProc_t *connReq,
-                       agentProc_t **agentProcHead );
-int
 getAgentProcCnt();
 int
 chkAgentProcCnt();
