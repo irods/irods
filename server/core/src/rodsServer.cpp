@@ -42,13 +42,14 @@ using namespace boost::filesystem;
 
 #include "irods_random.hpp"
 
-struct sockaddr_un local_addr;
-int agent_conn_socket;
-bool connected_to_agent = false;
+struct sockaddr_un local_addr{};
+int agent_conn_socket{};
+bool connected_to_agent{};
 
-pid_t agent_spawning_pid;
-char agent_factory_socket_file[128];
-char agent_factory_socket_dir[128];
+pid_t agent_spawning_pid{};
+const char socket_dir_template[]{"/tmp/irods_sockets_XXXXXX"};
+char agent_factory_socket_dir[sizeof(socket_dir_template)]{};
+char agent_factory_socket_file[sizeof(local_addr.sun_path)]{};
 
 uint ServerBootTime;
 int SvrSock;
@@ -75,7 +76,12 @@ boost::condition_variable SpawnReqCond;
 
 std::vector<std::string> setExecArg( const char *commandArgv );
 
-int runIrodsAgent( sockaddr_un agent_addr );
+int runIrodsAgentFactory(sockaddr_un agent_addr);
+
+int queueConnectedAgentProc(
+    int childPid,
+    agentProc_t *connReq,
+    agentProc_t **agentProcHead);
 
 namespace {
 // We incorporate the cache salt into the rule engine's named_mutex and shared memory object.
@@ -248,29 +254,28 @@ main( int argc, char **argv )
     char random_suffix[65];
     get64RandomBytes( random_suffix );
 
-    char mkdtemp_template[] = "/tmp/irods_sockets_XXXXXX";
-    char* mkdtemp_result = mkdtemp(mkdtemp_template); 
-    if ( mkdtemp_result == NULL ) {
-        rodsLog( LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno) );
-        free( logDir );
+    char mkdtemp_template[sizeof(socket_dir_template)]{};
+    snprintf(mkdtemp_template, sizeof(mkdtemp_template), "%s", socket_dir_template);
+
+    const char* mkdtemp_result = mkdtemp(mkdtemp_template);
+    if (!mkdtemp_result) {
+        rodsLog(LOG_ERROR, "Error creating tmp directory for iRODS sockets, mkdtemp errno [%d]: [%s]", errno, strerror(errno));
+        free(logDir);
         return SYS_INTERNAL_ERR;
     }
-    strcpy( agent_factory_socket_dir, mkdtemp_result );
-
-    strcpy( agent_factory_socket_file, agent_factory_socket_dir );
-    strcat( agent_factory_socket_file, "/irods_factory_" );
-    strcat( agent_factory_socket_file, random_suffix );
-    strcpy( local_addr.sun_path, agent_factory_socket_file );
+    snprintf(agent_factory_socket_dir, sizeof(agent_factory_socket_dir), "%s", mkdtemp_result);
+    snprintf(agent_factory_socket_file, sizeof(agent_factory_socket_file), "%s/irods_factory_%s", agent_factory_socket_dir, random_suffix);
+    snprintf(local_addr.sun_path, sizeof(local_addr.sun_path), "%s", agent_factory_socket_file);
 
     agent_spawning_pid = fork();
 
     if ( agent_spawning_pid == 0 ) {
-        // Child process
+        // Agent factory process (parent)
         ProcessType = AGENT_PT;
         free( logDir );
-        return runIrodsAgent( local_addr );
+        return runIrodsAgentFactory( local_addr );
     } else if ( agent_spawning_pid > 0 ) {
-        // Parent process
+        // Main iRODS server (grandparent)
         rodsLog( LOG_NOTICE, "Agent factory process pid = [%d]", agent_spawning_pid );
         agent_conn_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
 
@@ -453,7 +458,11 @@ serverMain( char *logDir ) {
         irods::server_control_plane ctrl_plane(
             irods::CFG_SERVER_CONTROL_PLANE_PORT );
 
-        startProcConnReqThreads();
+        status = startProcConnReqThreads();
+        if(status < 0) {
+            rodsLog(LOG_ERROR, "[%s] - Error in startProcConnReqThreads()", __FUNCTION__);
+            return status;
+        }
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
             try {
                 PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
@@ -724,7 +733,9 @@ spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead ) {
     startupPack = &connReq->startupPack;
 
     childPid = execAgent( newSock, startupPack );
-    queConnectedAgentProc( childPid, connReq, agentProcHead );
+    if (childPid > 0) {
+        queueConnectedAgentProc(childPid, connReq, agentProcHead);
+    }
 
     return childPid;
 }
@@ -788,53 +799,67 @@ ssize_t sendSocketOverSocket( int writeFd, int socket ) {
 
 int
 execAgent( int newSock, startupPack_t *startupPack ) {
-    ssize_t status;
-    unsigned int len = sizeof(local_addr);
-    char in_buf[1024];
-    memset( in_buf, 0, sizeof(in_buf) );
-
     // Create unique socket for each call to exec agent
-    sockaddr_un tmp_socket_addr;
-    char tmp_socket_file[128];
-    char random_suffix[65];
-    int tmp_socket;
-    memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
-    tmp_socket_addr.sun_family = AF_UNIX;
-    get64RandomBytes( random_suffix );
+    char random_suffix[65]{};
+    get64RandomBytes(random_suffix);
 
-    strcpy( tmp_socket_file, agent_factory_socket_dir );
-    strcat( tmp_socket_file, "/irods_agent_" );
-    strcat( tmp_socket_file, random_suffix );
+    sockaddr_un tmp_socket_addr{};
+    char tmp_socket_file[sizeof(tmp_socket_addr.sun_path)]{};
+    snprintf(tmp_socket_file, sizeof(tmp_socket_file), "%s/irods_agent_%s", agent_factory_socket_dir, random_suffix);
 
-    status = send( agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0 );
+    ssize_t status{send(agent_conn_socket, tmp_socket_file, strlen(tmp_socket_file), 0)};
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "Error sending socket to agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
     } else if ( static_cast<size_t>(status) < strlen( tmp_socket_file ) ) {
-
         rodsLog( LOG_DEBUG, "Failed to send entire message - msg [%s] is [%d] bytes long, sent [%d] bytes", tmp_socket_file, strlen( tmp_socket_file ), status );
     }
 
-    strcpy( tmp_socket_addr.sun_path, tmp_socket_file );
+    tmp_socket_addr.sun_family = AF_UNIX;
+    strncpy(tmp_socket_addr.sun_path, tmp_socket_file, sizeof(tmp_socket_addr.sun_path));
 
-    tmp_socket = socket( AF_UNIX, SOCK_STREAM, 0 );
+    int tmp_socket{socket(AF_UNIX, SOCK_STREAM, 0)};
     if ( tmp_socket < 0 ) {
         rodsLog( LOG_ERROR, "Unable to create socket in execAgent, errno = [%d]: %s", errno, strerror( errno ) );
     }
 
+    const auto cleanup_sockets{[&]() {
+        if (close(tmp_socket) < 0) {
+            rodsLog(LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror(errno));
+        }
+        if (unlink(tmp_socket_file) < 0) {
+            rodsLog(LOG_ERROR, "unlink(tmp_socket_file) failed with errno = [%d]: %s", errno, strerror(errno));
+        }
+    }};
+
     // Wait until receiving acknowledgement that socket has been created
-    status = recv( agent_conn_socket, &in_buf, 1024, 0 );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
-        return SYS_SOCK_READ_ERR;
-    } else if ( strcmp(in_buf, "OK") != 0 ) {
-        rodsLog( LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf );
-        return status;
+    char in_buf[1024]{};
+    status = recv( agent_conn_socket, &in_buf, sizeof(in_buf), 0 );
+    if (status < 0) {
+        rodsLog(LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror(errno));
+        status = SYS_SOCK_READ_ERR;
+    } else if (0 != strcmp(in_buf, "OK")) {
+        rodsLog(LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf);
+        status = SYS_SOCK_READ_ERR;
+    }
+    else {
+        status = connect(tmp_socket, (const struct sockaddr*) &tmp_socket_addr, sizeof(local_addr));
+        if (status < 0) {
+            rodsLog(LOG_ERROR, "Unable to connect to socket in agent factory process, errno = [%d]: %s", errno, strerror(errno));
+            status = SYS_SOCK_CONNECT_ERR;
+        }
     }
 
-    status = connect( tmp_socket, (const struct sockaddr*) &tmp_socket_addr, len );
     if (status < 0) {
-        rodsLog( LOG_ERROR, "Unable to connect to socket in agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
-        return SYS_SOCK_CONNECT_ERR;
+        // Agent factory expects a message about connection to the agent - send failure
+        const std::string failure_message{"spawn_failure"};
+        send(agent_conn_socket, failure_message.c_str(), failure_message.length() + 1, 0);
+        cleanup_sockets();
+        return status;
+    }
+    else {
+        // Notify agent factory of success and send data to agent process
+        const std::string connection_successful{"connection_successful"};
+        send(agent_conn_socket, connection_successful.c_str(), connection_successful.length() + 1, 0);
     }
 
     status = sendEnvironmentVarStrToSocket( SP_RE_CACHE_SALT,irods::get_server_property<const std::string>( irods::CFG_RE_CACHE_SALT_KW).c_str(),  tmp_socket );
@@ -916,40 +941,30 @@ execAgent( int newSock, startupPack_t *startupPack ) {
         rodsLog( LOG_ERROR, "Failed to send \"end_of_vars;\" to agent" );
     }
 
-    status = recv( tmp_socket, &in_buf, 1024, 0 );
+    status = recv( tmp_socket, &in_buf, sizeof(in_buf), 0 );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "Error in recv acknowledgement from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        cleanup_sockets();
         return SYS_SOCK_READ_ERR;
     } else if ( strcmp(in_buf, "OK") != 0 ) {
         rodsLog( LOG_ERROR, "Bad acknowledgement from agent factory process, message = [%s]", in_buf );
-        return status;
+        cleanup_sockets();
+        return SYS_SOCK_READ_ERR;
     }
-
     sendSocketOverSocket( tmp_socket, newSock );
-
-    status = recv( tmp_socket, &in_buf, 1024, 0 );
+    status = recv( tmp_socket, &in_buf, sizeof(in_buf), 0 );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "Error in recv child_pid from agent factory process, errno = [%d]: %s", errno, strerror( errno ) );
+        cleanup_sockets();
         return SYS_SOCK_READ_ERR;
     }
 
-    int childPid = atoi(in_buf);
-
-    status = close( tmp_socket );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
-    }
-
-    status = unlink( tmp_socket_file );
-    if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "unlink(tmp_socket_file) failed with errno = [%d]: %s", errno, strerror( errno ) );
-    }
-
-    return childPid;
+    cleanup_sockets();
+    return std::atoi(in_buf);
 }
 
 int
-queConnectedAgentProc( int childPid, agentProc_t *connReq,
+queueConnectedAgentProc( int childPid, agentProc_t *connReq,
                        agentProc_t **agentProcHead ) {
     if ( connReq == NULL ) {
         return USER__NULL_INPUT_ERR;

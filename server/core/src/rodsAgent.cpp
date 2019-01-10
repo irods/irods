@@ -89,7 +89,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
     memset( in_buf, 0, 1024 );
     bool data_complete = false;
 
-    char ack_buffer[256];
+    char ack_buffer[256]{};
     unsigned int len = snprintf( ack_buffer, 256, "OK" );
 
     while (!data_complete) {
@@ -185,8 +185,8 @@ irodsAgentSignalExit( int ) {
 }
 
 int
-runIrodsAgent( sockaddr_un agent_addr ) {
-    int status;
+runIrodsAgentFactory( sockaddr_un agent_addr ) {
+    int status{};
     rsComm_t rsComm;
 
     signal( SIGINT, irodsAgentSignalExit );
@@ -290,10 +290,9 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             // select returned, attempt to receive data
             // If 0 bytes are received, socket has been closed
             // If a socket address is on the line, create it and fork a child process
-            char in_buf[1024];
-            memset( in_buf, 0, sizeof(in_buf));
+            char in_buf[1024]{};
+            int tmp_socket{};
             const ssize_t bytes_received = recv( conn_socket, &in_buf, sizeof(in_buf), 0 );
-            int tmp_socket;
             if ( bytes_received == -1 ) {
                 rodsLog(LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]: %s", errno, strerror( errno ) );
                 return SYS_SOCK_READ_ERR;
@@ -304,8 +303,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             } else {
                 // Assume that we have received valid data over the socket connection
                 // Set up the temporary (per-agent) sockets
-                sockaddr_un tmp_socket_addr;
-                memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
+                sockaddr_un tmp_socket_addr{};
                 tmp_socket_addr.sun_family = AF_UNIX;
                 strncpy( tmp_socket_addr.sun_path, in_buf, sizeof(tmp_socket_addr.sun_path) );
                 unsigned int len = sizeof(tmp_socket_addr);
@@ -326,9 +324,25 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 }
 
                 // Send acknowledgement that socket has been created
-                char ack_buffer[256];
+                char ack_buffer[256]{};
                 len = snprintf( ack_buffer, sizeof(ack_buffer), "OK" );
-                send ( conn_socket, ack_buffer, len, 0 );
+                const auto bytes_sent{send(conn_socket, ack_buffer, len, 0)};
+                if (bytes_sent < 0) {
+                    rodsLog(LOG_ERROR, "[%s] - Error sending acknowledgment to rodsServer, errno = [%d][%s]", __FUNCTION__, errno, strerror(errno));
+                    return SYS_SOCK_READ_ERR;
+                }
+
+                // Wait for connection message from main server
+                memset(in_buf, 0, sizeof(in_buf));
+                recv(conn_socket, in_buf, sizeof(in_buf), 0);
+                if (0 != std::string(in_buf).compare("connection_successful")) {
+                    rodsLog(LOG_ERROR, "[%s:%d] - received failure message in connecting to socket from server", __FUNCTION__, __LINE__);
+                    status = close( tmp_socket );
+                    if (status < 0) {
+                        rodsLog(LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror(errno));
+                    }
+                    continue;
+                }
 
                 conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
                 if ( conn_tmp_socket == -1 ) {
