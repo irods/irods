@@ -65,6 +65,10 @@ def run_update(irods_config, cursor):
             for child_name, context in child_contexts:
                 database_connect.execute_sql_statement(cursor, "update R_RESC_MAIN set resc_parent_context=? where resc_name=?", context, child_name)
 
+    elif new_schema_version == 6:
+        database_connect.execute_sql_statement(cursor, "create index idx_data_main7 on R_DATA_MAIN (resc_id);")
+        database_connect.execute_sql_statement(cursor, "create index idx_data_main8 on R_DATA_MAIN (data_is_dirty);")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
