@@ -208,3 +208,14 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
 
         # Remove the files from iRODS.
         self.admin.assert_icommand('irm -rf {0}'.format(dst_dir))
+
+    def test_ireg_file_with_unresolvable_owner__issue_4040(self):
+        filename = '/tmp/irods_unresolvable_uid_testfile__issue_4040'
+        fullpath = os.path.abspath(filename)
+        # if the file is there (should be for a package installation)
+        # attempt the ireg, should pass now that 4040 is fixed
+        if os.path.isfile(fullpath):
+            self.admin.assert_icommand('ireg {0} {1}'.format(fullpath, self.admin.session_collection+'/'+os.path.basename(filename)))
+            self.admin.assert_icommand('irm -U {0}'.format(self.admin.session_collection+'/'+os.path.basename(filename)))
+        else:
+            print('ireg skipped, file not found [{0}]'.format(filename))
