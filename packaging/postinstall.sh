@@ -73,6 +73,11 @@ chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecC
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/irodsServerMonPerf
 chown $IRODS_SERVICE_ACCOUNT_NAME:$IRODS_SERVICE_GROUP_NAME $IRODS_HOME/msiExecCmd_bin/hello
 
+# =-=-=-=-=-=-=-
+# set permission on single testfile to a probably unresolvable uid
+touch /tmp/irods_unresolvable_uid_testfile__issue_4040
+chown 29999:29999 /tmp/irods_unresolvable_uid_testfile__issue_4040
+
 if [ ! $UPGRADE_FLAG ] ; then
     cat $IRODS_HOME/packaging/server_setup_instructions.txt
 fi
