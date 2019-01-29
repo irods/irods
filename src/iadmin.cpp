@@ -1861,6 +1861,23 @@ usage( char *subOpt ) {
         "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
         " ",
         "'rebalance' will trigger the rebalancing operation on a coordinating resource node.",
+        " ",
+        "Running 'iadmin modresc <rescName> rebalance' will check if",
+        "a rebalance is already running for <rescName> by looking for an",
+        "AVU on the named resource matching an attribute 'rebalance_operation'.",
+        " ",
+        "If it finds a match, it will exit early and return",
+        "REBALANCE_ALREADY_ACTIVE_ON_RESOURCE.",
+        " ",
+        "An active (or stale) rebalance will appear in the catalog:",
+        " ",
+        "  $ imeta ls -R demoResc",
+        "  AVUs defined for resource demoResc:",
+        "  attribute: rebalance_operation",
+        "  value: x.x.x.x:7294",
+        "  units: 20180203T140006Z",
+        " ",
+        "When a rebalance completes successfully, the timestamp AVU is removed.",
         ""
     };
 
