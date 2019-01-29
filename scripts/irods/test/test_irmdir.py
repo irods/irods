@@ -78,3 +78,6 @@ class Test_Irmdir(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['irmdir', '-p', rods_collname_5], 'STDOUT_SINGLELINE', [ '[' + self.admin.session_collection + ']', 'Collection is not empty'])
         # If irmdir failed, attempting to make a directory with the same name will also fail
         self.admin.assert_icommand(['imkdir', rods_collname_2])
+
+    def test_irmdir_no_input(self):
+        self.admin.assert_icommand('irmdir', 'STDOUT_SINGLELINE', 'No collection names specified.')
