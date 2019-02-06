@@ -44,7 +44,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
             f.write('gibberish\n')
 
         # do the reauth
-        self.auth_session.assert_icommand('iexit full')
+        self.auth_session.assert_icommand('iexit')
         self.auth_session.assert_icommand(['iinit', self.auth_session.password])
         # connect and list some files
         self.auth_session.assert_icommand('icd')
@@ -53,7 +53,7 @@ class Test_OSAuth_Only(resource_suite.ResourceBase, unittest.TestCase):
         # reset client environment to original
         del self.auth_session.environment_file_contents['irods_authentication_scheme']
         # do the reauth
-        self.auth_session.assert_icommand('iexit full')
+        self.auth_session.assert_icommand('iexit')
         self.auth_session.assert_icommand(['iinit', self.auth_session.password])
 
         # clean up keyfile

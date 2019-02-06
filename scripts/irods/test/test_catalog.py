@@ -129,16 +129,15 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     ###################
 
     def test_iexit(self):
-        self.admin.assert_icommand("iexit")  # just go home
+        self.admin.assert_icommand('iexit')  # remove scrambled password file
+        self.admin.assert_icommand(['iinit', self.admin.password]) # restore session for remaining tests
 
     def test_iexit_verbose(self):
-        self.admin.assert_icommand("iexit -v", 'STDOUT_SINGLELINE', "Deleting (if it exists) session envFile:")  # home, verbose
+        self.admin.assert_icommand('iexit -v', 'STDOUT_SINGLELINE', 'Deleting (if it exists) session envFile:', input='y\n')  # remove scrambled password file, verbose
+        self.admin.assert_icommand(['iinit', self.admin.password]) # restore session for remaining tests
 
     def test_iexit_with_bad_option(self):
-        self.admin.assert_icommand_fail("iexit -z")  # run iexit with bad option
-
-    def test_iexit_with_bad_parameter(self):
-        self.admin.assert_icommand_fail("iexit badparameter")  # run iexit with bad parameter
+        self.admin.assert_icommand('iexit -z', 'STDERR_SINGLELINE', 'USER_INPUT_OPTION_ERR')  # run iexit with bad option
 
     ###################
     # ihelp
