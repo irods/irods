@@ -62,6 +62,10 @@ addMsParamToArray( msParamArray_t *msParamArray, const char *label,
             continue;
         }
         if ( strcmp( msParamArray->msParam[i]->label, label ) == 0 ) {
+            if (!type || !msParamArray->msParam[i]->type) {
+                rodsLog(LOG_ERROR, "[%s] - type is null for [%s]", __FUNCTION__, label);
+                continue;
+            }
             /***  Jan 28 2010 to make it not given an error ***/
             if ( !strcmp( msParamArray->msParam[i]->type, STR_MS_T ) &&
                     !strcmp( type, STR_MS_T ) &&
