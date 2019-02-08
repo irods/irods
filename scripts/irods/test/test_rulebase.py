@@ -625,36 +625,76 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['irule', '-F', rule_file])
         os.unlink(rule_file)
 
+class Test_Remote_Exec(ResourceBase, unittest.TestCase):
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+    class_name = 'Test_Remote_Exec'
 
+    def setUp(self):
+        super(Test_Remote_Exec, self).setUp()
 
+    def tearDown(self):
+        super(Test_Remote_Exec, self).tearDown()
 
+    def create_rule_file(self, rule_text_key):
+        rule_file_path = rule_text_key + '.r'
+        parameters = {}
+        parameters['host'] = test.settings.ICAT_HOSTNAME
+        parameters['zone'] = 'tempZone'
+        rule_str = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        with open(rule_file_path, 'w') as rule_file:
+            rule_file.write(rule_str)
+        return rule_file_path
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_remote_no_writeline(self):
+        rule_file_path = self.create_rule_file('test_remote_no_writeline')
+        try:
+            self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'a=remote')
+        finally:
+            if os.path.exists(rule_file_path):
+                os.unlink(rule_file_path)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_remote_writeline(self):
+        rule_file_path = self.create_rule_file('test_remote_writeline')
+        try:
+            self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'Remote writeLine')
+        finally:
+            if os.path.exists(rule_file_path):
+                os.unlink(rule_file_path)
 
+    @unittest.skip('Remove skip with resolution of #4262')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_remote_in_remote_writeline(self):
+        rule_file_path = self.create_rule_file('test_remote_in_remote_writeline')
+        try:
+            self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT_MULTILINE', ['Remote in remote writeLine', 'Remote writeLine'])
+        finally:
+            if os.path.exists(rule_file_path):
+                os.unlink(rule_file_path)
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_delay_in_remote_writeline(self):
+        rule_file_path = self.create_rule_file('test_delay_in_remote_writeline')
+        try:
+            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'Remote writeLine')
+            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay in remote writeLine', start_index=initial_log_size))
+        finally:
+            if os.path.exists(rule_file_path):
+                os.unlink(rule_file_path)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for Python REP')
+    def test_remote_in_delay_writeline(self):
+        rule_file_path = self.create_rule_file('test_remote_in_delay_writeline')
+        try:
+            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand(['irule', '-F', rule_file_path])
+            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Remote in delay writeLine', start_index=initial_log_size))
+            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay writeLine', start_index=initial_log_size))
+        finally:
+            if os.path.exists(rule_file_path):
+                os.unlink(rule_file_path)
 
