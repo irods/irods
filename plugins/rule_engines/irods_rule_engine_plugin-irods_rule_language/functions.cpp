@@ -1924,15 +1924,21 @@ Res *smsi_remoteExec( Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int,
         return newErrorRes( r, ret );
     }
 
-    // Add ruleExecOut to input param and execute rule
+    // Add ruleExecOut to input param and execute rule if the type is set
+    // Use add here because ruleExecOut is specifically not stored in rei, not env
     msParam_t* rule_exec_out{getMsParamByLabel(rei->msParamArray, "ruleExecOut")};
-    addMsParam(execMyRuleInp.inpParamArray, rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf);
+    if (rule_exec_out && rule_exec_out->type) {
+        addMsParamToArray(execMyRuleInp.inpParamArray, rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf, 0);
+    }
     i = rsExecMyRule( rei->rsComm, &execMyRuleInp,  &outParamArray );
 
     if (outParamArray) {
-        // Put ruleExecOut into rei->msParamArray
+        // Put ruleExecOut into rei->msParamArray if the type is set
+        // Use fill rather than add because the label already exists in rei->msParamArray
         replMsParam(getMsParamByLabel(outParamArray, "ruleExecOut"), rule_exec_out);
-        addMsParam(rei->msParamArray, rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf);
+        if (rule_exec_out && rule_exec_out->type) {
+            fillMsParam(getMsParamByLabel(rei->msParamArray, "ruleExecOut"), rule_exec_out->label, rule_exec_out->type, rule_exec_out->inOutStruct, rule_exec_out->inpOutBuf);
+        }
 
         // Remove ruleExecOut before storing param array to env
         rmMsParamByLabel(outParamArray, "ruleExecOut", 1);
