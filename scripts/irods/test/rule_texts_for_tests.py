@@ -371,6 +371,64 @@ INPUT *arg1="abc", *arg2="def", *arg3="ghi"
 OUTPUT ruleExecOut
 '''
 
+#===== Test_Remote_Exec =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_no_writeline'] = '''
+test_remote_no_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        *a = "remote";
+    }}
+    writeLine("stdout", "a=*a");
+}}
+INPUT *a="input"
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_in_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+            writeLine("stdout", "Remote in remote writeLine");
+        }}
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_in_delay_writeline'] = '''
+test_remote_writeLine {{
+    delay("<PLUSET>1s</PLUSET>") {{
+        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+            writeLine("serverLog", "Remote in delay writeLine");
+        }}
+        writeLine("serverLog", "Delay writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_delay_in_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        delay("<PLUSET>1s</PLUSET>") {{
+            writeLine("serverLog", "Delay in remote writeLine");
+        }}
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+
 #==============================================================
 #========================== Python ============================
 #==============================================================
