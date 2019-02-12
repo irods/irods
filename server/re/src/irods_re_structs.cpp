@@ -16,8 +16,14 @@
 
 #include "irods_ms_plugin.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_logger.hpp"
+
+#include "filesystem.hpp"
+#include "dstream.hpp"
 
 #include <list>
+
+extern int ProcessType;
 
 extern const packInstruct_t RodsPackTable[];
 irods::ms_table& get_microservice_table();
@@ -199,110 +205,111 @@ initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
     return 0;
 }
 
-int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei ) {
+namespace
+{
+    int append_message_to_data_object(ruleExecInfo_t* _rei, const char* _path, char* _message)
+    {
+        using log = irods::experimental::log;
 
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4619
-    dataObjInp_t dataObjInp;
-    openedDataObjInp_t openedDataObjInp;
-    bytesBuf_t tmpBBuf;
-    int fd, i;
-    // =-=-=-=-=-=-=-
-
-    if ( writeId != NULL && strcmp( writeId, "serverLog" ) == 0 ) {
-        rodsLog( LOG_NOTICE, "writeString: inString = %s", writeStr );
-        return 0;
-    }
-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4619
-    if ( writeId != NULL && writeId[0] == '/' ) {
-        /* writing to an existing iRODS file */
-
-        if ( rei == NULL || rei->rsComm == NULL ) {
-            rodsLog( LOG_ERROR, "_writeString: input rei or rsComm is NULL" );
+        if (!_rei || !_rei->rsComm) {
+            log::rule_engine::error("Rule execution info pointer or connection pointer is null");
             return SYS_INTERNAL_NULL_INPUT_ERR;
         }
 
-        bzero( &dataObjInp, sizeof( dataObjInp ) );
-        dataObjInp.openFlags = O_RDWR;
-        snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s", writeId );
-        fd = rsDataObjOpen( rei->rsComm, &dataObjInp );
-        if ( fd < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd );
-            return fd;
+        try {
+            using irods::experimental::odstream;
+
+            odstream out{*_rei->rsComm, _path, std::ios_base::in | std::ios_base::ate};
+
+            if (!out) {
+                // clang-format off
+                log::rule_engine::error({{"log_message", "Cannot open data object for writing"},
+                                         {"path", _path}});
+                // clang-format on
+                return USER_FILE_DOES_NOT_EXIST;
+            }
+
+            out << _message;
+        }
+        catch (const std::exception& e) {
+            log::rule_engine::error(e.what());
         }
 
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        openedDataObjInp.offset = 0;
-        openedDataObjInp.whence = SEEK_END;
-        fileLseekOut_t *dataObjLseekOut = NULL;
-        i = rsDataObjLseek( rei->rsComm, &openedDataObjInp, &dataObjLseekOut );
-        free( dataObjLseekOut );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        tmpBBuf.len = openedDataObjInp.len = strlen( writeStr ) + 1;
-        tmpBBuf.buf =  writeStr;
-        i = rsDataObjWrite( rei->rsComm, &openedDataObjInp, &tmpBBuf );
-        if ( i < 0 ) {
-            rodsLog( LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i );
-            return i;
-        }
-
-        bzero( &openedDataObjInp, sizeof( openedDataObjInp ) );
-        openedDataObjInp.l1descInx = fd;
-        i = rsDataObjClose( rei->rsComm, &openedDataObjInp );
-        return i;
+        return 0;
     }
 
-    // =-=-=-=-=-=-=-
+    void append_message_to_buffer(ruleExecInfo_t* _rei, const char* _target, char* _message)
+    {
+        execCmdOut_t* myExecCmdOut{};
+        msParamArray_t* inMsParamArray = _rei->msParamArray;
+        msParam_t* mP = getMsParamByLabel(inMsParamArray, "ruleExecOut");
 
-    msParam_t * mP = NULL;
-    msParamArray_t * inMsParamArray = rei->msParamArray;
-    execCmdOut_t *myExecCmdOut;
-    if ( ( ( mP = getMsParamByLabel( inMsParamArray, "ruleExecOut" ) ) != NULL ) &&
-            ( mP->inOutStruct != NULL ) ) {
-        if ( !strcmp( mP->type, STR_MS_T ) ) {
-            myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
-            memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-            mP->inOutStruct = myExecCmdOut;
-            mP->type = strdup( ExecCmdOut_MS_T );
+        if (mP && mP->inOutStruct) {
+            if (strcmp(mP->type, STR_MS_T) == 0) {
+                myExecCmdOut = (execCmdOut_t*) malloc(sizeof(execCmdOut_t));
+                memset(myExecCmdOut, 0, sizeof(execCmdOut_t));
+                mP->inOutStruct = myExecCmdOut;
+                mP->type = strdup(ExecCmdOut_MS_T);
+            }
+            else {
+                myExecCmdOut = (execCmdOut_t*) mP->inOutStruct;
+            }
         }
         else {
-            myExecCmdOut = ( execCmdOut_t* )mP->inOutStruct;
+            myExecCmdOut = (execCmdOut_t*) malloc(sizeof(execCmdOut_t));
+            memset(myExecCmdOut, 0, sizeof(execCmdOut_t));
+
+            if (!mP) {
+                addMsParam(inMsParamArray, "ruleExecOut", ExecCmdOut_MS_T, myExecCmdOut, nullptr);
+            }
+            else {
+                mP->inOutStruct = myExecCmdOut;
+                mP->type = strdup(ExecCmdOut_MS_T);
+            }
+        }
+
+        if (strcmp(_target, "stdout") == 0) {
+            appendToByteBuf(&(myExecCmdOut->stdoutBuf), _message);
+        }
+        else if (strcmp(_target, "stderr") == 0) {
+            appendToByteBuf(&(myExecCmdOut->stderrBuf), _message);
         }
     }
-    else {
-        myExecCmdOut = ( execCmdOut_t* )malloc( sizeof( execCmdOut_t ) );
-        memset( myExecCmdOut, 0, sizeof( execCmdOut_t ) );
-        if ( mP == NULL ) {
-            addMsParam( inMsParamArray, "ruleExecOut", ExecCmdOut_MS_T, myExecCmdOut, NULL );
-        }
-        else {
-            mP->inOutStruct = myExecCmdOut;
-            mP->type = strdup( ExecCmdOut_MS_T );
-        }
+} // anonymous namespace
+
+int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
+{
+    using log = irods::experimental::log;
+
+    if (!writeId) {
+        log::rule_engine::error("Output target cannot be null");
+        return 0;
     }
 
-    /***** Jun 27, 2007
-           i  = replaceVariablesAndMsParams("",writeStr, rei->msParamArray, rei);
-           if (i < 0)
-           return i;
-    ****/
+    if (std::strcmp(writeId, "serverLog") == 0) {
+        log::rule_engine::info("writeString: " + std::string{writeStr});
+        return 0;
+    }
 
-    if ( writeId != NULL ) {
-        if ( !strcmp( writeId, "stdout" ) ) {
-            appendToByteBuf( &( myExecCmdOut->stdoutBuf ), ( char * ) writeStr );
-        }
-        else if ( !strcmp( writeId, "stderr" ) ) {
-            appendToByteBuf( &( myExecCmdOut->stderrBuf ), ( char * ) writeStr );
-        }
+    if (!rei->rsComm) {
+        log::rule_engine::error("Connection object is null");
+        return 0;
+    }
+
+    namespace fs = irods::experimental::filesystem;
+
+    if (fs::is_data_object(*rei->rsComm, writeId)) {
+        return append_message_to_data_object(rei, writeId, writeStr);
+    }
+
+    if (CLIENT_PT == ::ProcessType) {
+        append_message_to_buffer(rei, writeId, writeStr);
+    }
+    else if (strcmp(writeId, "stdout") == 0) {
+        log::rule_engine::info(writeStr);
+    }
+    else if (strcmp(writeId, "stderr") == 0) {
+        log::rule_engine::error(writeStr);
     }
 
     return 0;
