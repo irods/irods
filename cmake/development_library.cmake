@@ -573,6 +573,24 @@ install(
     PATTERN */filesystem/recursive_collection_iterator.hpp
   )
 
+# Install the "contents" of the "include" directory into the "irods/plugins/api" directory.
+# API plugins are installed in a separate directory to signal to the user that the headers
+# inside this directory are for plugins only.
+#
+# For details about "FILES_MATCHING" and "PATTERN", search for "filesystem" in this file.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/api/include/
+  DESTINATION usr/include/irods/plugins/api
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */api_plugin_number.h
+    PATTERN */api_plugin_number_map.hpp
+    PATTERN */api_plugin_number_data.h
+    PATTERN */get_file_descriptor_info.h
+  )
+
 install(
   EXPORT
   IRODSTargets
