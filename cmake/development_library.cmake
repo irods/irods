@@ -23,6 +23,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/bunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
