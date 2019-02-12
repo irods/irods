@@ -295,7 +295,7 @@ target_include_directories(
   )
 set_target_properties(irods_filesystem_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
-target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API)
+target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API)
 
 
 set(
