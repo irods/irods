@@ -4,8 +4,6 @@
 /* irodsReServer.h - header file for irodsReServer
  */
 
-
-
 #ifndef RE_SERVER_HPP
 #define RE_SERVER_HPP
 
@@ -26,8 +24,7 @@ uint CoreIrbTimeStamp = 0;
 
 #define v_FLAG  0x1
 
-void
-reServerMain( char* logDir );
-int
-reSvrSleep( );
+void reServerMain();
+int reSvrSleep();
+
 #endif	/* RE_SERVER_H */

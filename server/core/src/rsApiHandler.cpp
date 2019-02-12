@@ -34,19 +34,40 @@ jmp_buf Jenv;
 #include "irods_api_number_validator.hpp"
 #include "irods_logger.hpp"
 
+#define MAKE_IRODS_ERROR_MAP
+#include "rodsErrorTable.h"
+#undef MAKE_IRODS_ERROR_MAP
+
+namespace {
+
+void attach_api_request_info_to_logger(rsComm_t* _comm, int _api_number)
+{
+    using log = irods::experimental::log;
+
+    log::set_request_client_version(&_comm->cliVersion);
+    log::set_request_client_host(_comm->clientAddr);
+    log::set_request_client_user(_comm->clientUser.userName);
+    log::set_request_proxy_user(_comm->proxyUser.userName);
+    log::set_request_api_number(_api_number);
+}
+
+} // anonymous namespace
+
 int rsApiHandler(
     rsComm_t*   rsComm,
     int         apiNumber,
     bytesBuf_t* inputStructBBuf,
     bytesBuf_t* bsBBuf )
 {
-    if (auto [supported, ec] = irods::is_api_number_supported(apiNumber); !supported) {
-        irods::experimental::log::server::error({
-            {"msg", "unsupported api number"},
-            {"api_number", std::to_string(apiNumber)},
-            {"error_code", std::to_string(ec)}
-        });
+    using log = irods::experimental::log;
 
+    attach_api_request_info_to_logger(rsComm, apiNumber);
+
+    log::agent::trace("Verifying if API number is supported ...");
+
+    if (const auto [supported, ec] = irods::is_api_number_supported(apiNumber); !supported) {
+        log::server::error({{"log_message", "unsupported api number"},
+                            {"error_code", std::to_string(ec)}});
         return ec;
     }
 
@@ -73,8 +94,7 @@ int rsApiHandler(
     }
 
     if ( apiInx < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber );
+        rodsLog( LOG_ERROR, "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber );
         /* cannot use sendApiReply because it does not know apiInx */
         sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL, NULL, NULL,
                      apiInx, rsComm->irodsProt );
@@ -88,6 +108,8 @@ int rsApiHandler(
         sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
         return status;
     }
+
+    log::agent::trace("Checking API permissions ...");
 
     status = chkApiPermission( rsComm, apiInx );
     if ( status < 0 ) {
@@ -308,8 +330,7 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
                              "RError_PI", RodsPackTable, 0, rsComm->irodsProt );
 
         if ( status < 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "sendApiReply: packStruct error, status = %d", status );
+            rodsLog( LOG_NOTICE, "sendApiReply: packStruct error, status = %d", status );
             sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
                          NULL, NULL, status, rsComm->irodsProt );
             svrChkReconnAtSendEnd( rsComm );
@@ -339,15 +360,13 @@ sendApiReply( rsComm_t * rsComm, int apiInx, int retVal,
             boost_lock.unlock();
             if ( status1 > 0 ) {
                 /* should not be here */
-                rodsLog( LOG_NOTICE,
-                         "sendApiReply: Switch connection and retry sendRodsMsg" );
+                rodsLog( LOG_NOTICE, "sendApiReply: Switch connection and retry sendRodsMsg" );
                 ret = sendRodsMsg( net_obj, RODS_API_REPLY_T,
                                    myOutStructBBuf, myOutBsBBuf, myRErrorBBuf,
                                    retVal, rsComm->irodsProt );
 
                 if ( ret.code() >= 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "sendApiReply: retry sendRodsMsg succeeded" );
+                    rodsLog( LOG_NOTICE, "sendApiReply: retry sendRodsMsg succeeded" );
                 }
                 else {
                     status = savedStatus;
@@ -579,14 +598,11 @@ readAndProcClientMsg( rsComm_t * rsComm, int flags ) {
         }
     }
     else if ( strcmp( myHeader.type, RODS_DISCONNECT_T ) == 0 ) {
-        rodsLog( LOG_DEBUG,
-                 "readAndProcClientMsg: received disconnect msg from client" );
-
+        rodsLog( LOG_DEBUG, "readAndProcClientMsg: received disconnect msg from client" );
         return DISCONN_STATUS;
     }
     else if ( strcmp( myHeader.type, RODS_RECONNECT_T ) == 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "readAndProcClientMsg: received reconnect msg from client" );
+        rodsLog( LOG_NOTICE, "readAndProcClientMsg: received reconnect msg from client" );
         /* call itself again. be careful */
         status = readAndProcClientMsg( rsComm, flags );
         return status;

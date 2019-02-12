@@ -337,8 +337,7 @@ def get_file_size_by_path(path):
     return os.stat(path).st_size
 
 def write_to_log(log_path, message):
-    with open(log_path, 'at') as f:
-        print(message, file=f, end='')
+    pass
 
 def count_occurrences_of_string_in_log(log_path, string, start_index=0):
     with open(log_path) as f:
