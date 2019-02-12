@@ -22,6 +22,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/base64.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/bunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
