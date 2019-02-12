@@ -19,16 +19,17 @@
     "environment_variables": {},
     "federation": [],
     "log_level": {
-        "agent": "warn",
-        "api": "warn",
-        "authorization": "warn",
-        "database": "warn",
-        "legacy": "warn",
-        "microservice": "warn",
-        "network": "warn",
-        "resource": "warn",
-        "rule_engine": "warn",
-        "server": "warn"
+        "agent": "info",
+        "agent_factory": "info",
+        "api": "info",
+        "authentication": "info",
+        "database": "info",
+        "legacy": "info",
+        "microservice": "info",
+        "network": "info",
+        "resource": "info",
+        "rule_engine": "info",
+        "server": "info"
     },
     "match_hash_policy": "compatible",
     "plugin_configuration": {

@@ -66,7 +66,7 @@ class Test_Rule_Engine_Plugin_Passthrough(session.make_sessions_mixin([('otherro
 
                 # Verify that the Passthrough REP message appears in the log file before
                 # the message produced the PEP in core.re.
-                with open('/var/log/irods.log', 'r') as log_file:
+                with open('/var/log/irods/irods.log', 'r') as log_file:
                     mm = mmap.mmap(log_file.fileno(), 0, access=mmap.ACCESS_READ)
                     index = mm.find("returned 'RULE_ENGINE_CONTINUE' to REPF")
                     self.assertTrue(index != -1)

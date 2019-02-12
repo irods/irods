@@ -1257,7 +1257,7 @@ target_include_directories(
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irodsReServer PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
 add_executable(

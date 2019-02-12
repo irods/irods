@@ -10,7 +10,6 @@
 #include "reServerLib.hpp"
 #include "rsApiHandler.hpp"
 #include "rsIcatOpr.hpp"
-#include <syslog.h>
 #include "miscServerFunct.hpp"
 #include "reconstants.hpp"
 #include "initServer.hpp"
@@ -24,19 +23,17 @@
 // =-=-=-=-=-=-=-
 // irods includes
 #include "irods_get_full_path_for_config_file.hpp"
-
 #include "irods_re_plugin.hpp"
+#include "irods_logger.hpp"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 using namespace boost::filesystem;
 
 time_t LastRescUpdateTime;
-char *CurLogfileName = NULL;    /* the path of the current logfile */
-static time_t LogfileLastChkTime = 0;
 
-void
-cleanupAndExit( int status ) {
+void cleanupAndExit( int status )
+{
 #if 0
     rodsLog( LOG_NOTICE,
              "Agent exiting with status = %d", status );
@@ -50,8 +47,8 @@ cleanupAndExit( int status ) {
     }
 }
 
-void
-signalExit( int ) {
+void signalExit( int )
+{
 #if 0
     rodsLog( LOG_NOTICE,
              "caught a signal and exiting\n" );
@@ -59,123 +56,8 @@ signalExit( int ) {
     cleanupAndExit( SYS_CAUGHT_SIGNAL );
 }
 
-char *
-getLogDir() {
-    char *myDir;
-
-    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
-        return myDir;
-    }
-    return DEF_LOG_DIR;
-}
-
-int get_log_file_rotation_time() {
-    char* rotation_time_str = getenv(LOGFILE_INT);
-    if ( rotation_time_str ) {
-        const int rotation_time = atoi(rotation_time_str);
-        if( rotation_time >= 1 ) {
-            return rotation_time;
-        }
-    }
-
-    try {
-        const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
-        if(rotation_time >= 1) {
-            return rotation_time;
-        }
-
-    }
-    catch( irods::exception& _e ) {
-    }
-
-    return DEF_LOGFILE_INT;
-
-} // get_log_file_rotation_time
-
-void
-getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
-    time_t myTime;
-    struct tm *mytm;
-    char *logfilePattern; // JMC - backport 4793
-    //char *logfileIntStr;
-    //int logfileInt;
-    int tm_mday = 1;
-    char logfileSuffix[MAX_NAME_LEN]; // JMC - backport 4793
-    char myLogDir[MAX_NAME_LEN];
-
-    /* Put together the full pathname of the logFile */
-
-    if ( logDir == NULL ) {
-        snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
-    }
-    else {
-        snprintf( myLogDir, MAX_NAME_LEN, "%-s", logDir );
-    }
-    *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
-
-    LogfileLastChkTime = myTime = time( 0 );
-    mytm = localtime( &myTime );
-    const int rotation_time = get_log_file_rotation_time(); /*
-    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
-            ( logfileInt = atoi( logfileIntStr ) ) < 1 ) {
-        logfileInt = DEF_LOGFILE_INT;
-    }*/
-
-    tm_mday = ( mytm->tm_mday / rotation_time ) * rotation_time + 1;
-    if ( tm_mday > mytm->tm_mday ) {
-        tm_mday -= rotation_time;
-    }
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4793
-    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
-        logfilePattern = DEF_LOGFILE_PATTERN;
-    }
-    mytm->tm_mday = tm_mday;
-    strftime( logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm );
-    sprintf( *logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix );
-    // =-=-=-=-=-=-=-
-}
-
-int
-logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
-#ifdef SYSLOG
-    int logFd = 0;
-#else
-    int logFd;
-#endif
-
-    if ( runMode == SINGLE_PASS && logDir == NULL ) {
-        return 1;
-    }
-
-    if ( logFileName == NULL ) {
-        fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    getLogfileName( &logFile, logDir, logFileName );
-    if ( NULL == logFile ) { // JMC cppcheck - nullptr
-        fprintf( stderr, "logFileOpen: unable to open log file" );
-        return -1;
-    }
-
-#ifndef SYSLOG
-    logFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0666 );
-#endif
-    if ( logFd < 0 ) {
-        fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
-                 logFile, errno );
-        free( logFile );
-        return -1 * errno;
-    }
-
-    free( logFile );
-    return logFd;
-}
-
-void
-daemonize( int runMode, int logFd ) {
+void daemonize(int runMode)
+{
     if ( runMode == SINGLE_PASS ) {
         return;
     }
@@ -192,29 +74,52 @@ daemonize( int runMode, int logFd ) {
         }
     }
 
-    close( 0 );
-    close( 1 );
-    close( 2 );
+    close(0);
+    close(1);
+    close(2);
 
-    ( void ) dup2( logFd, 0 );
-    ( void ) dup2( logFd, 1 );
-    ( void ) dup2( logFd, 2 );
-    close( logFd );
+    open("/dev/null", O_RDONLY);
+    open("/dev/null", O_WRONLY);
+    open("/dev/null", O_RDWR);
 }
 
 extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
 
 int usage( char *prog );
 
-int
-main( int argc, char **argv ) {
+namespace
+{
+    void init_logger()
+    {
+        using log = irods::experimental::log;
+
+        log::init();
+        irods::server_properties::instance().capture();
+        log::server::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
+        log::set_server_type("delay_server");
+
+        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+            log::set_server_host(hostname);
+        }
+        else {
+            // TODO Handle error.
+        }
+    }
+} // anonymous namespace
+
+int main( int argc, char **argv )
+{
+    using log = irods::experimental::log;
+
+    init_logger();
+
+    log::server::info("Initializing ...");
+
     int status;
     int c;
     int runMode = SERVER;
     int flagval = 0;
-    char *logDir = NULL;
     char *tmpStr;
-    int logFd;
     char *ruleExecId = NULL;
     int jobType = 0;
 
@@ -233,31 +138,19 @@ main( int argc, char **argv ) {
     /* Handle option to log sql commands */
     tmpStr = getenv( SP_LOG_SQL );
     if ( tmpStr != NULL ) {
-#ifdef SYSLOG
-        int j = atoi( tmpStr );
-        rodsLogSqlReq( j );
-#else
         rodsLogSqlReq( 1 );
-#endif
     }
 
     /* Set the logging level */
     tmpStr = getenv( SP_LOG_LEVEL );
     if ( tmpStr != NULL ) {
-        int i;
-        i = atoi( tmpStr );
-        rodsLogLevel( i );
+        rodsLogLevel( atoi( tmpStr ) );
     }
     else {
         rodsLogLevel( LOG_NOTICE ); /* default */
     }
 
-#ifdef SYSLOG
-    /* Open a connection to syslog */
-    openlog( "rodsReServer", LOG_ODELAY | LOG_PID, LOG_DAEMON );
-#endif
-
-    while ( ( c = getopt( argc, argv, "sSvD:j:t:" ) ) != EOF ) {
+    while ( ( c = getopt( argc, argv, "sSv:j:t:" ) ) != EOF ) {
         switch ( c ) {
         case 's':
             runMode = SINGLE_PASS;
@@ -267,9 +160,6 @@ main( int argc, char **argv ) {
             break;
         case 'v':   /* verbose */
             flagval |= v_FLAG;
-            break;
-        case 'D':   /* user specified a log directory */
-            logDir = strdup( optarg );
             break;
         case 'j':
             runMode = SINGLE_PASS;
@@ -284,11 +174,7 @@ main( int argc, char **argv ) {
         }
     }
 
-    if ( ( logFd = logFileOpen( runMode, logDir, RULE_EXEC_LOGFILE ) ) < 0 ) {
-        return 1;
-    }
-
-    daemonize( runMode, logFd );
+    daemonize(runMode);
 
     if ( ruleExecId != NULL ) {
         status = reServerSingleExec( ruleExecId, jobType );
@@ -300,14 +186,14 @@ main( int argc, char **argv ) {
         }
     }
     else {
-        reServerMain( logDir );
+        reServerMain();
     }
 
     return 0;
 }
 
 int usage( char *prog ) {
-    fprintf( stderr, "Usage: %s [-sSv] [j jobID] [-t jobType] [-D logDir] \n", prog );
+    fprintf( stderr, "Usage: %s [-sSv] [j jobID] [-t jobType] \n", prog );
     fprintf( stderr, "-s   Run like a client process - no fork\n" );
     fprintf( stderr, "-S   Run like a daemon server process - forked\n" );
     fprintf( stderr, "-j jobID   Run a single job\n" );
@@ -315,54 +201,11 @@ int usage( char *prog ) {
     return 0;
 }
 
-int
-chkLogfileName( const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
-    int i;
+void reServerMain()
+{
+    using log = irods::experimental::log;
 
-    time_t myTime = time( 0 );
-    if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
-        /* not time yet */
-        return 0;
-    }
-
-    getLogfileName( &logFile, logDir, logFileName );
-
-    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
-        free( logFile );
-        return 0;
-    }
-
-    if ( ( i = open( logFile, O_CREAT | O_RDWR | O_APPEND, 0644 ) ) < 0 ) {
-        fprintf( stderr, "Unable to open logFile %s\n", logFile );
-        free( logFile );
-        return -1;
-    }
-    else {
-        lseek( i, 0, SEEK_END );
-    }
-
-    if ( CurLogfileName != NULL ) {
-        free( CurLogfileName );
-    }
-
-    CurLogfileName = logFile;
-
-    close( 0 );
-    close( 1 );
-    close( 2 );
-    ( void ) dup2( i, 0 );
-    ( void ) dup2( i, 1 );
-    ( void ) dup2( i, 2 );
-    ( void ) close( i );
-
-    return 0;
-}
-
-
-
-void
-reServerMain( char* logDir ) {
+    log::server::info("Entering while loop ...");
 
     genQueryOut_t *genQueryOut = NULL;
     reExec_t reExec;
@@ -391,11 +234,11 @@ reServerMain( char* logDir ) {
                       env.rodsUserName,
                       env.rodsZone,
                       NO_RECONN, &rcConnect_error_msg );
-              if (!rc_comm) {
-                  rodsLog(LOG_ERROR, "rcConnect failed %ji, %s", static_cast<intmax_t>(rcConnect_error_msg.status), rcConnect_error_msg.msg);
-                  reSvrSleep();
-                  continue;
-              }
+            if (!rc_comm) {
+                rodsLog(LOG_ERROR, "rcConnect failed %ji, %s", static_cast<intmax_t>(rcConnect_error_msg.status), rcConnect_error_msg.msg);
+                reSvrSleep();
+                continue;
+            }
 
             int status = clientLogin( rc_comm );
             if (status < 0) {
@@ -408,9 +251,6 @@ reServerMain( char* logDir ) {
                 continue;
             }
 
-#ifndef SYSLOG
-            chkLogfileName( logDir, RULE_EXEC_LOGFILE );
-#endif
             status = getReInfo( rc_comm, &genQueryOut );
             if ( status < 0 ) {
                 if ( status != CAT_NO_ROWS_FOUND ) {
@@ -451,8 +291,7 @@ reServerMain( char* logDir ) {
                          RE_FAILED_STATUS );
             closeQueryOut( rc_comm, genQueryOut );
             freeGenQueryOut( &genQueryOut );
-            if ( runCnt > 0 ||
-                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
+            if ( runCnt > 0 || ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
                 rcDisconnect( rc_comm );
                 reSvrSleep();
                 continue;
@@ -465,7 +304,8 @@ reServerMain( char* logDir ) {
         } // while
 
         rodsLog(LOG_NOTICE, "rule engine is exiting");
-    } catch (const irods::exception& e_) {
+    }
+    catch (const irods::exception& e_) {
         rodsLog(LOG_ERROR, "rule engine is exiting because of irods::exception");
         std::cerr << e_.what() << std::endl;
         return;
@@ -474,9 +314,11 @@ reServerMain( char* logDir ) {
 
 int reSvrSleep( ) {
     int re_sleep_time;
+
     try {
         re_sleep_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
-    } catch ( const irods::exception& e ) {
+    }
+    catch ( const irods::exception& e ) {
         irods::log(e);
         re_sleep_time = RE_SERVER_SLEEP_TIME;
     }

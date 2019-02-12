@@ -153,6 +153,8 @@ set(
   IRODS_LIB_API_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiHeaderAll.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumber.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumberData.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumberMap.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiPackTable.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiTable.hpp
   ${CMAKE_SOURCE_DIR}/lib/api/include/authCheck.h

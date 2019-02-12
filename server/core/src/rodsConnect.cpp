@@ -486,9 +486,9 @@ resoAndConnHostByDataObjInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
 int
 printServerHost( rodsServerHost_t *myServerHost ) {
-    namespace exp = irods::experimental;
+    using log = irods::experimental::log;
 
-    std::vector<exp::log::key_value> server_info;
+    std::vector<log::key_value> server_info;
     hostName_t *tmpHostName;
     std::string hostname_label;
 
@@ -538,7 +538,7 @@ printServerHost( rodsServerHost_t *myServerHost ) {
 
     server_info.push_back({"port", std::to_string(static_cast<zoneInfo_t*>(myServerHost->zoneInfo)->portNum)});
 
-    exp::log::server::info(server_info);
+    log::server::info(server_info);
 
     return 0;
 }
@@ -550,9 +550,9 @@ printZoneInfo() {
 
     tmpZoneInfo = ZoneInfoHead;
 
-    namespace exp = irods::experimental;
+    using log = irods::experimental::log;
 
-    std::vector<exp::log::key_value> zone_info;
+    std::vector<log::key_value> zone_info;
 
 #ifdef SYSLOG
     rodsLog( LOG_NOTICE, "Zone Info:\n" );
@@ -618,7 +618,7 @@ printZoneInfo() {
             zone_info.push_back({"zone_info.slave_port", std::to_string(tmpZoneInfo->portNum)});
         }
 
-        exp::log::server::info(zone_info);
+        log::server::info(zone_info);
         zone_info.clear();
 
         tmpZoneInfo = tmpZoneInfo->next;
@@ -631,7 +631,7 @@ printZoneInfo() {
 #else /* SYSLOG */
         fprintf( stderr, "reHost:   %s\n\n", tmpRodsServerHost->hostName->name );
 #endif /* SYSLOG */
-        exp::log::server::info({{"re_host", tmpRodsServerHost->hostName->name}});
+        log::server::info({{"re_host", tmpRodsServerHost->hostName->name}});
     }
     else {
 #ifdef SYSLOG
@@ -639,7 +639,7 @@ printZoneInfo() {
 #else /* SYSLOG */
         fprintf( stderr, "reHost error" );
 #endif /* SYSLOG */
-        exp::log::server::info({{"re_host", "error"}});
+        log::server::info({{"re_host", "error"}});
     }
 
     return 0;
