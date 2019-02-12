@@ -393,6 +393,10 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/path.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/collection_iterator.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/recursive_collection_iterator.cpp
   )
 add_library(
   irods_client
@@ -422,6 +426,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
@@ -675,6 +680,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/api/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
@@ -692,7 +698,6 @@ set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_server PRIVATE -Wno-write-strings)
-
 
 set(
   IRODS_LIBIRODS_COMMON_SOURCES
