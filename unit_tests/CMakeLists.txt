@@ -33,6 +33,7 @@ endif()
 set(TEST_INCLUDE_LIST test_config/irods_connection_pool
                       test_config/irods_dstream
                       test_config/irods_filesystem
+                      test_config/irods_get_file_descriptor_info
                       test_config/irods_hierarchy_parser
                       test_config/irods_key_value_proxy
                       test_config/irods_lifetime_manager
