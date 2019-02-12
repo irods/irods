@@ -137,6 +137,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/sslSockComm.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/stringOpr.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/termiosUtil.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/thread_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/trimUtil.h
   )
 
