@@ -1,6 +1,8 @@
 #ifndef IRODS_AT_SCOPE_EXIT_HPP
 #define IRODS_AT_SCOPE_EXIT_HPP
 
+#include <utility>
+
 namespace irods
 {
     template <typename Function>
