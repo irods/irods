@@ -224,6 +224,80 @@ configure_file(
   @ONLY
   )
 
+add_library(
+  irods_filesystem_path
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/path.cpp
+  )
+target_include_directories(
+  irods_filesystem_path
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  )
+set_target_properties(irods_filesystem_path PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_path PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_path PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+
+add_library(
+  irods_filesystem_client
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/collection_iterator.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/recursive_collection_iterator.cpp
+  )
+target_include_directories(
+  irods_filesystem_client
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include
+  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
+  ${OPENSSL_INCLUDE_DIR}
+  )
+set_target_properties(irods_filesystem_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+
+add_library(
+  irods_filesystem_server
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/collection_iterator.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/recursive_collection_iterator.cpp
+  )
+target_include_directories(
+  irods_filesystem_server
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include
+  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/api/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
+  ${OPENSSL_INCLUDE_DIR}
+  )
+set_target_properties(irods_filesystem_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API)
+
+
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
@@ -393,6 +467,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  $<TARGET_OBJECTS:irods_filesystem_path>
+  $<TARGET_OBJECTS:irods_filesystem_client>
   )
 add_library(
   irods_client
@@ -423,6 +499,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
@@ -646,6 +723,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/sharedmemory.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/xmsgMS.cpp
+  $<TARGET_OBJECTS:irods_filesystem_server>
   )
 add_library(
   irods_server
@@ -680,6 +758,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/api/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include

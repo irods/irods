@@ -552,6 +552,35 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
+# Install the "contents" of the "include" directory into the "irods" directory.
+# This way of installing is required to maintain the directory structure. Without it,
+# the filesystem headers would be installed in a flat manner which would make it unusable.
+#
+# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
+# This scheme allows developers to see what headers will be installed. It also keeps files
+# that aren't meant to be installed out.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/lib/filesystem/include/
+  DESTINATION usr/include/irods
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */filesystem.hpp
+    PATTERN */filesystem/collection_entry.hpp
+    PATTERN */filesystem/collection_iterator.hpp
+    PATTERN */filesystem/config.hpp
+    PATTERN */filesystem/copy_options.hpp
+    PATTERN */filesystem/detail.hpp
+    PATTERN */filesystem/filesystem.hpp
+    PATTERN */filesystem/filesystem_error.hpp
+    PATTERN */filesystem/object_status.hpp
+    PATTERN */filesystem/path.hpp
+    PATTERN */filesystem/path_traits.hpp
+    PATTERN */filesystem/permissions.hpp
+    PATTERN */filesystem/recursive_collection_iterator.hpp
+  )
+
 install(
   EXPORT
   IRODSTargets
