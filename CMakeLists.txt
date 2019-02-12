@@ -366,6 +366,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/bunUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/chksumUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/clientLogin.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/connection_pool.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/cpUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getUtil.cpp
