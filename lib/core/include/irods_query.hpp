@@ -1,7 +1,7 @@
 #ifndef IRODS_QUERY_HPP
 #define IRODS_QUERY_HPP
 
-#ifdef RODS_SERVER
+#if defined(RODS_SERVER) || defined(RODS_CLERVER)
 #include "rsGenQuery.hpp"
 #include "specificQuery.h"
 #include "rsSpecificQuery.hpp"
@@ -18,7 +18,7 @@ char *getCondFromString( char * t );
 
 namespace irods {
     namespace query_helper {
-#ifdef RODS_SERVER
+#if defined(RODS_SERVER) || defined(RODS_CLERVER)
         typedef rsComm_t comm_type;
         static const std::function<
             int(rsComm_t*,
