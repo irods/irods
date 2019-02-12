@@ -230,6 +230,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileUnlink.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileWrite.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/genQuery.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/get_file_descriptor_info.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalAdmin.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalRowInsert.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalRowPurge.h
@@ -316,6 +317,7 @@ set(
 
 set(
   IRODS_SERVER_API_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthCheck.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthPluginRequest.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthRequest.hpp
@@ -590,6 +592,23 @@ install(
     PATTERN */filesystem/recursive_collection_iterator.hpp
   )
 
+# Install the "contents" of the "include" directory into the "irods/plugins/api" directory.
+# API plugins are installed in a separate directory to signal to the user that the headers
+# inside this directory are for plugins only.
+#
+# For details about "FILES_MATCHING" and "PATTERN", search for "filesystem" in this file.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/api/include/
+  DESTINATION usr/include/irods/plugins/api
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */api_plugin_number.h
+    PATTERN */api_plugin_number_map.hpp
+    PATTERN */api_plugin_number_data.h
+  )
+
 # Install the "contents" of the "transport" directory into the "irods/transport" directory.
 # This way of installing is required to maintain the directory structure. Without it,
 # the filesystem headers would be installed in a flat manner which would make it unusable.
@@ -607,7 +626,6 @@ install(
     PATTERN */transport/transport.hpp
     PATTERN */transport/default_transport.hpp
   )
-
 
 install(
   EXPORT
