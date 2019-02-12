@@ -24,6 +24,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
@@ -580,6 +581,25 @@ install(
     PATTERN */filesystem/permissions.hpp
     PATTERN */filesystem/recursive_collection_iterator.hpp
   )
+
+# Install the "contents" of the "transport" directory into the "irods/transport" directory.
+# This way of installing is required to maintain the directory structure. Without it,
+# the filesystem headers would be installed in a flat manner which would make it unusable.
+#
+# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
+# This scheme allows developers to see what headers will be installed. It also keeps files
+# that aren't meant to be installed out.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/lib/core/include/transport/
+  DESTINATION usr/include/irods/transport
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */transport/transport.hpp
+    PATTERN */transport/default_transport.hpp
+  )
+
 
 install(
   EXPORT
