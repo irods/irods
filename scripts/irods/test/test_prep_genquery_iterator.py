@@ -61,7 +61,7 @@ def genquery_module_available():
             try:
                 sys.path.insert(0,IRODS_CONFIG_DIR)
                 import genquery
-                if getattr(genquery,'AUTO_FREE_QUERIES',None) is True:
+                if getattr(genquery,'AUTO_CLOSE_QUERIES',None) is True:
                     Allow_Intensive_Memory_Use = True
                 idx =  sys.path.index(IRODS_CONFIG_DIR)
             except ImportError: # not fatal, past versions were only importable via PREP
