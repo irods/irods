@@ -429,6 +429,96 @@ INPUT null
 OUTPUT ruleExecOut
 '''
 
+#===== Test_Delay_Queue =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_batch_delay_processing__3941'] = '''
+test_batch_delay_processing {{
+    for(*i = 0; *i < {expected_count}; *i = *i + 1) {{
+        delay("<PLUSET>0.1s</PLUSET>") {{
+            writeLine("serverLog", "delay *i");
+        }}
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_block_with_output_param__3906'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "delayed rule executed");
+    }}
+    *status = "rule queued";
+}}
+INPUT null
+OUTPUT *status
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_with_long_job'] = '''
+test_delay_queue_with_long_job {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "Sleeping...");
+        msiSleep("{long_job_run_time}", "0");
+        writeLine("serverLog", "Waking!");
+    }}
+    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+        delay("<PLUSET>{sooner_delay}s</PLUSET>") {{
+            writeLine("serverLog", "sooner: *i");
+        }}
+    }}
+    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+        delay("<PLUSET>{later_delay}s</PLUSET>") {{
+            writeLine("serverLog", "later: *i");
+        }}
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_connection_refresh'] = '''
+test_delay_queue_with_long_job {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "sleep 1...");
+        msiSleep("{sleep_time}", "0");
+        writeLine("serverLog", "wakeup 1!");
+    }}
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "sleep 2...");
+        msiSleep("{sleep_time}", "0");
+        writeLine("serverLog", "wakeup 2!");
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_failed_delay_job'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "We are about to fail...");
+        msiGoodFailure();
+        writeLine("serverLog", "You should never see this line.");
+    }}
+    writeLine("stdout", "rule queued");
+}}
+OUTPUT ruleExecOut 
+'''
+
+#===== Test_Execution_Frequency =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency']['test_repeat_n_times'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s REPEAT {repeat_n} TIMES</EF>") {{
+        writeLine("serverLog", "{repeat_string}");
+    }}
+}}
+INPUT null
+OUTPUT *status
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency']['test_double_n_times'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s DOUBLE {repeat_n} TIMES</EF>") {{
+        writeLine("serverLog", "{repeat_string}");
+    }}
+}}
+INPUT null
+OUTPUT *status
+'''
+
 #==============================================================
 #========================== Python ============================
 #==============================================================
