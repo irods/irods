@@ -1215,24 +1215,17 @@ endforeach()
 add_executable(
   irodsReServer
   ${CMAKE_SOURCE_DIR}/server/core/src/irodsReServer.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/reServerLib.cpp
   )
 target_link_libraries(
   irodsReServer
   PRIVATE
+  irods_server
   irods_client
   irods_common
-  irods_plugin_dependencies
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
   ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
-  ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
-  ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
-  ${OPENSSL_CRYPTO_LIBRARY}
-  ${OPENSSL_SSL_LIBRARY}
   rt
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
@@ -1247,15 +1240,9 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
-  ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
-  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
-  ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
-  ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-  ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irodsReServer PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
