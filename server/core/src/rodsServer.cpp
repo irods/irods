@@ -1209,12 +1209,8 @@ initServerMain( rsComm_t *svrComm ) {
         if ( re_pid == 0 ) { // child
 
             close( svrComm->sock );
-            std::vector<std::string> args = setExecArg( getenv( "reServerOption" ) );
             std::vector<char *> av;
             av.push_back( "irodsReServer" );
-            for ( std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++ ) {
-                av.push_back( strdup( it->c_str() ) );
-            }
             av.push_back( NULL );
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
             execv( av[0], &av[0] );
