@@ -12,7 +12,6 @@
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
 #include "getRescQuota.h"
-#include "reServerLib.hpp"
 #include "dataObjOpr.hpp"
 #include "resource.hpp"
 #include "physPath.hpp"
@@ -23,6 +22,7 @@
 
 // =-=-=-=-=-=-=-
 //
+#include "irodsReServer.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_table.hpp"
 #include "irods_server_properties.hpp"
@@ -1433,17 +1433,12 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
-    char *numProcStr;
-    int numProc;
+    int numProc{irods::default_max_number_of_concurrent_re_threads};
+    char* numProcStr = ( char* )xnumProc->inOutStruct;
 
-    numProcStr = ( char* )xnumProc->inOutStruct;
-
-    if ( strcmp( numProcStr, "default" ) == 0 ) {
-        numProc = DEF_NUM_RE_PROCS;
-    }
-    else {
+    if (0 != strcmp(numProcStr, "default")) {
         numProc = atoi( numProcStr );
-        int max_re_procs = 0;
+        int max_re_procs{irods::default_max_number_of_concurrent_re_threads};
         try {
             max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
         } catch ( const irods::exception& e ) {
@@ -1455,7 +1450,7 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
             numProc = max_re_procs;
         }
         else if ( numProc < 0 ) {
-            numProc = DEF_NUM_RE_PROCS;
+            numProc = irods::default_max_number_of_concurrent_re_threads;
         }
     }
     rei->status = numProc;
