@@ -55,11 +55,13 @@ connection_pool::connection_pool(int _size,
                                  const std::string& _host,
                                  const int _port,
                                  const std::string& _username,
-                                 const std::string& _zone)
+                                 const std::string& _zone,
+                                 const int _refresh_time)
     : host_{_host}
     , port_{_port}
     , username_{_username}
     , zone_{_zone}
+    , refresh_time_(_refresh_time)
     , conn_ctxs_(_size)
 {
     if (_size < 1) {
@@ -91,6 +93,7 @@ void connection_pool::create_connection(
     std::function<void()> _on_login_err)
 {
     auto& context = conn_ctxs_[_index];
+    context.creation_time = std::time(nullptr);
     context.conn.reset(rcConnect(host_.c_str(), port_, username_.c_str(), zone_.c_str(), NO_RECONN, &context.error));
 
     if (!context.conn) {
@@ -130,6 +133,9 @@ bool connection_pool::verify_connection(int _index) {
     try {
         irods::query qobj{context.conn.get(),
             "SELECT ZONE_NAME WHERE ZONE_TYPE = 'local'"};
+        if(std::time(nullptr) - context.creation_time > refresh_time_) {
+            return false;
+        }
     } catch(const irods::exception&) {
         return false;
     }
