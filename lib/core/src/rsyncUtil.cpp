@@ -17,14 +17,6 @@
 
 #include <stdlib.h>
 
-// TODO:THIS NEEDS TO BE GONE (Issue 3995)
-//
-// Replace this with:
-// namespace fs = boost::filesystem;
-// within the scope of functions and
-// objects that need it.
-using namespace boost::filesystem;
-
 #include "irods_log.hpp"
 #include "irods_hasher_factory.hpp"
 #include "irods_path_recursion.hpp"
@@ -769,6 +761,8 @@ int
 rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
                     rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                     dataObjInp_t *dataObjOprInp ) {
+    namespace fs = boost::filesystem;
+
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
     int status = 0;
@@ -789,7 +783,7 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         return USER_INPUT_OPTION_ERR;
     }
 
-    path srcDirPath( srcDir );
+    fs::path srcDirPath( srcDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
                  "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
@@ -819,12 +813,12 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
     myTargPath.objType = DATA_OBJ_T;
     mySrcPath.objType  = LOCAL_FILE_T;
 
-    directory_iterator end_itr; // default construction yields past-the-end
+    fs::directory_iterator end_itr; // default construction yields past-the-end
     int savedStatus = 0;
-    for ( directory_iterator itr( srcDirPath );
+    for ( fs::directory_iterator itr( srcDirPath );
             itr != end_itr;
             ++itr ) {
-        path p = itr->path();
+        fs::path p = itr->path();
         snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
         try {
@@ -852,18 +846,18 @@ rsyncDirToCollUtil( rcComm_t *conn, rodsPath_t *srcPath,
         }
 
         bzero( &myTargPath, sizeof( myTargPath ) );
-        path childPath = p.filename();
+        fs::path childPath = p.filename();
         snprintf( myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
                   targColl, childPath.c_str() );
         if ( is_symlink( p ) ) {
-            path cp = read_symlink( p );
+            fs::path cp = read_symlink( p );
             // Issue 3663 - If the path is FQDN, do not add srcDir on path
             if (cp.is_relative()) {
                 snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s/%s", srcDir, cp.c_str() );
             } else {
                 snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", cp.c_str() );
             }
-            p = path( mySrcPath.outPath );
+            p = mySrcPath.outPath;
         }
         dataObjOprInp->createMode = getPathStMode( p.c_str() );
         status = 0;

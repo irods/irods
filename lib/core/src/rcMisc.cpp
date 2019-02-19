@@ -48,14 +48,6 @@
 #include <boost/format.hpp>
 #include <boost/generator_iterator.hpp>
 
-// TODO:THIS NEEDS TO BE GONE (Issue 3995)
-//
-// Replace this with:
-// namespace fs = boost::filesystem;
-// within the scope of functions and
-// objects that need it.
-using namespace boost::filesystem;
-
 /* check with the input path is a valid path -
  * 1 - valid
  * 0 - not valid
@@ -63,7 +55,9 @@ using namespace boost::filesystem;
 
 int
 isPath( char *myPath ) {
-    path p( myPath );
+    namespace fs = boost::filesystem;
+
+    fs::path p( myPath );
 
     if ( exists( p ) ) {
         return 1;
@@ -75,7 +69,9 @@ isPath( char *myPath ) {
 
 rodsLong_t
 getFileSize( char *myPath ) {
-    path p( myPath );
+    namespace fs = boost::filesystem;
+
+    fs::path p( myPath );
 
     if ( exists( p ) && is_regular_file( p ) ) {
         return file_size( p );
@@ -2551,7 +2547,9 @@ isHomeColl( char * myPath ) {
 
 int
 openRestartFile( char * restartFile, rodsRestart_t * rodsRestart ) {
-    path p( restartFile );
+    namespace fs = boost::filesystem;
+
+    fs::path p( restartFile );
     char buf[MAX_NAME_LEN * 3];
     char *inptr;
     char tmpStr[MAX_NAME_LEN];
