@@ -13,8 +13,6 @@ endif()
 # Enable CTest support.
 enable_testing()
 
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CATCH2 catch22.3.0-0)
-
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 # Update the CMake module path so that the test compilation variables
@@ -32,7 +30,8 @@ endif()
 # List of cmake files defined under ./cmake/test_config.
 # Each file in the ./cmake/test_config directory defines variables for a specific test.
 # New tests should be added to this list.
-set(TEST_INCLUDE_LIST test_config/irods_linked_list_iterator)
+set(TEST_INCLUDE_LIST test_config/irods_linked_list_iterator
+                      test_config/irods_filesystem)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     unset_irods_test_variables()
