@@ -185,6 +185,7 @@ extern "C" {
         _env->irodsMaxSizeForSingleBuffer       = 32;
         _env->irodsDefaultNumberTransferThreads = 4;
         _env->irodsTransBufferSizeForParaTrans  = 4;
+        _env->irodsConnectionPoolRefreshTime    = 300;
 
         // default auth scheme
         snprintf(
@@ -339,6 +340,10 @@ extern "C" {
         capture_integer_property(
             irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
+
+        capture_integer_property(
+            irods::CFG_IRODS_CONNECTION_POOL_REFRESH_TIME,
+            _env->irodsConnectionPoolRefreshTime );
 
         capture_string_property(
             irods::CFG_IRODS_PLUGINS_HOME_KW,
