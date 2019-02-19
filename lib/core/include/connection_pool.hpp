@@ -43,7 +43,8 @@ namespace irods
                         const std::string& _host,
                         const int _port,
                         const std::string& _username,
-                        const std::string& _zone);
+                        const std::string& _zone,
+                        const int _refresh_time);
 
         connection_pool(const connection_pool&) = delete;
         connection_pool& operator=(const connection_pool&) = delete;
@@ -59,6 +60,7 @@ namespace irods
             std::atomic<bool> in_use{};
             connection_pointer conn{nullptr, rcDisconnect};
             rErrMsg_t error{};
+            std::time_t creation_time{};
         };
 
         void return_connection(int _index);
@@ -76,6 +78,7 @@ namespace irods
         const int port_;
         const std::string username_;
         const std::string zone_;
+        const int refresh_time_;
         std::vector<connection_context> conn_ctxs_;
     };
 } // namespace irods

@@ -402,6 +402,7 @@ def setup_client_environment(irods_config):
             'irods_maximum_size_for_single_buffer_in_megabytes': irods_config.server_config['advanced_settings']['maximum_size_for_single_buffer_in_megabytes'],
             'irods_default_number_of_transfer_threads': irods_config.server_config['advanced_settings']['default_number_of_transfer_threads'],
             'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
+            'irods_connection_pool_refresh_time_in_seconds': 300,
         }
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
