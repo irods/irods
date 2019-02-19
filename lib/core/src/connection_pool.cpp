@@ -64,11 +64,13 @@ connection_pool::connection_pool(int _size,
                                  const std::string& _host,
                                  const int _port,
                                  const std::string& _username,
-                                 const std::string& _zone)
+                                 const std::string& _zone,
+                                 const int _refresh_time)
     : host_{_host}
     , port_{_port}
     , username_{_username}
     , zone_{_zone}
+    , refresh_time_(_refresh_time)
     , conn_ctxs_(_size)
 {
     if (_size < 1) {
@@ -122,7 +124,7 @@ void connection_pool::create_connection(int _index,
                                         std::function<void()> _on_login_error)
 {
     auto& ctx = conn_ctxs_[_index];
-
+    ctx.creation_time = std::time(nullptr);
     ctx.conn.reset(rcConnect(host_.c_str(),
                              port_,
                              username_.c_str(),
@@ -150,6 +152,9 @@ bool connection_pool::verify_connection(int _index)
 
     try {
         query{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
+        if(std::time(nullptr) - ctx.creation_time > refresh_time_) {
+            return false;
+        }
     }
     catch (const std::exception&) {
         return false;
