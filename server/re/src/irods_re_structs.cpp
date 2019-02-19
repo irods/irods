@@ -269,10 +269,10 @@ namespace
         }
 
         if (strcmp(_target, "stdout") == 0) {
-            appendToByteBuf(&(myExecCmdOut->stdoutBuf), _message);
+            appendToByteBuf(&myExecCmdOut->stdoutBuf, _message);
         }
         else if (strcmp(_target, "stderr") == 0) {
-            appendToByteBuf(&(myExecCmdOut->stderrBuf), _message);
+            appendToByteBuf(&myExecCmdOut->stderrBuf, _message);
         }
     }
 } // anonymous namespace
@@ -282,7 +282,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
     using log = irods::experimental::log;
 
     if (!writeId) {
-        log::rule_engine::error("Output target cannot be null");
+        log::rule_engine::error("Output target is null");
         return 0;
     }
 
@@ -302,14 +302,14 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
         return append_message_to_data_object(rei, writeId, writeStr);
     }
 
-    if (CLIENT_PT == ::ProcessType) {
+    if (strcmp(writeId, "stdout") == 0 || strcmp(writeId, "stderr") == 0) {
         append_message_to_buffer(rei, writeId, writeStr);
     }
-    else if (strcmp(writeId, "stdout") == 0) {
-        log::rule_engine::info(writeStr);
-    }
-    else if (strcmp(writeId, "stderr") == 0) {
-        log::rule_engine::error(writeStr);
+    else {
+        // clang-format off
+        log::rule_engine::error({{"log_message", "Invalid output target"},
+                                 {"output_target", writeId}});
+        // clang-format on
     }
 
     return 0;
