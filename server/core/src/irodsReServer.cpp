@@ -1,5 +1,4 @@
 #include "initServer.hpp"
-#include "irods_at_scope_exit.hpp"
 #include "irods_delay_queue.hpp"
 #include "irods_log.hpp"
 #include "irods_query.hpp"
