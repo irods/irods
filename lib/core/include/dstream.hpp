@@ -33,6 +33,7 @@
 #endif // defined(RODS_SERVER) || defined(RODS_CLERVER)
 // clang-format on
 
+#include "rcMisc.h"
 #include "filesystem/path.hpp"
 
 #include <streambuf>
