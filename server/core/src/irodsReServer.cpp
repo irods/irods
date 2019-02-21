@@ -159,7 +159,7 @@ namespace {
             return status;
         };
 
-        rodsLog(LOG_NOTICE, "[%s:%d] - time:[%s],ef:[%s],next:[%s]", __FUNCTION__, __LINE__, current_time, ef_string, next_time);
+        rodsLog(LOG_DEBUG, "[%s:%d] - time:[%s],ef:[%s],next:[%s]", __FUNCTION__, __LINE__, current_time, ef_string, next_time);
         const int repeat_status = getNextRepeatTime(current_time, ef_string, next_time);
         switch(repeat_status) {
             case 0:
