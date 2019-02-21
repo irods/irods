@@ -35,9 +35,18 @@ auto log::to_level(const std::string& _level) -> log::level
 
 auto log::get_level_from_config(const std::string& _category) -> log::level
 {
-    using map_t = std::unordered_map<std::string, boost::any>;
-    const auto& log_level = irods::get_server_property<const map_t&>(irods::CFG_LOG_LEVEL_KW);
-    return to_level(boost::any_cast<const std::string&>(log_level.at(_category)));
+    try {
+        using map_type = std::unordered_map<std::string, boost::any>;
+        const auto& log_level = irods::get_server_property<const map_type&>(irods::CFG_LOG_LEVEL_KW);
+        return to_level(boost::any_cast<const std::string&>(log_level.at(_category)));
+    }
+    catch (const std::exception&) {
+        log::server::warn({{"log_message", "Cannot get 'log_level' for log category. "
+                                           "Defaulting to 'info'."},
+                           {"requested_category",  _category}});
+    }
+
+    return log::level::info;
 }
 
 void log::set_error_object(rError_t* _error) noexcept
