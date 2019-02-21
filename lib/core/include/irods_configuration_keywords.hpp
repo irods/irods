@@ -45,6 +45,7 @@ namespace irods {
     const std::string CFG_LOG_LEVEL_CATEGORY_SERVER_KW{"server"};
     const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY_KW{"agent_factory"};
     const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_KW{"agent"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW{"delay_server"};
     const std::string CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW{"resource"};
     const std::string CFG_LOG_LEVEL_CATEGORY_DATABASE_KW{"database"};
     const std::string CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW{"authentication"};
