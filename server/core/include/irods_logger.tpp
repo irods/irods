@@ -39,6 +39,15 @@ class log::logger_config<log::category::agent>
 };
 
 template <>
+class log::logger_config<log::category::delay_server>
+{
+    static constexpr const char* name = "delay_server";
+    inline static log::level level = log::level::info;
+
+    friend class logger<log::category::delay_server>;
+};
+
+template <>
 class log::logger_config<log::category::resource>
 {
     static constexpr const char* name = "resource";

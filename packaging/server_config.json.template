@@ -24,6 +24,7 @@
         "api": "info",
         "authentication": "info",
         "database": "info",
+        "delay_server": "info",
         "legacy": "info",
         "microservice": "info",
         "network": "info",

@@ -53,6 +53,7 @@ public:
         struct server;
         struct agent_factory;
         struct agent;
+        struct delay_server;
         struct resource;
         struct database;
         struct authentication;
@@ -70,6 +71,7 @@ public:
     using server         = logger<category::server>;
     using agent_factory  = logger<category::agent_factory>;
     using agent          = logger<category::agent>;
+    using delay_server   = logger<category::delay_server>;
     using resource       = logger<category::resource>;
     using database       = logger<category::database>;
     using authentication = logger<category::authentication>;
