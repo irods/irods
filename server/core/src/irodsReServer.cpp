@@ -349,7 +349,7 @@ int main() {
                         RULE_EXEC_ESTIMATED_EXE_TIME, \
                         RULE_EXEC_NOTIFICATION_ADDR \
                 WHERE RULE_EXEC_TIME <= '%s'") % now).str();
-            irods::query qobj{&static_cast<rcComm_t&>(query_conn), qstr};
+            irods::query<rcComm_t> qobj{&static_cast<rcComm_t&>(query_conn), qstr};
             if(qobj.size() > 0) {
                 rodsEnv env{};
                 _getRodsEnv(env);

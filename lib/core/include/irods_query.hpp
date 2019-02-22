@@ -17,34 +17,8 @@
 char *getCondFromString( char * t );
 
 namespace irods {
-    namespace query_helper {
-#ifdef RODS_SERVER
-        typedef rsComm_t comm_type;
-        static const std::function<
-            int(rsComm_t*,
-                genQueryInp_t*,
-                genQueryOut_t**)>
-                    gen_query_fcn{rsGenQuery};
-        static const std::function<
-            int(rsComm_t*,
-                specificQueryInp_t*,
-                genQueryOut_t**)>
-                    spec_query_fcn{rsSpecificQuery};
-#else
-        typedef rcComm_t comm_type;
-        static const std::function<
-            int(rcComm_t*,
-                genQueryInp_t*,
-                genQueryOut_t**)>
-                    gen_query_fcn{rcGenQuery};
-        static const std::function<
-            int(rcComm_t*,
-                specificQueryInp_t*,
-                genQueryOut_t**)>
-                    spec_query_fcn{rcSpecificQuery};
-#endif
-    };
 
+    template <typename connection_type>
     class query {
     public:
         typedef std::vector<std::string> value_type;
@@ -144,7 +118,7 @@ namespace irods {
             }
 
             query_impl_base(
-                query_helper::comm_type* _comm,
+                connection_type* _comm,
                 const uint32_t           _query_limit,
                 const std::string&       _q) :
                 comm_{_comm},
@@ -153,7 +127,7 @@ namespace irods {
                 gen_output_{} {
             };
             protected:
-            query_helper::comm_type* comm_;
+            connection_type* comm_;
             const uint32_t query_limit_;
             const std::string query_string_;
             genQueryOut_t* gen_output_;
@@ -162,15 +136,15 @@ namespace irods {
         class gen_query_impl : public query_impl_base {
             public:
             virtual ~gen_query_impl() {
-                if(gen_output_->continueInx) {
+                if(this->gen_output_ && this->gen_output_->continueInx) {
                     // Close statements for this query
-                    gen_input_.continueInx = gen_output_->continueInx;
-                    freeGenQueryOut(&gen_output_);
+                    gen_input_.continueInx = this->gen_output_->continueInx;
+                    freeGenQueryOut(&this->gen_output_);
                     gen_input_.maxRows = 0;
-                    auto err = query_helper::gen_query_fcn(
-                                   comm_,
+                    auto err = gen_query_fcn(
+                                   this->comm_,
                                    &gen_input_,
-                                   &gen_output_);
+                                   &this->gen_output_);
                     if (CAT_NO_ROWS_FOUND != err && err < 0) {
                         irods::log(ERROR(err, (boost::format(
                                     "[%s] - Failed to close statement with continueInx [%d]") %
@@ -180,21 +154,21 @@ namespace irods {
             }
 
             void reset_for_page_boundary() override {
-                if(gen_output_) {
-                    gen_input_.continueInx = gen_output_->continueInx;
-                    freeGenQueryOut(&gen_output_);
+                if(this->gen_output_) {
+                    gen_input_.continueInx = this->gen_output_->continueInx;
+                    freeGenQueryOut(&this->gen_output_);
                 }
             }
 
             int fetch_page() override {
-                return query_helper::gen_query_fcn(
-                           comm_,
+                return gen_query_fcn(
+                           this->comm_,
                            &gen_input_,
-                           &gen_output_);
+                           &this->gen_output_);
             } // fetch_page
 
             gen_query_impl(
-                query_helper::comm_type* _comm,
+                connection_type* _comm,
                 int                      _query_limit,
                 const std::string&       _query_string) :
                 query_impl_base(_comm, _query_limit, _query_string) {
@@ -214,20 +188,34 @@ namespace irods {
 
             private:
             genQueryInp_t gen_input_; 
+            #ifdef RODS_SERVER
+                const std::function<
+                    int(connection_type*,
+                        genQueryInp_t*,
+                        genQueryOut_t**)>
+                            gen_query_fcn{rsGenQuery};
+            #else
+                const std::function<
+                    int(connection_type*,
+                        genQueryInp_t*,
+                        genQueryOut_t**)>
+                            gen_query_fcn{rcGenQuery};
+            #endif
+
         }; // class gen_query_impl
 
         class spec_query_impl : public query_impl_base {
             public:
             virtual ~spec_query_impl() {
-                if(gen_output_->continueInx) {
+                if(this->gen_output_ && this->gen_output_->continueInx) {
                     // Close statement for this query
-                    spec_input_.continueInx = gen_output_->continueInx;
-                    freeGenQueryOut(&gen_output_);
+                    spec_input_.continueInx = this->gen_output_->continueInx;
+                    freeGenQueryOut(&this->gen_output_);
                     spec_input_.maxRows = 0;
-                    auto err = query_helper::spec_query_fcn(
-                                   comm_,
+                    auto err = spec_query_fcn(
+                                   this->comm_,
                                    &spec_input_,
-                                   &gen_output_);
+                                   &this->gen_output_);
                     if (CAT_NO_ROWS_FOUND != err && err < 0) {
                         irods::log(ERROR(
                                     err, (boost::format(
@@ -238,21 +226,21 @@ namespace irods {
             }
 
             void reset_for_page_boundary() override {
-                if(gen_output_) {
-                    spec_input_.continueInx = gen_output_->continueInx;
-                    freeGenQueryOut(&gen_output_);
+                if(this->gen_output_) {
+                    spec_input_.continueInx = this->gen_output_->continueInx;
+                    freeGenQueryOut(&this->gen_output_);
                 }
             }
 
             int fetch_page() override {
-                return query_helper::spec_query_fcn(
-                           comm_,
+                return spec_query_fcn(
+                           this->comm_,
                            &spec_input_,
-                           &gen_output_);
+                           &this->gen_output_);
             } // fetch_page
 
             spec_query_impl(
-                query_helper::comm_type* _comm,
+                connection_type* _comm,
                 int                      _query_limit,
                 const std::string&       _query_string) :
                 query_impl_base(_comm, _query_limit, _query_string) {
@@ -261,10 +249,10 @@ namespace irods {
                 spec_input_.maxRows = MAX_SQL_ROWS;
                 spec_input_.sql = const_cast<char*>(_query_string.c_str());
 
-                int spec_err = query_helper::spec_query_fcn(
+                int spec_err = spec_query_fcn(
                                    _comm,
                                    &spec_input_,
-                                   &gen_output_);
+                                   &this->gen_output_);
                 if(spec_err < 0) {
                     THROW(
                         spec_err,
@@ -275,6 +263,19 @@ namespace irods {
 
             private:
             specificQueryInp_t spec_input_; 
+            #ifdef RODS_SERVER
+                const std::function<
+                    int(connection_type*,
+                        specificQueryInp_t*,
+                        genQueryOut_t**)>
+                            spec_query_fcn{rsSpecificQuery};
+            #else
+                const std::function<
+                    int(connection_type*,
+                        specificQueryInp_t*,
+                        genQueryOut_t**)>
+                            spec_query_fcn{rcSpecificQuery};
+            #endif
         }; // class spec_query_impl
 
         class iterator {
@@ -395,7 +396,7 @@ namespace irods {
         }; // class iterator
         
         explicit query(
-            query_helper::comm_type* _comm,
+            connection_type* _comm,
             const std::string&       _query_string,
             uintmax_t                _query_limit = 0,
             query_type               _query_type = GENERAL) {
