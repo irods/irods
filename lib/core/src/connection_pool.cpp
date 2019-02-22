@@ -151,7 +151,7 @@ bool connection_pool::verify_connection(int _index)
     }
 
     try {
-        query{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
+        query<rcComm_t>{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
         if(std::time(nullptr) - ctx.creation_time > refresh_time_) {
             return false;
         }
