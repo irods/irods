@@ -131,7 +131,7 @@ bool connection_pool::verify_connection(int _index) {
         return false;
     }
     try {
-        irods::query qobj{context.conn.get(),
+        irods::query<rcComm_t> qobj{context.conn.get(),
             "SELECT ZONE_NAME WHERE ZONE_TYPE = 'local'"};
         if(std::time(nullptr) - context.creation_time > refresh_time_) {
             return false;
