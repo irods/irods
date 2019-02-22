@@ -36,7 +36,7 @@ bool print_general_info(const userinfo_t& _info) {
     // Construct query object for listing info for specified user
     const std::string select{
         "USER_NAME, USER_ID, USER_TYPE, USER_ZONE, USER_INFO, USER_COMMENT, USER_CREATE_TIME, USER_MODIFY_TIME"};
-    irods::query qobj{Conn, construct_userinfo_query_string(_info, select)};
+    irods::query<rcComm_t> qobj{Conn, construct_userinfo_query_string(_info, select)};
 
     // Ensure that user exists
     if (qobj.begin() == qobj.end()) {
@@ -62,14 +62,14 @@ bool print_general_info(const userinfo_t& _info) {
 }
 
 void print_auth_info(const userinfo_t& _info) {
-    irods::query qobj{Conn, construct_userinfo_query_string(_info, "USER_DN")};
+    irods::query<rcComm_t> qobj{Conn, construct_userinfo_query_string(_info, "USER_DN")};
     for (const auto& result: qobj) {
         printf("GSI DN or Kerberos Principal Name: %s\n", result[0].c_str());
     }
 }
 
 void print_group_info(const userinfo_t& _info) {
-    irods::query qobj{Conn, construct_userinfo_query_string(_info, "USER_GROUP_NAME")};
+    irods::query<rcComm_t> qobj{Conn, construct_userinfo_query_string(_info, "USER_GROUP_NAME")};
     if (qobj.begin() == qobj.end()) {
         printf("Not a member of any group\n");
         return;
