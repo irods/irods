@@ -339,7 +339,7 @@ namespace irods {
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
             try {
-                dataObjInp_t* l = boost::any_cast<dataObjInp_t*>(_p);
+                dataObjInp_t* l = &boost::any_cast<dataObjInp_t&>(_p);
 
                 if (l) {
                     _out["obj_path"]    = l->objPath;
