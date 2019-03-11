@@ -28,6 +28,7 @@ if [ "$PACKAGEUPGRADE" = "true" ] ; then
     # Upgrade
     echo "Upgrading Existing iRODS Installation"
     UPGRADE_TEMP_FILE="/var/lib/irods/upgrade.tmp"
+    touch $UPGRADE_TEMP_FILE
 fi
 
 if [ -f "/var/lib/irods/VERSION" ] ; then

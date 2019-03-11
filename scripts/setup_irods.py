@@ -60,6 +60,7 @@ from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
 from irods.password_obfuscation import maximum_password_length
+from irods.logging_infrastructure import setup_rsyslog_and_logrotate, rsyslog_config_path, logrotate_config_path
 
 def setup_server(irods_config, json_configuration_file=None):
     l = logging.getLogger(__name__)
@@ -89,8 +90,7 @@ def setup_server(irods_config, json_configuration_file=None):
         irods_user, irods_group = get_irods_user_and_group(irods_config)
 
     setup_service_account(irods_config, irods_user, irods_group)
-
-    setup_syslog_and_logrotate()
+    setup_rsyslog_and_logrotate(register_tty=False)
 
     #Do the rest of the setup as the irods user
     if os.getuid() == 0:
@@ -136,66 +136,14 @@ def setup_server(irods_config, json_configuration_file=None):
     l.info(irods.lib.get_header('Log Configuration Notes'))
     l.info(('The iRODS log file is managed by syslog and logrotate.\n'
             'The locations of the log file and configuration files are listed below.\n\n'
-            '  Log File Path               : ' + log_file_path() + '\n'
-            '  Delay Log File Path         : ' + delay_log_file_path() + '\n'
-            '  Syslog Configuration Path   : ' + syslog_config_path() + '\n'
+            '  Log File Path               : /var/log/irods/irods.log\n'
+            '  Delay Log File Path         : /var/log/irods/irods_delay_queue.log\n'
+            '  Rsyslog Configuration Path  : ' + rsyslog_config_path() + '\n'
             '  Logrotate Configuration Path: ' + logrotate_config_path() + '\n\n'
             'iRODS will never touch these configuration files ever again. If you need\n'
             'to make adjustments, you must do so manually.'))
 
     l.info(irods.lib.get_header('iRODS is installed and running'))
-
-def syslog_config_path():
-    return '/etc/rsyslog.d/00-irods.conf'
-
-def log_file_path():
-    return '/var/log/irods/irods.log'
-
-def delay_log_file_path():
-    return '/var/log/irods/irods_delay_queue.log'
-
-def logrotate_config_path():
-    return '/etc/logrotate.d/irods'
-
-def setup_syslog_and_logrotate():
-    l = logging.getLogger(__name__)
-
-    l.info(irods.lib.get_header('Configuring Syslog and Logrotate'))
-
-    # Enable syslog support if the syslog config file for iRODS does not exist.
-    if not os.path.exists(syslog_config_path()):
-        l.info('Creating syslog configuration file for iRODS ...')
-        with open(syslog_config_path(), 'w') as f:
-            f.write(('$FileCreateMode 0644\n'
-                     '$Umask 0000\n'
-                     '$template irods_format,"%msg%\\n"\n'
-                     ':programname,startswith,"irodsServer"\t' + log_file_path() + ';irods_format\n'
-                     ':programname,startswith,"irodsReServer"\t' + log_file_path() + ';irods_format\n'
-                     '& stop\n'))
-        l.info('Restarting syslog ...')
-        irods.lib.execute_command(['service', 'rsyslog', 'restart'])
-    else:
-        l.info('Found syslog configuration file for iRODS.  Skipping ...')
-
-    irods_logrotate_config_path = logrotate_config_path()
-
-    # Configure logrotate support if the logrotate config file for iRODS does not exist.
-    if not os.path.exists(irods_logrotate_config_path):
-        l.info('Creating logrotate configuration file for iRODS ...\n')
-        with open(irods_logrotate_config_path, 'w') as f:
-            f.write((log_file_path() + ' ' + delay_log_file_path() + ' {\n'
-                     '\tweekly\n'
-                     '\trotate 26\n'
-                     '\tcopytruncate\n'
-                     '\tdelaycompress\n'
-                     '\tcompress\n'
-                     '\tdateext\n'
-                     '\tnotifempty\n'
-                     '\tmissingok\n'
-                     '\tsu root root\n'
-                     '}\n'))
-    else:
-        l.info('Found logrotate configuration file for iRODS.  Skipping ...')
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
