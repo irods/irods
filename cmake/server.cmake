@@ -39,7 +39,10 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/host_access_control_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/hosts_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/irodsMonPerf.config.in
+  ${CMAKE_SOURCE_DIR}/packaging/irods.logrotate
+  ${CMAKE_SOURCE_DIR}/packaging/irods.rsyslog
   ${CMAKE_SOURCE_DIR}/packaging/server_config.json.template
+  ${CMAKE_SOURCE_DIR}/packaging/server_log_setup_instructions.txt
   ${CMAKE_SOURCE_DIR}/packaging/server_setup_instructions.txt
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
