@@ -18,9 +18,8 @@ This library does not support relative paths when interacting with iRODS objects
 ## Using the Library
 To use the library, simply include the filesystem header (e.g. `<irods/filesystem.hpp>`) and link against the appropriate shared library. Client-side software should link against `irods_client.so`. Server-side software should link against `irods_server.so`.
 
-The library defaults to providing the client-side API. To enable the server-side API, you must define at least one of the following macros (these macros produce the same results).
-- RODS_SERVER
-- RODS_CLERVER
+The library defaults to providing the client-side API. To enable the server-side API, define the following macro.
+- IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 ## TODOs
 - Finish designing and implementing unit tests.

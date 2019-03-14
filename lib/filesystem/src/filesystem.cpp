@@ -6,7 +6,9 @@
 #include "filesystem/detail.hpp"
 
 // clang-format off
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #define RODS_SERVER
+
     #include "rods.h"
     #include "apiHeaderAll.h"
     #include "rsObjStat.hpp"
@@ -37,7 +39,7 @@
     #include "modColl.h"
     #include "rmColl.h"
     #include "modAVUMetadata.h"
-#endif // RODS_SERVER or RODS_CLERVER
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
 #include "rcMisc.h"
@@ -57,11 +59,11 @@
 #include <iomanip>
 #include <algorithm>
 
-namespace irods::experimental::filesystem
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
     namespace
     {
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
         int rsDataObjCopy(rsComm_t* _comm, dataObjCopyInp_t* _dataObjCopyInp)
         {
             //_dataObjCopyInp->srcDataObjInp.oprType = COPY_SRC;
@@ -83,7 +85,7 @@ namespace irods::experimental::filesystem
             collOprStat_t* stat{};
             return ::rsRmColl(_comm, _rmCollInp, &stat);
         };
-#endif // RODS_SERVER or RODS_CLERVER
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
         auto make_error_code(int _ec) -> std::error_code
         {
@@ -969,5 +971,5 @@ namespace irods::experimental::filesystem
 
         return true;
     }
-} // namespace irods::experimental::filesystem
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 

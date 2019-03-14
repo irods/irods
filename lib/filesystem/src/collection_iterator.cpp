@@ -4,7 +4,7 @@
 #include "filesystem/filesystem_error.hpp"
 
 // clang-format off
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #include "rsOpenCollection.hpp"
     #include "rsReadCollection.hpp"
     #include "rsCloseCollection.hpp"
@@ -12,7 +12,7 @@
     #include "openCollection.h"
     #include "readCollection.h"
     #include "closeCollection.h"
-#endif // RODS_SERVER or RODS_CLERVER
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
 #include "irods_at_scope_exit.hpp"
@@ -21,9 +21,9 @@
 #include <string>
 #include <cassert>
 
-namespace irods::experimental::filesystem
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     namespace
     {
         const auto rsReadCollection = [](rsComm_t* _comm, int _handle, collEnt_t** _collEnt) -> int
@@ -36,7 +36,7 @@ namespace irods::experimental::filesystem
             return ::rsCloseCollection(_comm, &_handle);
         };
     } // anonymous namespace
-#endif // RODS_SERVER or RODS_CLERVER
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
     collection_iterator::collection_iterator(rxComm& _comm,
                                              const path& _p,
@@ -123,5 +123,5 @@ namespace irods::experimental::filesystem
 
         return *this;
     }
-} // namespace irods::experimental::filesystem
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
