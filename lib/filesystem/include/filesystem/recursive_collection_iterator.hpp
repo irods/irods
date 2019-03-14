@@ -9,7 +9,7 @@
 #include <stack>
 #include <memory>
 
-namespace irods::experimental::filesystem
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
     class recursive_collection_iterator
     {
@@ -87,6 +87,6 @@ namespace irods::experimental::filesystem
     {
         return {};
     }
-} // namespace irods::experimental::filesystem
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
 #endif // IRODS_FILESYSTEM_RECURSIVE_COLLECTION_ITERATOR_HPP
