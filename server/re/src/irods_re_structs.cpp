@@ -17,9 +17,13 @@
 #include "irods_ms_plugin.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_logger.hpp"
-
-#include "filesystem.hpp"
 #include "dstream.hpp"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#define IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+#include "transport/default_transport.hpp"
 
 #include <list>
 
@@ -217,9 +221,11 @@ namespace
         }
 
         try {
-            using irods::experimental::odstream;
+            using odstream = irods::experimental::io::odstream;
+            using default_transport = irods::experimental::io::server::default_transport;
 
-            odstream out{*_rei->rsComm, _path, std::ios_base::in | std::ios_base::ate};
+            default_transport tp{*_rei->rsComm};
+            odstream out{tp, _path, std::ios_base::in | std::ios_base::ate};
 
             if (!out) {
                 // clang-format off
@@ -296,7 +302,7 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei )
         return 0;
     }
 
-    namespace fs = irods::experimental::filesystem;
+    namespace fs = irods::experimental::filesystem::server;
 
     if (fs::is_data_object(*rei->rsComm, writeId)) {
         return append_message_to_data_object(rei, writeId, writeStr);

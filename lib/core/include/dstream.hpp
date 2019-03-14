@@ -1,40 +1,8 @@
-#ifndef IRODS_DSTREAM_HPP
-#define IRODS_DSTREAM_HPP
+#ifndef IRODS_IO_DSTREAM_HPP
+#define IRODS_IO_DSTREAM_HPP
 
-// clang-format off
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
-    #include "rsDataObjOpen.hpp"
-    #include "rsDataObjRead.hpp"
-    #include "rsDataObjWrite.hpp"
-    #include "rsDataObjClose.hpp"
-    #include "rsDataObjLseek.hpp"
-
-    #define rxComm              rsComm_t
-
-    #define rxDataObjOpen       rsDataObjOpen
-    #define rxDataObjRead       rsDataObjRead
-    #define rxDataObjWrite      rsDataObjWrite
-    #define rxDataObjClose      rsDataObjClose
-    #define rxDataObjLseek      rsDataObjLseek
-#else
-    #include "dataObjOpen.h"
-    #include "dataObjRead.h"
-    #include "dataObjWrite.h"
-    #include "dataObjClose.h"
-    #include "dataObjLseek.h"
-
-    #define rxComm              rcComm_t
-
-    #define rxDataObjOpen       rcDataObjOpen
-    #define rxDataObjRead       rcDataObjRead
-    #define rxDataObjWrite      rcDataObjWrite
-    #define rxDataObjClose      rcDataObjClose
-    #define rxDataObjLseek      rcDataObjLseek
-#endif // defined(RODS_SERVER) || defined(RODS_CLERVER)
-// clang-format on
-
-#include "rcMisc.h"
 #include "filesystem/path.hpp"
+#include "transport/transport.hpp"
 
 #include <streambuf>
 #include <type_traits>
@@ -44,7 +12,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace irods::experimental
+namespace irods::experimental::io
 {
     // Details about what each virtual function in this template are required to
     // do can be found at the following link:
@@ -71,22 +39,18 @@ namespace irods::experimental
         using base_type = std::basic_streambuf<CharT, Traits>;
 
         // clang-format off
-        inline static constexpr auto uninitialized_file_descriptor = -1;
-        inline static constexpr auto minimum_valid_file_descriptor = 3;
-        inline static constexpr auto buffer_size                   = 4096;
+        inline static constexpr auto buffer_size          = 4096;
 
         // Errors
-        inline static constexpr auto translation_error             = -1;
-        inline static constexpr auto external_write_error          = -1;
-        inline static const     auto seek_error                    = pos_type{off_type{-1}};
+        inline static constexpr auto external_write_error = -1;
+        inline static const     auto seek_error           = pos_type{off_type{-1}};
         // clang-format on
 
     public:
         basic_data_object_buf()
             : base_type{}
             , buf_{}
-            , comm_{}
-            , fd_{uninitialized_file_descriptor}
+            , transport_{}
         {
         }
 
@@ -113,9 +77,8 @@ namespace irods::experimental
             using std::swap;
 
             base_type::swap(_other);
+            swap(transport_, _other.transport_);
             swap(buf_, _other.buf_);
-            swap(comm_, _other.comm_);
-            swap(fd_, _other.fd_);
         }
 
         friend void swap(basic_data_object_buf& _lhs, basic_data_object_buf& _rhs)
@@ -125,85 +88,70 @@ namespace irods::experimental
 
         bool is_open() const noexcept
         {
-            return fd_ >= minimum_valid_file_descriptor;
+            return transport_->is_open();
         }
 
-        bool open(rxComm& _comm,
+        bool open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   std::ios_base::openmode _mode)
         {
-            if (is_open()) {
+            transport_ = &_transport;
+
+            if (!transport_->open(_p, _mode)) {
                 return false;
             }
 
-            comm_ = &_comm;
-
             init_get_or_put_area(_mode);
 
-            return open_impl(_p, _mode, [](auto&) {});
+            return true;
         }
 
-        bool open(rxComm& _comm,
+        bool open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   int _replica_number,
                   std::ios_base::openmode _mode)
         {
-            if (is_open()) {
+            transport_ = &_transport;
+
+            if (!transport_->open(_p, _replica_number, _mode)) {
                 return false;
             }
 
-            comm_ = &_comm;
-
             init_get_or_put_area(_mode);
 
-            return open_impl(_p, _mode, [_replica_number](auto& _input) {
-                const auto replica = std::to_string(_replica_number);
-                addKeyVal(&_input.condInput, REPL_NUM_KW, replica.c_str());
-            });
+            return true;
         }
 
-        bool open(rxComm& _comm,
+        bool open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   const std::string& _resource_name,
                   std::ios_base::openmode _mode)
         {
-            if (is_open()) {
+            transport_ = &_transport;
+
+            if (!transport_->open(_p, _resource_name, _mode)) {
                 return false;
             }
 
-            comm_ = &_comm;
-
             init_get_or_put_area(_mode);
 
-            return open_impl(_p, _mode, [&_resource_name](auto& _input) {
-                addKeyVal(&_input.condInput, RESC_NAME_KW, _resource_name.c_str());
-            });
+            return true;
         }
 
         bool close()
         {
-            if (!is_open()) {
+            if (!transport_->is_open()) {
                 return false;
             }
 
             this->sync();
 
-            openedDataObjInp_t input{};
-            input.l1descInx = fd_;
-
-            if (const auto ec = rxDataObjClose(comm_, &input); ec < 0) {
-                return false;
-            }
-
-            comm_ = nullptr;
-            fd_ = uninitialized_file_descriptor;
-
-            return true;
+            return transport_->close();
         }
 
         int file_descriptor() const noexcept
         {
-            return fd_;
+            return transport_->file_descriptor();;
         }
 
     protected:
@@ -220,7 +168,7 @@ namespace irods::experimental
             // The "Get" area has been consumed. Fill the internal buffer with
             // new data from the data object.
 
-            const auto bytes_read = read_bytes(buf_.data(), buf_.size());
+            const auto bytes_read = transport_->receive(buf_.data(), buf_.size() * sizeof(char_type));
 
             if (bytes_read <= 0) {
                 return traits_type::eof();
@@ -260,7 +208,7 @@ namespace irods::experimental
                 this->gbump(bytes_to_copy);
             }
 
-            return read_bytes(_buffer + bytes_to_copy, _buffer_size - bytes_to_copy);
+            return transport_->receive(_buffer + bytes_to_copy, (_buffer_size - bytes_to_copy) * sizeof(char_type));
         }
 
         std::streamsize xsputn(const char_type* _buffer, std::streamsize _buffer_size) override
@@ -271,7 +219,7 @@ namespace irods::experimental
                 return external_write_error;
             }
 
-            return send_bytes(_buffer, _buffer_size * sizeof(char_type));
+            return transport_->send(_buffer, _buffer_size * sizeof(char_type));
         }
 
         int sync() override
@@ -307,60 +255,20 @@ namespace irods::experimental
                          std::ios_base::seekdir _dir,
                          std::ios_base::openmode _which = std::ios_base::in | std::ios_base::out) override
         {
-            if (!is_open() || this->sync() != 0) {
+            if (this->sync() != 0) {
                 return seek_error;
             }
 
-            openedDataObjInp_t input{};
-
-            input.l1descInx = fd_;
-            input.offset = _off;
-
-            switch (_dir) {
-                case std::ios_base::beg:
-                    input.whence = SEEK_SET;
-                    break;
-
-                case std::ios_base::cur:
-                    input.whence = SEEK_CUR;
-                    break;
-
-                case std::ios_base::end:
-                    input.whence = SEEK_END;
-                    break;
-
-                default:
-                    return seek_error;
-            }
-
-            fileLseekOut_t* output{};
-
-            if (const auto ec = rxDataObjLseek(comm_, &input, &output); ec < 0) {
-                return seek_error;
-            }
-
-            return pos_type{output->offset};
+            return transport_->seekpos(_off, _dir);
         }
 
         pos_type seekpos(pos_type _pos, std::ios_base::openmode _which = std::ios_base::in | std::ios_base::out) override
         {
-            if (!is_open() || this->sync() != 0) {
+            if (this->sync() != 0) {
                 return seek_error;
             }
 
-            openedDataObjInp_t input{};
-
-            input.l1descInx = fd_;
-            input.offset = _pos;
-            input.whence = SEEK_SET;
-
-            fileLseekOut_t* output{};
-
-            if (const auto ec = rxDataObjLseek(comm_, &input, &output); ec < 0) {
-                return seek_error;
-            }
-
-            return pos_type{output->offset};
+            return transport_->seekpos(_pos, std::ios_base::beg);
         }
 
     private:
@@ -409,82 +317,6 @@ namespace irods::experimental
             }
         }
 
-        int make_open_flags(std::ios_base::openmode _mode) noexcept
-        {
-            using std::ios_base;
-
-            const auto m = _mode & ~(ios_base::ate | ios_base::binary);
-
-            if (ios_base::in == m) {
-                return O_RDONLY;
-            }
-            else if (ios_base::out == m || (ios_base::out | ios_base::trunc) == m) {
-                return O_CREAT | O_WRONLY | O_TRUNC;
-            }
-            else if (ios_base::app == m || (ios_base::out | ios_base::app) == m) {
-                return O_CREAT | O_WRONLY | O_APPEND;
-            }
-            else if ((ios_base::out | ios_base::in) == m) {
-                return O_CREAT | O_RDWR;
-            }
-            else if ((ios_base::out | ios_base::in | ios_base::trunc) == m) {
-                return O_CREAT | O_RDWR | O_TRUNC;
-            }
-            else if ((ios_base::out | ios_base::in | ios_base::app) == m ||
-                     (ios_base::in | ios_base::app) == m)
-            {
-                return O_CREAT | O_RDWR | O_APPEND | O_TRUNC;
-            }
-
-            return translation_error;
-        }
-
-        bool seek_to_end_if_required(std::ios_base::openmode _mode)
-        {
-            if (std::ios_base::ate & _mode) {
-                if (seek_error == this->seekoff(0, std::ios_base::end)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        template <typename Function>
-        bool open_impl(const filesystem::path& _p, std::ios_base::openmode _mode, Function _func)
-        {
-            const auto flags = make_open_flags(_mode);
-
-            if (flags == translation_error) {
-                return false;
-            }
-
-            dataObjInp_t input{};
-
-            input.createMode = 0600;
-            input.openFlags = flags;
-            rstrcpy(input.objPath, _p.c_str(), sizeof(input.objPath));
-
-            _func(input);
-
-            // TODO Modularize the block of code below.
-
-            const auto fd = rxDataObjOpen(comm_, &input);
-
-            if (fd < minimum_valid_file_descriptor) {
-                return false;
-            }
-
-            fd_ = fd;
-
-            if (!seek_to_end_if_required(_mode)) {
-                close();
-                return false;
-            }
-
-            return true;
-        }
-
         int flush_buffer()
         {
             const auto bytes_to_send = this->pptr() - this->pbase();
@@ -493,7 +325,7 @@ namespace irods::experimental
                 return 0;
             }
 
-            const auto bytes_written = send_bytes(buf_.data(), bytes_to_send);
+            const auto bytes_written = transport_->send(buf_.data(), bytes_to_send * sizeof(char_type));
 
             if (bytes_written < 0) {
                 return external_write_error;
@@ -504,39 +336,8 @@ namespace irods::experimental
             return 0;
         }
 
-        int read_bytes(char_type* _buffer, int _buffer_size) const noexcept
-        {
-            openedDataObjInp_t input{};
-
-            input.l1descInx = fd_;
-            input.len = _buffer_size;
-
-            bytesBuf_t output{};
-
-            output.len = input.len;
-            output.buf = _buffer;
-
-            return rxDataObjRead(comm_, &input, &output);
-        }
-
-        int send_bytes(const char_type* _buffer, int _buffer_size) const noexcept
-        {
-            openedDataObjInp_t input{};
-
-            input.l1descInx = fd_;
-            input.len = _buffer_size;
-
-            bytesBuf_t input_buffer{};
-
-            input_buffer.len = input.len;
-            input_buffer.buf = const_cast<char_type*>(_buffer);
-
-            return rxDataObjWrite(comm_, &input, &input_buffer);
-        }
-
         std::array<char_type, buffer_size> buf_;
-        rxComm* comm_;
-        int fd_;
+        transport<char_type>* transport_;
     }; // basic_data_object_buf
 
     // Provides a default openmode for basic_dstream constructors and open()
@@ -590,30 +391,30 @@ namespace irods::experimental
         {
         }
 
-        basic_dstream(rxComm& _comm,
-                           const filesystem::path& _p,
-                           std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+        basic_dstream(transport<char_type>& _transport,
+                      const filesystem::path& _p,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_comm, _p, _mode);
+            open(_transport, _p, _mode);
         }
 
-        basic_dstream(rxComm& _comm,
-                           const filesystem::path& _p,
-                           int _replica_number,
-                           std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+        basic_dstream(transport<char_type>& _transport,
+                      const filesystem::path& _p,
+                      int _replica_number,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_comm, _p, _replica_number, _mode);
+            open(_transport, _p, _replica_number, _mode);
         }
 
-        basic_dstream(rxComm& _comm,
-                           const filesystem::path& _p,
-                           const std::string& _resource_name,
-                           std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+        basic_dstream(transport<char_type>& _transport,
+                      const filesystem::path& _p,
+                      const std::string& _resource_name,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_comm, _p, _resource_name, _mode);
+            open(_transport, _p, _resource_name, _mode);
         }
 
         basic_dstream(basic_dstream&&) = default;
@@ -642,11 +443,11 @@ namespace irods::experimental
             return buf_.is_open();
         }
 
-        void open(rxComm& _comm,
+        void open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_comm, _p, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _p, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -654,12 +455,12 @@ namespace irods::experimental
             }
         }
 
-        void open(rxComm& _comm,
+        void open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   int _replica_number,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_comm, _p, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _p, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -667,12 +468,12 @@ namespace irods::experimental
             }
         }
 
-        void open(rxComm& _comm,
+        void open(transport<char_type>& _transport,
                   const filesystem::path& _p,
                   const std::string& _resource_name,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_comm, _p, _resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _p, _resource_name, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -713,7 +514,7 @@ namespace irods::experimental
     using odstream        = basic_dstream<std::basic_ostream<char>>;
     using dstream         = basic_dstream<std::basic_iostream<char>>;
     // clang-format on
-} // namespace irods::experimental
+} // namespace irods::experimental::io
 
-#endif // IRODS_DSTREAM_HPP
+#endif // IRODS_IO_DSTREAM_HPP
 
