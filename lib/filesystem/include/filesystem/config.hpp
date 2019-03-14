@@ -1,8 +1,26 @@
 #ifndef IRODS_FILESYSTEM_CONFIG_HPP
 #define IRODS_FILESYSTEM_CONFIG_HPP
 
+#undef NAMESPACE_IMPL
+#undef rxComm
+#undef rxOpenCollection
+#undef rxReadCollection
+#undef rxCloseCollection
+#undef rxObjStat
+#undef rxModColl
+#undef rxCollCreate
+#undef rxRmColl
+#undef rxDataObjCopy
+#undef rxDataObjRename
+#undef rxDataObjUnlink
+#undef rxDataObjChksum
+#undef rxModAccessControl
+#undef rxModAVUMetadata
+
 // clang-format off
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #define NAMESPACE_IMPL          server
+
     #define rxComm                  rsComm_t
 
     #define rxOpenCollection        rsOpenCollection
@@ -19,6 +37,8 @@
     #define rxModAccessControl      rsModAccessControl
     #define rxModAVUMetadata        rsModAVUMetadata
 #else
+    #define NAMESPACE_IMPL          client
+
     #define rxComm                  rcComm_t
 
     #define rxOpenCollection        rcOpenCollection
@@ -34,7 +54,7 @@
     #define rxDataObjChksum         rcDataObjChksum
     #define rxModAccessControl      rcModAccessControl
     #define rxModAVUMetadata        rcModAVUMetadata
-#endif // RODS_SERVER or RODS_CLERVER
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
 #endif // IRODS_FILESYSTEM_CONFIG_HPP
