@@ -24,7 +24,7 @@
 
 #include "boost/lexical_cast.hpp"
 
-#include "jansson.h"
+#include "json.hpp"
 
 #include <ctime>
 #include <unistd.h>
@@ -381,13 +381,13 @@ namespace irods {
         }
 
         return static_cast<int>( age );
-
     } // get_pid_age
 
     static error operation_status(
         const std::string&, // _wait_option,
         const size_t, //       _wait_seconds,
-        std::string& _output ) {
+        std::string& _output )
+    {
         rodsEnv my_env;
         _reloadRodsEnv( my_env );
 
@@ -404,59 +404,38 @@ namespace irods {
 
         int my_pid = getpid();
 
-        json_t* obj = json_object();
-        if ( !obj ) {
-            return ERROR(
-                       SYS_MALLOC_ERR,
-                       "allocation of json object failed" );
-        }
+        using json = nlohmann::json;
 
-        json_object_set_new( obj, "hostname", json_string( my_env.rodsHost ) );
-        json_object_set_new( obj, "irods_server_pid", json_integer( my_pid ) );
-        json_object_set_new( obj, "re_server_pid", json_integer( re_pid ) );
-        json_object_set_new( obj, "xmsg_server_pid", json_integer( xmsg_pid ) );
+        json obj{
+            {"hostname", my_env.rodsHost},
+            {"irods_server_pid", my_pid}, // Should be int
+            {"re_server_pid", re_pid}, // Should be int
+            {"xmsg_server_pid", xmsg_pid} // Should be int
+        };
 
         server_state& s = server_state::instance();
-        json_object_set_new( obj, "status", json_string( s().c_str() ) );
+        obj["status"] = s();
 
-        json_t* arr = json_array();
-        if ( !arr ) {
-            return ERROR(
-                       SYS_MALLOC_ERR,
-                       "allocation of json array failed" );
-        }
+        auto arr = json::array();
 
         std::vector<int> pids;
         getAgentProcPIDs( pids );
-        for ( size_t i = 0;
-                i < pids.size();
-                ++i ) {
-            int  pid = pids[i];
-            int  age = get_pid_age( pids[i] );
+        for ( size_t i = 0; i < pids.size(); ++i ) {
+            int pid = pids[i];
+            int age = get_pid_age( pids[i] );
 
-            json_t* agent_obj = json_object();
-            if ( !agent_obj ) {
-                return ERROR(
-                           SYS_MALLOC_ERR,
-                           "allocation of json object failed" );
-            }
-
-            json_object_set_new( agent_obj, "agent_pid", json_integer( pid ) );
-            json_object_set_new( agent_obj, "age", json_integer( age ) );
-            json_array_append_new( arr, agent_obj );
+            arr.push_back(json::object({
+                {"agent_pid", pid},
+                {"age", age}
+            }));
         }
 
-        json_object_set_new( obj, "agents", arr );
+        obj["agents"] = arr;
 
-        char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
-        json_decref( obj );
-
-        _output += tmp_buf;
-        free(tmp_buf);
+        _output += obj.dump(4);
         _output += ",";
 
         return SUCCESS();
-
     } // operation_status
 
     static error operation_ping(

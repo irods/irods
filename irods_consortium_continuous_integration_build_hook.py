@@ -25,15 +25,15 @@ def install_building_dependencies():
     irods_python_ci_utilities.install_irods_core_dev_repository()
     install_cmake_and_add_to_front_of_path()
     irods_python_ci_utilities.install_os_packages([
-        "irods-externals-avropre190cpp17-0",
-        "irods-externals-boost1.67.0-0",
-        "irods-externals-catch22.3.0-0",
-        "irods-externals-clang-runtime6.0-0",
-        "irods-externals-clang6.0-0",
-        "irods-externals-cppzmq4.2.3-0",
-        "irods-externals-jansson2.7-0",
-        "irods-externals-libarchive3.3.2-1",
-        "irods-externals-zeromq4-14.1.6-0"
+        'irods-externals-avropre190cpp17-0',
+        'irods-externals-boost1.67.0-0',
+        'irods-externals-catch22.3.0-0',
+        'irods-externals-clang-runtime6.0-0',
+        'irods-externals-clang6.0-0',
+        'irods-externals-cppzmq4.2.3-0',
+        'irods-externals-json3.1.2-0',
+        'irods-externals-libarchive3.3.2-1',
+        'irods-externals-zeromq4-14.1.6-0'
         ])
     install_os_specific_dependencies()
 
