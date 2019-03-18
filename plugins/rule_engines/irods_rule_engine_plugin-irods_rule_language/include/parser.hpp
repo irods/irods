@@ -416,8 +416,8 @@ StringList *getVarNamesInExprNodeAux( Node *expr, StringList* varnames, Region *
 int eqExprNodeSyntactic( Node *a, Node *b );
 int eqExprNodeSyntacticVarMapping( Node *a, Node *b, Hashtable *varMapping /* from a to b */ );
 
-int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] );
-int nextStringBase2( Pointer *e, char *value, char* delim );
+int nextStringBase( Pointer *e, char *value, int max_len, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] );
+int nextStringBase2( Pointer *e, char *value, int max_len, char* delim );
 Node *convertStringToExpression( Token *token, char *base, Node **node, Region *r );
 Node *nextActionBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );
 Node *parseActionArgumentBackwardCompatible( Pointer *e, Node **node, rError_t *errmsg, Region *r );

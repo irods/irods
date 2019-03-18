@@ -255,7 +255,7 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
                 }
             }
             else if ( pathLiteral && ch == '/' ) { /* path */
-                nextStringBase( e, token->text, "),; \t\r\n", 0, '\\', 0, token->vars ); /* path can be used in a foreach loop or assignment, or as a function argument */
+                nextStringBase( e, token->text,MAX_TOKEN_TEXT_LEN, "),; \t\r\n", 0, '\\', 0, token->vars ); /* path can be used in a foreach loop or assignment, or as a function argument */
                 token->type = TK_PATH;
                 break;
             }
@@ -319,7 +319,7 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
             }
             else if ( ch == '`' ) {
                 if ( lookAhead( e, 1 ) == '`' ) {
-                    if ( nextStringBase2( e, token->text, "``" ) == -1 ) {
+                    if ( nextStringBase2( e, token->text, MAX_TOKEN_TEXT_LEN, "``" ) == -1 ) {
                         token->type = N_ERROR;
                     }
                     else {
@@ -328,7 +328,7 @@ Token* nextTokenRuleGen( Pointer* e, ParserContext *context, int rulegen, int pa
                     }
                 }
                 else {
-                    if ( nextStringBase( e, token->text, "`", 1, '\\', 1, token->vars ) == -1 ) {
+                    if ( nextStringBase( e, token->text, MAX_TOKEN_TEXT_LEN, "`", 1, '\\', 1, token->vars ) == -1 ) {
                         token->type = N_ERROR;
                     }
                     else {
@@ -1554,14 +1554,19 @@ BUILD_NODE( N_QUERY_COND_JUNCTION, op, &start, n + 1, n + 1 );
 END_TRY( QueryCond )
 PARSER_FUNC_END( QueryCond )
 
-int nextStringBase2( Pointer *e, char *value, char* delim ) {
+int nextStringBase2( Pointer *e, char *value, int max_len, char* delim ) {
+    char *value0 = value;
     nextChar( e );
     int ch = nextChar( e );
     while ( ch != -1 ) {
+        if (value >= value0 + max_len) {
+	    return -1;
+        }
         if ( delim[0] == ch && delim[1] == lookAhead( e, 1 ) ) {
             if ( delim[0] == delim[1] ) {
                 while ( lookAhead( e, 2 ) == delim[1] ) {
                     *( value++ ) = delim[0];
+                    if (value >= value0 + max_len) { return -1; }
                     nextChar( e );
                 }
             }
@@ -1579,7 +1584,7 @@ int nextStringBase2( Pointer *e, char *value, char* delim ) {
 /*
  * return number of vars or -1 if no string found
  */
-int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] ) {
+int nextStringBase( Pointer *e, char *value, int max_len, char* delim, int consumeDelim, char escape, int cntOffset, int vars[] ) {
     int mode = 1; /* 1 string 3 escape */
     int nov = 0;
     char* value0 = value;
@@ -1587,6 +1592,9 @@ int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char
     value++;
     int ch = nextChar( e );
     while ( ch != -1 ) {
+        if (value >= value0 + max_len) {
+	    return -1;
+        }
         *value = ch;
         switch ( mode ) {
         case 1:
@@ -1636,12 +1644,15 @@ int nextStringBase( Pointer *e, char *value, char* delim, int consumeDelim, char
     }
     return -1;
 }
-int nextStringParsed( Pointer *e, char *value, char* deliml, char *delimr, char *delim, int consumeDelim, int vars[] ) {
+int nextStringParsed( Pointer *e, char *value, int max_len, char* deliml, char *delimr, char *delim, int consumeDelim, int vars[] ) {
     int mode = 0; /* level */
     int nov = 0;
     char* value0 = value;
     int ch = lookAhead( e, 0 );
     while ( ch != -1 ) {
+        if (value >= value0 + max_len) {
+	    return -1;
+        }
         *value = ch;
         if ( strchr( deliml, ch ) != NULL ) {
             mode ++;
@@ -1671,10 +1682,10 @@ int nextStringParsed( Pointer *e, char *value, char* deliml, char *delimr, char 
     return -1;
 }
 int nextString( Pointer *e, char *value, int vars[] ) {
-    return nextStringBase( e, value, "\"", 1, '\\', 1, vars );
+    return nextStringBase( e, value, MAX_TOKEN_TEXT_LEN, "\"", 1, '\\', 1, vars );
 }
 int nextString2( Pointer *e, char *value, int vars[] ) {
-    return nextStringBase( e, value, "\'", 1, '\\', 1, vars );
+    return nextStringBase( e, value, MAX_TOKEN_TEXT_LEN,"\'", 1, '\\', 1, vars );
 }
 
 int getBinaryPrecedence( Token * token ) {
@@ -2836,15 +2847,15 @@ void nextActionArgumentStringBackwardCompatible( Pointer *e, Token *token ) {
     else {
         ch = lookAhead( e, 0 );
         if ( ch == '\"' ) {
-            nextStringBase( e, token->text, "\"", 1, '\\', 1, token->vars );
+            nextStringBase( e, token->text, MAX_TOKEN_TEXT_LEN,"\"", 1, '\\', 1, token->vars );
             skipWhitespace( e );
         }
         else if ( ch == '\'' ) {
-            nextStringBase( e, token->text, "\'", 1, '\\', 1, token->vars );
+            nextStringBase( e, token->text, MAX_TOKEN_TEXT_LEN,"\'", 1, '\\', 1, token->vars );
             skipWhitespace( e );
         }
         else {
-            nextStringParsed( e, token->text, "(", ")", ",|)", 0, token->vars );
+            nextStringParsed( e, token->text, MAX_TOKEN_TEXT_LEN, "(", ")", ",|)", 0, token->vars );
             /* remove trailing ws */
             int l0;
             l0 = strlen( token->text );
