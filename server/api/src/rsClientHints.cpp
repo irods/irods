@@ -14,8 +14,6 @@
 #include "ies_client_hints.h"
 #include "rsIESClientHints.hpp"
 
-#include "jansson.h"
-
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -27,17 +25,16 @@
 
 #include <sys/utsname.h>
 
+#include "json.hpp"
+
+using json = nlohmann::json;
+
 const std::string HOST_ACCESS_CONTROL_FILE( "HostAccessControl" );
 
+int _rsClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf );
 
-int _rsClientHints(
-    rsComm_t*    _comm,
-    bytesBuf_t** _bbuf );
-
-int rsClientHints(
-    rsComm_t*    _comm,
-    bytesBuf_t** _bbuf ) {
-
+int rsClientHints( rsComm_t* _comm, bytesBuf_t** _bbuf )
+{
     // always execute this locally
     int status = _rsClientHints(
                      _comm,
@@ -50,17 +47,15 @@ int rsClientHints(
     }
 
     return status;
-
 } // rsClientHints
 
 irods::error get_hash_and_policy(
     rsComm_t* _comm,
     std::string& _hash,
-    std::string& _policy ) {
+    std::string& _policy )
+{
     if ( !_comm ) {
-        return ERROR(
-                   SYS_INVALID_INPUT_PARAM,
-                   "comm is null" );
+        return ERROR( SYS_INVALID_INPUT_PARAM, "comm is null" );
     }
 
     try {
@@ -76,51 +71,36 @@ irods::error get_hash_and_policy(
     }
 
     return SUCCESS();
-
 } // get_hash_and_policy
 
-int _rsClientHints(
-    rsComm_t*    _comm,
-    bytesBuf_t** _bbuf ) {
-
+int _rsClientHints( rsComm_t*    _comm, bytesBuf_t** _bbuf )
+{
     if ( !_comm || !_bbuf ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsServerReport: null comm or bbuf" );
+        rodsLog( LOG_ERROR, "_rsServerReport: null comm or bbuf" );
         return SYS_INVALID_INPUT_PARAM;
     }
 
     ( *_bbuf ) = ( bytesBuf_t* ) malloc( sizeof( bytesBuf_t ) );
     if ( !( *_bbuf ) ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsClientHints: failed to allocate _bbuf" );
+        rodsLog( LOG_ERROR, "_rsClientHints: failed to allocate _bbuf" );
         return SYS_MALLOC_ERR;
-
     }
 
     bytesBuf_t* ies_buf = 0;
-    int status = rsIESClientHints(
-                     _comm,
-                     &ies_buf );
+    int status = rsIESClientHints( _comm, &ies_buf );
     if ( status < 0 ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsClientHints: rsIESClientHints failed %d",
-            status );
+        rodsLog( LOG_ERROR, "_rsClientHints: rsIESClientHints failed %d", status );
         return status;
     }
 
-    json_error_t j_err;
-    json_t* client_hints = json_loads(
-                               ( char* )ies_buf->buf,
-                               JSON_REJECT_DUPLICATES, &j_err );
-    freeBBuf( ies_buf );
-    if ( !client_hints ) {
-        rodsLog(
-            LOG_ERROR,
-            "_rsClientHints - json_loads failed [%s]",
-            j_err.text );
+    json client_hints;
+
+    try {
+        client_hints = json::parse(std::string(static_cast<const char*>(ies_buf->buf), ies_buf->len));
+        freeBBuf( ies_buf );
+    }
+    catch (const json::parse_error& e) {
+        rodsLog( LOG_ERROR, "_rsClientHints - json::parse failed [%s]", e.what());
         return ACTION_FAILED_ERR;
     }
 
@@ -130,15 +110,15 @@ int _rsClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_object_set_new(client_hints, "hash_scheme", json_string( hash.c_str() ) );
-    json_object_set_new(client_hints, "match_hash_policy", json_string( hash_policy.c_str() ) );
+    client_hints["hash_scheme"] = hash;
+    client_hints["match_hash_policy"] = hash_policy;
 
-    json_t* plugins = 0;
+    json plugins;
     ret = irods::get_plugin_array(plugins);
     if (!ret.ok()) {
         irods::log(PASS(ret));
     }
-    json_object_set_new(client_hints, "plugins", plugins);
+    client_hints["plugins"] = plugins;
 
     // List rules
     ruleExecInfo_t rei;
@@ -162,18 +142,19 @@ int _rsClientHints(
         irods::log( PASS( ret ) );
     }
 
-    json_t* rules = json_array();
+    auto rules = json::array();
     for ( const auto& rule : rule_vec ) {
-        json_array_append_new( rules, json_string( rule.c_str() ) );
+        rules.push_back(rule);
     }
-    json_object_set_new( client_hints, "rules", rules );
+    client_hints["rules"] = rules;
 
-    char* tmp_buf = json_dumps(client_hints, JSON_INDENT( 4 ) );
-    json_decref( client_hints );
+    const auto ch = client_hints.dump(4);
+    char* tmp_buf = new char[ch.length() + 1]{};
+    std::strncpy(tmp_buf, ch.c_str(), ch.length());
 
     ( *_bbuf )->buf = tmp_buf;
-    ( *_bbuf )->len = strlen( tmp_buf );
+    ( *_bbuf )->len = ch.length();
 
     return 0;
-
 } // _rsClientHints
+

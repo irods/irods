@@ -23,7 +23,6 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/icat/include
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-    ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${CURL_INCLUDE_DIRS}
     )
 
@@ -34,7 +33,6 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
     irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
     ${CURL_LIBRARIES}
     )
 
