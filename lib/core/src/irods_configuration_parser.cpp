@@ -2,11 +2,15 @@
 #include "irods_log.hpp"
 #include "irods_exception.hpp"
 
+#include <fstream>
 #include <algorithm>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/any.hpp>
+
 namespace fs = boost::filesystem;
+using json = nlohmann::json;
 
 namespace irods {
 
@@ -67,9 +71,7 @@ namespace irods {
 
     error configuration_parser::load( const std::string& _file ) {
         if ( _file.empty() ) {
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       "file is empty" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "file is empty" );
         }
 
         error ret = load_json_object( _file );
@@ -78,27 +80,34 @@ namespace irods {
 
     } // load
 
-    error configuration_parser::load_json_object(
-        const std::string&              _file ) {
-        json_error_t error;
+    error configuration_parser::load_json_object(const std::string& _file)
+    {
+        json config;
 
-        json_t *json = json_load_file( _file.c_str(), 0, &error );
-        if ( !json ) {
-            std::string msg( "failed to load file [" );
-            msg += _file;
-            msg += "] json error [";
-            msg += error.text;
-            msg += "]";
-            return ERROR( -1, msg );
+        {
+            std::ifstream in{_file};
+
+            if (!in) {
+                std::string msg{"failed to open file ["};
+                msg += _file;
+                msg += ']';
+                return ERROR( -1, msg );
+            }
+
+            try {
+                in >> config;
+            }
+            catch (const json::parse_error& e) {
+                return ERROR(-1, boost::format("failed to parse json [file=%s, error=%s].") % _file % e.what());
+            }
         }
-
 
         irods::error ret = SUCCESS();
         try {
             if ( root_.empty() ) {
-                root_ = boost::any_cast<std::unordered_map<std::string, boost::any> >(convert_json(json));
+                root_ = boost::any_cast<std::unordered_map<std::string, boost::any>>(convert_json(config));
             } else {
-                const auto json_object_any = convert_json(json);
+                const auto json_object_any = convert_json(config);
                 const auto& json_object = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(json_object_any);
                 for ( auto it = json_object.cbegin(); it != json_object.cend(); ++it ) {
                     root_[it->first] = it->second;
@@ -109,64 +118,55 @@ namespace irods {
         } catch ( const boost::bad_any_cast& ) {
             ret = ERROR(INVALID_ANY_CAST, "configuration file did not contain a json object.");
         }
-        json_decref( json );
 
         return ret;
 
     } // load_json_object
 
-    boost::any configuration_parser::convert_json(json_t* _val) {
-        switch( json_typeof( _val )) {
-            case JSON_INTEGER:
-            return boost::any((int)json_integer_value(_val));
+    boost::any configuration_parser::convert_json(const json& _json)
+    {
+        switch (_json.type()) {
+            case json::value_t::string:
+                return _json.get<std::string>();
 
-            case JSON_STRING:
-            return boost::any(std::string(json_string_value(_val)));
+            case json::value_t::number_float:
+                return _json.get<double>();
 
-            case JSON_REAL:
-            return boost::any(json_real_value(_val));
+            case json::value_t::number_integer:
+            case json::value_t::number_unsigned:
+                return _json.get<int>();
 
-            case JSON_TRUE:
-            return boost::any(json_true());
-            
-            case JSON_FALSE:
-            return boost::any(json_false());
+            case json::value_t::boolean:
+                return _json.get<bool>();
 
-            case JSON_NULL:
-            return boost::any(std::string("NULL"));
+            case json::value_t::array: {
+                std::vector<boost::any> array;
 
-            case JSON_ARRAY:
-            {
-                std::vector<boost::any> vector;
-                size_t  idx = 0;
-                json_t* element = NULL;
-                json_array_foreach(_val, idx, element) {
-                    try {
-                        vector.push_back(convert_json(element));
-                    } catch (const irods::exception& e) {
-                        irods::log(e);
-                    }
+                for (auto&& jj : _json) {
+                    array.push_back(convert_json(jj));
                 }
-                return boost::any(vector);
+
+                return array;
             }
 
-            case JSON_OBJECT:
-            {
-                std::unordered_map<std::string, boost::any> map;
-                const char* key = NULL;
-                json_t*     subval = NULL;
-                json_object_foreach( _val, key, subval ) {
-                    try {
-                        map.insert(std::pair<std::string, boost::any>(std::string(key), convert_json(subval)));
-                    } catch (const irods::exception& e) {
-                        irods::log(e);
-                    }
+            case json::value_t::object: {
+                std::unordered_map<std::string, boost::any> object;
+
+                //for (auto&& [k, v] : j.items()) { // Supported in later versions :(
+                for (auto it = std::begin(_json); it != std::end(_json); ++it) {
+                    object.insert({it.key(), convert_json(it.value())});
                 }
-                return boost::any(map);
+
+                return object;
             }
+
+            case json::value_t::null:
+                return std::string{"NULL"};
+
+            default:
+                const auto type = static_cast<std::uint8_t>(_json.type());
+                THROW(-1, (boost::format("unhandled type in json_typeof: %d") % type));
         }
-        THROW( -1, (boost::format("unhandled type in json_typeof: %d") % json_typeof(_val) ).str());
-
     } // parse_json_object
 
     std::string to_env(
