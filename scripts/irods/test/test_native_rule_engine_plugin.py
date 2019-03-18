@@ -144,8 +144,6 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
        """
        self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
 
-
-
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
     def test_remote_rule_execution(self):
         # =-=-=-=-=-=-=-=-
@@ -317,4 +315,57 @@ OUTPUT ruleExecOut
 
         self.admin.assert_icommand('irule -F ' + rule_file, 'STDERR_SINGLELINE','SYS_NOT_SUPPORTED')
         os.unlink(rule_file)
+
+    max_literal_strlen = 1021 # MAX_TOKEN_TEXT_LEN - 2
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only: irods#4311')
+    def test_string_literal__4311(self):
+        rule_text = '''
+main {
+   *b=".%s"
+   msiStrlen(*b,*L)
+   writeLine("stdout",*L)
+}
+INPUT null
+OUTPUT ruleExecOut
+''' % ('a'*self.max_literal_strlen,)
+
+        rule_file = 'test_string_literal__4311.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR_SINGLELINE', ["SYS_INTERNAL_ERR"], desired_rc = 4)
+
+        rule_file_2 = 'test_string_literal__4311_noerr.r'
+        with open(rule_file_2, 'w') as f:
+            f.write(rule_text.replace('".','"'))
+        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+
+        os.remove(rule_file)
+        os.remove(rule_file_2)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only: irods#4311')
+    def test_string_input__4311(self):
+
+        rule_text = '''
+main {
+  msiStrlen(*a,*L)
+  writeLine("stdout",*L)
+}
+INPUT *a=".%s"
+OUTPUT ruleExecOut
+''' % ('a'*self.max_literal_strlen,)
+
+        rule_file = 'test_string_input__4311.r'
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR_MULTILINE', ["RE_PARSER_ERROR"], desired_rc = 4)
+
+        rule_file_2 = 'test_string_input__4311_noerr.r'
+        with open(rule_file_2, 'w') as f:
+            f.write(rule_text.replace('".','"'))
+        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+
+        os.remove(rule_file)
+        os.remove(rule_file_2)
 
