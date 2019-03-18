@@ -1194,6 +1194,20 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             server_config_update = {
                 'environment_variables': {
                     'spLogLevel': '11'
+                },
+                'log_level': {
+                    'agent': 'info',
+                    'agent_factory': 'info',
+                    'api': 'info',
+                    'authentication': 'info',
+                    'database': 'info',
+                    'delay_server': 'info',
+                    'legacy': 'trace',
+                    'microservice': 'info',
+                    'network': 'info',
+                    'resource': 'info',
+                    'rule_engine': 'info',
+                    'server': 'info'
                 }
             }
             lib.update_json_file_from_dict(server_config_filename, server_config_update)
@@ -1206,7 +1220,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
             self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
-            debug_message = 'DEBUG: loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
+            debug_message = 'loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
             debug_message_count = lib.count_occurrences_of_string_in_log(irods_config.server_log_path, debug_message, start_index=initial_size_of_server_log)
             self.assertTrue(1 == debug_message_count, msg='Found {} messages in log but expected 1'.format(debug_message_count))
 
