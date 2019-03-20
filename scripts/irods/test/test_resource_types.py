@@ -4433,6 +4433,32 @@ OUTPUT ruleExecOut
         self.assertEqual(num_out_of_date, 0)
         os.unlink(filename)
 
+    def test_irepl_to_consumer_repl_hier_from_provider__4319(self):
+        filename = 'test_irepl_to_consumer_repl_hier_from_provider__4319'
+        lib.make_file(filename, 1 * 1024 * 1024 + 1)
+
+        repl_host = test.settings.HOSTNAME_2
+        self.admin.assert_icommand(['iadmin', 'modresc', 'unix2Resc', 'host', repl_host])
+        self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', repl_host])
+        test_resc = 'catalog_provider_resc'
+        self.admin.assert_icommand(['iadmin', 'mkresc', test_resc, 'unixfilesystem', test.settings.ICAT_HOSTNAME + ':/tmp/irods/test_vault'], 'STDOUT_SINGLELINE', "Creating")
+
+        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+
+        try:
+            self.admin.assert_icommand(['iput', '-R', test_resc, filename])
+            self.admin.assert_icommand(['irepl', '-R', 'demoResc', filename])
+
+            self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'rcDataCopy failed', start_index=initial_log_size))
+            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'SYS_BAD_FILE_DESCRIPTOR', start_index=initial_log_size))
+        finally:
+            self.admin.assert_icommand(['irm', '-f', filename])
+            os.unlink(filename)
+            self.admin.assert_icommand(['iadmin', 'modresc', 'unix2Resc', 'host', test.settings.HOSTNAME_2])
+            self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', test.settings.HOSTNAME_3])
+            self.admin.assert_icommand(['iadmin', 'rmresc', test_resc])
+
 @unittest.skipIf(False == test.settings.USE_MUNGEFS, "These tests require mungefs")
 class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
