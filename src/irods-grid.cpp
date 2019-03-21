@@ -12,14 +12,14 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/lexical_cast.hpp"
 
-#include "jansson.h"
-
 #include "rodsClient.h"
 #include "irods_server_control_plane.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "server_control_plane_command.hpp"
 #include "irods_buffer_encryption.hpp"
 #include "irods_exception.hpp"
+
+#include "json.hpp"
 
 template <typename T>
 irods::error usage(T& ostream) {
@@ -282,8 +282,8 @@ irods::error decrypt_response(
 
 } // decrypt_response
 
-std::string format_grid_message(
-    const std::string& _status) {
+std::string format_grid_message( const std::string& _status)
+{
     std::string status = "{\n    \"hosts\": [\n";
     status += _status;
     status += "]    \n}";
@@ -297,23 +297,22 @@ std::string format_grid_message(
         THROW( -1, std::string("server responded with an error\n") + _status );
     }
 
-    json_error_t j_err;
-    json_t* obj = json_loads(
-                      ( char* )status.data(),
-                      JSON_REJECT_DUPLICATES,
-                      &j_err );
-    if ( !obj ) {
-        if ( std::string::npos != _status.find( irods::SERVER_PAUSED_ERROR ) ) {
-            THROW( -1, std::string("server paused error\n") + _status );
+    using json = nlohmann::json;
+
+    json obj;
+
+    try {
+        obj = json::parse(static_cast<const char*>(status.data()));
+    }
+    catch (const json::parse_error& e) {
+        if (std::string::npos != _status.find(irods::SERVER_PAUSED_ERROR)) {
+            THROW(-1, std::string{"server paused error\n"} + _status);
         }
 
-        THROW( -1, boost::format("json_loads failed with error: %s\nserver status: %s\n") % j_err.text % _status );
+        THROW(-1, boost::format("json::parse failed with error: %s\n") % e.what());
     }
 
-    char* tmp_buf = json_dumps( obj, JSON_INDENT( 4 ) );
-    json_decref( obj );
-    status = tmp_buf;
-    free( tmp_buf );
+    status = obj.dump(4);
 
     return status;
 
