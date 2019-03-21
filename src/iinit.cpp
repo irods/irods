@@ -21,14 +21,13 @@
 
 #include "boost/lexical_cast.hpp"
 
-#include "jansson.h"
+#include "json.hpp"
 
 #include <iostream>
 #include <fstream>
 
 void usage( char *prog );
 void usageTTL();
-
 
 /* Uncomment the line below if you want TTL to be required for all
    users; i.e. all credentials will be time-limited.  This is only
@@ -77,9 +76,9 @@ printUpdateMsg() {
     printf( "One or more fields in your iRODS environment file (irods_environment.json) are\n" );
     printf( "missing; please enter them.\n" );
 }
-int
-main( int argc, char **argv ) {
 
+int main( int argc, char **argv )
+{
     signal( SIGPIPE, SIG_IGN );
 
     int i = 0, ix = 0, status = 0;
@@ -146,11 +145,9 @@ main( int argc, char **argv ) {
     // Create ~/.irods/ if it does not exist
     mkrodsdir();
 
-    json_t* json_env = json_object();
-    if ( !json_env ) {
-        printf( "call to json_object() failed.\n" );
-        return SYS_MALLOC_ERR;
-    }
+    using json = nlohmann::json;
+
+    auto json_env = json::object();
 
     /*
        Check on the key Environment values, prompt and save
@@ -164,15 +161,8 @@ main( int argc, char **argv ) {
         printf( "Enter the host name (DNS) of the server to connect to: " );
         std::string response;
         getline( std::cin, response );
-        snprintf(
-            my_env.rodsHost,
-            NAME_LEN,
-            "%s",
-            response.c_str() );
-        json_object_set(
-            json_env,
-            "irods_host",
-            json_string( my_env.rodsHost ) );
+        snprintf( my_env.rodsHost, NAME_LEN, "%s", response.c_str() );
+        json_env["irods_host"] = my_env.rodsHost;
     }
     if ( my_env.rodsPort == 0 ) {
         if ( !doingEnvFileUpdate ) {
@@ -189,10 +179,7 @@ main( int argc, char **argv ) {
             my_env.rodsPort = 0;
         }
 
-        json_object_set(
-            json_env,
-            "irods_port",
-            json_integer( my_env.rodsPort ) );
+        json_env["irods_port"] = my_env.rodsPort;
     }
     if ( strlen( my_env.rodsUserName ) == 0 ) {
         if ( !doingEnvFileUpdate ) {
@@ -202,15 +189,8 @@ main( int argc, char **argv ) {
         printf( "Enter your irods user name: " );
         std::string response;
         getline( std::cin, response );
-        snprintf(
-            my_env.rodsUserName,
-            NAME_LEN,
-            "%s",
-            response.c_str() );
-        json_object_set(
-            json_env,
-            "irods_user_name",
-            json_string( my_env.rodsUserName ) );
+        snprintf( my_env.rodsUserName, NAME_LEN, "%s", response.c_str() );
+        json_env["irods_user_name"] = my_env.rodsUserName;
     }
     if ( strlen( my_env.rodsZone ) == 0 ) {
         if ( !doingEnvFileUpdate ) {
@@ -220,15 +200,8 @@ main( int argc, char **argv ) {
         printf( "Enter your irods zone: " );
         std::string response;
         getline( std::cin, response );
-        snprintf(
-            my_env.rodsZone,
-            NAME_LEN,
-            "%s",
-            response.c_str() );
-        json_object_set(
-            json_env,
-            "irods_zone_name",
-            json_string( my_env.rodsZone ) );
+        snprintf( my_env.rodsZone, NAME_LEN, "%s", response.c_str() );
+        json_env["irods_zone_name"] = my_env.rodsZone;
     }
     if ( strlen( my_env.rodsAuthScheme ) == 0 ) {
         if ( !doingEnvFileUpdate ) {
@@ -238,15 +211,8 @@ main( int argc, char **argv ) {
         printf( "Enter your irods authentication scheme: " );
         std::string response;
         getline( std::cin, response );
-        snprintf(
-            my_env.rodsAuthScheme,
-            NAME_LEN,
-            "%s",
-            response.c_str() );
-        json_object_set(
-            json_env,
-            irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW.c_str(),
-            json_string( my_env.rodsAuthScheme ) );
+        snprintf( my_env.rodsAuthScheme, NAME_LEN, "%s", response.c_str() );
+        json_env[irods::CFG_IRODS_AUTHENTICATION_SCHEME_KW] = my_env.rodsAuthScheme;
     }
 
     if ( doingEnvFileUpdate ) {
@@ -412,45 +378,34 @@ main( int argc, char **argv ) {
     /* Save updates to irods_environment.json. */
     if ( doingEnvFileUpdate ) {
         std::string env_file, session_file;
-        irods::error ret = irods::get_json_environment_file(
-                               env_file,
-                               session_file );
+        irods::error ret = irods::get_json_environment_file( env_file, session_file );
         if ( ret.ok() ) {
-            json_error_t error;
-            json_t *current_contents = json_load_file( env_file.c_str(), 0, &error );
+            json obj_to_dump;
 
-            json_t *obj_to_dump = 0;
-            if ( current_contents ) {
-                int ret = json_object_update( current_contents, json_env );
-                if ( ret == 0 ) {
-                    obj_to_dump = current_contents;
+            if (std::ifstream in{env_file}; in) {
+                try {
+                    in >> obj_to_dump;
                 }
-                else {
+                catch (const json::parse_error& e) {
                     obj_to_dump = json_env;
-                    std::cerr << "Failed to update " << env_file.c_str() << std::endl;
-                    std::cerr << error.text << std::endl;
-                    std::cerr << error.source << std::endl;
-                    std::cerr << error.line << ":" << error.column << " " << error.position << std::endl;
+                    std::cerr << "Failed to parse environment file: " << e.what() << '\n'
+                              << "Falling back to original environment settings.;";
                 }
+
+                obj_to_dump.merge_patch(json_env);
             }
             else {
                 obj_to_dump = json_env;
+                std::cerr << "Failed to update [" << env_file << "]\n";
             }
 
-            char* tmp_buf = json_dumps( obj_to_dump, JSON_INDENT( 4 ) );
             std::ofstream f( env_file.c_str(), std::ios::out );
             if ( f.is_open() ) {
-                f << tmp_buf << std::endl;
+                f << obj_to_dump.dump(4) << std::endl;
                 f.close();
             }
             else {
-                printf(
-                    "failed to open environment file [%s]\n",
-                    env_file.c_str() );
-            }
-
-            if ( current_contents ) {
-                json_decref( current_contents );
+                printf( "failed to open environment file [%s]\n", env_file.c_str() );
             }
         }
         else {
@@ -459,7 +414,6 @@ main( int argc, char **argv ) {
     } // if doingEnvFileUpdate
 
     return 0;
-
 } // main
 
 
