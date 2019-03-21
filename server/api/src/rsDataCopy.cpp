@@ -82,6 +82,8 @@ remoteDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
         return status;
     }
 
+    dataCopyInp->dataOprInp.srcL3descInx =
+        convL3descInx( dataCopyInp->dataOprInp.srcL3descInx );
     dataCopyInp->dataOprInp.destL3descInx =
         convL3descInx( dataCopyInp->dataOprInp.destL3descInx );
 
