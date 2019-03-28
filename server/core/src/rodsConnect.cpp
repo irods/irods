@@ -152,7 +152,7 @@ queAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
         const int ret_get_canonical_name = get_canonical_name(myHostName, canonicalName, sizeof(canonicalName));
         if (ret_get_canonical_name != 0) {
             if ( ProcessType == SERVER_PT ) {
-                rodsLog( LOG_NOTICE,
+                rodsLog( LOG_ERROR,
                          "queAddr: get_canonical_name error for [%s], status [%d]",
                          myHostName, ret_get_canonical_name);
             }
