@@ -114,7 +114,7 @@ mkServerHost( char *myHostAddr, char *zoneName ) {
     tmpRodsServerHost = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
     memset( tmpRodsServerHost, 0, sizeof( rodsServerHost_t ) );
 
-    /* XXXXX need to lookup the zone table when availiable */
+    /* XXXXX need to lookup the zone table when available */
     status = queHostName( tmpRodsServerHost, myHostAddr, 0 );
     if ( status < 0 ) {
         free( tmpRodsServerHost );
