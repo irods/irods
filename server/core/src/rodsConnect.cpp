@@ -175,8 +175,8 @@ queueAddr( rodsServerHost_t *rodsServerHost, char *myHostName ) {
         }
         time_t afterTime = time( 0 );
         if ( afterTime - beforeTime >= 2 ) {
-            rodsLog( LOG_NOTICE,
-                     "WARNING WARNING: get_canonical_name of %s is taking %d sec. This could severely affect interactivity of your Rods system",
+            rodsLog( LOG_WARNING,
+                     "get_canonical_name of %s is taking %d seconds. This could severely affect the interactivity of your iRODS system.",
                      myHostName, afterTime - beforeTime );
             /* XXXXXX may want to mark resource down later */
         }
