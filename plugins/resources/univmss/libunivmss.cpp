@@ -484,6 +484,9 @@ irods::error univ_mss_file_rename(
 
     }
 
+    // issue 4326 - plugins must set the physical path to the new path
+    fco->physical_path(_new_file_name);
+
     return CODE( status );
 
 } // univ_mss_file_rename
