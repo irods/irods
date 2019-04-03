@@ -1210,6 +1210,9 @@ irods::error unix_file_rename(
             // make the call to rename
             int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
 
+            // issue 4326 - plugins must set the physical path to the new path 
+            fco->physical_path(new_full_path);
+
             // =-=-=-=-=-=-=-
             // handle error cases
             int err_status = UNIX_FILE_RENAME_ERR - errno;
