@@ -116,12 +116,6 @@ int _rsFileRename(
         irods::error err = PASSMSG( msg.str(), rename_err );
         irods::log( err );
     }
-    // =-=-=-=-=-=-=-
-    // compare fco phy path and old file name
-    // if they differ then repave for next call
-    if ( file_obj->physical_path() == _rename_inp->oldFileName ) {
-        file_obj->physical_path( _rename_inp->newFileName );
-    }
 
     // =-=-=-=-=-=-=-
     // percolate possible change in phy path up
