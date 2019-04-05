@@ -27,22 +27,22 @@ namespace irods {
             virtual rError_t* r_error( void ) const {
                 return r_error_;
             }
-            virtual std::string request_result() const {
+            virtual const std::string& request_result() const {
                 return request_result_;
             }
             virtual void request_result( const std::string& _r ) {
                 request_result_ = _r;
             }
-            virtual std::string context() const {
+            virtual const std::string& context() const {
                 return context_;
             }
             virtual void context( const std::string& _c ) {
                 context_ = _c;
             }
-            virtual std::string user_name() const {
+            virtual const std::string& user_name() const {
                 return user_name_;
             }
-            virtual std::string zone_name() const {
+            virtual const std::string& zone_name() const {
                 return zone_name_;
             }
             virtual void user_name( const std::string& _un ) {
