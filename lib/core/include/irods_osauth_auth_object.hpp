@@ -46,13 +46,13 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief accessors
-            std::string user_name() const {
+            const std::string& user_name() const {
                 return user_name_;
             }
-            std::string zone_name() const {
+            const std::string& zone_name() const {
                 return zone_name_;
             }
-            std::string digest() const {
+            const std::string& digest() const {
                 return digest_;
             }
 

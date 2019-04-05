@@ -46,7 +46,7 @@ namespace irods {
 
             /// =-=-=-=-=-=-=-
             /// @brief accessors
-            std::string digest() const {
+            const std::string& digest() const {
                 return digest_;
             }
 
