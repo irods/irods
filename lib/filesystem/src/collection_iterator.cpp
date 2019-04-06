@@ -87,7 +87,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         irods::at_scope_exit<std::function<void()>> at_scope_exit{[e] {
             if (e) {
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+                std::free(e);
+#else
                 freeCollEnt(e);
+#endif
             }
         }};
 
