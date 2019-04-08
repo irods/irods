@@ -186,19 +186,4 @@ int cmlGetGroupMemberCount( const char *groupName, icatSessionStruct *icss );
 
 int cmlDebug( int mode );
 
-int cmlAudit1( int actionId, const char *clientUser, const char *zone, const char *targetUser,
-               const char *comment, icatSessionStruct *icss );
-
-int cmlAudit2( int actionId, const char *dataID, const char *userName, const char *zoneName,
-               const char *accessLevel, icatSessionStruct *icss );
-
-int cmlAudit3( int actionId, const char *dataId, const char *clientUser, const char *zone,
-               const char *comment, icatSessionStruct *icss );
-
-int cmlAudit4( int actionId, const char *sql, const char *sqlParm, const char *clientUser,
-               const char *zone, const char *comment, icatSessionStruct *icss );
-
-int cmlAudit5( int actionId, const char *objId, const char *userID, const char *comment,
-               icatSessionStruct *icss );
-
 #endif /* ICAT_MIDLEVEL_ROUTINES_H */
