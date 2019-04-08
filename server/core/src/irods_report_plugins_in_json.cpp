@@ -147,7 +147,7 @@ namespace irods {
 
         _entry["name"] = name;
         _entry["type"] = type;
-        _entry["host_name"] = host_name;
+        _entry["host"] = host_name;
         _entry["vault_path"] = vault;
         _entry["context_string"] = context;
         _entry["parent_resource"] = parent;
