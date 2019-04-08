@@ -284,7 +284,7 @@ putUtil( rcComm_t **myConn, rodsEnv *myRodsEnv,
         else if ( targPath->objType == COLL_OBJ_T ) {
 
             // send recursive flag in case the resource plugin needs it
-            addKeyVal(&dataObjOprInp.condInput, RECURSIVE_OPR__KW, "1"); // value doesn't matter, other than for testing
+            addKeyVal(&dataObjOprInp.condInput, RECURSIVE_OPR__KW, ""); // value doesn't matter, other than for testing
 
             setStateForRestart( &rodsRestart, targPath, myRodsArgs );
             if ( myRodsArgs->bulk == True ) {
