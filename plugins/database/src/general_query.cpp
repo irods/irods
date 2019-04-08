@@ -1835,13 +1835,6 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
             return CAT_UNKNOWN_TABLE;
         }
 
-        if ( genQueryInp.selectInp.inx[i] >= COL_AUDIT_RANGE_START &&
-                genQueryInp.selectInp.inx[i] <= COL_AUDIT_RANGE_END ) {
-            if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return CAT_NO_ACCESS_PERMISSION;
-            }
-        }
-
         if ( Tables[table].cycler < 1 || startingTable == 0 ) {
             startingTable = table;  /* start with a non-cycler, if possible */
         }
@@ -1907,13 +1900,6 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
             status = insertWhere( condition, 0 );
             if ( status ) {
                 return status;
-            }
-        }
-
-        if ( genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
-                genQueryInp.sqlCondInp.inx[i] <= COL_AUDIT_RANGE_END ) {
-            if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return CAT_NO_ACCESS_PERMISSION;
             }
         }
 

@@ -240,8 +240,6 @@ cllConnect( icatSessionStruct *icss ) {
   If option is 0, record some of the sql, or clear it (if commit or rollback).
   If option is 1, issue warning the there are some pending (and include
   some of the sql).
-  If option is 2, this is indicating that the previous option 0 call was
-  for an audit-type SQL.
 */
 #define maxPendingToRecord 5
 #define pendingRecordSize 30
@@ -250,7 +248,6 @@ int
 cllCheckPending( const char *sql, int option, int dbType ) {
     static int pendingCount = 0;
     static int pendingIx = 0;
-    static int pendingAudits = 0;
     static char pBuffer[pBufferSize + 2];
     static int firstTime = 1;
 
@@ -263,7 +260,6 @@ cllCheckPending( const char *sql, int option, int dbType ) {
                 strncmp( sql, "rollback", 8 ) == 0 ) {
             pendingIx = 0;
             pendingCount = 0;
-            pendingAudits = 0;
             memset( pBuffer, 0, pBufferSize );
             return 0;
         }
@@ -275,61 +271,46 @@ cllCheckPending( const char *sql, int option, int dbType ) {
         pendingCount++;
         return 0;
     }
-    if ( option == 2 ) {
-        pendingAudits++;
-        return 0;
+
+    /* but ignore a single pending "begin" which can be normal */
+    if ( pendingIx == 1 ) {
+        if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
+            return 0;
+        }
     }
-
-    /* if there are some non-Audit pending SQL, log them */
-    if ( pendingCount > pendingAudits ) {
-        /* but ignore a single pending "begin" which can be normal */
-        if ( pendingIx == 1 ) {
-            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
-                return 0;
-            }
+    if ( dbType == DB_TYPE_MYSQL ) {
+        /* For mySQL, may have a few SET SESSION sql too, which we
+           should ignore */
+        int skip = 1;
+        if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
+            skip = 0;
         }
-        if ( dbType == DB_TYPE_MYSQL ) {
-            /* For mySQL, may have a few SET SESSION sql too, which we
-               should ignore */
-            int skip = 1;
-            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
-                skip = 0;
-            }
-            int max = maxPendingToRecord;
-            if ( pendingIx < max ) {
-                max = pendingIx;
-            }
-            for ( int i = 1; i < max && skip == 1; i++ ) {
-                if (    (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET SESSION",   11) !=0)
-                     && (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET character", 13) !=0)) {
-                    skip = 0;
-                }
-            }
-            if ( skip ) {
-                return 0;
-            }
-        }
-
-        rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
-                 pendingCount );
         int max = maxPendingToRecord;
         if ( pendingIx < max ) {
             max = pendingIx;
         }
-        for ( int i = 0; i < max; i++ ) {
-            rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
-                     ( char * )&pBuffer[i * pendingRecordSize] );
+        for ( int i = 1; i < max && skip == 1; i++ ) {
+            if (    (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET SESSION",   11) !=0)
+                 && (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET character", 13) !=0)) {
+                skip = 0;
+            }
         }
-        if ( pendingAudits > 0 ) {
-            rodsLog( LOG_NOTICE, "Warning, SQL will be commited with audits" );
+        if ( skip ) {
+            return 0;
         }
     }
 
-    if ( pendingAudits > 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "Notice, pending Auditing SQL committed at cllDisconnect" );
-        return 1; /* tell caller (cllDisconect) to do a commit */
+    rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
+             pendingCount );
+    int max = maxPendingToRecord;
+    if ( pendingIx < max ) {
+        max = pendingIx;
     }
+    for ( int i = 0; i < max; i++ ) {
+        rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
+                 ( char * )&pBuffer[i * pendingRecordSize] );
+    }
+
     return 0;
 }
 
@@ -340,7 +321,7 @@ int
 cllDisconnect( icatSessionStruct *icss ) {
 
     if ( 1 == cllCheckPending( "", 1, icss->databaseType ) ) {
-        /* auto commit any pending SQLs, including the audit ones */
+        /* auto commit any pending SQLs */
         /* Nothing to do if it fails */
         cllExecSqlNoResult( icss, "commit" ); 
     }
