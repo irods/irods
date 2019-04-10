@@ -186,17 +186,7 @@ namespace NAMESPACE_IMPL {
 
         auto is_collection_empty(rxComm& _comm, const path& _p) -> bool
         {
-            std::string sql = "select count(COLL_NAME) where COLL_PARENT_NAME = '";
-            sql += _p;
-            sql += "'";
-
-            for (const auto& row : irods::query<rxComm>{&_comm, sql}) {
-                if (std::stoll(row[0]) > 0) {
-                    return false;
-                }
-            }
-
-            return true;
+            return collection_iterator{} == collection_iterator{_comm, _p};
         }
 
         struct remove_impl_options
