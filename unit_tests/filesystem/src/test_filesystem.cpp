@@ -25,6 +25,8 @@
 #include <vector>
 #include <iostream>
 #include <variant>
+#include <iterator>
+#include <algorithm>
 
 TEST_CASE("filesystem")
 {
@@ -139,6 +141,86 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::data_object_size(*comm, p) == 12);
         REQUIRE(fs::client::data_object_checksum(*comm, p, fs::replica_number::all).size() == 1);
         REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
+    }
+
+    SECTION("collection iterators")
+    {
+        // Creates three data objects under at the path "_collection".
+        const auto create_data_objects_under_collection = [comm](const fs::path& _collection)
+        {
+            // Create new data objects.
+            for (auto&& e : {"f1.txt", "f2.txt", "f3.txt"}) {
+                default_transport tp{*comm};
+                odstream{tp, _collection / e} << "test file";
+            }
+        };
+
+        create_data_objects_under_collection(user_home);
+
+        // Create two collections.
+        const auto col1 = user_home / "col1.d";
+        REQUIRE(fs::client::create_collection(*comm, col1));
+
+        const auto col2 = user_home / "col2.d";
+        REQUIRE(fs::client::create_collection(*comm, col2));
+
+        create_data_objects_under_collection(col1);
+
+        SECTION("non-recursive collection iterator")
+        {
+            // Capture the results of the iterator in a vector.
+            std::vector<std::string> entries;
+
+            for (auto&& e : fs::client::collection_iterator{*comm, user_home}) {
+                entries.push_back(e.path().string());
+            }
+
+            std::sort(std::begin(entries), std::end(entries));
+
+            // The sorted list of paths that the "entries" vector must match.
+            const std::vector expected_entries{
+                col1.string(),
+                col2.string(),
+                (user_home / "f1.txt").string(),
+                (user_home / "f2.txt").string(),
+                (user_home / "f3.txt").string()
+            };
+
+            REQUIRE(expected_entries == entries);
+        }
+
+        SECTION("recursive collection iterator")
+        {
+            // Capture the results of the iterator in a vector.
+            std::vector<std::string> entries;
+
+            for (auto&& e : fs::client::recursive_collection_iterator{*comm, user_home}) {
+                entries.push_back(e.path().string());
+            }
+
+            std::sort(std::begin(entries), std::end(entries));
+
+            // The sorted list of paths that the "entries" vector must match.
+            const std::vector expected_entries{
+                col1.string(),
+                (col1 / "f1.txt").string(),
+                (col1 / "f2.txt").string(),
+                (col1 / "f3.txt").string(),
+                col2.string(),
+                (user_home / "f1.txt").string(),
+                (user_home / "f2.txt").string(),
+                (user_home / "f3.txt").string()
+            };
+
+            REQUIRE(expected_entries == entries);
+        }
+
+        // Clean-up.
+        REQUIRE(fs::client::remove(*comm, user_home / "f1.txt", fs::remove_options::no_trash));
+        REQUIRE(fs::client::remove(*comm, user_home / "f2.txt", fs::remove_options::no_trash));
+        REQUIRE(fs::client::remove(*comm, user_home / "f3.txt", fs::remove_options::no_trash));
+        REQUIRE(fs::client::remove_all(*comm, col1, fs::remove_options::no_trash));
+        REQUIRE(fs::client::remove_all(*comm, col2, fs::remove_options::no_trash));
     }
 
     SECTION("object type checking")
