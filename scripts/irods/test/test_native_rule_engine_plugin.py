@@ -333,7 +333,7 @@ OUTPUT ruleExecOut
         rule_file = 'test_string_literal__4311.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
-        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR_SINGLELINE', ["SYS_INTERNAL_ERR"], desired_rc = 4)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
 
         rule_file_2 = 'test_string_literal__4311_noerr.r'
         with open(rule_file_2, 'w') as f:
@@ -359,7 +359,7 @@ OUTPUT ruleExecOut
 
         with open(rule_file, 'w') as f:
             f.write(rule_text)
-        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR_MULTILINE', ["RE_PARSER_ERROR"], desired_rc = 4)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
 
         rule_file_2 = 'test_string_input__4311_noerr.r'
         with open(rule_file_2, 'w') as f:
