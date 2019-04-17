@@ -140,6 +140,14 @@ acSetNumThreads() {
     writeLine("serverLog", "test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
 }
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_msiSegFault'] = '''
+test_msiSegFault {{
+    writeLine("stdout", "We are about to segfault...");
+    msiSegFault();
+    writeLine("stdout", "You should never see this line.");
+}}
+OUTPUT ruleExecOut
+'''
 
 #===== Test_Quotas =====
 
@@ -495,7 +503,34 @@ test_delay_with_output_param {{
     }}
     writeLine("stdout", "rule queued");
 }}
-OUTPUT ruleExecOut 
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_sigpipe_in_delay_server'] = '''
+test_sigpipe_in_delay_server {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "We are about to segfault...");
+        msiSegFault();
+        writeLine("serverLog", "You should never see this line.");
+    }}
+    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+        writeLine("serverLog", "Follow-up rule executed later!");
+    }}
+    writeLine("stdout", "rule queued");
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_exception_in_delay_server'] = '''
+test_exception_in_delay_server {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "Sleeping now...");
+        msiSleep("{sleep_time}", "0");
+        msiSegFault();
+    }}
+    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+        writeLine("serverLog", "Follow-up rule executed later!");
+    }}
+}}
+OUTPUT ruleExecOut
 '''
 
 #===== Test_Execution_Frequency =====
