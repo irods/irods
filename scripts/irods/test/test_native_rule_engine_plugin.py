@@ -369,3 +369,16 @@ OUTPUT ruleExecOut
         os.remove(rule_file)
         os.remove(rule_file_2)
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only')
+    def test_msiSegFault(self):
+        rule_text = rule_texts[self.plugin_name][self.class_name]['test_msiSegFault']
+        rule_file = 'test_msiSegFault.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        try:
+            # Should get SYS_INTERNAL_ERR because it's a segmentation fault
+            self.admin.assert_icommand(['irule', '-F', rule_file],'STDERR','SYS_INTERNAL_ERR')
+            # Should get CAT_INSUFFICIENT_PRIVILEGE_LEVEL because this is for admin users only
+            self.user0.assert_icommand(['irule', '-F', rule_file],'STDERR','CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+        finally:
+            os.unlink(rule_file)

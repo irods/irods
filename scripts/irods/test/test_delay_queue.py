@@ -310,6 +310,132 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
             os.remove(rule_file)
             irodsctl.restart()
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
+    def test_sigpipe_in_delay_server(self):
+        irodsctl = IrodsController()
+
+        re_server_sleep_time = 2
+        longer_delay_time = re_server_sleep_time * 2
+        parameters = {}
+        parameters['longer_delay_time'] = str(longer_delay_time)
+        rule_text_key = 'test_sigpipe_in_delay_server'
+        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_file = rule_text_key + '.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+
+        try:
+            # load server_config.json to inject new settings
+            server_config_filename = paths.server_config_path()
+            with open(server_config_filename) as f:
+                svr_cfg = json.load(f)
+            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = re_server_sleep_time
+
+            # dump to a string to repave the existing server_config.json
+            new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+            with lib.file_backed_up(server_config_filename):
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
+
+                # Bounce server to apply setting
+                irodsctl.restart()
+
+                # Fire off rule and wait for message to get written out to serverLog
+                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+                time.sleep(re_server_sleep_time + 2)
+                actual_count = lib.count_occurrences_of_string_in_log(
+                    paths.server_log_path(),
+                    'We are about to segfault...',
+                    start_index=initial_size_of_server_log)
+                expected_count = 1
+                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+
+                # See if the later rule is executed (i.e. delay server is still alive)
+                time.sleep(longer_delay_time * 2)
+                actual_count = lib.count_occurrences_of_string_in_log(
+                    paths.server_log_path(),
+                    'Follow-up rule executed later!',
+                    start_index=initial_size_of_server_log)
+                expected_count = 1
+                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+
+        finally:
+            os.remove(rule_file)
+            self.admin.assert_icommand(['iqdel', '-a'])
+            irodsctl.restart()
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
+    def test_exception_in_delay_server(self):
+        config = IrodsConfig()
+        irodsctl = IrodsController()
+        server_config_filename = paths.server_config_path()
+
+        delay_job_sleep_time = 5
+        parameters = {}
+        parameters['sleep_time'] = str(delay_job_sleep_time)
+        parameters['longer_delay_time'] = str(delay_job_sleep_time)
+        rule_text_key = 'test_exception_in_delay_server'
+        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
+        rule_file = rule_text_key + '.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+
+        odbc_ini_file = os.path.join(test.settings.FEDERATION.IRODS_DIR, '.odbc.ini')
+        try:
+            # load server_config.json to inject new settings
+            server_config_filename = paths.server_config_path()
+            with open(server_config_filename) as f:
+                svr_cfg = json.load(f)
+            svr_cfg['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+
+            # dump to a string to repave the existing server_config.json
+            new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+            with lib.file_backed_up(server_config_filename):
+                with lib.file_backed_up(config.client_environment_path):
+                    # repave the existing server_config.json
+                    with open(server_config_filename, 'w') as f:
+                        f.write(new_server_config)
+
+                    lib.update_json_file_from_dict(
+                        config.client_environment_path,
+                        {'irods_connection_pool_refresh_time_in_seconds' : 2})
+
+                    # Bounce server to apply setting
+                    irodsctl.restart()
+                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+                    initial_size_of_re_log = lib.get_file_size_by_path(paths.re_log_path())
+                    with lib.file_backed_up(odbc_ini_file):
+                        self.admin.assert_icommand(['irule', '-F', rule_file])
+                        time.sleep(2)
+                        os.unlink(odbc_ini_file)
+                        time.sleep(5)
+
+                    # Restore .odbc.ini and wait for delay server to execute rule properly
+                    time.sleep(delay_job_sleep_time * 2)
+
+                    # The delay server should have caught the exception from the connection error on trying to delete the rule the first time
+                    unexpected_string = 'terminating with uncaught exception of type std::runtime_error: connect error'
+                    actual_count = lib.count_occurrences_of_string_in_log(
+                        paths.re_log_path(),
+                        unexpected_string,
+                        start_index=initial_size_of_re_log)
+                    expected_count = 0
+                    self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in reLog, found {actual_count}'.format(**locals()))
+
+                    # The delay server should not have zombified, so the later rule should have executed
+                    actual_count = lib.count_occurrences_of_string_in_log(
+                        paths.server_log_path(),
+                        'Follow-up rule executed later!',
+                        start_index=initial_size_of_server_log)
+                    expected_count = 1
+                    self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+
+        finally:
+            os.remove(rule_file)
+            irodsctl.restart()
+
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
 class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
