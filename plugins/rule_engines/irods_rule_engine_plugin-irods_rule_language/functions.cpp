@@ -2559,8 +2559,13 @@ char *wildCardToRegex( char *buf ) {
     return buf2;
 }
 
-Res *smsi_segfault( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* ) {
-
+Res *smsi_segfault(Node**, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r) {
+    if (rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+        char buf[ERR_MSG_LEN];
+        snprintf(buf, ERR_MSG_LEN, "[%s]: permission denied", __FUNCTION__);
+        generateAndAddErrMsg(buf, node, CAT_INSUFFICIENT_PRIVILEGE_LEVEL, errmsg);
+        return newErrorRes(r, CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+    }
     raise( SIGSEGV );
     return NULL;
 }
