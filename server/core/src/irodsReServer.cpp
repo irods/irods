@@ -234,11 +234,27 @@ namespace {
                     _inp.ruleExecId, _inp.ruleName);
             ruleExecDelInp_t rule_exec_del_inp{};
             rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
-            status = rcRuleExecDel(&_comm, &rule_exec_del_inp );
+            status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if (status < 0) {
                 rodsLog(LOG_ERROR,
                         "rcRuleExecDel failed for %s, stat=%d",
-                        _inp.ruleExecId, status );
+                        _inp.ruleExecId, status);
+                // Establish a new connection as the original may be invalid
+                rodsEnv env{};
+                _getRodsEnv(env);
+                auto tmp_pool = std::make_shared<irods::connection_pool>(
+                    1,
+                    env.rodsHost,
+                    env.rodsPort,
+                    env.rodsUserName,
+                    env.rodsZone,
+                    env.irodsConnectionPoolRefreshTime);
+                status = rcRuleExecDel(&static_cast<rcComm_t&>(tmp_pool->get_connection()), &rule_exec_del_inp);
+                if (status < 0) {
+                    rodsLog(LOG_ERROR,
+                            "rcRuleExecDel failed again for %s, stat=%d - exiting",
+                            _inp.ruleExecId, status);
+                }
             }
             return status;
         }
@@ -272,9 +288,15 @@ namespace {
             return;
         }
 
-        int status = run_rule_exec(_conn_pool->get_connection(), rule_exec_submit_inp);
-        if(status < 0) {
-            rodsLog(LOG_ERROR, "Rule exec for [%s] failed. status = [%d]", rule_exec_submit_inp.ruleName, status);
+        try {
+            int status = run_rule_exec(_conn_pool->get_connection(), rule_exec_submit_inp);
+            if(status < 0) {
+                rodsLog(LOG_ERROR, "Rule exec for [%s] failed. status = [%d]",
+                        rule_exec_submit_inp.ruleExecId, status);
+            }
+        } catch(const std::exception& e) {
+            rodsLog(LOG_ERROR, "Exception caught during execution of rule [%s]: [%s]",
+                    rule_exec_submit_inp.ruleExecId, e.what());
         }
 
         _queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
@@ -292,7 +314,6 @@ int main() {
     signal(SIGTERM, signal_exit_handler);
     signal(SIGKILL, signal_exit_handler);
     signal(SIGUSR1, signal_exit_handler);
-    signal(SIGPIPE, signal_exit_handler);
 
     auto log_fd = init_log();
     if(log_fd < 0) {
