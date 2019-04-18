@@ -104,9 +104,6 @@ def server_parent_log_path():
 def server_log_path():
     return '/var/log/irods/irods.log'
 
-def re_log_path():
-    return '/var/log/irods/irods.log'
-
 def server_bin_directory():
     return os.path.join(
         root_directory(),

@@ -388,10 +388,6 @@ class IrodsConfig(object):
         return paths.server_log_path()
 
     @property
-    def re_log_path(self):
-        return paths.re_log_path()
-
-    @property
     def server_bin_directory(self):
         return paths.server_bin_directory()
 
