@@ -73,8 +73,8 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     paths.server_log_path(),
                     'We are about to fail...',
                     start_index=initial_size_of_server_log)
-                # RE server tries 2 times before failing out
-                expected_count = 2
+                # Message prints, rcExecRuleExpression prints rule name on failure, and delay server prints rule name on failure
+                expected_count = 3
                 self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
 
         finally:
@@ -349,7 +349,8 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     paths.server_log_path(),
                     'We are about to segfault...',
                     start_index=initial_size_of_server_log)
-                expected_count = 1
+                # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rcExecRuleExpression)
+                expected_count = 2
                 self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
 
                 # See if the later rule is executed (i.e. delay server is still alive)
@@ -405,7 +406,6 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     # Bounce server to apply setting
                     irodsctl.restart()
                     initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                    initial_size_of_re_log = lib.get_file_size_by_path(paths.re_log_path())
                     with lib.file_backed_up(odbc_ini_file):
                         self.admin.assert_icommand(['irule', '-F', rule_file])
                         time.sleep(2)
@@ -418,9 +418,9 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     # The delay server should have caught the exception from the connection error on trying to delete the rule the first time
                     unexpected_string = 'terminating with uncaught exception of type std::runtime_error: connect error'
                     actual_count = lib.count_occurrences_of_string_in_log(
-                        paths.re_log_path(),
+                        paths.server_log_path(),
                         unexpected_string,
-                        start_index=initial_size_of_re_log)
+                        start_index=initial_size_of_server_log)
                     expected_count = 0
                     self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in reLog, found {actual_count}'.format(**locals()))
 

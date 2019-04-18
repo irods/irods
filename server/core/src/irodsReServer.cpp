@@ -1,12 +1,12 @@
+#include "connection_pool.hpp"
 #include "initServer.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_delay_queue.hpp"
-#include "irods_log.hpp"
+#include "irods_logger.hpp"
 #include "irods_query.hpp"
 #include "irods_re_structs.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_state.hpp"
-#include "thread_pool.hpp"
 #include "irodsReServer.hpp"
 #include "miscServerFunct.hpp"
 #include "rodsClient.h"
@@ -15,7 +15,7 @@
 #include "rsLog.hpp"
 #include "ruleExecDel.h"
 #include "ruleExecSubmit.h"
-#include "connection_pool.hpp"
+#include "thread_pool.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -26,34 +26,17 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/format.hpp>
 
+using logger = irods::experimental::log;
 namespace {
-    int init_log() {
-        /* Handle option to log sql commands */
-        auto sql_log_level = getenv(SP_LOG_SQL);
-        if(sql_log_level) {
-            int j{1};
-            #ifdef SYSLOG
-                j = atoi(sql_log_level);
-            #endif
-            rodsLogSqlReq(j);
-        }
+    void init_logger() {
+        logger::init();
+        irods::server_properties::instance().capture();
+        logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
+        logger::set_server_type("delay_server");
 
-        /* Set the logging level */
-        rodsLogLevel(LOG_NOTICE); /* default */
-        auto log_level = getenv(SP_LOG_LEVEL);
-        if (log_level) {
-            rodsLogLevel(std::atoi(log_level));
+        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+            logger::set_server_host(hostname);
         }
-
-        #ifdef SYSLOG
-            /* Open a connection to syslog */
-            openlog("irodsDelayServer", LOG_ODELAY | LOG_PID, LOG_DAEMON);
-        #endif
-        int log_fd = logFileOpen(SERVER, nullptr, RULE_EXEC_LOGFILE);
-        if (log_fd >= 0) {
-            daemonize(SERVER, log_fd);
-        }
-        return log_fd;
     }
 
     ruleExecSubmitInp_t fill_rule_exec_submit_inp(
@@ -159,7 +142,8 @@ namespace {
             return status;
         };
 
-        rodsLog(LOG_DEBUG, "[%s:%d] - time:[%s],ef:[%s],next:[%s]", __FUNCTION__, __LINE__, current_time, ef_string, next_time);
+        logger::delay_server::debug((boost::format("[%s:%d] - time:[%s],ef:[%s],next:[%s]") %
+            __FUNCTION__ % __LINE__ % current_time % ef_string % next_time).str());
         const int repeat_status = getNextRepeatTime(current_time, ef_string, next_time);
         switch(repeat_status) {
             case 0:
@@ -212,9 +196,8 @@ namespace {
                          RodsPackTable,
                          NATIVE_PROT);
         if (status < 0) {
-            rodsLog(LOG_ERROR,
-                "[%s] - unpackStruct error. status [%d]",
-                __FUNCTION__, status );
+            logger::delay_server::error((boost::format("[%s] - unpackStruct error. status [%d]") %
+                __FUNCTION__ % status).str());
             return status;
         }
 
@@ -240,16 +223,14 @@ namespace {
             return update_entry_for_repeat(_comm, _inp, status);
         }
         else if(status < 0) {
-            rodsLog(LOG_ERROR,
-                    "ruleExec of %s: %s failed.",
-                    _inp.ruleExecId, _inp.ruleName);
+            logger::delay_server::error((boost::format("ruleExec of %s: %s failed.") %
+                _inp.ruleExecId % _inp.ruleName).str());
             ruleExecDelInp_t rule_exec_del_inp{};
             rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
             status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if (status < 0) {
-                rodsLog(LOG_ERROR,
-                        "rcRuleExecDel failed for %s, stat=%d",
-                        _inp.ruleExecId, status);
+                logger::delay_server::error((boost::format("rcRuleExecDel failed for %s, stat=%d") %
+                    _inp.ruleExecId % status).str());
                 // Establish a new connection as the original may be invalid
                 rodsEnv env{};
                 _getRodsEnv(env);
@@ -275,7 +256,8 @@ namespace {
             rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
             status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
             if(status < 0) {
-                rodsLog(LOG_ERROR, "Failed deleting rule exec %s from catalog", rule_exec_del_inp.ruleExecId);
+                logger::delay_server::error((boost::format("Failed deleting rule exec %s from catalog") %
+                    rule_exec_del_inp.ruleExecId).str());
             }
             return status;
         }
@@ -305,14 +287,15 @@ namespace {
         }
 
         try {
+            logger::delay_server::trace((boost::format("Executing rule [%s]") % rule_exec_submit_inp.ruleExecId).str());
             int status = run_rule_exec(_conn_pool->get_connection(), rule_exec_submit_inp);
             if(status < 0) {
-                rodsLog(LOG_ERROR, "Rule exec for [%s] failed. status = [%d]",
-                        rule_exec_submit_inp.ruleExecId, status);
+                logger::delay_server::error((boost::format("Rule exec for [%s] failed. status = [%d]") %
+                    rule_exec_submit_inp.ruleExecId % status).str());
             }
         } catch(const std::exception& e) {
-            rodsLog(LOG_ERROR, "Exception caught during execution of rule [%s]: [%s]",
-                    rule_exec_submit_inp.ruleExecId, e.what());
+            logger::delay_server::error((boost::format("Exception caught during execution of rule [%s]: [%s]") %
+                rule_exec_submit_inp.ruleExecId % e.what()).str());
         }
 
         _queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
@@ -320,20 +303,18 @@ namespace {
 }
 
 int main() {
+    init_logger();
+    logger::delay_server::debug("Initializing...");
+
     static std::atomic_bool re_server_terminated{};
     const auto signal_exit_handler = [](int signal) {
-        rodsLog(LOG_NOTICE, "RE server received signal [%d]", signal);
+        logger::delay_server::error((boost::format("RE server received signal [%d]") % signal).str());
         re_server_terminated = true;
     };
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
     signal(SIGTERM, signal_exit_handler);
     signal(SIGUSR1, signal_exit_handler);
-
-    auto log_fd = init_log();
-    if(log_fd < 0) {
-        exit(log_fd);
-    }
 
     const auto sleep_time = [] {
         int sleep_time = irods::default_re_server_sleep_time;
@@ -354,6 +335,7 @@ int main() {
         }
         return thread_count;
     }();
+
     irods::thread_pool thread_pool{thread_count};
 
     irods::delay_queue queue;
@@ -401,6 +383,7 @@ int main() {
                     if(queue.contains_rule_id(rule_id)) {
                         continue;
                     }
+                    logger::delay_server::trace((boost::format("Enqueueing rule [%s]") % rule_id).str());
                     queue.enqueue_rule(rule_id);
                     irods::thread_pool::post(thread_pool, [conn_pool, &queue, result] {
                         execute_rule(conn_pool, queue, result, re_server_terminated);
