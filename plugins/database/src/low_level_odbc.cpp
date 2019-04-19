@@ -272,43 +272,45 @@ cllCheckPending( const char *sql, int option, int dbType ) {
         return 0;
     }
 
-    /* but ignore a single pending "begin" which can be normal */
-    if ( pendingIx == 1 ) {
-        if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
-            return 0;
+    if (pendingCount > 0) {
+        /* but ignore a single pending "begin" which can be normal */
+        if ( pendingIx == 1 ) {
+            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
+                return 0;
+            }
         }
-    }
-    if ( dbType == DB_TYPE_MYSQL ) {
-        /* For mySQL, may have a few SET SESSION sql too, which we
-           should ignore */
-        int skip = 1;
-        if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
-            skip = 0;
+        if ( dbType == DB_TYPE_MYSQL ) {
+            /* For mySQL, may have a few SET SESSION sql too, which we
+               should ignore */
+            int skip = 1;
+            if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) != 0 ) {
+                skip = 0;
+            }
+            int max = maxPendingToRecord;
+            if ( pendingIx < max ) {
+                max = pendingIx;
+            }
+            for ( int i = 1; i < max && skip == 1; i++ ) {
+                if (    (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET SESSION",   11) !=0)
+                     && (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET character", 13) !=0)) {
+                    skip = 0;
+                }
+            }
+            if ( skip ) {
+                return 0;
+            }
         }
+
+        rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
+                 pendingCount );
         int max = maxPendingToRecord;
         if ( pendingIx < max ) {
             max = pendingIx;
         }
-        for ( int i = 1; i < max && skip == 1; i++ ) {
-            if (    (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET SESSION",   11) !=0)
-                 && (strncmp((char *)&pBuffer[i*pendingRecordSize], "SET character", 13) !=0)) {
-                skip = 0;
-            }
+        for ( int i = 0; i < max; i++ ) {
+            rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
+                     ( char * )&pBuffer[i * pendingRecordSize] );
         }
-        if ( skip ) {
-            return 0;
-        }
-    }
-
-    rodsLog( LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
-             pendingCount );
-    int max = maxPendingToRecord;
-    if ( pendingIx < max ) {
-        max = pendingIx;
-    }
-    for ( int i = 0; i < max; i++ ) {
-        rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
-                 ( char * )&pBuffer[i * pendingRecordSize] );
     }
 
     return 0;
