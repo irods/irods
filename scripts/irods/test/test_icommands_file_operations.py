@@ -31,6 +31,8 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
     class_name = 'Test_ICommands_File_Operations'
 
     def setUp(self):
+        # TODO: Remove this sleep when #4359 is resolved
+        time.sleep(30)
         super(Test_ICommands_File_Operations, self).setUp()
         self.testing_tmp_dir = '/tmp/irods-test-icommands-recursive'
         shutil.rmtree(self.testing_tmp_dir, ignore_errors=True)
