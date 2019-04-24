@@ -719,6 +719,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/reDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reIn2p3SysRule.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reNaraMetaData.cpp
+  ${CMAKE_SOURCE_DIR}/server/re/src/reStruct.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reSysDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/sharedmemory.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp

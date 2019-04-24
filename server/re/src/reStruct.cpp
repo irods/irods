@@ -1,8 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-#include "reGlobalsExtern.hpp"
-#include "reFuncDefs.hpp"
+#include "irods_re_structs.hpp"
 #include "rcMisc.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
@@ -98,19 +97,19 @@ copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to ) {
 }
 
 int
-freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
-    freeRuleExecInfoInternals( rs, freeSpeialStructFlag );
+freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
+    freeRuleExecInfoInternals( rs, freeSpecialStructFlag );
     free( rs );
     return 0;
 }
 int
-freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
-    if ( rs->msParamArray != NULL && ( freeSpeialStructFlag & FREE_MS_PARAM ) > 0 ) {
+freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag ) {
+    if ( rs->msParamArray != NULL && ( freeSpecialStructFlag & FREE_MS_PARAM ) > 0 ) {
         clearMsParamArray( rs->msParamArray, 1 );
         free( rs->msParamArray );
     }
 
-    if ( rs->doinp != NULL && ( freeSpeialStructFlag & FREE_DOINP ) > 0 ) {
+    if ( rs->doinp != NULL && ( freeSpecialStructFlag & FREE_DOINP ) > 0 ) {
         clearDataObjInp( rs->doinp );
         free( rs->doinp );
     }
@@ -134,7 +133,7 @@ freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag ) {
         freeKeyValPairStruct( rs->condInputData );
     }
     if ( rs->next != NULL ) {
-        freeRuleExecInfoStruct( rs->next, freeSpeialStructFlag );
+        freeRuleExecInfoStruct( rs->next, freeSpecialStructFlag );
     }
     return 0;
 }

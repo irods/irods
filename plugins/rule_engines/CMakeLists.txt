@@ -12,7 +12,6 @@ set(
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers2.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reLib1.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/parser.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reStruct.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.gen.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/restructs.cpp

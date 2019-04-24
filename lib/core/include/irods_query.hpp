@@ -151,6 +151,8 @@ namespace irods {
                                     __FUNCTION__ % gen_input_.continueInx).str()));
                     }
                 }
+                freeGenQueryOut(&this->gen_output_);
+                clearGenQueryInp(&gen_input_);
             }
 
             void reset_for_page_boundary() override {
@@ -223,6 +225,7 @@ namespace irods {
                                     __FUNCTION__ % spec_input_.continueInx).str()));
                     }
                 }
+                freeGenQueryOut(&this->gen_output_);
             }
 
             void reset_for_page_boundary() override {

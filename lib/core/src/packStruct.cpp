@@ -2821,6 +2821,7 @@ addPointerToPackedOut( packedOutput_t &packedOutput, int len, void *pointer ) {
     }
     else if ( len > 0 ) {
         *tmpPtr = malloc( len );
+        memset(*tmpPtr, 0, len);
     }
     else {
         /* add a NULL pointer */
