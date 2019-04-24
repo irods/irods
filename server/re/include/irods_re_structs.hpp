@@ -86,4 +86,27 @@ packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
 int
 unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
                  bytesBuf_t *packedReiAndArgBBuf );
+
+int copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to );
+
+int freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpecialStructFlag );
+
+int freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpecialStructFlag );
+
+int copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to );
+
+int copyCollInfo( collInfo_t *from, collInfo_t *to );
+
+int freeCollInfo( collInfo_t *rs );
+
+int copyUserInfo( userInfo_t *from, userInfo_t *to );
+
+int freeUserInfo( userInfo_t *rs );
+
+int copyKeyValPairStruct( keyValPair_t *from, keyValPair_t *to );
+
+int freeKeyValPairStruct( keyValPair_t *rs );
+
+void *mallocAndZero( int s );
+
 #endif // IRODS_RE_STRUCTS_HPP

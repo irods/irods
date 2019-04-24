@@ -4,9 +4,6 @@
 #ifndef RE_FUNCDEFS_HPP
 #define RE_FUNCDEFS_HPP
 
-/* definition for freeSpeialStructFlag in freeRuleExecInfoStruct and
- * freeRuleExecInfoInternals
- */
 #include "restructs.hpp"
 #include "reGlobalsExtern.hpp"
 #include "irods_re_structs.hpp"
@@ -98,24 +95,6 @@ int replaceLongValue( char *start, int size, rodsLong_t inval, int paramLen );
 
 int replaceULongValue( char *start, int size, rodsULong_t inval, int paramLen );
 
-void *mallocAndZero( int s );
-
-int copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to );
-
-int freeRuleExecInfoStruct( ruleExecInfo_t *rs, int freeSpeialStructFlag );
-
-int freeRuleExecInfoInternals( ruleExecInfo_t *rs, int freeSpeialStructFlag );
-
-int copyDataObjInfo( dataObjInfo_t *from, dataObjInfo_t *to );
-
-int copyCollInfo( collInfo_t *from, collInfo_t *to );
-
-int freeCollInfo( collInfo_t *rs );
-
-int copyUserInfo( userInfo_t *from, userInfo_t *to );
-
-int freeUserInfo( userInfo_t *rs );
-
 
 #if 0	// #1472
 int copyRescInfo( rescInfo_t *from, rescInfo_t *to );
@@ -124,9 +103,6 @@ int copyRescGrpInfo( rescGrpInfo_t *from, rescGrpInfo_t *to );
 int freeRescGrpInfo( rescGrpInfo_t *rs );
 #endif
 
-int copyKeyValPairStruct( keyValPair_t *from, keyValPair_t *to );
-
-int freeKeyValPairStruct( keyValPair_t *rs );
 /*
 int reREMatch(char *pat, char *str);
 */
