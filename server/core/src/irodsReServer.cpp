@@ -1,4 +1,5 @@
 #include "initServer.hpp"
+#include "irods_at_scope_exit.hpp"
 #include "irods_delay_queue.hpp"
 #include "irods_log.hpp"
 #include "irods_query.hpp"
@@ -58,10 +59,9 @@ namespace {
     ruleExecSubmitInp_t fill_rule_exec_submit_inp(
         const std::vector<std::string>& exec_info) {
         namespace bfs = boost::filesystem;
+
         ruleExecSubmitInp_t rule_exec_submit_inp{};
         rule_exec_submit_inp.packedReiAndArgBBuf = (bytesBuf_t*)malloc(sizeof(bytesBuf_t));
-        rule_exec_submit_inp.packedReiAndArgBBuf->buf = malloc(REI_BUF_LEN);
-        rule_exec_submit_inp.packedReiAndArgBBuf->len = REI_BUF_LEN;
 
         const auto& rule_exec_id = exec_info[0].c_str();
         const auto& rei_file_path = exec_info[2].c_str();
@@ -73,7 +73,7 @@ namespace {
         }
 
         rule_exec_submit_inp.packedReiAndArgBBuf->len = static_cast<int>(bfs::file_size(p));
-        rule_exec_submit_inp.packedReiAndArgBBuf->buf = malloc(rule_exec_submit_inp.packedReiAndArgBBuf->len);
+        rule_exec_submit_inp.packedReiAndArgBBuf->buf = malloc(rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
 
         int fd = open(rei_file_path, O_RDONLY, 0);
         if (fd < 0) {
@@ -83,7 +83,7 @@ namespace {
         }
 
         memset(rule_exec_submit_inp.packedReiAndArgBBuf->buf, 0,
-               rule_exec_submit_inp.packedReiAndArgBBuf->len);
+               rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
         ssize_t status{read(fd, rule_exec_submit_inp.packedReiAndArgBBuf->buf,
                         rule_exec_submit_inp.packedReiAndArgBBuf->len)};
         close(fd);
@@ -224,6 +224,16 @@ namespace {
 
         exec_rule_expression_t exec_rule = pack_exec_rule_expression(_inp);
         exec_rule.params_ = rei_and_arg->rei->msParamArray;
+        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&exec_rule, &rei_and_arg] {
+            clearBBuf(&exec_rule.rule_text_);
+            if(rei_and_arg->rei) {
+                if(rei_and_arg->rei->rsComm) {
+                    free(rei_and_arg->rei->rsComm);
+                }
+                freeRuleExecInfoStruct(rei_and_arg->rei, (FREE_MS_PARAM | FREE_DOINP));
+            }
+            free(rei_and_arg);
+        }};
 
         status = rcExecRuleExpression(&_comm, &exec_rule);
         if (strlen(_inp.exeFrequency) > 0) {
@@ -282,6 +292,11 @@ namespace {
         }
         // Prepare input for rule execution API call
         ruleExecSubmitInp_t rule_exec_submit_inp{};
+
+        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&rule_exec_submit_inp] {
+            freeBBuf(rule_exec_submit_inp.packedReiAndArgBBuf);
+        }};
+
         try{
             rule_exec_submit_inp = fill_rule_exec_submit_inp(_rule_info);
         } catch(const irods::exception& e) {
@@ -313,7 +328,6 @@ int main() {
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
     signal(SIGTERM, signal_exit_handler);
-    signal(SIGKILL, signal_exit_handler);
     signal(SIGUSR1, signal_exit_handler);
 
     auto log_fd = init_log();
