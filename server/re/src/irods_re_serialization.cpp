@@ -551,6 +551,32 @@ namespace irods {
             return SUCCESS();
         } // serialize_collInfo_ptr
 
+        static error serialize_collInp_ptr(
+                boost::any              _p,
+                serialized_parameter_t& _out) { 
+            try {
+                collInp_t* l = boost::any_cast<collInp_t*>(_p);
+
+                if (l) {
+                    _out["coll_name"] = l->collName;
+                    _out["flags"] = l->flags;
+                    _out["opr_type"] = l->oprType;
+
+                    serialize_keyValPair(l->condInput, _out);
+
+                } else {
+                    _out["collInp_ptr"] = "nullptr";
+                }
+            }
+            catch ( std::exception& ) {
+                return ERROR(
+                         INVALID_ANY_CAST,
+                         "failed to cast collInp ptr" );
+            }
+
+            return SUCCESS();
+        } // serialize_collInp_ptr
+
         static error serialize_modAVUMetaInp_ptr(
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
@@ -935,6 +961,7 @@ namespace irods {
                 { std::type_index(typeid(keyValPair_t*)), serialize_keyValPair_ptr },
                 { std::type_index(typeid(userInfo_t*)), serialize_userInfo_ptr },
                 { std::type_index(typeid(collInfo_t*)), serialize_collInfo_ptr },
+                { std::type_index(typeid(collInp_t*)), serialize_collInp_ptr },
                 { std::type_index(typeid(modAVUMetadataInp_t*)), serialize_modAVUMetaInp_ptr },
                 { std::type_index(typeid(modAccessControlInp_t*)), serialize_modAccessControlInp_ptr },
                 { std::type_index(typeid(modDataObjMeta_t*)), serialize_modDataObjMeta_ptr },
