@@ -339,7 +339,7 @@ namespace irods {
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
             try {
-                dataObjInp_t* l = &boost::any_cast<dataObjInp_t&>(_p);
+                dataObjInp_t* l = boost::any_cast<dataObjInp_t*>(_p);
 
                 if (l) {
                     _out["obj_path"]    = l->objPath;
@@ -683,7 +683,7 @@ namespace irods {
                 if (l) {
                     serialized_parameter_t src;
                     error ret = serialize_dataObjInp_ptr(
-                            l->srcDataObjInp,
+                            &l->srcDataObjInp,
                             src );
                     if(!ret.ok()) {
                         irods::log(PASS(ret));
@@ -697,7 +697,7 @@ namespace irods {
 
                     serialized_parameter_t dst;
                     ret = serialize_dataObjInp_ptr(
-                            l->destDataObjInp,
+                            &l->destDataObjInp,
                             dst );
                     if(!ret.ok()) {
                         irods::log(PASS(ret));
