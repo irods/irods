@@ -87,6 +87,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_tcp_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_threads.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_virtual_path.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mcollUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/microservice.hpp
