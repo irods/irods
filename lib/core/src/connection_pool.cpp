@@ -1,13 +1,7 @@
 #include "connection_pool.hpp"
 
-#include "thread_pool.hpp"
-
-// The connection pool only supports "rcComm_t" so, undefine the
-// following macros in case they have been defined. Doing this guarantees
-// that the query iterator implementation uses "rcComm_t" instead of "rsComm_t".
-#undef RODS_SERVER
-#undef RODS_CLERVER
 #include "irods_query.hpp"
+#include "thread_pool.hpp"
 
 #include <stdexcept>
 #include <thread>

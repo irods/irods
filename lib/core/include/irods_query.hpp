@@ -1,14 +1,15 @@
 #ifndef IRODS_QUERY_HPP
 #define IRODS_QUERY_HPP
 
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
-#include "rsGenQuery.hpp"
-#include "specificQuery.h"
-#include "rsSpecificQuery.hpp"
+#ifdef RODS_SERVER
+    #include "rsGenQuery.hpp"
+    #include "specificQuery.h"
+    #include "rsSpecificQuery.hpp"
 #else
-#include "genQuery.h"
-#include "specificQuery.h"
+    #include "genQuery.h"
+    #include "specificQuery.h"
 #endif
+
 #include "irods_log.hpp"
 #include "rcMisc.h"
 
@@ -191,19 +192,19 @@ namespace irods {
 
             private:
             genQueryInp_t gen_input_; 
-            #if defined(RODS_SERVER) || defined(RODS_CLERVER)
-                const std::function<
-                    int(connection_type*,
-                        genQueryInp_t*,
-                        genQueryOut_t**)>
-                            gen_query_fcn{rsGenQuery};
-            #else
-                const std::function<
-                    int(connection_type*,
-                        genQueryInp_t*,
-                        genQueryOut_t**)>
-                            gen_query_fcn{rcGenQuery};
-            #endif
+#ifdef RODS_SERVER
+            const std::function<
+                int(connection_type*,
+                    genQueryInp_t*,
+                    genQueryOut_t**)>
+                        gen_query_fcn{rsGenQuery};
+#else
+            const std::function<
+                int(connection_type*,
+                    genQueryInp_t*,
+                    genQueryOut_t**)>
+                        gen_query_fcn{rcGenQuery};
+#endif
 
         }; // class gen_query_impl
 
@@ -267,19 +268,19 @@ namespace irods {
 
             private:
             specificQueryInp_t spec_input_; 
-            #if defined(RODS_SERVER) || defined(RODS_CLERVER)
-                const std::function<
-                    int(connection_type*,
-                        specificQueryInp_t*,
-                        genQueryOut_t**)>
-                            spec_query_fcn{rsSpecificQuery};
-            #else
-                const std::function<
-                    int(connection_type*,
-                        specificQueryInp_t*,
-                        genQueryOut_t**)>
-                            spec_query_fcn{rcSpecificQuery};
-            #endif
+#ifdef RODS_SERVER
+            const std::function<
+                int(connection_type*,
+                    specificQueryInp_t*,
+                    genQueryOut_t**)>
+                        spec_query_fcn{rsSpecificQuery};
+#else
+            const std::function<
+                int(connection_type*,
+                    specificQueryInp_t*,
+                    genQueryOut_t**)>
+                        spec_query_fcn{rcSpecificQuery};
+#endif
         }; // class spec_query_impl
 
         class iterator {
