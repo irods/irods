@@ -233,6 +233,7 @@ NEW_ERROR(SYS_SOCK_WRITE_ERR,                          -161000)
 NEW_ERROR(SYS_SOCK_CONNECT_ERR,                        -162000)
 NEW_ERROR(SYS_OPERATION_IN_PROGRESS,                   -163000)
 NEW_ERROR(SYS_REPLICA_DOES_NOT_EXIST,                  -164000)
+NEW_ERROR(SYS_UNKNOWN_ERROR,                           -165000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */
