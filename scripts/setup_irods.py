@@ -134,14 +134,13 @@ def setup_server(irods_config, json_configuration_file=None):
     test_put(irods_config)
 
     l.info(irods.lib.get_header('Log Configuration Notes'))
-    l.info(('The iRODS log file is managed by syslog and logrotate.\n'
+    l.info(('The iRODS log file is managed by rsyslog and logrotate.\n'
             'The locations of the log file and configuration files are listed below.\n\n'
-            '  Log File Path               : /var/log/irods/irods.log\n'
-            '  Delay Log File Path         : /var/log/irods/irods_delay_queue.log\n'
+            '  Log File Path               : ' + irods.paths.server_log_path() + '\n'
             '  Rsyslog Configuration Path  : ' + rsyslog_config_path() + '\n'
             '  Logrotate Configuration Path: ' + logrotate_config_path() + '\n\n'
-            'iRODS will never touch these configuration files ever again. If you need\n'
-            'to make adjustments, you must do so manually.'))
+            'iRODS will never touch these configuration files again.\n'
+            'If you need to make adjustments, you must do so manually.'))
 
     l.info(irods.lib.get_header('iRODS is installed and running'))
 

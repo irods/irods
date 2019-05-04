@@ -1,4 +1,4 @@
-/var/log/irods/irods.log /var/log/irods/irods_delay_queue.log {
+/var/log/irods/irods.log {
     weekly
     rotate 26
     copytruncate
