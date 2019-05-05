@@ -696,8 +696,8 @@ acPostProcForDataCopyReceived(*leaf_resource) {}
 
 # =-=-=-=-=-=-=-
 # examples of API dynamic policy enforcement points
-# pep_api_data_obj_put_pre(*COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
-# pep_api_data_obj_put_post(*COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
+# pep_api_data_obj_put_pre(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
+# pep_api_data_obj_put_post(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {  }
 
 # =-=-=-=-=-=-=-
 # policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
