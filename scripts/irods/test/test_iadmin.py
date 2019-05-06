@@ -230,6 +230,8 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                                    ("pt"), 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc %s passthru" %
                                    ("the_child"), 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc %s passthru" %
+                                   ("grandchild"), 'STDOUT_SINGLELINE', "Creating")
         # bad parent
         self.admin.assert_icommand("iadmin addchildtoresc non_existent_resource %s" %
                                    ("pt"), 'STDERR_SINGLELINE', "CAT_INVALID_RESOURCE")
@@ -239,8 +241,15 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         # duplicate parent
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child")
         self.admin.assert_icommand("iadmin addchildtoresc pt the_child", 'STDERR_SINGLELINE', "CHILD_HAS_PARENT")
+        # parent and child are the same
+        self.admin.assert_icommand("iadmin addchildtoresc pt pt", 'STDERR_SINGLELINE', "HIERARCHY_ERROR")
+        # adding ancestor as a child to a descendant
+        self.admin.assert_icommand("iadmin addchildtoresc the_child grandchild")
+        self.admin.assert_icommand("iadmin addchildtoresc grandchild pt", 'STDERR_SINGLELINE', "HIERARCHY_ERROR")
         # cleanup
+        self.admin.assert_icommand("iadmin rmchildfromresc the_child grandchild")
         self.admin.assert_icommand("iadmin rmchildfromresc pt the_child")
+        self.admin.assert_icommand("iadmin rmresc grandchild")
         self.admin.assert_icommand("iadmin rmresc the_child")
         self.admin.assert_icommand("iadmin rmresc pt")
 
