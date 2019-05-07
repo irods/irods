@@ -28,8 +28,11 @@
 #include "mid_level.hpp"
 #include "low_level.hpp"
 #include "irods_virtual_path.hpp"
+
 #include <boost/algorithm/string.hpp>
+
 #include <string>
+#include <algorithm>
 
 extern int logSQLGenQuery;
 
@@ -96,6 +99,38 @@ char tableAbbrevs;
 
 int debug = 0;
 int debug2 = 0;
+
+namespace
+{
+    int mask_query_argument(std::string& _condition, std::string::size_type _offset)
+    {
+        if (_condition.empty() || _offset >= _condition.size()) {
+            return -1;
+        }
+
+        const auto bpos = _condition.find_first_of("'", _offset);
+
+        if (bpos == std::string::npos) {
+            return -1;
+        }
+
+        const auto epos = _condition.find_first_of("'", bpos + 1);
+
+        if (epos == std::string::npos) {
+            return -1;
+        }
+
+        std::fill(&_condition[bpos + 1], &_condition[epos], ' ');
+
+        return epos + 1;
+    }
+
+    void mask_query_arguments(std::string& _condition)
+    {
+        int offset = 0;
+        while ((offset = mask_query_argument(_condition, offset)) > -1);
+    }
+} // anonymous namespace
 
 /*
  Used by fklink (below) to find an existing name and return the
@@ -920,7 +955,6 @@ compoundConditionSpecified( char *condition ) {
     return 1;
 }
 
-
 /* When there's a compound condition, need to put () around it, use the
    tablename.column for each part, and put OR or AND between.
    Uses and updates whereSQL in addition to the arguments.
@@ -964,9 +998,32 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
             return USER_STRLEN_TOOLONG;
         }
 
-        char* orptr = strstr( condPart1, "||" );
-        char* andptr = strstr( condPart1, "&&" );
-        char *cptr = NULL;
+        char* orptr{};
+        char* andptr{};
+
+        {
+            std::string tmp = condPart1;
+
+            // Masking the query arguments (characters surrounded by quotes) is
+            // required in case the arguments contain character sequences that
+            // can trip up the parser (e.g. "&&" and "||"). This allows the parser
+            // to find the correct location of the "and" and "or" operators.
+            mask_query_arguments(tmp);
+
+            auto pos = tmp.find("||");
+
+            if (std::string::npos != pos) {
+                orptr = condPart1 + pos;
+            }
+
+            pos = tmp.find("&&");
+
+            if (std::string::npos != pos) {
+                andptr = condPart1 + pos;
+            }
+        }
+
+        char *cptr{};
         int type = 0;
         if ( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
             cptr = orptr;

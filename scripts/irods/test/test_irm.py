@@ -36,3 +36,10 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
         self.admin.assert_icommand('iput {0}'.format(filename_path))
         self.admin.assert_icommand('irm -rn0 {0}'.format(filename), 'STDERR', 'USER_INCOMPATIBLE_PARAMS')
 
+    def test_irm_delete_collection_with_ampersand_in_name_causes_error__issue_3398(self):
+        collection = 'testDeleteACollectionWithAmpInTheNameBug170 && hail hail rock & roll  &'
+        self.admin.assert_icommand("imkdir '{0}'".format(collection))
+        self.admin.assert_icommand("ils -l '{0}'".format(self.admin.session_collection), 'STDOUT', collection)
+        self.admin.assert_icommand("irm -r '{0}'".format(collection))
+        self.admin.assert_icommand("ils -l '{0}'".format(self.admin.session_collection_trash), 'STDOUT', collection)
+
