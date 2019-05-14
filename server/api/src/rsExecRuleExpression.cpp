@@ -49,13 +49,6 @@ int rsExecRuleExpression(
     if(strlen(rei->pluginInstanceName) > 0) {
         instance_name = rei->pluginInstanceName;
     }
-    else {
-        irods::error ret = get_default_rule_plugin_instance( instance_name );
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
-    }
 
     irods::rule_engine_context_manager<
         irods::unit,

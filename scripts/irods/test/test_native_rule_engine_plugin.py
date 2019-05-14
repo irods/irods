@@ -22,11 +22,6 @@ from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
 from ..controller import IrodsController
 
-
-
-
-
-
 def exec_icat_command(command):
     import paramiko
 
@@ -389,7 +384,6 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_SYS_NOT_SUPPORTED__4174(self):
-
         rule_file = 'test_SYS_NOT_SUPPORTED__4174.r'
         rule_string = '''
 test_SYS_NOT_SUPPORTED__4174_rule {
@@ -402,7 +396,7 @@ OUTPUT ruleExecOut
         with open(rule_file, 'w') as f:
             f.write(rule_string)
 
-        self.admin.assert_icommand('irule -F ' + rule_file, 'STDERR_SINGLELINE','SYS_NOT_SUPPORTED')
+        self.admin.assert_icommand('irule -r irods_rule_engine_plugin-irods_rule_language-instance -F ' + rule_file, 'STDERR_SINGLELINE', 'SYS_NOT_SUPPORTED')
         os.unlink(rule_file)
 
     max_literal_strlen = 1021 # MAX_TOKEN_TEXT_LEN - 2
@@ -422,19 +416,19 @@ OUTPUT ruleExecOut
         rule_file = 'test_string_literal__4311.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
-        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ['ERROR'], desired_rc = 4)
 
         rule_file_2 = 'test_string_literal__4311_noerr.r'
         with open(rule_file_2, 'w') as f:
             f.write(rule_text.replace('".','"'))
-        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file_2], 'STDOUT_SINGLELINE', str(self.max_literal_strlen))
 
         os.remove(rule_file)
         os.remove(rule_file_2)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only: irods#4311')
     def test_string_input__4311(self):
-
         rule_text = '''
 main {
   msiStrlen(*a,*L)
@@ -445,15 +439,15 @@ OUTPUT ruleExecOut
 ''' % ('a'*self.max_literal_strlen,)
 
         rule_file = 'test_string_input__4311.r'
-
         with open(rule_file, 'w') as f:
             f.write(rule_text)
-        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
 
         rule_file_2 = 'test_string_input__4311_noerr.r'
         with open(rule_file_2, 'w') as f:
             f.write(rule_text.replace('".','"'))
-        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file_2], 'STDOUT_SINGLELINE', str(self.max_literal_strlen))
 
         os.remove(rule_file)
         os.remove(rule_file_2)
@@ -462,12 +456,18 @@ OUTPUT ruleExecOut
     def test_msiSegFault(self):
         rule_text = rule_texts[self.plugin_name][self.class_name]['test_msiSegFault']
         rule_file = 'test_msiSegFault.r'
+
         with open(rule_file, 'w') as f:
             f.write(rule_text)
+
         try:
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
             # Should get SYS_INTERNAL_ERR because it's a segmentation fault
-            self.admin.assert_icommand(['irule', '-F', rule_file],'STDERR','SYS_INTERNAL_ERR')
-            # Should get CAT_INSUFFICIENT_PRIVILEGE_LEVEL because this is for admin users only
-            self.user0.assert_icommand(['irule', '-F', rule_file],'STDERR','CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+            self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', 'SYS_INTERNAL_ERR')
+
+            # Should get CAT_INSUFFICIENT_PRIVILEGE_LEVEL in the log because this is for admin users only
+            self.user0.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+
         finally:
             os.unlink(rule_file)

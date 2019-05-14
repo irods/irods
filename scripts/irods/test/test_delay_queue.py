@@ -63,7 +63,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     f.write(new_server_config)
 
                 # Bounce server to apply setting
-                irodsctl.restart()
+                irodsctl.restart(test_mode=True)
 
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -82,7 +82,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_queue_with_long_job(self):
@@ -121,7 +121,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     f.write(new_server_config)
 
                 # Bounce server to apply setting
-                irodsctl.restart()
+                irodsctl.restart(test_mode=True)
 
                 # Fire off rule and ensure the delay queue is correctly populated
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -163,7 +163,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_batch_delay_processing__3941(self):
@@ -194,7 +194,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 f.write(new_server_config)
 
             # Bounce server to apply setting
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
             # Fire off rule and ensure the delay queue is correctly populated
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -212,7 +212,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         os.remove(rule_file)
 
         # Bounce server to get back original settings
-        irodsctl.restart()
+        irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_block_with_output_param__3906(self):
@@ -239,7 +239,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 f.write(new_server_config)
 
             # Bounce server to apply setting
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
             # Fire off rule and wait for message to get written out to serverLog
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -252,7 +252,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         os.remove(rule_file)
 
         # Bounce server to get back original settings
-        irodsctl.restart()
+        irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_delay_queue_connection_refresh(self):
@@ -289,7 +289,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                         {'irods_connection_pool_refresh_time_in_seconds' : 2})
 
                     # Bounce server to apply setting
-                    irodsctl.restart()
+                    irodsctl.restart(test_mode=True)
 
                     # Fire off rule and ensure the delay queue is correctly populated
                     initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -320,7 +320,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_sigpipe_in_delay_server(self):
@@ -351,7 +351,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     f.write(new_server_config)
 
                 # Bounce server to apply setting
-                irodsctl.restart()
+                irodsctl.restart(test_mode=True)
 
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -375,7 +375,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         finally:
             os.remove(rule_file)
             self.admin.assert_icommand(['iqdel', '-a'])
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Delete this line on resolution of #4094')
     def test_exception_in_delay_server(self):
@@ -414,7 +414,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                         {'irods_connection_pool_refresh_time_in_seconds' : 2})
 
                     # Bounce server to apply setting
-                    irodsctl.restart()
+                    irodsctl.restart(test_mode=True)
                     initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                     with lib.file_backed_up(odbc_ini_file):
                         self.admin.assert_icommand(['irule', '-F', rule_file])
@@ -439,7 +439,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
@@ -496,7 +496,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
                     f.write(self.new_server_config)
 
                 # Bounce server to apply setting
-                irodsctl.restart()
+                irodsctl.restart(test_mode=True)
 
                 string = 'writeLine: inString = {}'.format(repeat_string)
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -507,7 +507,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     #def test_repeat_until_time(self):
     #def test_repeat_until_success_or_until_time(self):
@@ -538,7 +538,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
                     f.write(self.new_server_config)
 
                 # Bounce server to apply setting
-                irodsctl.restart()
+                irodsctl.restart(test_mode=True)
 
                 string = 'writeLine: inString = {}'.format(repeat_string)
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
@@ -548,7 +548,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
 
         finally:
             os.remove(rule_file)
-            irodsctl.restart()
+            irodsctl.restart(test_mode=True)
 
     #def test_double_until_time(self):
     #def test_double_until_success_or_until_time(self):
