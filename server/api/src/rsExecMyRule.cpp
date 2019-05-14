@@ -59,13 +59,6 @@ int rsExecMyRule(
     if( inst_name_str ) {
         inst_name = inst_name_str;
     }
-    else {
-        irods::error ret = get_default_rule_plugin_instance( inst_name );
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
-    }
 
     ruleExecInfo_t rei;
     initReiWithDataObjInp( &rei, _comm, NULL );

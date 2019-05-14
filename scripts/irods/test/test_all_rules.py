@@ -470,7 +470,7 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         assert os.path.isfile(bundlefile)
 
         # now try as a normal user (expect err msg)
-        self.user0.assert_icommand("irule -F " + os.path.join(rulesdir, rulefile), 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
+        self.user0.assert_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + os.path.join(rulesdir, rulefile), 'STDERR_SINGLELINE', "SYS_NO_API_PRIV")
 
         # cleanup
         self.rods_session.run_icommand(['irm', '-rf', bundle_path])
