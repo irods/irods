@@ -208,6 +208,64 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
                 self.assertTrue(mm.find(msg_2, index) != -1)
                 mm.close()
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_exec_rule_text_and_expression_supports_continuation__issue_4299(self):
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            # PEPs.
+            pep_api_exec_my_rule_pre = 'pep_api_exec_my_rule_pre'
+            pep_api_exec_rule_expression_pre = 'pep_api_exec_rule_expression_pre'
+
+            # Rule engine error codes to return.
+            RULE_ENGINE_CONTINUE = 5000000
+
+            # Lower the delay server's sleep time so that rules are executed quicker.
+            config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+
+            # Enable the Passthrough REP (make it the first REP in the list).
+            # Configure the Passthrough REP to return 'RULE_ENGINE_CONTINUE' to the REPF.
+            # Set the log level to 'trace' for the rule engine and legacy logger categories.
+            config.server_config['log_level']['rule_engine'] = 'trace'
+            config.server_config['log_level']['legacy'] = 'trace'
+            config.server_config['plugin_configuration']['rule_engines'].insert(0, {
+                'instance_name': 'irods_rule_engine_plugin-passthrough-instance',
+                'plugin_name': 'irods_rule_engine_plugin-passthrough',
+                'plugin_specific_configuration': {
+                    'return_codes_for_peps': [
+                        {
+                            'regex': '^' + pep_api_exec_my_rule_pre + '$',
+                            'code': RULE_ENGINE_CONTINUE
+                        },
+                        {
+                            'regex': '^' + pep_api_exec_rule_expression_pre + '$',
+                            'code': RULE_ENGINE_CONTINUE
+                        }
+                    ]
+                }
+            })
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+            IrodsController().restart(test_mode=True)
+
+            # Test 1 - exec_rule_text
+            # ~~~~~~~~~~~~~~~~~~~~~~~
+            msg = 'exec_rule_text: Using -r to target a REP is not required anymore!'
+            self.admin.assert_icommand(['irule', 'writeLine("stdout", "{0}")'.format(msg), 'null', 'ruleExecOut'], 'STDOUT', msg)
+
+            # Test 2 - exec_rule_expression
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Capture the current size of the log file. This will be used as the starting
+            # point for searching the log file for a particular string.
+            log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+            msg = 'exec_rule_expression: Using -r to target a REP is not required anymore!'
+            self.admin.assert_icommand(['irule', 'delay("0.1s") {{ writeLine("serverLog", "{0}"); }}'.format(msg), 'null', 'null'])
+
+            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+
+        IrodsController().restart(test_mode=True)
+
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
