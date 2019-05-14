@@ -15,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <initializer_list>
+#include <optional>
 
 #include <boost/any.hpp>
 #include <boost/algorithm/string.hpp>
@@ -104,7 +105,6 @@ namespace irods {
         var_arg_to_list(l, std::forward<As>(_ps)...);
         return l;
     }
-
 
     // microservice manager
     template<typename C>
@@ -320,14 +320,11 @@ namespace irods {
                 }
             };
 
-            error err = op();
+            auto err = op();
 
-            if (!err.ok()) {
-                return PASS(err);
-            }
-
-            return SUCCESS();
+            return !err.ok() ? PASS(err) : err;
         }
+
     protected:
 
         std::shared_ptr<rule_engine_context_manager<T,C,Audit> >re_mgr_;
@@ -358,16 +355,20 @@ namespace irods {
 
         error resolve(std::string& _plugin_name, const std::string& _inst_name, pluggable_rule_engine<T> *& _re_ptr) {
             auto itr = re_plugin_map_.find(_inst_name);
+
             if(itr == end(re_plugin_map_)) {
                 error err = load_plugin <pluggable_rule_engine<T> > (_re_ptr, _plugin_name, dir_, _inst_name, std::string("empty_context"));
+
                 if (!err.ok()) {
                     irods::log( PASS( err ) );
                     return err;
                 }
+
                 re_plugin_map_[_inst_name] = _re_ptr;
             } else {
                 _re_ptr = itr->second;
             }
+
             return SUCCESS();
         }
 
@@ -377,7 +378,6 @@ namespace irods {
         std::string dir_;
 
     };
-
 
     // load rule engines from plugins DONE
     template<typename T, typename C>
@@ -429,32 +429,56 @@ namespace irods {
 
     };
 
+    inline bool is_continuation_code(int _error_code)
+    {
+        // Continue to the next rule engine plugin if the current REP
+        // returns either of the following:
+        // - SYS_NOT_SUPPORTED   : Signals to the REPF that the REP did nothing.
+        // - RULE_ENGINE_CONTINUE: Signals to the REPF to continue with the next REP.
+        const std::initializer_list<int> continuation_codes = {SYS_NOT_SUPPORTED, RULE_ENGINE_CONTINUE};
+
+        return std::any_of(std::begin(continuation_codes),
+                           std::end(continuation_codes),
+                           [_error_code](auto _ec) { return _ec == _error_code; });
+    }
+
     template <typename ER, typename EM, typename T, typename ...As>
     inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, const std::string& _rn, As &&... _ps) {
-        // Iterate over the list of REPs. If the rule exists in one of the REPs,
-        // then execute that REP's rule code.
-        for (auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
-            bool rule_exists = false;
+        // "unsafe_ms_ctx" is a special keyword that must be processed by the microservice
+        // handler, "_em". If this keyword is seen, the REPs should be skipped.
+        if ("unsafe_ms_ctx" != _rn) {
+            // Holds the error code of the last REP that processed the rule "_rn".
+            // If the rule was NOT processed by any REP, then "last_error_code" will
+            // be empty and "_rn" MIGHT reference a microservice. It is VERY important that
+            // "last_error_code" be instantiated in the empty state.
+            std::optional<int> last_error_code;
 
-            error err = itr->re_->rule_exists(_rn, itr->re_ctx_, rule_exists);
+            // Iterate over the list of REPs. If the rule exists in one of the REPs,
+            // then execute that REP's rule code.
+            for (auto itr = begin(_re_packs); itr != end(_re_packs); ++itr) {
+                bool rule_exists = false;
 
-            if (!err.ok()) {
-                return err;
-            }
+                error err = itr->re_->rule_exists(_rn, itr->re_ctx_, rule_exists);
 
-            if (rule_exists) {
-                err = _er(*itr, _rn, std::forward<As>(_ps)...);
-
-                // Continue to the next rule engine plugin if the current REP
-                // returns either of the following:
-                // - SYS_NOT_SUPPORTED   : Signals to the REPF that the REP did nothing. 
-                // - RULE_ENGINE_CONTINUE: Signals to the REPF to continue with the next REP.
-                const std::initializer_list<int> continuation_codes = {SYS_NOT_SUPPORTED, RULE_ENGINE_CONTINUE};
-                const auto pred = [ec = err.code()](const auto _ec) { return _ec == ec; };
-
-                if (std::none_of(begin(continuation_codes), end(continuation_codes), pred)) {
+                if (!err.ok()) {
                     return err;
                 }
+
+                if (rule_exists) {
+                    err = _er(*itr, _rn, std::forward<As>(_ps)...);
+                    last_error_code = err.code();
+
+                    if (!is_continuation_code(*last_error_code)) {
+                        return err;
+                    }
+                }
+            }
+
+            // If the rule was processed by a REP and the last error code is zero or a continuation
+            // code, then return the last error code. Checking for zero is equivalent to a REP returning
+            // SUCCESS(). This keeps the REPF from trying to execute rules as microservices.
+            if (last_error_code && (*last_error_code == 0 || is_continuation_code(*last_error_code))) {
+                return CODE(*last_error_code);
             }
         }
 
