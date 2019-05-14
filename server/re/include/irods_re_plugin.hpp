@@ -6,6 +6,7 @@
 #include "irods_lookup_table.hpp"
 #include "irods_re_structs.hpp"
 #include "irods_state_table.h"
+#include "rodsLog.h"
 
 #include <iostream>
 #include <list>
@@ -21,6 +22,11 @@
 #include <boost/optional.hpp>
 
 namespace irods {
+
+// Notes about the exec_rule_* family of functions:
+// - exec_rule: Executes dynamic PEPs and user-defined rules.
+// - exec_rule_text: Used by irule exclusively.
+// - exec_rule_expression: Used to execute delay() and remote() code.
 
 /* How to use
  * Get rei and set necessary fields
@@ -279,22 +285,17 @@ namespace irods {
             const std::string& _instance_name,
             const std::string& _rule_text,
             msParamArray_t*    _ms_params,
-            const std::string& _out_desc) {
-                return re_mgr_->exec_rule_text(
-                           _instance_name,
-                           _rule_text,
-                           _ms_params,
-                           _out_desc);
+            const std::string& _out_desc)
+        {
+            return re_mgr_->exec_rule_text(_instance_name, _rule_text, _ms_params, _out_desc);
         }
 
         error exec_rule_expression(
             const std::string& _instance_name,
             const std::string& _rule_text,
-            msParamArray_t*    _ms_params) {
-                return re_mgr_->exec_rule_expression(
-                           _instance_name,
-                           _rule_text,
-                           _ms_params);
+            msParamArray_t*    _ms_params)
+        {
+            return re_mgr_->exec_rule_expression(_instance_name, _rule_text, _ms_params);
         }
 
         template<typename OP, typename... As >
@@ -438,6 +439,16 @@ namespace irods {
                            [_error_code](auto _ec) { return _ec == _error_code; });
     }
 
+    inline void log_error_code(const error& e)
+    {
+        if (e.code() == RE_PARSER_ERROR || e.code() == RULE_ENGINE_ERROR || is_continuation_code(e.code())) {
+            rodsLog(LOG_DEBUG, "Rule Engine Plugin returned [%i].", e.code());
+        }
+        else {
+            rodsLog(LOG_ERROR, "Rule Engine Plugin returned [%i].", e.code());
+        }
+    }
+
     template <typename ER, typename EM, typename T, typename ...As>
     inline error control(std::list<re_pack_inp<T> >& _re_packs, ER _er, EM _em, const std::string& _rn, As &&... _ps) {
         // "unsafe_ms_ctx" is a special keyword that must be processed by the microservice
@@ -511,7 +522,8 @@ namespace irods {
     class rule_engine_context_manager {};
 
     template<typename T, typename C>
-    class rule_engine_context_manager<T,C,AUDIT_RULE> final : public rule_exists_manager<T,C> {
+    class rule_engine_context_manager<T,C,AUDIT_RULE> final : public rule_exists_manager<T,C>
+    {
     public:
         rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx)
             : rule_exists_manager<T,C>{_re_mgr}
@@ -560,22 +572,25 @@ namespace irods {
                 const std::string& _instance_name,
                 const std::string& _rt,
                 msParamArray_t*    _ms_params,
-                const std::string& _out_desc) {
+                const std::string& _out_desc)
+        {
+            if (_instance_name.empty()) {
+                for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                    log_error_code(re_pack.re_->exec_rule_text(re_pack.re_ctx_, _rt, _ms_params, _out_desc, callback(*this)));
+                }
 
-            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
-                if( _instance_name == re_pack.instance_name_ ) {
-                    return re_pack.re_->exec_rule_text(
-                            re_pack.re_ctx_,
-                            _rt,
-                            _ms_params,
-                            _out_desc,
-                            callback(*this));
+                return SUCCESS();
+            }
+
+            for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                if (_instance_name == re_pack.instance_name_) {
+                    return re_pack.re_->exec_rule_text(re_pack.re_ctx_, _rt, _ms_params, _out_desc, callback(*this));
                 }
             }
 
-            std::string msg( "instance not found [" );
+            std::string msg = "instance not found [";
             msg += _instance_name;
-            msg += "]";
+            msg += ']';
 
             return ERROR(SYS_INVALID_INPUT_PARAM, msg);
         }
@@ -583,23 +598,27 @@ namespace irods {
         error exec_rule_expression(
                 const std::string& _instance_name,
                 const std::string& _rt,
-                msParamArray_t*    _ms_params) {
-            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
-                if( _instance_name == re_pack.instance_name_ ) {
-                    return re_pack.re_->exec_rule_expression(
-                            re_pack.re_ctx_,
-                            _rt,
-                            _ms_params,
-                            callback(*this));
+                msParamArray_t*    _ms_params)
+        {
+            if (_instance_name.empty()) {
+                for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                    log_error_code(re_pack.re_->exec_rule_expression(re_pack.re_ctx_, _rt, _ms_params, callback(*this)));
+                }
+
+                return SUCCESS();
+            }
+
+            for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                if (_instance_name == re_pack.instance_name_) {
+                    return re_pack.re_->exec_rule_expression(re_pack.re_ctx_, _rt, _ms_params, callback(*this));
                 }
             }
 
-            std::string msg( "instance not found [" );
+            std::string msg = "instance not found [";
             msg += _instance_name;
-            msg += "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+            msg += ']';
+
+            return ERROR(SYS_INVALID_INPUT_PARAM, msg);
         }
 
         error list_rules(std::vector< std::string >& rule_vec) {
@@ -609,13 +628,12 @@ namespace irods {
     protected:
         C ctx_;
         dynamic_operation_execution_manager<T,C,DONT_AUDIT_RULE> rex_mgr_;
-
     };
 
     template<typename T, typename C>
-    class rule_engine_context_manager<T,C,DONT_AUDIT_RULE> final : public rule_exists_manager<T,C> {
+    class rule_engine_context_manager<T,C,DONT_AUDIT_RULE> final : public rule_exists_manager<T,C>
+    {
     public:
-
         rule_engine_context_manager(rule_engine_manager<T,C>& _re_mgr, C _ctx) :
                 rule_exists_manager<T,C>{_re_mgr},
                 ctx_{_ctx} {}
@@ -637,48 +655,53 @@ namespace irods {
                 const std::string& _instance_name,
                 const std::string& _rt,
                 msParamArray_t*    _ms_params,
-                const std::string& _out_desc) {
+                const std::string& _out_desc)
+        {
+            if (_instance_name.empty()) {
+                for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                    log_error_code(re_pack.re_->exec_rule_text(re_pack.re_ctx_, _rt, _ms_params, _out_desc, callback(*this)));
+                }
 
-            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
-                if( _instance_name == re_pack.instance_name_ ) {
-                    return re_pack.re_->exec_rule_text(
-                            re_pack.re_ctx_,
-                            _rt,
-                            _ms_params,
-                            _out_desc,
-                            callback(*this));
+                return SUCCESS();
+            }
+
+            for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                if (_instance_name == re_pack.instance_name_) {
+                    return re_pack.re_->exec_rule_text(re_pack.re_ctx_, _rt, _ms_params, _out_desc, callback(*this));
                 }
             }
 
-            std::string msg( "instance not found [" );
+            std::string msg = "instance not found [";
             msg += _instance_name;
-            msg += "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+            msg += ']';
+
+            return ERROR(SYS_INVALID_INPUT_PARAM, msg);
         }
 
         error exec_rule_expression(
                 const std::string& _instance_name,
                 const std::string& _rt,
-                msParamArray_t* _ms_params) {
+                msParamArray_t* _ms_params)
+        {
+            if (_instance_name.empty()) {
+                for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                    log_error_code(re_pack.re_->exec_rule_expression(re_pack.re_ctx_, _rt, _ms_params, callback(*this)));
+                }
 
-            for( auto& re_pack : this->re_mgr_.re_packs_ ) {
-                if( _instance_name == re_pack.instance_name_ ) {
-                    return re_pack.re_->exec_rule_expression(
-                            re_pack.re_ctx_,
-                            _rt,
-                            _ms_params,
-                            callback(*this));
+                return SUCCESS();
+            }
+
+            for (auto&& re_pack : this->re_mgr_.re_packs_) {
+                if (_instance_name == re_pack.instance_name_) {
+                    return re_pack.re_->exec_rule_expression(re_pack.re_ctx_, _rt, _ms_params, callback(*this));
                 }
             }
 
-            std::string msg( "instance not found [" );
+            std::string msg = "instance not found [";
             msg += _instance_name;
-            msg += "]";
-            return ERROR(
-                       SYS_INVALID_INPUT_PARAM,
-                       msg );
+            msg += ']';
+
+            return ERROR(SYS_INVALID_INPUT_PARAM, msg);
         }
 
         error list_rules(std::vector< std::string >& rule_vec) {
@@ -694,9 +717,9 @@ namespace irods {
 
             return SUCCESS();
         }
+
     protected:
         C ctx_;
-
     };
 
     template<typename T>

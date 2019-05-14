@@ -23,6 +23,7 @@ from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from ..core_file import temporary_core_file, CoreFile
 from .. import test
+from .. import paths
 from . import settings
 from .. import lib
 from .resource_suite import ResourceSuite, ResourceBase
@@ -803,13 +804,20 @@ OUTPUT ruleExecOut
         with open(rule_file_path, 'w') as rule_file:
             rule_file.write(rule_str)
 
-        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        rc,_,stderr = self.admin.assert_icommand_fail(['irule', '-F', rule_file_path])
+        config = IrodsConfig()
 
-        self.admin.assert_icommand(['ilsresc', '-l', 'demoResc'], 'STDOUT_SINGLELINE', ['free space', free_space])
-        self.assertTrue(0 != rc)
-        self.assertTrue('status = -32000 SYS_INVALID_RESC_INPUT' in stderr)
-        self.assertTrue(1 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'could not find existing non-root path from vault path', start_index=initial_log_size))
+        with lib.file_backed_up(config.client_environment_path):
+            lib.update_json_file_from_dict(config.client_environment_path, {'irods_log_level': 7})
+
+            log_offset = lib.get_file_size_by_path(paths.server_log_path())
+            rc, _, stderr = self.admin.assert_icommand_fail(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', '-F', rule_file_path])
+
+            self.admin.assert_icommand(['ilsresc', '-l', 'demoResc'], 'STDOUT_SINGLELINE', ['free space', free_space])
+            self.assertTrue(0 != rc)
+            self.assertTrue('status = -32000 SYS_INVALID_RESC_INPUT' in stderr)
+
+            msg = 'could not find existing non-root path from vault path'
+            self.assertTrue(1 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), msg, log_offset))
 
         os.unlink(rule_file_path)
 
