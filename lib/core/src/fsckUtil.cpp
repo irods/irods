@@ -13,6 +13,10 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
+
+#include <iostream>
+#include <string>
+
 using namespace boost::filesystem;
 
 int
@@ -116,10 +120,25 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
 
     genQueryOut_t *genQueryOut = NULL;
     int status = rcGenQuery( conn, &genQueryInp, &genQueryOut );
+
     if ( status == 0 && NULL != genQueryOut ) {
         const char *objName = genQueryOut->sqlResult[0].value;
         const char *objPath = genQueryOut->sqlResult[1].value;
-        const intmax_t objSize = atoi( genQueryOut->sqlResult[2].value );
+
+        intmax_t objSize = 0;
+
+        try {
+            objSize = std::stoll(genQueryOut->sqlResult[2].value);
+        }
+        catch (const std::invalid_argument& e) {
+            std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
+            return SYS_INTERNAL_ERR;
+        }
+        catch (const std::out_of_range& e) {
+            std::cerr << "ERROR: could not parse object size into integer [exception => " << e.what() << ", path => " << inpPath << "].\n";
+            return SYS_INTERNAL_ERR;
+        }
+
         const char *objChksum = genQueryOut->sqlResult[3].value;
         if ( srcSize == objSize ) {
             if ( myRodsArgs->verifyChecksum == True ) {
@@ -141,7 +160,6 @@ chkObjConsistency( rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, S
     } else {
         printf("ERROR chkObjConsistency: rcGenQuery failed: status [%d] genQueryOut [%p] file [%s]\n", status, genQueryOut, inpPath);
     }
-
 
     clearGenQueryInp( &genQueryInp );
     freeGenQueryOut( &genQueryOut );
