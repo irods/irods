@@ -168,7 +168,7 @@ install(
 
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_NAME "irods-server")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${CPACK_DEBIAN_PACKAGE_VERSION}), irods-icommands (= ${CPACK_DEBIAN_PACKAGE_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, libxml2, python, openssl, python-psutil, python-requests, lsof")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${CPACK_DEBIAN_PACKAGE_VERSION}), irods-icommands (= ${CPACK_DEBIAN_PACKAGE_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, python, openssl, python-psutil, python-requests, lsof")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_PROVIDES "irods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_CONFLICTS "eirods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_BREAKS "irods-icat, irods-resource")
@@ -183,7 +183,7 @@ endif()
 
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_NAME "irods-server")
 if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos")
-  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, irods-icommands = ${IRODS_VERSION}, openssl, libxml2, python, python-psutil, python-requests, python-jsonschema")
+  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, irods-icommands = ${IRODS_VERSION}, openssl, python, python-psutil, python-requests, python-jsonschema")
 elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
   set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, irods-icommands = ${IRODS_VERSION}, libopenssl1_0_0, python, openssl, python-psutil, python-requests, python-jsonschema")
 endif()
