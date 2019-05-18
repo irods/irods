@@ -26,9 +26,10 @@ namespace irods
         using job        = std::function<void (const result_row&)>;
         // clang-format on
 
-        query_processor(const std::string& _query, job _job)
+        query_processor(const std::string& _query, job _job, uint32_t _limit = 0)
             : query_{_query}
             , job_{_job}
+            , limit_{_limit}
         {
         }
 
@@ -44,7 +45,7 @@ namespace irods
                 errors errs;
 
                 try {
-                    for (auto&& row : query<ConnectionType>{&conn, query_}) {
+                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_}) {
                         try {
                             job_(row);
                         }
@@ -69,6 +70,7 @@ namespace irods
     private:
         std::string query_;
         job job_;
+        uint32_t limit_;
     };
 } // namespace irods
 
