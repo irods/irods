@@ -23,12 +23,14 @@ namespace irods
         using errors     = std::vector<error>;
         using result_row = typename query<ConnectionType>::value_type;
         using job        = std::function<void (const result_row&)>;
+        using query_type = typename query<ConnectionType>::query_type;
         // clang-format on
 
-        query_processor(const std::string& _query, job _job, uint32_t _limit = 0)
+        query_processor(const std::string& _query, job _job, uint32_t _limit = 0, query_type _type = query_type::GENERAL)
             : query_{_query}
             , job_{_job}
             , limit_{_limit}
+            , type_{_type}
         {
         }
 
@@ -45,7 +47,7 @@ namespace irods
                 errors errs;
 
                 try {
-                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_}) {
+                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_, type_}) {
                         try {
                             job_(row);
                         }
@@ -71,6 +73,7 @@ namespace irods
         std::string query_;
         job job_;
         uint32_t limit_;
+        query_type type_;
     };
 } // namespace irods
 
