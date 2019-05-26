@@ -27,6 +27,8 @@
 #include "irods_re_ruleexistshelper.hpp"
 
 #include <functional>
+#include <utility>
+#include <type_traits>
 
 namespace irods {
 
@@ -63,6 +65,18 @@ namespace irods {
         int(*call_wrapper)(...);        // wraps the api call for type casting
 
     }; // struct apidef_t
+
+    template <typename Integer,
+              typename std::enable_if_t<std::is_integral<Integer>::value, int> = 0
+    >
+    bool is_acceptable_error(Integer error_code) {
+        static const std::vector<Integer> acceptable_errors {
+            SYS_NO_HANDLER_REPLY_MSG //... others as necessary
+        };
+        return std::any_of( acceptable_errors.begin(), acceptable_errors.end(),
+            [error_code](auto listed)->bool { return listed == error_code; }
+        );
+    }
 
     template < typename... types_t >
     class api_call_adaptor {
@@ -167,7 +181,8 @@ namespace irods {
                                 api_call_adaptor<types_t...>(fcn) };
 
                         error op_err = adapted_fcn( ctx, _comm, forward<types_t>(_t)...);
-                        if(!op_err.ok()) {
+
+                        if (!op_err.ok()  && !is_acceptable_error(op_err.code())) {
                             // if the operation fails, invoke the exception pep
                             error except_err = invoke_policy_enforcement_point(
                                                    re_ctx_mgr,
