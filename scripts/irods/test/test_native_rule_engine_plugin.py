@@ -9,6 +9,8 @@ import inspect
 import json
 import os
 import time
+import tempfile
+from textwrap import dedent
 
 from . import resource_suite
 from .. import test
@@ -63,18 +65,90 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     def tearDown(self):
         super(Test_Native_Rule_Engine_Plugin, self).tearDown()
 
+
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rules_to_add)
             time.sleep(1)  # remove once file hash fix is committed #2279
-
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.run_icommand(icommand)
 
-        for s in strings_to_check_for:
-            count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), s, start_index=initial_size_of_server_log)
-            assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
+        def check_string_count_in_log_section(string, n_occurrences):
+            count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), string, start_index=initial_size_of_server_log)
+            self.assertTrue (n_occurrences == count, msg='Found {0} instead of {1} occurrences of {2}'.format(count, n_occurrences, string))
+
+        if  isinstance(strings_to_check_for, dict):
+            for s,n  in  strings_to_check_for.items():
+                check_string_count_in_log_section (s,n)
+        else:
+            for s in strings_to_check_for:
+                check_string_count_in_log_section (s,number_of_strings_to_look_for)
+
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_peps_for_parallel_mode_transfers__4404(self):
+
+        (fd, largefile) = tempfile.mkstemp()
+        os.write(fd,"123456789abcdef\n"*(6*1024**2))
+        os.close(fd)
+        temp_base = os.path.basename(largefile)
+        temp_dir  = os.path.dirname(largefile)
+        extrafile = ""
+
+        try:
+            get_peps = dedent("""\
+                pep_api_data_obj_get_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-pre")
+                }
+                pep_api_data_obj_get_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-post")
+                }
+                pep_api_data_obj_get_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-except")
+                }
+                """)
+
+            put_peps = dedent("""\
+                pep_api_data_obj_put_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-pre")
+                }
+                pep_api_data_obj_put_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-post")
+                }
+                pep_api_data_obj_put_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-except")
+                }
+                """)
+
+            self.helper_test_pep( put_peps, "iput -f {}".format(largefile),
+                             { "data-obj-put-pre": 1, "data-obj-put-post": 1, "data-obj-put-except": 0 } )
+
+            self.helper_test_pep( get_peps, "iget -f {} {}".format(temp_base,temp_dir),
+                             { "data-obj-get-pre": 1, "data-obj-get-post": 1, "data-obj-get-except": 0 } )
+
+            self.helper_test_pep( put_peps, "iput {}".format(largefile),
+                             { "data-obj-put-pre": 1, "data-obj-put-post": 0, "data-obj-put-except": 1 } )
+
+            self.admin.run_icommand('ichmod null {} {}'.format(self.admin.username,temp_base))
+
+            extrafile = os.path.join(temp_dir, temp_base + ".x")
+
+            self.helper_test_pep( get_peps, "iget {} {}".format(temp_base,extrafile),
+                             { "data-obj-get-pre": 1, "data-obj-get-post": 0, "data-obj-get-except": 1 } )
+
+        finally:
+
+            self.admin.run_icommand('ichmod own {} {}'.format(self.admin.username,temp_base))
+            os.unlink(largefile)
+            if extrafile and os.path.isfile(extrafile):
+                os.unlink(extrafile)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
     def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
