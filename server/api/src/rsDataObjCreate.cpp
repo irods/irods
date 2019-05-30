@@ -30,6 +30,7 @@
 #include "rsSubStructFileCreate.hpp"
 #include "rsFileCreate.hpp"
 #include "rsGetRescQuota.hpp"
+#include "rsUnregDataObj.hpp"
 
 #include "irods_hierarchy_parser.hpp"
 
@@ -39,6 +40,32 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_server_api_call.hpp"
+
+namespace {
+    int register_and_create_data_object(
+            rsComm_t *rsComm,
+            int l1descInx) {
+        dataObjInfo_t* myDataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+        int status = svrRegDataObj(rsComm, myDataObjInfo);
+        if ( status < 0 ) {
+            rodsLog( LOG_NOTICE,
+                    "%s: rsRegDataObj for %s failed, status = %d",
+                    __FUNCTION__, myDataObjInfo->objPath, status );
+            return status;
+        }
+
+        myDataObjInfo->replNum = status;
+        status = dataCreate(rsComm, l1descInx);
+        if (status < 0) {
+            l3Unlink(rsComm, myDataObjInfo);
+            unregDataObj_t inp{};
+            inp.dataObjInfo = myDataObjInfo;
+            rsUnregDataObj(rsComm, &inp);
+        }
+        return status;
+    }
+}
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -287,15 +314,11 @@ _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
                              dataObjInp,
                              "INVALID_RESOURCE_NAME");
 
-    // JMC - legacy resource - if (status < 0) {
-    if ( status >= 0 ) {
-        return status;
-    }
-    else {
+    if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "rsDataObjCreate: Internal error" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
+    return status;
 }
 
 int
@@ -431,7 +454,7 @@ _rsDataObjCreateWithResc(
         status = 0;
     }
     else {
-        status = dataObjCreateAndReg( rsComm, l1descInx );
+        status = register_and_create_data_object( rsComm, l1descInx );
     }
 
     if ( status < 0 ) {
@@ -440,37 +463,6 @@ _rsDataObjCreateWithResc(
     }
     else {
         return l1descInx;
-    }
-}
-
-/* dataObjCreateAndReg - Given the l1descInx, physically the file (dataCreate)
- * and register the new data object with the rcat
- */
-
-int
-dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx ) {
-
-    dataObjInfo_t *myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-    int status;
-
-    status = dataCreate( rsComm, l1descInx );
-
-    if ( status < 0 ) {
-        return status;
-    }
-
-    /* only register new copy */
-    status = svrRegDataObj( rsComm, myDataObjInfo );
-    if ( status < 0 ) {
-        l3Unlink( rsComm, myDataObjInfo );
-        rodsLog( LOG_NOTICE,
-                 "dataObjCreateAndReg: rsRegDataObj for %s failed, status = %d",
-                 myDataObjInfo->objPath, status );
-        return status;
-    }
-    else {
-        myDataObjInfo->replNum = status;
-        return 0;
     }
 }
 
@@ -502,10 +494,9 @@ dataCreate( rsComm_t *rsComm, int l1descInx ) {
 
 int
 l3Create( rsComm_t *rsComm, int l1descInx ) {
-    dataObjInfo_t *dataObjInfo;
     int l3descInx;
 
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
