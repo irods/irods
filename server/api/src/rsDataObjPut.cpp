@@ -32,6 +32,7 @@
 #include "rsDataObjUnlink.hpp"
 #include "rsSubStructFilePut.hpp"
 #include "rsFilePut.hpp"
+#include "rsUnregDataObj.hpp"
 
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
@@ -332,34 +333,25 @@ l3DataPutSingleBuf( rsComm_t*     rsComm,
 int
 _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                      bytesBuf_t *dataObjInpBBuf ) {
-    int status = 0;
     dataObjInfo_t *myDataObjInfo = L1desc[l1descInx].dataObjInfo;
+    if (NEWLY_CREATED_COPY == L1desc[l1descInx].replStatus &&
+        !myDataObjInfo->specColl && !L1desc[l1descInx].remoteZoneHost) {
+        /* the check for remoteZoneHost host is not needed because
+         * the put would have done in the remote zone. But it make
+         * the code easier to read (similar ro copy).
+         */
+        int status = svrRegDataObj( rsComm, myDataObjInfo );
+        if ( status < 0 ) {
+            rodsLog( LOG_NOTICE,
+                     "%s: rsRegDataObj for %s failed, status = %d",
+                     __FUNCTION__, myDataObjInfo->objPath, status );
+            return status;
+        }
+        myDataObjInfo->replNum = status;
+    }
 
     int bytesWritten = l3FilePutSingleBuf( rsComm, l1descInx, dataObjInpBBuf );
     if ( bytesWritten >= 0 ) {
-        if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY &&
-                myDataObjInfo->specColl == NULL &&
-                L1desc[l1descInx].remoteZoneHost == NULL ) {
-
-            /* the check for remoteZoneHost host is not needed because
-             * the put would have done in the remote zone. But it make
-             * the code easier to read (similar ro copy).
-             */
-            status = svrRegDataObj( rsComm, myDataObjInfo );
-            if ( status < 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "l3DataPutSingleBuf: rsRegDataObj for %s failed, status = %d",
-                         myDataObjInfo->objPath, status );
-                if ( status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) {
-                    l3Unlink( rsComm, myDataObjInfo );
-                }
-                return status;
-            }
-            else {
-                myDataObjInfo->replNum = status;
-            }
-
-        }
         /* myDataObjInfo->dataSize = bytesWritten; update size problem */
         if ( bytesWritten == 0 && myDataObjInfo->dataSize > 0 ) {
             /* overwrite with 0 len file */
@@ -370,9 +362,14 @@ _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
         }
 
     }
+    else {
+        l3Unlink(rsComm, myDataObjInfo);
+        unregDataObj_t inp{};
+        inp.dataObjInfo = myDataObjInfo;
+        rsUnregDataObj(rsComm, &inp);
+    }
 
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
-
     return bytesWritten;
 }
 

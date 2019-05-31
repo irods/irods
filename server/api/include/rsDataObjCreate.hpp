@@ -10,7 +10,6 @@
 int rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int _rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
 int specCollSubCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int dataObjCreateAndReg( rsComm_t *rsComm, int l1descInx );
 int dataCreate( rsComm_t *rsComm, int l1descInx );
 int l3Create( rsComm_t *rsComm, int l1descInx );
 int l3CreateByObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfo );

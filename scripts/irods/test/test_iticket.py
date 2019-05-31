@@ -29,10 +29,19 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_iticket_bad_subcommand(self):
         self.admin.assert_icommand('iticket badsubcommand', 'STDOUT_SINGLELINE', 'unrecognized command')
 
-    def test_iticket_get(self):
+    def test_iticket_get_small(self):
+        # Single buffer transfer
+        self.ticket_get_test(1)
+
+    @unittest.skip('This test does not work in CI, but passes locally')
+    def test_iticket_get_large(self):
+        # Triggers parallel transfer
+        self.ticket_get_test(40000001)
+
+    def ticket_get_test(self, size):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
-        lib.make_file(filepath, 1)
+        lib.make_file(filepath, size)
         collection = self.admin.session_collection + '/dir'
         data_obj = collection + '/' + filename
 
@@ -44,10 +53,20 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.ticket_get_on(data_obj, data_obj)
         self.ticket_get_on(collection, data_obj)
 
-    def test_iticket_put(self):
+        os.unlink(filepath)
+
+    def test_iticket_put_small(self):
+        # Single buffer transfer
+        self.ticket_put_test(1)
+
+    def test_iticket_put_large(self):
+        # Triggers parallel transfer
+        self.ticket_put_test(40000001)
+
+    def ticket_put_test(self, size):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
-        lib.make_file(filepath, 1)
+        lib.make_file(filepath, size)
         collection = self.admin.session_collection + '/dir'
         data_obj = collection + '/' + filename
 
@@ -58,6 +77,8 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.anon.assert_icommand('ils -l ' + collection, 'STDERR')
         self.ticket_put_on(data_obj, data_obj, filepath)
         self.ticket_put_on(collection, data_obj, filepath)
+
+        os.unlink(filepath)
 
     def ticket_get_on(self, ticket_target, data_obj):
         ticket = 'ticket'
