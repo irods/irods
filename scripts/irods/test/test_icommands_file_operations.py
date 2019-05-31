@@ -1609,3 +1609,64 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.run_icommand('irm -rf {dir1}'.format(**locals()))
             shutil.rmtree(os.path.abspath(dir1path), ignore_errors=True)
 
+    # These tests create a resource with a vault for which iRODS has no write permission and tries to put a file there
+    def test_iput_small_file_to_resource_with_restricted_vault_permission(self):
+        self.iput_to_resource_with_restricted_vault_permission_test(1)
+
+    def test_iput_large_file_to_resource_with_restricted_vault_permission(self):
+        self.iput_to_resource_with_restricted_vault_permission_test(40000001)
+
+    def iput_to_resource_with_restricted_vault_permission_test(self, size):
+        resc_name = 'cantwritetovaultresc'
+        vault_path = os.path.join('/', 'var')
+        self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'unixfilesystem', lib.get_hostname() + ':' + vault_path], 'STDOUT_SINGLELINE', resc_name)
+        file_name = 'test_iput_to_resource_with_restricted_vault_permission'
+        file_path = os.path.join(self.testing_tmp_dir, file_name)
+        lib.make_file(file_path, size)
+        logical_path = os.path.join(self.admin.session_collection, file_name) # another user's home collection
+        try:
+            self.admin.assert_icommand(['iput', '-R', resc_name, file_path], 'STDERR', 'UNIX_FILE_MKDIR_ERR')
+            self.admin.assert_icommand(['ils', '-l', file_name], 'STDERR', 'does not exist')
+            session_vault_path = self.admin.get_vault_session_path()
+            self.assertTrue(False == os.path.exists(os.path.join(session_vault_path, file_name)))
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            os.unlink(file_path)
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc_name])
+
+    # These tests attempt to put a file to a logical path to which the authenticated user has no access permission
+    def test_iput_small_file_to_restricted_logical_path(self):
+        self.iput_to_restricted_logical_path_test(1)
+
+    def test_iput_large_file_to_restricted_logical_path(self):
+        self.iput_to_restricted_logical_path_test(40000001)
+
+    def iput_to_restricted_logical_path_test(self, size):
+        file_name = 'iput_to_restricted_logical_path_test'
+        file_path = os.path.join(self.testing_tmp_dir, file_name)
+        lib.make_file(file_path, size)
+        logical_path = os.path.join(self.user1.session_collection, file_name) # another user's home collection
+        try:
+            # attempt to put file where there is no permission
+            self.user0.assert_icommand(['iput', file_path, logical_path], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDERR', 'does not exist')
+            session_vault_path = self.user1.get_vault_session_path()
+            self.assertTrue(False == os.path.exists(os.path.join(session_vault_path, file_name)))
+
+            # attempt an overwrite
+            self.user1.assert_icommand(['iput', file_path, logical_path])
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', file_name)
+            self.user0.assert_icommand(['iput', file_path, logical_path], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', file_name)
+            session_vault_path = self.user1.get_vault_session_path()
+            self.assertTrue(os.path.exists(os.path.join(session_vault_path, file_name)))
+
+            # attempt a forced overwrite
+            self.user0.assert_icommand(['iput', '-f', file_path, logical_path], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
+            self.admin.assert_icommand(['ils', '-l', logical_path], 'STDOUT', file_name)
+            session_vault_path = self.user1.get_vault_session_path()
+            self.assertTrue(os.path.exists(os.path.join(session_vault_path, file_name)))
+        finally:
+            self.admin.run_icommand(['irm', '-f', logical_path])
+            os.unlink(file_path)
+
