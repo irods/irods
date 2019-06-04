@@ -114,6 +114,9 @@
 * after the operation */
 #define EMPTY_BUNDLE_ONLY_KW   "emptyBundleOnly" /* delete emptyBundleOnly */ // JMC - backport 4552
 
+#define REGISTER_AS_INTERMEDIATE_KW "registerAsIntermediate"
+#define STALE_ALL_INTERMEDIATE_REPLICAS_KW  "staleAllIntermediateReplicas"
+
 // =-=-=-=-=-=-=-
 // JMC - backport 4599
 #define LOCK_TYPE_KW   "lockType"      /* valid values are READ_LOCK_TYPE

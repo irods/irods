@@ -220,6 +220,7 @@ NEW_ERROR(SYS_SOCK_CONNECT_ERR,                        -162000)
 NEW_ERROR(SYS_OPERATION_IN_PROGRESS,                   -163000)
 NEW_ERROR(SYS_REPLICA_DOES_NOT_EXIST,                  -164000)
 NEW_ERROR(SYS_UNKNOWN_ERROR,                           -165000)
+NEW_ERROR(SYS_NO_GOOD_REPLICA,                         -166000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */
@@ -288,6 +289,7 @@ NEW_ERROR(USER_FILE_SIZE_MISMATCH,                     -401000)
 NEW_ERROR(USER_INCOMPATIBLE_PARAMS,                    -402000)
 NEW_ERROR(USER_INVALID_REPLICA_INPUT,                  -403000)
 NEW_ERROR(USER_INCOMPATIBLE_OPEN_FLAGS,                -404000)
+NEW_ERROR(USER_INTERMEDIATE_REPLICA_ACCESS,            -405000)
 /** @} */
 
 /* 500,000 to 800,000 - file driver error */

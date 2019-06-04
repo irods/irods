@@ -25,7 +25,6 @@ rsFileGet( rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
     int remoteFlag;
     int status;
 
-    //remoteFlag = resolveHost (&fileGetInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileGetInp->resc_hier_, remoteFlag, rodsServerHost );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );

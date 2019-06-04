@@ -2124,8 +2124,6 @@ irods::error db_mod_data_obj_meta_op(
     rodsLong_t iVal = 0; // JMC cppcheck - uninit var
     int status2 = 0;
 
-    int mode = 0;
-
     char logicalFileName[MAX_NAME_LEN];
     char logicalDirName[MAX_NAME_LEN];
     char *theVal = 0;
@@ -2135,8 +2133,8 @@ irods::error db_mod_data_obj_meta_op(
     const char* whereValues[10];
     char idVal[MAX_NAME_LEN];
     int numConditions = 0;
-    char oldCopy[NAME_LEN];
-    char newCopy[NAME_LEN];
+    char replica_status_string[NAME_LEN]{};
+
     std::vector<const char *> updateCols;
     std::vector<const char *> updateVals;
 
@@ -2453,12 +2451,6 @@ irods::error db_mod_data_obj_meta_op(
         }
     }
 
-    mode = 0;
-    if ( getValByKey( _reg_param, ALL_REPL_STATUS_KW ) ) {
-        mode = 1;
-        /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
-    }
-
     std::string zone;
     ret = getLocalZone(
               _ctx.prop_map(),
@@ -2469,26 +2461,63 @@ irods::error db_mod_data_obj_meta_op(
         return PASS( ret );
     }
 
-    if ( mode == 0 ) {
+    if (!getValByKey(_reg_param, ALL_REPL_STATUS_KW)) {
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModDataObjMeta SQL 4" );
         }
         status = cmlModifySingleTable(
-                     "R_DATA_MAIN",
-                     &( updateCols[0] ),
-                     &( updateVals[0] ),
-                     whereColsAndConds,
-                     whereValues,
-                     upCols,
-                     numConditions,
-                     &icss );
+                "R_DATA_MAIN",
+                &( updateCols[0] ),
+                &( updateVals[0] ),
+                whereColsAndConds,
+                whereValues,
+                upCols,
+                numConditions,
+                &icss );
+
+        // Stale intermediate replicas
+        if (0 == status && getValByKey(_reg_param, STALE_ALL_INTERMEDIATE_REPLICAS_KW)) {
+            // Exclude this replica
+            j = numConditions - 1;
+            whereColsAndConds[j] = "data_repl_num!=";
+            snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
+            whereValues[j] = replNum1;
+
+            // Find all intermediate replicas
+            j = numConditions;
+            whereColsAndConds[j] = "data_is_dirty=";
+            whereValues[j] = std::to_string(INTERMEDIATE_REPLICA).c_str();
+            numConditions++;
+
+            // And mark them stale
+            updateCols[0] = "data_is_dirty";
+            memset(replica_status_string, 0, NAME_LEN);
+            snprintf(replica_status_string, NAME_LEN, "%d", STALE_REPLICA);
+            updateVals[0] = replica_status_string;
+            if ( logSQL != 0 ) {
+                rodsLog( LOG_SQL, "chlModDataObjMeta SQL 6" );
+            }
+            status2 = cmlModifySingleTable( "R_DATA_MAIN", &( updateCols[0] ), &( updateVals[0] ),
+                    whereColsAndConds, whereValues, 1,
+                    numConditions, &icss );
+
+            if ( status2 != 0 && status2 != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
+                /* Ignore NO_INFO errors but not others */
+                rodsLog( LOG_NOTICE,
+                        "chlModDataObjMeta cmlModifySingleTable failure for other replicas %d",
+                        status2 );
+                _rollback( "chlModDataObjMeta" );
+                return ERROR(
+                        status2,
+                        "cmlModifySingleTable failure for other replicas" );
+            }
+        }
     }
     else {
-        /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
-        j = upCols;
+        /* mark this one as GOOD_REPLICA and others as STALE_REPLICA */
         updateCols.push_back( "data_is_dirty" );
-        snprintf( newCopy, NAME_LEN, "%d", NEWLY_CREATED_COPY );
-        updateVals.push_back( newCopy );
+        snprintf(replica_status_string, NAME_LEN, "%d", GOOD_REPLICA);
+        updateVals.push_back(replica_status_string);
         upCols++;
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModDataObjMeta SQL 5" );
@@ -2502,15 +2531,24 @@ irods::error db_mod_data_obj_meta_op(
                      upCols,
                      numConditions,
                      &icss );
+
         if ( status == 0 ) {
             j = numConditions - 1;
             whereColsAndConds[j] = "data_repl_num!=";
             snprintf( replNum1, MAX_NAME_LEN, "%d", _data_obj_info->replNum );
             whereValues[j] = replNum1;
 
+            // Only update replicas already marked as good
+            // Intermediate replicas were never good, so they cannot be stale.
+            j = numConditions;
+            whereColsAndConds[j] = "data_is_dirty!=";
+            whereValues[j] = std::to_string(INTERMEDIATE_REPLICA).c_str();
+            numConditions++;
+
             updateCols[0] = "data_is_dirty";
-            snprintf( oldCopy, NAME_LEN, "%d", OLD_COPY );
-            updateVals[0] = oldCopy;
+            memset(replica_status_string, 0, NAME_LEN);
+            snprintf(replica_status_string, NAME_LEN, "%d", STALE_REPLICA);
+            updateVals[0] = replica_status_string;
             if ( logSQL != 0 ) {
                 rodsLog( LOG_SQL, "chlModDataObjMeta SQL 6" );
             }

@@ -52,11 +52,38 @@
 #include "irods_server_properties.hpp"
 
 
+namespace{
+    int trimDataObjInfo(
+        rsComm_t*      rsComm,
+        dataObjInfo_t* dataObjInfo ) {
+        // =-=-=-=-=-=-=-
+        // add the hier to a parser to get the leaf
+        //std::string cache_resc = irods::hierarchy_parser{dataObjInfo->rescHier}.last_resc();
+
+        dataObjInp_t dataObjInp{};
+        rstrcpy( dataObjInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN );
+        char tmpStr[NAME_LEN]{};
+        snprintf( tmpStr, NAME_LEN, "1" );
+        addKeyVal( &dataObjInp.condInput, COPIES_KW, tmpStr );
+
+        // =-=-=-=-=-=-=-
+        // specify the cache repl num to trim just the cache
+        addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, std::to_string(dataObjInfo->replNum).c_str() );
+        addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
+
+        int status = rsDataObjTrim( rsComm, &dataObjInp );
+        clearKeyVal( &dataObjInp.condInput );
+        if ( status < 0 ) {
+            rodsLogError( LOG_ERROR, status,
+                          "%s: error trimming obj info for [%s]", __FUNCTION__, dataObjInfo->objPath );
+        }
+        return status;
+    }
+}
+
 int
 rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp ) {
-    int status = irsDataObjClose( rsComm, dataObjCloseInp, NULL );
-
-    return status;
+    return irsDataObjClose( rsComm, dataObjCloseInp, NULL );
 }
 
 int
@@ -65,11 +92,8 @@ irsDataObjClose(
     openedDataObjInp_t *dataObjCloseInp,
     dataObjInfo_t **outDataObjInfo ) {
     int status;
-    int srcL1descInx;
-    openedDataObjInp_t myDataObjCloseInp;
-    int l1descInx;
     ruleExecInfo_t rei;
-    l1descInx = dataObjCloseInp->l1descInx;
+    int l1descInx = dataObjCloseInp->l1descInx;
     if ( l1descInx <= 2 || l1descInx >= NUM_L1_DESC ) {
         rodsLog( LOG_NOTICE,
                  "rsDataObjClose: l1descInx %d out of range",
@@ -234,16 +258,7 @@ irsDataObjClose(
         }
     }
 
-    srcL1descInx = L1desc[l1descInx].srcL1descInx;
-    if ( ( L1desc[l1descInx].oprType == REPLICATE_DEST ||
-            L1desc[l1descInx].oprType == COPY_DEST ) &&
-            srcL1descInx > 2 ) {
-        memset( &myDataObjCloseInp, 0, sizeof( myDataObjCloseInp ) );
-        myDataObjCloseInp.l1descInx = srcL1descInx;
-        rsDataObjClose( rsComm, &myDataObjCloseInp );
-    }
-
-    if ( outDataObjInfo != NULL ) {
+    if ( outDataObjInfo ) {
         *outDataObjInfo = L1desc[l1descInx].dataObjInfo;
         L1desc[l1descInx].dataObjInfo = NULL;
     }
@@ -270,14 +285,22 @@ int _modDataObjSize(
             ADMIN_KW ) != NULL ) {
         addKeyVal( &regParam, ADMIN_KW, "" );
     }
+    char* repl_status = getValByKey(&L1desc[_l1descInx].dataObjInp->condInput, REPL_STATUS_KW);
+    if (repl_status) {
+        addKeyVal(&regParam, REPL_STATUS_KW, repl_status);
+    }
+
+    if (getValByKey(&L1desc[_l1descInx].dataObjInp->condInput, STALE_ALL_INTERMEDIATE_REPLICAS_KW)) {
+        addKeyVal(&regParam, STALE_ALL_INTERMEDIATE_REPLICAS_KW, "");
+    }
 
     modDataObjMetaInp.dataObjInfo = _info;
     modDataObjMetaInp.regParam = &regParam;
     int status = rsModDataObjMeta( _comm, &modDataObjMetaInp );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
-                 "_modDataObjSize: rsModDataObjMeta failed, dataSize [%d] status = %d",
-                 _info->dataSize, status );
+                 "%s: rsModDataObjMeta failed, dataSize [%d] status = %d",
+                 __FUNCTION__, _info->dataSize, status );
     }
     return status;
 }
@@ -287,22 +310,17 @@ _rsDataObjClose(
     rsComm_t *rsComm,
     openedDataObjInp_t *dataObjCloseInp ) {
     int status = 0;
-    int l1descInx, l3descInx;
-    keyValPair_t regParam;
-    memset( &regParam, 0, sizeof( regParam ) );
-    rodsLong_t newSize;
     char tmpStr[MAX_NAME_LEN];
     modDataObjMeta_t modDataObjMetaInp;
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     int srcL1descInx;
-    regReplica_t regReplicaInp;
-    int noChkCopyLenFlag = 0;
     int updateChksumFlag = 0;
 
-    l1descInx = dataObjCloseInp->l1descInx;
-    l3descInx = L1desc[l1descInx].l3descInx;
+    int l1descInx = dataObjCloseInp->l1descInx;
+    int l3descInx = L1desc[l1descInx].l3descInx;
 
     // Store openType in key/val in case a hop occurs
+    keyValPair_t regParam{};
     addKeyVal(&regParam, OPEN_TYPE_KW, std::to_string(L1desc[l1descInx].openType).c_str());
 
     if ( l3descInx > 2 ) {
@@ -311,18 +329,19 @@ _rsDataObjClose(
 
         if ( status < 0 ) {
             rodsLog( LOG_NOTICE,
-                     "_rsDataObjClose: l3Close of %d failed, status = %d",
-                     l3descInx, status );
+                     "%s: l3Close of %d failed, status = %d",
+                     __FUNCTION__, l3descInx, status );
             return status;
         }
     }
 
     if ( L1desc[l1descInx].oprStatus < 0 ) {
-        // #3674 - elide any additional errors for catalog update if this is a newly created replica
-        if(L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
+        // #3674 - elide any additional errors for catalog update if this is an intermediate replica
+        if((L1desc[l1descInx].replStatus & 0x0F) == INTERMEDIATE_REPLICA) {
             if( L1desc[l1descInx].oprType == REPLICATE_OPR ||
                 L1desc[l1descInx].oprType == REPLICATE_DEST ||
                 L1desc[l1descInx].oprType == REPLICATE_SRC ) {
+                // Make change here if we want to stop replication
                 return L1desc[l1descInx].oprStatus;
             }
         }
@@ -332,12 +351,15 @@ _rsDataObjClose(
                                           L1desc[l1descInx].dataObjInfo );
         if ( vault_size < 0 ) {
             rodsLog( LOG_ERROR,
-                     "_rsDataObjClose - getSizeInVault failed [%ld]",
-                     vault_size );
+                     "%s - getSizeInVault failed [%ld]",
+                     __FUNCTION__, vault_size );
             return vault_size;
         }
 
-        if ( L1desc[l1descInx].dataObjInfo->dataSize != vault_size ) {
+        //if ( L1desc[l1descInx].dataObjInfo->dataSize != vault_size ) {
+            addKeyVal(&L1desc[l1descInx].dataObjInp->condInput, REPL_STATUS_KW,
+                std::to_string(STALE_REPLICA).c_str());
+            addKeyVal(&L1desc[l1descInx].dataObjInp->condInput, STALE_ALL_INTERMEDIATE_REPLICAS_KW, "");
             L1desc[l1descInx].dataObjInfo->dataSize = vault_size;
             int status = _modDataObjSize(
                              rsComm,
@@ -345,11 +367,11 @@ _rsDataObjClose(
                              L1desc[l1descInx].dataObjInfo );
             if ( status < 0 ) {
                 rodsLog( LOG_ERROR,
-                         "_rsDataObjClose - _modDataObjSize failed [%d]",
-                         status );
+                         "%s - _modDataObjSize failed [%d]",
+                         __FUNCTION__, status );
                 return status;
             }
-        }
+        //}
 
         /* an error has occurred */
         return L1desc[l1descInx].oprStatus;
@@ -359,8 +381,7 @@ _rsDataObjClose(
             L1desc[l1descInx].bytesWritten <= 0 ) {
         /* dataObjCloseInp->bytesWritten is used to specify bytesWritten
          * for cross zone operation */
-        L1desc[l1descInx].bytesWritten =
-            dataObjCloseInp->bytesWritten;
+        L1desc[l1descInx].bytesWritten = dataObjCloseInp->bytesWritten;
     }
 
     /* note that bytesWritten only indicates whether the file has been written
@@ -373,12 +394,11 @@ _rsDataObjClose(
         // =-=-=-=-=-=-=-
         // JMC - backport 4537
         if ( L1desc[l1descInx].purgeCacheFlag > 0 ) {
-            int status1 = trimDataObjInfo( rsComm,
-                                           L1desc[l1descInx].dataObjInfo );
-            if ( status1 < 0 ) {
-                rodsLogError( LOG_ERROR, status1,
-                              "_rsDataObjClose: trimDataObjInfo error for %s",
-                              L1desc[l1descInx].dataObjInfo->objPath );
+            int trim_status = trimDataObjInfo(rsComm, L1desc[l1descInx].dataObjInfo);
+            if (trim_status < 0) {
+                rodsLogError(LOG_ERROR, trim_status,
+                             "%s: trimDataObjInfo error for %s",
+                             __FUNCTION__, L1desc[l1descInx].dataObjInfo->objPath);
             }
         }
 
@@ -414,12 +434,13 @@ _rsDataObjClose(
         return status;
     }
 
+    int noChkCopyLenFlag = 0;
     if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
                       NO_CHK_COPY_LEN_KW ) != NULL ) {
         noChkCopyLenFlag = 1;
     }
 
-    newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
+    rodsLong_t newSize = getSizeInVault( rsComm, L1desc[l1descInx].dataObjInfo );
 
     // since we are not filtering out writes to archive resources, the
     // archive plugins report UNKNOWN_FILE_SZ as their size since they may
@@ -444,6 +465,7 @@ _rsDataObjClose(
             return SYS_COPY_LEN_ERR;
         }
     }
+
     // If an object with a checksum was written to, checksum needs updating
     if ( ( OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType ||
             CREATE_TYPE == L1desc[l1descInx].openType ) &&
@@ -451,11 +473,10 @@ _rsDataObjClose(
 
         L1desc[l1descInx].chksumFlag = REG_CHKSUM;
         updateChksumFlag = 1;
-
     }
 
     // need a checksum check
-    std::string checksum;
+    std::string checksum{};
     if ( !noChkCopyLenFlag || updateChksumFlag ) {
         char *chksumStr = NULL;
         status = procChksumForClose( rsComm, l1descInx, &chksumStr );
@@ -468,152 +489,55 @@ _rsDataObjClose(
         }
     }
 
-    if ( L1desc[l1descInx].oprType == PHYMV_DEST ) {
-        /* a phymv */
+    if (L1desc[l1descInx].oprType == REPLICATE_DEST ||
+             L1desc[l1descInx].oprType == PHYMV_DEST ) {
         destDataObjInfo = L1desc[l1descInx].dataObjInfo;
         srcL1descInx = L1desc[l1descInx].srcL1descInx;
         if ( srcL1descInx <= 2 ) {
             rodsLog( LOG_NOTICE,
-                     "_rsDataObjClose: srcL1descInx %d out of range",
-                     srcL1descInx );
+                     "%s: srcL1descInx %d out of range",
+                     __FUNCTION__, srcL1descInx );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
+        snprintf( tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus );
+        addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );
+        snprintf( tmpStr, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataSize );
+        addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
+        snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
+        addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
         if ( !checksum.empty() ) {
             addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
         }
-        addKeyVal( &regParam, FILE_PATH_KW,     destDataObjInfo->filePath );
-        addKeyVal( &regParam, RESC_NAME_KW,     destDataObjInfo->rescName );
-        addKeyVal( &regParam, RESC_HIER_STR_KW, destDataObjInfo->rescHier );
+
         if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
                           ADMIN_KW ) != NULL ) {
             addKeyVal( &regParam, ADMIN_KW, "" );
+        }
+        if ( ( L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG ) != 0 ) {
+            /* path has changed */
+            addKeyVal( &regParam, FILE_PATH_KW, destDataObjInfo->filePath );
         }
         char* pdmo_kw = getValByKey( &dataObjCloseInp->condInput, IN_PDMO_KW );
         if ( pdmo_kw != NULL ) {
             addKeyVal( &regParam, IN_PDMO_KW, pdmo_kw );
         }
+        char* sync = getValByKey( &L1desc[l1descInx].dataObjInp->condInput, SYNC_OBJ_KW );
+        if (sync) {
+            addKeyVal( &regParam, SYNC_OBJ_KW, "" );
+        }
+        if (L1desc[l1descInx].oprType == PHYMV_DEST) {
+            addKeyVal(&regParam, REPL_NUM_KW, std::to_string(srcDataObjInfo->replNum).c_str());
+        }
         modDataObjMetaInp.dataObjInfo = destDataObjInfo;
         modDataObjMetaInp.regParam = &regParam;
         status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-        clearKeyVal( &regParam );
-        /* have to handle the l3Close here because the need to
-         * unlink the srcDataObjInfo */
-        if ( status >= 0 ) {
-            if ( L1desc[srcL1descInx].l3descInx > 2 ) {
-                int status1;
-                status1 = l3Close( rsComm, srcL1descInx );
-                if ( status1 < 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "_rsDataObjClose: l3Close of %s error. status = %d",
-                             srcDataObjInfo->objPath, status1 );
-                }
-            }
-            l3Unlink( rsComm, srcDataObjInfo );
-            updatequotaOverrun( destDataObjInfo->rescHier,
-                                destDataObjInfo->dataSize, RESC_QUOTA );
-        }
-        else {
-            if ( L1desc[srcL1descInx].l3descInx > 2 ) {
-                l3Close( rsComm, srcL1descInx );
-            }
-        }
-        freeL1desc( srcL1descInx );
-        L1desc[l1descInx].srcL1descInx = 0;
-    }
-    else if ( L1desc[l1descInx].oprType == REPLICATE_DEST ) {
-        destDataObjInfo = L1desc[l1descInx].dataObjInfo;
-        srcL1descInx = L1desc[l1descInx].srcL1descInx;
-        if ( srcL1descInx <= 2 ) {
-            rodsLog( LOG_NOTICE,
-                     "_rsDataObjClose: srcL1descInx %d out of range",
-                     srcL1descInx );
-            return SYS_FILE_DESC_OUT_OF_RANGE;
-        }
-        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
-        if ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) {
-            /* repl to an existing copy */
-            snprintf( tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus );
-            addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );
-            snprintf( tmpStr, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataSize );
-            addKeyVal( &regParam, DATA_SIZE_KW, tmpStr );
-            snprintf( tmpStr, MAX_NAME_LEN, "%d", ( int ) time( NULL ) );
-            addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
-            if ( !checksum.empty() ) {
-                addKeyVal( &regParam, CHKSUM_KW, checksum.c_str() );
-            }
-
-            if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                              ADMIN_KW ) != NULL ) {
-                addKeyVal( &regParam, ADMIN_KW, "" );
-            }
-            if ( ( L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG ) != 0 ) {
-                /* path has changed */
-                addKeyVal( &regParam, FILE_PATH_KW, destDataObjInfo->filePath );
-            }
-            char* pdmo_kw = getValByKey( &dataObjCloseInp->condInput, IN_PDMO_KW );
-            if ( pdmo_kw != NULL ) {
-                addKeyVal( &regParam, IN_PDMO_KW, pdmo_kw );
-            }
-            modDataObjMetaInp.dataObjInfo = destDataObjInfo;
-            modDataObjMetaInp.regParam = &regParam;
-            status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-        }
-        else {
-            /* repl to a new copy */
-            memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
-            if ( destDataObjInfo->dataId <= 0 ) {
-                destDataObjInfo->dataId = srcDataObjInfo->dataId;
-            }
-            regReplicaInp.srcDataObjInfo = srcDataObjInfo;
-            regReplicaInp.destDataObjInfo = destDataObjInfo;
-            if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                              SU_CLIENT_USER_KW ) != NULL ) {
-                addKeyVal( &regReplicaInp.condInput, SU_CLIENT_USER_KW, "" );
-                addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
-            }
-            else if ( getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
-                                   ADMIN_KW ) != NULL ) {
-                addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
-            }
-
-            char* pdmo_kw = getValByKey( &dataObjCloseInp->condInput, IN_PDMO_KW );
-            if ( pdmo_kw ) {
-                addKeyVal( &regReplicaInp.condInput, IN_PDMO_KW, pdmo_kw );
-            }
-            // Store openType in key/val in case a hop occurs
-            addKeyVal(&regReplicaInp.condInput, OPEN_TYPE_KW, std::to_string(L1desc[l1descInx].openType).c_str());
-
-            status = rsRegReplica( rsComm, &regReplicaInp );
-            clearKeyVal( &regReplicaInp.condInput );
-
-            // update datasize in catalog if there is a mismatch between
-            // what is expected and what was actually written to the resource
-            if ( srcDataObjInfo->dataSize != newSize ) {
-                srcDataObjInfo->dataSize = newSize;
-                status = _modDataObjSize( rsComm, l1descInx, srcDataObjInfo );
-                if ( status < 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "_rsDataObjClose: _modDataObjSize srcDataObjInfo failed, status = [%d]", status );
-                    return status;
-                }
-            }
-            if ( destDataObjInfo->dataSize != newSize ) {
-                destDataObjInfo->dataSize = newSize;
-                status = _modDataObjSize( rsComm, l1descInx, destDataObjInfo );
-                if ( status < 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "_rsDataObjClose: _modDataObjSize destDataObjInfo failed, status = [%d]", status );
-                    return status;
-                }
-            }
-
+        if (!(L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY)) {
             /* update quota overrun */
             updatequotaOverrun( destDataObjInfo->rescHier,
                                 destDataObjInfo->dataSize, ALL_QUOTA );
-
         }
 
         clearKeyVal( &regParam );
@@ -628,8 +552,8 @@ _rsDataObjClose(
             }
             // =-=-=-=-=-=-=-
             rodsLog( LOG_NOTICE,
-                     "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
-                     destDataObjInfo->objPath, status );
+                     "%s: RegReplica/ModDataObjMeta %s err. stat = %d",
+                     __FUNCTION__, destDataObjInfo->objPath, status );
             return status;
         }
     }
@@ -638,15 +562,15 @@ _rsDataObjClose(
         if ( l3descInx < 2 &&
                 getValByKey( &L1desc[l1descInx].dataObjInp->condInput,
                              CROSS_ZONE_CREATE_KW ) != NULL &&
-                L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
+                INTERMEDIATE_REPLICA == L1desc[l1descInx].replStatus ) {
             /* the comes from a cross zone copy. have not been
              * registered yet */
             status = svrRegDataObj( rsComm, L1desc[l1descInx].dataObjInfo );
             if ( status < 0 ) {
                 L1desc[l1descInx].oprStatus = status;
                 rodsLog( LOG_NOTICE,
-                         "_rsDataObjClose: svrRegDataObj for %s failed, status = %d",
-                         L1desc[l1descInx].dataObjInfo->objPath, status );
+                         "%s: svrRegDataObj for %s failed, status = %d",
+                         __FUNCTION__, L1desc[l1descInx].dataObjInfo->objPath, status );
             }
         }
 
@@ -667,7 +591,7 @@ _rsDataObjClose(
             addKeyVal( &regParam, DATA_MODIFY_KW, tmpStr );
         }
         else {
-            snprintf( tmpStr, MAX_NAME_LEN, "%d", NEWLY_CREATED_COPY );
+            snprintf( tmpStr, MAX_NAME_LEN, "%d", GOOD_REPLICA );
             addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );
         }
         modDataObjMetaInp.dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -678,7 +602,6 @@ _rsDataObjClose(
         if ( status < 0 ) {
             return status;
         }
-
 
         try {
             applyACLFromKVP(rsComm, L1desc[l1descInx].dataObjInp);
@@ -692,7 +615,7 @@ _rsDataObjClose(
             return e.code();
         }
 
-        if ( L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY ) {
+        if ( L1desc[l1descInx].replStatus == GOOD_REPLICA ) {
             /* update quota overrun */
             updatequotaOverrun( L1desc[l1descInx].dataObjInfo->rescHier,
                                 newSize, ALL_QUOTA );
@@ -703,12 +626,11 @@ _rsDataObjClose(
     // JMC - backport 4537
     /* purge the cache copy */
     if ( L1desc[l1descInx].purgeCacheFlag > 0 ) {
-        int status1 = trimDataObjInfo( rsComm,
-                                       L1desc[l1descInx].dataObjInfo );
-        if ( status1 < 0 ) {
-            rodsLogError( LOG_ERROR, status1,
-                          "_rsDataObjClose: trimDataObjInfo error for %s",
-                          L1desc[l1descInx].dataObjInfo->objPath );
+        int trim_status = trimDataObjInfo(rsComm, L1desc[l1descInx].dataObjInfo);
+        if (trim_status < 0) {
+            rodsLogError(LOG_ERROR, trim_status,
+                    "%s: trimDataObjInfo error for %s",
+                    __FUNCTION__, L1desc[l1descInx].dataObjInfo->objPath);
         }
     }
 

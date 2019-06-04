@@ -743,7 +743,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.user0.assert_icommand(['irm', '-f', filename])
 
@@ -754,7 +754,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
             self.admin.assert_icommand(['irm', '-f', filename])
 
@@ -776,7 +776,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
             self.user0.assert_icommand(['irm', '-f', filename])
 
@@ -787,7 +787,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
             self.admin.assert_icommand(['irm', '-f', filename])
 
@@ -809,7 +809,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.user0.assert_icommand(['irm', '-f', filename])
 
-            self.user0.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.user0.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.user0.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
             self.user0.assert_icommand(['irm', '-f', filename])
 
@@ -820,7 +820,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', 'demoResc')
             self.admin.assert_icommand(['irm', '-f', filename])
 
-            self.admin.assert_icommand(['iput', '-fR '+self.testresc, filepath])
+            self.admin.assert_icommand(['iput', '-fR', self.testresc, filepath])
             self.admin.assert_icommand(['ils', '-l', filename], 'STDOUT_SINGLELINE', self.testresc)
             self.admin.assert_icommand(['irm', '-f', filename])
 
@@ -1647,7 +1647,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.admin.assert_icommand(['iput', '-R', resc_name, file_path], 'STDERR', 'UNIX_FILE_MKDIR_ERR')
             self.admin.assert_icommand(['ils', '-l', file_name], 'STDERR', 'does not exist')
             session_vault_path = self.admin.get_vault_session_path()
-            self.assertTrue(False == os.path.exists(os.path.join(session_vault_path, file_name)))
+            self.assertFalse(os.path.exists(os.path.join(session_vault_path, file_name)))
         finally:
             self.admin.run_icommand(['irm', '-f', logical_path])
             os.unlink(file_path)
@@ -1670,7 +1670,7 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             self.user0.assert_icommand(['iput', file_path, logical_path], 'STDERR', 'CAT_NO_ACCESS_PERMISSION')
             self.admin.assert_icommand(['ils', '-l', logical_path], 'STDERR', 'does not exist')
             session_vault_path = self.user1.get_vault_session_path()
-            self.assertTrue(False == os.path.exists(os.path.join(session_vault_path, file_name)))
+            self.assertFalse(os.path.exists(os.path.join(session_vault_path, file_name)))
 
             # attempt an overwrite
             self.user1.assert_icommand(['iput', file_path, logical_path])

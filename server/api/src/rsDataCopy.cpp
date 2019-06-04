@@ -34,7 +34,6 @@
  */
 int
 rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
-    int status;
     int l3descInx;
     rodsServerHost_t *rodsServerHost;
     dataOprInp_t *dataOprInp;
@@ -45,26 +44,26 @@ rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     if ( getValByKey( &dataOprInp->condInput, EXEC_LOCALLY_KW ) != NULL ||
             dataCopyInp->portalOprOut.numThreads == 0 ) {
         /* XXXXX do it locally if numThreads == 0 */
-        status = _rsDataCopy( rsComm, dataCopyInp );
+        return _rsDataCopy( rsComm, dataCopyInp );
+    }
+
+    if ( dataOprInp->destL3descInx > 0 ) {
+        l3descInx = dataOprInp->destL3descInx;
     }
     else {
-        if ( dataOprInp->destL3descInx > 0 ) {
-            l3descInx = dataOprInp->destL3descInx;
-        }
-        else {
-            l3descInx = dataOprInp->srcL3descInx;
-        }
-        rodsServerHost = FileDesc[l3descInx].rodsServerHost;
-        if ( rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST ) {
-            addKeyVal( &dataOprInp->condInput, EXEC_LOCALLY_KW, "" );
-            status = remoteDataCopy( rsComm, dataCopyInp, rodsServerHost );
-            clearKeyVal( &dataOprInp->condInput );
-        }
-        else {
-            status = _rsDataCopy( rsComm, dataCopyInp );
-        }
+        // what
+        l3descInx = dataOprInp->srcL3descInx;
     }
-    return status;
+
+    rodsServerHost = FileDesc[l3descInx].rodsServerHost;
+    if ( rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST ) {
+        addKeyVal( &dataOprInp->condInput, EXEC_LOCALLY_KW, "" );
+        const int status = remoteDataCopy( rsComm, dataCopyInp, rodsServerHost );
+        clearKeyVal( &dataOprInp->condInput );
+        return status;
+    }
+
+    return _rsDataCopy( rsComm, dataCopyInp );
 }
 
 int
@@ -158,6 +157,7 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
     if ( dataOprInp->oprType == SAME_HOST_COPY_OPR ) {
         /* src is on the same host */
+        rodsLog(LOG_NOTICE, "[%s:%d] - src is on the same host", __FUNCTION__, __LINE__);
         retVal = sameHostCopy( rsComm, dataCopyInp );
         if (retVal >= 0) {
             apply_acPostProcForDataCopyReceived(rsComm, dataOprInp);

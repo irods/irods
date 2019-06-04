@@ -858,10 +858,10 @@ OUTPUT ruleExecOut'''
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiDataObjPhymv_to_resource_hierarchy__3234(self):
         source_resource = self.admin.default_resource
-        destination_resource = 'phymv_pt'
+        passthrough_resource = 'phymv_pt'
         path_to_leaf_resource_vault = tempfile.mkdtemp()
         leaf_resource = 'leafresc'
-        resource_hierarchy = ';'.join([destination_resource, leaf_resource])
+        resource_hierarchy = ';'.join([passthrough_resource, leaf_resource])
         data_object_name = 'phymv_obj'
         logical_path = os.path.join(self.admin.session_collection, data_object_name)
 
@@ -871,20 +871,20 @@ test_msiDataObjPhymv_to_resource_hierarchy__3234 {{
     *logical_path = "{0}"
     *destination_resource = "{1}";
     *source_resource = "{2}";
-    msiDataObjPhymv(*logical_path, *destination_resource, *source_resource, "", "", *status);
+    msiDataObjPhymv(*logical_path, *destination_resource, *source_resource, "null", "null", *status);
     writeLine("stdout", "msiDataObjPhymv status:[*status]");
 }}
 OUTPUT ruleExecOut
 '''
 
         try:
-            self.admin.assert_icommand(['iadmin', 'mkresc', destination_resource, 'passthru'], 'STDOUT', destination_resource)
+            self.admin.assert_icommand(['iadmin', 'mkresc', passthrough_resource, 'passthru'], 'STDOUT', passthrough_resource)
             self.admin.assert_icommand(['iadmin', 'mkresc', leaf_resource, 'unixfilesystem',
                 socket.gethostname() + ':' + path_to_leaf_resource_vault], 'STDOUT', 'unixfilesystem')
-            self.admin.assert_icommand(['iadmin', 'addchildtoresc', destination_resource, leaf_resource])
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', passthrough_resource, leaf_resource])
 
             with open(rule_file, 'wt') as f:
-                print(rule_string.format(logical_path, destination_resource, source_resource), file=f, end='')
+                print(rule_string.format(logical_path, leaf_resource, source_resource), file=f, end='')
             self.admin.assert_icommand(['iput', rule_file, logical_path])
             self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'],
                 'STDOUT', 'DATA_RESC_HIER: {}'.format(source_resource))
@@ -898,8 +898,8 @@ OUTPUT ruleExecOut
             if os.path.exists(rule_file):
                 os.unlink(rule_file)
             self.admin.assert_icommand(['irm', '-f', logical_path])
-            self.admin.run_icommand(['iadmin', 'rmchildfromresc', destination_resource, leaf_resource])
-            self.admin.run_icommand(['iadmin', 'rmresc', destination_resource])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', passthrough_resource, leaf_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', passthrough_resource])
             self.admin.run_icommand(['iadmin', 'rmresc', leaf_resource])
 
     @unittest.skip(("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "

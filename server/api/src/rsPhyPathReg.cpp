@@ -200,53 +200,31 @@ irsPhyPathReg(rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
             // =-=-=-=-=-=-=-
             // root node and pathological situation
             else {
-                irods::error ret = irods::resolve_resource_hierarchy(
-                                       irods::CREATE_OPERATION,
-                                       rsComm,
-                                       phyPathRegInp,
-                                       hier );
-                if ( !ret.ok() ) {
-                    std::string msg( "failed for [" );
-                    msg += phyPathRegInp->objPath;
-                    msg += "]";
-                    irods::log( PASSMSG( msg, ret ) );
-                    return ret.code();
+                try {
+                    auto result = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, *phyPathRegInp);
+                    hier = std::get<std::string>(result);
+                    addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
                 }
-
-                addKeyVal(
-                    &phyPathRegInp->condInput,
-                    RESC_HIER_STR_KW,
-                    hier.c_str() );
+                catch (const irods::exception& e) {
+                    irods::log(e);
+                    return e.code();
+                }
             }
-
         } // if dst_resc
         else {
             // =-=-=-=-=-=-=-
             // no resc is specified, request a hierarchy given the default resource
-            irods::file_object_ptr file_obj( new irods::file_object() );
-            irods::error ret = irods::resolve_resource_hierarchy(
-                                   irods::CREATE_OPERATION,
-                                   rsComm,
-                                   phyPathRegInp,
-                                   hier );
-            if ( !ret.ok() ) {
-                std::string msg( "failed for [" );
-                msg += phyPathRegInp->objPath;
-                msg += "]";
-                irods::log( PASSMSG( msg, ret ) );
-                return ret.code();
+            try {
+                auto result = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, *phyPathRegInp);
+                hier = std::get<std::string>(result);
             }
-
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
+            catch (const irods::exception& e) {
+                irods::log(e);
+                return e.code();
+            }
             addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
         } // else
-
     } // if tmp_hier
-    // =-=-=-=-=-=-=-
-    // we have been handed a hierarchy, pass it on
     else {
         hier = tmp_hier;
     }
@@ -289,7 +267,6 @@ irsPhyPathReg(rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         std::string leaf_resc;
         p.last_resc(leaf_resc);
         status = _rsPhyPathReg( rsComm, phyPathRegInp, leaf_resc.c_str(), rodsServerHost );
-
     }
     else if ( remoteFlag == REMOTE_HOST ) {
         status = remotePhyPathReg( rsComm, phyPathRegInp, rodsServerHost );
@@ -457,20 +434,19 @@ int
 filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  const char *_resc_name ) {
     dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
-    regReplica_t regReplicaInp;
     int status;
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
-        rodsLog( LOG_NOTICE, "filePathRegRepl - RESC_HIER_STR_KW is NULL" );
+        rodsLog( LOG_NOTICE, "%s - RESC_HIER_STR_KW is NULL", __FUNCTION__ );
         return SYS_INVALID_INPUT_PARAM;
     }
 
     status = getDataObjInfo( rsComm, phyPathRegInp, &dataObjInfoHead,
                              ACCESS_READ_OBJECT, 0 );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "filePathRegRepl: getDataObjInfo for %s", phyPathRegInp->objPath );
+        rodsLog( LOG_ERROR, "%s: getDataObjInfo for [%s] failed",
+                 __FUNCTION__, phyPathRegInp->objPath );
         return status;
     }
 
@@ -494,7 +470,7 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         irods::log(PASS(ret));
     }
 
-    memset( &regReplicaInp, 0, sizeof( regReplicaInp ) );
+    regReplica_t regReplicaInp{};
     regReplicaInp.srcDataObjInfo = dataObjInfoHead;
     regReplicaInp.destDataObjInfo = &destDataObjInfo;
     if ( getValByKey( &phyPathRegInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
@@ -510,6 +486,9 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     if (nullptr != data_size_str) {
         addKeyVal(&regReplicaInp.condInput, DATA_SIZE_KW, data_size_str);
     }
+    if (getValByKey(&phyPathRegInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
+        addKeyVal(&regReplicaInp.condInput, REGISTER_AS_INTERMEDIATE_KW, "");
+    }
     status = rsRegReplica( rsComm, &regReplicaInp );
     clearKeyVal( &regReplicaInp.condInput );
     freeAllDataObjInfo( dataObjInfoHead );
@@ -519,19 +498,18 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
 int
 filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_name ) {
-    dataObjInfo_t dataObjInfo;
-    memset( &dataObjInfo, 0, sizeof( dataObjInfo ) );
+    dataObjInfo_t dataObjInfo{};
 
     int status;
     char *chksum = NULL;
     initDataObjInfoWithInp( &dataObjInfo, phyPathRegInp );
 
-    dataObjInfo.replStatus = NEWLY_CREATED_COPY;
+    dataObjInfo.replStatus = GOOD_REPLICA;
     rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier ) {
-        rodsLog( LOG_NOTICE, "filePathReg - RESC_HIER_STR_KW is NULL" );
+        rodsLog( LOG_NOTICE, "%s - RESC_HIER_STR_KW is NULL", __FUNCTION__ );
         return SYS_INVALID_INPUT_PARAM;
     }
 
@@ -559,8 +537,8 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) dataObjInfo.dataSize;
         rodsLog( LOG_ERROR,
-                 "filePathReg: getFileMetadataFromVault for %s failed, status = %d",
-                 dataObjInfo.objPath, status );
+                 "%s: getFileMetadataFromVault for %s failed, status = %d",
+                 __FUNCTION__, dataObjInfo.objPath, status );
         clearKeyVal( &dataObjInfo.condInput );
         return status;
     }
@@ -570,14 +548,18 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         strcpy(dataObjInfo.dataModify, data_modify_str);
     }
 
-    if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
-         ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) ) {
+    // If intermediate replica, set replica status and do not attempt to verify checksum (file does not exist)
+    if (getValByKey(&phyPathRegInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
+        dataObjInfo.replStatus = INTERMEDIATE_REPLICA;
+    }
+    else if (( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
+             ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) ) {
         chksum = 0;
         status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
         if ( status < 0 ) {
             rodsLog( LOG_ERROR,
-                     "filePathReg: _dataObjChksum for %s failed, status = %d",
-                     dataObjInfo.objPath, status );
+                     "%s: _dataObjChksum for %s failed, status = %d",
+                     __FUNCTION__, dataObjInfo.objPath, status );
             clearKeyVal( &dataObjInfo.condInput );
             return status;
         }
@@ -587,8 +569,8 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
     status = svrRegDataObj( rsComm, &dataObjInfo );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "filePathReg: svrRegDataObj for %s failed, status = %d",
-                 dataObjInfo.objPath, status );
+                 "%s: svrRegDataObj for %s failed, status = %d",
+                 __FUNCTION__, dataObjInfo.objPath, status );
     }
     else {
         ruleExecInfo_t rei;
@@ -799,6 +781,7 @@ dirPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
             if ( status != 0 ) {
                 if ( rsComm->rError.len < MAX_ERROR_MESSAGES ) {
+                    rodsLog(LOG_ERROR, "[%s:%d] - adding error to stack...", __FUNCTION__, __LINE__);
                     char error_msg[ERR_MSG_LEN];
                     snprintf( error_msg, ERR_MSG_LEN, "dirPathReg: %s failed for %s, status = %d",
                              reg_func_name.c_str(), subPhyPathRegInp.objPath, status );

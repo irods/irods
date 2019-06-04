@@ -30,219 +30,184 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
 
-int rsDataObjGet(rsComm_t* rsComm,
-                 dataObjInp_t* dataObjInp,
-                 portalOprOut_t** portalOprOut,
-                 bytesBuf_t* dataObjOutBBuf)
-{
-    if (dataObjOutBBuf == NULL) {
-        rodsLog(LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet.");
+namespace {
+    int _rsDataObjGet(
+        rsComm_t *rsComm,
+        dataObjInp_t *dataObjInp,
+        portalOprOut_t **portalOprOut,
+        bytesBuf_t *dataObjOutBBuf,
+        int handlerFlag) {
+
+        char *chksumStr = NULL;
+
+        /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
+        addKeyVal( &dataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "" );
+        int l1descInx = rsDataObjOpen(rsComm, dataObjInp);
+
+        if ( l1descInx < 0 ) {
+            return l1descInx;
+        }
+
+        L1desc[l1descInx].oprType = GET_OPR;
+
+        dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
+        copyKeyVal(
+            &dataObjInp->condInput,
+            &dataObjInfo->condInput );
+
+        if ( getStructFileType( dataObjInfo->specColl ) >= 0 && // JMC - backport 4682
+                L1desc[l1descInx].l3descInx > 0 ) {
+            /* l3descInx == 0 if included */
+            *portalOprOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
+            bzero( *portalOprOut,  sizeof( portalOprOut_t ) );
+            ( *portalOprOut )->l1descInx = l1descInx;
+            return l1descInx;
+        }
+
+        if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
+            if ( strlen( dataObjInfo->chksum ) > 0 ) {
+                /* a chksum already exists */
+                chksumStr = strdup( dataObjInfo->chksum );
+            }
+            else {
+                int status = dataObjChksumAndReg( rsComm, dataObjInfo, &chksumStr );
+                if ( status < 0 ) {
+                    return status;
+                }
+                rstrcpy( dataObjInfo->chksum, chksumStr, NAME_LEN );
+            }
+        }
+
+        if ( L1desc[l1descInx].l3descInx <= 2 ) {
+            /* no physical file was opened */
+            int status = l3DataGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf,
+                                         portalOprOut );
+            if ( status >= 0 ) {
+                int status2;
+                status2 = applyRuleForPostProcForRead( rsComm, dataObjOutBBuf,
+                                                       dataObjInp->objPath );
+                if ( status2 >= 0 ) {
+                    status = 0;
+                }
+                else {
+                    status = status2;
+                }
+                if ( chksumStr != NULL ) {
+                    rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
+                }
+            }
+            free( chksumStr );
+            return status;
+        }
+
+
+        int status = preProcParaGet( rsComm, l1descInx, portalOprOut );
+
+        if ( status < 0 ) {
+            openedDataObjInp_t dataObjCloseInp{};
+            dataObjCloseInp.l1descInx = l1descInx;
+            rsDataObjClose( rsComm, &dataObjCloseInp );
+            free( chksumStr );
+            return status;
+        }
+
+        status = l1descInx;         /* means file not included */
+        if ( chksumStr != NULL ) {
+            rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
+        }
+        free( chksumStr );
+
+        /* return portalOprOut to the client and wait for the rcOprComplete
+         * call. That is when the parallel I/O is done */
+        int retval = sendAndRecvBranchMsg( rsComm, rsComm->apiInx, status,
+                                       ( void * ) * portalOprOut, dataObjOutBBuf );
+
+        if ( retval < 0 ) {
+            openedDataObjInp_t dataObjCloseInp{};
+            dataObjCloseInp.l1descInx = l1descInx;
+            rsDataObjClose( rsComm, &dataObjCloseInp );
+        }
+
+        if ( handlerFlag & INTERNAL_SVR_CALL ) {
+            /* internal call. want to know the real status */
+            return retval;
+        }
+        else {
+            /* already send the client the status */
+            return SYS_NO_HANDLER_REPLY_MSG;
+        }
+
+    }
+}
+
+int
+rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+              portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf ) {
+    rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
+    if ( dataObjOutBBuf == NULL ) {
+        rodsLog( LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet." );
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     remove_trailing_path_separators(dataObjInp->objPath);
 
-    int status;
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
-    specCollCache_t *specCollCache = NULL;
+    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
+                       &dataObjInp->condInput );
+    int remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
+                                       REMOTE_OPEN );
 
-    resolveLinkedPath(rsComm, dataObjInp->objPath, &specCollCache, &dataObjInp->condInput);
-    remoteFlag = getAndConnRemoteZone(rsComm, dataObjInp, &rodsServerHost, REMOTE_OPEN);
-
-    if (remoteFlag < 0) {
+    if ( remoteFlag < 0 ) {
         return remoteFlag;
     }
-
-    if ( remoteFlag == LOCAL_HOST ) {
-        // dataObjInfo_t linked list
-        dataObjInfo_t *dataObjInfoHead = NULL;
-
-        // resource hierarchy
-        std::string hier;
-
-        // =-=-=-=-=-=-=-
-        // working on the "home zone", determine if we need to redirect to a different
-        // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
-        // we know that the redirection decision has already been made
-        if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                               dataObjInp, hier, &dataObjInfoHead );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "rsDataObjGet :: failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjInp->objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
-            }
-
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
-            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-        }
-        else {
-            // file object for file_object_factory
-            irods::file_object_ptr file_obj( new irods::file_object() );
-
-            // get resource hierarchy from condInput
-            hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-
-            // get replicas vector populated
-            irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
-
-        } // if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL )
-
-        status = _rsDataObjGet( rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG, dataObjInfoHead );
-    }
-    else {
-        status = _rcDataObjGet(rodsServerHost->conn, dataObjInp, portalOprOut, dataObjOutBBuf);
+    else if ( remoteFlag != LOCAL_HOST ) {
+        int status = _rcDataObjGet( rodsServerHost->conn, dataObjInp, portalOprOut,
+                                dataObjOutBBuf );
 
         if ( status < 0 ) {
             return status;
         }
-
         if ( status == 0 || dataObjOutBBuf->len > 0 ) {
             /* data included in buf */
             return status;
         }
-
-        if ( !( *portalOprOut ) ) {
+        else if ( !( *portalOprOut ) ) {
             rodsLog( LOG_ERROR, "_rcDataObjGet returned a %d status code, but left portalOprOut null.", status );
             return SYS_INVALID_PORTAL_OPR;
         }
-
-        /* have to allocate a local l1descInx to keep track of things
-         * since the file is in remote zone. It sets remoteL1descInx,
-         * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
-         * rsComplete knows what to do */
-        int l1descInx = allocAndSetL1descForZoneOpr((*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
-
-        if (l1descInx < 0) {
-            return l1descInx;
-        }
-
-        (*portalOprOut)->l1descInx = l1descInx;
-
-        return status;
-    }
-
-    return status;
-}
-
-int
-_rsDataObjGet( rsComm_t *rsComm,
-        dataObjInp_t *dataObjInp,
-        portalOprOut_t **portalOprOut,
-        bytesBuf_t *dataObjOutBBuf,
-        int handlerFlag,
-        dataObjInfo_t *dataObjInfoHead ) {
-
-    int status;
-    dataObjInfo_t *dataObjInfo;
-    int l1descInx;
-    char *chksumStr = NULL;
-    int retval;
-    openedDataObjInp_t dataObjCloseInp;
-
-    /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
-    addKeyVal( &dataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "" );
-    l1descInx = _rsDataObjOpen( rsComm, dataObjInp, dataObjInfoHead );
-
-    if ( l1descInx < 0 ) {
-        return l1descInx;
-    }
-
-    L1desc[l1descInx].oprType = GET_OPR;
-
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    copyKeyVal(
-        &dataObjInp->condInput,
-        &dataObjInfo->condInput );
-
-    if ( getStructFileType( dataObjInfo->specColl ) >= 0 && // JMC - backport 4682
-            L1desc[l1descInx].l3descInx > 0 ) {
-        /* l3descInx == 0 if included */
-        *portalOprOut = ( portalOprOut_t * ) malloc( sizeof( portalOprOut_t ) );
-        bzero( *portalOprOut,  sizeof( portalOprOut_t ) );
-        ( *portalOprOut )->l1descInx = l1descInx;
-        return l1descInx;
-    }
-
-    if ( getValByKey( &dataObjInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) {
-        if ( strlen( dataObjInfo->chksum ) > 0 ) {
-            /* a chksum already exists */
-            chksumStr = strdup( dataObjInfo->chksum );
-        }
         else {
-            status = dataObjChksumAndReg( rsComm, dataObjInfo, &chksumStr );
-            if ( status < 0 ) {
-                return status;
+            /* have to allocate a local l1descInx to keep track of things
+             * since the file is in remote zone. It sets remoteL1descInx,
+             * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
+             * rsComplete knows what to do */
+            int l1descInx = allocAndSetL1descForZoneOpr(
+                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
+            if ( l1descInx < 0 ) {
+                return l1descInx;
             }
-            rstrcpy( dataObjInfo->chksum, chksumStr, NAME_LEN );
+            ( *portalOprOut )->l1descInx = l1descInx;
+            return status;
         }
     }
 
-    if ( L1desc[l1descInx].l3descInx <= 2 ) {
-        /* no physical file was opened */
-        status = l3DataGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf,
-                                     portalOprOut );
-        if ( status >= 0 ) {
-            int status2;
-            status2 = applyRuleForPostProcForRead( rsComm, dataObjOutBBuf,
-                                                   dataObjInp->objPath );
-            if ( status2 >= 0 ) {
-                status = 0;
-            }
-            else {
-                status = status2;
-            }
-            if ( chksumStr != NULL ) {
-                rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
-            }
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        try {
+            auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjInp);
+            const auto hier = std::get<std::string>(result);
+            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
         }
-        free( chksumStr );
-        return status;
+        catch (const irods::exception& e) {
+            irods::log(e);
+            return e.code();
+        }
     }
-
-
-    status = preProcParaGet( rsComm, l1descInx, portalOprOut );
-
-    if ( status < 0 ) {
-        memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
-        dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose( rsComm, &dataObjCloseInp );
-        free( chksumStr );
-        return status;
-    }
-
-    status = l1descInx;         /* means file not included */
-    if ( chksumStr != NULL ) {
-        rstrcpy( ( *portalOprOut )->chksum, chksumStr, NAME_LEN );
-    }
-    free( chksumStr );
-
-    /* return portalOprOut to the client and wait for the rcOprComplete
-     * call. That is when the parallel I/O is done */
-    retval = sendAndRecvBranchMsg( rsComm, rsComm->apiInx, status,
-                                   ( void * ) * portalOprOut, dataObjOutBBuf );
-
-    if ( retval < 0 ) {
-        memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
-        dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose( rsComm, &dataObjCloseInp );
-    }
-
-    if ( handlerFlag & INTERNAL_SVR_CALL ) {
-        /* internal call. want to know the real status */
-        return retval;
-    }
-    else {
-        /* already send the client the status */
-        return SYS_NO_HANDLER_REPLY_MSG;
-    }
-
+    return _rsDataObjGet(rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG);
 }
+
 
 /* preProcParaGet - preprocessing for parallel get. Basically it calls
  * rsDataGet to setup portalOprOut with the resource server.
@@ -278,28 +243,23 @@ preProcParaGet( rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut )
 int
 l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
                     bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut ) {
-    int status = 0;
-    int bytesRead;
-    openedDataObjInp_t dataObjCloseInp;
-    dataObjInfo_t *dataObjInfo;
-
     /* just malloc an empty portalOprOut */
 
     *portalOprOut = ( portalOprOut_t* )malloc( sizeof( portalOprOut_t ) );
     memset( *portalOprOut, 0, sizeof( portalOprOut_t ) );
 
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     dataObjOutBBuf->buf = malloc( dataObjInfo->dataSize );
-    bytesRead = l3FileGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf );
+    int bytesRead = l3FileGetSingleBuf( rsComm, l1descInx, dataObjOutBBuf );
 
-    memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
+    openedDataObjInp_t dataObjCloseInp{};
     dataObjCloseInp.l1descInx = l1descInx;
-    status = rsDataObjClose( rsComm, &dataObjCloseInp );
+    int status = rsDataObjClose( rsComm, &dataObjCloseInp );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
-                 "l3DataGetSingleBuf: rsDataObjClose of %d error, status = %d",
-                 l1descInx, status );
+                 "%s: rsDataObjClose of %d error, status = %d",
+                 __FUNCTION__, l1descInx, status );
     }
 
     if ( bytesRead < 0 ) {
@@ -318,16 +278,10 @@ l3DataGetSingleBuf( rsComm_t *rsComm, int l1descInx,
 int
 l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
                     bytesBuf_t *dataObjOutBBuf ) {
-    dataObjInfo_t *dataObjInfo;
-    fileOpenInp_t fileGetInp;
-    int bytesRead;
-    dataObjInp_t *dataObjInp;
-
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
-
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
-    std::string location;
+    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    std::string location{};
     irods::error ret = irods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "l3FileGetSingleBuf - failed in get_loc_for_hier_string", ret ) );
@@ -335,9 +289,6 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
     }
 
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
-
-
-
         subFile_t subFile;
         memset( &subFile, 0, sizeof( subFile ) );
         rstrcpy( subFile.subFilePath, dataObjInfo->subPath,
@@ -348,12 +299,11 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         subFile.mode = getFileMode( L1desc[l1descInx].dataObjInp );
         subFile.flags = O_RDONLY;
         subFile.offset = dataObjInfo->dataSize;
-        bytesRead = rsSubStructFileGet( rsComm, &subFile, dataObjOutBBuf );
-        return bytesRead;
+        return rsSubStructFileGet( rsComm, &subFile, dataObjOutBBuf );
     }
 
-    memset( &fileGetInp, 0, sizeof( fileGetInp ) );
-    dataObjInp = L1desc[l1descInx].dataObjInp;
+    fileOpenInp_t fileGetInp{};
+    dataObjInp_t* dataObjInp = L1desc[l1descInx].dataObjInp;
     rstrcpy( fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN );
     rstrcpy( fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescName, MAX_NAME_LEN );
@@ -368,7 +318,7 @@ l3FileGetSingleBuf( rsComm_t *rsComm, int l1descInx,
         &fileGetInp.condInput );
 
     /* XXXXX need to be able to handle structured file */
-    bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
+    int bytesRead = rsFileGet( rsComm, &fileGetInp, dataObjOutBBuf );
 
     clearKeyVal( &fileGetInp.condInput );
 

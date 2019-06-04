@@ -50,23 +50,17 @@ int rsGetHostForGet(
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
         if ( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
-            std::string       hier;
+            std::string hier{};
             if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-                irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                                   dataObjInp, hier );
-                if ( !ret.ok() ) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " :: failed in irods::resolve_resource_hierarchy for [";
-                    msg << dataObjInp->objPath << "]";
-                    irods::log( PASSMSG( msg.str(), ret ) );
-                    return ret.code();
+                try {
+                    auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjInp);
+                    hier = std::get<std::string>(result);
+                }   
+                catch (const irods::exception& e ) { 
+                    irods::log(e);
+                    return e.code();
                 }
-                // =-=-=-=-=-=-=-
-                // we resolved the redirect and have a host, set the hier str for subsequent
-                // api calls, etc.
                 addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
             } // if keyword
 
             // =-=-=-=-=-=-=-

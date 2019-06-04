@@ -1242,4 +1242,13 @@ namespace irods {
         return SUCCESS();
     } // is_coordinating_resource
 
+    bool resource_manager::is_coordinating_resource(
+        const std::string& _resc_name) {
+        if(!resource_name_map_.has_entry(_resc_name)) {
+            THROW(SYS_RESC_DOES_NOT_EXIST, _resc_name);
+        }
+        resource_ptr resc = resource_name_map_[_resc_name];
+        return resc->num_children() > 0;
+    } // is_coordinating_resource
+
 }; // namespace irods

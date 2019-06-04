@@ -3159,31 +3159,25 @@ msiTarFileCreate( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
 **/
 int
 msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei ) {
-    rsComm_t *rsComm;
-    structFileExtAndRegInp_t structFileExtAndRegInp,
-                             *myStructFileExtAndRegInp;
 
     RE_TEST_MACRO( " Calling msiPhyBundleColl" )
 
-    if ( rei == NULL || rei->rsComm == NULL ) {
+    if (!rei || !rei->rsComm) {
         rodsLog( LOG_ERROR,
-                 "msiPhyBundleColl: input rei or rsComm is NULL" );
+                 "%s: input rei or rsComm is NULL", __FUNCTION__ );
         if ( rei ) {
             rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         }
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    rsComm = rei->rsComm;
-
     /* start building the structFileExtAndRegInp instance.
     extract from inpParam1 the tar file object path: tarFilePath
     and from inpParam2 the target collection: colTarget */
-
-
+    rsComm_t *rsComm = rei->rsComm;
     if ( inpParam1 == NULL ) {
         rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, rei->status,
-                            "msiPhyBundleColl: input Param1 is NULL" );
+                            "%s: input Param1 is NULL", __FUNCTION__ );
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return rei->status;
     }
@@ -3191,26 +3185,23 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     // For consistency with iphybun
     if ( rei->uoic->authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
         rei->status = SYS_NO_API_PRIV;
-        rodsLog( LOG_ERROR, "msiPhyBundleColl: User %s does not have sufficient privilege, status = %d",
-                 rei->uoic->userName, rei->status );
+        rodsLog( LOG_ERROR, "%s: User %s does not have sufficient privilege, status = %d",
+                 __FUNCTION__, rei->uoic->userName, rei->status );
         return rei->status;
     }
 
-
+    structFileExtAndRegInp_t* myStructFileExtAndRegInp{};
+    structFileExtAndRegInp_t structFileExtAndRegInp{};
     if ( strcmp( inpParam1->type, STR_MS_T ) == 0 ) {
-        bzero( &structFileExtAndRegInp, sizeof( structFileExtAndRegInp ) );
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         snprintf( myStructFileExtAndRegInp->collection, sizeof( myStructFileExtAndRegInp->collection ),
                   "%s", ( char* )inpParam1->inOutStruct );
-
     }
     else if ( strcmp( inpParam1->type, StructFileExtAndRegInp_MS_T ) == 0 ) {
         myStructFileExtAndRegInp =
             ( structFileExtAndRegInp_t * ) inpParam1->inOutStruct;
-
     }
     else {
-
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
         return rei->status;
     }
@@ -3230,7 +3221,7 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
             std::vector<std::string> current_arg;
             boost::algorithm::split_regex( current_arg, tokens[i], boost::regex( "=" ) );
             if ( current_arg.size() != 2 || current_arg[0].size() != 1 ) {
-                rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
+                rodsLog( LOG_ERROR, "%s called with improperly formatted arguments", __FUNCTION__ );
                 continue;
             }
             switch ( current_arg[0].c_str()[0] ) {
@@ -3244,18 +3235,13 @@ msiPhyBundleColl( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
                 addKeyVal( &myStructFileExtAndRegInp->condInput, MAX_BUNDLE_SIZE_KW, current_arg[1].c_str() );
                 break;
             default:
-                rodsLog( LOG_ERROR, "msiPhyBundleColl called with improperly formatted arguments" );
+                rodsLog( LOG_ERROR, "%s called with improperly formatted arguments", __FUNCTION__ );
             }
         }
     }
 
     /* tar file extraction */
     rei->status = rsPhyBundleColl( rsComm, myStructFileExtAndRegInp );
-
-
     fillIntInMsParam( outParam, rei->status );
-
-
     return rei->status;
-
 }

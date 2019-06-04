@@ -92,19 +92,17 @@ getPhyPath(
     // =-=-=-=-=-=-=-
     // if no resc hier is specified, call resolve on the object to
     // ask the resource composition to pick a valid hier for open
-    std::string  resc_hier;
+    std::string resc_hier{};
 
     if ( 0 == strlen( _resc_hier ) ) {
-        dataObjInp_t data_inp;
-        memset( &data_inp, 0, sizeof( data_inp ) );
-        snprintf( data_inp.objPath, sizeof( data_inp.objPath ), "%s", _obj_name );
-        irods::error ret = irods::resolve_resource_hierarchy(
-                               irods::OPEN_OPERATION,
-                               _comm,
-                               &data_inp,
-                               resc_hier );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
+        dataObjInp_t data_inp{};
+        snprintf(data_inp.objPath, sizeof( data_inp.objPath ), "%s", _obj_name);
+        try {
+            auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, _comm, data_inp);
+            resc_hier = std::get<std::string>(result);
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
             return SYS_INVALID_INPUT_PARAM;
         }
     }

@@ -430,9 +430,9 @@ int chlUpdateRescObjCount(
 //         keyValPair_t *regParam - the keyword/value pair of items to be
 //         modified. Valid keywords are given in char *dataObjCond[] in rcGlobal.h.
 //         If the keyword ALL_REPL_STATUS_KW is used
-//         the replStatus of the copy specified by dataObjInfo
-//         is marked NEWLY_CREATED_COPY and all other copies are
-//         be marked OLD_COPY.
+//         the replStatus of the replica specified by dataObjInfo
+//         is marked GOOD_REPLICA and all other replicas are
+//         marked STALE_REPLICA.
 int chlModDataObjMeta(
     rsComm_t*      _comm,
     dataObjInfo_t* _data_obj_info,

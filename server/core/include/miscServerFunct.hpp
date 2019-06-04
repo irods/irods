@@ -48,8 +48,6 @@ typedef struct PortalTransferInp {
 } portalTransferInp_t;
 
 int
-singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp );
-int
 svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost );
 int
 svrToSvrConnect( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost );

@@ -11,20 +11,12 @@
 
 namespace irods {
 
+    using resolve_hierarchy_result_type = std::tuple<irods::file_object_ptr, std::string>;
+
     const std::string CREATE_OPERATION( "CREATE" );
     const std::string WRITE_OPERATION( "WRITE" );
     const std::string OPEN_OPERATION( "OPEN" );
     const std::string UNLINK_OPERATION( "UNLINK" );
-
-
-// check C++11 support
-#if __cplusplus > 199711L
-    error resolve_resource_hierarchy(
-        const std::string&, // requested operation to consider
-        rsComm_t*,          // current agent connection
-        dataObjInp_t*,      // data inp struct for data object in question
-        std::string&,        // out going selected resource hierarchy
-        dataObjInfo_t** _data_obj_info = nullptr );
 
     error resource_redirect(
         const std::string&, // requested operation to consider
@@ -35,25 +27,11 @@ namespace irods {
         int&,                // flag stating LOCAL_HOST or REMOTE_HOST
         dataObjInfo_t**    _data_obj_info = nullptr );
 
-#else
-    error resolve_resource_hierarchy(
-        const std::string&, // requested operation to consider
-        rsComm_t*,          // current agent connection
-        dataObjInp_t*,      // data inp struct for data object in question
-        std::string&,        // out going selected resource hierarchy
-        dataObjInfo_t** _data_obj_info = NULL );
-
-    error resource_redirect(
-        const std::string&, // requested operation to consider
-        rsComm_t*,          // current agent connection
-        dataObjInp_t*,      // data inp struct for data object in question
-        std::string&,       // out going selected resource hierarchy
-        rodsServerHost_t*&, // selected host for redirection if necessary
-        int&,                // flag stating LOCAL_HOST or REMOTE_HOST
-        dataObjInfo_t**    _data_obj_info = NULL );
-#endif
-
-bool is_hier_in_obj_info_list(const std::string&, dataObjInfo_t*);
+    irods::resolve_hierarchy_result_type resolve_resource_hierarchy(
+        const std::string&   _oper,
+        rsComm_t*            _comm,
+        dataObjInp_t&        _data_obj_inp,
+        dataObjInfo_t**      _data_obj_info = nullptr);
 
 }; // namespace irods
 

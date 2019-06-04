@@ -188,7 +188,7 @@ rsStructFileExtAndReg(
     dataObjCloseInp.l1descInx = l1descInx;
 
     if ( local == REMOTE_HOST ) {
-        addKeyVal( &structFileExtAndRegInp->condInput, RESC_NAME_KW, L1desc[l1descInx].dataObjInfo->rescName );
+        addKeyVal( &structFileExtAndRegInp->condInput, RESC_HIER_STR_KW, L1desc[l1descInx].dataObjInfo->rescHier );
 
         status = rcStructFileExtAndReg( host->conn, structFileExtAndRegInp );
         rsDataObjClose( rsComm, &dataObjCloseInp );

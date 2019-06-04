@@ -41,23 +41,17 @@ int rsGetHostForPut(
         // working on the "home zone", determine if we need to redirect to a different
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
-        std::string       hier;
+        std::string hier{};
         if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
-                               dataObjInp, hier );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " :: failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjInp->objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
+            try {
+                auto result = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, *dataObjInp);
+                hier = std::get<std::string>(result);
             }
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
+            catch (const irods::exception& e ) {
+                irods::log(e);
+                return e.code();
+            }
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
         } // if keyword
 
         // =-=-=-=-=-=-=-

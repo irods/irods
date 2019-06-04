@@ -163,9 +163,12 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( dataObjInfo->rescHier[0] == '\0' && resc_hier ) {
-        snprintf( dataObjInfo->rescHier, sizeof( dataObjInfo->rescHier ), "%s", resc_hier );
+        rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+        if (dataObjInfo->rescName[0] == '\0') {
+            const std::string root = irods::hierarchy_parser{resc_hier}.first_resc();
+            rstrcpy( dataObjInfo->rescName, root.c_str(), NAME_LEN );
+        }
     }
-
 
     condInput = &dataObjInp->condInput;
     char* in_pdmo = getValByKey( condInput, IN_PDMO_KW );
@@ -210,24 +213,38 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
         }
     }
 
+    if (getValByKey(&dataObjInp->condInput, PURGE_CACHE_KW)) {
+        L1desc[l1descInx].purgeCacheFlag = 1;
+    }
+
+    const char* kvp_str = getValByKey(&dataObjInp->condInput, KEY_VALUE_PASSTHROUGH_KW);
+    if (kvp_str) {
+        addKeyVal(&dataObjInfo->condInput, KEY_VALUE_PASSTHROUGH_KW, kvp_str);
+    }
+
     return 0;
 }
 
 int
 initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
-    char *rescName = 0, *dataType = 0, *filePath = 0;
-    keyValPair_t *condInput = 0;
-
-    condInput = &dataObjInp->condInput;
+    if (!dataObjInp || !dataObjInfo) {
+        rodsLog(LOG_ERROR, "[%s] - null input", __FUNCTION__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+    keyValPair_t* condInput = &dataObjInp->condInput;
+    if (!condInput) {
+        rodsLog(LOG_ERROR, "[%s] - null condInput", __FUNCTION__);
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
     memset( dataObjInfo, 0, sizeof( dataObjInfo_t ) );
     rstrcpy( dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN );
 
-    rescName = getValByKey( condInput, RESC_NAME_KW );
+    auto rescName = getValByKey( condInput, RESC_NAME_KW );
     if ( rescName != NULL ) {
         rstrcpy( dataObjInfo->rescName, rescName, NAME_LEN );
     }
 
-    char* rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    auto rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( rescHier ) {
         rstrcpy( dataObjInfo->rescHier, rescHier, MAX_NAME_LEN );
     }
@@ -242,7 +259,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
 
     snprintf( dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode );
 
-    dataType = getValByKey( condInput, DATA_TYPE_KW );
+    auto dataType = getValByKey( condInput, DATA_TYPE_KW );
     if ( dataType != NULL ) {
         rstrcpy( dataObjInfo->dataType, dataType, NAME_LEN );
     }
@@ -250,7 +267,7 @@ initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp ) {
         rstrcpy( dataObjInfo->dataType, "generic", NAME_LEN );
     }
 
-    filePath = getValByKey( condInput, FILE_PATH_KW );
+    auto filePath = getValByKey( condInput, FILE_PATH_KW );
     if ( filePath != NULL ) {
         rstrcpy( dataObjInfo->filePath, filePath, MAX_NAME_LEN );
     }
@@ -536,33 +553,6 @@ initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType ) {
             NULL ) {
         addKeyVal( &dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr );
     }
-
-    return 0;
-}
-
-int
-initDataObjInfoForRepl(
-    dataObjInfo_t* destDataObjInfo,
-    dataObjInfo_t* srcDataObjInfo,
-    const char*	   _resc_name ) {
-
-
-    memset( destDataObjInfo, 0, sizeof( dataObjInfo_t ) );
-    *destDataObjInfo = *srcDataObjInfo;
-    memset( &destDataObjInfo->condInput, 0, sizeof( destDataObjInfo->condInput ) );
-    replKeyVal( &srcDataObjInfo->condInput, &destDataObjInfo->condInput );
-
-    destDataObjInfo->filePath[0] = '\0';
-    rstrcpy( destDataObjInfo->rescName, _resc_name, NAME_LEN );
-
-    // initialize the destination resource hierarchy to the root resource
-    rstrcpy( destDataObjInfo->rescHier, _resc_name, MAX_NAME_LEN ); // orphan right now
-    irods::error ret = resc_mgr.hier_to_leaf_id(_resc_name,destDataObjInfo->rescId);
-    if( !ret.ok() ) {
-        irods::log(PASS(ret));
-    }
-
-    destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
 
     return 0;
 }
