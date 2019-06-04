@@ -333,7 +333,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -412,6 +412,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         os.remove(doublefile)
 
 
+@unittest.skip('Round Robin is deprecated and non-deterministic under load - #3778')
 class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
 
     def setUp(self):
@@ -656,7 +657,7 @@ class Test_Resource_RoundRobinWithinReplication(ChunkyDevTest, ResourceSuite, un
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -1271,7 +1272,7 @@ class Test_Resource_CompoundWithMockarchive(ChunkyDevTest, ResourceSuite, unitte
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -1599,7 +1600,7 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -1928,9 +1929,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.user1.assert_icommand("iput -R TestResc " + filename)
 
         logical_path = os.path.join( self.user1.session_collection, filename )
-        self.admin.assert_icommand("iphymv -M -R demoResc " + logical_path )
-        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'cacheResc')
-        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', 'archiveResc')
+        self.admin.assert_icommand("iphymv -M -S TestResc -R cacheResc " + logical_path )
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', ['&', 'cacheResc'])
+        self.admin.assert_icommand("ils -l " + logical_path, 'STDOUT_SINGLELINE', ['&', 'archiveResc'])
 
     def test_irepl_as_admin__2988(self):
         filename = "test_irepl_as_admin__2988_file.txt"
@@ -2122,10 +2123,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from cache
 
         # confirm retrieved file is same as original
-        assert 0 == os.system("diff %s %s" % (filepath, retrievedfile))
+        self.assertEqual(0, os.system("diff %s %s" % (filepath, retrievedfile)))
 
         # manipulate the core.re to add the new policy
-
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
@@ -2138,7 +2138,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             out, _, _ = self.admin.run_icommand('ils -L ' + filename)
             archivereplicaphypath = filter(lambda x : "archiveRescVault" in x, out.split())[0]
             with open(archivereplicaphypath, 'wt') as f:
-                print('MANUALLY UPDATED ON ARCHIVE **AGAIN**\n', file=f, end='')
+                print('UPDATED ARCHIVE AGAIN\n', file=f, end='')
 
             # get the file
             self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from archive
@@ -2147,9 +2147,9 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
             matchfound = False
             with open(retrievedfile) as f:
                 for line in f:
-                    if "**AGAIN**" in line:
+                    if "AGAIN" in line:
                         matchfound = True
-            assert matchfound
+            self.assertTrue(matchfound)
 
         # local cleanup
         os.remove(filepath)
@@ -2228,7 +2228,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -2636,7 +2636,7 @@ class Test_Resource_ReplicationWithinReplication(ChunkyDevTest, ResourceSuite, u
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -2822,10 +2822,13 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
 
         # get file
         retrievedfile = "retrieved.txt"
-        os.system("rm -f %s" % retrievedfile)
-        self.admin.assert_icommand("iget -f %s %s" % (filename, retrievedfile))  # get file from cache
+        if os.path.exists(retrievedfile):
+            os.unlink(retrievedfile)
+        self.admin.assert_icommand(['iget', '-f', filename, retrievedfile])  # get file from cache
         # confirm retrieved file is same as original
-        assert 0 == os.system("diff %s %s" % (filepath, retrievedfile))
+        self.assertTrue(os.path.exists(retrievedfile))
+        self.assertTrue(os.path.exists(filepath))
+        self.assertEqual(0, os.system("diff %s %s" % (filepath, retrievedfile))) 
         print("original file diff confirmed")
 
         # manipulate the core.re to add the new policy
@@ -2844,9 +2847,9 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
             print(archive1replicaphypath)
             print(archive2replicaphypath)
             with open(archivereplica1phypath, 'wt') as f:
-                print('MANUALLY UPDATED ON ARCHIVE 1 **AGAIN**\n', file=f, end='')
+                print('UPDATED ARCHIVE 1 AGAIN\n', file=f, end='')
             with open(archivereplica2phypath, 'wt') as f:
-                print('MANUALLY UPDATED ON ARCHIVE 2 **AGAIN**\n', file=f, end='')
+                print('UPDATED ARCHIVE 2 AGAIN\n', file=f, end='')
 
             # confirm the new content is on disk
             with open(archivereplica1phypath) as f:
@@ -2954,7 +2957,7 @@ class Test_Resource_ReplicationToTwoCompound(ChunkyDevTest, ResourceSuite, unitt
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -3348,7 +3351,7 @@ class Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive(ChunkyDev
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 6 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -4085,7 +4088,7 @@ OUTPUT ruleExecOut
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 5 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -4848,7 +4851,7 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)
+        self.admin.assert_icommand("irepl -a " + filename)
 
         # should have dirty copies
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])

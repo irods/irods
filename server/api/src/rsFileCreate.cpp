@@ -27,15 +27,13 @@
 int
 rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t** _out ) {
     rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
-    int fileInx;
-    int fd;
+    int remoteFlag{};
+    int fd{};
 
-    //remoteFlag = resolveHost (&fileCreateInp->addr, &rodsServerHost);
     irods::error ret = irods::get_host_for_hier_string( fileCreateInp->resc_hier_, remoteFlag, rodsServerHost );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "failed in call to irods::get_host_for_hier_string", ret ) );
-        return -1;
+        return ret.code();
     }
 
     if ( remoteFlag == LOCAL_HOST ) {
@@ -56,14 +54,13 @@ rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t*
         }
     }
 
+    //rodsLog( LOG_NOTICE, "[%s:%d] - fd:[%d]", __FUNCTION__, __LINE__, fd);
     if ( fd < 0 ) {
         return fd;
     }
 
-    fileInx = allocAndFillFileDesc( rodsServerHost, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_,
+    return allocAndFillFileDesc( rodsServerHost, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_,
                                     fd, fileCreateInp->mode );
-
-    return fileInx;
 }
 
 int

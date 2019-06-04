@@ -73,34 +73,27 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    dataObjInp_t      data_inp;
-    bzero( &data_inp, sizeof( data_inp ) );
+    dataObjInp_t      data_inp{};
     rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, MAX_NAME_LEN );
     bzero( &data_inp.condInput, sizeof( data_inp.condInput ) );
     addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
 
-    std::string       hier;
+    std::string hier{};
     char* hier_kw = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
     if ( hier_kw == NULL ) {
-        irods::error ret = irods::resolve_resource_hierarchy( irods::CREATE_OPERATION, rsComm,
-                           &data_inp, hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "failed in irods::resolve_resource_hierarchy for [";
-            msg << data_inp.objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
+        try {
+            auto result = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, data_inp);
+            hier = std::get<std::string>(result);
+        }   
+        catch (const irods::exception& e ) { 
+            irods::log(e);
+            return e.code();
         }
 
-        // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
-        // api calls, etc.
         addKeyVal( &phyBundleCollInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
     }
     else {
         hier = hier_kw;
-
     }
 
     // =-=-=-=-=-=-=-
@@ -142,8 +135,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                   structFileExtAndRegInp_t* phyBundleCollInp,
                   const char *_resc_name ) {
 
-    collInp_t collInp;
-    bzero( &collInp, sizeof( collInp ) );
+    collInp_t collInp{};
     rstrcpy( collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN );
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
 
@@ -173,7 +165,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     /* create the bundle file */
     char* dataType  = getValByKey( &phyBundleCollInp->condInput, DATA_TYPE_KW ); // JMC - backport 4658
     char* rescHier = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
-    dataObjInp_t dataObjInp;
+    dataObjInp_t dataObjInp{};
     int   l1descInx = createPhyBundleDataObj( rsComm, phyBundleCollInp->collection,
                       _resc_name, rescHier, &dataObjInp, dataType ); // JMC - backport 4658
 
@@ -214,11 +206,8 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     createPhyBundleDir( rsComm, L1desc[l1descInx].dataObjInfo->filePath,
                         phyBunDir, L1desc[l1descInx].dataObjInfo->rescHier );
 
-    curSubFileCond_t     curSubFileCond;
-    bunReplCacheHeader_t bunReplCacheHeader;
-    bzero( &bunReplCacheHeader, sizeof( bunReplCacheHeader ) );
-    bzero( &curSubFileCond, sizeof( curSubFileCond ) );
-
+    curSubFileCond_t     curSubFileCond{};
+    bunReplCacheHeader_t bunReplCacheHeader{};
     int        status      = -1;
     int        savedStatus =  0;
     collEnt_t* collEnt     =  NULL;
@@ -255,8 +244,8 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
                         if ( l1descInx < 0 ) {
                             rodsLog( LOG_ERROR,
-                                     "_rsPhyBundleColl:createPhyBundleDataObj err for %s,stat=%d",
-                                     phyBundleCollInp->collection, l1descInx );
+                                     "%s:createPhyBundleDataObj err for %s,stat=%d",
+                                     __FUNCTION__, phyBundleCollInp->collection, l1descInx );
                             freeCollEnt( collEnt );
                             return l1descInx;
                         }
@@ -278,8 +267,8 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                 if ( status < 0 ) {
                     savedStatus = status;
                     rodsLog( LOG_ERROR,
-                             "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
-                             curSubFileCond.subPhyPath, status );
+                             "%s:replAndAddSubFileToDir err for %s,sta=%d",
+                             __FUNCTION__, curSubFileCond.subPhyPath, status );
                 }
                 curSubFileCond.bundled = 0;
                 curSubFileCond.subPhyPath[0] =
@@ -323,8 +312,8 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     if ( status < 0 ) {
         savedStatus = status;
         rodsLog( LOG_ERROR,
-                 "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,stat=%d",
-                 curSubFileCond.subPhyPath, status );
+                 "%s:replAndAddSubFileToDir err for %s,stat=%d",
+                 __FUNCTION__, curSubFileCond.subPhyPath, status );
     }
 
     status = bundleAndRegSubFiles( rsComm, l1descInx, phyBunDir,
@@ -349,34 +338,31 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 int
 replAndAddSubFileToDir( rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
                         const char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader ) {
-    int status;
-    dataObjInfo_t dataObjInfo;
-
     if ( curSubFileCond->bundled == 1 ) {
         return 0;
     }
 
-    bzero( &dataObjInfo, sizeof( dataObjInfo ) );
     /* next dataObj. See if we need to replicate */
     if ( curSubFileCond->subPhyPath[0] == '\0' ) {
         /* don't have a good cache copy yet. make one */
-        status = replDataObjForBundle( rsComm, curSubFileCond->collName,
+        irods::physical_object obj;
+        int status = replDataObjForBundle( rsComm, curSubFileCond->collName,
                                        curSubFileCond->dataName, myRescName,
-                                       0, 0, 1, &dataObjInfo );
+                                       0, 0, 1, obj);
         if ( status >= 0 ) {
             setSubPhyPath( phyBunDir, curSubFileCond->dataId,
                            curSubFileCond->subPhyPath );
-            rstrcpy( curSubFileCond->cachePhyPath, dataObjInfo.filePath,
+            rstrcpy( curSubFileCond->cachePhyPath, obj.path().c_str(),
                      MAX_NAME_LEN );
-            curSubFileCond->cacheReplNum = dataObjInfo.replNum;
-            curSubFileCond->subFileSize = dataObjInfo.dataSize;
+            curSubFileCond->cacheReplNum = obj.repl_num();
+            curSubFileCond->subFileSize = obj.size();
         }
     }
-    status = addSubFileToDir( curSubFileCond, bunReplCacheHeader );
+    int status = addSubFileToDir( curSubFileCond, bunReplCacheHeader );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "_rsPhyBundleColl:addSubFileToDir error for %s,stst=%d",
-                 curSubFileCond->subPhyPath, status );
+                 "%s:addSubFileToDir error for %s,stst=%d",
+                 __FUNCTION__, curSubFileCond->subPhyPath, status );
     }
     return status;
 }
@@ -597,17 +583,15 @@ phyBundle( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
 int
 addSubFileToDir( curSubFileCond_t *curSubFileCond,
                  bunReplCacheHeader_t *bunReplCacheHeader ) {
-    int status;
-    bunReplCache_t *bunReplCache;
-
     /* add a link */
-    status = link( curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath );
+    int status = link( curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "addSubFileToDir: link error %s to %s. errno = %d",
-                 curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno );
+                 "%s: link error %s to %s. errno = %d",
+                 __FUNCTION__, curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno );
         return UNIX_FILE_LINK_ERR - errno;
     }
+    bunReplCache_t *bunReplCache;
     bunReplCache = ( bunReplCache_t* )malloc( sizeof( bunReplCache_t ) );
     bzero( bunReplCache, sizeof( bunReplCache_t ) );
     bunReplCache->dataId = curSubFileCond->dataId;
@@ -645,24 +629,22 @@ isDataObjBundled( collEnt_t *collEnt ) {
 }
 
 int
-replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
-                      const char *rescName, char* rescHier, char* dstRescHier,
-                      int adminFlag, dataObjInfo_t *outCacheObjInfo ) {
-    transferStat_t transStat;
-    dataObjInp_t dataObjInp;
-    int status;
-
-    if ( outCacheObjInfo != NULL ) {
-        memset( outCacheObjInfo, 0, sizeof( dataObjInfo_t ) );
-    }
-
-    memset( &dataObjInp, 0, sizeof( dataObjInp_t ) );
-    memset( &transStat, 0, sizeof( transStat ) );
+replDataObjForBundle(
+    rsComm_t *rsComm,
+    char *collName,
+    char *dataName,
+    const char *rescName,
+    char* rescHier,
+    char* dstRescHier,
+    int adminFlag,
+    irods::physical_object& _obj) {
+    transferStat_t* transStat{};
+    dataObjInp_t dataObjInp{};
 
     snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collName, dataName );
     addKeyVal( &dataObjInp.condInput, BACKUP_RESC_NAME_KW,   rescName );
     if ( rescHier ) {
-        addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW,      rescHier );
+        addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, rescHier );
     }
     if ( dstRescHier ) {
         addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, dstRescHier );
@@ -671,8 +653,28 @@ replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName,
         addKeyVal( &dataObjInp.condInput, ADMIN_KW, "" );
     }
 
-    status = _rsDataObjRepl( rsComm, &dataObjInp, &transStat,
-                             outCacheObjInfo );
+    int status = rsDataObjRepl(rsComm, &dataObjInp, &transStat);
+    if (status < 0) {
+        clearKeyVal( &dataObjInp.condInput );
+        return status;
+    }
+
+    try {
+        auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, dataObjInp);
+        auto out_hier = std::get<std::string>(result);
+        auto file_obj = std::get<irods::file_object_ptr>(result);
+        for (const auto& r : file_obj->replicas()) {
+            if (out_hier == r.resc_hier()) {
+                _obj = std::move(r);
+                break;
+            }
+        }
+    }
+    catch (const irods::exception& e) {
+        irods::log(LOG_ERROR, e.what());
+        status = e.code();
+    }
+
     clearKeyVal( &dataObjInp.condInput );
     return status;
 }
@@ -706,15 +708,6 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
     if( !ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
-    }
-
-    std::string type;
-    irods::error err = irods::get_resource_property< std::string >(
-                           resc_id,
-                           irods::RESOURCE_TYPE,
-                           type );
-    if ( !err.ok() ) {
-        irods::log( PASS( err ) );
     }
 
     do {
@@ -764,7 +757,7 @@ createPhyBundleDataObj( rsComm_t *rsComm, char *collection,
             }
         }
 
-        l1descInx = _rsDataObjCreateWithResc( rsComm, dataObjInp, _resc_name );
+        l1descInx = rsDataObjCreate(rsComm, dataObjInp);
 
         clearKeyVal( &dataObjInp->condInput );
     }

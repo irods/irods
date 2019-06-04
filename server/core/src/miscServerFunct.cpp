@@ -29,6 +29,7 @@
 #include "rsDataObjLseek.hpp"
 #include "rsDataObjWrite.hpp"
 #include "rsDataObjRead.hpp"
+#include "rsFileOpen.hpp"
 #include "rsGenQuery.hpp"
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
@@ -69,6 +70,19 @@ using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 #include <fstream>
 
 #include <boost/filesystem.hpp>
+
+namespace {
+    int l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags ) {
+        fileOpenInp_t fileOpenInp{};
+        rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
+        rstrcpy( fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN );
+        rstrcpy( fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN );
+        fileOpenInp.mode = FileDesc[l3descInx].mode;
+        fileOpenInp.flags = flags;
+
+        return rsFileOpenByHost(rsComm, &fileOpenInp, FileDesc[l3descInx].rodsServerHost);
+    }
+}
 
 int
 svrToSvrConnectNoLogin( rsComm_t *rsComm, rodsServerHost_t *rodsServerHost ) {
@@ -1317,54 +1331,41 @@ rbudpRemLocCopy( dataCopyInp_t *dataCopyInp ) {
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
 
-int
-remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
-    portalOprOut_t *portalOprOut;
-    dataOprInp_t *dataOprInp;
-    portList_t *myPortList;
-    int i, sock, myFd;
-    int numThreads;
-    portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
+int remLocCopy(rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
     int retVal = 0;
-    rodsLong_t dataSize;
-    int oprType;
-
-    if ( dataCopyInp == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "remLocCopy: NULL dataCopyInp input" );
+    if (!dataCopyInp) {
+        rodsLog(LOG_NOTICE, "%s: NULL dataCopyInp input", __FUNCTION__);
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
-    portalOprOut = &dataCopyInp->portalOprOut;
-    numThreads = portalOprOut->numThreads;
-    if ( numThreads == 0 ) {
-        retVal = singleRemLocCopy( rsComm, dataCopyInp );
-        return retVal;
+    portalOprOut_t* portalOprOut = &dataCopyInp->portalOprOut;
+    const int numThreads = portalOprOut->numThreads;
+    if (0 == numThreads) {
+        return singleRemLocCopy(rsComm, dataCopyInp);
     }
 
-    dataOprInp = &dataCopyInp->dataOprInp;
-    oprType = dataOprInp->oprType;
-    dataSize = dataOprInp->dataSize;
+    dataOprInp_t *dataOprInp = &dataCopyInp->dataOprInp;
+    int oprType = dataOprInp->oprType;
+    rodsLong_t dataSize = dataOprInp->dataSize;
 
     if ( getUdpPortFromPortList( &portalOprOut->portList ) != 0 ) {
         /* rbudp transfer */
-        retVal = rbudpRemLocCopy( dataCopyInp );
-        return retVal;
+        return rbudpRemLocCopy( dataCopyInp );
     }
 
     if ( numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "remLocCopy: numThreads %d out of range",
-                 numThreads );
+        rodsLog(LOG_NOTICE,
+                "%s: numThreads %d out of range",
+                __FUNCTION__, numThreads);
         return SYS_INVALID_PORTAL_OPR;
     }
 
+    portList_t *myPortList = &portalOprOut->portList;
 
-    myPortList = &portalOprOut->portList;
+    portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR]{};
 
-    memset( myInput, 0, sizeof( myInput ) );
-
-    sock = connectToRhostPortal( myPortList->hostAddr,
+    int sock = connectToRhostPortal( myPortList->hostAddr,
                                  myPortList->portNum, myPortList->cookie, rsComm->windowSize );
     if ( sock < 0 ) {
         return sock;
@@ -1381,116 +1382,111 @@ remLocCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                                0, 0, 0, 0 );
     }
 
-    if ( numThreads == 1 ) {
-        if ( getValByKey( &dataOprInp->condInput,
-                          NO_CHK_COPY_LEN_KW ) != NULL ) {
+    if (1 == numThreads) {
+        if (getValByKey(&dataOprInp->condInput, NO_CHK_COPY_LEN_KW)) {
             myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
         }
-        if ( oprType == COPY_TO_LOCAL_OPR ) {
-            remToLocPartialCopy( &myInput[0] );
+
+        if (COPY_TO_LOCAL_OPR == oprType) {
+            remToLocPartialCopy(&myInput[0]);
         }
         else {
-            locToRemPartialCopy( &myInput[0] );
+            locToRemPartialCopy(&myInput[0]);
         }
-        if ( myInput[0].status < 0 ) {
+
+        if (myInput[0].status < 0) {
             return myInput[0].status;
         }
-        else {
-            if ( myInput[0].bytesWritten == dataSize ) {
-                return 0;
-            }
-            else {
-                rodsLog( LOG_NOTICE,
-                         "remLocCopy:bytesWritten %lld dataSize %lld mismatch",
-                         myInput[0].bytesWritten, dataSize );
-                return SYS_COPY_LEN_ERR;
-            }
+
+        if (dataSize != myInput[0].bytesWritten) {
+            rodsLog(LOG_NOTICE,
+                    "[%s:%d]:bytesWritten %lld dataSize %lld mismatch",
+                    __FUNCTION__, __LINE__, myInput[0].bytesWritten, dataSize);
+            return SYS_COPY_LEN_ERR;
         }
+        return 0;
+    }
+
+    rodsLong_t totalWritten = 0;
+    std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
+    memset( tid, 0, sizeof( tid ) );
+    for (int i = 1; i < numThreads; i++) {
+        sock = connectToRhostPortal( myPortList->hostAddr,
+                                     myPortList->portNum, myPortList->cookie, rsComm->windowSize );
+        if (sock < 0) {
+            return sock;
+        }
+
+        if (COPY_TO_LOCAL_OPR == oprType) {
+            const int myFd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
+            if ( myFd < 0 ) {  /* error */
+                retVal = myFd;
+                rodsLog(LOG_NOTICE,
+                        "%s: cannot open file, status = %d",
+                        __FUNCTION__, myFd);
+                CLOSE_SOCK( sock );
+                continue;
+            }
+
+            fillPortalTransferInp( &myInput[i], rsComm,
+                                   sock, myFd, 0, dataOprInp->destRescTypeInx,
+                                   i, 0, 0, 0 );
+
+            tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[i] ) );
+        }
+        else {
+            const int myFd = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
+            if ( myFd < 0 ) {  /* error */
+                retVal = myFd;
+                rodsLog(LOG_NOTICE,
+                        "%s: cannot open file, status = %d",
+                        __FUNCTION__, myFd );
+                CLOSE_SOCK( sock );
+                continue;
+            }
+
+            fillPortalTransferInp( &myInput[i], rsComm,
+                                   myFd, sock, dataOprInp->destRescTypeInx, 0,
+                                   i, 0, 0, 0 );
+
+            tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[i] ) );
+        }
+    }
+
+    if (COPY_TO_LOCAL_OPR == oprType) {
+        tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[0] ) );
     }
     else {
-        rodsLong_t totalWritten = 0;
-        std::unique_ptr<boost::scoped_thread<>> tid[MAX_NUM_CONFIG_TRAN_THR];
-        memset( tid, 0, sizeof( tid ) );
+        tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[0] ) );
+    }
 
-        for ( i = 1; i < numThreads; i++ ) {
-            sock = connectToRhostPortal( myPortList->hostAddr,
-                                         myPortList->portNum, myPortList->cookie, rsComm->windowSize );
-            if ( sock < 0 ) {
-                return sock;
-            }
-            if ( oprType == COPY_TO_LOCAL_OPR ) {
-                myFd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
-                if ( myFd < 0 ) {  /* error */
-                    retVal = myFd;
-                    rodsLog( LOG_NOTICE,
-                             "remLocCopy: cannot open file, status = %d",
-                             myFd );
-                    CLOSE_SOCK( sock );
-                    continue;
-                }
+    if (retVal < 0) {
+        return retVal;
+    }
 
-                fillPortalTransferInp( &myInput[i], rsComm,
-                                       sock, myFd, 0, dataOprInp->destRescTypeInx,
-                                       i, 0, 0, 0 );
-
-                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[i] ) );
-            }
-            else {
-                myFd = l3OpenByHost( rsComm, dataOprInp->srcL3descInx, O_RDONLY );
-                if ( myFd < 0 ) {  /* error */
-                    retVal = myFd;
-                    rodsLog( LOG_NOTICE,
-                             "remLocCopy: cannot open file, status = %d",
-                             myFd );
-                    CLOSE_SOCK( sock );
-                    continue;
-                }
-
-                fillPortalTransferInp( &myInput[i], rsComm,
-                                       myFd, sock, dataOprInp->destRescTypeInx, 0,
-                                       i, 0, 0, 0 );
-
-                tid[i] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[i] ) );
-            }
+    for (int i = 0; i < numThreads; i++) {
+        if (tid[i]) {
+            tid[i]->join();
         }
-
-        if ( oprType == COPY_TO_LOCAL_OPR ) {
-            tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( remToLocPartialCopy, &myInput[0] ) );
-        }
-        else {
-            tid[0] = std::make_unique<boost::scoped_thread<>>( boost::thread( locToRemPartialCopy, &myInput[0] ) );
-        }
-
-
-        if ( retVal < 0 ) {
-            return retVal;
-        }
-
-        for ( i = 0; i < numThreads; i++ ) {
-            if ( tid[i] != 0 ) {
-                tid[i]->join();
-            }
-            totalWritten += myInput[i].bytesWritten;
-            if ( myInput[i].status < 0 ) {
-                retVal = myInput[i].status;
-            }
-        }
-        if ( retVal < 0 ) {
-            return retVal;
-        }
-        else {
-            if ( dataSize <= 0 || totalWritten == dataSize ) {
-                return 0;
-            }
-            else {
-                rodsLog( LOG_NOTICE,
-                         "remLocCopy: totalWritten %lld dataSize %lld mismatch",
-                         totalWritten, dataSize );
-                return SYS_COPY_LEN_ERR;
-            }
+        totalWritten += myInput[i].bytesWritten;
+        if (myInput[i].status < 0) {
+            retVal = myInput[i].status;
         }
     }
-}
+
+    if (retVal < 0) {
+        return retVal;
+    }
+
+    if (dataSize > 0 && totalWritten != dataSize) {
+        rodsLog(LOG_NOTICE,
+                "%s: totalWritten %lld dataSize %lld mismatch",
+                __FUNCTION__, totalWritten, dataSize );
+        return SYS_COPY_LEN_ERR;
+    }
+
+    return 0;
+} // remLocCopy
 
 int
 sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
@@ -1563,6 +1559,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 mySize = size1;
             }
 
+            rodsLog(LOG_NOTICE, "[%s:%d] - opening dest file with l3descInx [%d]", __FUNCTION__, __LINE__, dataOprInp->destL3descInx);
             out_fd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
             if ( out_fd < 0 ) {  /* error */
                 retVal = out_fd;
@@ -1736,8 +1733,8 @@ sameHostPartialCopy( portalTransferInp_t *myInput ) {
     }
 }
 
-void
-locToRemPartialCopy( portalTransferInp_t *myInput ) {
+void locToRemPartialCopy(portalTransferInp_t *myInput)
+{
     transferHeader_t myHeader;
     int srcL3descInx = 0, destFd = 0;
     unsigned char *buf = 0;
@@ -1932,7 +1929,7 @@ locToRemPartialCopy( portalTransferInp_t *myInput ) {
         _l3Close( myInput->rsComm, srcL3descInx );
     }
     CLOSE_SOCK( destFd );
-}
+} // locToRemPartialCopy
 
 /*
  Given a zoneName, return the Zone Server ID string (from the
@@ -2632,77 +2629,6 @@ singleLocToRemCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     else {
         rodsLog( LOG_ERROR,
                  "singleLocToRemCopy: totalWritten %lld dataSize %lld mismatch",
-                 totalWritten, dataSize );
-        return SYS_COPY_LEN_ERR;
-    }
-}
-
-int
-singleL1Copy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
-    dataOprInp_t *dataOprInp;
-    rodsLong_t dataSize;
-    int srcL1descInx, destL1descInx;
-    bytesBuf_t dataObjReadInpBBuf;
-    bytesBuf_t dataObjWriteInpBBuf;
-    openedDataObjInp_t dataObjReadInp;
-    openedDataObjInp_t dataObjWriteInp;
-    int bytesWritten, bytesRead;
-    rodsLong_t totalWritten = 0;
-
-    if ( dataCopyInp == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "singleL1Copy: NULL dataCopyInp input" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    int trans_buff_size;
-    try {
-        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
-    } catch ( const irods::exception& e ) {
-        irods::log(e);
-        return e.code();
-    }
-
-    dataOprInp = &dataCopyInp->dataOprInp;
-    destL1descInx = dataCopyInp->portalOprOut.l1descInx;
-    srcL1descInx = L1desc[destL1descInx].srcL1descInx;
-
-    dataSize = dataOprInp->dataSize;
-    bzero( &dataObjReadInp, sizeof( dataObjReadInp ) );
-    dataObjReadInpBBuf.buf = malloc( trans_buff_size );
-    dataObjReadInpBBuf.len = dataObjReadInp.len = trans_buff_size;
-    dataObjReadInp.l1descInx = srcL1descInx;
-
-    bzero( &dataObjWriteInp, sizeof( dataObjWriteInp ) );
-    dataObjWriteInpBBuf.buf = dataObjReadInpBBuf.buf;
-    dataObjWriteInpBBuf.len = 0;
-    dataObjWriteInp.l1descInx = destL1descInx;
-
-    while ( ( bytesRead = rsDataObjRead( rsComm, &dataObjReadInp,
-                                         &dataObjReadInpBBuf ) ) > 0 ) {
-        dataObjWriteInp.len =  dataObjWriteInpBBuf.len = bytesRead;
-        bytesWritten = rsDataObjWrite( rsComm, &dataObjWriteInp,
-                                       &dataObjWriteInpBBuf );
-
-        if ( bytesWritten != bytesRead ) {
-            rodsLog( LOG_ERROR,
-                     "singleL1Copy: Read %d bytes, Wrote %d bytes.\n ",
-                     bytesRead, bytesWritten );
-            free( dataObjReadInpBBuf.buf );
-            return SYS_COPY_LEN_ERR;
-        }
-        else {
-            totalWritten += bytesWritten;
-        }
-    }
-    free( dataObjReadInpBBuf.buf );
-    if ( dataSize <= 0 || totalWritten == dataSize ||
-            getValByKey( &dataOprInp->condInput, NO_CHK_COPY_LEN_KW ) != NULL ) {
-        return 0;
-    }
-    else {
-        rodsLog( LOG_ERROR,
-                 "singleL1Copy: totalWritten %lld dataSize %lld mismatch",
                  totalWritten, dataSize );
         return SYS_COPY_LEN_ERR;
     }

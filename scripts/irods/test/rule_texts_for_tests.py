@@ -182,7 +182,7 @@ acRescQuotaPolicy {
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Resource_Compound'] = {}
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''
-test_msiDataObjRepl {{
+test_msiDataObjRsync {{
     *err = errormsg( msiDataObjRsync(*SourceFile,"IRODS_TO_IRODS",*Resource,*DestFile,*status), *msg );
     if( 0 != *err ) {{
         writeLine( "stdout", "*err - *msg" );
@@ -333,20 +333,20 @@ replicateMultiple(*destRgStr) {
     writeLine("serverLog", " acPostProcForPut multiple replicate $objPath $filePath -> *destRgStr");
     foreach (*destRg in *destRgList) {
         writeLine("serverLog", " acPostProcForPut replicate $objPath $filePath -> *destRg");
-        *e = errorcode(msiSysReplDataObj(*destRg,"null"));
-        if (*e != 0) {
-            if(*e == -808000) {
+        *err = errormsg(msiDataObjRepl($objPath,"destRescName=*destRg++++irodsAdmin=",*Status), *msg );
+        if( 0 != *err ) {
+            if(*err == -808000) {
                 writeLine("serverLog", "$objPath cannot be found");
                 $status = 0;
                 succeed;
             } else {
-                fail(*e);
+                fail(*err);
             }
         }
     }
 }
 acPostProcForPut {
-    replicateMultiple( "r1, r2" )
+    replicateMultiple( "r1,r2" )
 }
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_dynamic_pep_with_rscomm_usage'] = '''
@@ -878,7 +878,7 @@ def replicateMultiple(dest_list, callback, rei):
     callback.writeLine('serverLog', ' acPostProcForPut multiple replicate ' + obj_path + ' ' + filepath + ' -> ' + str(dest_list))
     for dest in dest_list:
         callback.writeLine('serverLog', 'acPostProcForPut replicate ' + obj_path + ' ' + filepath + ' -> ' + dest)
-        out_dict = callback.msiSysReplDataObj(dest, 'null')
+        out_dict = callback.msiDataObjRepl(obj_path,"destRescName=' + dest '++++irodsAdmin='", 0);
         if not out_dict['code'] == 0:
             if out_dict['code'] == -808000:
                 callback.writeLine('serverLog', obj_path + ' cannot be found')

@@ -83,26 +83,27 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
         hostname = socket.gethostname()
         self.admin.assert_icommand("iadmin mkresc r1 unixfilesystem " + hostname + ":/tmp/irods/r1", 'STDOUT_SINGLELINE', "Creating")
         self.admin.assert_icommand("iadmin mkresc r2 unixfilesystem " + hostname + ":/tmp/irods/r2", 'STDOUT_SINGLELINE', "Creating")
+        tfile = "rulebasetestfile"
+        try:
+            with temporary_core_file() as core:
+                time.sleep(1)  # remove once file hash fix is committed #2279
+                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                time.sleep(1)  # remove once file hash fix is committed #2279
 
-        with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
-            core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
-            time.sleep(1)  # remove once file hash fix is committed #2279
+                # put data
+                lib.touch(tfile)
+                self.admin.assert_icommand(['iput', tfile])
 
-            # put data
-            tfile = "rulebasetestfile"
-            lib.touch(tfile)
-            self.admin.assert_icommand(['iput', tfile])
+                # check replicas
+                self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
 
-            # check replicas
-            self.admin.assert_icommand(['ils', '-L', tfile], 'STDOUT_MULTILINE', [' demoResc ', ' r1 ', ' r2 '])
+            time.sleep(2)  # remove once file hash fix is commited #2279
 
+        finally:
             # clean up and remove new resources
-            self.admin.assert_icommand("irm -rf " + tfile)
+            self.admin.run_icommand("irm -rf " + tfile)
             self.admin.assert_icommand("iadmin rmresc r1")
             self.admin.assert_icommand("iadmin rmresc r2")
-
-        time.sleep(2)  # remove once file hash fix is commited #2279
 
     def test_dynamic_pep_with_rscomm_usage(self):
         with temporary_core_file() as core:

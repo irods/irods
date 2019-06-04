@@ -202,9 +202,10 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                                   curCollEnt->collName, curCollEnt->dataName );
 
                         if ( curCopyGood == False ) {
+                            irods::physical_object obj;
                             status = replDataObjForBundle( rsComm,
                                                            curCollEnt->collName, curCollEnt->dataName,
-                                                           resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
+                                                           resource, curCollEnt->resc_hier, resc_hier, 0, obj);
 
                             if ( status < 0 ) {
                                 rodsLog( LOG_ERROR,
@@ -256,16 +257,23 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         }
 
         /* handle what's left */
-        if ( curCollEnt != NULL ) {
-            if ( curCopyGood == False ) {
-                status = replDataObjForBundle( rsComm, curCollEnt->collName,
-                                               curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
-                freeCollEntForChkColl( curCollEnt );
-                if ( status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "chkCollForBundleOpr:%s does not have a good copy in %s",
-                             chkObjPermAndStatInp->objPath, resource );
-                    status = SYS_COPY_NOT_EXIST_IN_RESC;
+        if (NULL != curCollEnt) {
+            if (False == curCopyGood) {
+                irods::physical_object obj;
+                status = replDataObjForBundle(rsComm,
+                                              curCollEnt->collName,
+                                              curCollEnt->dataName,
+                                              resource,
+                                              curCollEnt->resc_hier,
+                                              resc_hier,
+                                              0,
+                                              obj);
+                freeCollEntForChkColl(curCollEnt);
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("[%s] does not have a good copy in [%s]") %
+                                          chkObjPermAndStatInp->objPath % resource).str().c_str())};
+                    irods::log(err);
                 }
             }
             else {

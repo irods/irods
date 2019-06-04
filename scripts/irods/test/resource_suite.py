@@ -140,6 +140,7 @@ class ResourceSuite(ResourceBase):
         self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
         self.admin.assert_icommand("iput " + filename)  # put file
         self.admin.assert_icommand("irepl -R " + self.testresc + " " + filename)  # replicate file
+        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # debugging
         # force new put on second resource
         self.admin.assert_icommand("iput -f -R " + self.testresc + " " + updated_filename + " " + filename)
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', filename)  # debugging
@@ -267,7 +268,7 @@ class ResourceSuite(ResourceBase):
         lib.touch("file.txt")
         for i in range(0, 100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
-        self.admin.assert_icommand("iphymv -r -M -R " + self.testresc + " " + self.admin.session_collection)  # creates replica
+        self.admin.assert_icommand("iphymv -r -M -n0 -R " + self.testresc + " " + self.admin.session_collection)  # creates replica
 
     ###################
     # iput
@@ -814,7 +815,7 @@ class ResourceSuite(ResourceBase):
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -U " + filename)                                 # update last replica
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])                # update last replica
 
         # should have a dirty copy
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -825,7 +826,7 @@ class ResourceSuite(ResourceBase):
         # should have a clean copy
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -aU " + filename)                                # update all replicas
+        self.admin.assert_icommand("irepl -a " + filename)                                # update all replicas
 
         # should have a clean copy
         self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
@@ -1051,7 +1052,7 @@ class ResourceSuite(ResourceBase):
     ###################
 
     def test_itrim_with_admin_mode(self):
-        lib.touch("file.txt")
+        lib.make_file("file.txt", 0)
         for i in range(100):
             self.user0.assert_icommand("iput file.txt " + str(i) + ".txt", "EMPTY")
 

@@ -1,7 +1,6 @@
 #ifndef IRODS_KEY_VALUE_PROXY_HPP
 #define IRODS_KEY_VALUE_PROXY_HPP
 
-#include "lifetime_manager.hpp"
 #include "objInfo.h"
 #include "rcMisc.h"
 
@@ -9,6 +8,8 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
+#include <string_view>
 
 namespace irods::experimental {
     /// \brief Tag which indicates that a missing key will be inserted with an empty value.

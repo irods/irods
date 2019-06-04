@@ -8,13 +8,18 @@
 
 // =-=-=-=-=-=-=-
 #include "irods_data_object.hpp"
+#include "irods_hierarchy_parser.hpp"
 #include "irods_physical_object.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <vector>
+#include <tuple>
 
 namespace irods {
+
+    using vote_type = std::tuple<irods::physical_object, irods::hierarchy_parser, float>;
+    using vote_list_type = std::vector<vote_type>;
 
     class file_object : public data_object {
         public:
@@ -117,6 +122,9 @@ namespace irods {
             virtual void replicas( const std::vector< physical_object >& _v ) {
                 replicas_ = _v;
             }
+            virtual vote_list_type& vote_list() {
+                return vote_list_;
+            }
 
         protected:
             // =-=-=-=-=-=-=-
@@ -137,6 +145,7 @@ namespace irods {
             std::vector< physical_object > replicas_;        // structures holding replica info initialized
             // by factory fcn from
             // dataObjInfoHead
+            vote_list_type vote_list_;
 
     }; // class file_object
 
@@ -146,10 +155,10 @@ namespace irods {
 
 // =-=-=-=-=-=-=-
 // factory function which will take a dataObjInfo pointer and create a file_object
-    error file_object_factory( rsComm_t*,         // server network connection
-                               dataObjInp_t*,     // incoming data object request struct
-                               file_object_ptr,   // out var for file object
-							   dataObjInfo_t** );
+    error file_object_factory(rsComm_t*        _comm,
+                              dataObjInp_t*    _data_obj_inp,
+                              file_object_ptr  _file_obj,
+                              dataObjInfo_t**  _data_obj_info = nullptr);
 
 }; // namespace irods
 

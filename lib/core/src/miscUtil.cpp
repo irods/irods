@@ -1699,7 +1699,7 @@ getNextDataObjMetaInfo( collHandle_t *collHandle, collEnt_t *outCollEnt ) {
             rodsObjStat->specColl->collClass != LINKED_COLL ) {
         outCollEnt->resource = rodsObjStat->specColl->resource;
         outCollEnt->ownerName = rodsObjStat->ownerName;
-        outCollEnt->replStatus = NEWLY_CREATED_COPY;
+        outCollEnt->replStatus = GOOD_REPLICA;
         outCollEnt->resc_hier = rodsObjStat->specColl->rescHier;
     }
     else {

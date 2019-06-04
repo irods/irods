@@ -201,7 +201,7 @@ _rsBulkDataObjReg( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                 }
             }
 
-            dataObjInfo.replStatus = NEWLY_CREATED_COPY;
+            dataObjInfo.replStatus = GOOD_REPLICA;
             if ( strcmp( tmpOprType, REGISTER_OPR ) == 0 ) {
                 status = svrRegDataObj( rsComm, &dataObjInfo );
             }

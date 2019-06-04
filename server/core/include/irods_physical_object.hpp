@@ -24,8 +24,8 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // accessors
-            inline int         is_dirty()        const {
-                return is_dirty_;
+            inline int         replica_status()  const {
+                return replica_status_;
             }
             inline int         repl_num()        const {
                 return repl_num_;
@@ -93,8 +93,8 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // mutators
-            inline void is_dirty( int _v )                       {
-                is_dirty_        = _v;
+            inline void replica_status( int _v )                 {
+                replica_status_  = _v;
             }
             inline void repl_num( int _v )                       {
                 repl_num_        = _v;
@@ -161,7 +161,7 @@ namespace irods {
             }
 
         private:
-            int         is_dirty_;
+            int         replica_status_;
             int         repl_num_;
             long        map_id_;
             long        size_;

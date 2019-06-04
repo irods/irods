@@ -40,6 +40,8 @@ rsFileOpen( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp ) {
     }
 }
 
+// ^---- TODO: combine these -----v
+
 int
 rsFileOpenByHost( rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                   rodsServerHost_t *rodsServerHost ) {

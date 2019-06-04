@@ -65,8 +65,10 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
 
     if ( status >= 0 ) {
         const auto open_type = getValByKey(modDataObjMetaInp->regParam, OPEN_TYPE_KW);
-        if (!getValByKey(modDataObjMetaInp->regParam, IN_REPL_KW) && open_type &&
+        const auto in_repl = getValByKey(modDataObjMetaInp->regParam, IN_REPL_KW);
+        if (!in_repl && open_type &&
             (OPEN_FOR_WRITE_TYPE == std::atoi(open_type) || CREATE_TYPE == std::atoi(open_type))) {
+            // TODO check for IN_PDMO...
             status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
         }
     }
@@ -301,11 +303,20 @@ int _call_file_modified_for_modification(
         }
         const auto pdmo_kw{getValByKey(regParam, IN_PDMO_KW)};
         if (pdmo_kw) {
+            // TODO: log in_pdmo kw
             file_obj->in_pdmo(pdmo_kw);
         }
         const auto open_type{getValByKey(regParam, OPEN_TYPE_KW)};
         if (open_type) {
             addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
+        }
+        char* sync = getValByKey(regParam, SYNC_OBJ_KW );
+        if (sync) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), SYNC_OBJ_KW, sync);
+        }
+        const auto repl_status{getValByKey(regParam, REPL_STATUS_KW)};
+        if (repl_status) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), REPL_STATUS_KW, repl_status);
         }
         ret = fileModified(rsComm, file_obj);
         if (!ret.ok()) {

@@ -121,6 +121,7 @@ static irods::error unix_file_copy(
                 std::stringstream msg_stream;
                 msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << err_status;
                 result = ERROR( err_status, msg_stream.str() );
+                irods::log(result);
             }
             else {
                 size_t trans_buff_size;
@@ -141,6 +142,9 @@ static irods::error unix_file_copy(
                     if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
                                                   destFileName, status ) ).ok() ) {
                         bytesCopied += bytesWritten;
+                    }
+                    else {
+                        irods::log(result);
                     }
                 }
 
@@ -589,7 +593,6 @@ irods::error unix_file_create(
                 // =-=-=-=-=-=-=-
                 // if we got a 0 descriptor, try again
                 if ( fd == 0 ) {
-
                     close( fd );
                     int null_fd = open( "/dev/null", O_RDWR, 0 );
 
@@ -623,6 +626,7 @@ irods::error unix_file_create(
                     //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
                     fco->file_descriptor( status );
                     result = ERROR( status, msg.str() );
+                    irods::log(result);
                 }
                 else {
                     // =-=-=-=-=-=-=-
@@ -1278,6 +1282,7 @@ irods::error unix_file_stage_to_cache(
 
         ret = unix_file_copy( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
         result = ASSERT_PASS( ret, "Failed" );
+        irods::log(result);
     }
     return result;
 } // unix_file_stagetocache
@@ -1430,7 +1435,7 @@ irods::error unix_resolve_hierarchy_open(
                     // more flags to simplify decision making
                     bool repl_us  = ( _file_obj->repl_requested() == itr->repl_num() );
                     bool resc_us  = ( _resc_name == last_resc );
-                    bool is_dirty = ( itr->is_dirty() != 1 );
+                    bool is_good_replica = ( GOOD_REPLICA == itr->replica_status() );
 
                     // =-=-=-=-=-=-=-
                     // success - correct resource and don't need a specific
@@ -1452,15 +1457,10 @@ irods::error unix_resolve_hierarchy_open(
                         }
                         else {
                             // =-=-=-=-=-=-=-
-                            // if no repl is requested consider dirty flag
-                            if ( is_dirty ) {
+                            // if no repl is requested consider replica status
+                            if ( is_good_replica ) {
                                 // =-=-=-=-=-=-=-
-                                // repl is dirty, vote very low
-                                _out_vote = 0.25;
-                            }
-                            else {
-                                // =-=-=-=-=-=-=-
-                                // if our repl is not dirty then a local copy
+                                // if our repl is marked good then a local copy
                                 // wins, otherwise vote middle of the road
                                 if ( curr_host ) {
                                     _out_vote = 1.0;
@@ -1468,6 +1468,12 @@ irods::error unix_resolve_hierarchy_open(
                                 else {
                                     _out_vote = 0.5;
                                 }
+                            }
+                            else {
+                                // =-=-=-=-=-=-=-
+                                // repl is not good, vote very low
+                                irods::experimental::log::resource::debug("repl is not good, vote very low");
+                                _out_vote = 0.25;
                             }
                         }
 
@@ -1495,6 +1501,122 @@ irods::error unix_resolve_hierarchy_open(
     return result;
 
 } // unix_resolve_hierarchy_open
+
+irods::error unix_resolve_hierarchy_unlink(
+    irods::plugin_property_map&   _prop_map,
+    irods::file_object_ptr        _file_obj,
+    const std::string&             _resc_name,
+    const std::string&             _curr_host,
+    float&                         _out_vote ) {
+    irods::error result = SUCCESS();
+
+    // =-=-=-=-=-=-=-
+    // initially set a good default
+    _out_vote = 0.0;
+
+    // =-=-=-=-=-=-=-
+    // determine if the resource is down
+    int resc_status = 0;
+    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
+    if (!get_ret.ok()) {
+        return PASSMSG("Failed to get \"status\" property.", get_ret);
+    }
+
+    // =-=-=-=-=-=-=-
+    // if the status is down, vote no.
+    if ( INT_RESC_STATUS_DOWN == resc_status ) {
+        result.code( SYS_RESC_IS_DOWN );
+        return PASS( result );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the resource host for comparison to curr host
+    std::string host_name;
+    get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
+    if (!get_ret.ok()) {
+        return PASSMSG("Failed to get \"location\" property.", get_ret);
+    }
+
+    // =-=-=-=-=-=-=-
+    // set a flag to test if were at the curr host, if so we vote higher
+    bool curr_host = ( _curr_host == host_name );
+
+    // =-=-=-=-=-=-=-
+    // make some flags to clarify decision making
+    bool need_repl = ( _file_obj->repl_requested() > -1 );
+
+    // =-=-=-=-=-=-=-
+    // set up variables for iteration
+    irods::error final_ret = SUCCESS();
+    std::vector< irods::physical_object > objs = _file_obj->replicas();
+    std::vector< irods::physical_object >::iterator itr = objs.begin();
+
+    // =-=-=-=-=-=-=-
+    // check to see if the replica is in this resource, if one is requested
+    for ( ; itr != objs.end(); ++itr ) {
+        // =-=-=-=-=-=-=-
+        // more flags to simplify decision making
+        const bool repl_us  = ( _file_obj->repl_requested() == itr->repl_num() );
+        const bool resc_us  = ( _resc_name == irods::hierarchy_parser{itr->resc_hier()}.last_resc() );
+        const bool is_stale_replica = ( STALE_REPLICA == itr->replica_status() );
+
+        // =-=-=-=-=-=-=-
+        // success - correct resource and don't need a specific
+        //           replication, or the repl nums match
+        if ( resc_us ) {
+            // =-=-=-=-=-=-=-
+            // if a specific replica is requested then we
+            // ignore all other criteria
+            if ( need_repl ) {
+                if ( repl_us ) {
+                    _out_vote = 1.0;
+                }
+                else {
+                    // =-=-=-=-=-=-=-
+                    // repl requested and we are not it, vote
+                    // very low
+                    _out_vote = 0.25;
+                }
+            }
+            else {
+                // =-=-=-=-=-=-=-
+                // if no repl is requested consider replica status
+                if ( is_stale_replica ) {
+                    // =-=-=-=-=-=-=-
+                    // if our repl is marked good then a local copy
+                    // wins, otherwise vote middle of the road
+                    if ( curr_host ) {
+                        _out_vote = 1.0;
+                    }
+                    else {
+                        _out_vote = 0.5;
+                    }
+                }
+                else {
+                    // =-=-=-=-=-=-=-
+                    // repl is not good, vote very low
+                    irods::experimental::log::resource::debug("repl is not stale, vote very low");
+                    _out_vote = 0.25;
+                }
+            }
+
+            rodsLog(
+                    LOG_DEBUG,
+                    "open :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
+                    _resc_name.c_str(),
+                    _curr_host.c_str(),
+                    host_name.c_str(),
+                    _out_vote );
+
+            break;
+
+        } // if resc_us
+
+    } // for itr
+
+    return result;
+
+} // unix_resolve_hierarchy_unlink
 
 // =-=-=-=-=-=-=-
 // used to allow the resource to determine which host
