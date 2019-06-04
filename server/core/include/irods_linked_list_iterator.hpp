@@ -33,8 +33,7 @@ namespace irods
 
         linked_list_iterator& operator++() noexcept
         {
-            if (node_)
-            {
+            if (node_) {
                 node_ = node_->next;
             }
 

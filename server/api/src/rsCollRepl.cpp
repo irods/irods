@@ -34,7 +34,6 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
     int status;
     dataObjInp_t dataObjInp;
     int handleInx;
-    transferStat_t myTransStat;
     int totalFileCnt = 0;
     int fileCntPerStatOut;
     int savedStatus = 0;
@@ -98,9 +97,9 @@ rsCollRepl( rsComm_t *rsComm, collInp_t *collReplInp,
                       collEnt->collName, collEnt->dataName );
             dataObjInp.condInput = collReplInp->condInput;
 
-            memset( &myTransStat, 0, sizeof( myTransStat ) );
-            status = _rsDataObjRepl( rsComm, &dataObjInp,
-                                     &myTransStat, NULL );
+            transferStat_t myTransStat{};
+            transferStat_t* stat{&myTransStat};
+            status = rsDataObjRepl(rsComm, &dataObjInp, &stat);
 
             if ( status == SYS_COPY_ALREADY_IN_RESC ) {
                 savedStatus = status;

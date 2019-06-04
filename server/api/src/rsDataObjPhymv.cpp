@@ -17,378 +17,259 @@
 #include "rsFileClose.hpp"
 #include "rsDataObjRepl.hpp"
 #include "rsDataObjPhymv.hpp"
+#include "rsDataObjOpen.hpp"
+#include "rsDataObjClose.hpp"
+#include "rsDataObjTrim.hpp"
+#include "rsDataObjUnlink.hpp"
 
 // =-=-=-=-=-=-=-
+#include "irods_at_scope_exit.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+namespace {
 
-irods::error test_source_replica_for_write_permissions(
-    rsComm_t*      _comm,
-    std::string    _resc_hier,
-    dataObjInfo_t* _data_obj_info ) {
-    
-    while(_data_obj_info != NULL && _data_obj_info->rescHier != _resc_hier) {
-        _data_obj_info = _data_obj_info->next;
+dataObjInp_t init_destination_replica_input(
+    rsComm_t* rsComm,
+    const dataObjInp_t& dataObjInp) {
+    dataObjInp_t destination_data_obj_inp = dataObjInp;
+    replKeyVal(&dataObjInp.condInput, &destination_data_obj_inp.condInput);
+
+    // Remove existing keywords used for source resource
+    rmKeyVal( &destination_data_obj_inp.condInput, RESC_NAME_KW );
+    rmKeyVal( &destination_data_obj_inp.condInput, RESC_HIER_STR_KW );
+    rmKeyVal( &destination_data_obj_inp.condInput, REPL_NUM_KW);
+
+    // Get the destination resource that the client specified, or use the default resource
+    const char* hier_kw = getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW);
+    if (hier_kw) {
+        addKeyVal(&destination_data_obj_inp.condInput, RESC_HIER_STR_KW, hier_kw);
+        return destination_data_obj_inp;
     }
-	if( !_comm || !_data_obj_info ) {
-        return ERROR(
-		           SYS_INTERNAL_NULL_INPUT_ERR,
-				   "null _data_obj_info or _comm" );
-	}
-
-    std::string location;
-    irods::error ret = irods::get_loc_for_hier_string(
-	                       _data_obj_info->rescHier,
-						   location );
-    if ( !ret.ok() ) {
-        return PASS( ret );
+    const char* target = getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_NAME_KW);
+    if (!target) {
+        THROW(USER__NULL_INPUT_ERR, "Destination hierarchy or leaf resource required - none provided.");
     }
+    irods::hierarchy_parser parser{target};
+    if (parser.first_resc() == target && resc_mgr.is_coordinating_resource(target)) {
+        const auto status = USER_INVALID_RESC_INPUT;
+        const std::string msg{"Destination resource must be a leaf - coordinating resource provided."};
+        addRErrorMsg(&rsComm->rError, status, msg.c_str());
+        THROW(status, msg);
+    }
+    std::string hier{};
+    irods::error ret = resc_mgr.get_hier_to_root_for_resc(parser.last_resc(), hier);
+    if (!ret.ok()) {
+        THROW(ret.code(), ret.result());
+    }
+    addKeyVal(&destination_data_obj_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
+    return destination_data_obj_inp;
+} // init_destination_replica_input
 
-	// test the source hier to determine if we have write access to the data
-	// stored.  if not then we cannot unlink that replica and should throw an
-	// error.
-	fileOpenInp_t open_inp;
-	memset(
-	    &open_inp, 0,
-		sizeof( open_inp ) );
-    open_inp.mode = getDefFileMode();
-    open_inp.flags = O_WRONLY;
-    rstrcpy(
-	    open_inp.resc_name_,
-		_data_obj_info->rescName,
-		MAX_NAME_LEN );
-    rstrcpy(
-	    open_inp.resc_hier_,
-		_data_obj_info->rescHier,
-		MAX_NAME_LEN );
-    rstrcpy(
-	    open_inp.objPath,
-		_data_obj_info->objPath,
-		MAX_NAME_LEN );
-    rstrcpy(
-	    open_inp.addr.hostAddr,
-		location.c_str(),
-		NAME_LEN );
-    rstrcpy(
-	    open_inp.fileName,
-		_data_obj_info->filePath,
-		MAX_NAME_LEN );
-    rstrcpy(
-	    open_inp.in_pdmo,
-		_data_obj_info->in_pdmo,
-		MAX_NAME_LEN );
+dataObjInp_t init_source_replica_input(
+    rsComm_t* rsComm,
+    const dataObjInp_t& dataObjInp)
+{
+    dataObjInp_t source_data_obj_inp = dataObjInp;
+    replKeyVal(&dataObjInp.condInput, &source_data_obj_inp.condInput);
 
-    // kv passthru
-    copyKeyVal(
-        &_data_obj_info->condInput,
-        &open_inp.condInput );
+    // Remove existing keywords used for destination resource
+    rmKeyVal(&source_data_obj_inp.condInput, DEST_RESC_NAME_KW);
+    rmKeyVal(&source_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW);
+    // Need to be able to unlink the source replica after moving
+    addKeyVal(&source_data_obj_inp.condInput, DATA_ACCESS_KW, ACCESS_DELETE_OBJECT);
 
-    int l3_idx = rsFileOpen( _comm, &open_inp );
-	clearKeyVal( &open_inp.condInput );
-    if( l3_idx < 0 ) {
-		std::string msg = "unable to open ";
-		msg += _data_obj_info->objPath;
-		msg += " for unlink";
-		addRErrorMsg(
-		    &_comm->rError,
-			SYS_USER_NO_PERMISSION,
-			msg.c_str() );
-		return ERROR(
-		           SYS_USER_NO_PERMISSION,
-				   msg );
-	}
-
-
-    fileCloseInp_t close_inp;
-	memset( &close_inp, 0, sizeof( close_inp ) );
-	close_inp.fileInx = l3_idx;
-	int status = rsFileClose( _comm, &close_inp );
-    if( status < 0 ) {
-		std::string msg = "failed to close ";
-		msg += _data_obj_info->objPath;
-		return ERROR(
-		           status,
-				   msg );
+    // If hierarchy or replica number are specified, that is all that is required
+    const char* hier_kw = getValByKey(&source_data_obj_inp.condInput, RESC_HIER_STR_KW);
+    if (hier_kw) {
+        return source_data_obj_inp;
     }
 
-	return SUCCESS();
+    const char* target = getValByKey(&source_data_obj_inp.condInput, RESC_NAME_KW);
+    const char* repl_num = getValByKey(&source_data_obj_inp.condInput, REPL_NUM_KW);
+    if (target && repl_num) {
+        const auto status = USER_INCOMPATIBLE_PARAMS;
+        const std::string msg{"source resource and replica number cannot both be specified for source replica."};
+        addRErrorMsg(&rsComm->rError, status, msg.c_str());
+        THROW(status, msg);
+    }
 
-} // test_source_replica_for_write_permissions
+    if (!target && !repl_num) {
+        const auto status = USER__NULL_INPUT_ERR;
+        const std::string msg{"Source hierarchy or leaf resource or replica number required - none provided."};
+        addRErrorMsg(&rsComm->rError, status, msg.c_str());
+        THROW(status, msg);
+    }
 
+    if (repl_num) {
+        rodsLog(LOG_NOTICE, "[%s] - repl_num [%s] used", __FUNCTION__, repl_num);
+        return source_data_obj_inp;
+    }
 
-/* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
- * a data object from one resource to another.
- * Input -
- *    rsComm_t *rsComm
- *    dataObjInp_t *dataObjInp - The replication input
- *    transferStat_t **transStat - transfer stat output
- */
+    irods::hierarchy_parser parser{target};
+    if (parser.first_resc() == target && resc_mgr.is_coordinating_resource(target)) {
+        const auto status = USER_INVALID_RESC_INPUT;
+        const std::string msg{"Source resource must be a leaf - coordinating resource provided."};
+        addRErrorMsg(&rsComm->rError, status, msg.c_str());
+        THROW(status, msg);
+    }
+    std::string hier{};
+    irods::error ret = resc_mgr.get_hier_to_root_for_resc(parser.last_resc(), hier);
+    if (!ret.ok()) {
+        THROW(ret.code(), ret.result());
+    }
+    addKeyVal(&source_data_obj_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
+    return source_data_obj_inp;
+} // init_source_replica_input
 
-int
-rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                transferStat_t **transStat ) {
-    int status = 0;
-    dataObjInfo_t *dataObjInfoHead = NULL;
-    dataObjInfo_t *oldDataObjInfoHead = NULL;
-    ruleExecInfo_t rei;
-    int multiCopyFlag = 0;
-    char *accessPerm = NULL;
-    int remoteFlag = 0;
-    rodsServerHost_t *rodsServerHost = NULL;
-    specCollCache_t *specCollCache = NULL;
+int close_replica(
+    rsComm_t* rsComm,
+    const int _inx,
+    const int _status) {
+    openedDataObjInp_t dataObjCloseInp{};
+    dataObjCloseInp.l1descInx = _inx;
+    L1desc[dataObjCloseInp.l1descInx].oprStatus = _status;
+    char* pdmo_kw = getValByKey(&L1desc[_inx].dataObjInp->condInput, IN_PDMO_KW);
+    if (pdmo_kw) {
+        addKeyVal(&dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw);
+    }
+    const int status = rsDataObjClose( rsComm, &dataObjCloseInp);
+    if (status < 0) {
+        rodsLog(LOG_ERROR, "[%s] - rsDataObjClose failed with [%d]", __FUNCTION__, status);
+    }
+    clearKeyVal( &dataObjCloseInp.condInput );
+    return status;
+} // close_replica
 
-    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
-                       &dataObjInp->condInput );
-    remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
-                                       REMOTE_OPEN );
+int open_source_replica(
+    rsComm_t* rsComm,
+    dataObjInp_t& source_data_obj_inp) {
+    source_data_obj_inp.oprType = PHYMV_SRC;
+    source_data_obj_inp.openFlags = O_RDWR;
+    int source_l1descInx = rsDataObjOpen(rsComm, &source_data_obj_inp);
+    if (source_l1descInx < 0) {
+        return source_l1descInx;
+    }
+    return source_l1descInx;
+} // open_source_replica
 
-    if ( remoteFlag < 0 ) {
+int open_destination_replica(
+    rsComm_t* rsComm,
+    dataObjInp_t& destination_data_obj_inp) {
+    addKeyVal(&destination_data_obj_inp.condInput, REG_REPL_KW, "");
+    addKeyVal(&destination_data_obj_inp.condInput, FORCE_FLAG_KW, "");
+    destination_data_obj_inp.oprType = PHYMV_DEST;
+    destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
+    int destination_l1descInx = rsDataObjOpen(rsComm, &destination_data_obj_inp);
+    if (destination_l1descInx < 0) {
+        return destination_l1descInx;
+    }
+    return destination_l1descInx;
+} // open_destination_replica
+
+int replicate_data(
+    rsComm_t* rsComm,
+    dataObjInp_t& source_inp,
+    dataObjInp_t& destination_inp)
+{
+    // Open source replica
+    int source_l1descInx = open_source_replica(rsComm, source_inp);
+    if (source_l1descInx < 0) {
+        THROW(source_l1descInx, "Failed opening source replica");
+    }
+
+    // Open destination replica
+    int destination_l1descInx = open_destination_replica(rsComm, destination_inp);
+    if (destination_l1descInx < 0) {
+        close_replica(rsComm, source_l1descInx, source_l1descInx);
+        THROW(destination_l1descInx, "Failed opening destination replica");
+    }
+    L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
+
+    // Copy data from source to destination
+    int status = dataObjCopy(rsComm, destination_l1descInx);
+    L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
+    L1desc[source_l1descInx].bytesWritten = 0;
+    if (status < 0) {
+        rodsLog(LOG_ERROR, "[%s] - dataObjCopy failed for [%s]",
+            __FUNCTION__, destination_inp.objPath);
+    }
+    else {
+        const int trim_status = dataObjUnlinkS(rsComm, &source_inp, L1desc[source_l1descInx].dataObjInfo);
+        if (trim_status < 0) {
+            rodsLog(LOG_ERROR, "[%s] - unlinking source replica failed with [%d]",
+                __FUNCTION__, trim_status);
+            status = trim_status;
+        }
+    }
+
+    // Close destination replica
+    const int close_status = close_replica(rsComm, destination_l1descInx, status);
+    if (close_status < 0) {
+        rodsLog(LOG_ERROR, "[%s] - closing destination replica failed with [%d]",
+            __FUNCTION__, close_status);
+        status = close_status;
+    }
+    return status;
+} // replicate_data
+
+int move_replica(
+    rsComm_t* rsComm,
+    dataObjInp_t& dataObjInp) {
+    // Make sure the requested source and destination resources are valid
+    dataObjInp_t destination_inp{};
+    dataObjInp_t source_inp{};
+    const irods::at_scope_exit free_cond_inputs{[&destination_inp, &source_inp]() {
+        clearKeyVal(&destination_inp.condInput);
+        clearKeyVal(&source_inp.condInput);
+    }};
+    destination_inp = init_destination_replica_input(rsComm, dataObjInp);
+    source_inp = init_source_replica_input(rsComm, dataObjInp);
+
+    const char* dest_hier = getValByKey(&destination_inp.condInput, RESC_HIER_STR_KW);
+    const char* source_hier = getValByKey(&source_inp.condInput, RESC_HIER_STR_KW);
+    if (dest_hier && source_hier &&
+        std::string{dest_hier} == source_hier) {
+        return 0;
+    }
+    return replicate_data(rsComm, source_inp, destination_inp);
+} // move_replica
+
+} // anonymous namespace
+
+int rsDataObjPhymv(
+    rsComm_t *rsComm,
+    dataObjInp_t *dataObjInp,
+    transferStat_t **transStat) {
+
+    if (!dataObjInp) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    specCollCache_t *specCollCache{};
+    resolveLinkedPath(rsComm, dataObjInp->objPath, &specCollCache, &dataObjInp->condInput);
+
+    rodsServerHost_t *rodsServerHost{};
+    const int remoteFlag = getAndConnRemoteZone(rsComm, dataObjInp, &rodsServerHost, REMOTE_OPEN);
+    if (remoteFlag < 0) {
         return remoteFlag;
     }
-    else if ( remoteFlag == REMOTE_HOST ) {
-        status = _rcDataObjPhymv( rodsServerHost->conn, dataObjInp,
-                                  transStat );
+    else if (REMOTE_HOST == remoteFlag) {
+        return _rcDataObjPhymv(rodsServerHost->conn, dataObjInp, transStat);
+    }
+
+    try {
+        int status = move_replica(rsComm, *dataObjInp);
+        if (status < 0) {
+            rodsLog(LOG_NOTICE, "%s - Failed to physically move replica. status:[%d]",
+                __FUNCTION__, status);
+        }
         return status;
     }
-
-    char* dest_resc = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
-    if ( dest_resc ) {
-        std::string dest_hier;
-        irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
-                               rsComm,
-                               dest_resc,
-                               dest_hier );
-        if( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return ret.code();
-        }
-        addKeyVal(
-            &dataObjInp->condInput,
-            DEST_RESC_HIER_STR_KW,
-            dest_hier.c_str() );
+    catch (const irods::exception& _e) {
+        irods::log(_e);
+        return _e.code();
     }
+} // rsDataObjPhymv
 
-    // =-=-=-=-=-=-=-
-    // determine hierarchy string
-	char* dest_hier_kw = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
-    std::string dest_hier;
-    if ( NULL == dest_hier_kw || 0 == strlen(dest_hier_kw) ) {
-        irods::error ret = irods::resolve_resource_hierarchy(
-			irods::CREATE_OPERATION,
-			rsComm,
-			dataObjInp,
-			dest_hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in irods::resolve_resource_hierarchy for [";
-            msg << dataObjInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
-
-        // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the dest_hier str for subsequent
-        // api calls, etc.
-        addKeyVal(
-		    &dataObjInp->condInput,
-			DEST_RESC_HIER_STR_KW,
-			dest_hier.c_str() );
-    } // if keyword
-    else {
-        dest_hier = dest_hier_kw;
-    }
-
-    char* src_resc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW );
-    if ( src_resc ) {
-        std::string src_hier;
-        irods::error ret = resolve_hierarchy_for_resc_from_cond_input(
-                               rsComm,
-                               src_resc,
-                               src_hier );
-        if( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-            return ret.code();
-        }
-        addKeyVal(
-            &dataObjInp->condInput,
-            RESC_HIER_STR_KW,
-            src_hier.c_str() );
-    }
-
-    // =-=-=-=-=-=-=-
-    // determine hierarchy string
-	char* resc_hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    std::string src_hier;
-    if ( NULL == resc_hier_kw || 0 == strlen(resc_hier_kw) ) {
-        irods::error ret = irods::resolve_resource_hierarchy(
-		                       irods::OPEN_OPERATION,
-							   rsComm,
-                               dataObjInp,
-							   src_hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in irods::resolve_resource_hierarchy for [";
-            msg << dataObjInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
-
-        // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the src_hier str for subsequent
-        // api calls, etc.
-        addKeyVal(
-		    &dataObjInp->condInput,
-			RESC_HIER_STR_KW,
-			src_hier.c_str() );
-    } // if keyword
-    else {
-        src_hier = resc_hier_kw;
-    }
-
-    *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
-    memset( *transStat, 0, sizeof( transferStat_t ) );
-
-    if( getValByKey( &dataObjInp->condInput, ADMIN_KW ) != NULL ) {
-        if ( rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
-            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-        }
-        accessPerm = NULL;
-    }
-    else {
-        accessPerm = ACCESS_DELETE_OBJECT;
-    }
-
-    // get root of the destination hierarchy as the 'resc for create'
-    irods::hierarchy_parser h_parse;
-    h_parse.set_string( dest_hier );
-
-    std::string dest_root;
-    h_parse.first_resc( dest_root );
-    if( status < 0 ) {
-        return status;
-    }
-
-    initReiWithDataObjInp(&rei, rsComm, dataObjInp);
-    status = applyRule("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
-    clearKeyVal(rei.condInputData);
-    free(rei.condInputData);
-    if (status < 0) {
-        if (rei.status < 0) {
-            status = rei.status;
-        }
-        const auto err{ERROR(status, "acSetMultiReplPerResc failed")};
-        irods::log(err);
-        return status;
-    }
-
-    if ( strcmp( rei.statusStr, MULTI_COPIES_PER_RESC ) == 0 ) {
-        multiCopyFlag = 1;
-    }
-    else {
-        multiCopyFlag = 0;
-    }
-
-    // query rcat for dataObjInfo and sort it
-    status = getDataObjInfo(
-	             rsComm,
-				 dataObjInp,
-				 &dataObjInfoHead,
-                 accessPerm, 1 );
-
-    if ( status < 0 ) {
-        rodsLog(
-		    LOG_NOTICE,
-            "rsDataObjPhymv: getDataObjInfo for %s",
-			dataObjInp->objPath );
-        return status;
-    }
-
-    irods::error ret = test_source_replica_for_write_permissions(
-	                       rsComm,
-                               src_hier,
-	                       dataObjInfoHead );
-	if( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-		return ret.code();
-	}
-
-    status = resolveInfoForPhymv(
-	             &dataObjInfoHead,
-				 &oldDataObjInfoHead,
-				 dest_root.c_str(),
-				 &dataObjInp->condInput,
-				 multiCopyFlag );
-    if ( status < 0 ) {
-        freeAllDataObjInfo( dataObjInfoHead );
-        freeAllDataObjInfo( oldDataObjInfoHead );
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return 0;
-        }
-        else {
-            return status;
-        }
-    }
-    status = _rsDataObjPhymv(
-	             rsComm,
-				 dataObjInp,
-				 dataObjInfoHead,
-				 dest_root.c_str(),
-                 *transStat,
-				 multiCopyFlag );
-
-    freeAllDataObjInfo( dataObjInfoHead );
-    freeAllDataObjInfo( oldDataObjInfoHead );
-
-    return status;
-}
-
-int
-_rsDataObjPhymv( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 dataObjInfo_t *srcDataObjInfoHead, const char *_resc_name,
-                 transferStat_t *transStat, int multiCopyFlag ) {
-    dataObjInfo_t *srcDataObjInfo;
-    int status = 0;
-    int savedStatus = 0;
-
-
-    srcDataObjInfo = srcDataObjInfoHead;
-
-    while ( srcDataObjInfo ) {
-        /* use _rsDataObjReplS for the phymv */
-        dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
-        status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
-                                  _resc_name, NULL, 0 );
-
-        if ( multiCopyFlag == 0 ) {
-            if ( status >= 0 ) {
-                srcDataObjInfo = srcDataObjInfo->next;
-            }
-            else {
-                savedStatus = status;
-            }
-            /* use another resc */
-            break;
-        }
-        else {
-            if ( status < 0 ) {
-                savedStatus = status;
-                /* use another resc */
-                break;
-            }
-        }
-        srcDataObjInfo = srcDataObjInfo->next;
-    }
-    if ( status >= 0 ) {
-        transStat->numThreads = dataObjInp->numThreads;
-    }
-
-    if ( NULL == srcDataObjInfo ) {
-        savedStatus = 0;
-    }
-
-    return savedStatus;
-}

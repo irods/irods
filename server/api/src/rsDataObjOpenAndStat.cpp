@@ -10,28 +10,28 @@
 #include "rcGlobalExtern.h"
 #include "rsDataObjOpen.hpp"
 
-int
-rsDataObjOpenAndStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                      openStat_t **openStat ) {
-    int status;
+int rsDataObjOpenAndStat(
+    rsComm_t *rsComm,
+    dataObjInp_t *dataObjInp,
+    openStat_t **openStat ) {
 
-    status = rsDataObjOpen( rsComm, dataObjInp );
-
-    if ( status >= 0 ) {
-        *openStat = ( openStat_t* )malloc( sizeof( openStat_t ) );
-        bzero( *openStat, sizeof( openStat_t ) );
-        ( *openStat )->dataSize = L1desc[status].dataObjInfo->dataSize;
-        rstrcpy( ( *openStat )->dataMode, L1desc[status].dataObjInfo->dataMode,
-                 SHORT_STR_LEN );
-        rstrcpy( ( *openStat )->dataType, L1desc[status].dataObjInfo->dataType,
-                 NAME_LEN );
-        ( *openStat )->l3descInx = L1desc[status].l3descInx;
-        ( *openStat )->replStatus = L1desc[status].replStatus;
-        ( *openStat )->replNum = L1desc[status].dataObjInfo->replNum;
+    if (!dataObjInp) {
+        return SYS_INTERNAL_NULL_INPUT_ERR;
     }
-    else {
+
+    int l1descInx = rsDataObjOpen( rsComm, dataObjInp );
+    if ( l1descInx < 0 ) {
         *openStat = NULL;
+        return l1descInx;
     }
 
-    return status;
+    *openStat = (openStat_t*)malloc(sizeof(openStat_t));
+    bzero(*openStat, sizeof(openStat_t));
+    (*openStat)->dataSize = L1desc[l1descInx].dataObjInfo->dataSize;
+    rstrcpy((*openStat)->dataMode, L1desc[l1descInx].dataObjInfo->dataMode, SHORT_STR_LEN);
+    rstrcpy((*openStat)->dataType, L1desc[l1descInx].dataObjInfo->dataType, NAME_LEN);
+    (*openStat)->l3descInx = L1desc[l1descInx].l3descInx;
+    (*openStat)->replStatus = L1desc[l1descInx].replStatus;
+    (*openStat)->replNum = L1desc[l1descInx].dataObjInfo->replNum;
+    return l1descInx;
 }

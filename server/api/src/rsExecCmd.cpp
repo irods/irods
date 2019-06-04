@@ -75,34 +75,27 @@ rsExecCmd( rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut ) 
 
     memset( &addr, 0, sizeof( addr ) );
     if ( *execCmdInp->hintPath != '\0' ) {
-        dataObjInp_t dataObjInp;
-        memset( &dataObjInp, 0, sizeof( dataObjInp ) );
+        dataObjInp_t dataObjInp{};
         rstrcpy( dataObjInp.objPath, execCmdInp->hintPath, MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // determine the resource hierarchy if one is not provided
-        std::string resc_hier;
         char*       resc_hier_ptr = getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW );
         if ( resc_hier_ptr == NULL ) {
-            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
-                               rsComm, &dataObjInp, resc_hier );
-            if ( !ret.ok() ) {
+            try {
+                auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, dataObjInp);
+                auto file_obj = std::get<irods::file_object_ptr>(result);
+                const auto& resc_hier = std::get<std::string>(result);
+                addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
+                addKeyVal( &execCmdInp->condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
+            }
+            catch (const irods::exception& e) {
                 std::stringstream msg;
                 msg << "failed in irods::resolve_resource_hierarchy for [";
                 msg << dataObjInp.objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
+                irods::log(e);
+                return e.code();
             }
-
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
-            addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
-            addKeyVal( &execCmdInp->condInput, RESC_HIER_STR_KW, resc_hier.c_str() );
-        }
-        else {
-            resc_hier = resc_hier_ptr;
-
         }
 
         status = getDataObjInfo( rsComm, &dataObjInp, &dataObjInfoHead, ACCESS_READ_OBJECT, 0 );

@@ -6,12 +6,10 @@
 #include <utility>
 
 namespace irods::experimental {
-    /// \struct array_delete
-    /// 
     /// \brief Tag which indicates lifetime_manager is holding an array.
     ///
     /// \since 4.2.8
-    struct array_delete {
+    static struct array_delete {
     } array_delete;
 
     /// \class lifetime_manager
@@ -84,8 +82,6 @@ namespace irods::experimental {
         {
         }
 
-        /// \fn explicit lifetime_manager(struct array_delete, T* _obj)
-        ///
         /// \brief Constructor taking array_delete tag and pointer to
         /// managed structure.
         ///

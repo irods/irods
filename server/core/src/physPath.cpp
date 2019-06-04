@@ -45,6 +45,10 @@
 int getLeafRescPathName( const std::string& _resc_hier, std::string& _ret_string );
 
 int
+chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath,
+                        const char *_resc_name, int replStatus );
+
+int
 getFileMode( dataObjInp_t *dataObjInp ) {
     int createMode;
     int defFileMode;
@@ -288,6 +292,7 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if ( chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath,
                                  dataObjInfo->rescName, dataObjInfo->replStatus ) >= 0 ) {
         /* this is an orphan file or has been renamed */
+        rodsLog(LOG_NOTICE, "[%s:%d] - ALERT! TERRELL WAS HERE BUT HE DOESN'T KNOW WHY. Also, this is an orphan file or has been renamed.", __FUNCTION__, __LINE__);
         return 0;
     }
 
@@ -311,7 +316,6 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 int
 getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 dataObjInfo_t *dataObjInfo ) {
-    int chkPathPerm;
     char *filePath;
     ruleExecInfo_t rei;
 
@@ -323,6 +327,14 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return NO_CHK_PATH_PERM;
     }
 
+#if 1
+    // Possibly need to revisit this -- this is wrong
+    if (getValByKey(&dataObjInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
+        return NO_CHK_PATH_PERM;
+    }
+#endif
+
+    int chkPathPerm = NO_CHK_PATH_PERM;
     if ( ( filePath = getValByKey( &dataObjInp->condInput, FILE_PATH_KW ) ) != NULL
             && strlen( filePath ) > 0 ) {
         /* the user input a path */
@@ -358,9 +370,6 @@ getchkPathPerm( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 // =-=-=-=-=-=-=-
             }
         }
-    }
-    else {
-        chkPathPerm = NO_CHK_PATH_PERM;
     }
     return chkPathPerm;
 }
@@ -453,6 +462,7 @@ _dataObjChksum(
             rstrcpy( fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN );
         }
 
+        rodsLog( LOG_NOTICE, "[%s:%d] - performing checksum for [%s] on [%s] at location [%s]", __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath);
         status = rsFileChksum( rsComm, &fileChksumInp, chksumStr );
 
         if ( status == DIRECT_ARCHIVE_ACCESS ) {
@@ -546,13 +556,14 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
         rstrcpy( fileRenameInp.objPath, objPath, MAX_NAME_LEN );
 
         /* not an orphan file */
-        if ( replStatus > OLD_COPY || isTrashPath( myDataObjInfo.objPath ) ) {
-            modDataObjMeta_t modDataObjMetaInp;
-            keyValPair_t regParam;
+        rodsLog( LOG_ERROR, "[%s:%d] - [%s] is not an orphan file...replStatus:[%d]", __FUNCTION__, __LINE__, filePath, replStatus);
+        if ( replStatus > STALE_REPLICA || isTrashPath( myDataObjInfo.objPath ) ) {
+            modDataObjMeta_t modDataObjMetaInp{};
+            keyValPair_t regParam{};
 
             /* a new copy or the current path is in trash.
              * rename and reg the path of the old one */
-            char new_fn[ MAX_NAME_LEN ];
+            char new_fn[ MAX_NAME_LEN ]{};
             status = renameFilePathToNewDir( rsComm, REPL_DIR, &fileRenameInp,
                                              1, new_fn );
             if ( status < 0 ) {
@@ -563,8 +574,8 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
                 free( sys_error );
                 return status;
             }
+            rodsLog( LOG_ERROR, "[%s:%d] - [%s] got a new file path:[%s]", __FUNCTION__, __LINE__, filePath, new_fn);
             /* register the change */
-            memset( &regParam, 0, sizeof( regParam ) );
             addKeyVal( &regParam, FILE_PATH_KW, new_fn );//fileRenameInp.newFileName );
             modDataObjMetaInp.dataObjInfo = &myDataObjInfo;
             modDataObjMetaInp.regParam = &regParam;
@@ -629,6 +640,7 @@ chkAndHandleOrphanFile( rsComm_t *rsComm, char* objPath, char* rescHier, char *f
         status = renameFilePathToNewDir( rsComm, ORPHAN_DIR, &fileRenameInp,
                                          1, new_fn );
         if ( status >= 0 ) {
+            rodsLog( LOG_ERROR, "[%s:%d] - renamed file [%s] to new dir", __FUNCTION__, __LINE__, filePath );
             return 1;
         }
         else {
@@ -661,7 +673,7 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
     irods::error ret = irods::get_loc_for_hier_string( fileRenameInp->rescHier, location );
     if ( !ret.ok() ) {
         irods::log( PASSMSG( "renameFilePathToNewDir - failed in get_loc_for_hier_string", ret ) );
-        return -1;
+        return ret.code();
     }
 
     rstrcpy( fileRenameInp->addr.hostAddr, location.c_str(), NAME_LEN );
@@ -741,40 +753,27 @@ renameFilePathToNewDir( rsComm_t *rsComm, char *newDir,
 int
 syncDataObjPhyPath( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     dataObjInfo_t *dataObjInfoHead, char *acLCollection ) {
-    dataObjInfo_t *tmpDataObjInfo;
-    int status;
     int savedStatus = 0;
-
-    tmpDataObjInfo = dataObjInfoHead;
+    dataObjInfo_t* tmpDataObjInfo = dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
-        status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
-
+        int status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
         if ( status < 0 ) {
             savedStatus = status;
         }
-
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
-
     return savedStatus;
 }
 
 int
 syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      dataObjInfo_t *dataObjInfo, char *acLCollection ) {
-    int status, status1;
-    fileRenameInp_t fileRenameInp;
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
-    vaultPathPolicy_t vaultPathPolicy;
-    irods::error err;
-
     if ( strcmp( dataObjInfo->rescName, BUNDLE_RESC ) == 0 ) {
         return 0;
     }
 
     int create_path = 0;
-    err = irods::get_resource_property< int >(
+    irods::error err = irods::get_resource_property< int >(
               dataObjInfo->rescId,
               irods::RESOURCE_CREATE_PATH, create_path );
     if ( !err.ok() ) {
@@ -786,7 +785,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
     }
 
-    status = getVaultPathPolicy( rsComm, dataObjInfo, &vaultPathPolicy );
+    vaultPathPolicy_t vaultPathPolicy{};
+    int status = getVaultPathPolicy( rsComm, dataObjInfo, &vaultPathPolicy );
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE,
                  "syncDataObjPhyPathS: getVaultPathPolicy error for %s, status = %d",
@@ -820,7 +820,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* Save the current objPath */
-    memset( &fileRenameInp, 0, sizeof( fileRenameInp ) );
+    fileRenameInp_t fileRenameInp{};
     rstrcpy( fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN );
     rstrcpy( fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( fileRenameInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
@@ -849,7 +849,7 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* see if the new file exist */
     if ( getSizeInVault( rsComm, dataObjInfo ) >= 0 ) {
         if ( ( status = chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier,
-                                                dataObjInfo->filePath, dataObjInfo->rescName, OLD_COPY ) ) <= 0 ) {
+                                                dataObjInfo->filePath, dataObjInfo->rescName, STALE_REPLICA ) ) <= 0 ) {
             rodsLog( LOG_ERROR,
                      "%s: newFileName %s already in use. Status = %d",
                      __FUNCTION__, dataObjInfo->filePath, status );
@@ -866,8 +866,8 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = rsFileRename( rsComm, &fileRenameInp, &ren_out );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
-                 "syncDataObjPhyPath:rsFileRename from %s to %s failed,status=%d",
-                 fileRenameInp.oldFileName, fileRenameInp.newFileName, status );
+                 "%s:rsFileRename from %s to %s failed,status=%d",
+                 __FUNCTION__, fileRenameInp.oldFileName, fileRenameInp.newFileName, status );
         free( ren_out );
         return status;
     }
@@ -877,12 +877,13 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     strncpy( dataObjInfo->filePath, ren_out->file_name, MAX_NAME_LEN );
 
     /* register the change */
-    memset( &regParam, 0, sizeof( regParam ) );
+    keyValPair_t regParam{};
     addKeyVal( &regParam, FILE_PATH_KW, ren_out->file_name );
     free( ren_out );
     if ( acLCollection != NULL ) {
         addKeyVal( &regParam, ACL_COLLECTION_KW, acLCollection );
     }
+    modDataObjMeta_t modDataObjMetaInp{};
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
@@ -890,21 +891,21 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if ( status < 0 ) {
         char tmpPath[MAX_NAME_LEN];
         rodsLog( LOG_ERROR,
-                 "syncDataObjPhyPath: rsModDataObjMeta of %s error. stat = %d",
-                 fileRenameInp.newFileName, status );
+                 "%s: rsModDataObjMeta of %s error. stat = %d",
+                 __FUNCTION__, fileRenameInp.newFileName, status );
         /* need to rollback the change in path */
         rstrcpy( tmpPath, fileRenameInp.oldFileName, MAX_NAME_LEN );
         rstrcpy( fileRenameInp.oldFileName, fileRenameInp.newFileName,
                  MAX_NAME_LEN );
         rstrcpy( fileRenameInp.newFileName, tmpPath, MAX_NAME_LEN );
         fileRenameOut_t* ren_out = 0;
-        status1 = rsFileRename( rsComm, &fileRenameInp, &ren_out );
+        int status1 = rsFileRename( rsComm, &fileRenameInp, &ren_out );
         free( ren_out );
 
         if ( status1 < 0 ) {
             rodsLog( LOG_ERROR,
-                     "syncDataObjPhyPath: rollback rename %s failed, status = %d",
-                     fileRenameInp.oldFileName, status1 );
+                     "%s: rollback rename %s failed, status = %d",
+                     __FUNCTION__, fileRenameInp.oldFileName, status1 );
         }
         return status;
     }

@@ -90,26 +90,17 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
         // =-=-=-=-=-=-=-
         // determine the resource hierarchy if one is not provided
         if ( getValByKey( &dataObjChksumInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            std::string       hier;
-            irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION,
-                               rsComm, dataObjChksumInp, hier );
-            if ( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "failed in irods::resolve_resource_hierarchy for [";
-                msg << dataObjChksumInp->objPath << "]";
-                irods::log( PASSMSG( msg.str(), ret ) );
-                return ret.code();
+            try {
+                auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjChksumInp);
+                const auto hier = std::get<std::string>(result);
+                addKeyVal( &dataObjChksumInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+            }   
+            catch (const irods::exception& e ) { 
+                irods::log(e);
+                return e.code();
             }
-
-            // =-=-=-=-=-=-=-
-            // we resolved the redirect and have a host, set the hier str for subsequent
-            // api calls, etc.
-            addKeyVal( &dataObjChksumInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
         } // if keyword
-
-        status = _rsDataObjChksum( rsComm, dataObjChksumInp, outChksum,
-                                   &dataObjInfoHead );
+        status = _rsDataObjChksum(rsComm, dataObjChksumInp, outChksum, &dataObjInfoHead);
     }
     freeAllDataObjInfo( dataObjInfoHead );
     rodsLog( LOG_DEBUG, "rsDataObjChksum - returning status %d", status );
@@ -262,15 +253,12 @@ _rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                          char **outChksumStr ) {
-    int              status;
-    keyValPair_t     regParam;
-    modDataObjMeta_t modDataObjMetaInp;
 
-    status = _dataObjChksum( rsComm, dataObjInfo, outChksumStr );
+    int status = _dataObjChksum( rsComm, dataObjInfo, outChksumStr );
 
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "dataObjChksumAndRegInfo: _dataObjChksum error for %s, status = %d",
-                 dataObjInfo->objPath, status );
+        rodsLog( LOG_ERROR, "%s: _dataObjChksum error for %s, status = %d",
+                 __FUNCTION__, dataObjInfo->objPath, status );
         return status;
     }
 
@@ -278,7 +266,7 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return status;
     }
 
-    memset( &regParam, 0, sizeof( regParam ) );
+    keyValPair_t regParam{};
     addKeyVal( &regParam, CHKSUM_KW, *outChksumStr );
     // set pdmo flag so that chksum doesn't trigger file operations
     addKeyVal( &regParam, IN_PDMO_KW, "" );
@@ -289,10 +277,10 @@ dataObjChksumAndRegInfo( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         }
         addKeyVal( &regParam, ADMIN_KW, "" );
     }
+    modDataObjMeta_t modDataObjMetaInp{};
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta( rsComm, &modDataObjMetaInp );
-    rodsLog( LOG_DEBUG, "dataObjChksumAndRegInfo - rsModDataObjMeta status %d", status );
     clearKeyVal( &regParam );
 
     return status;

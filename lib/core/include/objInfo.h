@@ -111,10 +111,15 @@ typedef struct SpecCollCache {
 } specCollCache_t;
 
 /* definition for replStatus (isDirty) */
-#define OLD_COPY        0x0
-#define NEWLY_CREATED_COPY      0x1
 #define OPEN_EXISTING_COPY      0x10
 #define FILE_PATH_HAS_CHG       0x20
+
+typedef int repl_status_t;
+enum {
+    STALE_REPLICA,
+    GOOD_REPLICA,
+    INTERMEDIATE_REPLICA
+};
 
 /* keyValPair_t - str key, str value pair */
 typedef struct KeyValPair {

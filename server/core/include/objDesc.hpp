@@ -82,9 +82,6 @@ getNumThreads( rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 int
 initDataOprInp( dataOprInp_t *dataOprInp, int l1descInx, int oprType );
 int
-initDataObjInfoForRepl( dataObjInfo_t *destDataObjInfo,
-                        dataObjInfo_t *srcDataObjInfo, const char *_resc_name );
-int
 convL3descInx( int l3descInx );
 int
 initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp );

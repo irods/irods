@@ -7,10 +7,6 @@
 #include "dataObjInpOut.h"
 
 int rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp, bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut );
-int _rsDataObjPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp, bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut );
 int preProcParaPut( rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut );
-int l3DataPutSingleBuf( rsComm_t *rsComm, dataObjInp_t *dataObjInp, bytesBuf_t *dataObjInpBBuf );
-int _l3DataPutSingleBuf( rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp, bytesBuf_t *dataObjInpBBuf );
-int l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf );
 
 #endif

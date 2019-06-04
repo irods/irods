@@ -482,11 +482,19 @@ printDataCollEntLong( collEnt_t *collEnt, int flags ) {
     char localTimeModify[TIME_LEN];
     char typeStr[NAME_LEN];
 
-    if ( collEnt->replStatus == OLD_COPY ) {
-        tmpReplStatus = " ";
-    }
-    else {
-        tmpReplStatus = "&";
+    switch (collEnt->replStatus) {
+        case STALE_REPLICA:
+            tmpReplStatus = "X";
+            break;
+
+        case GOOD_REPLICA:
+            tmpReplStatus = "&";
+            break;
+
+        case INTERMEDIATE_REPLICA:
+        default:
+            tmpReplStatus = "?";
+            break;
     }
 
     getLocalTimeFromRodsTime( collEnt->modifyTime, localTimeModify );

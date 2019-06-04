@@ -10,6 +10,7 @@
 #include "rodsLog.h"
 
 // =-=-=-=-=-=-=-
+#include "irods_at_scope_exit.hpp"
 #include "irods_resource_plugin.hpp"
 #include "irods_file_object.hpp"
 #include "irods_collection_object.hpp"
@@ -23,7 +24,6 @@
 #include "irods_object_oper.hpp"
 #include "irods_replicator.hpp"
 #include "irods_create_write_replicator.hpp"
-#include "irods_hierarchy_parser.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_repl_rebalance.hpp"
 #include "irods_kvp_string_parser.hpp"
@@ -402,7 +402,6 @@ irods::error create_replication_list(
     irods::resource_child_map* cmap_ref;
     _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
     if (cmap_ref->empty()) {
-        rodsLog(LOG_NOTICE, "[%s] - child map empty - nothing to do", __FUNCTION__);
         return SUCCESS();
     }
 
@@ -486,8 +485,24 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
     irods::hierarchy_parser sub_parser{};
     sub_parser.set_string(file_obj->in_pdmo());
     if (sub_parser.resc_in_hier(name)) {
+        irods::log(LOG_NOTICE,
+                   (boost::format("[%s:%d] - pdmo for [%s]") %
+                    __FUNCTION__ % __LINE__ % file_obj->in_pdmo()).str());
         return SUCCESS();
     }
+
+    // The selected child resource is not added to the child list property
+    // Only replicate if the selected child resource is not in the list
+    // TODO: Replace with a query
+    child_list_t child_list{};
+    ret = _ctx.prop_map().get<child_list_t>(CHILD_LIST_PROP, child_list);
+    if (ret.ok()) {
+        return SUCCESS();
+    }
+
+    const irods::at_scope_exit clear_child_list{[&_ctx]() {
+        _ctx.prop_map().erase(CHILD_LIST_PROP);
+    }};
 
     // Get operation type based on reason for opening the file
     const auto open_type_str{getValByKey(&file_obj->cond_input(), OPEN_TYPE_KW)};
@@ -1312,7 +1327,7 @@ irods::error add_self_to_hierarchy(
     return SUCCESS();
 } // add_self_to_hierarchy
 
-/// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
+/// @brief Loop through the children and call resolve hierarchy on each one to populate the hierarchy vector
 irods::error resolve_children(
     irods::plugin_context& _ctx,
     const std::string*             _operation,
@@ -1412,8 +1427,19 @@ irods::error repl_file_resolve_hierarchy(
                       __FUNCTION__).str().c_str() ); 
     }
 
+    // If child list property exists, use previously selected parser for the vote
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object >( ( _ctx.fco() ) );
+    const auto hier_str{getValByKey(&file_obj->cond_input(), RESC_HIER_STR_KW)};
+    if (hier_str) {
+        irods::hierarchy_parser selected_parser{};
+        selected_parser.set_string(hier_str);
+        *_out_vote = 1.0;
+        *_inout_parser = selected_parser;
+        return SUCCESS();
+    }
+
     // add ourselves to the hierarchy parser
-    auto ret{add_self_to_hierarchy(_ctx, *_inout_parser)};
+    auto ret = add_self_to_hierarchy(_ctx, *_inout_parser);
     if (!ret.ok()) {
         return PASS(ret);
     }

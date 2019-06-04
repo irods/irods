@@ -1,12 +1,14 @@
 #ifndef IRODS_KEY_VALUE_PROXY_HPP
 #define IRODS_KEY_VALUE_PROXY_HPP
 
-#include "lifetime_manager.hpp"
 #include "objInfo.h"
 #include "rcMisc.h"
 
+#include "lifetime_manager.hpp"
 #include <algorithm>
 #include <limits>
+#include <string>
+#include <string_view>
 
 // TODO: take a pass over std::string allocations
 
@@ -523,7 +525,7 @@ namespace irods::experimental {
     /// \return std::pair<key_value_proxy, lifetime_manager<keyValPair_t>>
     ///
     /// \since 4.2.8
-    auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> proxy_struct_pair
+    static auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> proxy_struct_pair
     {
         keyValPair_t* cond_input = (keyValPair_t*)malloc(sizeof(keyValPair_t));
         std::memset(cond_input, 0, sizeof(keyValPair_t));

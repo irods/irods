@@ -55,6 +55,7 @@ namespace {
             }
         }
         catch( const irods::exception& e ) {
+            irods::log(e);
             return irods::error( e );
         }
 
@@ -103,7 +104,7 @@ namespace {
         std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
 
-        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, "= '1'");
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, (boost::format("= '%d'") % GOOD_REPLICA).str().c_str());
 
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_DATA_NAME, 1);
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_COLL_NAME, 1);
@@ -203,7 +204,7 @@ namespace {
         }
         const std::string cond_str = cond_ss.str().substr(0, cond_ss.str().size()-4);
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_RESC_ID, cond_str.c_str());
-        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, "= '0'");
+        addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_REPL_STATUS, (boost::format("= '%d'") % STALE_REPLICA).str().c_str());
         const std::string timestamp_str = "<= '" + _invocation_timestamp + "'";
         addInxVal(&genquery_inp_wrapped.get().sqlCondInp, COL_D_MODIFY_TIME, timestamp_str.c_str());
         addInxIval(&genquery_inp_wrapped.get().selectInp, COL_D_DATA_ID, 1);
@@ -321,6 +322,8 @@ namespace {
                   leaf_bundles_to_string(_bundles));
         }
 
+        //irods::file_object_ptr file_obj{boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco())};
+
         irods::error first_rebalance_error = SUCCESS();
         for (auto data_id_to_replicate : _data_ids_to_replicate) {
             const ReplicationSourceInfo source_info = get_source_data_object_attributes(_ctx.comm(), data_id_to_replicate, _bundles);
@@ -328,16 +331,11 @@ namespace {
             // create a file object so we can resolve a valid hierarchy to which to replicate
             irods::file_object_ptr f_ptr(new irods::file_object(_ctx.comm(), source_info.object_path, "", "", 0, source_info.data_mode, 0));
             // short circuit the magic re-repl
-            {
-                irods::hierarchy_parser sub_parser;
-                sub_parser.set_string(source_info.resource_hierarchy);
-                std::string sub_hier;
-                sub_parser.str(sub_hier, _parent_resc_name);
-                f_ptr->in_pdmo(sub_hier);
-            }
+            // This file_object_ptr is only used for hierarchy resolution, not in the actual repl... may need to set the pdmo for the _ctx.fco
+            f_ptr->in_pdmo(irods::hierarchy_parser{source_info.resource_hierarchy}.str(_parent_resc_name));
+            rodsLog(LOG_NOTICE, "[%s:%d] - set pdmo for [%s] on [%s] to [%s]", __FUNCTION__, __LINE__, source_info.object_path.c_str(), source_info.resource_hierarchy.c_str(), f_ptr->in_pdmo().c_str());
 
             // init the parser with the fragment of the upstream hierarchy not including the repl node as it should add itself
-            irods::hierarchy_parser parser;
             const size_t pos = source_info.resource_hierarchy.find(_parent_resc_name);
             if (std::string::npos == pos) {
                 THROW(SYS_INVALID_INPUT_PARAM, boost::format("missing repl name [%s] in source hier string [%s]") % _parent_resc_name % source_info.resource_hierarchy);
@@ -345,11 +343,7 @@ namespace {
 
             // substring hier from the root to the parent resc
             std::string src_frag = source_info.resource_hierarchy.substr(0, pos + _parent_resc_name.size() + 1);
-            parser.set_string(src_frag);
-
-            // handy reference to root resc name
-            std::string root_resc;
-            parser.first_resc(root_resc);
+            irods::hierarchy_parser parser{src_frag};
 
             // resolve the target child resource plugin
             irods::resource_ptr dst_resc;
@@ -365,7 +359,7 @@ namespace {
             }
 
             // then we need to query the target resource and ask it to determine a dest resc hier for the repl
-            std::string host_name;
+            std::string host_name{};
             float vote = 0.0;
             const irods::error err_vote = dst_resc->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
                 _ctx.comm(),
@@ -385,10 +379,13 @@ namespace {
                       err_vote.result());
             }
 
-            // extract the hier from the parser
-            std::string dst_hier;
-            parser.str(dst_hier);
-            rodsLog(LOG_NOTICE, "proc_results_for_rebalance: creating new replica for data id [%lld] from [%s] on [%s]", data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
+            const std::string root_resc = parser.first_resc();
+            const std::string dst_hier = parser.str();
+            rodsLog(LOG_NOTICE, "%s: creating new replica for data id [%lld] from [%s] on [%s]", __FUNCTION__, data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
+
+            //file_obj->in_pdmo(dst_hier);
+            //rodsLog(LOG_NOTICE, "[%s:%d] - set pdmo for [%s] on [%s] to [%s]", __FUNCTION__, __LINE__, file_obj->logical_path().c_str(), file_obj->in_pdmo().c_str());
+
             const irods::error err_rebalance = repl_for_rebalance(
                 _ctx,
                 source_info.object_path,
@@ -402,8 +399,8 @@ namespace {
                 if (first_rebalance_error.ok()) {
                     first_rebalance_error = err_rebalance;
                 }
-                rodsLog(LOG_ERROR, "proc_results_for_rebalance: repl_for_rebalance failed. object path [%s] parent resc [%s] source hier [%s] dest hier [%s] root resc [%s] data mode [%d]",
-                        source_info.object_path.c_str(), _parent_resc_name.c_str(), source_info.resource_hierarchy.c_str(), dst_hier.c_str(), root_resc.c_str(), source_info.data_mode);
+                rodsLog(LOG_ERROR, "%s: repl_for_rebalance failed. object path [%s] parent resc [%s] source hier [%s] dest hier [%s] root resc [%s] data mode [%d]",
+                        __FUNCTION__, source_info.object_path.c_str(), _parent_resc_name.c_str(), source_info.resource_hierarchy.c_str(), dst_hier.c_str(), root_resc.c_str(), source_info.data_mode);
                 irods::log(PASS(err_rebalance));
                 if (_ctx.comm()->rError.len < MAX_ERROR_MESSAGES) {
                     addRErrorMsg(&_ctx.comm()->rError, err_rebalance.code(), err_rebalance.result().c_str());
@@ -413,7 +410,8 @@ namespace {
 
         if (!first_rebalance_error.ok()) {
             THROW(first_rebalance_error.code(),
-                  boost::format("proc_results_for_rebalance: repl_for_rebalance failed. child_resc [%s] parent resc [%s]. rebalance message [%s]") %
+                  boost::format("%s: repl_for_rebalance failed. child_resc [%s] parent resc [%s]. rebalance message [%s]") %
+                  __FUNCTION__ %
                   _child_resc_name %
                   _parent_resc_name %
                   first_rebalance_error.result());

@@ -202,9 +202,10 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                                   curCollEnt->collName, curCollEnt->dataName );
 
                         if ( curCopyGood == False ) {
+                            irods::physical_object obj;
                             status = replDataObjForBundle( rsComm,
                                                            curCollEnt->collName, curCollEnt->dataName,
-                                                           resource, curCollEnt->resc_hier, resc_hier, 0, NULL );
+                                                           resource, curCollEnt->resc_hier, resc_hier, 0, obj);
 
                             if ( status < 0 ) {
                                 rodsLog( LOG_ERROR,
@@ -258,6 +259,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         /* handle what's left */
         if (NULL != curCollEnt) {
             if (False == curCopyGood) {
+                irods::physical_object obj;
                 status = replDataObjForBundle(rsComm,
                                               curCollEnt->collName,
                                               curCollEnt->dataName,
@@ -265,7 +267,7 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                                               curCollEnt->resc_hier,
                                               resc_hier,
                                               0,
-                                              NULL);
+                                              obj);
                 freeCollEntForChkColl(curCollEnt);
                 if (status < 0) {
                     const auto err{ERROR(status,

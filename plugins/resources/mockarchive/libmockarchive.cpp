@@ -305,11 +305,13 @@ irods::error mock_archive_file_rename(
 
             // =-=-=-=-=-=-=-
             // get hashed names for the old path
-            std::string new_hash;
+            std::string new_hash{};
             ret = make_hashed_path(
                       _ctx.prop_map(),
                       _new_file_name,
                       new_hash );
+            rodsLog(LOG_NOTICE, "[%s:%d] - old path:[%s],new_path:[%s],new_hashed_path:[%s]",
+                __FUNCTION__, __LINE__, fco->physical_path().c_str(), new_full_path.c_str(), new_hash.c_str());
             if ( ( result = ASSERT_PASS( ret, "Failed to gen hashed path" ) ).ok() ) {
                 // =-=-=-=-=-=-=-
                 // make the call to rename

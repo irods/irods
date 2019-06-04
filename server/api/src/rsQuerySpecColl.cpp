@@ -61,28 +61,17 @@ rsQuerySpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    std::string hier;
     char* hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-    if ( NULL == hier_kw ) {
-        irods::error ret = irods::resolve_resource_hierarchy( irods::OPEN_OPERATION, rsComm,
-                           dataObjInp, hier );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "failed for [";
-            msg << dataObjInp->objPath << "]";
-            irods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
+    if (!hier_kw) {
+        try {
+            auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjInp);
+            const auto& hier = std::get<std::string>(result);
+            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
         }
-
-        // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
-        // api calls, etc.
-        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
-    }
-    else {
-        hier = hier_kw;
-
+        catch (const irods::exception& e ) { 
+            irods::log(e);
+            return e.code();
+        }
     }
 
     if ( ( specCollInx = dataObjInp->openFlags ) <= 0 ) {

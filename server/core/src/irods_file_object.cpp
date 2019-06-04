@@ -281,7 +281,6 @@ namespace irods {
 
         // handle the case where we are being called as part of a pdmo
         const char* in_pdmo = getValByKey( &_data_obj_inp->condInput, IN_PDMO_KW );
-
         if ( in_pdmo ) {
             _file_obj->in_pdmo( in_pdmo );
         }
@@ -289,9 +288,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // if a repl is requested, cache that fact
         const char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
-
-        // =-=-=-=-=-=-=-
-        // handle requested repl number
         if (repl_num) {
             try {
                 _file_obj->repl_requested(std::stoi(repl_num));
@@ -344,7 +340,7 @@ namespace irods {
         while ( info_ptr ) {
             physical_object obj;
 
-            obj.is_dirty( info_ptr->replStatus );
+            obj.replica_status( info_ptr->replStatus );
             obj.repl_num( info_ptr->replNum );
             obj.map_id( info_ptr->dataMapId );
             if(info_ptr->dataSize > 0) {
