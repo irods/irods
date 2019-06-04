@@ -52,20 +52,14 @@ rsGetRemoteZoneResc( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
 
-    // =-=-=-=-=-=-=-
-    // determine the hier string for the dest data obj inp
-    std::string hier;
-    err = irods::resolve_resource_hierarchy(
-              oper,
-              rsComm,
-              dataObjInp,
-              hier );
-    if ( !err.ok() ) {
-        std::stringstream msg;
-        msg << "failed for [";
-        msg << dataObjInp->objPath << "]";
-        irods::log( PASSMSG( msg.str(), err ) );
-        return err.code();
+    std::string hier{};
+    try {
+        auto result = irods::resolve_resource_hierarchy(oper, rsComm, *dataObjInp);
+        hier = std::get<std::string>(result);
+    }   
+    catch (const irods::exception& e) { 
+        irods::log(e);
+        return e.code();
     }
 
     // =-=-=-=-=-=-=-

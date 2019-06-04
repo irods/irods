@@ -559,10 +559,9 @@ freeDataObjInfo( dataObjInfo_t *dataObjInfo ) {
 
 int
 freeAllDataObjInfo( dataObjInfo_t *dataObjInfoHead ) {
-    dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
-
-    tmpDataObjInfo = dataObjInfoHead;
-    while ( tmpDataObjInfo != NULL ) {
+    dataObjInfo_t* nextDataObjInfo{};
+    dataObjInfo_t* tmpDataObjInfo = dataObjInfoHead;
+    while (tmpDataObjInfo) {
         nextDataObjInfo = tmpDataObjInfo->next;
         freeDataObjInfo( tmpDataObjInfo );
         tmpDataObjInfo = nextDataObjInfo;

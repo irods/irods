@@ -162,7 +162,7 @@ getDataObjInfo(
     if ( status < 0 ) {
         if ( status != CAT_NO_ROWS_FOUND ) {
             rodsLog( LOG_NOTICE,
-                     "getDataObjInfo: rsGenQuery error, status = %d",
+                     "%s: rsGenQuery error, status = %d", __FUNCTION__,
                      status );
         }
 
@@ -181,151 +181,151 @@ getDataObjInfo(
 
     if ( genQueryOut == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: NULL genQueryOut" );
+                 "%s: NULL genQueryOut", __FUNCTION__);
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
     if ( ( dataOwnerName =
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_NAME failed" );
+                 "%s: getSqlResultByInx for COL_D_OWNER_NAME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataName =
                 getSqlResultByInx( genQueryOut, COL_DATA_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed" );
+                 "%s: getSqlResultByInx for COL_DATA_NAME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collName =
                 getSqlResultByInx( genQueryOut, COL_COLL_NAME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_COLL_NAME failed" );
+                 "%s: getSqlResultByInx for COL_COLL_NAME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataId = getSqlResultByInx( genQueryOut, COL_D_DATA_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_DATA_ID failed" );
+                 "%s: getSqlResultByInx for COL_D_DATA_ID failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( collId = getSqlResultByInx( genQueryOut, COL_D_COLL_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_COLL_ID failed" );
+                 "%s: getSqlResultByInx for COL_D_COLL_ID failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replNum = getSqlResultByInx( genQueryOut, COL_DATA_REPL_NUM ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_REPL_NUM failed" );
+                 "%s: getSqlResultByInx for COL_DATA_REPL_NUM failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( version = getSqlResultByInx( genQueryOut, COL_DATA_VERSION ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_VERSION failed" );
+                 "%s: getSqlResultByInx for COL_DATA_VERSION failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataType = getSqlResultByInx( genQueryOut, COL_DATA_TYPE_NAME ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_TYPE_NAME failed" );
+                 "%s: getSqlResultByInx for COL_DATA_TYPE_NAME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataSize = getSqlResultByInx( genQueryOut, COL_DATA_SIZE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_SIZE failed" );
+                 "%s: getSqlResultByInx for COL_DATA_SIZE failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( hierString = getSqlResultByInx( genQueryOut, COL_D_RESC_HIER ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_RESC_HIER failed" );
+                 "%s: getSqlResultByInx for COL_D_RESC_HIER failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( filePath = getSqlResultByInx( genQueryOut, COL_D_DATA_PATH ) ) ==
             NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_DATA_PATH failed" );
+                 "%s: getSqlResultByInx for COL_D_DATA_PATH failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataOwnerZone =
                 getSqlResultByInx( genQueryOut, COL_D_OWNER_ZONE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_ZONE failed" );
+                 "%s: getSqlResultByInx for COL_D_OWNER_ZONE failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( replStatus =
                 getSqlResultByInx( genQueryOut, COL_D_REPL_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_REPL_STATUS failed" );
+                 "%s: getSqlResultByInx for COL_D_REPL_STATUS failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( statusString =
                 getSqlResultByInx( genQueryOut, COL_D_DATA_STATUS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_DATA_STATUS failed" );
+                 "%s: getSqlResultByInx for COL_D_DATA_STATUS failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( chksum =
                 getSqlResultByInx( genQueryOut, COL_D_DATA_CHECKSUM ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_DATA_CHECKSUM failed" );
+                 "%s: getSqlResultByInx for COL_D_DATA_CHECKSUM failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataExpiry =
                 getSqlResultByInx( genQueryOut, COL_D_EXPIRY ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_EXPIRY failed" );
+                 "%s: getSqlResultByInx for COL_D_EXPIRY failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMapId =
                 getSqlResultByInx( genQueryOut, COL_D_MAP_ID ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_MAP_ID failed" );
+                 "%s: getSqlResultByInx for COL_D_MAP_ID failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataComments =
                 getSqlResultByInx( genQueryOut, COL_D_COMMENTS ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_COMMENTS failed" );
+                 "%s: getSqlResultByInx for COL_D_COMMENTS failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataCreate =
                 getSqlResultByInx( genQueryOut, COL_D_CREATE_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_CREATE_TIME failed" );
+                 "%s: getSqlResultByInx for COL_D_CREATE_TIME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataModify =
                 getSqlResultByInx( genQueryOut, COL_D_MODIFY_TIME ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_D_MODIFY_TIME failed" );
+                 "%s: getSqlResultByInx for COL_D_MODIFY_TIME failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
     if ( ( dataMode =
                 getSqlResultByInx( genQueryOut, COL_DATA_MODE ) ) == NULL ) {
         rodsLog( LOG_NOTICE,
-                 "getDataObjInfo: getSqlResultByInx for COL_DATA_MODE failed" );
+                 "%s: getSqlResultByInx for COL_DATA_MODE failed", __FUNCTION__);
         return UNMATCHED_KEY_OR_INDEX;
     }
 
@@ -404,137 +404,6 @@ getDataObjInfo(
     return qcondCnt;
 }
 
-int
-sortObjInfo(
-    dataObjInfo_t **dataObjInfoHead,
-    dataObjInfo_t **currentArchInfo,
-    dataObjInfo_t **currentCacheInfo,
-    dataObjInfo_t **oldArchInfo,
-    dataObjInfo_t **oldCacheInfo,
-    dataObjInfo_t **downCurrentInfo,
-    dataObjInfo_t **downOldInfo,
-    const char* resc_hier ) {
-    dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
-    // int rescClassInx;
-    int topFlag;
-    dataObjInfo_t *currentBundleInfo = NULL;
-    dataObjInfo_t *oldBundleInfo = NULL;
-
-    *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
-    *downCurrentInfo = *downOldInfo = NULL;
-
-    tmpDataObjInfo = *dataObjInfoHead;
-
-    while ( tmpDataObjInfo != NULL ) {
-
-        nextDataObjInfo = tmpDataObjInfo->next;
-        tmpDataObjInfo->next = NULL;
-
-
-        if ( !strlen( tmpDataObjInfo->rescName ) ) {
-            topFlag = 0;
-
-        }
-        else if ( !irods::is_resc_live( tmpDataObjInfo->rescId ).ok() ) {
-            /* the resource is down */
-            if ( tmpDataObjInfo->replStatus > 0 ) {
-                queDataObjInfo( downCurrentInfo, tmpDataObjInfo, 1, 1 );
-            }
-            else {
-                queDataObjInfo( downOldInfo, tmpDataObjInfo, 1, 1 );
-            }
-
-            tmpDataObjInfo = nextDataObjInfo;
-
-            continue;
-        }
-        else {
-            rodsServerHost_t *rodsServerHost = NULL;
-            irods::get_resource_property< rodsServerHost_t* >( tmpDataObjInfo->rescId, irods::RESOURCE_HOST, rodsServerHost );
-
-            if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST ) {
-                topFlag = 0;
-            }
-            else {
-                /* queue local host at the head */
-                topFlag = 1;
-            }
-        }
-
-        std::string class_type;
-        irods::error prop_err = irods::get_resource_property<std::string>(
-                                    tmpDataObjInfo->rescId,
-                                    irods::RESOURCE_CLASS,
-                                    class_type );
-
-        bool hier_match = false;
-        if ( resc_hier != NULL && ( strcmp( resc_hier, tmpDataObjInfo->rescHier ) == 0 ) ) {
-            hier_match = true;
-        }
-
-        // =-=-=-=-=-=-=-
-        // if the resc hierarchy is defined match it
-        // honor the original queue structure given repl status
-        if ( resc_hier != NULL && hier_match ) {
-            //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
-            // =-=-=-=-=-=-=-
-            // even if the repl is dirty we will want to select it here as
-            // the resources make these decisions
-            //if( tmpDataObjInfo->replStatus > 0 ) {
-            queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 1 );
-            //} else {
-            //    queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
-            //}
-        }
-        else if ( resc_hier != NULL && !hier_match ) {
-            if ( tmpDataObjInfo->replStatus > 0 ) {
-                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
-            }
-            else {
-                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, 1 );
-            }
-        }
-        else if ( tmpDataObjInfo->replStatus > 0 ) {
-
-            if ( "archive" == class_type ) {
-                queDataObjInfo( currentArchInfo, tmpDataObjInfo, 1, topFlag );
-            }
-            else if ( "compound" == class_type ) {
-                rodsLog( LOG_ERROR, "sortObj :: class_type == compound" );
-            }
-            else if ( "bundle" == class_type ) {
-                queDataObjInfo( &currentBundleInfo, tmpDataObjInfo, 1, topFlag );
-            }
-            else {
-                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, topFlag );
-            }
-        }
-        else {
-            if ( "archive" == class_type ) {
-                queDataObjInfo( oldArchInfo, tmpDataObjInfo, 1, topFlag );
-            }
-            else if ( "compound" == class_type ) {
-                rodsLog( LOG_ERROR, "sortObj :: class_type == compound" );
-            }
-            else if ( "bundle" == class_type ) {
-                queDataObjInfo( &oldBundleInfo, tmpDataObjInfo, 1, topFlag );
-            }
-            else {
-                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
-            }
-        }
-        tmpDataObjInfo = nextDataObjInfo;
-
-    } // while
-
-    /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
-    //queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
-    queDataObjInfo( oldArchInfo, oldBundleInfo, 0, 0 );
-    //queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
-    queDataObjInfo( currentArchInfo, currentBundleInfo, 0, 0 );
-    return 0;
-}
-
 // determine if a forced open is done to a resource which does not have
 // an original copy of the data object
 
@@ -550,61 +419,58 @@ int sortObjInfoForOpen(
     keyValPair_t*   condInput,
     int             writeFlag ) {
 
-    int result = 0;
     char* resc_hier = getValByKey( condInput, RESC_HIER_STR_KW );
-    if ( !resc_hier ) {
+    if (!resc_hier) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No resource hierarchy specified in keywords.";
         irods::log( ERROR( SYS_INVALID_INPUT_PARAM, msg.str() ) );
-        result = SYS_INVALID_INPUT_PARAM;
+        return SYS_INVALID_INPUT_PARAM;
     }
-    else {
-        dataObjInfo_t* found_info = NULL;
-        dataObjInfo_t* prev_info = NULL;
-        for ( dataObjInfo_t* dataObjInfo = *dataObjInfoHead;
-                result >= 0 && found_info == NULL && dataObjInfo != NULL;
-                dataObjInfo = dataObjInfo->next ) {
-            if ( strcmp( resc_hier, dataObjInfo->rescHier ) == 0 ) {
-                found_info = dataObjInfo;
-            }
-            else {
-                prev_info = dataObjInfo;
-            }
-        }
-        if ( found_info == NULL ) {
-            // =-=-=-=-=-=-=-
-            // according to the below read only semantics
-            // any copy in the head is a good copy.
-            if ( 0 != writeFlag ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - No data object found matching resource hierarchy: \"";
-                msg << resc_hier;
-                msg << "\"";
-                irods::log( ERROR( HIERARCHY_ERROR, msg.str() ) );
-                result = HIERARCHY_ERROR;
-            }
+
+    dataObjInfo_t* found_info = NULL;
+    dataObjInfo_t* prev_info = NULL;
+    for (dataObjInfo_t* dataObjInfo = *dataObjInfoHead;
+            !found_info && dataObjInfo;
+            dataObjInfo = dataObjInfo->next) {
+        if ( strcmp( resc_hier, dataObjInfo->rescHier ) == 0 ) {
+            found_info = dataObjInfo;
         }
         else {
-            if ( prev_info == NULL ) {
-                // our object is at the head of the list. So delete the rest of the list, if any and we are done.
-                if ( found_info->next != NULL ) {
-                    freeAllDataObjInfo( found_info->next );
-                    found_info->next = NULL;
-                }
-            }
-            else {
-                // remove our object from the list. delete that list then make our object the head.
-                prev_info->next = found_info->next;
-                found_info->next = NULL;
-                freeAllDataObjInfo( *dataObjInfoHead );
-                *dataObjInfoHead = found_info;
-            }
+            prev_info = dataObjInfo;
         }
     }
-    return result;
 
+    if (!found_info) {
+        // according to the below read only semantics
+        // any copy in the head is a good copy.
+        if (writeFlag) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - No data object found matching resource hierarchy: \"";
+            msg << resc_hier;
+            msg << "\"";
+            irods::log( ERROR( HIERARCHY_ERROR, msg.str() ) );
+            return HIERARCHY_ERROR;
+        }
+        return 0;
+    }
+
+    if (!prev_info) {
+        // our object is at the head of the list. So delete the rest of the list, if any and we are done.
+        if (found_info->next) {
+            freeAllDataObjInfo(found_info->next);
+            found_info->next = NULL;
+        }
+        return 0;
+    }
+
+    // remove our object from the list. delete that list then make our object the head.
+    prev_info->next = found_info->next;
+    found_info->next = NULL;
+    freeAllDataObjInfo(*dataObjInfoHead);
+    *dataObjInfoHead = found_info;
+    return 0;
 }
 
 int create_and_sort_data_obj_info_for_open(
@@ -644,7 +510,7 @@ int create_and_sort_data_obj_info_for_open(
 	        memset(data_obj_info, 0, sizeof(dataObjInfo_t));
 
 	        // copy values from physical object
-	        data_obj_info->replStatus = replica.is_dirty();
+	        data_obj_info->replStatus = replica.replica_status();
 	        data_obj_info->replNum = replica.repl_num();
 	        data_obj_info->dataMapId = replica.map_id();
 	        data_obj_info->dataSize = replica.size();
@@ -760,81 +626,35 @@ int
 requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
                         const char *preferredResc, int writeFlag, int topFlag ) {
 
-    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
 
-    if ( preferredResc == NULL || *dataObjInfoHead == NULL ) {
+    if (!preferredResc || !*dataObjInfoHead) {
         return 0;
     }
 
-    tmpDataObjInfo = *dataObjInfoHead;
-    if ( tmpDataObjInfo->next == NULL ) {
+    dataObjInfo_t* tmpDataObjInfo = *dataObjInfoHead;
+    if (!tmpDataObjInfo->next) {
         /* just one */
-        if ( strstr(tmpDataObjInfo->rescHier,preferredResc ) != 0 ) {
-            return 0;
-        }
-        else {
-            return -1;
-        }
-    }
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
-        if ( strstr(tmpDataObjInfo->rescHier,preferredResc) != 0 ) {
-            if ( writeFlag > 0 || tmpDataObjInfo->replStatus > 0 ) {
-                if ( prevDataObjInfo != NULL ) {
-                    prevDataObjInfo->next = tmpDataObjInfo->next;
-                    queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1,
-                                    topFlag );
-                }
-                if ( topFlag > 0 ) {
-                    return 0;
-                }
-                else {
-                    status = 0;
-                }
-            }
-        }
-
-        prevDataObjInfo = tmpDataObjInfo;
-        tmpDataObjInfo = tmpDataObjInfo->next;
+        const bool resc_in_hier = irods::hierarchy_parser{tmpDataObjInfo->rescHier}.resc_in_hier(preferredResc);
+        return resc_in_hier ? 0 : -1;
     }
 
-    return status;
-}
-
-int
-requeDataObjInfoByReplNum( dataObjInfo_t **dataObjInfoHead, int replNum ) {
-    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
-    int status = -1;
-
-    if ( dataObjInfoHead == NULL || *dataObjInfoHead == NULL ) {
-        return -1;
-    }
-
-    tmpDataObjInfo = *dataObjInfoHead;
-    if ( tmpDataObjInfo->next == NULL ) {
-        /* just one */
-        if ( replNum == tmpDataObjInfo->replNum ) {
-            return 0;
-        }
-        else {
-            return -1;
-        }
-    }
-    prevDataObjInfo = NULL;
-    while ( tmpDataObjInfo != NULL ) {
-        if ( replNum == tmpDataObjInfo->replNum ) {
-            if ( prevDataObjInfo != NULL ) {
+    dataObjInfo_t* prevDataObjInfo = NULL;
+    while (tmpDataObjInfo) {
+        if (irods::hierarchy_parser{tmpDataObjInfo->rescHier}.resc_in_hier(preferredResc) &&
+            (writeFlag > 0 || tmpDataObjInfo->replStatus > 0)) {
+            if (prevDataObjInfo) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
-                queDataObjInfo( dataObjInfoHead, tmpDataObjInfo, 1, 1 );
+                queDataObjInfo(dataObjInfoHead, tmpDataObjInfo, 1, topFlag);
+            }
+            if (topFlag > 0) {
+                return 0;
             }
             status = 0;
-            break;
         }
         prevDataObjInfo = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
-
     return status;
 }
 
@@ -935,107 +755,6 @@ matchAndTrimRescGrp( dataObjInfo_t **dataObjInfoHead,
     return 0;
 }
 
-/* sortObjInfoForRepl - sort the data object given in dataObjInfoHead.
- * Put the current copies in dataObjInfoHead. Delete old copies if
- * deleteOldFlag allowed or put them in oldDataObjInfoHead for further
- * process if not allowed.
- */
-
-int
-sortObjInfoForRepl(
-    dataObjInfo_t** dataObjInfoHead,     // RESC_HIER
-    dataObjInfo_t** oldDataObjInfoHead,  // DST_RESC_HIER
-    int             deleteOldFlag,
-    const char*     resc_hier,
-    const char*     dst_resc_hier ) {
-    // =-=-=-=-=-=-=-
-    // trap bad pointers
-    if ( !dataObjInfoHead || !*dataObjInfoHead ) {
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    // =-=-=-=-=-=-=-
-    // short circuit sort for the case where a dst resc hier
-    // is provided which means the choice for to which repl
-    // to update is made already. However, we have to handle
-    // the case where the resc_hier and dst_resc_hier are the same.
-    *oldDataObjInfoHead = NULL;
-    if ( resc_hier && dst_resc_hier && strcmp( dst_resc_hier, resc_hier ) != 0 ) {
-        dataObjInfo_t* tmp_info = *dataObjInfoHead;
-        dataObjInfo_t* prev_info = NULL;
-        while ( tmp_info ) {
-            // =-=-=-=-=-=-=-
-            // compare resc hier strings, if its a match this is our
-            // choice so queue it up on the oldDataObjInfoHead
-            if ( 0 == strcmp( dst_resc_hier, tmp_info->rescHier ) ) {
-                // =-=-=-=-=-=-=-
-                // we need to check the status of the resource
-                // to determine if it is up or down before
-                // queue-ing it up
-                if ( irods::is_hier_live( dst_resc_hier ).ok() /* INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus */ ) {
-                    if ( prev_info == NULL ) {
-                        *dataObjInfoHead = tmp_info->next;
-                    }
-                    else {
-                        prev_info->next = tmp_info->next;
-                    }
-                    tmp_info->next = NULL;
-                    queDataObjInfo( oldDataObjInfoHead, tmp_info, 1, 1 );
-                    tmp_info = 0;
-                }
-                else {
-                    rodsLog(
-                        LOG_ERROR,
-                        "sortObjInfoForRepl - destination resource is down [%s]",
-                        dst_resc_hier );
-                    return -1;
-                }
-
-            }
-            else {
-                prev_info = tmp_info;
-                tmp_info = tmp_info->next;
-
-            }
-
-        } // while tmp_info
-
-    } // if dst_resc_hier
-
-    dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
-                   *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
-
-    sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
-                 &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier );
-    freeAllDataObjInfo( downOldInfo );
-    *dataObjInfoHead = currentCacheInfo;
-    queDataObjInfo( dataObjInfoHead, currentArchInfo, 0, 0 );
-    queDataObjInfo( dataObjInfoHead, downCurrentInfo, 0, 0 );
-    if ( *dataObjInfoHead != NULL ) {
-        if ( *oldDataObjInfoHead == NULL && deleteOldFlag == 0 ) {
-            /* multi copy not allowed. have to keep old copy in
-             * oldDataObjInfoHead for further processing */
-            *oldDataObjInfoHead = oldCacheInfo;
-            queDataObjInfo( oldDataObjInfoHead, oldArchInfo, 0, 0 );
-        }
-        else {
-            freeAllDataObjInfo( oldCacheInfo );
-            freeAllDataObjInfo( oldArchInfo );
-        }
-    }
-    else {
-        queDataObjInfo( dataObjInfoHead, oldCacheInfo, 0, 0 );
-        queDataObjInfo( dataObjInfoHead, oldArchInfo, 0, 0 );
-    }
-    if ( *dataObjInfoHead == NULL ) {
-        return SYS_RESC_IS_DOWN;
-    }
-    else {
-        return 0;
-    }
-}
-
-
 /* initDataObjInfoQuery - initialize the genQueryInp based on dataObjInp.
  * returns the qcondCnt - count of sqlCondInp based on condition input.
  */
@@ -1075,6 +794,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
 
     if ( ignoreCondInput == 0 && ( tmpStr =
                                        getValByKey( &dataObjInp->condInput, REPL_NUM_KW ) ) != NULL ) {
+        // Filters out all replicas except the requested one...
         snprintf( condStr, NAME_LEN, "='%s'", tmpStr );
         addInxVal( &genQueryInp->sqlCondInp, COL_DATA_REPL_NUM, condStr );
         qcondCnt++;
@@ -1098,7 +818,7 @@ initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
 int
 chkOrphanFile(
     rsComm_t*		rsComm,
-    char*			filePath,
+    const char*     filePath,
     const char*		rescName,
     dataObjInfo_t*	dataObjInfo ) {
     // =-=-=-=-=-=-=-
@@ -1283,133 +1003,6 @@ chkOrphanDir( rsComm_t *rsComm, char *dirPath, const char *rescName ) {
     return savedStatus;
 }
 
-
-/* resolveSingleReplCopy - given the dataObjInfoHead (up-to-date copies)
- * and oldDataObjInfoHead (stale copies) and the destRescGrpInfo,
- * sort through the single copy requirement for repl.
- * If there is a good copy in every resc in the rescGroup, return
- * HAVE_GOOD_COPY. Otherwise, trim the resc in the rescGroup so only the one
- * with no copies are left. The copies required to be overwritten are
- * placed in destDataObjInfo. The old dataObjInfo that do not need to
- * be overwritten are placed in oldDataObjInfoHead which may be needed
- * for compound resource staging.
- * A returned value of CAT_NO_ROWS_FOUND mean there is condition in
- * condInput but none in dataObjInfoHead or oldDataObjInfoHead match
- * the condition. i.e., no source for the replication
- */
-int
-resolveSingleReplCopy( dataObjInfo_t **dataObjInfoHead,
-                       dataObjInfo_t **oldDataObjInfoHead,
-                       const std::string& _resc_name, // replaces destRescGrpInfo
-                       dataObjInfo_t **destDataObjInfo,
-                       keyValPair_t *condInput ) {
-    int status = 0;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
-
-    /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
-    status = matchDataObjInfoByCondInput( dataObjInfoHead, oldDataObjInfoHead,
-                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
-    if ( status < 0 ) {
-        return status;
-    }
-
-    if ( matchedDataObjInfo != NULL ) {
-        /* que the matched one on top */
-        queDataObjInfo( dataObjInfoHead, matchedDataObjInfo, 0, 1 );
-        queDataObjInfo( oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1 );
-    }
-    else if ( matchedOldDataObjInfo != NULL ) {
-        /* The source of replication is an old copy. Queue dataObjInfoHead
-         * to oldDataObjInfoHead */
-        queDataObjInfo( oldDataObjInfoHead, *dataObjInfoHead, 0, 1 );
-        *dataObjInfoHead = matchedOldDataObjInfo;
-    }
-
-
-    /* single target resource */
-    char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
-    if ( ( *destDataObjInfo = chkCopyInResc( *dataObjInfoHead,
-                              _resc_name,
-                              destRescHier ) ) != NULL ) {
-        /* have a good copy already */
-        *destDataObjInfo = NULL; // JMC - backport 4594
-        return HAVE_GOOD_COPY;
-    }
-
-    /* handle the old dataObj */
-    if ( getValByKey( condInput, ALL_KW ) != NULL ) {
-        dataObjInfo_t *trimmedDataObjInfo = NULL;
-        /* replicate to all resc. trim the resc that has a match and
-         * the DataObjInfo that does not have a match */
-        matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                             TRIM_MATCHED_RESC_INFO | TRIM_UNMATCHED_OBJ_INFO, &trimmedDataObjInfo );
-        *destDataObjInfo = *oldDataObjInfoHead;
-        *oldDataObjInfoHead = trimmedDataObjInfo;
-    }
-    else {
-        char* destRescHier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
-        *destDataObjInfo = chkCopyInResc( *oldDataObjInfoHead, _resc_name, destRescHier );
-        if ( *destDataObjInfo != NULL ) {
-            /* see if there is any resc that is not used */
-            matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                                 TRIM_MATCHED_RESC_INFO, NULL );
-            dequeDataObjInfo( oldDataObjInfoHead, *destDataObjInfo );
-        }
-    }
-    return NO_GOOD_COPY;
-}
-
-int
-resolveInfoForPhymv( dataObjInfo_t **dataObjInfoHead,
-                     dataObjInfo_t **oldDataObjInfoHead,
-                     const std::string& _resc_name,
-                     keyValPair_t *condInput,
-                     int multiCopyFlag ) {
-    int status;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
-
-    status = matchDataObjInfoByCondInput( dataObjInfoHead, oldDataObjInfoHead,
-                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
-    if ( status < 0 ) {
-        return status;
-    }
-
-    if ( matchedDataObjInfo != NULL ) {
-        /* put the matched in oldDataObjInfoHead. should not be anything in
-         * oldDataObjInfoHead */
-        *oldDataObjInfoHead = *dataObjInfoHead;
-        *dataObjInfoHead = matchedDataObjInfo;
-    }
-
-    if ( multiCopyFlag ) {
-        matchAndTrimRescGrp( dataObjInfoHead, _resc_name,
-                             REQUE_MATCHED_RESC_INFO, NULL );
-        matchAndTrimRescGrp( oldDataObjInfoHead, _resc_name,
-                             REQUE_MATCHED_RESC_INFO, NULL );
-    }
-    else {
-        matchAndTrimRescGrp( dataObjInfoHead, _resc_name, TRIM_MATCHED_OBJ_INFO, NULL );
-    }
-
-    if ( _resc_name.empty() ) {
-        if ( *dataObjInfoHead == NULL ) {
-            return CAT_NO_ROWS_FOUND;
-        }
-        else {
-            /* have a good copy in all resc in resc group */
-            rodsLog( LOG_ERROR,
-                     "resolveInfoForPhymv: %s already have copy in the resc",
-                     ( *dataObjInfoHead )->objPath );
-            return SYS_COPY_ALREADY_IN_RESC;
-        }
-    }
-    else {
-        return 0;
-    }
-}
-
 /* matchDataObjInfoByCondInput - given dataObjInfoHead and oldDataObjInfoHead
  * put all DataObjInfo that match condInput into matchedDataObjInfo and
  * matchedOldDataObjInfo. The unmatch one stay in dataObjInfoHead and
@@ -1560,210 +1153,6 @@ int matchDataObjInfoByCondInput( dataObjInfo_t **dataObjInfoHead,
 }
 
 int
-resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
-                    keyValPair_t *condInput ) {
-    const auto* repl_number_string = getValByKey(condInput, REPL_NUM_KW);
-    int repl_number = -1;
-
-    if (repl_number_string) {
-        try {
-            repl_number = std::stoi(repl_number_string);
-
-            if (!contains_replica(*dataObjInfoHead, repl_number)) {
-                return USER_INVALID_REPLICA_INPUT;
-            }
-        }
-        catch (const std::invalid_argument& e) {
-            return USER_INVALID_REPLICA_INPUT;
-        }
-        catch (const std::out_of_range& e) {
-            return USER_INVALID_REPLICA_INPUT;
-        }
-    }
-
-    int i, status;
-    dataObjInfo_t *matchedDataObjInfo = NULL;
-    dataObjInfo_t *matchedOldDataObjInfo = NULL;
-    dataObjInfo_t *oldDataObjInfoHead = NULL;
-    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
-    int matchedInfoCnt, unmatchedInfoCnt, matchedOldInfoCnt,
-        unmatchedOldInfoCnt;
-    int minCnt;
-    char *tmpStr;
-    int condFlag;
-    int toTrim;
-
-    //char* resc_hier     = getValByKey( condInput, RESC_HIER_STR_KW );
-    //char* dst_resc_hier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
-    sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, NULL, NULL );
-
-    status = matchDataObjInfoByCondInput( dataObjInfoHead, &oldDataObjInfoHead,
-                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo );
-    if ( status < 0 ) {
-        freeAllDataObjInfo( *dataObjInfoHead );
-        freeAllDataObjInfo( oldDataObjInfoHead );
-        *dataObjInfoHead = NULL;
-        if ( status == CAT_NO_ROWS_FOUND ) {
-            return 0;
-        }
-        else {
-            rodsLog( LOG_NOTICE, "%s - Failed during matching of data objects.", __FUNCTION__ );
-            return status;
-        }
-    }
-    condFlag = status;  /* cond exist if condFlag > 0 */
-
-    if ( matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL ) {
-        if ( condFlag == 0 ) {
-            /* at least have some good copies */
-            /* see if we can trim some old copies */
-            matchedOldDataObjInfo = oldDataObjInfoHead;
-            oldDataObjInfoHead = NULL;
-            /* also trim good copy too since there is no condition 12/1/09 */
-            matchedDataObjInfo = *dataObjInfoHead;
-            *dataObjInfoHead = NULL;
-        }
-        else {
-            /* don't trim anything */
-            freeAllDataObjInfo( *dataObjInfoHead );
-            *dataObjInfoHead = nullptr; // JMC cppcheck - nullptr
-            freeAllDataObjInfo( oldDataObjInfoHead );
-            return 0;
-        }
-    }
-
-    matchedInfoCnt = getDataObjInfoCnt( matchedDataObjInfo );
-    unmatchedInfoCnt = getDataObjInfoCnt( *dataObjInfoHead );
-    unmatchedOldInfoCnt = getDataObjInfoCnt( oldDataObjInfoHead );
-    /* free the unmatched one first */
-
-    freeAllDataObjInfo( *dataObjInfoHead );
-    freeAllDataObjInfo( oldDataObjInfoHead );
-    *dataObjInfoHead = oldDataObjInfoHead = nullptr;
-
-    const auto total_good_repls = matchedInfoCnt + unmatchedInfoCnt;
-
-    if ((tmpStr = getValByKey(condInput, COPIES_KW))) {
-        try {
-            minCnt = std::stoi(tmpStr);
-        }
-        catch (const std::invalid_argument& e) {
-            minCnt = DEF_MIN_COPY_CNT;
-        }
-        catch (const std::out_of_range& e) {
-            minCnt = DEF_MIN_COPY_CNT;
-        }
-
-        if (minCnt <= 0) {
-            minCnt = DEF_MIN_COPY_CNT;
-        }
-        else if (minCnt > total_good_repls) {
-            minCnt = total_good_repls;
-        }
-    }
-    else {
-        minCnt = DEF_MIN_COPY_CNT;
-    }
-
-    // the TOTAL number of good replicas that COULD be trimmed.
-    toTrim = total_good_repls - minCnt;
-
-    if ( toTrim > matchedInfoCnt ) {    /* cannot trim more than match */
-        toTrim = matchedInfoCnt;
-    }
-
-    if (repl_number > -1) {
-        // if the number of good replicas is already down to the minimum and the
-        // client requested that a good replica be trimmed, doing that would violate
-        // the minimum replicas requirement.
-        if (total_good_repls == minCnt && contains_replica(matchedDataObjInfo, repl_number)) {
-            return USER_INCOMPATIBLE_PARAMS;
-        }
-    }
-
-    if ( toTrim >= 0 ) {
-        /* trim all old */
-        *dataObjInfoHead = matchedOldDataObjInfo;
-
-        /* take some off the bottom - since cache are queued at top. Want
-         * to trim them first */
-        for ( i = 0; i < matchedInfoCnt - toTrim; i++ ) {
-            prevDataObjInfo = NULL;
-            tmpDataObjInfo = matchedDataObjInfo;
-            while ( tmpDataObjInfo != NULL ) {
-                if ( tmpDataObjInfo->next == NULL ) {
-                    if ( prevDataObjInfo == NULL ) {
-
-                        matchedDataObjInfo = NULL;
-                    }
-                    else {
-                        prevDataObjInfo->next = NULL;
-                    }
-                    freeDataObjInfo( tmpDataObjInfo );
-                    break;
-                }
-                prevDataObjInfo = tmpDataObjInfo;
-                tmpDataObjInfo = tmpDataObjInfo->next;
-            }
-        }
-        queDataObjInfo( dataObjInfoHead, matchedDataObjInfo, 0, 1 );
-    }
-    else {
-        /* negative toTrim. see if we can trim some matchedOldDataObjInfo */
-        freeAllDataObjInfo( matchedDataObjInfo );
-        matchedOldInfoCnt = getDataObjInfoCnt( matchedOldDataObjInfo );
-        toTrim = matchedOldInfoCnt + unmatchedOldInfoCnt + toTrim;
-        if ( toTrim > matchedOldInfoCnt ) {
-            toTrim = matchedOldInfoCnt;
-        }
-
-        if ( toTrim <= 0 ) {
-            freeAllDataObjInfo( matchedOldDataObjInfo );
-        }
-        else {
-            /* take some off the bottom - since cache are queued at top. Want
-             * to trim them first */
-            for ( i = 0; i < matchedOldInfoCnt - toTrim; i++ ) {
-                prevDataObjInfo = NULL;
-                tmpDataObjInfo = matchedOldDataObjInfo;
-                while ( tmpDataObjInfo != NULL ) {
-                    if ( tmpDataObjInfo->next == NULL ) {
-                        if ( prevDataObjInfo == NULL ) {
-                            matchedOldDataObjInfo = NULL;
-                        }
-                        else {
-                            prevDataObjInfo->next = NULL;
-                        }
-                        freeDataObjInfo( tmpDataObjInfo );
-                        break;
-                    }
-                    prevDataObjInfo = tmpDataObjInfo;
-                    tmpDataObjInfo = tmpDataObjInfo->next;
-                }
-            }
-            queDataObjInfo( dataObjInfoHead, matchedOldDataObjInfo, 0, 1 );
-        }
-    }
-
-    return 0;
-}
-
-int
-requeDataObjInfoByDestResc( dataObjInfo_t **dataObjInfoHead,
-                            keyValPair_t *condInput, int writeFlag, int topFlag ) {
-    char *rescName;
-    int status = -1;
-    if ( ( rescName = getValByKey( condInput, DEST_RESC_NAME_KW ) ) != NULL ||
-            ( rescName = getValByKey( condInput, BACKUP_RESC_NAME_KW ) ) != NULL ||
-            ( rescName = getValByKey( condInput, DEF_RESC_NAME_KW ) ) != NULL ) {
-
-
-        status = requeDataObjInfoByResc( dataObjInfoHead, rescName,
-                                         writeFlag, topFlag );
-    }
-    return status;
-}
-int
 getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                            dataObjInfo_t **dataObjInfo ) {
     int status, writeFlag;
@@ -1773,8 +1162,8 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         specCollPerm = WRITE_COLL_PERM;
         if ( rsComm->clientUser.authInfo.authFlag <= PUBLIC_USER_AUTH ) {
             rodsLog( LOG_NOTICE,
-                     "getDataObjInfoIncSpecColl:open for write not allowed for user %s",
-                     rsComm->clientUser.userName );
+                     "%s:open for write not allowed for user %s",
+                     __FUNCTION__, rsComm->clientUser.userName );
             return SYS_NO_API_PRIV;
         }
     }
@@ -1807,6 +1196,11 @@ getDataObjInfoIncSpecColl( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     else if ( writeFlag > 0 && dataObjInp->oprType != REPLICATE_OPR ) {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
                                  ACCESS_MODIFY_OBJECT, 0 );
+    }
+    else if (getValByKey(&dataObjInp->condInput, DATA_ACCESS_KW)) {
+        char* data_access_kw = getValByKey(&dataObjInp->condInput, DATA_ACCESS_KW);
+        status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,
+                                 data_access_kw, 0 );
     }
     else {
         status = getDataObjInfo( rsComm, dataObjInp, dataObjInfo,

@@ -157,7 +157,6 @@ unbunBulkBuf(
     int status, i;
     genQueryOut_t *attriArray = &bulkOprInp->attriArray;
     int intOffset[MAX_NUM_BULK_OPR_FILES];
-    char phyBunPath[MAX_NAME_LEN];
 
     if ( bulkOprInp == NULL ) {
         return USER__NULL_INPUT_ERR;
@@ -213,14 +212,11 @@ unbunBulkBuf(
             return status;
         }
 
-        // status = getPhyBunPath (bulkOprInp->objPath, tmpObjPath, baseDir.c_str(), phyBunPath);
-        // if (status < 0) return status;
-
         rstrcpy( dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN );
-        status = _rsDataObjPut( rsComm, dataObjInp, &buffer, NULL );
+        status = rsDataObjPut( rsComm, dataObjInp, &buffer, NULL );
         if ( status < 0 ) {
             std::stringstream msg;
-            msg << __FUNCTION__ << ": Failed to put data into file \"" << phyBunPath << "\"";
+            msg << __FUNCTION__ << ": Failed to put data into file \"" << tmpObjPath << "\"";
             irods::log( LOG_NOTICE, msg.str() );
             return status;
         }
@@ -249,19 +245,16 @@ _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     initDataObjInpFromBulkOpr( &dataObjInp, bulkOprInp );
 
     if ( myRodsObjStat->specColl != NULL ) {
-        /*status = resolveResc (myRodsObjStat->specColl->resource, &rescInfo);
-          if (status < 0) {
-          rodsLog( LOG_ERROR,"_rsBulkDataObjPut: resolveResc error for %s, status = %d",
-          myRodsObjStat->specColl->resource, status);
-          freeRodsObjStat (myRodsObjStat);
-          return status;
-          }*/
-
         resc_name = myRodsObjStat->specColl->resource;
     }
     else {
-        status = getRescForCreate( rsComm, &dataObjInp, resc_name );
-        if ( status < 0 || resc_name.empty() ) { // JMC cppcheck
+        const auto resc_hier = getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW);
+        if (!resc_hier) {
+            freeRodsObjStat( myRodsObjStat );
+            return SYS_INTERNAL_NULL_INPUT_ERR;
+        }
+        resc_name = irods::hierarchy_parser{resc_hier}.first_resc();
+        if (resc_name.empty()) {
             freeRodsObjStat( myRodsObjStat );
             return status;
         }
@@ -943,7 +936,7 @@ postProcBulkPut( rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
     /* create a template */
     bzero( &dataObjInfo, sizeof( dataObjInfo_t ) );
     rstrcpy( dataObjInfo.rescName, rescName->value, NAME_LEN );
-    dataObjInfo.replStatus = NEWLY_CREATED_COPY;
+    dataObjInfo.replStatus = INTERMEDIATE_REPLICA;
     /*status = resolveResc (rescName->value, &dataObjInfo.rescInfo);
       if (status < 0) {
       rodsLog( LOG_ERROR,"postProcBulkPut: resolveResc error for %s, status = %d",

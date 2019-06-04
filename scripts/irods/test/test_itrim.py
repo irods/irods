@@ -36,41 +36,49 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             path = hostname + ':' + vault
             self.admin.assert_icommand('iadmin mkresc resc_{0} unixfilesystem {1}'.format(i, path), 'STDOUT_SINGLELINE', ['unixfilesystem'])
 
-        self.admin.assert_icommand('iput -R resc_0 {0}'.format(filename))
+        try:
+            self.admin.assert_icommand('iput -R resc_0 {0}'.format(filename))
 
-        # Replicate the file across all resources.
-        for i in range(1, replicas):
-            self.admin.assert_icommand('irepl -S resc_0 -R resc_{0} {1}'.format(i, filename))
+            # Replicate the file across all resources.
+            for i in range(1, replicas):
+                self.admin.assert_icommand('irepl -S resc_0 -R resc_{0} {1}'.format(i, filename))
 
-        # Make all replicas stale except two.
-        self.admin.assert_icommand('iput -fR resc_0 {0}'.format(filename))
-        self.admin.assert_icommand('irepl -R resc_5 {0}'.format(filename))
+            # Make all replicas stale except two.
+            self.admin.assert_icommand('iput -fR resc_0 {0}'.format(filename))
+            self.admin.assert_icommand('irepl -R resc_5 {0}'.format(filename))
 
-        # Here are the actual tests.
+            # Here are the actual tests.
 
-        # Error cases.
-        self.admin.assert_icommand('itrim -S resc_1 -n3 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-        self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-        self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
-        self.admin.assert_icommand('itrim -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
+            # Error cases.
+            self.admin.assert_icommand('itrim -S resc_1 -n3 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
+            self.admin.assert_icommand('itrim -N2 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
+            self.admin.assert_icommand('itrim -N9 -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
+            self.admin.assert_icommand('itrim -n0 {0}'.format(filename), 'STDERR', 'status = -402000 USER_INCOMPATIBLE_PARAMS')
 
-        self.admin.assert_icommand('itrim -S invalid_resc {0}'.format(filename), 'STDERR', 'status = -78000 SYS_RESC_DOES_NOT_EXIST')
-        self.admin.assert_icommand('itrim -n999 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
-        self.admin.assert_icommand('itrim -n-1 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
-        self.admin.assert_icommand('itrim -nX {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
+            self.admin.assert_icommand('itrim -S invalid_resc {0}'.format(filename), 'STDERR', 'status = -78000 SYS_RESC_DOES_NOT_EXIST')
+            self.admin.assert_icommand('itrim -n999 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
+            self.admin.assert_icommand('itrim -n-1 {0}'.format(filename), 'STDERR', 'status = -164000 SYS_REPLICA_DOES_NOT_EXIST')
+            self.admin.assert_icommand('itrim -nX {0}'.format(filename), 'STDERR', 'status = -403000 USER_INVALID_REPLICA_INPUT')
 
-        # No error cases.
-        self.admin.assert_icommand('itrim -N2 -S resc_1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
-        self.admin.assert_icommand('itrim -S resc_2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            # No error cases.
+            self.admin.assert_icommand('itrim -N2 -S resc_1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+            self.admin.assert_icommand('itrim -S resc_2 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
-        self.admin.assert_icommand('itrim -N4 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
-        self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
-        self.admin.assert_icommand('itrim -N1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('itrim -N4 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+            self.admin.assert_icommand('itrim -N2 {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
+            self.admin.assert_icommand('itrim -N1 {0}'.format(filename), 'STDOUT', 'files trimmed = 1')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
-        self.admin.assert_icommand('itrim {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            self.admin.assert_icommand('itrim {0}'.format(filename), 'STDOUT', 'files trimmed = 0')
+            self.admin.assert_icommand('ils -l {0}'.format(filename), 'STDOUT', filename)
 
-        # Clean up.
-        self.admin.assert_icommand('irm -f {0}'.format(filename))
-        for i in range(replicas):
-            self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
+        finally:
+            # Clean up.
+            self.admin.assert_icommand('irm -f {0}'.format(filename))
+            for i in range(replicas):
+                self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
 

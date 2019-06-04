@@ -79,6 +79,7 @@ rsStructFileBundle( rsComm_t *rsComm,
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
+        rodsLog(LOG_NOTICE, "[%s:%d] - Adding [%s] as kw", __FUNCTION__, __LINE__, hier.c_str());
         addKeyVal( &structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
@@ -102,13 +103,10 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     char tmpPath[MAX_NAME_LEN];
     int l1descInx;
     char* dataType = 0; // JMC - backport 4664
-    openedDataObjInp_t dataObjCloseInp;
-    memset( &dataObjCloseInp, 0, sizeof(dataObjCloseInp) );
 
     // =-=-=-=-=-=-=-
     // create an empty data obj
-    dataObjInp_t dataObjInp;
-    memset( &dataObjInp, 0, sizeof( dataObjInp ) );
+    dataObjInp_t dataObjInp{};
     dataObjInp.openFlags = O_WRONLY;
 
     // =-=-=-=-=-=-=-
@@ -136,11 +134,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // open the file if we are in an add operation, otherwise create the new file
     if ( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR ) != 0 ) { // JMC - backport 4643
         l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
-
     }
     else {
         l1descInx = rsDataObjCreate( rsComm, &dataObjInp );
-
     }
 
     // =-=-=-=-=-=-=-
@@ -182,7 +178,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     std::string resc_hier;
     char* resc_hier_ptr = getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW );
     if ( !resc_hier_ptr ) {
-        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is NULL" );
+        rodsLog( LOG_NOTICE, "%s :: RESC_HIER_STR_KW is NULL", __FUNCTION__ );
     }
     else {
         addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier_ptr );
@@ -192,7 +188,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
                  chkObjPermAndStatInp.objPath, status );
+        openedDataObjInp_t dataObjCloseInp{};
         dataObjCloseInp.l1descInx = l1descInx;
+        //L1desc[l1descInx].oprStatus = status;
         rsDataObjClose( rsComm, &dataObjCloseInp );
         return status;
     }
@@ -270,8 +268,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // filter out any possible replicas that are not on this resource
             if ( resc_hier != collEnt->resc_hier ) {
                 rodsLog(
-                    LOG_DEBUG,
-                    "_rsStructFileBundle - skipping [%s] on resc [%s]",
+                    LOG_NOTICE,//LOG_DEBUG,
+                    "%s - skipping [%s] on resc [%s]",
+                    __FUNCTION__,
                     collEnt->phyPath,
                     collEnt->resc_hier );
                 free( collEnt );
@@ -303,8 +302,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 if ( status < 0 ) {
                     rodsLog(
                         LOG_ERROR,
-                        "mkDirForFilePath failed in _rsStructFileBundle with status %d",
-                        status );
+                        "mkDirForFilePath failed in %s with status %d",
+                        __FUNCTION__, status );
                     free( collEnt );
                     return status;
                 }
@@ -328,7 +327,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             else {
                 rodsLog(
                     LOG_DEBUG,
-                    "_rsStructFileBundle - LINK  [%s] on resc [%s]",
+                    "%s - LINK  [%s] on resc [%s]",
+                    __FUNCTION__,
                     collEnt->phyPath,
                     collEnt->resc_hier );
             }
@@ -344,7 +344,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->collName + collLen );
             status = mkFileDirR( rsComm, strlen( phyBunDir ), tmpPath, resc_hier.c_str(), getDefDirMode() );
             if ( status < 0 ) {
-                rodsLog( LOG_ERROR, "mkFileDirR failed in _rsStructFileBundle with status %d", status );
+                rodsLog( LOG_ERROR, "mkFileDirR failed in %s with status %d", __FUNCTION__, status );
                 free( collEnt );
                 return status;
             }
@@ -382,7 +382,9 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     rmLinkedFilesInUnixDir( phyBunDir );
     rmdir( phyBunDir );
 
+    openedDataObjInp_t dataObjCloseInp{};
     dataObjCloseInp.l1descInx = l1descInx;
+    //L1desc[l1descInx].oprStatus = status;
     status = rsDataObjClose( rsComm, &dataObjCloseInp );
     if ( status >= 0 ) {
         return savedStatus;

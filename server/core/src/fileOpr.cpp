@@ -51,9 +51,7 @@ allocAndFillFileDesc( rodsServerHost_t *rodsServerHost,
                       const std::string&  rescHier,
                       int                 fd,
                       int                 mode ) {
-    int fileInx;
-
-    fileInx = allocFileDesc();
+    int fileInx = allocFileDesc();
     if ( fileInx < 0 ) {
         return fileInx;
     }

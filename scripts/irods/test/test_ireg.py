@@ -84,15 +84,21 @@ class Test_Ireg(resource_suite.ResourceBase, unittest.TestCase):
     def test_ireg_inconsistent_replica__3829(self):
         filename = 'regfile.txt'
         filename2 = filename+'2'
-        os.system('rm -f {0} {1}'.format(filename, filename2))
-        lib.make_file(filename, 234)
-        lib.make_file(filename2, 468)
-        self.admin.assert_icommand('ireg -Kk -R {0} {1} {2}'.format(self.testresc, os.path.abspath(filename), self.admin.session_collection+'/'+filename))
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
-        self.admin.assert_icommand('ireg -Kk --repl -R {0} {1} {2}'.format(self.anotherresc, os.path.abspath(filename2), self.admin.session_collection+'/'+filename))
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '234', filename])
-        self.admin.assert_icommand('ils -L', 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '468', '& '+filename])
-        os.system('rm -f {0} {1}'.format(filename, filename2))
+        try:
+            lib.make_file(filename, 234)
+            lib.make_file(filename2, 468)
+            self.admin.assert_icommand(['ireg', '-K', '-k', '-R', self.testresc,
+                os.path.abspath(filename), os.path.join(self.admin.session_collection, filename)])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '& '+filename])
+            self.admin.assert_icommand(['ireg', '-K', '-k', '--repl', '-R', self.anotherresc,
+                os.path.abspath(filename2), os.path.join(self.admin.session_collection, filename)])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 0 '+self.testresc, '234', 'X '+filename])
+            self.admin.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', [' 1 '+self.anotherresc, '468', '& '+filename])
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)
+            if os.path.exists(filename2):
+                os.unlink(filename2)
 
     def test_ireg_dir_exclude_from(self):
         # test settings

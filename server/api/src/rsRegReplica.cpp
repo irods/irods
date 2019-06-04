@@ -221,18 +221,25 @@ rsRegReplica( rsComm_t *rsComm, regReplica_t *regReplicaInp ) {
     }
     else {
         // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
-        addKeyVal(&regReplicaInp->condInput, IN_REPL_KW, "" );
+        bool in_repl = getValByKey(&regReplicaInp->condInput, IN_REPL_KW);
+        if (!in_repl) {
+            addKeyVal(&regReplicaInp->condInput, IN_REPL_KW, "" );
+        }
         status = rcRegReplica( rodsServerHost->conn, regReplicaInp );
         // Remove the keyword as we will want to replicate on this server (the consumer)
-        rmKeyVal(&regReplicaInp->condInput, IN_REPL_KW);
-        if ( status >= 0 ) {
-            regReplicaInp->destDataObjInfo->replNum = status;
+        if (!in_repl) {
+            rmKeyVal(&regReplicaInp->condInput, IN_REPL_KW);
+            if ( status >= 0) {
+                regReplicaInp->destDataObjInfo->replNum = status;
+            }
+            if (!getValByKey(&regReplicaInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
+                status = _call_file_modified_for_replica( rsComm, regReplicaInp );
+            }
         }
-        status = _call_file_modified_for_replica( rsComm, regReplicaInp );
         return status;
     }
 
-    if ( status >= 0 ) {
+    if ( status >= 0 && !getValByKey(&regReplicaInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
         try {
             irods::reg_repl::verify_and_update_replica(rsComm, regReplicaInp);
         }
