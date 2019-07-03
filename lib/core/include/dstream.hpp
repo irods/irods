@@ -88,65 +88,73 @@ namespace irods::experimental::io
 
         bool is_open() const noexcept
         {
-            return transport_->is_open();
+            return transport_ && transport_->is_open();
         }
-
-        bool open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
-                  std::ios_base::openmode _mode)
+	
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const filesystem::path& _p,
+                                    std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
             if (!transport_->open(_p, _mode)) {
-                return false;
+                return nullptr;
             }
 
             init_get_or_put_area(_mode);
 
-            return true;
+            return this;
         }
 
-        bool open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
-                  int _replica_number,
-                  std::ios_base::openmode _mode)
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const filesystem::path& _p,
+                                    int _replica_number,
+                                    std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
             if (!transport_->open(_p, _replica_number, _mode)) {
-                return false;
+                return nullptr;
             }
 
             init_get_or_put_area(_mode);
 
-            return true;
+            return this;
         }
 
-        bool open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
-                  const std::string& _resource_name,
-                  std::ios_base::openmode _mode)
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const filesystem::path& _p,
+                                    const std::string& _resource_name,
+                                    std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
             if (!transport_->open(_p, _resource_name, _mode)) {
-                return false;
+                return nullptr;
             }
 
             init_get_or_put_area(_mode);
 
-            return true;
+            return this;
         }
 
-        bool close()
+        basic_data_object_buf* close()
         {
-            if (!transport_->is_open()) {
-                return false;
+            if (!transport_ || !transport_->is_open()) {
+                return nullptr;
             }
 
-            this->sync();
+            auto* sb = this;
 
-            return transport_->close();
+            if (this->sync()) {
+                sb = nullptr;
+            }
+
+            if (!transport_->close()) {
+                sb = nullptr;
+            }
+
+            return sb;
         }
 
         int file_descriptor() const noexcept
