@@ -31,7 +31,8 @@ endif()
 # Each file in the ./cmake/test_config directory defines variables for a specific test.
 # New tests should be added to this list.
 set(TEST_INCLUDE_LIST test_config/irods_linked_list_iterator
-                      test_config/irods_filesystem)
+                      test_config/irods_filesystem
+                      test_config/irods_dstream)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     unset_irods_test_variables()
