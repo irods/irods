@@ -1177,6 +1177,9 @@ add_library(
   ${IRODS_LIB_HASHER_SOURCES}
   ${IRODS_LIB_CLIENT_EXEC_SOURCES}
   ${IRODS_SERVER_CORE_SOURCES}
+  $<TARGET_OBJECTS:irods_filesystem_path>
+  $<TARGET_OBJECTS:irods_filesystem_client>
+  $<TARGET_OBJECTS:irods_filesystem_server>
   )
 target_link_libraries(
   RodsAPIs
@@ -1198,6 +1201,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include

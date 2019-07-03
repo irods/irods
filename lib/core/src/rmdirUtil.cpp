@@ -7,6 +7,8 @@
 #include "rodsPath.h"
 #include "rcMisc.h"
 
+#include "filesystem.hpp"
+
 #include "boost/filesystem.hpp"
 
 #include <iostream>
@@ -30,10 +32,53 @@ rmdirUtil( rcComm_t        *conn,
     return status;
 }
 
-int rmdirCollUtil( rcComm_t        *conn, 
-               rodsArguments_t     *myRodsArgs, 
-               int                 treatAsPathname, 
-               rodsPath_t          collPath ) {
+int rmdirCollUtil(rcComm_t        *conn, 
+                  rodsArguments_t *myRodsArgs, 
+                  int             treatAsPathname, 
+                  rodsPath_t      collPath)
+{
+    namespace fs = irods::experimental::filesystem;
+
+    // Handle "-p".
+    if (treatAsPathname) {
+        try {
+            const auto options = myRodsArgs->force
+                ? fs::remove_options::no_trash
+                : fs::remove_options::none;
+            
+            fs::path abs_path = collPath.outPath;
+
+            // Iterate over the elements in the path. This guarantees that no collections
+            // above the ones provided are touched.
+            for (auto&& _ : fs::path{collPath.inPath}) {
+                if (!fs::client::exists(*conn, abs_path)) {
+                    std::cerr << "Failed to remove [" << abs_path << "]: Collection does not exist\n";
+                    return 0;
+                }
+
+                if (!fs::client::is_collection(*conn, abs_path)) {
+                    std::cerr << "Failed to remove [" << abs_path << "]: Path does not point to a collection\n";
+                    return 0;
+                }
+
+                if (!fs::client::is_empty(*conn, abs_path)) {
+                    std::cerr << "Failed to remove [" << abs_path << "]: Collection is not empty\n";
+                    return 0;
+                }
+
+                fs::client::remove(*conn, abs_path, options);
+                abs_path = abs_path.parent_path();
+
+                (void) _; // Unused
+            }
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "Error: " << e.what() << '\n';
+        }
+
+        return 0;
+    }
+
     int status;
     collInp_t collInp;
     dataObjInp_t dataObjInp;
@@ -55,27 +100,21 @@ int rmdirCollUtil( rcComm_t        *conn,
                   << "]: Collection is not empty"
                   << std::endl;
         return 0;
-    } else {
-        initCondForRm( myRodsArgs, &dataObjInp, &collInp );
-        rstrcpy( collInp.collName, collPath.outPath, MAX_NAME_LEN );
-
-        status = rcRmColl( conn, &collInp, myRodsArgs->verbose );
-
-        if ( status < 0 ) {
-            std::cout << "rmdirColl: rcRmColl failed with error "
-                      << status
-                      << std::endl;
-            return status;
-        }
-
-        if ( treatAsPathname ) {
-            return rmdirCollUtil( conn, myRodsArgs, treatAsPathname, getParentColl( collPath.outPath ) );
-        } else {
-            return status;
-        }
     }
 
-    return 0;
+    initCondForRm( myRodsArgs, &dataObjInp, &collInp );
+    rstrcpy( collInp.collName, collPath.outPath, MAX_NAME_LEN );
+
+    status = rcRmColl( conn, &collInp, myRodsArgs->verbose );
+
+    if ( status < 0 ) {
+        std::cout << "rmdirColl: rcRmColl failed with error "
+                  << status
+                  << std::endl;
+        return status;
+    }
+
+    return status;
 }
 
 int checkCollExists( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *collPath ) {
