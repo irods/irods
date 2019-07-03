@@ -431,8 +431,19 @@ namespace io {
             open(_transport, _p, _resource_name, _mode);
         }
 
-        basic_dstream(basic_dstream&&) = default;
-        basic_dstream& operator=(basic_dstream&&) = default;
+        basic_dstream(basic_dstream&& _other)
+            : GeneralStream{std::move(_other)}
+            , buf_{std::move(_other.buf_)}
+        {
+            this->set_rdbuf(&buf_);
+        }
+
+        basic_dstream& operator=(basic_dstream&& _other)
+        {
+            GeneralStream::operator=(std::move(_other));
+            buf_ = std::move(_other.buf_);
+            return *this;
+        }
 
         ~basic_dstream() = default;
 
