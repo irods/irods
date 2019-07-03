@@ -452,9 +452,9 @@ namespace irods::experimental::io
             _lhs.swap(_rhs);
         }
 
-        basic_data_object_buf<char_type, traits_type>* rdbuf() const noexcept
+        basic_data_object_buf<char_type, traits_type>* rdbuf() const
         {
-            return &buf_;
+            return const_cast<basic_data_object_buf<char_type, traits_type>*>(&buf_);
         }
 
         bool is_open() const noexcept
