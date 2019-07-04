@@ -77,6 +77,11 @@ rcComm_t* _rcConnect(
 
     if ( ( tmpStr = getenv( IRODS_PROT ) ) != NULL ) {
         conn->irodsProt = ( irodsProt_t )atoi( tmpStr );
+
+        if (conn->irodsProt != NATIVE_PROT && conn->irodsProt != XML_PROT) {
+            rodsLog(LOG_ERROR, "Invalid protocol value.");
+            return nullptr;
+        }
     }
     else {
         conn->irodsProt = NATIVE_PROT;
