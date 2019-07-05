@@ -193,7 +193,7 @@ if __name__ == '__main__':
                                  'test_resource_configuration', 'test_control_plane', 'test_native_rule_engine_plugin', 'test_quotas',
                                  'test_ils', 'test_irmdir', 'test_ichksum', 'test_iquest', 'test_imeta_help', 'test_irepl', 'test_itrim',
                                  'test_irm', 'test_rule_engine_plugin_passthrough', 'test_irule', 'test_iuserinfo', 'test_delay_queue', 'test_imv',
-                                 'test_dynamic_peps', 'test_ifsck'])
+                                 'test_dynamic_peps', 'test_ifsck', 'test_stacktrace'])
     if options.run_plugin_tests:
         test_identifiers.extend(get_plugin_tests())
 
