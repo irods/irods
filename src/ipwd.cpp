@@ -3,6 +3,9 @@
 #include "rods.h"
 #include "parseCommandLine.h"
 #include "rcMisc.h"
+#include "rodsPath.h"
+
+#include <cstdlib>
 
 void usage( char *prog );
 
@@ -32,11 +35,14 @@ main( int argc, char **argv ) {
         exit( 2 );
     }
 
-    printf( "%s\n", myEnv.rodsCwd );
+    auto* path = escape_path(myEnv.rodsCwd);
+
+    printf("%s\n", path);
+
+    std::free(path);
 
     exit( 0 );
 }
-
 
 void usage( char *prog ) {
     printf( "Shows your iRODS Current Working Directory.\n" );
