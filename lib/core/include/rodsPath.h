@@ -62,6 +62,13 @@ int
 getFileType( rodsPath_t *rodsPath );
 void
 clearRodsPath( rodsPath_t *rodsPath );
+
+// Returns a new path with the following special characters escaped:
+//   - '\f'
+//
+// The character array returned is dynamically allocated. The caller is expected
+// to deallocate this memory using "free".
+char* escape_path(const char* _path);
 #ifdef __cplusplus
 }
 #endif

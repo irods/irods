@@ -38,5 +38,6 @@
     "test_all_rules",
     "test_symlink_operations",
     "test_icommands_file_operations",
-    "test_iadmin"
+    "test_iadmin",
+    "test_ipwd"
 ]
