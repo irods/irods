@@ -13,6 +13,9 @@
 #include "irodsntutil.hpp"
 #endif
 
+#include <string>
+#include <map>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 
@@ -391,12 +394,19 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
         else {
             addSrcInPath( rodsPathInp, argv[optInd + i] );
         }
+
         if ( srcFileType <= COLL_OBJ_T ) {
             status = parseRodsPath( &rodsPathInp->srcPath[i], myRodsEnv );
+            if (status == 0) {
+                auto* escaped_path = escape_path(rodsPathInp->srcPath->outPath);
+                rstrcpy(rodsPathInp->srcPath->outPath, escaped_path, MAX_NAME_LEN);
+                std::free(escaped_path);
+            }
         }
         else {
             status = parseLocalPath( &rodsPathInp->srcPath[i] );
         }
+
         if ( status < 0 ) {
             return status;
         }
@@ -415,6 +425,11 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
 
         if ( destFileType <= COLL_OBJ_T ) {
             status = parseRodsPath( rodsPathInp->destPath, myRodsEnv );
+            if (status == 0) {
+                auto* escaped_path = escape_path(rodsPathInp->destPath->outPath);
+                rstrcpy(rodsPathInp->destPath->outPath, escaped_path, MAX_NAME_LEN);
+                std::free(escaped_path);
+            }
         }
         else {
             status = parseLocalPath( rodsPathInp->destPath );
@@ -494,5 +509,34 @@ clearRodsPath( rodsPath_t *rodsPath ) {
     memset( rodsPath, 0, sizeof( rodsPath_t ) );
 
     return;
+}
+
+char* escape_path(const char* _path)
+{
+    static const std::map<char, std::string> special_char_mappings{
+        {'\f', "\\f"}
+    };
+
+    std::string path = _path;
+    std::string escaped_path;
+    const auto end = std::end(special_char_mappings);
+
+    for (auto&& c : path) {
+        const auto iter = special_char_mappings.find(c);
+
+        if (end != iter) {
+            escaped_path += iter->second;
+        }
+        else {
+            escaped_path += c;
+        }
+    }
+
+    const auto size = escaped_path.size() + 1;
+    char* escaped_path_c_str = static_cast<char*>(std::malloc(sizeof(char) * size));
+    std::memset(escaped_path_c_str, '\0', size);
+    std::strcpy(escaped_path_c_str, escaped_path.c_str());
+
+    return escaped_path_c_str;
 }
 
