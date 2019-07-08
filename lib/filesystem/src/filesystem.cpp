@@ -24,6 +24,7 @@
     #include "rsModColl.hpp"
     #include "rsRmColl.hpp"
     #include "rsModAVUMetadata.hpp"
+    #include "rsModDataObjMeta.hpp"
 #else
     #include "rodsClient.h"
     #include "objStat.h"
@@ -39,6 +40,7 @@
     #include "modColl.h"
     #include "rmColl.h"
     #include "modAVUMetadata.h"
+    #include "modDataObjMeta.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
@@ -543,17 +545,41 @@ namespace NAMESPACE_IMPL {
         detail::throw_if_path_length_exceeds_limit(_p);
 
         const auto seconds = _new_time.time_since_epoch();
-
-        collInp_t input{};
-        std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
         std::stringstream new_time;
         new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
-        addKeyVal(&input.condInput, COLLECTION_MTIME_KW, new_time.str().c_str());
 
-        const auto ec = rxModColl(&_comm, &input);
+        const auto object_status = status(_comm, _p);
 
-        if (ec != 0) {
-            throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
+        if (is_collection(object_status)) {
+            collInp_t input{};
+            std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
+            addKeyVal(&input.condInput, COLLECTION_MTIME_KW, new_time.str().c_str());
+
+            const auto ec = rxModColl(&_comm, &input);
+
+            if (ec != 0) {
+                throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
+            }
+        }
+        else if (is_data_object(object_status)) {
+            dataObjInfo_t info{};
+            std::strncpy(info.objPath, _p.c_str(), std::strlen(_p.c_str()));
+
+            keyValPair_t reg_params{};
+            addKeyVal(&reg_params, DATA_MODIFY_KW, new_time.str().c_str());
+
+            modDataObjMeta_t input{};
+            input.dataObjInfo = &info;
+            input.regParam = &reg_params;
+
+            const auto ec = rxModDataObjMeta(&_comm, &input);
+
+            if (ec != 0) {
+                throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
+            }
+        }
+        else {
+            throw filesystem_error{"cannot set mtime of unknown object type", _p};
         }
     }
 
