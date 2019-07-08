@@ -36,6 +36,7 @@
     #define rxDataObjChksum         rsDataObjChksum
     #define rxModAccessControl      rsModAccessControl
     #define rxModAVUMetadata        rsModAVUMetadata
+    #define rxModDataObjMeta        rsModDataObjMeta
 #else
     #define NAMESPACE_IMPL          client
 
@@ -54,6 +55,7 @@
     #define rxDataObjChksum         rcDataObjChksum
     #define rxModAccessControl      rcModAccessControl
     #define rxModAVUMetadata        rcModAVUMetadata
+    #define rxModDataObjMeta        rcModDataObjMeta
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 

@@ -27,6 +27,8 @@
 #include <variant>
 #include <iterator>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 TEST_CASE("filesystem")
 {
@@ -140,6 +142,56 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::exists(*comm, p));
         REQUIRE(fs::client::data_object_size(*comm, p) == 12);
         REQUIRE(fs::client::data_object_checksum(*comm, p, fs::replica_number::all).size() == 1);
+        REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
+    }
+
+    SECTION("collection modification times")
+    {
+        using namespace std::chrono_literals;
+
+        const fs::path col = user_home / "mtime_col.d";
+        REQUIRE(fs::client::create_collection(*comm, col));
+
+        const auto old_mtime = fs::client::last_write_time(*comm, col);
+        std::this_thread::sleep_for(2s);
+
+        using clock_type = fs::object_time_type::clock;
+        using duration_type = fs::object_time_type::duration;
+
+        const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+        REQUIRE(old_mtime != now);
+
+        fs::client::last_write_time(*comm, user_home, now);
+        const auto updated = fs::client::last_write_time(*comm, user_home);
+        REQUIRE(updated == now);
+
+        REQUIRE(fs::client::remove(*comm, col, fs::remove_options::no_trash));
+    }
+
+    SECTION("data object modification times")
+    {
+        using namespace std::chrono_literals;
+
+        const fs::path p = user_home / "data_object";
+
+        {
+            default_transport tp{*comm};
+            odstream{tp, p} << "hello world!";
+        }
+
+        const auto old_mtime = fs::client::last_write_time(*comm, p);
+        std::this_thread::sleep_for(2s);
+
+        using clock_type = fs::object_time_type::clock;
+        using duration_type = fs::object_time_type::duration;
+
+        const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+        REQUIRE(old_mtime != now);
+
+        fs::client::last_write_time(*comm, p, now);
+        const auto updated = fs::client::last_write_time(*comm, p);
+        REQUIRE(updated == now);
+
         REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
     }
 
