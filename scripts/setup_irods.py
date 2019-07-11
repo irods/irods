@@ -146,21 +146,10 @@ def setup_server(irods_config, json_configuration_file=None):
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Running Post-Install Test'))
 
-    l.info(irods.lib.get_header('Attempting test put'))
-
-    test_text = 'This is a test file written by the iRODS installation script.'
-    with tempfile.NamedTemporaryFile(mode='wt', suffix=irods_config.server_config['default_resource_name']) as f:
-        print(test_text, file=f, end='')
-        f.flush()
-        l.info('Putting the test file into iRODS...')
-        irods.lib.execute_command(['iput', f.name])
-        test_file_name = os.path.basename(f.name)
-    l.info('Getting the test file from iRODS...')
-    if irods.lib.execute_command(['iget', test_file_name, '-'])[0] != test_text:
-        raise IrodsError('The text retrieved from iRODS did not match the text in the file put into iRODS')
-    l.info('Removing the test file from iRODS...')
-    irods.lib.execute_command(['irm', '-f', test_file_name])
+    if 0 != irods.lib.execute_command_permissive(irods.paths.test_put_get_executable())[2]:
+        raise IrodsError('Post-install test failed. Please check your configuration.')
 
     l.info('Success.')
 

@@ -1370,6 +1370,7 @@ add_subdirectory(plugins/network)
 add_subdirectory(plugins/resources)
 add_subdirectory(plugins/rule_engines)
 add_subdirectory(test/c_api_test)
+add_subdirectory(test/post_install_test)
 add_subdirectory(unit_tests)
 
 include(${CMAKE_SOURCE_DIR}/cmake/development_library.cmake)
