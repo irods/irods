@@ -120,6 +120,9 @@ def rule_engine_executable():
         server_bin_directory(),
         'irodsReServer')
 
+def test_put_get_executable():
+    return os.path.join(server_bin_directory(), 'irodsTestPutGet')
+
 def service_account_file_path():
     return os.path.join(config_directory(), 'service_account.config')
 
