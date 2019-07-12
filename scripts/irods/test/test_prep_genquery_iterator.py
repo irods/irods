@@ -10,7 +10,7 @@ else:
 
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
-from textwrap import dedent as D_
+from textwrap import dedent
 from .. import lib
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -18,8 +18,6 @@ from . import resource_suite
 from ..core_file import temporary_core_file
 from ..paths import (config_directory as irods_config_dir,
                      server_config_path)
-
-#             Constants
 
 GENQUERY_MODULE_BASENAME = 'genquery.py'
 
@@ -60,8 +58,7 @@ def genquery_module_available():
             try:
                 sys.path.insert(0,IRODS_CONFIG_DIR)
                 import genquery
-                if getattr(genquery,'AUTO_CLOSE_QUERIES',None) is True:
-                    Allow_Intensive_Memory_Use = True
+                if getattr(genquery,'AUTO_CLOSE_QUERIES',None): Allow_Intensive_Memory_Use = True
                 idx =  sys.path.index(IRODS_CONFIG_DIR)
             except ImportError: # not fatal, past versions were only importable via PREP
                 pass
@@ -98,6 +95,8 @@ def generateRuleFile(names_list=None, **kw):
 
 class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
+    Statement_Table_Size = 50
+
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
     full_test = genquery_module_available()
@@ -107,6 +106,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_Genquery_Iterator, self).setUp()
 
         self.to_unlink = []
+        self.dir_cleanup = True
 
         # ------- set up variables specific to this group of tests
 
@@ -145,7 +145,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
             core.prepend_to_imports( 'from genquery import *')
 
-            core.add_rule(D_('''\
+            core.add_rule(dedent('''\
                 def my_rule_256(rule_args, callback, rei):
                     n=0
                     coll = rule_args[0]
@@ -160,7 +160,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             rule_file = ""
             with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_"} ) as f:
                 rule_file = f.name
-                print(D_('''\
+                print(dedent('''\
                 def main(rule_args,callback,rei):
                     TestCollection = global_vars['*testcollection'][1:-1]
                     retval = callback.my_rule_256(TestCollection);
@@ -182,7 +182,98 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
     #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
 
-    # This test passed on the command-line and behaves well, but temporarily removing from CI . -DWM 2018/11
+    @staticmethod
+    def int_from_bitfields( sub_ints , shift_incr ):
+        value = 0
+        shift = 0
+        for i in sub_ints:
+            value |= ( i << shift )
+            shift += shift_incr
+        return value
+
+    @unittest.skipUnless(Allow_Intensive_Memory_Use, 'Skip non nested repeats pending rsGenQuery continueInx fix')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
+    def test_repeat_nonnested_with_brk__4438(self):
+        self.repeat_nonnested(use_break = True,
+                              int_for_compare = self.int_from_bitfields((1,1,1,0),shift_incr=10))
+
+    @unittest.skipUnless(Allow_Intensive_Memory_Use, 'Skip non nested repeats pending rsGenQuery continueInx fix')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
+    def test_repeat_nonnested_without_brk__4438(self):
+        self.repeat_nonnested(use_break = False,
+                              int_for_compare = self.int_from_bitfields((256,2+256,512,0),shift_incr=10))
+
+    def repeat_nonnested(self, use_break, int_for_compare):
+        if not self.full_test : return
+        Do_Break = use_break
+        Outer_Loop_Reps = 2 * self.Statement_Table_Size + 1
+        lib.create_directory_of_small_files(self.dir_for_coll,912)
+        lib.execute_command('''sh -c "cd '{}' && rm ? ?? 1[0123]? 14[0123]"'''.format(self.dir_for_coll))
+        lib.execute_command ('tar -cf {} {}'.format(self.bundled_coll, self.dir_for_coll))
+        self.admin.assert_icommand('icd')
+        self.admin.assert_icommand('iput -f {}'.format(self.bundled_coll))
+        self.admin.assert_icommand('ibun -x {} .'.format(self.bundled_coll))
+
+        IrodsController().stop()
+
+        with temporary_core_file() as core:
+
+            core.prepend_to_imports('from genquery import *') # import all names to core that are exported by genquery.py
+
+            # with collection containing 144..911 inclusive
+            core.add_rule(dedent('''\
+                def my_rule_256_nonnested(rule_args, callback, rei):
+                    coll = rule_args[0]
+                    L = []
+                    for repeat in range( {Outer_Loop_Reps} ):
+                        n = 0
+                        for w1 in row_iterator("DATA_NAME",
+                                               "COLL_NAME = '{{}}' and DATA_NAME < '4'".format(coll), # 256 objects
+                                               AS_LIST, callback):
+                            n += 1
+                            if {Do_Break}: break  ## ___ (256 << 0)
+                        for x1 in row_iterator("DATA_NAME",
+                                               "COLL_NAME = '{{}}' and DATA_NAME like '91_' || < '4'".format(coll), # 2 + 256 objects
+                                               AS_LIST, callback):
+                            n += 0x400
+                            if {Do_Break}: break  ## ___ (2+256)<<10
+                        for y1 in row_iterator("DATA_NAME",
+                                               "COLL_NAME = '{{}}' and DATA_NAME >= '4'".format(coll), # 512 objects
+                                               AS_LIST, callback):
+                            n += 0x100000
+                            if {Do_Break}: break ## ___ (512 << 20)
+                        for z1 in row_iterator("DATA_NAME",
+                                               "COLL_NAME = '{{}}' and DATA_NAME = '999'".format(coll), # 0 objects
+                                               AS_LIST, callback):
+                            n |= 0x40000000
+                        L.append(n)
+                        rule_args[0] = str(L[0]) if len(L) == {Outer_Loop_Reps} and L == L[:1] * len(L) else "-1"
+                '''.format(**locals())))
+
+            IrodsController().start()
+
+            rule_file = ""
+            with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_nn_"} ) as f:
+                rule_file = f.name
+                print(dedent('''\
+                def main(rule_args,callback,rei):
+                    TestCollection = global_vars['*testcollection'][1:-1]
+                    retval = callback.my_rule_256_nonnested(TestCollection);
+                    result = retval['arguments'][0]
+                    callback.writeLine("stdout", "nonnested repeats test: {}".format(result))
+                input *testcollection=$""
+                output ruleExecOut
+                '''), file=f, end='')
+
+            run_irule = ("irule -F {} \*testcollection=\"'{}'\""
+                                              ).format(rule_file, self.test_admin_coll_path,)
+
+            self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'\s+{}$'.format(int_for_compare), use_regex=True)
+
+            IrodsController().stop()
+
+        IrodsController().start()
+    #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
 
     # Remove the next line when msiGetMoreRows always returns an accurate value for continueInx
     @unittest.skipUnless(Allow_Intensive_Memory_Use, 'Skip nested multiples-of-256 pending rsGenQuery continueInx fix')
@@ -205,7 +296,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             core.prepend_to_imports( 'from genquery import *') # import all names to core that are exported by genquery.py
 
             # with collection containing 144..911 inclusive
-            core.add_rule(D_('''\
+            core.add_rule(dedent('''\
                 def my_rule_256_nested(rule_args, callback, rei):
                     n=0
                     coll = rule_args[0]
@@ -227,7 +318,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
             rule_file = ""
             with generateRuleFile( names_list = self.to_unlink, **{'prefix':"test_mult256_n_"} ) as f:
                 rule_file = f.name
-                print(D_('''\
+                print(dedent('''\
                 def main(rule_args,callback,rei):
                     TestCollection = global_vars['*testcollection'][1:-1]
                     retval = callback.my_rule_256_nested(TestCollection);
@@ -260,6 +351,8 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         if not self.full_test : return
 
+        Do_Long_Nested_Test = False
+
         lib.create_directory_of_small_files(self.dir_for_coll,1000)
         lib.execute_command ('tar -cf {} {}'.format(self.bundled_coll, self.dir_for_coll))
         self.admin.assert_icommand('icd')
@@ -268,21 +361,30 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         rule_file = ""
 
+        cond1 = "DATA_NAME like '1__' "
+        cond2 = "DATA_NAME = '1' "
+        cond3 = "DATA_NAME like '7__' || like '8__' || like '9__' "
+
+        ( term1 , term2 , term3 ) = ( 100, 1, 300 )
+
+        if Do_Long_Nested_Test :
+
+            cond1 += " || like '2__' || like '3__' "
+            term1 += 200
+
+            cond2 += " || = '2' "
+            term2 += 1
+
         with generateRuleFile( names_list = self.to_unlink, **{'prefix':"qenquery_nest_paged"} ) as f:
             rule_file = f.name
-            print(D_(
-            '''\
+            print(dedent('''\
             def main(rule_args,callback,rei):
                 collect = global_vars['*testcollection'][1:-1]
                 from genquery import row_iterator, paged_iterator, AS_LIST
 
-                cond1 = "DATA_NAME like '1__' || like '2__' || like '3__' "
-                cond2 = "DATA_NAME like '1' || like '2' "
-                cond3 = "DATA_NAME like '7__' || like '8__' || like '9__' "
-
-                condString1 = "COLL_NAME = '{}' and {}".format(collect,cond1)
-                condString2 = "COLL_NAME = '{}' and {}".format(collect,cond2)
-                condString3 = "COLL_NAME = '{}' and {}".format(collect,cond3)
+                condString1 = "COLL_NAME = '" + collect + "' and {cond1}"
+                condString2 = "COLL_NAME = '" + collect + "' and {cond2}"
+                condString3 = "COLL_NAME = '" + collect + "' and {cond3}"
 
                 num_lines = 0
                 for x_rows in paged_iterator( "order_asc(DATA_NAME)",condString1, AS_LIST,callback):
@@ -295,16 +397,15 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                                     callback.writeLine('stdout', output_line)
                 callback.writeLine('stderr', str(num_lines))
 
-
             INPUT  *testcollection=$""
             OUTPUT ruleExecOut
-            '''), file=f, end='')
+            ''').format(**locals()), file=f, end='')
 
         command2run = ("irule -F " + rule_file + " " +
                        "\*testcollection=\"'{}'\"").format(self.test_admin_coll_path)
 
         out, err, _ = self.admin.run_icommand( command2run )
-        self.assertEqual( err.strip(), str( 2 * 300 ** 2 ))
+        self.assertEqual( err.strip(), str( term1 * term2 * term3 ))
         nestedQueryError = None
         old_i = 0
         ## -- assert monotonic number sequence
@@ -316,6 +417,33 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
         self.assertIsNotNone(nestedQueryError)
         self.assertFalse(nestedQueryError)
 
+    #=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#=-=-=-=-=-#
+
+    @unittest.skipUnless(Allow_Intensive_Memory_Use, 'This test will fail in iRODS > vsn 4.2.6 if queries not auto-closed.')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
+    def test_queries_are_freeing_statements__4438(self):
+        if not self.full_test : return
+        self.dir_cleanup = False
+        outer_loop_reps = 2 * self.Statement_Table_Size + 1
+        collection_to_query = "/" + self.admin.zone_name + "/home/" + self.admin.username
+        IrodsController().stop()
+        with temporary_core_file() as core:
+            core.prepend_to_imports( 'import genquery')
+            core.add_rule(dedent('''\
+                def attempt_to_fill_statement_table (rule_args, callback, rei):
+                    valid_count = []
+                    for m in range( {0} ):
+                        n = 0
+                        for z in genquery.row_iterator("COLL_NAME", "COLL_NAME = '{1}'", genquery.AS_LIST, callback):
+                            n += 1
+                        valid_count.append(n == 1)
+                    callback.writeLine("stdout", str( 1 if len( valid_count ) == {0} and all (valid_count) else 0) )
+                ''').format(outer_loop_reps , collection_to_query))
+            IrodsController().start()
+            run_irule = "irule attempt_to_fill_statement_table null ruleExecOut"
+            self.admin.assert_icommand(run_irule, 'STDOUT_SINGLELINE', r'^1$', use_regex=True)
+            IrodsController().stop()
+        IrodsController().start()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_with_modified_rulebase_off_boundary(self):
@@ -370,7 +498,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
                 rule_file = f.name
 
-                rule_string = D_('''\
+                rule_string = dedent('''\
                                  def main(rule_args,callback,rei):
                                      a = "%s/%%" # collection  plus Sql match pattern
                                      b = global_vars['*rpi'][1:-1]  # rows_per_iter
@@ -450,7 +578,7 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
                 rule_file = f.name
 
-                rule_string = D_('''\
+                rule_string = dedent('''\
                          irodsRule() {
                              *a = "%s/%%" # collection  plus Sql match pattern
                              *b = "*rpi"  # rows_per_iter
@@ -494,14 +622,16 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
 
         if self.full_test:
 
-            # - clean up in admin home collection
             self.admin.assert_icommand('icd')
-            self.admin.assert_icommand('irm -f {}'.format(self.bundled_coll))
-            self.admin.assert_icommand('irm -rf {}'.format(self.dir_for_coll))
 
-            # - clean up in local filesystem
-            lib.execute_command('rm -fr {}/'.format(self.test_dir_path))
-            lib.execute_command('rm -f {}'.format(self.test_tar_path))
+            if self.dir_cleanup:
+                # - clean up in admin home collection
+                self.admin.assert_icommand('irm -f {}'.format(self.bundled_coll))
+                self.admin.assert_icommand('irm -rf {}'.format(self.dir_for_coll))
+
+                # - clean up in local filesystem
+                lib.execute_command('rm -fr {}/'.format(self.test_dir_path))
+                lib.execute_command('rm -f {}'.format(self.test_tar_path))
 
             for f in self.to_unlink:
                 os.unlink(f)
