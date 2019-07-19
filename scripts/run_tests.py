@@ -11,6 +11,7 @@ import optparse
 import os
 import subprocess
 import sys
+import json
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -22,7 +23,6 @@ import irods.test
 import irods.test.settings
 import irods.log
 import irods.paths
-
 
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
@@ -143,14 +143,8 @@ if __name__ == '__main__':
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
     if options.run_python_suite:
-        test_identifiers.extend(['test_prep_genquery_iterator', 'test_ssl', 'test_xmsg', 'test_iadmin', 'test_resource_types', 'test_catalog',
-                                 'test_rulebase', 'test_symlink_operations', 'test_resource_tree', 'test_load_balanced_suite',
-                                 'test_icommands_file_operations', 'test_imeta_set', 'test_all_rules', 'test_iscan', 'test_ipasswd',
-                                 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync', 'test_iticket', 'test_irodsctl',
-                                 'test_resource_configuration', 'test_control_plane', 'test_native_rule_engine_plugin', 'test_quotas',
-                                 'test_ils', 'test_irmdir', 'test_ichksum', 'test_iquest', 'test_imeta_help', 'test_irepl', 'test_itrim',
-                                 'test_irm', 'test_rule_engine_plugin_passthrough', 'test_irule', 'test_iuserinfo', 'test_delay_queue', 'test_imv',
-                                 'test_dynamic_peps', 'test_ifsck', 'test_misc'])
+        with open(os.path.join(IrodsConfig().scripts_directory, 'core_tests_list.json'), 'r') as f:
+            test_identifiers.extend(json.loads(f.read()))
     if options.run_plugin_tests:
         test_identifiers.extend(get_plugin_tests())
 
