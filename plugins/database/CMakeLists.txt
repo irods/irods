@@ -89,6 +89,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     irods_server
     irods_plugin_dependencies
     irods_common
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
     ${ODBC_LIBRARY}

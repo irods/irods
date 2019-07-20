@@ -2206,6 +2206,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
         }
+
         status = cmlCheckDataObjId(
                      icss->stmtPtr[statementNum]->resultValue[dataIx],
                      genQueryInp.condInput.value[userIx],
