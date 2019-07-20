@@ -18,11 +18,14 @@
 #include "low_level.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_log.hpp"
+#include "irods_virtual_path.hpp"
 
 #include "rcMisc.h"
 
 #include <vector>
 #include <string>
+
+#include "boost/filesystem.hpp"
 
 /* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
@@ -1336,6 +1339,21 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
                         const char *ticketStr, const char *ticketHost,
                         const char *userName, const char *userZone,
                         icatSessionStruct *icss ) {
+
+    char original_collection_name[MAX_NAME_LEN];
+    std::vector<std::string> bindVars;
+    bindVars.push_back( dataId );
+    int cml_error = cmlGetStringValueFromSql(
+                 "select coll_name from R_COLL_MAIN where coll_id in (select coll_id from R_DATA_MAIN where data_id=?)",
+                 original_collection_name, MAX_NAME_LEN, bindVars, icss );
+    if(0 != cml_error) {
+        rodsLog(
+            LOG_ERROR,
+            "failed to determine collection name for object id [%s]",
+            dataId);
+        return cml_error;
+    }
+
     int status, i;
     char *cVal[10];
     int iVal[10];
@@ -1381,27 +1399,45 @@ int checkObjIdByTicket( const char *dataId, const char *accessLevel,
         cVal[6] = writeFileLimit;
         cVal[7] = writeByteCount;
         cVal[8] = writeByteLimit;
-        std::vector<std::string> bindVars;
-        bindVars.push_back( ticketStr );
-        bindVars.push_back( dataId );
-        bindVars.push_back( dataId );
-        status = cmlGetStringValuesFromSql(
-                     "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                     cVal, iVal, 9, bindVars, icss );
+        const std::string zone_path{boost::str(boost::format("/%s") % userZone)};
+        boost::filesystem::path coll_path{original_collection_name};
+        while(coll_path != zone_path) {
+            std::vector<std::string> bindVars;
+            bindVars.push_back( ticketStr );
+            bindVars.push_back( dataId );
+            bindVars.push_back( coll_path.string() );
+            status = cmlGetStringValuesFromSql(
+                         "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions, write_file_count, write_file_limit, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_COLL_MAIN where coll_name = ?))",
+                         cVal, iVal, 9, bindVars, icss );
+                if(0 == status) {
+                    break;
+                }
 
+                coll_path = coll_path.parent_path();
+        }
     }
     else {
         /* don't check ticket type, 'read' or 'write' is fine */
         if ( logSQL_CML != 0 ) {
             rodsLog( LOG_SQL, "checkObjIdByTicket SQL 2 " );
         }
-        std::vector<std::string> bindVars;
-        bindVars.push_back( ticketStr );
-        bindVars.push_back( dataId );
-        bindVars.push_back( dataId );
-        status = cmlGetStringValuesFromSql(
-                     "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                     cVal, iVal, 5, bindVars, icss );
+
+        const std::string zone_path{boost::str(boost::format("/%s") % userZone)};
+        boost::filesystem::path coll_path{original_collection_name};
+        while(coll_path != zone_path) {
+                std::vector<std::string> bindVars;
+                bindVars.push_back( ticketStr );
+                bindVars.push_back( dataId );
+                bindVars.push_back( coll_path.string() );
+                status = cmlGetStringValuesFromSql(
+                             "select ticket_id, uses_limit, uses_count, ticket_expiry_ts, restrictions from R_TICKET_MAIN where ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_COLL_MAIN where coll_name = ?))",
+                             cVal, iVal, 5, bindVars, icss );
+                if(0 == status) {
+                    break;
+                }
+
+                coll_path = coll_path.parent_path();
+        }
     }
 
     if ( status != 0 ) {
@@ -1513,6 +1549,21 @@ int
 cmlTicketUpdateWriteBytes( const char *ticketStr,
                            const char *dataSize, const char *objectId,
                            icatSessionStruct *icss ) {
+
+    char original_collection_name[MAX_NAME_LEN];
+    std::vector<std::string> bindVars;
+    bindVars.push_back( objectId );
+    int cml_error = cmlGetStringValueFromSql(
+                 "select coll_name from R_COLL_MAIN where coll_id in (select coll_id from R_DATA_MAIN where data_id=?)",
+                 original_collection_name, MAX_NAME_LEN, bindVars, icss );
+    if(0 != cml_error) {
+        rodsLog(
+            LOG_ERROR,
+            "failed to determine collection name for object id [%s]",
+            objectId);
+        return cml_error;
+    }
+
     int status, i;
     char *cVal[10];
     int iVal[10];
@@ -1541,13 +1592,23 @@ cmlTicketUpdateWriteBytes( const char *ticketStr,
     if ( logSQL_CML != 0 ) {
         rodsLog( LOG_SQL, "cmlTicketUpdateWriteBytes SQL 1 " );
     }
-    std::vector<std::string> bindVars;
-    bindVars.push_back( ticketStr );
-    bindVars.push_back( objectId );
-    bindVars.push_back( objectId );
-    status = cmlGetStringValuesFromSql(
-                 "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
-                 cVal, iVal, 3, bindVars, icss );
+
+    boost::filesystem::path coll_path{original_collection_name};
+    while(coll_path != irods::get_virtual_path_separator()) {
+        std::vector<std::string> bindVars;
+        bindVars.push_back( ticketStr );
+        bindVars.push_back( objectId );
+        bindVars.push_back( coll_path.string() );
+        status = cmlGetStringValuesFromSql(
+                     "select ticket_id, write_byte_count, write_byte_limit from R_TICKET_MAIN where ticket_type = 'write' and ticket_string = ? and (object_id = ? or object_id in (select coll_id from R_DATA_MAIN where data_id = ?))",
+                     cVal, iVal, 3, bindVars, icss );
+        if(0 == status) {
+            break;
+        }
+
+        coll_path = coll_path.parent_path();
+    }
+
     if ( status != 0 ) {
         return status;
     }
