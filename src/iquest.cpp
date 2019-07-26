@@ -38,7 +38,7 @@ usage() {
         "or order and order_desc (descending) to specify an order (if needed).",
         "Use % and _ as wild-cards, and use \\ to escape them.",
         "If 'no-distinct' appears before the selectConditionString, the normal",
-        "distinct option on the SQL will bypassed (this is useful in rare cases).",
+        "distinct option on the SQL will be bypassed (this is useful in rare cases).",
         "If uppercase (or upper) appears before the selectConditionString, the",
         "database value in the 'where' condition will be made upper case so one can do",
         "case-insensitive tests (using upper-case literals).",
