@@ -3,13 +3,80 @@
 #include "irods_server_properties.hpp"
 
 #include <unordered_map>
+#include <memory>
+#include <iostream>
+#include <iomanip>
+
+#include "boost/interprocess/sync/named_mutex.hpp"
+#include "boost/interprocess/sync/scoped_lock.hpp"
+
+#include <sys/types.h>
+#include <unistd.h>
+
+namespace ipc = boost::interprocess;
 
 namespace irods::experimental {
 
-void log::init() noexcept
+class stdout_ipc_sink
+    : public spdlog::sinks::base_sink<spdlog::details::null_mutex>
 {
-    static const char* id = "";
-    log_ = spdlog::syslog_logger("syslog", id, LOG_PID, LOG_LOCAL0);
+public:
+    stdout_ipc_sink()
+        : mutex_{ipc::open_or_create, shm_name_}
+        , pid_{getpid()}
+    {
+    }
+
+    stdout_ipc_sink(const stdout_ipc_sink&) = delete;
+    stdout_ipc_sink& operator=(const stdout_ipc_sink&) = delete;
+
+    ~stdout_ipc_sink()
+    {
+        try {
+            if (getpid() == pid_) {
+                ipc::named_mutex::remove(shm_name_);
+            }
+        }
+        catch (const ipc::interprocess_exception& e) {
+            std::cerr << "ERROR: " << e.what() << std::endl;
+        }
+    }
+
+protected:
+    void _sink_it(const spdlog::details::log_msg& _msg) override
+    {
+        try {
+            ipc::scoped_lock<ipc::named_mutex> lock{mutex_};
+            std::cout << _msg.raw.c_str() << std::endl;
+        }
+        catch (const ipc::interprocess_exception& e) {
+            std::cerr << "ERROR: " << e.what() << std::endl;
+        }
+    }
+
+    void _flush() override
+    {
+    }
+
+private:
+    inline static const char* const shm_name_ = "irods_stdout_ipc_sink";
+
+    ipc::named_mutex mutex_;
+    const pid_t pid_;
+};
+
+void log::init(bool _write_to_stdout) noexcept
+{
+    if (_write_to_stdout) {
+        auto sink = std::make_shared<stdout_ipc_sink>();
+        log_ = std::make_shared<spdlog::logger>("stdout", sink);
+        log_->set_pattern("%v");
+    }
+    else {
+        static const char* id = "";
+        log_ = spdlog::syslog_logger("syslog", id, LOG_PID, LOG_LOCAL0);
+    }
+
     log_->set_level(spdlog::level::trace); // Log everything!
 }
 

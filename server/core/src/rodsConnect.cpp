@@ -493,19 +493,9 @@ printServerHost( rodsServerHost_t *myServerHost ) {
     std::string hostname_label;
 
     if ( myServerHost->localFlag == LOCAL_HOST ) {
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "    LocalHostName: " );
-#else /* SYSLOG */
-        fprintf( stderr, "    LocalHostName: " );
-#endif /* SYSLOG */
         hostname_label = "local_hostname";
     }
     else {
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "    RemoteHostName: " );
-#else /* SYSLOG */
-        fprintf( stderr, "    RemoteHostName: " );
-#endif /* SYSLOG */
         hostname_label = "remote_hostname";
     }
 
@@ -514,11 +504,6 @@ printServerHost( rodsServerHost_t *myServerHost ) {
     std::vector<std::string> hostnames;
 
     while ( tmpHostName != NULL ) {
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, " %s,", tmpHostName->name );
-#else /* SYSLOG */
-        fprintf( stderr, " %s,", tmpHostName->name );
-#endif /* SYSLOG */
         hostnames.emplace_back(tmpHostName->name);
         tmpHostName = tmpHostName->next;
     }
@@ -528,14 +513,6 @@ printServerHost( rodsServerHost_t *myServerHost ) {
               std::cend(hostnames),
               std::experimental::make_ostream_joiner(ss, ", "));
     server_info.push_back({hostname_label, ss.str()});
-
-#ifdef SYSLOG
-    rodsLog( LOG_NOTICE, " Port Num: %d.\n\n", ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
-#else /* SYSLOG */
-    fprintf( stderr, " Port Num: %d.\n\n",
-             ( ( zoneInfo_t * )myServerHost->zoneInfo )->portNum );
-#endif /* SYSLOG */
-
     server_info.push_back({"port", std::to_string(static_cast<zoneInfo_t*>(myServerHost->zoneInfo)->portNum)});
 
     log::server::info(server_info);
@@ -554,46 +531,18 @@ printZoneInfo() {
 
     std::vector<log::key_value> zone_info;
 
-#ifdef SYSLOG
-    rodsLog( LOG_NOTICE, "Zone Info:\n" );
-#else /* SYSLOG */
-    fprintf( stderr, "Zone Info:\n" );
-#endif /* SYSLOG */
     while ( tmpZoneInfo != NULL ) {
         /* print the master */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->masterServerHost;
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-#else /* SYSLOG */
-        fprintf( stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-#endif /* SYSLOG */
     
         zone_info.push_back({"zone_info.name", tmpZoneInfo->zoneName});
 
         if ( tmpRodsServerHost->rcatEnabled == LOCAL_ICAT ) {
-#ifdef SYSLOG
-            rodsLog( LOG_NOTICE, "Type: LOCAL_ICAT   " );
-#else /* SYSLOG */
-            fprintf( stderr, "Type: LOCAL_ICAT   " );
-#endif /* SYSLOG */
             zone_info.push_back({"zone_info.type", "LOCAL_ICAT"});
         }
         else {
-#ifdef SYSLOG
-            rodsLog( LOG_NOTICE, "Type: REMOTE_ICAT   " );
-#else /* SYSLOG */
-            fprintf( stderr, "Type: REMOTE_ICAT   " );
-#endif /* SYSLOG */
             zone_info.push_back({"zone_info.type", "REMOTE_ICAT"});
         }
-
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
-                 tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#else /* SYSLOG */
-        fprintf( stderr, " HostAddr: %s   PortNum: %d\n\n",
-                 tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#endif /* SYSLOG */
 
         zone_info.push_back({"zone_info.host", tmpRodsServerHost->hostName->name});
         zone_info.push_back({"zone_info.port", std::to_string(tmpZoneInfo->portNum)});
@@ -601,17 +550,6 @@ printZoneInfo() {
         /* print the slave */
         tmpRodsServerHost = ( rodsServerHost_t * ) tmpZoneInfo->slaveServerHost;
         if ( tmpRodsServerHost != NULL ) {
-#ifdef SYSLOG
-            rodsLog( LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-            rodsLog( LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   " );
-            rodsLog( LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
-                     tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#else /* SYSLOG */
-            fprintf( stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName );
-            fprintf( stderr, "Type: LOCAL_SLAVE_ICAT   " );
-            fprintf( stderr, " HostAddr: %s   PortNum: %d\nn",
-                     tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum );
-#endif /* SYSLOG */
             zone_info.push_back({"zone_info.slave_zone_name", tmpZoneInfo->zoneName});
             zone_info.push_back({"zone_info.slave_type", "LOCAL_SLAVE_ICAT"});
             zone_info.push_back({"zone_info.slave_host", tmpRodsServerHost->hostName->name});
@@ -626,19 +564,9 @@ printZoneInfo() {
 
     /* print the reHost */
     if ( getReHost( &tmpRodsServerHost ) >= 0 ) {
-#ifdef SYSLOG
-        rodsLog( LOG_NOTICE, "reHost:   %s", tmpRodsServerHost->hostName->name );
-#else /* SYSLOG */
-        fprintf( stderr, "reHost:   %s\n\n", tmpRodsServerHost->hostName->name );
-#endif /* SYSLOG */
         log::server::info({{"re_host", tmpRodsServerHost->hostName->name}});
     }
     else {
-#ifdef SYSLOG
-        rodsLog( LOG_ERROR, "reHost error" );
-#else /* SYSLOG */
-        fprintf( stderr, "reHost error" );
-#endif /* SYSLOG */
         log::server::info({{"re_host", "error"}});
     }
 

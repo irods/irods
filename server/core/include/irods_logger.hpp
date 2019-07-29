@@ -86,7 +86,7 @@ public:
     log(const log&) = delete;
     log& operator=(const log&) = delete;
 
-    static void init() noexcept;
+    static void init(bool _write_to_stdout = false) noexcept;
     static auto to_level(const std::string& _level) -> level;
     static auto get_level_from_config(const std::string& _category) -> level;
     static void set_error_object(rError_t* _error) noexcept;
