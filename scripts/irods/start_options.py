@@ -27,3 +27,7 @@ def add_options(parser):
                       dest='server_reconnect_flag', action='store_true', default=False,
                       help='Causes the server to attempt a reconnect after '
                       'timeout (ten minutes)')
+
+    parser.add_option('--stdout',
+                      dest='write_to_stdout', action='store_true',
+                      help='Write log messages to stdout')

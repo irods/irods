@@ -55,7 +55,7 @@ class IrodsController(object):
                 }
             })
 
-    def start(self):
+    def start(self, write_to_stdout=False):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
 
@@ -114,38 +114,46 @@ class IrodsController(object):
                 from . import database_interface
                 database_interface.server_launch_hook(self.config)
 
-            l.info('Starting iRODS server...')
-            lib.execute_command(
-                [self.config.server_executable],
-                cwd=self.config.server_bin_directory,
-                env=self.config.execution_environment)
+            if write_to_stdout:
+                l.info('Starting iRODS server in foreground ...')
+                lib.execute_command(
+                    [self.config.server_executable, '-u'],
+                    foreground=True,
+                    cwd=self.config.server_bin_directory,
+                    env=self.config.execution_environment)
+            else:
+                l.info('Starting iRODS server ...')
+                lib.execute_command(
+                    [self.config.server_executable],
+                    cwd=self.config.server_bin_directory,
+                    env=self.config.execution_environment)
 
-            try_count = 1
-            max_retries = 100
-            while True:
-                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                        irods_port, try_count)
-                with contextlib.closing(socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)) as s:
-                    if s.connect_ex(('127.0.0.1', irods_port)) == 0:
-                        l.debug('Successfully connected to port %s.', irods_port)
-                        if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
-                            raise IrodsError('iRODS port is bound, but server is not started.')
-                        s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
-                        message = s.recv(256)
-                        if message != b'HEARTBEAT':
-                            raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
-                        break
-                if try_count >= max_retries:
-                    raise IrodsError('iRODS server failed to start.')
-                try_count += 1
-                time.sleep(1)
+                try_count = 1
+                max_retries = 100
+                while True:
+                    l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
+                            irods_port, try_count)
+                    with contextlib.closing(socket.socket(
+                            socket.AF_INET, socket.SOCK_STREAM)) as s:
+                        if s.connect_ex(('127.0.0.1', irods_port)) == 0:
+                            l.debug('Successfully connected to port %s.', irods_port)
+                            if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
+                                raise IrodsError('iRODS port is bound, but server is not started.')
+                            s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
+                            message = s.recv(256)
+                            if message != b'HEARTBEAT':
+                                raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
+                            break
+                    if try_count >= max_retries:
+                        raise IrodsError('iRODS server failed to start.')
+                    try_count += 1
+                    time.sleep(1)
+
+                l.info('Success')
 
         except IrodsError as e:
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
-
-        l.info('Success')
 
     def irods_grid_shutdown(self, timeout=20, **kwargs):
         l = logging.getLogger(__name__)
@@ -215,11 +223,11 @@ class IrodsController(object):
 
         l.info('Success')
 
-    def restart(self):
+    def restart(self, write_to_stdout=False):
         l = logging.getLogger(__name__)
         l.debug('Calling restart on IrodsController')
         self.stop()
-        self.start()
+        self.start(write_to_stdout)
 
     def status(self):
         l = logging.getLogger(__name__)

@@ -158,11 +158,11 @@ static void set_agent_spawner_process_name(const InformationRequiredToSafelyRena
 
 namespace {
 
-void init_logger()
+void init_logger(bool _write_to_stdout = false)
 {
     using log = irods::experimental::log;
 
-    log::init();
+    log::init(_write_to_stdout);
     irods::server_properties::instance().capture();
     log::server::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
     log::set_server_type("server");
@@ -198,8 +198,6 @@ void daemonize()
 int
 main( int argc, char **argv )
 {
-    init_logger();
-
     int c;
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
@@ -253,9 +251,11 @@ main( int argc, char **argv )
         }
     }
 
-    if (uFlag == 0) {
+    if (0 == uFlag) {
         daemonize();
     }
+
+    init_logger(1 == uFlag);
 
     /* start of irodsReServer has been moved to serverMain */
     signal( SIGTTIN, SIG_IGN );

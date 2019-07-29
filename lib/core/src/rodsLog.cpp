@@ -39,6 +39,8 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #define BIG_STRING_LEN MAX_NAME_LEN+300
 #include <stdarg.h>
 
+#include <iostream>
+
 static int verbosityLevel = LOG_ERROR;
 static int sqlVerbosityLevel = 0;
 pid_t myPid = 0;
@@ -124,148 +126,56 @@ void forward_to_syslog(int _log_level, const std::string& _msg)
  the message is, and depending on the verbosityLevel may or may not be
  recorded.  This is used by both client and server code.
  */
-void
-rodsLog( int level, const char *formatStr, ... ) {
-    time_t timeValue;
-    FILE *errOrOut;
-    va_list ap;
-
-#ifdef SYSLOG
-    char *myZone = getenv( "spProxyRodsZone" );
-#endif
-    int okToLog = 0;
-
-    char extraInfo[100];
-#ifdef windows_platform
-    char nt_log_msg[2048];
-#endif
-
-    if ( level <= verbosityLevel ) {
-        okToLog = 1;
-    }
-
-    if ( level == LOG_SQL ) {
-        okToLog = 1;
-    }
-
-    if ( !okToLog ) {
+void rodsLog(int _level, const char *_format, ...)
+{
+    if (!(_level <= verbosityLevel || _level == LOG_SQL)) {
         return;
     }
 
-    va_start( ap, formatStr );
-    char * message = ( char * )malloc( sizeof( char ) * BIG_STRING_LEN );
-    int len = vsnprintf( message, BIG_STRING_LEN, formatStr, ap );
-    if ( len + 1 > BIG_STRING_LEN ) {
-        va_end( ap );
-        va_start( ap, formatStr );
-        free( message );
-        message = ( char * )malloc( sizeof( char ) * ( len + 1 ) );
-        vsnprintf( message, len + 1, formatStr, ap );
-    }
-    va_end( ap );
+    std::vector<char> message;
 
-    extraInfo[0] = '\0';
-#ifndef windows_platform
-    errOrOut = stdout;
-#endif
-    if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
-            ProcessType == RE_SERVER_PT ) {
-        char timeBuf[100];
-        time( &timeValue );
-        rstrcpy( timeBuf, ctime( &timeValue ), 90 );
-        timeBuf[19] = '\0';
-        myPid = getpid();
-        snprintf( extraInfo, 100 - 1, "%s pid:%d ", timeBuf + 4, myPid );
-    }
-    else {
-#ifndef windows_platform
-        if ( level <= LOG_ERROR || level == LOG_SQL ) {
-            errOrOut = stderr;
-        }
-#endif
-    }
-
-    std::string prefix = "";
-    if ( level == LOG_SQL ) {
-        prefix = "LOG_SQL";
-    }
-    if ( level == LOG_SYS_FATAL ) {
-        prefix = "SYSTEM FATAL";
-    }
-    if ( level == LOG_SYS_WARNING ) {
-        prefix = "SYSTEM WARNING";
-    }
-    if ( level == LOG_ERROR ) {
-        prefix = create_log_error_prefix();
-        prefix += " ERROR";
-    }
-    if ( level == LOG_NOTICE ) {
-        prefix = "NOTICE";
-    }
-    if ( level == LOG_WARNING ) {
-        prefix = "WARNING";
-    }
-#ifdef SYSLOG
-    if ( level == LOG_DEBUG ) {
-        prefix = "DEBUG";
-    }
-    if ( level == LOG_DEBUG10 ) {
-        prefix = "DEBUG1";
-    }
-    if ( level == LOG_DEBUG9 ) {
-        prefix = "DEBUG2";
-    }
-    if ( level == LOG_DEBUG8 ) {
-        prefix = "DEBUG3";
-    }
-    if ( ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
-            ProcessType == RE_SERVER_PT )
-#else
-    if ( level == LOG_DEBUG ) {
-        prefix = "DEBUG";
-    }
-    if ( level == LOG_DEBUG10 ) {
-        prefix = "DEBUG1";
-    }
-    if ( level == LOG_DEBUG9 ) {
-        prefix = "DEBUG2";
-    }
-    if ( level == LOG_DEBUG8 ) {
-        prefix = "DEBUG3";
-    }
-    if ( message[strlen( message ) - 1] == '\n' )
-#endif
     {
-#ifdef SYSLOG
-#ifdef SYSLOG_FACILITY_CODE
-        syslog( SYSLOG_FACILITY_CODE | LOG_NOTICE, "%s - %s: %s", myZone, prefix.c_str(), message );
-#else
-        syslog( LOG_DAEMON | LOG_NOTICE, "%s - %s: %s", myZone, prefix.c_str(), message );
-#endif
-#else
-#ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s", extraInfo, prefix.c_str(), message );
-#else
-        sprintf( nt_log_msg, "%s%s: %s", extraInfo, prefix.c_str(), message );
-        rodsNtElog( nt_log_msg );
-#endif
-#endif
-    }
-    else {
-#ifndef windows_platform
-        fprintf( errOrOut, "%s%s: %s\n", extraInfo, prefix.c_str(), message );
-#else
-        sprintf( nt_log_msg, "%s%s: %s\n", extraInfo, prefix.c_str(), message );
-        rodsNtElog( nt_log_msg );
-#endif
-    }
-#ifndef windows_platform
-    fflush( errOrOut );
-#endif
+        va_list args_1;
+        va_list args_2;
 
-    forward_to_syslog(level, message);
+        va_start(args_1, _format);
+        va_copy(args_2, args_1);
+        message.resize(1 + std::vsnprintf(nullptr, 0, _format, args_1));
+        va_end(args_1);
 
-    free( message );
+        std::vsnprintf(message.data(), message.size(), _format, args_2);
+        va_end(args_2);
+    }
+
+    if (CLIENT_PT == ::ProcessType) {
+        std::string prefix;
+
+        switch (_level) {
+            case LOG_SQL:         prefix = "LOG_SQL"; break;
+            case LOG_SYS_FATAL:   prefix = "SYSTEM FATAL"; break;
+            case LOG_SYS_WARNING: prefix = "SYSTEM WARNING"; break;
+            case LOG_ERROR:       prefix = create_log_error_prefix() + " ERROR"; break;
+            case LOG_NOTICE:      prefix = "NOTICE"; break;
+            case LOG_WARNING:     prefix = "WARNING"; break;
+            case LOG_DEBUG:       prefix = "DEBUG"; break;
+            case LOG_DEBUG10:     prefix = "DEBUG1"; break;
+            case LOG_DEBUG9:      prefix = "DEBUG2"; break;
+            case LOG_DEBUG8:      prefix = "DEBUG3"; break;
+            default:              break;
+        }
+
+        std::ostream* out = &std::cout;
+
+        if (_level <= LOG_ERROR || _level == LOG_SQL) {
+            out = &std::cerr;
+        }
+
+        *out << prefix << ": " << message.data() << '\n';
+
+        return;
+    }
+
+    forward_to_syslog(_level, message.data());
 }
 
 /* same as rodsLog plus putting the msg in myError too. Need to merge with
