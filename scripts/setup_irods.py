@@ -62,7 +62,7 @@ import irods.log
 from irods.password_obfuscation import maximum_password_length
 from irods.logging_infrastructure import setup_rsyslog_and_logrotate, rsyslog_config_path, logrotate_config_path
 
-def setup_server(irods_config, json_configuration_file=None):
+def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     l = logging.getLogger(__name__)
 
     check_hostname()
@@ -126,7 +126,7 @@ def setup_server(irods_config, json_configuration_file=None):
         database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
     l.info(irods.lib.get_header('Starting iRODS...'))
-    IrodsController(irods_config).start()
+    IrodsController(irods_config).start(test_mode=test_mode)
 
     if irods_config.is_resource:
         irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
@@ -435,7 +435,9 @@ def main():
 
 
     try:
-        setup_server(irods_config, json_configuration_file=options.json_configuration_file)
+        setup_server(irods_config,
+                     json_configuration_file=options.json_configuration_file,
+                     test_mode=options.test_mode)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')

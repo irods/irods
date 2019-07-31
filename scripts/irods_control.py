@@ -67,11 +67,11 @@ def main():
         return 1
 
     operations_dict = {}
-    operations_dict['start'] = lambda: irods_controller.start(options.write_to_stdout)
-    operations_dict['graceful_start'] = lambda: irods_controller.start(options.write_to_stdout)
+    operations_dict['start'] = lambda: irods_controller.start(write_to_stdout=options.write_to_stdout, test_mode=options.test_mode)
+    operations_dict['graceful_start'] = lambda: irods_controller.start(write_to_stdout=options.write_to_stdout, test_mode=options.test_mode)
     operations_dict['stop'] = lambda: irods_controller.stop()
-    operations_dict['restart'] = lambda: irods_controller.restart(options.write_to_stdout)
-    operations_dict['graceful_restart'] = lambda: irods_controller.restart(options.write_to_stdout)
+    operations_dict['restart'] = lambda: irods_controller.restart(write_to_stdout=options.write_to_stdout, test_mode=options.test_mode)
+    operations_dict['graceful_restart'] = lambda: irods_controller.restart(write_to_stdout=options.write_to_stdout, test_mode=options.test_mode)
     operations_dict['status'] = lambda: irods_controller.status()
     operations_dict['get_environment'] = lambda: irods_config.print_execution_environment()
 

@@ -74,7 +74,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     'We are about to fail...',
                     start_index=initial_size_of_server_log)
                 # Message prints, rcExecRuleExpression prints rule name on failure, and delay server prints rule name on failure
-                expected_count = 3
+                expected_count = 2
                 self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
 
         finally:
@@ -350,7 +350,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     'We are about to segfault...',
                     start_index=initial_size_of_server_log)
                 # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rcExecRuleExpression)
-                expected_count = 2
+                expected_count = 1
                 self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
 
                 # See if the later rule is executed (i.e. delay server is still alive)
