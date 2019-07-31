@@ -99,9 +99,12 @@ def server_test_directory():
         'bin')
 
 def server_parent_log_path():
-    return '/var/log/irods/irods.log'
+    return server_log_path()
 
 def server_log_path():
+    env_var_name = 'IRODS_ENABLE_TEST_MODE'
+    if env_var_name in os.environ and os.environ[env_var_name] == '1':
+        return '/var/lib/irods/log/test_mode_output.log'
     return '/var/log/irods/irods.log'
 
 def server_bin_directory():

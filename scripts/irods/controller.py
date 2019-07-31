@@ -55,7 +55,7 @@ class IrodsController(object):
                 }
             })
 
-    def start(self, write_to_stdout=False):
+    def start(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
 
@@ -114,19 +114,31 @@ class IrodsController(object):
                 from . import database_interface
                 database_interface.server_launch_hook(self.config)
 
+            cmd = [self.config.server_executable]
+
             if write_to_stdout:
                 l.info('Starting iRODS server in foreground ...')
-                lib.execute_command(
-                    [self.config.server_executable, '-u'],
-                    foreground=True,
-                    cwd=self.config.server_bin_directory,
-                    env=self.config.execution_environment)
+
+                cmd.append('-u')
+
+                env_var_name = 'IRODS_ENABLE_TEST_MODE'
+                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
+                    cmd.append('-t')
+
+                lib.execute_command(cmd,
+                                    foreground=True,
+                                    cwd=self.config.server_bin_directory,
+                                    env=self.config.execution_environment)
             else:
                 l.info('Starting iRODS server ...')
-                lib.execute_command(
-                    [self.config.server_executable],
-                    cwd=self.config.server_bin_directory,
-                    env=self.config.execution_environment)
+
+                env_var_name = 'IRODS_ENABLE_TEST_MODE'
+                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
+                    cmd.append('-t')
+
+                lib.execute_command(cmd,
+                                    cwd=self.config.server_bin_directory,
+                                    env=self.config.execution_environment)
 
                 try_count = 1
                 max_retries = 100
@@ -223,11 +235,11 @@ class IrodsController(object):
 
         l.info('Success')
 
-    def restart(self, write_to_stdout=False):
+    def restart(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling restart on IrodsController')
         self.stop()
-        self.start(write_to_stdout)
+        self.start(write_to_stdout, test_mode)
 
     def status(self):
         l = logging.getLogger(__name__)

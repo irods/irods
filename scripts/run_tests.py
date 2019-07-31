@@ -20,6 +20,7 @@ else:
     import unittest
 
 from irods.configuration import IrodsConfig
+from irods.controller import IrodsController
 import irods.test
 import irods.test.settings
 import irods.log
@@ -191,6 +192,7 @@ if __name__ == '__main__':
     if options.run_plugin_tests:
         test_identifiers.extend(get_plugin_tests())
 
+    IrodsController().restart(test_mode=True)
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output, options.skip_until)
     print(results)
 

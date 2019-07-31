@@ -84,7 +84,7 @@ def execute_command_timeout(args, timeout=10, **kwargs):
             'The call {0} did not complete within'
             ' {1} seconds.'.format(args, timeout))
 
-def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, foreground=None, **kwargs):
+def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, foreground=False, **kwargs):
     if input is not None:
         if 'stdin' in kwargs and kwargs['stdin'] != subprocess.PIPE:
             raise IrodsError('\'input\' option is mutually exclusive with a \'stdin\' '

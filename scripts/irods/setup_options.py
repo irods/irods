@@ -20,10 +20,10 @@ def add_options(parser):
                       'LD_LIBRARY_PATH configured in your environment.')
 
     parser.add_option('--json_configuration_file',
-            dest='json_configuration_file', metavar='FILE_PATH',
-            help='The json file to use when setting up the server. '
-            'This option will ingest a json file instead of '
-            'prompting the user for input to perform server '
-            'configuration.')
+                      dest='json_configuration_file', metavar='FILE_PATH',
+                      help='The json file to use when setting up the server. '
+                      'This option will ingest a json file instead of '
+                      'prompting the user for input to perform server '
+                      'configuration.')
 
     start_options.add_options(parser)
