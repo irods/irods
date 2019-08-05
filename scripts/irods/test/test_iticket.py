@@ -301,3 +301,18 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.admin.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
         self.user.assert_icommand('iput '+filename)
         self.user.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
+
+    def test_iticket_get__issue_4387(self):
+        filename = 'TicketTestFile'
+        filepath = os.path.join(self.admin.local_session_dir, filename)
+        lib.make_file(filepath, 1)
+        parent_collection = self.admin.session_collection + '/inner'
+        collection = parent_collection + '/outer'
+        data_obj = collection + '/' + filename
+
+        self.admin.assert_icommand('imkdir -p ' + collection)
+        self.admin.assert_icommand('iput ' + filepath + ' ' + data_obj)
+        self.admin.assert_icommand('ils -l ' + collection, 'STDOUT')
+        self.user.assert_icommand('ils -l ' + collection, 'STDERR')
+        self.anon.assert_icommand('ils -l ' + collection, 'STDERR')
+        self.ticket_get_on(parent_collection, data_obj)
