@@ -6,6 +6,9 @@
 #include "rcGlobalExtern.h"
 
 #include "filesystem.hpp"
+#include "irods_query.hpp"
+
+#include <boost/format.hpp>
 
 char zoneHint[MAX_NAME_LEN];
 
@@ -44,6 +47,24 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             rodsLog(LOG_ERROR, "lsUtil: srcPath %s does not exist or user lacks access permission", src_path);
             savedStatus = USER_INPUT_PATH_ERR;
             continue;
+        }
+
+        // Need to populate dataId in srcPath as it is needed for getting permissions info
+        char coll_name[MAX_NAME_LEN]{};
+        char data_name[MAX_NAME_LEN]{};
+        status = splitPathByKey(rodsPathInp->srcPath[i].outPath, coll_name, MAX_NAME_LEN, data_name, MAX_NAME_LEN, '/');
+        if (status < 0) {
+            return status;
+        }
+
+        const std::string query_str{(boost::format(
+            "select DATA_ID where DATA_NAME = '%s' and COLL_NAME = '%s'") % data_name % coll_name).str()};
+        irods::query<rcComm_t> qobj{conn, query_str};
+        if (qobj.size() > 0) {
+            const auto id = qobj.front()[0];
+            if (!id.empty()) {
+                rstrcpy(rodsPathInp->srcPath[i].dataId, id.c_str(), sizeof(rodsPathInp->srcPath[i].dataId));
+            }
         }
 
         if (fs::client::is_data_object(object_status)) {
