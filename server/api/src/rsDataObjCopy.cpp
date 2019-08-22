@@ -23,6 +23,10 @@
 #include "rsRegDataObj.hpp"
 #include "rsDataObjClose.hpp"
 
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
 
@@ -38,8 +42,24 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
-    destDataObjInp = &dataObjCopyInp->destDataObjInp;
+    {
+        namespace fs = irods::experimental::filesystem;
+
+        srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
+        try {
+            if (! fs::server::is_data_object( *rsComm, srcDataObjInp->objPath )) {
+                return USER_INPUT_PATH_ERR;
+            }
+
+            destDataObjInp = &dataObjCopyInp->destDataObjInp;
+            if (fs::path{destDataObjInp->objPath}.is_relative()) {
+                return USER_INPUT_PATH_ERR;
+            }
+        }
+        catch (const fs::filesystem_error & err) {
+            return err.code().value();
+        }
+    }
 
     resolveLinkedPath( rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput );
     resolveLinkedPath( rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput );
