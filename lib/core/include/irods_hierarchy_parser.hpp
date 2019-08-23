@@ -19,6 +19,9 @@ namespace irods {
             /// @brief ctor doesn't do much, until it has a string
             hierarchy_parser( void );
 
+            /// @brief ctor - calls set_string using passed value
+            explicit hierarchy_parser( const std::string& _hier );
+
             /// @brief copy constructor
             hierarchy_parser( const hierarchy_parser& parser );
 
@@ -34,7 +37,13 @@ namespace irods {
              * This method returns a properly formatted hierarchy string, terminating
              * the string at the _term_resc resource if non-empty.
              */
-            error str( std::string& _ret_string, const std::string& _term_resc = std::string( "" ) ) const;
+            error str( std::string& _ret_string, const std::string& _term_resc = "" ) const;
+
+            /** @brief Returns the resource hierarchy string.
+             * This method returns a properly formatted hierarchy string, terminating
+             * the string at the _term_resc resource if non-empty.
+             */
+            std::string str(const std::string& _term_resc = "") const;
 
             /// @brief Adds another level of hierarchy by adding the specified child resource
             error add_child( const std::string& _resc );
@@ -42,14 +51,26 @@ namespace irods {
             /// @brief Returns the first resource
             error first_resc( std::string& _ret_resc ) const;
 
+            /// @brief Returns the first resource
+            std::string first_resc() const;
+
             /// @brief Returns the last resource in the hierarchy
             error last_resc( std::string& _ret_resc ) const;
+
+            /// @brief Returns the last resource in the hierarchy
+            std::string last_resc() const;
 
             /// @brief Returns the next resource in the hierarchy after the specified resource
             error next( const std::string& _current, std::string& _ret_resc ) const;
 
+            /// @brief Returns the next resource in the hierarchy after the specified resource
+            std::string next(const std::string& _current) const;
+
             /// @brief Returns the number of levels in the resource hierarchy
             error num_levels( int& levels ) const;
+
+            /// @brief Returns the number of levels in the resource hierarchy
+            int num_levels() const;
 
             /// @brief Returns an iterator to the beginning of the list
             const_iterator begin( void ) const;
