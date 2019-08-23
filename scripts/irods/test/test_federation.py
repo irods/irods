@@ -990,14 +990,14 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # list remote resources
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_DEF_RESOURCE)
+            "ilsresc --ascii -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_DEF_RESOURCE)
 
     @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 0) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
     def test_ilsresc_z_child_resc(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
+            "ilsresc --ascii -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
 
     def run_remote_writeLine_test(self, config, zone_info):
         # Some inputs and expected values

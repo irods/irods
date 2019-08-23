@@ -30,11 +30,6 @@ from .test_chunkydevtest import ChunkyDevTest
 from . import session
 from .rule_texts_for_tests import rule_texts
 
-def statvfs_path_or_parent(path):
-    while not os.path.exists(path):
-        path = os.path.dirname(path)
-    return os.statvfs(path)
-
 def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replica_count):
     for i in range(0, replica_count):
         admin_session.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [' {} '.format(str(i)), ' & ', data_obj_name])
@@ -3978,7 +3973,7 @@ OUTPUT ruleExecOut
                 self.admin.assert_icommand("iadmin modresc unix%dResc path /nopes" % (c1), "STDOUT_SINGLELINE", "Previous resource path")
                 filename = "reliableputfile.txt"
                 filepath = lib.create_local_testfile(filename)
-                self.admin.assert_icommand('ilsresc', 'STDOUT_SINGLELINE', "demoResc:replication")
+                self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', "demoResc:replication")
                 self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
                 self.admin.assert_icommand("iput " + filename, 'STDERR_SINGLELINE', "put error")  # put file
                 test = i+1 % len(indicies)
