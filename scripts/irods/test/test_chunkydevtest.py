@@ -48,7 +48,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.default_resource)
 
         # begin original devtest
-        self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("ilsresc -l", 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT_SINGLELINE', ["relVersion"])
         self.admin.assert_icommand("iuserinfo", 'STDOUT_SINGLELINE', "name: " + username)
@@ -611,7 +611,7 @@ class ChunkyDevTest(ResourceBase):
 
         # do test using xml protocol
         os.environ['irodsProt'] = "1"
-        self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT_SINGLELINE', "relVersion")
         self.admin.assert_icommand("iuserinfo", 'STDOUT_SINGLELINE', "name: " + username)
         self.admin.assert_icommand("ienv", 'STDOUT_SINGLELINE', "irods_version")
