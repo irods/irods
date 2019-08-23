@@ -13,6 +13,14 @@ namespace irods {
     hierarchy_parser::hierarchy_parser( void ) {
     }
 
+    hierarchy_parser::hierarchy_parser(const std::string& _hier) {
+        resc_list_.clear();
+        string_tokenize(_hier, DELIM, resc_list_);
+        if (resc_list_.empty()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "invalid hierarchy string");
+        }
+    }
+
     hierarchy_parser::hierarchy_parser(
         const hierarchy_parser& parser ) {
         hierarchy_parser::const_iterator it;
@@ -27,13 +35,12 @@ namespace irods {
 
     error hierarchy_parser::set_string(
         const std::string& _resc_hier ) {
-        if ( _resc_hier.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty hierarchy string" );
-        }
-        error result = SUCCESS();
         resc_list_.clear();
         string_tokenize( _resc_hier, DELIM, resc_list_ );
-        return result;
+        if (resc_list_.empty()) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty hierarchy string" );
+        }
+        return SUCCESS();
     }
 
     error hierarchy_parser::str(
@@ -58,6 +65,24 @@ namespace irods {
             }
         }
         return result;
+    }
+
+    std::string hierarchy_parser::str(const std::string& _term_resc) const {
+        std::string ret_string{};
+        bool first = true;
+        for (const auto& resc : resc_list_) {
+            if ( first ) {
+                first = false;
+            }
+            else {
+                ret_string += DELIM;
+            }
+            ret_string += resc;
+            if (resc == _term_resc) {
+                break;
+            }
+        }
+        return ret_string;
     }
 
     error hierarchy_parser::add_child(
@@ -94,6 +119,20 @@ namespace irods {
         return result;
     }
 
+    std::string hierarchy_parser::first_resc() const {
+        if (resc_list_.size()) {
+            return resc_list_.front();
+        }
+        return {};
+    }
+
+    std::string hierarchy_parser::last_resc() const {
+        if (resc_list_.size()) {
+            return resc_list_.back();
+        }
+        return {};
+    }
+
     error hierarchy_parser::next(
         const std::string& _current,
         std::string& _ret_resc ) const {
@@ -125,11 +164,33 @@ namespace irods {
         return result;
     }
 
+    std::string hierarchy_parser::next(
+        const std::string& _current) const {
+        for (resc_list_t::const_iterator itr = resc_list_.begin();
+             itr != resc_list_.end(); ++itr) {
+            if (*itr == _current) {
+                resc_list_t::const_iterator next_itr = itr + 1;
+                if (next_itr != resc_list_.end()) {
+                    return *next_itr;
+                }
+                THROW(NO_NEXT_RESC_FOUND, (boost::format(
+                      "there is no next resource. [%s] is a leaf resource.") % _current).str());
+            }
+        }
+        THROW(CHILD_NOT_FOUND, (boost::format(
+              "resource [%s] not in hierarchy.") % _current).str());
+    }
+
+
     error hierarchy_parser::num_levels(
         int& levels ) const {
         error result = SUCCESS();
         levels = resc_list_.size();
         return result;
+    }
+
+    int hierarchy_parser::num_levels() const {
+        return resc_list_.size();
     }
 
     hierarchy_parser::const_iterator hierarchy_parser::begin( void ) const {
@@ -150,15 +211,9 @@ namespace irods {
         return DELIM;
     }
 
-    bool hierarchy_parser::resc_in_hier(
-        const std::string& _resc ) const {
-        bool result = false;
-        for ( resc_list_t::const_iterator itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr ) {
-            if ( *itr == _resc ) {
-                result = true;
-            }
-        }
-        return result;
+    bool hierarchy_parser::resc_in_hier(const std::string& _resc) const {
+        return std::any_of(resc_list_.begin(), resc_list_.end(),
+                [&](const std::string& _r) { return _r == _resc; });
     }
 
 }; // namespace irods
