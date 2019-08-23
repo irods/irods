@@ -1375,12 +1375,12 @@ class Test_Iadmin_Resources(resource_suite.ResourceBase, unittest.TestCase):
         self.assertTrue(self.vault_warning_message in stdout)
         self.assertTrue(self.host_warning_message in stdout)
         # Should fail to create resource
-        self.admin.assert_icommand_fail('ilsresc', 'STDOUT_SINGLELINE', self.resc_name)
+        self.admin.assert_icommand_fail(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.resc_name)
 
         # Make resc with good vault path and localhost and ensure it is created
         self.admin.assert_icommand(['iadmin', 'mkresc', self.resc_name, 'unixfilesystem', 'localhost:' + self.good_vault],
                                    'STDOUT_SINGLELINE', self.host_warning_message)
-        self.admin.assert_icommand('ilsresc', 'STDOUT_SINGLELINE', self.resc_name)
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.resc_name)
 
     def test_modresc_host_path_warning_messages(self):
         # Change host to localhost and ensure that it was changed (check for warning)

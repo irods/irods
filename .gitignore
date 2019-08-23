@@ -4,4 +4,6 @@ tags
 .cproject
 *.swp
 *.pyc
+*.un~
+*.swp~
 packaging/unattended_setup.json
