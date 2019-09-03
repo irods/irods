@@ -205,10 +205,10 @@ int irods_file_open_for_write(
 ssize_t irods_file_read(
     struct archive* _arch,
     void*           _data,
-    const void**    _buff ) {
+    const void**    _block) {
     if ( !_arch ||
             !_data ||
-            !_buff ) {
+            !_block ) {
         rodsLog( LOG_ERROR, "irods_file_read - null input" );
         return ARCHIVE_FATAL;
     }
@@ -218,46 +218,28 @@ ssize_t irods_file_read(
     cb_ctx_t* cb_ctx = static_cast< cb_ctx_t* >( _data );
 
     // =-=-=-=-=-=-=-
-    // stat the file to get its size
-    rodsStat_t*   stbuf = 0;
-    fileStatInp_t f_inp;
-    memset( &f_inp, 0, sizeof( f_inp ) );
-    rstrcpy( f_inp.fileName, FileDesc[ cb_ctx->idx_ ].fileName, MAX_NAME_LEN );
-    rstrcpy( f_inp.rescHier, FileDesc[ cb_ctx->idx_ ].rescHier, MAX_NAME_LEN );
-    rstrcpy( f_inp.objPath,  FileDesc[ cb_ctx->idx_ ].objPath,  MAX_NAME_LEN );
-    rstrcpy( f_inp.addr.hostAddr, cb_ctx->loc_, NAME_LEN );
-    int status = rsFileStat( cb_ctx->desc_->rsComm, &f_inp, &stbuf );
-    if ( status != 0 ) {
-        if ( status != UNIX_FILE_STAT_ERR - ENOENT ) {
-            rodsLog( LOG_DEBUG, "irods_file_read: can't stat %s. status = %d",
-                     f_inp.fileName, status );
-        }
-        return -1;
-    }
-
-    size_t buf_len = stbuf->st_size;
-    free( stbuf );
-
-    // =-=-=-=-=-=-=-
     // build a read inp and read the buffer
     if ( cb_ctx->read_buf.buf ) {
         free( cb_ctx->read_buf.buf );
     }
 
-    memset( &cb_ctx->read_buf, 0, sizeof( cb_ctx->read_buf ) );
-    cb_ctx->read_buf.buf = malloc( buf_len );
-    cb_ctx->read_buf.len = buf_len;
+    // Based on some performance testing, it was determined that there were little
+    // or no performance gains beyond a block size of 1MB.
+    constexpr auto block_size_in_bytes = 1 * 1024 * 1024;
 
-    fileReadInp_t r_inp;
-    memset( &r_inp, 0, sizeof( r_inp ) );
+    memset( &cb_ctx->read_buf, 0, sizeof( cb_ctx->read_buf ) );
+    cb_ctx->read_buf.buf = malloc( block_size_in_bytes );
+    cb_ctx->read_buf.len = block_size_in_bytes;
+
+    fileReadInp_t r_inp{};
     r_inp.fileInx = cb_ctx->idx_;
-    r_inp.len     = buf_len;
-    status = rsFileRead( cb_ctx->desc_->rsComm, &r_inp, &cb_ctx->read_buf );
+    r_inp.len     = block_size_in_bytes;
+    const auto status = rsFileRead( cb_ctx->desc_->rsComm, &r_inp, &cb_ctx->read_buf );
     if ( status < 0 ) {
         return -1;
     }
     else {
-        ( *_buff ) = cb_ctx->read_buf.buf;
+        ( *_block ) = cb_ctx->read_buf.buf;
         return status;
     }
 
@@ -375,8 +357,7 @@ irods::error extract_file( int _index ) {
         return PASSMSG( "extract_file - failed in get_loc_for_hier_string", ret );
     }
 
-    cb_ctx_t cb_ctx;
-    memset( &cb_ctx, 0, sizeof( cb_ctx_t ) );
+    cb_ctx_t cb_ctx{};
     cb_ctx.desc_ = &PluginStructFileDesc[ _index ];
     snprintf( cb_ctx.loc_, sizeof( cb_ctx.loc_ ), "%s", location.c_str() );
 
@@ -403,7 +384,7 @@ irods::error extract_file( int _index ) {
     }
 
     // =-=-=-=-=-=-=-
-    // iterate over entries in the archive and write them do disk
+    // iterate over entries in the archive and write them to a resource
     struct archive_entry* entry;
     while ( ARCHIVE_OK == archive_read_next_header( arch, &entry ) ) {
         // =-=-=-=-=-=-=-
@@ -412,7 +393,7 @@ irods::error extract_file( int _index ) {
         archive_entry_set_pathname( entry, path.c_str() );
 
         // =-=-=-=-=-=-=-
-        // read data from entry and write it to disk
+        // read data from entry and write it to a resource
         if ( ARCHIVE_OK != archive_read_extract( arch, entry, flags ) ) {
             std::stringstream msg;
             msg << "extract_file - failed to write [";
