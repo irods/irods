@@ -5,6 +5,7 @@
     "test_delay_queue",
     "test_dynamic_peps",
     "test_iadmin",
+    "test_ibun",
     "test_ichksum",
     "test_ichmod",
     "test_icommands_file_operations",
