@@ -190,7 +190,7 @@ def cat(fname, string):
     with open(fname, 'at') as f:
         print(string, file=f, end='')
 
-def make_file(f_name, f_size, contents='zero'):
+def make_file(f_name, f_size, contents='zero', block_size_in_bytes=1000):
     assert contents in ['arbitrary', 'random', 'zero']
     if contents == 'arbitrary' or f_size == 0:
         execute_command(['truncate', '-s', str(f_size), f_name])
@@ -199,7 +199,14 @@ def make_file(f_name, f_size, contents='zero'):
     source = {'zero': '/dev/zero',
               'random': '/dev/urandom'}[contents]
 
-    execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
+    count = f_size / block_size_in_bytes
+    leftover_size = f_size % block_size_in_bytes
+    if count > 0:
+        execute_command(['dd', 'if='+source, 'of='+f_name, 'count='+str(count), 'bs='+str(block_size_in_bytes)])
+        if leftover_size > 0:
+            execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(leftover_size), 'oflag=append', 'conv=notrunc'])
+    else:
+        execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(leftover_size)])
 
 def make_dir_p(directory):
     try:
