@@ -28,6 +28,18 @@ acAclPolicy {
 }
 '''
 
+#===== Test_AllRules =====
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules']['test_msiTarFileExtract_big_file__issue_4118'] = '''
+myTestRule {{
+    msiTarFileExtract(*File,*Coll,*Resc,*Status);
+    writeLine("stdout","Extract files from a tar file *File into collection *Coll on resource *Resc");
+}}
+INPUT *File="{logical_path_to_tar_file}", *Coll="{logical_path_to_untar_coll}", *Resc="demoResc"
+OUTPUT ruleExecOut
+'''
+
 #===== Test_ICommands_File_Operations =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ICommands_File_Operations'] = {}
