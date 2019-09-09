@@ -56,9 +56,6 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
                   int srcFileType, int destFileType, int flag, rodsPathInp_t *rodsPathInp );
 
 int
-getLastPathElement( char *inPath, char *lastElement );
-
-int
 getFileType( rodsPath_t *rodsPath );
 void
 clearRodsPath( rodsPath_t *rodsPath );

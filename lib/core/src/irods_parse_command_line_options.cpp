@@ -3,6 +3,7 @@
 #include "boost/program_options.hpp"
 #include "boost/filesystem.hpp"
 #include "rodsErrorTable.h"
+#include "rcMisc.h"
 namespace fs = boost::filesystem;
 
 #include <vector>
@@ -307,6 +308,12 @@ static int build_irods_path_structure(
         }
         if ( _src_type <= COLL_OBJ_T ) {
             status = parseRodsPath( &_rods_paths->srcPath[i], _rods_env );
+
+            if (status == 0) {
+                auto* escaped_path = escape_path(_rods_paths->destPath->outPath);
+                rstrcpy(_rods_paths->destPath->outPath, escaped_path, MAX_NAME_LEN);
+                std::free(escaped_path);
+            }
         }
         else {
             status = parseLocalPath( &_rods_paths->srcPath[i] );
@@ -331,6 +338,12 @@ static int build_irods_path_structure(
 
         if ( _dst_type <= COLL_OBJ_T ) {
             status = parseRodsPath( _rods_paths->destPath, _rods_env );
+
+            if (status == 0) {
+                auto* escaped_path = escape_path(_rods_paths->destPath->outPath);
+                rstrcpy(_rods_paths->destPath->outPath, escaped_path, MAX_NAME_LEN);
+                std::free(escaped_path);
+            }
         }
         else if ( strcmp( _rods_paths->destPath->inPath, STDOUT_FILE_NAME ) == 0 ) {
             snprintf( _rods_paths->destPath->outPath, sizeof( _rods_paths->destPath->outPath ), "%s", STDOUT_FILE_NAME );

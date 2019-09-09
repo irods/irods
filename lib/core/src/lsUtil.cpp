@@ -130,12 +130,7 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 int
 printLsStrShort( char *srcPath ) {
-    char srcElement[MAX_NAME_LEN];
-
-    getLastPathElement( srcPath, srcElement );
-
     printf( "  %s\n", srcPath );
-
     return 0;
 }
 
@@ -557,13 +552,11 @@ printCollCollEnt( collEnt_t *collEnt, int flags ) {
 int
 printSpecLsLong( char *objPath, char *ownerName, char *objSize,
                  char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs ) {
-    char srcElement[MAX_NAME_LEN];
     collEnt_t collEnt;
     int queryFlags;
 
     bzero( &collEnt, sizeof( collEnt ) );
 
-    getLastPathElement( objPath, srcElement );
     collEnt.dataName = objPath;
     collEnt.ownerName = ownerName;
     collEnt.dataSize = strtoll( objSize, 0, 0 );

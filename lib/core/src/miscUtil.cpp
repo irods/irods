@@ -13,6 +13,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_path_recursion.hpp"
 #include "irods_exception.hpp"
+#include "filesystem/path.hpp"
 
 #include "get_hier_from_leaf_id.h"
 
@@ -2339,28 +2340,27 @@ matchPathname( pathnamePatterns_t *pp, char *name, char *dirname ) {
  *      All other oprType will be treated as normal.
  */
 int
-resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
+resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType )
+{
+    namespace fs = irods::experimental::filesystem;
+
     rodsPath_t *srcPath, *destPath;
-    char srcElement[MAX_NAME_LEN], destElement[MAX_NAME_LEN];
     int status;
     int srcInx;
     rodsPath_t *targPath;
 
     if ( rodsPathInp == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "resolveRodsTarget: NULL rodsPathInp input" );
+        rodsLog( LOG_ERROR, "resolveRodsTarget: NULL rodsPathInp input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsPathInp->srcPath == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "resolveRodsTarget: NULL rodsPathInp->srcPath input" );
+        rodsLog( LOG_ERROR, "resolveRodsTarget: NULL rodsPathInp->srcPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
     if ( rodsPathInp->destPath == NULL ) {
-        rodsLog( LOG_ERROR,
-                 "resolveRodsTarget: NULL rodsPathInp->destPath input" );
+        rodsLog( LOG_ERROR, "resolveRodsTarget: NULL rodsPathInp->destPath input" );
         return USER__NULL_INPUT_ERR;
     }
 
@@ -2412,10 +2412,9 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 }
 
                 /* collection */
-                getLastPathElement( srcPath->inPath, srcElement );
-                if ( strlen( srcElement ) > 0 ) {
-                    snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s",
-                              destPath->outPath, srcElement );
+                const auto src_object_name = fs::path{srcPath->inPath}.lexically_normal().object_name().string();
+                if ( !src_object_name.empty() ) {
+                    snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s", destPath->outPath, src_object_name.c_str() );
                     if ( destPath->objType <= COLL_OBJ_T ) {
                         getRodsObjType( conn, destPath );
                     }
@@ -2426,7 +2425,8 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 }
             }
             else if ( destPath->objType == DATA_OBJ_T ||
-                      destPath->objType == LOCAL_FILE_T || rodsPathInp->numSrc == 1 ) {
+                      destPath->objType == LOCAL_FILE_T ||
+                      rodsPathInp->numSrc == 1 ) {
                 *targPath = *destPath;
                 if ( destPath->objType <= COLL_OBJ_T ) {
                     targPath->objType = DATA_OBJ_T;
@@ -2442,8 +2442,7 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                 return USER_FILE_DOES_NOT_EXIST;
             }
         }
-        else if ( srcPath->objType == COLL_OBJ_T ||
-                  srcPath->objType == LOCAL_DIR_T ) {
+        else if ( srcPath->objType == COLL_OBJ_T || srcPath->objType == LOCAL_DIR_T ) {
             /* directory type source */
 
             if ( destPath->objType <= COLL_OBJ_T ) {
@@ -2470,42 +2469,38 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                     // mkColl changes the values in destPath, so repopulate the structure
                     status = mkColl( conn, destPath->outPath );
                     if ( status < 0 ) {
-                        rodsLog( LOG_ERROR,
-                                 "resolveRodsTarget: Could not create collection %s", destPath->outPath );
+                        rodsLog( LOG_ERROR, "resolveRodsTarget: Could not create collection %s", destPath->outPath );
                         return status;
                     }
                     getRodsObjType( conn, destPath );
                 }
+
                 if ( ( destPath->objType == COLL_OBJ_T ||
                        destPath->objType == LOCAL_DIR_T ) &&
                        destPath->objState == EXIST_ST ) {
                     /* the collection exist */
-                    getLastPathElement( srcPath->inPath, srcElement );
-                    if ( strlen( srcElement ) > 0 ) {
+                    const auto src_object_name = fs::path{srcPath->inPath}.lexically_normal().object_name().string();
+                    if ( !src_object_name.empty() ) {
                         if ( rodsPathInp->numSrc == 1 && oprType == RSYNC_OPR ) {
-                            getLastPathElement( destPath->inPath, destElement );
+                            const auto dst_object_name = fs::path{destPath->inPath}.lexically_normal().object_name().string();
                             /* RSYNC_OPR. Just use the same path */
-                            if ( strlen( destElement ) > 0 ) {
-                                rstrcpy( targPath->outPath, destPath->outPath,
-                                         MAX_NAME_LEN );
+                            if (!dst_object_name.empty()) {
+                                rstrcpy( targPath->outPath, destPath->outPath, MAX_NAME_LEN );
                             }
                         }
+
                         if ( targPath->outPath[0] == '\0' ) {
-                            snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s",
-                                      destPath->outPath, srcElement );
+                            snprintf( targPath->outPath, MAX_NAME_LEN, "%s/%s", destPath->outPath, src_object_name.c_str() );
                             /* make the collection */
                             if ( destPath->objType == COLL_OBJ_T ) {
-
                                 /* rename does not need to mkColl */
                                 if ( oprType != MOVE_OPR ) {
                                     // destPath is a collection
 
                                     // Issue 4057: When destPath is a collection (and we already know it
                                     // exists in this block), make sure targPath is made if it is a collection.
-                                    if (targPath->objType == COLL_OBJ_T)
-                                    {
-                                        if ((status = mkColl( conn, targPath->outPath )) == 0)
-                                        {
+                                    if (targPath->objType == COLL_OBJ_T) {
+                                        if ((status = mkColl( conn, targPath->outPath )) == 0) {
                                             targPath->objState = EXIST_ST;
                                         }
                                     }
@@ -2515,11 +2510,11 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                                 }
                             }
                             else {
-    #ifdef windows_platform
+#ifdef windows_platform
                                 status = iRODSNt_mkdir( targPath->outPath, 0750 );
-    #else
+#else
                                 status = mkdir( targPath->outPath, 0750 );
-    #endif
+#endif
                                 if ( status < 0 && errno == EEXIST ) {
                                     status = 0;
                                 }
@@ -2533,8 +2528,7 @@ resolveRodsTarget( rcComm_t *conn, rodsPathInp_t *rodsPathInp, int oprType ) {
                         }
                     }
                     else {
-                        rstrcpy( targPath->outPath, destPath->outPath,
-                                 MAX_NAME_LEN );
+                        rstrcpy( targPath->outPath, destPath->outPath, MAX_NAME_LEN );
                     }
                 }
                 else {
