@@ -16,10 +16,12 @@ from ..controller import IrodsController
 from . import metaclass_unittest_test_case_generator
 from . import resource_suite
 from . import session
+from .rule_texts_for_tests import rule_texts
 
 
 class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
     __metaclass__ = metaclass_unittest_test_case_generator.MetaclassUnittestTestCaseGenerator
+    class_name = 'Test_AllRules'
 
     global plugin_name
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -759,4 +761,58 @@ OUTPUT ruleExecOut
         self.rods_session.assert_icommand("irule -F " + collection_rule_file, 'STDOUT_MULTILINE', ['result=1$', 'result=1$', 'result=1$'],
             use_regex=True)
 
-       
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_msiTarFileExtract_big_file__issue_4118(self):
+        try:
+            test_name = 'test_msiTarFileExtract_big_file__issue_4118'
+            root_name = test_name + '_dir'
+            untar_collection_name = 'my_exploded_coll'
+            untar_directory_name = 'my_exploded_dir'
+            tar_file_name = 'bigtar.tar'
+            known_file_name = 'known_file'
+
+            # Generate a junk file
+            filesize = 524288000 # 500MB
+            lib.make_file(known_file_name, filesize, 'random')
+            out,_ = lib.execute_command(['ls', '-l', known_file_name])
+            print(out)
+
+            # Copy junk file until a sufficiently large tar file size is reached
+            os.mkdir(root_name)
+            for i in range(0, 13):
+                lib.execute_command(['cp', known_file_name, os.path.join(root_name, known_file_name + str(i))])
+
+            out,_ = lib.execute_command(['ls', '-l', root_name])
+            print(out)
+
+            lib.execute_command(['tar', '-cf', tar_file_name, root_name])
+            out,_ = lib.execute_command(['ls', '-l', tar_file_name])
+            print(out)
+
+            self.admin.assert_icommand(['iput', tar_file_name])
+
+            try:
+                logical_path_to_tar_file = os.path.join(self.admin.session_collection, tar_file_name)
+                logical_path_to_untar_coll = os.path.join(self.admin.session_collection, untar_collection_name)
+                rule_file = test_name + '.r'
+                rule_string = rule_texts[plugin_name][self.class_name][test_name].format(**locals())
+                with open(rule_file, 'w') as f:
+                    f.write(rule_string)
+                self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT', 'Extract files from a tar file')
+            finally:
+                if os.path.exists(rule_file):
+                    os.unlink(rule_file)
+
+            self.admin.assert_icommand(['ils', '-lr', untar_collection_name], 'STDOUT', known_file_name)
+
+            self.admin.assert_icommand(['iget', '-r', untar_collection_name, untar_directory_name])
+            lib.execute_command(['diff', '-r', root_name, os.path.join(untar_directory_name, root_name)])
+        finally:
+            self.admin.run_icommand(['irm', '-f', tar_file_name])
+            self.admin.run_icommand(['irm', '-rf', untar_collection_name])
+            shutil.rmtree(root_name, ignore_errors=True)
+            shutil.rmtree(untar_directory_name, ignore_errors=True)
+            if os.path.exists(known_file_name):
+                os.unlink(known_file_name)
+            if os.path.exists(tar_file_name):
+                os.unlink(tar_file_name)
