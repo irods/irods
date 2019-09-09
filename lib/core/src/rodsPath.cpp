@@ -13,7 +13,10 @@
 #include "irodsntutil.hpp"
 #endif
 
+#include "filesystem/path.hpp"
+
 #include <string>
+#include <string_view>
 #include <map>
 
 #include <boost/filesystem/operations.hpp>
@@ -84,23 +87,21 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
         return 0;
     }
     else if ( strcmp( rodsPath->inPath, "~" ) == 0 ||
-              strcmp( rodsPath->inPath, "~/" ) == 0 ||
-              strcmp( rodsPath->inPath, "^" ) == 0 ||
-              strcmp( rodsPath->inPath, "^/" ) == 0 ) {
+              strcmp( rodsPath->inPath, "~/" ) == 0) {
         /* ~ or ~/ */
         rstrcpy( rodsPath->outPath, myRodsEnv->rodsHome, MAX_NAME_LEN );
         rodsPath->objType = COLL_OBJ_T;
         return 0;
     }
-    else if ( rodsPath->inPath[0] == '~' || rodsPath->inPath[0] == '^' ) {
+    else if (rodsPath->inPath[0] == '~') {
         if ( rodsPath->inPath[1] == '/' ) {
             snprintf( rodsPath->outPath, MAX_NAME_LEN, "%s/%s",
                       myRodsEnv->rodsHome, rodsPath->inPath + 2 );
         }
         else {
-            /* treat it like a relative path */
+            // treat it like a relative path
             snprintf( rodsPath->outPath, MAX_NAME_LEN, "%s/%s",
-                      myRodsEnv->rodsCwd, rodsPath->inPath + 2 );
+                      myRodsEnv->rodsCwd, rodsPath->inPath );
         }
     }
     else if ( rodsPath->inPath[0] == '/' ) {
@@ -439,57 +440,36 @@ parseCmdLinePath( int argc, char **argv, int optInd, rodsEnv *myRodsEnv,
     return status;
 }
 
-
-int
-getLastPathElement( char *inInPath, char *lastElement ) {
-    char mydir[MAX_NAME_LEN];
-    char inPath[MAX_NAME_LEN];
-    int len;
-    char *tmpPtr1, *tmpPtr2;
-
-    if ( inInPath == NULL ) {
-        *lastElement = '\0';
+int getLastPathElement(char* _logical_path, char* _last_path_element)
+{
+    if (!_logical_path) {
+        *_last_path_element = '\0';
         return 0;
     }
-    snprintf( inPath, sizeof( inPath ), "%s", inInPath );
-#ifdef windows_platform
-    iRODSNtPathForwardSlash( inPath );
-#endif
 
+    namespace fs = irods::experimental::filesystem;
 
-    splitPathByKey( inPath, mydir, MAX_NAME_LEN, lastElement, MAX_NAME_LEN, '/' );
-
-    len = strlen( lastElement );
-
-    if ( len == 0 ) {
-        len = strlen( inPath );
-        if ( len == 0 ) {
-            *lastElement = '\0';
-            return 0;
-        }
-        else {
-            rstrcpy( lastElement, inPath, MAX_NAME_LEN );
-            len = strlen( lastElement );
-        }
+    if (std::string_view sv = _logical_path; fs::path::preferred_separator == sv.back()) {
+        sv = sv.substr(0, sv.size() - 1);
+        rstrcpy(_last_path_element, std::string{sv}.data(), MAX_NAME_LEN);
+        return 0;
     }
 
-    tmpPtr1 = lastElement + len;
-    if ( len >= 2 ) {
-        tmpPtr2 = tmpPtr1 - 2;
-        if ( strcmp( tmpPtr2, "/." ) == 0 || strcmp( tmpPtr2, ".." ) == 0 ) {
-            *tmpPtr2 = '\0';
-            return 0;
-        }
+    auto object_name = fs::path{_logical_path}.object_name();
+
+    if ("." == object_name || ".." == object_name) {
+        object_name.remove_object_name();
+        *_last_path_element = '\0';
+        return 0;
     }
 
-    if ( len >= 1 ) {
-        tmpPtr2 = tmpPtr1 - 1;
-        if ( *tmpPtr2 == '.' || *tmpPtr2 == '~' ||
-                *tmpPtr2 == '^' || *tmpPtr2 == '/' ) {
-            *tmpPtr2 = '\0';
-            return 0;
-        }
+    std::string_view sv = object_name.c_str();
+
+    if (fs::path::preferred_separator == sv.back()) {
+        sv = sv.substr(0, sv.size() - 1);
     }
+
+    rstrcpy(_last_path_element, std::string{sv}.data(), MAX_NAME_LEN);
 
     return 0;
 }
