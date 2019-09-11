@@ -12,6 +12,9 @@ extern "C" {
  *
  * \brief Returns information about an iRODS file descriptor.
  *
+ * The caller is expected to pass the same rsComm_t* used to open the data object.
+ * This API function does not redirect. 
+ *
  * \user Client
  *
  * \since 4.3.0

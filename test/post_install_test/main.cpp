@@ -1,4 +1,6 @@
 #include "rodsClient.h"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
@@ -15,6 +17,10 @@ int cleanup(irods::connection_pool::connection_proxy& _conn, const fs::path& _pa
 
 int main()
 {
+    auto& api_table = irods::get_client_api_table();
+    auto& pack_table = irods::get_pack_table();
+    init_api_table(api_table, pack_table);
+
     rodsEnv env;
     if (getRodsEnv(&env) != 0) {
         std::cerr << "Error: cannot get iRODS environment\n";

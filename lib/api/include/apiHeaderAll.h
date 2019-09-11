@@ -132,7 +132,6 @@
 #include "sslStart.h"
 #include "sslEnd.h"
 
-
 // =-=-=-=-=-=-=-
 // necessary for FUSE
 #include "dataObjTruncate.h"
@@ -147,5 +146,9 @@
 #include "get_hier_from_leaf_id.h"
 #include "set_round_robin_context.h"
 #include "exec_rule_expression.h"
+
+// =-=-=-=-=-=-=-
+// API plugins
+#include "get_file_descriptor_info.h"
 
 #endif	// API_HEADER_ALL_H__
