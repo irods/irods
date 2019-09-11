@@ -95,6 +95,38 @@ set(
   irods_client
   )
 
+# batch_apply_metadata_operations API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_batch_apply_metadata_operations_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/batch_apply_metadata_operations.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_batch_apply_metadata_operations_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/batch_apply_metadata_operations.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_batch_apply_metadata_operations_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_batch_apply_metadata_operations_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_batch_apply_metadata_operations_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_batch_apply_metadata_operations_client
+  irods_client
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
@@ -103,6 +135,8 @@ set(
   irods_get_file_descriptor_info_client
   irods_sync_with_physical_object_server
   irods_sync_with_physical_object_client
+  irods_batch_apply_metadata_operations_server
+  irods_batch_apply_metadata_operations_client
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})
@@ -118,6 +152,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/lib/filesystem/include
     ${CMAKE_SOURCE_DIR}/plugins/api/include
     ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include

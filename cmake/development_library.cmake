@@ -593,6 +593,7 @@ install(
     PATTERN */api_plugin_number.h
     PATTERN */api_plugin_number_map.hpp
     PATTERN */api_plugin_number_data.h
+    PATTERN */batch_apply_metadata_operations.h
     PATTERN */get_file_descriptor_info.h
     PATTERN */sync_with_physical_object.h
   )
