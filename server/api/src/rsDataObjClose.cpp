@@ -5,6 +5,8 @@
 
 
 #include "dataObjClose.h"
+#include "key_value_proxy.hpp"
+#include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "regReplica.h"
 #include "modDataObjMeta.h"
@@ -50,7 +52,14 @@
 #include "irods_serialization.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_at_scope_exit.hpp"
+#include "replica_access_table.hpp"
 
+#include <memory>
+#include <functional>
+
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace{
     int trimDataObjInfo(
@@ -81,16 +90,54 @@ namespace{
     }
 }
 
-int
-rsDataObjClose( rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp ) {
-    return irsDataObjClose( rsComm, dataObjCloseInp, NULL );
+int rsDataObjClose(rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
+{
+    if (dataObjCloseInp->l1descInx <= 0) {
+        return SYS_BAD_FILE_DESCRIPTOR;
+    }
+
+    const auto& l1desc = L1desc[dataObjCloseInp->l1descInx];
+    std::unique_ptr<irods::at_scope_exit<std::function<void()>>> restore_entry;
+    int ec = 0;
+
+    // Replica access tokens only apply to write operations.
+    if ((l1desc.dataObjInp->openFlags & O_ACCMODE) != O_RDONLY) {
+        namespace ix = irods::experimental;
+
+        if (!l1desc.replica_token.empty()) {
+            // Capture the replica token and erase the PID from the replica access table.
+            // This must always happen before calling "irsDataObjClose" because other operations
+            // may attempt to open this replica, but will fail because those operations do not
+            // have the replica token.
+            if (auto entry = ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid()); entry) {
+                // "entry" should always be populated in normal situations.
+                // Because closing a data object triggers a file modified notification, it is
+                // important to be able to restore the previously removed replica access table entry.
+                // This is required so that the iRODS state is maintained in relation to the client.
+                restore_entry.reset(new irods::at_scope_exit<std::function<void()>>{
+                    [&ec, e = std::move(*entry)] {
+                        if (ec != 0) {
+                            ix::replica_access_table::instance().restore(e);
+                        }
+                    }
+                });
+            }
+        }
+        else {
+            rodsLog(LOG_WARNING, "No replica access token in L1 descriptor. Ignoring replica access table. "
+                                 "[path=%s, resource_hierarchy=%s]",
+                                 l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
+        }
+    }
+
+    // Capture the error code so that the at_scope_exit handler can respond to it.
+    return ec = irsDataObjClose(rsComm, dataObjCloseInp, nullptr);
 }
 
-int
-irsDataObjClose(
-    rsComm_t *rsComm,
-    openedDataObjInp_t *dataObjCloseInp,
-    dataObjInfo_t **outDataObjInfo ) {
+int irsDataObjClose(rsComm_t* rsComm,
+                    openedDataObjInp_t* dataObjCloseInp,
+                    dataObjInfo_t** outDataObjInfo)
+{
     int status;
     ruleExecInfo_t rei;
     int l1descInx = dataObjCloseInp->l1descInx;

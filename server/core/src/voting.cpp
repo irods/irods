@@ -1,4 +1,8 @@
 #include "voting.hpp"
+
+#include "replica_access_table.hpp"
+#include "key_value_proxy.hpp"
+
 #include <boost/lexical_cast.hpp>
 
 #include <optional>
@@ -47,7 +51,24 @@ namespace {
 
         const auto& r = repl->get();
         if (INTERMEDIATE_REPLICA == r.replica_status()) {
-            return vote::zero;
+            // Because the replica is in an intermediate state, we must check if the client
+            // provided a replica token. The replica token represents a piece of information that
+            // allows the client to open subsequent streams to the exact same replica. This is
+            // required in order for the parallel transfer engine to work.
+
+            namespace ix = irods::experimental;
+
+            const ix::key_value_proxy kvp{ctx.file_obj->cond_input()};
+
+            if (!kvp.contains(REPLICA_TOKEN_KW)) {
+                return vote::zero;
+            }
+
+            auto token = kvp[REPLICA_TOKEN_KW].value();
+
+            if (!ix::replica_access_table::instance().contains(token.data(), r.id(), r.repl_num())) {
+                return vote::zero;
+            }
         }
 
         const int requested_repl_num = ctx.file_obj->repl_requested();

@@ -6,55 +6,64 @@
 #undef rxDataObjOpen
 #undef rxDataObjRead
 #undef rxDataObjWrite
-#undef rxDataObjClose
 #undef rxDataObjLseek
+#undef rx_replica_close
+#undef rx_replica_open
 
 // clang-format off
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+    #include "rs_replica_open.hpp"
+    #include "rs_replica_close.hpp"
+
     #include "rsDataObjOpen.hpp"
     #include "rsDataObjRead.hpp"
     #include "rsDataObjWrite.hpp"
-    #include "rsDataObjClose.hpp"
     #include "rsDataObjLseek.hpp"
 
-    #define NAMESPACE_IMPL      server
+    #define NAMESPACE_IMPL                  server
 
-    #define rxComm              rsComm_t
+    #define rxComm                          rsComm_t
 
-    #define rxDataObjOpen       rsDataObjOpen
-    #define rxDataObjRead       rsDataObjRead
-    #define rxDataObjWrite      rsDataObjWrite
-    #define rxDataObjClose      rsDataObjClose
-    #define rxDataObjLseek      rsDataObjLseek
+    #define rxDataObjOpen                   rsDataObjOpen
+    #define rxDataObjRead                   rsDataObjRead
+    #define rxDataObjWrite                  rsDataObjWrite
+    #define rxDataObjLseek                  rsDataObjLseek
+    #define rx_replica_open                 rs_replica_open
+    #define rx_replica_close                rs_replica_close
 #else
+    #include "replica_open.h"
+    #include "replica_close.h"
+
     #include "dataObjOpen.h"
     #include "dataObjRead.h"
     #include "dataObjWrite.h"
-    #include "dataObjClose.h"
     #include "dataObjLseek.h"
 
-    #define NAMESPACE_IMPL      client
+    #define NAMESPACE_IMPL                  client
 
-    #define rxComm              rcComm_t
+    #define rxComm                          rcComm_t
 
-    #define rxDataObjOpen       rcDataObjOpen
-    #define rxDataObjRead       rcDataObjRead
-    #define rxDataObjWrite      rcDataObjWrite
-    #define rxDataObjClose      rcDataObjClose
-    #define rxDataObjLseek      rcDataObjLseek
+    #define rxDataObjOpen                   rcDataObjOpen
+    #define rxDataObjRead                   rcDataObjRead
+    #define rxDataObjWrite                  rcDataObjWrite
+    #define rxDataObjLseek                  rcDataObjLseek
+    #define rx_replica_open                 rc_replica_open
+    #define rx_replica_close                rc_replica_close
 #endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 // clang-format on
 
 #include "rcMisc.h"
 #include "transport/transport.hpp"
 
+#include "json.hpp"
+
+#include <cstdlib>
 #include <string>
+#include <vector>
+#include <memory>
 
-namespace irods {
-namespace experimental {
-namespace io {
-namespace NAMESPACE_IMPL {
-
+namespace irods::experimental::io::NAMESPACE_IMPL
+{
     template <typename CharT>
     class basic_transport : public transport<CharT>
     {
@@ -69,12 +78,12 @@ namespace NAMESPACE_IMPL {
 
     private:
         // clang-format off
-        static constexpr auto uninitialized_file_descriptor = -1;
-        static constexpr auto minimum_valid_file_descriptor = 3;
+        inline static constexpr auto uninitialized_file_descriptor = -1;
+        inline static constexpr auto minimum_valid_file_descriptor = 3;
 
         // Errors
-        static constexpr auto translation_error             = -1;
-        static const pos_type seek_error; // Initialized outside of class.
+        inline static constexpr auto translation_error             = -1;
+        inline static const     auto seek_error                    = pos_type{off_type{-1}};
         // clang-format on
 
     public:
@@ -82,50 +91,96 @@ namespace NAMESPACE_IMPL {
             : transport<CharT>{}
             , comm_{&_comm}
             , fd_{uninitialized_file_descriptor}
+            , root_resc_name_{}
+            , leaf_resc_name_{}
+            , replica_number_{}
+            , replica_token_{}
         {
         }
 
-        bool open(const irods::experimental::filesystem::path& _p,
+        bool open(const irods::experimental::filesystem::path& _path,
                   std::ios_base::openmode _mode) override
         {
-            return !is_open()
-                ? open_impl(_p, _mode, [](auto&) {})
-                : false;
+            return open_impl(_path, _mode, [](auto&) {});
         }
 
-        bool open(const irods::experimental::filesystem::path& _p,
-                  int _replica_number,
+        bool open(const irods::experimental::filesystem::path& _path,
+                  const replica_number& _replica_number,
                   std::ios_base::openmode _mode) override
         {
-            if (is_open()) {
-                return false;
-            }
-
-            return open_impl(_p, _mode, [_replica_number](auto& _input) {
-                const auto replica = std::to_string(_replica_number);
+            return open_impl(_path, _mode, [_replica_number](auto& _input) {
+                const auto replica = std::to_string(_replica_number.value);
                 addKeyVal(&_input.condInput, REPL_NUM_KW, replica.c_str());
+
+                // Providing a replica number implies that the replica already exists.
+                // This constructor does not support creation of new replicas.
+                _input.openFlags &= ~O_CREAT;
             });
         }
 
-        bool open(const irods::experimental::filesystem::path& _p,
-                  const std::string& _resource_name,
+        bool open(const irods::experimental::filesystem::path& _path,
+                  const root_resource_name& _root_resource_name,
                   std::ios_base::openmode _mode) override
         {
-            if (is_open()) {
-                return false;
-            }
-
-            return open_impl(_p, _mode, [&_resource_name](auto& _input) {
-                addKeyVal(&_input.condInput, RESC_NAME_KW, _resource_name.c_str());
+            // This leaves the decision making to the server (i.e. the policy).
+            return open_impl(_path, _mode, [&_root_resource_name](auto& _input) {
+                addKeyVal(&_input.condInput, RESC_NAME_KW, _root_resource_name.value.c_str());
             });
         }
 
-        bool close() override
+        bool open(const irods::experimental::filesystem::path& _path,
+                  const leaf_resource_name& _leaf_resource_name,
+                  std::ios_base::openmode _mode) override
         {
-            openedDataObjInp_t input{};
-            input.l1descInx = fd_;
+            // This is when the client knows exactly where the replica should reside.
+            return open_impl(_path, _mode, [&_leaf_resource_name](auto& _input) {
+                addKeyVal(&_input.condInput, LEAF_RESOURCE_NAME_KW, _leaf_resource_name.value.c_str());
+            });
+        }
 
-            if (rxDataObjClose(comm_, &input) < 0) {
+        bool open(const replica_token& _replica_token,
+                  const irods::experimental::filesystem::path& _path,
+                  const replica_number& _replica_number,
+                  std::ios_base::openmode _mode) override
+        {
+            return open_impl(_path, _mode, [_replica_token, _replica_number](auto& _input) {
+                const auto replica = std::to_string(_replica_number.value);
+                addKeyVal(&_input.condInput, REPLICA_TOKEN_KW, _replica_token.value.data());
+                addKeyVal(&_input.condInput, REPL_NUM_KW, replica.c_str());
+
+                // Providing a replica number implies that the replica already exists.
+                // This constructor does not support creation of new replicas.
+                _input.openFlags &= ~O_CREAT;
+            });
+        }
+
+        bool open(const replica_token& _replica_token,
+                  const irods::experimental::filesystem::path& _path,
+                  const leaf_resource_name& _leaf_resource_name,
+                  std::ios_base::openmode _mode) override
+        {
+            return open_impl(_path, _mode, [_replica_token, &_leaf_resource_name](auto& _input) {
+                addKeyVal(&_input.condInput, REPLICA_TOKEN_KW, _replica_token.value.data());
+                addKeyVal(&_input.condInput, LEAF_RESOURCE_NAME_KW, _leaf_resource_name.value.c_str());
+            });
+        }
+
+        bool close(const on_close_success* _on_close_success = nullptr) override
+        {
+            using json = nlohmann::json;
+
+            json json_input{{"fd", fd_}};
+
+            if (_on_close_success) {
+                json_input["update_size"] = _on_close_success->update_size;
+                json_input["update_status"] = _on_close_success->update_status;
+                json_input["compute_checksum"] = _on_close_success->compute_checksum;
+                json_input["send_notifications"] = _on_close_success->send_notifications;
+            }
+
+            const auto json_string = json_input.dump();
+
+            if (const auto ec = rx_replica_close(comm_, json_string.c_str()); ec != 0) {
                 return false;
             }
 
@@ -137,12 +192,10 @@ namespace NAMESPACE_IMPL {
         std::streamsize receive(char_type* _buffer, std::streamsize _buffer_size) override
         {
             openedDataObjInp_t input{};
-
             input.l1descInx = fd_;
             input.len = _buffer_size;
 
             bytesBuf_t output{};
-
             output.len = input.len;
             output.buf = _buffer;
 
@@ -152,12 +205,10 @@ namespace NAMESPACE_IMPL {
         std::streamsize send(const char_type* _buffer, std::streamsize _buffer_size) override
         {
             openedDataObjInp_t input{};
-
             input.l1descInx = fd_;
             input.len = _buffer_size;
 
             bytesBuf_t input_buffer{};
-
             input_buffer.len = input.len;
             input_buffer.buf = const_cast<char_type*>(_buffer);
 
@@ -166,12 +217,7 @@ namespace NAMESPACE_IMPL {
 
         pos_type seekpos(off_type _offset, std::ios_base::seekdir _dir) override
         {
-            if (!is_open()) {
-                return seek_error;
-            }
-
             openedDataObjInp_t input{};
-
             input.l1descInx = fd_;
             input.offset = _offset;
 
@@ -209,6 +255,26 @@ namespace NAMESPACE_IMPL {
         int file_descriptor() const noexcept override
         {
             return fd_;
+        }
+
+        const root_resource_name& root_resource_name() const override
+        {
+            return root_resc_name_;
+        }
+
+        const leaf_resource_name& leaf_resource_name() const override
+        {
+            return leaf_resc_name_;
+        }
+
+        const replica_number& replica_number() const override
+        {
+            return replica_number_;
+        }
+
+        const replica_token& replica_token() const override
+        {
+            return replica_token_;
         }
 
     private:
@@ -254,7 +320,7 @@ namespace NAMESPACE_IMPL {
         }
 
         template <typename Function>
-        bool open_impl(const filesystem::path& _p, std::ios_base::openmode _mode, Function _func)
+        bool open_impl(const filesystem::path& _path, std::ios_base::openmode _mode, Function _func)
         {
             const auto flags = make_open_flags(_mode);
 
@@ -266,19 +332,31 @@ namespace NAMESPACE_IMPL {
 
             input.createMode = 0600;
             input.openFlags = flags;
-            rstrcpy(input.objPath, _p.c_str(), sizeof(input.objPath));
+            rstrcpy(input.objPath, _path.c_str(), sizeof(input.objPath));
 
             _func(input);
 
-            // TODO Modularize the block of code below.
-
-            const auto fd = rxDataObjOpen(comm_, &input);
+            char* json_output{}; 
+            const auto fd = rx_replica_open(comm_, &input, &json_output);
 
             if (fd < minimum_valid_file_descriptor) {
                 return false;
             }
 
             fd_ = fd;
+            std::unique_ptr<char, void(*)(void*)> free_json_output{json_output, std::free};
+
+            try {
+                const auto fd_info = nlohmann::json::parse(json_output);
+                root_resc_name_.value = fd_info.at("data_object_info").at("resource_name").template get<std::string>();
+                leaf_resc_name_.value = fd_info.at("data_object_info").at("destination_resource_name").template get<std::string>();
+                replica_number_.value = fd_info.at("data_object_info").at("replica_number").template get<int>();
+                replica_token_.value = fd_info.at("replica_token").template get<std::string>();
+            }
+            catch (const nlohmann::json::parse_error& e) {
+                close();
+                return false;
+            }
 
             if (!seek_to_end_if_required(_mode)) {
                 close();
@@ -290,18 +368,17 @@ namespace NAMESPACE_IMPL {
 
         rxComm* comm_;
         int fd_;
+        struct root_resource_name root_resc_name_;
+        struct leaf_resource_name leaf_resc_name_;
+        struct replica_number replica_number_;
+        struct replica_token replica_token_;
     }; // basic_transport
 
-    template <typename CharT>
-    const typename basic_transport<CharT>::pos_type
-        basic_transport<CharT>::seek_error = basic_transport<CharT>::off_type{-1};
-
+    // clang-format off
     using default_transport = basic_transport<char>;
-
-} // NAMESPACE_IMPL
-} // io
-} // experimental
-} // irods
+    using native_transport  = basic_transport<char>;
+    // clang-format on
+} // irods::experimental::io::NAMESPACE_IMPL
 
 #endif // IRODS_IO_DEFAULT_TRANSPORT_HPP
 

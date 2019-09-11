@@ -32,6 +32,7 @@
 #include "irods_re_serialization.hpp"
 #include "procLog.h"
 #include "initServer.hpp"
+#include "replica_access_table.hpp"
 
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
@@ -39,6 +40,10 @@
 #include "sys/socket.h"
 #include "sys/un.h"
 #include "sys/wait.h"
+
+#include <memory>
+
+namespace ix = irods::experimental;
 
 ssize_t receiveSocketFromSocket( int readFd, int *socket) {
     struct msghdr msg;
@@ -202,7 +207,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     register_handlers();
 
     initProcLog();
-    
+
     int listen_socket, conn_socket, conn_tmp_socket;
     struct sockaddr_un client_addr;
     unsigned int len = sizeof(agent_addr);
@@ -265,7 +270,11 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
             } else {
                 rodsLog( LOG_ERROR, "Agent process [%d] terminated with unusual status [%d]", reaped_pid, child_status );
             }
+
             rmProcLog( reaped_pid );
+
+            rodsLog(LOG_DEBUG, "Removing agent PID [%d] from replica access table ...", reaped_pid);
+            ix::replica_access_table::instance().erase_pid(reaped_pid);
         }
 
         fd_set read_socket;
