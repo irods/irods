@@ -99,6 +99,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/objInfo.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/osauth.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/packStruct.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/parallel_transfer_engine.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/parseCommandLine.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/phybunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/phymvUtil.h

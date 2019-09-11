@@ -11,44 +11,52 @@
 
 // clang-format off
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+    #include "irods_server_api_call.hpp"
+
     #include "rsDataObjOpen.hpp"
     #include "rsDataObjRead.hpp"
     #include "rsDataObjWrite.hpp"
     #include "rsDataObjClose.hpp"
     #include "rsDataObjLseek.hpp"
 
-    #define NAMESPACE_IMPL      server
+    #define NAMESPACE_IMPL                  server
 
-    #define rxComm              rsComm_t
+    #define rxComm                          rsComm_t
 
-    #define rxDataObjOpen       rsDataObjOpen
-    #define rxDataObjRead       rsDataObjRead
-    #define rxDataObjWrite      rsDataObjWrite
-    #define rxDataObjClose      rsDataObjClose
-    #define rxDataObjLseek      rsDataObjLseek
+    #define rxDataObjOpen                   rsDataObjOpen
+    #define rxDataObjRead                   rsDataObjRead
+    #define rxDataObjWrite                  rsDataObjWrite
+    #define rxDataObjClose                  rsDataObjClose
+    #define rxDataObjLseek                  rsDataObjLseek
 #else
+    #include "sync_with_physical_object.h"
+
     #include "dataObjOpen.h"
     #include "dataObjRead.h"
     #include "dataObjWrite.h"
     #include "dataObjClose.h"
     #include "dataObjLseek.h"
 
-    #define NAMESPACE_IMPL      client
+    #define NAMESPACE_IMPL                  client
 
-    #define rxComm              rcComm_t
+    #define rxComm                          rcComm_t
 
-    #define rxDataObjOpen       rcDataObjOpen
-    #define rxDataObjRead       rcDataObjRead
-    #define rxDataObjWrite      rcDataObjWrite
-    #define rxDataObjClose      rcDataObjClose
-    #define rxDataObjLseek      rcDataObjLseek
+    #define rxDataObjOpen                   rcDataObjOpen
+    #define rxDataObjRead                   rcDataObjRead
+    #define rxDataObjWrite                  rcDataObjWrite
+    #define rxDataObjClose                  rcDataObjClose
+    #define rxDataObjLseek                  rcDataObjLseek
 #endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 // clang-format on
 
+#include "api_plugin_number.h"
 #include "rcMisc.h"
 #include "transport/transport.hpp"
 
+#include "json.hpp"
+
 #include <string>
+#include <vector>
 
 namespace irods::experimental::io::NAMESPACE_IMPL
 {
@@ -79,6 +87,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             : transport<CharT>{}
             , comm_{&_comm}
             , fd_{uninitialized_file_descriptor}
+            , fd_info_{}
         {
         }
 
@@ -114,15 +123,40 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
             return open_impl(_p, _mode, [&_resource_name](auto& _input) {
                 addKeyVal(&_input.condInput, RESC_NAME_KW, _resource_name.c_str());
+                //addKeyVal(&_input.condInput, RESC_HIER_STR_KW, _resource_name.c_str());
             });
         }
 
-        bool close() override
+        bool close(const on_close_success* _on_close_success = nullptr) override
         {
-            openedDataObjInp_t input{};
-            input.l1descInx = fd_;
+            using json = nlohmann::json;
 
-            if (const auto ec = rxDataObjClose(comm_, &input); ec < 0) {
+            json json_input{
+                {"update_catalog", true},
+                {"file_descriptor", fd_},
+                {"file_descriptor_info", fd_info_},
+                {"metadata", json::array()},
+                {"acl", json::array()}
+            };
+
+            if (_on_close_success) {
+                json_input["update_catalog"] = _on_close_success->update_catalog;
+                
+                // FIXME The lines below will not compile right now.
+                // Need to provide functions that can transform the type in the container to JSON.
+                //json_input["metadata"] = _on_close_success->metadata;
+                //json_input["acl"] = _on_close_success->acl;
+            }
+
+            const auto json_string = json_input.dump();
+
+#ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+            const auto ec = irods::server_api_call(SYNC_WITH_PHYSICAL_OBJECT_APN, comm_, json_string.c_str());
+#else
+            const auto ec = rc_sync_with_physical_object(comm_, json_string.c_str());
+#endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+
+            if (ec != 0) {
                 return false;
             }
 
@@ -208,6 +242,21 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             return fd_;
         }
 
+        std::string resource_name() const override
+        {
+            return fd_info_["data_object_info"]["resource_name"].template get<std::string>();
+        }
+
+        std::string resource_hierarchy() const override
+        {
+            return fd_info_["data_object_info"]["resource_hierarchy"].template get<std::string>();
+        }
+
+        int replica_number() const override
+        {
+            return fd_info_["data_object_info"]["replica_number"].template get<int>();
+        }
+
     private:
         int make_open_flags(std::ios_base::openmode _mode) noexcept
         {
@@ -282,11 +331,46 @@ namespace irods::experimental::io::NAMESPACE_IMPL
                 return false;
             }
 
+            // TODO Calling rxDataObjOpen() should just return the file descriptor information
+            // to avoid an additional network call.
+            if (!capture_file_descriptor_info()) {
+                close();
+                return false;
+            }
+
+            return true;
+        }
+
+        bool capture_file_descriptor_info()
+        {
+            using json = nlohmann::json;
+
+            const auto json_input = json{{"fd", fd_}}.dump();
+            char* json_output{};
+
+#ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
+            const auto ec = irods::server_api_call(GET_FILE_DESCRIPTOR_INFO_APN, comm_, json_input.c_str(), &json_output);
+#else
+            const auto ec = rc_get_file_descriptor_info(comm_, json_input.c_str(), &json_output);
+#endif
+
+            if (ec != 0) {
+                return false;
+            }
+
+            try {
+                fd_info_ = json::parse(json_output);
+            }
+            catch (const json::parse_error& e) {
+                return false;
+            }
+
             return true;
         }
 
         rxComm* comm_;
         int fd_;
+        nlohmann::json fd_info_;
     }; // basic_transport
 
     using default_transport = basic_transport<char>;

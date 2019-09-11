@@ -138,7 +138,7 @@ namespace irods::experimental::io
             return this;
         }
 
-        basic_data_object_buf* close()
+        basic_data_object_buf* close(const on_close_success* _on_close_success = nullptr)
         {
             if (!transport_ || !transport_->is_open()) {
                 return nullptr;
@@ -150,7 +150,7 @@ namespace irods::experimental::io
                 sb = nullptr;
             }
 
-            if (!transport_->close()) {
+            if (!transport_->close(_on_close_success)) {
                 sb = nullptr;
             }
 
@@ -160,6 +160,21 @@ namespace irods::experimental::io
         int file_descriptor() const noexcept
         {
             return transport_->file_descriptor();;
+        }
+
+        std::string resource_name() const
+        {
+            return transport_->resource_name();
+        }
+
+        std::string resource_hierarchy() const
+        {
+            return transport_->resource_hierarchy();
+        }
+
+        int replica_number() const
+        {
+            return transport_->replica_number();
         }
 
     protected:
@@ -500,9 +515,9 @@ namespace irods::experimental::io
             }
         }
 
-        void close()
+        void close(const on_close_success* _on_close_success = nullptr)
         {
-            if (!buf_.close()) {
+            if (!buf_.close(_on_close_success)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -513,6 +528,21 @@ namespace irods::experimental::io
         int file_descriptor() const noexcept
         {
             return buf_.file_descriptor();
+        }
+
+        std::string resource_name() const
+        {
+            return buf_.resource_name();
+        }
+
+        std::string resource_hierarchy() const
+        {
+            return buf_.resource_hierarchy();
+        }
+
+        int replica_number() const
+        {
+            return buf_.replica_number();
         }
 
     private:

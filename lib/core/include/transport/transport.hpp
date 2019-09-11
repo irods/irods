@@ -2,12 +2,22 @@
 #define IRODS_IO_TRANSPORT_HPP
 
 #include "filesystem/path.hpp"
+#include "acl.hpp"
+#include "metadata.hpp"
 
 #include <ios>
 #include <string>
+#include <vector>
 
 namespace irods::experimental::io
 {
+    struct on_close_success
+    {
+        bool update_catalog = true;
+        std::vector<irods::experimental::metadata> metadata;
+        std::vector<irods::experimental::ace> acl;
+    };
+
     template <typename CharT,
               typename Traits = std::char_traits<CharT>>
     class transport
@@ -34,7 +44,7 @@ namespace irods::experimental::io
                           const std::string& _resource_name,
                           std::ios_base::openmode _mode) = 0;
 
-        virtual bool close() = 0;
+        virtual bool close(const on_close_success* _on_close_success = nullptr) = 0;
 
         virtual std::streamsize receive(char_type* _buffer, std::streamsize _buffer_size) = 0;
 
@@ -45,6 +55,12 @@ namespace irods::experimental::io
         virtual bool is_open() const noexcept = 0;
 
         virtual int file_descriptor() const noexcept = 0;
+
+        virtual std::string resource_name() const = 0;
+
+        virtual std::string resource_hierarchy() const = 0;
+
+        virtual int replica_number() const = 0;
     };
 } // irods::experimental::io
 
