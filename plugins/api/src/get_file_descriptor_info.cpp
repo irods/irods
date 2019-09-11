@@ -7,7 +7,7 @@
 
 #include <functional>
 
-#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+#ifdef RODS_SERVER
 
 //
 // Server-side Implementation
@@ -40,14 +40,13 @@ namespace
     auto to_json(const keyValPair_t&) -> json;
     auto to_json(const dataObjInp_t*) -> json;
     auto to_json(const dataObjInfo_t*) -> json;
+    auto to_json(const zoneInfo_t* _p) -> json;
+    auto to_json(const rodsServerHost_t*) -> json;
     auto to_json(const l1desc&) -> json;
 
     auto call_get_file_descriptor_info(irods::api_entry*, rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
-
     auto is_input_valid(const bytesBuf_t*) -> std::tuple<bool, std::string>;
-
     auto get_file_descriptor(const bytesBuf_t& _buf) -> int;
-
     auto rs_get_file_descriptor_info(rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
 
     //
@@ -149,6 +148,50 @@ namespace
         };
     }
 
+    auto to_json(const zoneInfo_t* _p) -> json
+    {
+        if (!_p) {
+            return nullptr;
+        }
+
+        return {
+            {"zone_name", _p->zoneName},
+            {"port", _p->portNum},
+            {"master_server_host", to_json(_p->masterServerHost)},
+            {"slave_server_host", to_json(_p->slaveServerHost)},
+            {"next", to_json(_p->next)}
+        };
+    }
+
+    auto to_json(const hostName_t* _p) -> json
+    {
+        if (!_p) {
+            return nullptr;
+        }
+
+        return {
+            {"name", _p->name},
+            {"next", to_json(_p->next)}
+        };
+    }
+
+    auto to_json(const rodsServerHost_t* _p) -> json
+    {
+        if (!_p) {
+            return nullptr;
+        }
+
+        return {
+            {"host_name", to_json(_p->hostName)},
+            {"rcat_enabled", _p->rcatEnabled},
+            {"re_host_flag", _p->reHostFlag},
+            {"local_flag", _p->localFlag},
+            {"status", _p->status},
+            {"status", to_json(static_cast<zoneInfo_t*>(_p->zoneInfo))},
+            {"next", to_json(_p->next)}
+        };
+    }
+
     auto to_json(const l1desc& _fd_info) -> json
     {
         return {
@@ -173,6 +216,8 @@ namespace
             {"purge_cache_flag", _fd_info.purgeCacheFlag},
             {"lock_file_descriptor", _fd_info.lockFd},
             {"plugin_data", nullptr}, // Not used anywhere as of 2019-01-28
+            {"replication_data_object_info", to_json(_fd_info.replDataObjInfo)},
+            {"remote_zone_host", to_json(_fd_info.remoteZoneHost)},
             {"in_pdmo", _fd_info.in_pdmo}
         };
     }
@@ -191,7 +236,7 @@ namespace
             return {false, "Missing JSON input"};
         }
 
-        if (_input->len == 0) {
+        if (_input->len <= 0) {
             return {false, "Length of buffer must be greater than zero"};
         }
 
@@ -209,11 +254,13 @@ namespace
 
     auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*
     {
-        char* buf = new char[_s.length() + 1]{};
+        const auto buf_size = _s.length() + 1;
+
+        char* buf = new char[buf_size]{};
         std::strncpy(buf, _s.c_str(), _s.length());
 
         bytesBuf_t* bbp = new bytesBuf_t{};
-        bbp->len = _s.length();
+        bbp->len = buf_size;
         bbp->buf = buf;
 
         return bbp;
@@ -233,12 +280,30 @@ namespace
         try {
             fd = get_file_descriptor(*_input);
         }
+        catch (const json::parse_error& e) {
+            // clang-format off
+            log::api::error({{"log_message", "Failed to parse input into JSON"},
+                             {"error_message", e.what()}});
+            // clang-format on
+            return SYS_INVALID_INPUT_PARAM;
+        }
         catch (const json::type_error& e) {
             // clang-format off
             log::api::error({{"log_message", "Failed to extract file descriptor from input"},
                              {"error_message", e.what()}});
             // clang-format on
-            return 0;
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        catch (const std::exception& e) {
+            // clang-format off
+            log::api::error({{"log_message", "An error occurred while processing the request"},
+                             {"error_message", e.what()}});
+            // clang-format on
+            return SYS_INVALID_INPUT_PARAM;
+        }
+        catch (...) {
+            log::api::error("An unknown error occurred while processing the request");
+            return SYS_INVALID_INPUT_PARAM;
         }
 
         *_output = to_bytes_buffer(to_json(irods::get_l1desc(fd)).dump());
@@ -250,16 +315,11 @@ namespace
     #define CALL_GET_FD_INFO call_get_file_descriptor_info
 } // anonymous namespace
 
-#else // defined(RODS_SERVER) || defined(RODS_CLERVER)
+#else // RODS_SERVER
 
 //
 // Client-side Implementation
 //
-
-#include "get_file_descriptor_info.h"
-#include "procApiRequest.h"
-
-#include <cstring>
 
 namespace
 {
@@ -268,33 +328,7 @@ namespace
     #define CALL_GET_FD_INFO nullptr
 } // anonymous namespace
 
-extern "C"
-auto rc_get_file_descriptor_info(rcComm_t* _comm,
-                                 const char* _json_input,
-                                 char** _json_output) -> int
-{
-    if (!_json_input) {
-        return -1;
-    }
-
-    bytesBuf_t input_buf{};
-    input_buf.len = static_cast<int>(std::strlen(_json_input));
-    input_buf.buf = const_cast<char*>(_json_input);
-
-    bytesBuf_t* output_buf{};
-
-    const int ec = procApiRequest(_comm, GET_FILE_DESCRIPTOR_INFO_APN,
-                                  &input_buf, nullptr,
-                                  reinterpret_cast<void**>(&output_buf), nullptr);
-
-    if (ec == 0) {
-        *_json_output = static_cast<char*>(output_buf->buf);
-    }
-
-    return ec;
-}
-
-#endif // defined(RODS_SERVER) || defined(RODS_CLERVER)
+#endif // RODS_SERVER
 
 // The plugin factory function must always be defined.
 extern "C"
@@ -302,15 +336,15 @@ auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
     // clang-format off
-    irods::apidef_t def{GET_FILE_DESCRIPTOR_INFO_APN,               // API number
-                        RODS_API_VERSION,                           // API version
-                        NO_USER_AUTH,                               // Client auth
-                        NO_USER_AUTH,                               // Proxy auth
-                        "BytesBuf_PI", 0,                           // In PI / bs flag
-                        "BytesBuf_PI", 0,                           // Out PI / bs flag
-                        op,                                         // Operation
-                        "rs_get_file_descriptor_info",              // Operation name
-                        nullptr,                                    // Null clear function
+    irods::apidef_t def{GET_FILE_DESCRIPTOR_INFO_APN,    // API number
+                        RODS_API_VERSION,                // API version
+                        NO_USER_AUTH,                    // Client auth
+                        NO_USER_AUTH,                    // Proxy auth
+                        "BytesBuf_PI", 0,                // In PI / bs flag
+                        "BytesBuf_PI", 0,                // Out PI / bs flag
+                        op,                              // Operation
+                        "get_file_descriptor_info",      // Operation name
+                        nullptr,                         // Null clear function
                         (funcPtr) CALL_GET_FD_INFO};
     // clang-format on
 
