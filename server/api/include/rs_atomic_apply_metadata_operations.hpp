@@ -1,0 +1,82 @@
+#ifndef IRODS_RS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
+#define IRODS_RS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
+
+/// \file
+
+#include "rcConnect.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/// Executes a list of metadata operations on a single object atomically.
+///
+/// Sequentially executes all \p operations on \p entity_name as a single transaction. If an
+/// error occurs, all updates are rolled back and an error is returned. \p json_output will
+/// contain specific information about the error.
+///
+/// \p json_input must have the following JSON structure:
+/// \code{.js}
+/// {
+///   "entity_name": string,
+///   "entity_type": string,
+///   "operations": [
+///     {
+///       "operation": string,
+///       "attribute": string,
+///       "value": string,
+///       "units": string
+///     }
+///   ]
+/// }
+/// \endcode
+///
+/// \p entity_name must be one of the following:
+/// - A logical path pointing to a data object.
+/// - A logical path pointing to a collection.
+/// - A user name.
+/// - A resource name.
+///
+/// \p entity_type must be one of the following:
+/// - collection
+/// - data_object
+/// - resource
+/// - user
+///
+/// \p operations is the list of metadata operations to execute atomically. They will be
+/// executed in order.
+///
+/// \p operation must be one of the following:
+/// - set
+/// - remove
+///
+/// \p units are optional.
+///
+/// On error, \p json_output will have the following JSON structure:
+/// \code{.js}
+/// {
+///   "operation": string,
+///   "operation_index": number,
+///   "error_message": string
+/// }
+/// \endcode
+///
+/// \user Server
+///
+/// \since 4.2.8
+///
+/// \param[in]  comm        A pointer to a rsComm_t.
+/// \param[in]  json_input  A JSON string containing the batch of metadata operations.
+/// \param[out] json_output A JSON string containing the error information on failure.
+///
+/// \return An integer.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+int rs_atomic_apply_metadata_operations(rsComm_t* comm, const char* json_input, char** json_output);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif // IRODS_RS_ATOMIC_APPLY_METADATA_OPERATIONS_HPP
+

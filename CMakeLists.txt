@@ -347,6 +347,7 @@ target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMP
 
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rc_atomic_apply_metadata_operations.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_get_file_descriptor_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_data_object_modify_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
@@ -568,6 +569,7 @@ target_compile_definitions(irods_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 
 set(
   IRODS_LIBIRODS_SERVER_SOURCES
+  ${CMAKE_SOURCE_DIR}/server/api/src/rs_atomic_apply_metadata_operations.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_get_file_descriptor_info.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthPluginRequest.cpp
