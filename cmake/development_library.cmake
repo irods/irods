@@ -304,6 +304,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/subStructFileUnlink.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/subStructFileWrite.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/syncMountedColl.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/replica_close.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ticketAdmin.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/unbunAndRegPhyBunfile.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/unregDataObj.h
@@ -322,6 +323,7 @@ set(
   IRODS_SERVER_API_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_metadata_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_close.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthCheck.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthPluginRequest.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthRequest.hpp
