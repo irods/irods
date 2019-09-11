@@ -22,6 +22,7 @@
 #define DEST_RESC_NAME_KW	"destRescName"	/* destination resource name */
 #define DEF_RESC_NAME_KW	"defRescName"	/* default resource name */
 #define BACKUP_RESC_NAME_KW "backupRescName" /* destination resource name */
+#define LEAF_RESOURCE_NAME_KW "leafRescName"
 #define DATA_TYPE_KW	"dataType"	/* data type */
 #define DATA_SIZE_KW	"dataSize"
 #define CHKSUM_KW	"chksum"
@@ -115,6 +116,7 @@
 #define PURGE_CACHE_KW         "purgeCache"    /* purge the cache copy right JMC - backport 4537
 * after the operation */
 #define EMPTY_BUNDLE_ONLY_KW   "emptyBundleOnly" /* delete emptyBundleOnly */ // JMC - backport 4552
+#define REPLICA_TOKEN_KW       "replicaToken"
 
 #define REGISTER_AS_INTERMEDIATE_KW "registerAsIntermediate"
 #define STALE_ALL_INTERMEDIATE_REPLICAS_KW  "staleAllIntermediateReplicas"

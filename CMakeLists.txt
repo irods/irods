@@ -721,6 +721,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/catalog_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/collection.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/dataObjOpr.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/replica_access_table.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/initServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_calling_functions.cpp
@@ -1291,6 +1292,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+  ${IRODS_EXTERNALS_FULLPATH_JSON}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})

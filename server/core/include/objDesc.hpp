@@ -3,9 +3,6 @@
 
 /* objDesc.h - header file for objDesc.c
  */
-
-
-
 #ifndef OBJ_DESC_HPP
 #define OBJ_DESC_HPP
 
@@ -20,6 +17,8 @@
 #include "rodsConnect.h"
 
 #include "boost/any.hpp"
+
+#include <string>
 
 #define NUM_L1_DESC     1026    /* number of L1Desc */
 
@@ -58,6 +57,8 @@ typedef struct l1desc {
                                      * on close */
     rodsServerHost_t *remoteZoneHost;
     char in_pdmo[MAX_NAME_LEN];
+
+    std::string replica_token;
 } l1desc_t;
 
 extern "C" {

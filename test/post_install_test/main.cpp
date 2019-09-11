@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <chrono>
 
 namespace io = irods::experimental::io;
@@ -15,20 +16,17 @@ int cleanup(irods::connection_pool::connection_proxy& _conn, const fs::path& _pa
 
 int main()
 {
+    load_client_api_plugins();
+
     rodsEnv env;
-    if (getRodsEnv(&env) != 0) {
-        std::cerr << "Error: cannot get iRODS environment\n";
-        return 1;
-    }
+    _getRodsEnv(env);
 
-    using namespace std::string_literals;
-
-    const std::string expected_text = "This is a test data object written by the iRODS post install binary.";
+    std::string_view expected_text = "This is a test data object written by the iRODS post install binary.";
     const auto unique_id = std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
     const auto data_obj_path = fs::path{env.rodsHome} / ("post_install_test." + unique_id + ".txt");
 
-    irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 600};
-    auto conn = conn_pool.get_connection();
+    auto conn_pool = irods::make_connection_pool();
+    auto conn = conn_pool->get_connection();
 
     // Create a new data object and write some bytes to it.
     {

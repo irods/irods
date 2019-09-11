@@ -362,6 +362,13 @@ namespace irods {
 
         determine_force_write_to_new_resource(oper, file_obj, _data_obj_inp);
 
+        // Providing a replica number means the client is attempting to target an existing replica.
+        // Therefore, usage of the replica number cannot be used during a create operation. The
+        // operation must be changed so that the system does not attempt to create the replica.
+        if (irods::CREATE_OPERATION == oper && getValByKey(&_data_obj_inp.condInput, REPL_NUM_KW)) {
+            oper = irods::WRITE_OPERATION;
+        }
+
         auto key_word = get_keyword_from_inp(_data_obj_inp);
 
         char* default_resc_name  = getValByKey(&_data_obj_inp.condInput, DEF_RESC_NAME_KW);
