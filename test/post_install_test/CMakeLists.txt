@@ -12,9 +12,17 @@ target_include_directories(${IRODS_POST_INSTALL_TARGET} PRIVATE ${CMAKE_BINARY_D
                                                                 ${CMAKE_SOURCE_DIR}/lib/core/include
                                                                 ${CMAKE_SOURCE_DIR}/lib/api/include
                                                                 ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+                                                                ${CMAKE_SOURCE_DIR}/plugins/api/include
                                                                 ${CMAKE_SOURCE_DIR}/server/core/include
-                                                                ${CMAKE_SOURCE_DIR}/server/icat/include)
+                                                                ${CMAKE_SOURCE_DIR}/server/icat/include
+                                                                ${CMAKE_SOURCE_DIR}/server/re/include
+                                                                ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+                                                                ${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
+
+target_compile_options(${IRODS_POST_INSTALL_TARGET} PRIVATE -nostdinc++ -Wall -Wextra)
 
 target_link_libraries(${IRODS_POST_INSTALL_TARGET} PRIVATE irods_common
                                                            irods_client
+                                                           irods_plugin_dependencies
+                                                           ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
                                                            c++abi)

@@ -11,7 +11,8 @@
 
 // clang-format off
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
-    #include "irods_server_api_call.hpp"
+    #include "rs_get_file_descriptor_info.hpp"
+    #include "rs_sync_with_physical_object.hpp"
 
     #include "rsDataObjOpen.hpp"
     #include "rsDataObjRead.hpp"
@@ -29,6 +30,7 @@
     #define rxDataObjClose                  rsDataObjClose
     #define rxDataObjLseek                  rsDataObjLseek
 #else
+    #include "get_file_descriptor_info.h"
     #include "sync_with_physical_object.h"
 
     #include "dataObjOpen.h"
@@ -49,7 +51,6 @@
 #endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
 // clang-format on
 
-#include "api_plugin_number.h"
 #include "rcMisc.h"
 #include "transport/transport.hpp"
 
@@ -151,7 +152,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             const auto json_string = json_input.dump();
 
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
-            const auto ec = irods::server_api_call(SYNC_WITH_PHYSICAL_OBJECT_APN, comm_, json_string.c_str());
+            const auto ec = rs_sync_with_physical_object(comm_, json_string.c_str());
 #else
             const auto ec = rc_sync_with_physical_object(comm_, json_string.c_str());
 #endif // IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
@@ -349,7 +350,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             char* json_output{};
 
 #ifdef IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API
-            const auto ec = irods::server_api_call(GET_FILE_DESCRIPTOR_INFO_APN, comm_, json_input.c_str(), &json_output);
+            const auto ec = rs_get_file_descriptor_info(comm_, json_input.c_str(), &json_output);
 #else
             const auto ec = rc_get_file_descriptor_info(comm_, json_input.c_str(), &json_output);
 #endif

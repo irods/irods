@@ -165,6 +165,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/authPluginRequest.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authRequest.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authResponse.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/batch_apply_metadata_operations.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authenticate.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/bulkDataObjPut.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/bulkDataObjReg.h
@@ -225,6 +226,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileUnlink.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/fileWrite.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/genQuery.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/get_file_descriptor_info.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalAdmin.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalRowInsert.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/generalRowPurge.h
@@ -291,6 +293,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/subStructFileTruncate.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/subStructFileUnlink.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/subStructFileWrite.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/sync_with_physical_object.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/syncMountedColl.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ticketAdmin.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/unbunAndRegPhyBunfile.h
@@ -308,6 +311,9 @@ set(
 
 set(
   IRODS_SERVER_API_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_batch_apply_metadata_operations.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_sync_with_physical_object.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthCheck.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthPluginRequest.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthRequest.hpp
@@ -594,9 +600,6 @@ install(
     PATTERN */api_plugin_number.h
     PATTERN */api_plugin_number_map.hpp
     PATTERN */api_plugin_number_data.h
-    PATTERN */batch_apply_metadata_operations.h
-    PATTERN */get_file_descriptor_info.h
-    PATTERN */sync_with_physical_object.h
   )
 
 # Install the "contents" of the "transport" directory into the "irods/transport" directory.
