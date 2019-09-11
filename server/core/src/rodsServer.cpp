@@ -1,6 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
+#include "irods_at_scope_exit.hpp"
 #include "rcMisc.h"
 #include "rodsServer.hpp"
 #include "sharedmemory.hpp"
@@ -41,6 +42,7 @@ using namespace boost::filesystem;
 #include "sys/un.h"
 
 #include "irods_random.hpp"
+#include "replica_access_table.hpp"
 
 struct sockaddr_un local_addr{};
 int agent_conn_socket{};
@@ -232,6 +234,9 @@ main( int argc, char **argv )
             exit( 1 );
         }
     }
+
+    irods::experimental::replica_access_table::init();
+    irods::at_scope_exit deinit_fd_table{[] { irods::experimental::replica_access_table::deinit(); }};
 
     /* start of irodsReServer has been moved to serverMain */
     signal( SIGTTIN, SIG_IGN );

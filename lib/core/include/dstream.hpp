@@ -95,12 +95,12 @@ namespace io {
         }
 	
         basic_data_object_buf* open(transport<char_type>& _transport,
-                                    const filesystem::path& _p,
+                                    const filesystem::path& _path,
                                     std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
-            if (!transport_->open(_p, _mode)) {
+            if (!transport_->open(_path, _mode)) {
                 return nullptr;
             }
 
@@ -110,13 +110,13 @@ namespace io {
         }
 
         basic_data_object_buf* open(transport<char_type>& _transport,
-                                    const filesystem::path& _p,
-                                    int _replica_number,
+                                    const filesystem::path& _path,
+                                    const replica_number& _replica_number,
                                     std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
-            if (!transport_->open(_p, _replica_number, _mode)) {
+            if (!transport_->open(_path, _replica_number, _mode)) {
                 return nullptr;
             }
 
@@ -126,13 +126,13 @@ namespace io {
         }
 
         basic_data_object_buf* open(transport<char_type>& _transport,
-                                    const filesystem::path& _p,
-                                    const std::string& _resource_name,
+                                    const filesystem::path& _path,
+                                    const root_resource_name& _root_resource_name,
                                     std::ios_base::openmode _mode)
         {
             transport_ = &_transport;
 
-            if (!transport_->open(_p, _resource_name, _mode)) {
+            if (!transport_->open(_path, _root_resource_name, _mode)) {
                 return nullptr;
             }
 
@@ -141,7 +141,57 @@ namespace io {
             return this;
         }
 
-        basic_data_object_buf* close()
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const filesystem::path& _path,
+                                    const leaf_resource_name& _leaf_resource_name,
+                                    std::ios_base::openmode _mode)
+        {
+            transport_ = &_transport;
+
+            if (!transport_->open(_path, _leaf_resource_name, _mode)) {
+                return nullptr;
+            }
+
+            init_get_or_put_area(_mode);
+
+            return this;
+        }
+
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const replica_token& _replica_token,
+                                    const filesystem::path& _path,
+                                    const replica_number& _replica_number,
+                                    std::ios_base::openmode _mode)
+        {
+            transport_ = &_transport;
+
+            if (!transport_->open(_replica_token, _path, _replica_number, _mode)) {
+                return nullptr;
+            }
+
+            init_get_or_put_area(_mode);
+
+            return this;
+        }
+
+        basic_data_object_buf* open(transport<char_type>& _transport,
+                                    const replica_token& _replica_token,
+                                    const filesystem::path& _path,
+                                    const leaf_resource_name& _leaf_resource_name,
+                                    std::ios_base::openmode _mode)
+        {
+            transport_ = &_transport;
+
+            if (!transport_->open(_replica_token, _path, _leaf_resource_name, _mode)) {
+                return nullptr;
+            }
+
+            init_get_or_put_area(_mode);
+
+            return this;
+        }
+
+        basic_data_object_buf* close(const on_close_success* _on_close_success = nullptr)
         {
             if (!transport_ || !transport_->is_open()) {
                 return nullptr;
@@ -153,7 +203,7 @@ namespace io {
                 sb = nullptr;
             }
 
-            if (!transport_->close()) {
+            if (!transport_->close(_on_close_success)) {
                 sb = nullptr;
             }
 
@@ -163,6 +213,26 @@ namespace io {
         int file_descriptor() const noexcept
         {
             return transport_->file_descriptor();;
+        }
+
+        const root_resource_name& root_resource_name() const
+        {
+            return transport_->resource_name();
+        }
+
+        const leaf_resource_name& leaf_resource_name() const
+        {
+            return transport_->leaf_resource_name();
+        }
+
+        const replica_number& replica_number() const
+        {
+            return transport_->replica_number();
+        }
+
+        const replica_token& replica_token() const
+        {
+            return transport_->replica_token();
         }
 
     protected:
@@ -407,29 +477,58 @@ namespace io {
         }
 
         basic_dstream(transport<char_type>& _transport,
-                      const filesystem::path& _p,
+                      const filesystem::path& _path,
                       std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_transport, _p, _mode);
+            open(_transport, _path, _mode);
         }
 
         basic_dstream(transport<char_type>& _transport,
-                      const filesystem::path& _p,
-                      int _replica_number,
+                      const filesystem::path& _path,
+                      const replica_number& _replica_number,
                       std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_transport, _p, _replica_number, _mode);
+            open(_transport, _path, _replica_number, _mode);
         }
 
         basic_dstream(transport<char_type>& _transport,
-                      const filesystem::path& _p,
-                      const std::string& _resource_name,
+                      const filesystem::path& _path,
+                      const root_resource_name& _root_resource_name,
                       std::ios_base::openmode _mode = default_openmode<GeneralStream>)
             : basic_dstream{}
         {
-            open(_transport, _p, _resource_name, _mode);
+            open(_transport, _path, _root_resource_name, _mode);
+        }
+
+        basic_dstream(transport<char_type>& _transport,
+                      const filesystem::path& _path,
+                      const leaf_resource_name& _leaf_resource_name,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+            : basic_dstream{}
+        {
+            open(_transport, _path, _leaf_resource_name, _mode);
+        }
+
+        basic_dstream(transport<char_type>& _transport,
+                      const replica_token& _replica_token,
+                      const filesystem::path& _path,
+                      const replica_number& _replica_number,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+            : basic_dstream{}
+        {
+            open(_transport, _replica_token, _path, _replica_number, _mode);
+        }
+
+        basic_dstream(transport<char_type>& _transport,
+                      const replica_token& _replica_token,
+                      const filesystem::path& _path,
+                      const leaf_resource_name& _leaf_resource_name,
+                      std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+            : basic_dstream{}
+        {
+            open(_transport, _replica_token, _path, _leaf_resource_name, _mode);
         }
 
         basic_dstream(basic_dstream&& _other)
@@ -470,10 +569,10 @@ namespace io {
         }
 
         void open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
+                  const filesystem::path& _path,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _p, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -482,11 +581,11 @@ namespace io {
         }
 
         void open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
-                  int _replica_number,
+                  const filesystem::path& _path,
+                  const replica_number& _replica_number,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _p, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -495,11 +594,11 @@ namespace io {
         }
 
         void open(transport<char_type>& _transport,
-                  const filesystem::path& _p,
-                  const std::string& _resource_name,
+                  const filesystem::path& _path,
+                  const root_resource_name& _root_resource_name,
                   std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.open(_transport, _p, _resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+            if (!buf_.open(_transport, _path, _root_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -507,9 +606,50 @@ namespace io {
             }
         }
 
-        void close()
+        void open(transport<char_type>& _transport,
+                  const filesystem::path& _path,
+                  const leaf_resource_name& _leaf_resource_name,
+                  std::ios_base::openmode _mode = default_openmode<GeneralStream>)
         {
-            if (!buf_.close()) {
+            if (!buf_.open(_transport, _path, _leaf_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+                this->setstate(std::ios_base::failbit);
+            }
+            else {
+                this->clear();
+            }
+        }
+
+        void open(transport<char_type>& _transport,
+                  const replica_token& _replica_token,
+                  const filesystem::path& _path,
+                  const replica_number& _replica_number,
+                  std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+        {
+            if (!buf_.open(_transport, _replica_token, _path, _replica_number, _mode | mandatory_openmode<GeneralStream>)) {
+                this->setstate(std::ios_base::failbit);
+            }
+            else {
+                this->clear();
+            }
+        }
+
+        void open(transport<char_type>& _transport,
+                  const replica_token& _replica_token,
+                  const filesystem::path& _path,
+                  const leaf_resource_name& _leaf_resource_name,
+                  std::ios_base::openmode _mode = default_openmode<GeneralStream>)
+        {
+            if (!buf_.open(_transport, _replica_token, _path, _leaf_resource_name, _mode | mandatory_openmode<GeneralStream>)) {
+                this->setstate(std::ios_base::failbit);
+            }
+            else {
+                this->clear();
+            }
+        }
+
+        void close(const on_close_success* _on_close_success = nullptr)
+        {
+            if (!buf_.close(_on_close_success)) {
                 this->setstate(std::ios_base::failbit);
             }
             else {
@@ -520,6 +660,26 @@ namespace io {
         int file_descriptor() const noexcept
         {
             return buf_.file_descriptor();
+        }
+
+        const root_resource_name& root_resource_name() const
+        {
+            return buf_.resource_name();
+        }
+
+        const leaf_resource_name& leaf_resource_name() const
+        {
+            return buf_.leaf_resource_name();
+        }
+
+        const replica_number& replica_number() const
+        {
+            return buf_.replica_number();
+        }
+
+        const replica_token& replica_token() const
+        {
+            return buf_.replica_token();
         }
 
     private:
