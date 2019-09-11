@@ -4,7 +4,9 @@
 /* See phyPathReg.h for a description of this API call.*/
 
 #include "fileStat.h"
+#include "key_value_proxy.hpp"
 #include "phyPathReg.h"
+#include "rcMisc.h"
 #include "rodsLog.h"
 #include "icatDefines.h"
 #include "objMetaOpr.hpp"
@@ -43,14 +45,21 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#define RODS_SERVER
+#include "irods_query.hpp"
+#undef RODS_SERVER
+
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
 #include "boost/lexical_cast.hpp"
+#include "fmt/format.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
+
+namespace ix = irods::experimental;
 
 /* holds a struct that describes pathname match patterns
    to exclude from registration. Needs to be global due
@@ -395,7 +404,6 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
             freePathnamePatterns( ExcludePatterns );
             ExcludePatterns = NULL;
         }
-
     }
     else if ( ( tmpStr = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW ) ) != NULL && strcmp( tmpStr, MOUNT_POINT_STR ) == 0 ) {
         rodsLong_t resc_id = 0;
@@ -413,10 +421,26 @@ _rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         }
 
         status = mountFileDir( rsComm, phyPathRegInp, filePath, resc_vault_path.c_str() );
-
     }
     else {
-        if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
+        bool register_replica = false;
+
+        // This flag is set by rsDataObjOpen to allow creation of replicas via the streaming
+        // interface (e.g. dstream).
+        if (ix::key_value_proxy{rsComm->session_props}.contains(REG_REPL_KW)) {
+            // At this point, we know that the target resource does not contain a replica.
+            // If at least one replica exists, then the file needs to be registered instead of
+            // creating a new data object.
+            const ix::filesystem::path p = phyPathRegInp->objPath;
+
+            const auto gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
+                                         p.parent_path().c_str(),
+                                         p.object_name().c_str());
+
+            register_replica = irods::query{rsComm, gql}.size() > 0;
+        }
+        
+        if (register_replica || getValByKey(&phyPathRegInp->condInput, REG_REPL_KW)) {
             status = filePathRegRepl( rsComm, phyPathRegInp, filePath, _resc_name );
         }
         else {

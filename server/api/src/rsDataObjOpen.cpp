@@ -1,5 +1,11 @@
+#include "dataObjInpOut.h"
 #include "dataObjOpen.h"
 #include "dataObjOpenAndStat.h"
+#include "irods_exception.hpp"
+#include "irods_get_l1desc.hpp"
+#include "irods_linked_list_iterator.hpp"
+#include "irods_resource_types.hpp"
+#include "objInfo.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
@@ -58,14 +64,95 @@
 #include "irods_server_api_call.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "key_value_proxy.hpp"
+#include "replica_access_table.hpp"
+
+#define RODS_SERVER
+#include "irods_query.hpp"
+#undef RODS_SERVER
 
 #include "boost/format.hpp"
 
 #include "irods_logger.hpp"
+#include <stdexcept>
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#include <fmt/format.h>
+
+#include <sys/types.h>
+#include <unistd.h>
+
+namespace ix = irods::experimental;
 
 using logger = irods::experimental::log;
 
 namespace {
+
+// Instructs how "update_replica_access_table" should update the
+// replica access table.
+enum class update_operation
+{
+    create,
+    update
+};
+
+void update_replica_access_table(rsComm_t& _conn,
+                                 update_operation _op,
+                                 int _l1desc_index,
+                                 const dataObjInp_t& _input)
+{
+    const irods::experimental::filesystem::path p = _input.objPath;
+    const ix::key_value_proxy kvp{_input.condInput};
+
+    ix::replica_access_table::data_id_type data_id;
+    ix::replica_access_table::replica_number_type replica_number;
+
+    try {
+        const auto gql = fmt::format("select DATA_ID, DATA_REPL_NUM "
+                                     "where"
+                                     " COLL_NAME = '{}' and"
+                                     " DATA_NAME = '{}' and"
+                                     " DATA_RESC_HIER = '{}'",
+                                     p.parent_path().c_str(),
+                                     p.object_name().c_str(),
+                                     kvp[RESC_HIER_STR_KW].value());
+
+        for (auto&& row : irods::query{&_conn, gql}) {
+            data_id = std::stoull(row[0]);
+            replica_number = std::stoul(row[1]);
+        }
+    }
+    catch (const std::out_of_range&) {
+        THROW(SYS_INTERNAL_ERR, "Could not convert string to integer");
+    }
+
+    auto& rat = irods::experimental::replica_access_table::instance();
+    auto& l1desc = L1desc[_l1desc_index];
+
+    try {
+        if (update_operation::create == _op) {
+            l1desc.replica_token = rat.create_new_entry(data_id, replica_number, getpid());
+        }
+        else {
+            auto token = kvp[REPLICA_TOKEN_KW].value();
+            rat.append_pid(token.data(), data_id, replica_number, getpid());
+            l1desc.replica_token = token;
+        }
+    }
+    catch (const ix::replica_access_table_error& e) {
+        logger::api::error(e.what());
+        THROW(SYS_INTERNAL_ERR, e.what());
+    }
+}
+
+void enable_creation_of_additional_replicas(rsComm_t& _comm)
+{
+    // rxDataObjOpen has the freedom to create replicas on demand. To enable this,
+    // it must always set the following flag. This special flag instructs rsPhyPathReg
+    // to register a new replica if an existing replica already exists.
+    ix::key_value_proxy{_comm.session_props}[REG_REPL_KW] = "";
+}
 
 int register_intermediate_replica(
     rsComm_t* _comm,
@@ -526,6 +613,40 @@ int change_replica_status_to_intermediate(
     return status;
 } // change_replica_status_to_intermediate
 
+int change_replica_status(rsComm_t& rsComm, dataObjInp_t& dataObjInp, int new_replica_status)
+{
+    {
+        const auto l = {GOOD_REPLICA, INTERMEDIATE_REPLICA, STALE_REPLICA};
+        if (std::none_of(std::begin(l), std::end(l), [x = new_replica_status](auto y) { return x == y; })) {
+            return SYS_INVALID_INPUT_PARAM;
+        }
+    }
+
+    irods::experimental::key_value_proxy src{dataObjInp.condInput};
+    auto resc_hier = src[RESC_HIER_STR_KW].value();
+
+    dataObjInfo_t info{};
+    rstrcpy(info.objPath, dataObjInp.objPath, MAX_NAME_LEN);
+    rstrcpy(info.rescHier, resc_hier.data(), MAX_NAME_LEN);
+
+    keyValPair_t kvp{};
+    irods::experimental::key_value_proxy dst{kvp};
+    dst[REPL_STATUS_KW] = std::to_string(new_replica_status);
+
+    modDataObjMeta_t inp{};
+    inp.dataObjInfo = &info;
+    inp.regParam = dst.get();
+
+    return rsModDataObjMeta(&rsComm, &inp);
+} // change_replica_status_to_stale
+
+int close_replica(rsComm_t& conn, int l1desc_index)
+{
+    openedDataObjInp_t input{};
+    input.l1descInx = l1desc_index;
+    return rsDataObjClose(&conn, &input);
+}
+
 int _rsDataObjOpen(
     rsComm_t* rsComm,
     dataObjInp_t& dataObjInp,
@@ -564,11 +685,15 @@ int _rsDataObjOpen(
             NULL );
     }};
 
+    // If O_RDWR or O_WRONLY is set in the open flags, then "writeFlag" will be set to "1".
     const int writeFlag = getWriteFlag(dataObjInp.openFlags);
+
+    // Depending on the conditions, this block may create a new replica.
     if (dataObjInp.openFlags & O_CREAT && writeFlag > 0) {
         const std::string resc_hier = getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW);
         if (!hier_has_replica(_obj->replicas(), resc_hier)) {
             int l1descInx = create_data_obj(rsComm, dataObjInp);
+
             if ( lockFd >= 0 ) {
                 if ( l1descInx > 0 ) {
                     L1desc[l1descInx].lockFd = lockFd;
@@ -577,16 +702,47 @@ int _rsDataObjOpen(
                     unlock_data_obj();
                 }
             }
+            
+            if (l1descInx >= 0) {
+                try {
+                    update_replica_access_table(*rsComm, update_operation::create, l1descInx, dataObjInp);
+                }
+                catch (const irods::exception& e) {
+                    logger::api::error("Could not update replica access table for newly created data object. "
+                                       "Closing data object and setting replica status to stale. "
+                                       "[path={}, error_code={}, exception={}]",
+                                       dataObjInp.objPath, e.code(), e.what());
+
+                    if (const auto ec = close_replica(*rsComm, l1descInx); ec < 0) {
+                        auto hier = ix::key_value_proxy{dataObjInp.condInput}[RESC_HIER_STR_KW].value();
+                        logger::api::error("Failed to close replica [error_code={}, path={}, hierarchy={}]",
+                                           ec, dataObjInp.objPath, hier);
+                        return ec;
+                    }
+
+                    if (const auto ec = change_replica_status(*rsComm, dataObjInp, STALE_REPLICA); ec < 0) {
+                        auto hier = ix::key_value_proxy{dataObjInp.condInput}[RESC_HIER_STR_KW].value();
+                        logger::api::error("Failed to set the replica's replica status to stale "
+                                           "[error_code={}, path={}, hierarchy={}]",
+                                           ec, dataObjInp.objPath, hier);
+                        return ec;
+                    }
+
+                    return e.code();
+                }
+            }
+
             return l1descInx;
         }
 
-        dataObjInp.openFlags |= O_TRUNC | O_RDWR;
         const std::string hier{getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW)};
         const std::string root_resc = irods::hierarchy_parser{hier}.first_resc();
         addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, root_resc.c_str());
         addKeyVal(&dataObjInp.condInput, OPEN_TYPE_KW, std::to_string(OPEN_FOR_WRITE_TYPE).c_str());
     }
 
+    // Shifts the entries in the dataObjInfo list around so that the target
+    // replica is at the front.
     int status = sortObjInfoForOpen(&dataObjInfoHead, &dataObjInp.condInput, writeFlag);
     if (status < 0) {
         if (lockFd > 0) {
@@ -647,25 +803,77 @@ int _rsDataObjOpen(
         dataObjInfo_t* nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
         int l1descInx = open_with_obj_info(rsComm, dataObjInp, tmpDataObjInfo);
+
         if (l1descInx >= 0) {
             if (writeFlag > 0) {
+                const auto old_replica_status = L1desc[l1descInx].replStatus;
                 L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
                 status = change_replica_status_to_intermediate(rsComm, dataObjInp, tmpDataObjInfo);
                 if (status < 0) {
+                    if (const auto ec = close_replica(*rsComm, l1descInx); ec < 0) {
+                        return ec;
+                    }
+
                     return status;
+                }
+
+                try {
+                    // Replica tokens only apply to write operations against intermediate replicas.
+                    auto& rat = irods::experimental::replica_access_table::instance();
+
+                    // There is a case where the client wants to open an existing replica for writes
+                    // but does not have a replica token because the client is the first one to open
+                    // the replica. "update" should be used when the replica is in an intermediate state.
+                    if (rat.contains(tmpDataObjInfo->dataId, tmpDataObjInfo->replNum)) {
+                        update_replica_access_table(*rsComm, update_operation::update, l1descInx, dataObjInp);
+                    }
+                    else {
+                        update_replica_access_table(*rsComm, update_operation::create, l1descInx, dataObjInp);
+                    }
+                }
+                catch (const irods::exception& e) {
+                    logger::api::error("Could not update replica access table for data object. "
+                                       "Closing data object and setting replica status to it's original value. "
+                                       "[error_code={}, path={}, exception={}]",
+                                       dataObjInp.objPath, e.code(), e.what());
+
+                    if (const auto ec = close_replica(*rsComm, l1descInx); ec < 0) {
+                        auto hier = ix::key_value_proxy{dataObjInp.condInput}[RESC_HIER_STR_KW].value();
+                        logger::api::error("Failed to close replica [error_code={}, path={}, hierarchy={}]",
+                                           ec, dataObjInp.objPath, hier);
+                        return ec;
+                    }
+
+                    if (const auto ec = change_replica_status(*rsComm, dataObjInp, old_replica_status); ec < 0) {
+                        auto hier = ix::key_value_proxy{dataObjInp.condInput}[RESC_HIER_STR_KW].value();
+                        logger::api::error("Failed to restore the replica's replica status "
+                                           "[error_code={}, path={}, hierarchy={}, original_replica_status={}]",
+                                           ec, dataObjInp.objPath, hier, old_replica_status);
+                        return ec;
+                    }
+
+                    return e.code();
+                }
+                catch (const std::exception& e) {
+                    logger::api::error("{} - {}", __FUNCTION__, e.what());
+                    return SYS_INTERNAL_ERR;
                 }
             }
             else {
                 L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
             }
+
             if ( lockFd >= 0 ) {
                 L1desc[l1descInx].lockFd = lockFd;
             }
+
             return l1descInx;
         }
+
         status = l1descInx;
         tmpDataObjInfo = nextDataObjInfo;
     }
+
     return status;
 } // _rsDataObjOpen
 
@@ -705,13 +913,48 @@ int rsDataObjOpen(
         return l1descInx;
     }
 
+    using irods::experimental::key_value_proxy;
+
+    key_value_proxy kvp{dataObjInp->condInput};
+
+    // If the client specified a leaf resource, then discover the hierarchy and
+    // store it in the keyValPair_t. This instructs the iRODS server to create
+    // the replica at the specified resource if it does not exist.
+    if (kvp.contains(LEAF_RESOURCE_NAME_KW)) {
+        std::string hier;
+        auto leaf = kvp[LEAF_RESOURCE_NAME_KW].value();
+        bool is_coord_resc = false;
+
+        if (const auto err = resc_mgr.is_coordinating_resource(leaf.data(), is_coord_resc); !err.ok()) {
+            logger::api::error(err.result());
+            return err.code();
+        }
+
+        // Leaf resources cannot be coordinating resources. This essentially checks
+        // if the resource has any child resources which is exactly what we're interested in.
+        if (is_coord_resc) {
+            logger::api::error("[{}] is not a leaf resource.", leaf);
+            return USER_INVALID_RESC_INPUT;
+        }
+
+        if (const auto err = resc_mgr.get_hier_to_root_for_resc(leaf.data(), hier); !err.ok()) {
+            logger::api::error(err.result());
+            return err.code();
+        }
+
+        kvp[RESC_HIER_STR_KW] = hier;
+    }
+
+    enable_creation_of_additional_replicas(*rsComm);
+
     dataObjInfo_t* dataObjInfoHead{};
-    if (!getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW)) {
+
+    if (!kvp.contains(RESC_HIER_STR_KW)) {
         try {
             const auto operation = (dataObjInp->openFlags & O_CREAT) ?
                 irods::CREATE_OPERATION : irods::OPEN_OPERATION;
             auto [file_obj, hier] = irods::resolve_resource_hierarchy(operation, rsComm, *dataObjInp, &dataObjInfoHead);
-            addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str());
+            kvp[RESC_HIER_STR_KW] = hier;
             return _rsDataObjOpen(rsComm, *dataObjInp, dataObjInfoHead, file_obj);
         }
         catch (const irods::exception& e) {

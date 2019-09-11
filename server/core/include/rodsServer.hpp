@@ -12,9 +12,9 @@
 #ifndef RODS_SERVER_HPP
 #define RODS_SERVER_HPP
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <unistd.h>
-#include <signal.h>
+#include <csignal>
 #include <sys/wait.h>
 
 #include "rods.h"

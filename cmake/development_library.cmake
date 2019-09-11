@@ -18,6 +18,7 @@ set(
 
 set(
   IRODS_LIB_CORE_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/lib/core/include/alignPointer.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/apiHandler.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/base64.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/bunUtil.h
@@ -106,6 +107,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/objInfo.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/osauth.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/packStruct.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/parallel_transfer_engine.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/parseCommandLine.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/phybunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/phymvUtil.h
@@ -469,6 +471,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/client_api_whitelist.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/collection.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/replica_access_table.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/fileOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/initServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsReServer.hpp
