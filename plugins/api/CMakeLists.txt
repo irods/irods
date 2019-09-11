@@ -63,12 +63,46 @@ set(
   irods_client
   )
 
+# sync_with_physical_object API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_sync_with_physical_object_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/sync_with_physical_object.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_sync_with_physical_object_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/sync_with_physical_object.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_sync_with_physical_object_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_sync_with_physical_object_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_sync_with_physical_object_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_sync_with_physical_object_client
+  irods_client
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
   helloworld_client
   irods_get_file_descriptor_info_server
   irods_get_file_descriptor_info_client
+  irods_sync_with_physical_object_server
+  irods_sync_with_physical_object_client
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})
@@ -85,6 +119,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/plugins/api/include
+    ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include
     ${CMAKE_SOURCE_DIR}/server/core/include
     ${CMAKE_SOURCE_DIR}/server/icat/include
