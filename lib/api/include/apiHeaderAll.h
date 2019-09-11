@@ -149,6 +149,7 @@
 
 // =-=-=-=-=-=-=-
 // API plugins
+#include "atomic_apply_metadata_operations.h"
 #include "get_file_descriptor_info.h"
 
 #endif	// API_HEADER_ALL_H__

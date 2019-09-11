@@ -63,12 +63,49 @@ set(
   irods_client
   )
 
+# atomic_apply_metadata_operations API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_metadata_operations_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_metadata_operations.cpp
+  /opt/nanodbc/src/nanodbc.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_metadata_operations_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_metadata_operations.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_atomic_apply_metadata_operations_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  NANODBC_ODBC_VERSION=SQL_OV_ODBC3
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_atomic_apply_metadata_operations_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_metadata_operations_server
+  irods_server
+  odbc
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_metadata_operations_client
+  irods_client
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
   helloworld_client
   irods_get_file_descriptor_info_server
   irods_get_file_descriptor_info_client
+  irods_atomic_apply_metadata_operations_server
+  irods_atomic_apply_metadata_operations_client
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})
@@ -84,7 +121,9 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_BINARY_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
+    ${CMAKE_SOURCE_DIR}/lib/filesystem/include
     ${CMAKE_SOURCE_DIR}/plugins/api/include
+    ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/drivers/include
     ${CMAKE_SOURCE_DIR}/server/core/include
     ${CMAKE_SOURCE_DIR}/server/icat/include
@@ -93,6 +132,8 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_JSON}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
+    /opt/nanodbc/src
+    /opt/fmt-6.0.0/include
     )
 
   target_link_libraries(
@@ -108,7 +149,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
-  target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings)
+  target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-error)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()
 

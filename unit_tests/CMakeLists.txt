@@ -30,7 +30,8 @@ endif()
 # List of cmake files defined under ./cmake/test_config.
 # Each file in the ./cmake/test_config directory defines variables for a specific test.
 # New tests should be added to this list.
-set(TEST_INCLUDE_LIST test_config/irods_connection_pool
+set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_metadata_operations
+                      test_config/irods_connection_pool
                       test_config/irods_dstream
                       test_config/irods_filesystem
                       test_config/irods_get_file_descriptor_info
