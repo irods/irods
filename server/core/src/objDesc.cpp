@@ -123,8 +123,7 @@ closeAllL1desc( rsComm_t *rsComm ) {
 int
 freeL1desc( int l1descInx ) {
     if ( l1descInx < 3 || l1descInx >= NUM_L1_DESC ) {
-        rodsLog( LOG_NOTICE,
-                 "freeL1desc: l1descInx %d out of range", l1descInx );
+        rodsLog( LOG_NOTICE, "freeL1desc: l1descInx %d out of range", l1descInx );
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
@@ -145,6 +144,9 @@ freeL1desc( int l1descInx ) {
         clearDataObjInp( L1desc[l1descInx].dataObjInp );
         free( L1desc[l1descInx].dataObjInp );
     }
+
+    L1desc[l1descInx].replica_token.clear();
+
     memset( &L1desc[l1descInx], 0, sizeof( l1desc_t ) );
 
     return 0;

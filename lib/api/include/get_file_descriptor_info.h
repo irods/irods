@@ -11,14 +11,21 @@ extern "C" {
 
 /// Returns information about an iRODS file descriptor.
 ///
-/// The caller is expected to pass the same RcComm* used to open the replica.
-///
-/// \user Client
+/// The caller is expected to pass the same RcComm pointer used to open the replica.
 ///
 /// \since 4.2.8
 ///
 /// \param[in]  _comm        A pointer to a RcComm.
-/// \param[in]  _json_input  A JSON string containing the file descriptor.
+/// \param[in]  _json_input  \parblock
+/// A JSON string containing the file descriptor.
+///
+/// The JSON string must have the following structure:
+/// \code{.js}
+/// {
+///   "fd": integer
+/// }
+/// \endcode
+/// \endparblock
 /// \param[out] _json_output A JSON string containing the file descriptor information.
 ///
 /// \return An integer.

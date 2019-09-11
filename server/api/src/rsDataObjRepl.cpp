@@ -48,12 +48,15 @@
 #include "irods_random.hpp"
 #include "irods_string_tokenize.hpp"
 #include "voting.hpp"
+#include "key_value_proxy.hpp"
 
 #include <string_view>
 #include <vector>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+
+namespace ix = irods::experimental;
 
 namespace {
 
@@ -88,6 +91,22 @@ repl_input_tuple init_destination_replica_input(
     // Remove existing keywords used for source resource
     rmKeyVal( &destination_data_obj_inp.condInput, RESC_NAME_KW );
     rmKeyVal( &destination_data_obj_inp.condInput, RESC_HIER_STR_KW );
+
+    std::string replica_number;
+    ix::key_value_proxy kvp{destination_data_obj_inp.condInput};
+
+    if (kvp.contains(REPL_NUM_KW)) {
+        replica_number = kvp[REPL_NUM_KW].value();
+
+        // This keyword must be removed temporarily so that the voting mechanism does
+        // not misinterpret it and change the operation from a CREATE to a WRITE.
+        // See server/core/src/irods_resource_redirect.cpp for details.
+        rmKeyVal(&destination_data_obj_inp.condInput, REPL_NUM_KW);
+    }
+
+    irods::at_scope_exit restore_replica_number_keyword{[&replica_number, &kvp] {
+        kvp[REPL_NUM_KW] = replica_number;
+    }};
 
     // Get the destination resource that the client specified, or use the default resource
     if (!getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW) &&

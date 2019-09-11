@@ -1075,6 +1075,26 @@ OUTPUT ruleExecOut
         # Show that the remote data object can be found via "imeta -z qu".
         user.assert_icommand('imeta -z {remote_zone} qu -d n1 = v1'.format(**parameters), 'STDOUT', [parameters['filename']])
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 9) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 2, 9), 'Only available in 4.2.9 and later')
+    def test_federation_support_for_replica_open_close_and_get_file_descriptor_info(self):
+        user = self.user_sessions[0]
+        parameters = self.config.copy()
+
+        # Create a new data object via istream.
+        # istream proves that the following API plugins work in a federated environment.
+        # - rx_get_file_descriptor_info
+        # - rx_replica_open
+        # - rx_replica_close
+        parameters['filename'] = 'istream_test_file.txt'
+        parameters['user_name'] = user.username
+        parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
+        parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
+        contents = 'Hello, iRODS!'
+        user.assert_icommand('istream write {remote_data_object}'.format(**parameters), input=contents)
+
+        # Show that the data object exists and contains the expected content.
+        user.assert_icommand('istream read {remote_data_object}'.format(**parameters), 'STDOUT', [contents])
+
 class Test_Admin_Commands(unittest.TestCase):
 
     '''

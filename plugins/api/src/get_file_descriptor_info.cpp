@@ -13,6 +13,8 @@
 // Server-side Implementation
 //
 
+#include "get_file_descriptor_info.h"
+
 #include "objDesc.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_api_call.hpp"
@@ -21,6 +23,7 @@
 #include "irods_logger.hpp"
 
 #include <string>
+#include <string_view>
 #include <tuple>
 
 #include "json.hpp"
@@ -218,7 +221,8 @@ namespace
             {"plugin_data", nullptr}, // Not used anywhere as of 2019-01-28
             {"replication_data_object_info", to_json(_fd_info.replDataObjInfo)},
             {"remote_zone_host", to_json(_fd_info.remoteZoneHost)},
-            {"in_pdmo", _fd_info.in_pdmo}
+            {"in_pdmo", _fd_info.in_pdmo},
+            {"replica_token", _fd_info.replica_token}
         };
     }
 
@@ -252,7 +256,7 @@ namespace
         return json::parse(std::string(static_cast<const char*>(_buf.buf), _buf.len)).at("fd").get<int>();
     }
 
-    auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*
+    auto to_bytes_buffer(std::string_view _s) -> bytesBuf_t*
     {
         constexpr auto allocate = [](const auto bytes) noexcept
         {
@@ -262,7 +266,7 @@ namespace
         const auto buf_size = _s.length() + 1;
 
         auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::strncpy(buf, _s.c_str(), _s.length());
+        std::strncpy(buf, _s.data(), _s.length());
 
         auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
         bbp->len = buf_size;
@@ -286,15 +290,15 @@ namespace
             fd = get_file_descriptor(*_input);
         }
         catch (const json::parse_error& e) {
-            log::api::error("Failed to parse input into JSON [error => {}]", e.what());
+            log::api::error("Failed to parse input into JSON [error_code={}]", e.what());
             return SYS_INVALID_INPUT_PARAM;
         }
         catch (const json::type_error& e) {
-            log::api::error("Failed to extract file descriptor from input [error => {}]", e.what());
+            log::api::error("Failed to extract file descriptor from input [error_code={}]", e.what());
             return SYS_INVALID_INPUT_PARAM;
         }
         catch (const std::exception& e) {
-            log::api::error("An error occurred while processing the request [error => {}]", e.what());
+            log::api::error("An error occurred while processing the request [error_code={}]", e.what());
             return SYS_INVALID_INPUT_PARAM;
         }
         catch (...) {
@@ -302,7 +306,27 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        *_output = to_bytes_buffer(to_json(irods::get_l1desc(fd)).dump());
+        const auto& l1desc = irods::get_l1desc(fd);
+
+        // Redirect to the federated zone if the local L1 descriptor references a remote zone.
+        if (l1desc.oprType == REMOTE_ZONE_OPR && l1desc.remoteZoneHost) {
+            auto* conn = l1desc.remoteZoneHost->conn;
+            const auto j_in = json{{"fd", l1desc.remoteL1descInx}}.dump();
+            char* j_out{};
+
+            if (const auto ec = rc_get_file_descriptor_info(conn, j_in.data(), &j_out); ec != 0) {
+                log::api::error("Failed to retrieve remote L1 descriptor information "
+                                "[error_code={}, remote_l1_descriptor={}]", ec, l1desc.remoteL1descInx);
+                return ec;
+            }
+
+            log::api::trace("Remote L1 descriptor info = {}", j_out);
+
+            *_output = to_bytes_buffer(j_out);
+        }
+        else {
+            *_output = to_bytes_buffer(to_json(l1desc).dump());
+        }
 
         return 0;
     }
