@@ -94,7 +94,7 @@ namespace filesystem {
         auto remove(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> bool;
         auto remove_all(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> std::uintmax_t;
 
-        auto permissions(rxComm& _comm, const path& _p, perms _prms) -> void;
+        auto permissions(rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void;
 
         auto rename(rxComm& _comm, const path& _from, const path& _to) -> void;
 

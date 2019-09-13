@@ -1,6 +1,8 @@
 #ifndef IRODS_FILESYSTEM_PERMISSIONS_HPP
 #define IRODS_FILESYSTEM_PERMISSIONS_HPP
 
+#include <string>
+
 namespace irods {
 namespace experimental {
 namespace filesystem {
@@ -13,6 +15,12 @@ namespace filesystem {
         own,
         inherit,
         noinherit
+    };
+
+    struct entity_permission
+    {
+        std::string name;
+        perms prms;
     };
 
 } // namespace filesystem
