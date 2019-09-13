@@ -205,9 +205,44 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
     }
 
+    SECTION("read/modify permissions on a data object")
+    {
+        const fs::path p = user_home / "data_object";
+
+        {
+            default_transport tp{*comm};
+            odstream{tp, p} << "hello world!";
+        }
+
+        const auto permissions_match = [&env](const auto& _entity_perms, const auto& _expected_perms)
+        {
+            REQUIRE(_entity_perms.name == env.rodsUserName);
+            REQUIRE(_entity_perms.prms == _expected_perms);
+        };
+
+        auto status = fs::client::status(*comm, p);
+
+        REQUIRE_FALSE(status.permissions().empty());
+        permissions_match(status.permissions()[0], fs::perms::own);
+
+        auto new_perms = fs::perms::read;
+        fs::client::permissions(*comm, p, env.rodsUserName, new_perms);
+        status = fs::client::status(*comm, p);
+        REQUIRE_FALSE(status.permissions().empty());
+        permissions_match(status.permissions()[0], new_perms);
+
+        new_perms = fs::perms::own;
+        fs::client::permissions(*comm, p, env.rodsUserName, new_perms);
+        status = fs::client::status(*comm, p);
+        REQUIRE_FALSE(status.permissions().empty());
+        permissions_match(status.permissions()[0], new_perms);
+
+        REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
+    }
+
     SECTION("collection iterators")
     {
-        // Creates three data objects under at the path "_collection".
+        // Creates three data objects under the path "_collection".
         const auto create_data_objects_under_collection = [comm](const fs::path& _collection)
         {
             // Create new data objects.

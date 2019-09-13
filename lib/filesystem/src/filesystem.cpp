@@ -11,6 +11,7 @@
 
     #include "rods.h"
     #include "apiHeaderAll.h"
+    #include "rsSpecificQuery.hpp"
     #include "rsObjStat.hpp"
     #include "rsDataObjCopy.hpp"
     #include "rsDataObjRename.hpp"
@@ -27,6 +28,7 @@
     #include "rsModDataObjMeta.hpp"
 #else
     #include "rodsClient.h"
+    #include "specificQuery.h"
     #include "objStat.h"
     #include "dataObjCopy.h"
     #include "dataObjRename.h"
@@ -51,7 +53,6 @@
 #include "irods_query.hpp"
 #include "irods_at_scope_exit.hpp"
 
-#include <iostream>
 #include <cctype>
 #include <cstring>
 #include <string>
@@ -108,40 +109,61 @@ namespace NAMESPACE_IMPL {
             std::string owner_zone;
             long long ctime;
             long long mtime;
-            perms prms;
+            std::vector<entity_permission> prms;
         };
+
+        auto to_permission_enum(const std::string& _perm) -> perms
+        {
+            // clang-format off
+            if      (_perm == "read object")   { return perms::read; }
+            else if (_perm == "modify object") { return perms::write; }
+            else if (_perm == "own")           { return perms::own; }
+            else if (_perm == "inherit")       { return perms::inherit; }
+            else if (_perm == "noinherit")     { return perms::noinherit; }
+            // clang-format on
+
+            return perms::null;
+        }
 
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
         {
-            std::string sql;
-            bool set_perms = false;
-
             if (DATA_OBJ_T == _s.type) {
-                set_perms = true;
-                sql = "select DATA_ACCESS_NAME where COLL_NAME = '";
+                std::string sql = "select USER_NAME, DATA_ACCESS_NAME where COLL_NAME = '";
                 sql += _p.parent_path();
                 sql += "' and DATA_NAME = '";
                 sql += _p.object_name();
-                sql += "'";
+                sql += "' and DATA_TOKEN_NAMESPACE = 'access_type'";
+
+                for (const auto& row : irods::query<rxComm>{&_comm, sql}) {
+                    _s.prms.push_back({row[0], to_permission_enum(row[1])});
+                }
             }
             else if (COLL_OBJ_T == _s.type) {
-                set_perms = true;
-                sql = "select COLL_ACCESS_NAME where COLL_NAME = '";
-                sql += _p;
-                sql += "'";
-            }
+                specificQueryInp_t sq_input{};
+                genQueryOut_t* gq_output{};
 
-            if (set_perms) {
-                for (const auto& row : irods::query<rxComm>{&_comm, sql}) {
-                    // clang-format off
-                    if      (row[0] == "null")      { _s.prms = perms::null; }
-                    else if (row[0] == "read")      { _s.prms = perms::read; }
-                    else if (row[0] == "write")     { _s.prms = perms::write; }
-                    else if (row[0] == "own")       { _s.prms = perms::own; }
-                    else if (row[0] == "inherit")   { _s.prms = perms::inherit; }
-                    else if (row[0] == "noinherit") { _s.prms = perms::noinherit; }
-                    else                            { _s.prms = perms::null; }
-                    // clang-format on
+                irods::at_scope_exit<std::function<void()>> at_scope_exit{[gq_output]() mutable {
+                    if (gq_output) {
+                        freeGenQueryOut(&gq_output);
+                    }
+                }};
+
+                sq_input.maxRows = MAX_SQL_ROWS;
+                sq_input.continueInx = 0;
+                sq_input.sql = "ShowCollAcls";
+                sq_input.args[0] = const_cast<char*>(_p.c_str());
+
+                const auto ec = rxSpecificQuery(&_comm, &sq_input, &gq_output);
+
+                if (ec < 0) {
+                    throw filesystem_error{"stat error: database query failed", _p, make_error_code(ec)};
+                }
+
+                for (int r = 0; r < gq_output->rowCnt; ++r) {
+                    auto offset = r * gq_output->sqlResult[2].len;
+                    const char* perm = gq_output->sqlResult[2].value + offset;
+                    offset = r * gq_output->sqlResult[0].len;
+                    _s.prms.push_back({gq_output->sqlResult[0].value + offset, to_permission_enum(perm)});
                 }
             }
         }
@@ -406,7 +428,10 @@ namespace NAMESPACE_IMPL {
         }
 
         create_collection(_comm, _p);
-        permissions(_comm, _p, s.permissions());
+
+        for (auto&& p : s.permissions()) {
+            permissions(_comm, _p, p.name, p.prms);
+        }
 
         return true;
     }
@@ -622,18 +647,22 @@ namespace NAMESPACE_IMPL {
         return 0;
     }
 
-    auto permissions(rxComm& _comm, const path& _p, perms _prms) -> void
+    auto permissions(rxComm& _comm, const path& _p, const std::string& _user_or_group, perms _prms) -> void
     {
         detail::throw_if_path_length_exceeds_limit(_p);
 
+        char username[NAME_LEN]{};
+        char zone[NAME_LEN]{};
+
+        auto ec = parseUserName(_user_or_group.c_str(), username, zone);
+
+        if (ec != 0) {
+            throw filesystem_error{"cannot parse user/group name", _p, make_error_code(ec)};
+        }
+
         modAccessControlInp_t input{};
 
-        char username[NAME_LEN]{};
-        rstrcpy(username, _comm.clientUser.userName, NAME_LEN);
         input.userName = username;
-
-        char zone[NAME_LEN]{};
-        rstrcpy(zone, _comm.clientUser.rodsZone, NAME_LEN);
         input.zone = zone;
 
         char path[MAX_NAME_LEN]{};
@@ -670,7 +699,7 @@ namespace NAMESPACE_IMPL {
 
         input.accessLevel = access;
 
-        const auto ec = rxModAccessControl(&_comm, &input);
+        ec = rxModAccessControl(&_comm, &input);
 
         if (ec != 0) {
             throw filesystem_error{"cannot set permissions", _p, make_error_code(ec)};

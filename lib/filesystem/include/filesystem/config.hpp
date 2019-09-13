@@ -3,6 +3,7 @@
 
 #undef NAMESPACE_IMPL
 #undef rxComm
+#undef rxSpecificQuery
 #undef rxOpenCollection
 #undef rxReadCollection
 #undef rxCloseCollection
@@ -23,6 +24,7 @@
 
     #define rxComm                  rsComm_t
 
+    #define rxSpecificQuery         rsSpecificQuery
     #define rxOpenCollection        rsOpenCollection
     #define rxReadCollection        rsReadCollection
     #define rxCloseCollection       rsCloseCollection
@@ -42,6 +44,7 @@
 
     #define rxComm                  rcComm_t
 
+    #define rxSpecificQuery         rcSpecificQuery
     #define rxOpenCollection        rcOpenCollection
     #define rxReadCollection        rcReadCollection
     #define rxCloseCollection       rcCloseCollection
