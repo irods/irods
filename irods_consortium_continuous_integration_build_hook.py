@@ -27,6 +27,7 @@ def install_building_dependencies():
     irods_python_ci_utilities.install_os_packages([
         "irods-externals-avro1.7.7-0",
         "irods-externals-boost1.60.0-0",
+        "irods-externals-catch22.3.0-0",
         "irods-externals-clang-runtime3.8-0",
         "irods-externals-clang3.8-0",
         "irods-externals-cppzmq4.1-0",
