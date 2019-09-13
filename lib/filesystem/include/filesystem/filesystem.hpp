@@ -15,7 +15,6 @@
 #include <chrono>
 #include <vector>
 
-#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
 namespace irods {
@@ -56,7 +55,7 @@ namespace filesystem {
     {
         std::string attribute;
         std::string value;
-        boost::optional<std::string> units;
+        std::string units;
     };
 
     namespace NAMESPACE_IMPL
@@ -107,9 +106,7 @@ namespace filesystem {
                                   const boost::variant<int, replica_number>& _replica_number,
                                   verification_calculation _calculation = verification_calculation::none) -> std::vector<checksum>;
 
-        auto get_metadata(rxComm& _comm,
-                          const path& _path,
-                          const boost::optional<metadata>& _metadata = {}) -> std::vector<metadata>;
+        auto get_metadata(rxComm& _comm, const path& _path) -> std::vector<metadata>;
 
         auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
 
