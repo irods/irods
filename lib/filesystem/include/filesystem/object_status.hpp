@@ -4,6 +4,8 @@
 #include "filesystem/filesystem.hpp"
 #include "filesystem/permissions.hpp"
 
+#include <vector>
+
 namespace irods {
 namespace experimental {
 namespace filesystem {
@@ -28,11 +30,11 @@ namespace filesystem {
         {
         }
 
-        object_status(const object_status& _other) noexcept = default;
+        object_status(const object_status& _other) = default;
 
-        explicit object_status(object_type _type, perms _permissions = perms::null) noexcept
+        explicit object_status(object_type _type, const std::vector<entity_permission>& _perms = {})
             : type_{_type}
-            , perms_{_permissions}
+            , perms_{_perms}
         {
         }
 
@@ -40,25 +42,25 @@ namespace filesystem {
 
         // Assignment operators
 
-        auto operator=(const object_status& _other) noexcept -> object_status& = default;
+        auto operator=(const object_status& _other) -> object_status& = default;
 
         // clang-format off
 
         // Observers
 
-        auto type() const noexcept -> object_type  { return type_; }
-        auto permissions() const noexcept -> perms { return perms_; }
+        auto type() const noexcept -> object_type { return type_; }
+        auto permissions() const noexcept -> const std::vector<entity_permission>& { return perms_; }
 
         // Modifiers
 
         auto type(object_type _ot) noexcept -> void    { type_ = _ot; }
-        auto permissions(perms _prms) noexcept -> void { perms_ = _prms; }
+        auto permissions(const std::vector<entity_permission>& _perms) -> void { perms_ = _perms; }
 
         // clang-format on
 
     private:
         object_type type_;
-        perms perms_;
+        std::vector<entity_permission> perms_;
     };
 
 } // namespace filesystem
