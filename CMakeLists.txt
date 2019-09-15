@@ -479,6 +479,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/acl_operation.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/metadata_operation.cpp
   $<TARGET_OBJECTS:irods_filesystem_path>
   $<TARGET_OBJECTS:irods_filesystem_client>
   )
@@ -1066,6 +1068,7 @@ set(
 
 set(
   IRODS_LIB_CORE_SOURCES
+  ${CMAKE_SOURCE_DIR}/lib/core/src/acl_operation.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/apiHandler.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/bunUtil.cpp
@@ -1119,6 +1122,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/list.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/lsUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/mcollUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/metadata_operation.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/miscUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/mkdirUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/msParam.cpp
@@ -1215,6 +1219,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_JSON}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})

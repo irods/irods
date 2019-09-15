@@ -2,8 +2,8 @@
 #define IRODS_IO_TRANSPORT_HPP
 
 #include "filesystem/path.hpp"
-#include "acl.hpp"
-#include "metadata.hpp"
+#include "acl_operation.hpp"
+#include "metadata_operation.hpp"
 
 #include <ios>
 #include <string>
@@ -14,8 +14,8 @@ namespace irods::experimental::io
     struct on_close_success
     {
         bool update_catalog = true;
-        std::vector<irods::experimental::metadata> metadata;
-        std::vector<irods::experimental::ace> acl;
+        std::vector<irods::experimental::metadata_operation> metadata_ops;
+        std::vector<irods::experimental::acl_operation> acl_ops;
     };
 
     template <typename CharT,

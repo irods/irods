@@ -142,11 +142,8 @@ namespace irods::experimental::io::NAMESPACE_IMPL
 
             if (_on_close_success) {
                 json_input["update_catalog"] = _on_close_success->update_catalog;
-                
-                // FIXME The lines below will not compile right now.
-                // Need to provide functions that can transform the type in the container to JSON.
-                //json_input["metadata"] = _on_close_success->metadata;
-                //json_input["acl"] = _on_close_success->acl;
+                json_input["metadata"] = _on_close_success->metadata_ops;
+                json_input["acl"] = _on_close_success->acl_ops;
             }
 
             const auto json_string = json_input.dump();
