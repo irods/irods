@@ -874,7 +874,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return _s.type() != object_type::none;
     }
 
-    auto get_metadata(rxComm& _comm, const path& _p, const std::optional<metadata>& _metadata) -> std::vector<metadata>
+    auto get_metadata(rxComm& _comm, const path& _p) -> std::vector<metadata>
     {
         if (_p.empty()) {
             throw filesystem_error{"empty path"};
@@ -948,9 +948,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         std::strncpy(value_buf, _metadata.value.c_str(), _metadata.value.size());
         input.arg4 = value_buf;
 
-        std::string units = _metadata.units.value_or("");
         char units_buf[MAX_NAME_LEN]{};
-        std::strncpy(units_buf, units.c_str(), units.size());
+        std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
         input.arg5 = units_buf;
 
         if (const auto ec = rxModAVUMetadata(&_comm, &input); ec != 0) {
@@ -999,9 +998,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         std::strncpy(value_buf, _metadata.value.c_str(), _metadata.value.size());
         input.arg4 = value_buf;
 
-        std::string units = _metadata.units.value_or("");
         char units_buf[MAX_NAME_LEN]{};
-        std::strncpy(units_buf, units.c_str(), units.size());
+        std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
         input.arg5 = units_buf;
 
         if (const auto ec = rxModAVUMetadata(&_comm, &input); ec != 0) {

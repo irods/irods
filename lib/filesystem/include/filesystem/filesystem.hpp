@@ -13,7 +13,6 @@
 #include <istream>
 #include <ostream>
 #include <chrono>
-#include <optional>
 #include <vector>
 #include <variant>
 
@@ -53,7 +52,7 @@ namespace irods::experimental::filesystem
     {
         std::string attribute;
         std::string value;
-        std::optional<std::string> units;
+        std::string units;
     };
 
     namespace NAMESPACE_IMPL
@@ -104,9 +103,7 @@ namespace irods::experimental::filesystem
                                   const std::variant<int, replica_number>& _replica_number,
                                   verification_calculation _calculation = verification_calculation::none) -> std::vector<checksum>;
 
-        auto get_metadata(rxComm& _comm,
-                          const path& _path,
-                          const std::optional<metadata>& _metadata = {}) -> std::vector<metadata>;
+        auto get_metadata(rxComm& _comm, const path& _path) -> std::vector<metadata>;
 
         auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
 
