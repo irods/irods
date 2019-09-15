@@ -24,7 +24,7 @@ TEST_CASE("dstream", "[iostreams]")
         irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 600};
 
         auto conn = conn_pool.get_connection();
-        fs::path path = "/tempZone/home/rods/dstream_data_object.txt";
+        const auto path = fs::path{env.rodsHome} / "dstream_data_object.txt";
 
         // Guarantees that the stream is closed before clean up.
         {

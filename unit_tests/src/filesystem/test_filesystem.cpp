@@ -14,9 +14,12 @@
 
 #include "catch.hpp"
 
-#include "filesystem.hpp"
 #include "rodsClient.h"
-#include "irods_at_scope_exit.hpp"
+
+#include "connection_pool.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
+#include "filesystem.hpp"
 
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
@@ -32,23 +35,32 @@
 
 TEST_CASE("filesystem")
 {
+    auto& api_table = irods::get_client_api_table();
+    auto& pck_table = irods::get_pack_table();
+    init_api_table(api_table, pck_table);
+
     rodsEnv env;
     REQUIRE(getRodsEnv(&env) >= 0);
 
-    rErrMsg_t errors;
-    auto* comm = rcConnect(env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 0, &errors);
-    REQUIRE(comm);
-    irods::at_scope_exit<std::function<void()>> at_scope_exit{[comm] {
-        rcDisconnect(comm);
-    }};
+    const auto connection_count = 1;
+    const auto refresh_time = 600;
 
-    REQUIRE(clientLogin(comm) == 0);
+    irods::connection_pool conn_pool{connection_count,
+                                     env.rodsHost,
+                                     env.rodsPort,
+                                     env.rodsUserName,
+                                     env.rodsZone,
+                                     refresh_time};
 
+    auto* comm = &static_cast<rcComm_t&>(conn_pool.get_connection());
+
+    // clang-format off
     namespace fs = irods::experimental::filesystem;
 
-    using dstream = irods::experimental::io::dstream;
-    using odstream = irods::experimental::io::odstream;
+    using dstream           = irods::experimental::io::dstream;
+    using odstream          = irods::experimental::io::odstream;
     using default_transport = irods::experimental::io::client::default_transport;
+    // clang-format on
 
     const fs::path user_home = env.rodsHome;
 
@@ -106,8 +118,8 @@ TEST_CASE("filesystem")
     {
         const fs::path col1 = user_home / "col1";
         REQUIRE(fs::client::create_collection(*comm, col1));
-        REQUIRE(fs::client::create_collection(*comm, "/tempZone/home/rods/col2", col1));
-        REQUIRE(fs::client::create_collections(*comm, "/tempZone/home/rods/col2/col3/col4/col5"));
+        REQUIRE(fs::client::create_collection(*comm, user_home / "col2", col1));
+        REQUIRE(fs::client::create_collections(*comm, user_home / "col2/col3/col4/col5"));
         REQUIRE(fs::client::remove(*comm, col1));
         REQUIRE(fs::client::remove_all(*comm, user_home / "col2/col3/col4"));
         REQUIRE(fs::client::remove_all(*comm, user_home / "col2", fs::remove_options::no_trash));
@@ -124,7 +136,7 @@ TEST_CASE("filesystem")
 
     SECTION("equivalence checking")
     {
-        const fs::path p = user_home / "../rods";
+        const fs::path p = user_home / ".." / env.rodsUserName;
         REQUIRE_THROWS(fs::client::equivalent(*comm, user_home, p));
         REQUIRE(fs::client::equivalent(*comm, user_home, p.lexically_normal()));
     }
