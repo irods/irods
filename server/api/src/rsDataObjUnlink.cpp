@@ -378,7 +378,7 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 /* unregistering but not an admin user */
                 std::string out_path;
                 ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
-                if ( !ret.ok() ) {
+                if ( ret.ok() ) {
                     /* in the vault */
                     std::stringstream msg;
                     msg << "unregistering a data object which is in a vault [";
