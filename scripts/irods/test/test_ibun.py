@@ -7,10 +7,12 @@ else:
 
 import os
 import shutil
+import tempfile
 
 from . import resource_suite
 from .. import lib
 
+@unittest.skip('Generation of large file causes I/O thrashing... skip for now')
 class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
 
     def setUp(self):
@@ -22,7 +24,7 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_ibun_extraction_of_big_zip_file__issue_4495(self):
         try:
-            root_name = 'test_ibun_extraction_of_big_zip_file__issue_4495_dir'
+            root_name = tempfile.mkdtemp()
             unzip_collection_name = 'my_exploded_coll'
             unzip_directory_name = 'my_exploded_dir'
             zip_file_name = 'bigzip.zip'
@@ -59,7 +61,7 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_ibun_extraction_of_big_tar_file__issue_4118(self):
         try:
-            root_name = 'test_ibun_extraction_of_big_tar_file__issue_4118_dir'
+            root_name = tempfile.mkdtemp()
             untar_collection_name = 'my_exploded_coll'
             untar_directory_name = 'my_exploded_dir'
             tar_file_name = 'bigtar.tar'
@@ -71,7 +73,6 @@ class Test_Ibun(resource_suite.ResourceBase, unittest.TestCase):
             print(out)
 
             # Copy junk file until a sufficiently large tar file size is reached
-            os.mkdir(root_name)
             for i in range(0, 13):
                 lib.execute_command(['cp', self.known_file_name, os.path.join(root_name, self.known_file_name + str(i))])
 

@@ -746,6 +746,7 @@ OUTPUT ruleExecOut
             use_regex=True)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    @unittest.skip('Generation of large file causes I/O thrashing... skip for now')
     def test_msiTarFileExtract_big_file__issue_4118(self):
         try:
             test_name = 'test_msiTarFileExtract_big_file__issue_4118'
