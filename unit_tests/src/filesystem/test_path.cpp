@@ -22,6 +22,10 @@
 #include <utility>
 #include <algorithm>
 
+#ifdef CPP17_STD_FILESYSTEM_SUPPORTED
+    #include <filesystem>
+#endif // CPP17_STD_FILESYSTEM_SUPPORTED
+
 namespace fs = irods::experimental::filesystem;
 
 TEST_CASE("path construction", "[constructors]")
@@ -290,6 +294,54 @@ TEST_CASE("path lexical operations", "[lexical operations]")
 {
     SECTION("normal form of path")
     {
+#ifdef CPP17_STD_FILESYSTEM_SUPPORTED
+        const std::vector<std::string> paths{
+            "/tempZone/home/rods/.",
+            "/tempZone/home/rods/..",
+            "/tempZone/home/rods/foo",
+            "/tempZone/home/rods/foo.",
+            "/tempZone/home/rods/foo^",
+            "/tempZone/home/rods/foo~",
+            "/tempZone/home/rods/foo/",
+            "/tempZone/home/rods/foo/.",
+            "/tempZone/home/rods/foo/..",
+            "tempZone/home/rods/.",
+            "tempZone/home/rods/..",
+            "tempZone/home/rods/foo",
+            "tempZone/home/rods/foo.",
+            "tempZone/home/rods/foo^",
+            "tempZone/home/rods/foo~",
+            "tempZone/home/rods/foo/",
+            "tempZone/home/rods/foo/.",
+            "tempZone/home/rods/foo/..",
+            "/foo",
+            "/foo/",
+            "foo/",
+            "/",
+            "/.",
+            "/..",
+            ".",
+            "./",
+            "./.",
+            "././.",
+            "..",
+            "../",
+            "../..",
+            "../../..",
+            "../file/../..",
+            "/../file/../..",
+            ""
+        };
+
+        for (auto&& p : paths) {
+            DYNAMIC_SECTION("test lexically_normal(" << p << ")")
+            {
+                namespace std_fs = std::filesystem;
+                REQUIRE(std_fs::path{p}.lexically_normal() == fs::path{p}.lexically_normal());
+            }
+        }
+#endif // CPP17_STD_FILESYSTEM_SUPPORTED
+
         REQUIRE("foo/" == fs::path{"foo/./bar/.."}.lexically_normal());
         REQUIRE("foo/" == fs::path{"foo/.///bar/../"}.lexically_normal());
     }
