@@ -22,6 +22,10 @@
 #include <utility>
 #include <algorithm>
 
+#ifdef __cpp_lib_filesystem
+    #include <filesystem>
+#endif // __cpp_lib_filesystem
+
 namespace fs = irods::experimental::filesystem;
 
 TEST_CASE("path construction", "[constructors]")
@@ -290,6 +294,102 @@ TEST_CASE("path lexical operations", "[lexical operations]")
 {
     SECTION("normal form of path")
     {
+#ifdef __cpp_lib_filesystem
+        const std::vector<std::string> paths{
+            "/tempZone/home/rods/.",
+            "/tempZone/home/rods/..",
+            "/tempZone/home/rods/foo",
+            "/tempZone/home/rods/foo.",
+            "/tempZone/home/rods/foo^",
+            "/tempZone/home/rods/foo~",
+            "/tempZone/home/rods/foo/",
+            "/tempZone/home/rods/foo/.",
+            "/tempZone/home/rods/foo/..",
+            "tempZone/home/rods/.",
+            "tempZone/home/rods/..",
+            "tempZone/home/rods/foo",
+            "tempZone/home/rods/foo.",
+            "tempZone/home/rods/foo^",
+            "tempZone/home/rods/foo~",
+            "tempZone/home/rods/foo/",
+            "tempZone/home/rods/foo/.",
+            "tempZone/home/rods/foo/..",
+            "/foo",
+            "/foo/",
+            "foo/",
+            "/",
+            "/.",
+            "/..",
+            ".",
+            "./",
+            "./.",
+            "././.",
+            "..",
+            "../",
+            "../..",
+            "../../..",
+            "../file/../..",
+            "/../file/../..",
+            ""
+        };
+
+        for (auto&& p : paths) {
+            DYNAMIC_SECTION("normal form of path [" << p << "]")
+            {
+                namespace std_fs = std::filesystem;
+                REQUIRE(std_fs::path{p}.lexically_normal() == fs::path{p}.lexically_normal());
+            }
+        }
+#else
+        // This table holds the expected output of the C++17 Std. Filesystem's
+        // path::lexically_normal() function. The first value represents the string
+        // that lexically normal will be called on. The second value is the expected output.
+        const std::vector<std::pair<std::string, std::string>> paths{
+            {"/tempZone/home/rods/.", "/tempZone/home/rods/"},
+            {"/tempZone/home/rods/..", "/tempZone/home/"},
+            {"/tempZone/home/rods/foo", "/tempZone/home/rods/foo"},
+            {"/tempZone/home/rods/foo.", "/tempZone/home/rods/foo."},
+            {"/tempZone/home/rods/foo^", "/tempZone/home/rods/foo^"},
+            {"/tempZone/home/rods/foo~", "/tempZone/home/rods/foo~"},
+            {"/tempZone/home/rods/foo/", "/tempZone/home/rods/foo/"},
+            {"/tempZone/home/rods/foo/.", "/tempZone/home/rods/foo/"},
+            {"/tempZone/home/rods/foo/..", "/tempZone/home/rods/"},
+            {"tempZone/home/rods/.", "tempZone/home/rods/"},
+            {"tempZone/home/rods/..", "tempZone/home/"},
+            {"tempZone/home/rods/foo", "tempZone/home/rods/foo"},
+            {"tempZone/home/rods/foo.", "tempZone/home/rods/foo."},
+            {"tempZone/home/rods/foo^", "tempZone/home/rods/foo^"},
+            {"tempZone/home/rods/foo~", "tempZone/home/rods/foo~"},
+            {"tempZone/home/rods/foo/", "tempZone/home/rods/foo/"},
+            {"tempZone/home/rods/foo/.", "tempZone/home/rods/foo/"},
+            {"tempZone/home/rods/foo/..", "tempZone/home/rods/"},
+            {"/foo", "/foo"},
+            {"/foo/", "/foo/"},
+            {"foo/", "foo/"},
+            {"/", "/"},
+            {"/.", "/"},
+            {"/..", "/"},
+            {".", "."},
+            {"./", "."},
+            {"./.", "."},
+            {"././.", "."},
+            {"..", ".."},
+            {"../", ".."},
+            {"../..", "../.."},
+            {"../../..", "../../.."},
+            {"../file/../..", "../.."},
+            {"/../file/../..", "/"},
+            {"", ""}
+        };
+
+        for (auto&& p : paths) {
+            DYNAMIC_SECTION("normal form of path [" << p.first << "]")
+            {
+                REQUIRE(p.second == fs::path{p.first}.lexically_normal());
+            }
+        }
+#endif // __cpp_lib_filesystem
+
         REQUIRE("foo/" == fs::path{"foo/./bar/.."}.lexically_normal());
         REQUIRE("foo/" == fs::path{"foo/.///bar/../"}.lexically_normal());
     }
