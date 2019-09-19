@@ -19,7 +19,7 @@ namespace irods::experimental::filesystem::detail
 
     inline auto is_separator(path::value_type _c) noexcept -> bool
     {
-        return path::separator == _c;
+        return path::preferred_separator == _c;
     }
 } // irods::experimental::filesystem::detail
 
