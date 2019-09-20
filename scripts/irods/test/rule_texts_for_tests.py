@@ -869,6 +869,39 @@ def pep_resource_open_pre(rule_args, callback, rei):
     retStr = ''
     callback.msiGetSystemTime( retStr, '' )
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ImetaSet'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ImetaSet']['test_mod_avu_msvc_with_rodsuser_invoking_rule_4521'] = '''
+test {
+    msiModAVUMetadata("-C", "*homeColln","set","a1","v1","x")
+    *a.a1 = "v1"
+    *a.a2 = "v2"
+    msiAssociateKeyValuePairsToObj(*a ,"*homeColln","-C" )
+    msiModAVUMetadata("-C", "*homeColln","add","a2","v2","u2")
+    printmeta("1",*b)
+    msiModAVUMetadata("-C", "*homeColln","set","a2","v2","u")
+    printmeta("2",*b)
+    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","")
+    printmeta("3",*b)
+    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","%")
+    printmeta("4",*b)
+}
+printmeta(*id,*z) {
+    msiString2KeyValPair("",*z)
+    foreach (*x in select META_COLL_ATTR_NAME,
+                          META_COLL_ATTR_VALUE,
+                          META_COLL_ATTR_UNITS
+                    where META_COLL_ATTR_NAME like 'a_' and
+                          COLL_NAME like '*homeColln') {
+        *key = *x.META_COLL_ATTR_NAME ++ ":" ++ *x.META_COLL_ATTR_VALUE
+                                      ++ ":" ++ *x.META_COLL_ATTR_UNITS
+        *z.*key = "*id"
+        writeLine("stdout","(*id,*key)")
+    }
+}
+INPUT *homeColln="/$rodsZoneClient/home/$userNameClient"
+OUTPUT ruleExecOut
+'''
+
 # SKIP TEST test_rulebase_update__2585 FOR NON IRODS_RULE_LANGUAGE REPS
 #   Only applicable if using a rule cache
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_rulebase_update__2585'] = '''
