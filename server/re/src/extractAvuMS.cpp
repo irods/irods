@@ -17,10 +17,13 @@
 #endif
 
 
-
+#include <algorithm> // for std::find
+#include <vector>
+#include <string>
 #include <regex.h>
 
 #include "irods_re_structs.hpp"
+#include "rsModAVUMetadata.hpp"
 
 extern char *__loc1;
 
@@ -626,7 +629,7 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
+ * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
  * \retval from removeAVUMetadataFromKVPairs
  * \pre none
  * \post none
@@ -661,3 +664,114 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
 
 }
 
+/**
+ * \fn msiModAVUMetadata(
+ *  msParam_t* _item_type,
+ *  msParam_t* _item_name,
+ *  msParam_t* _avu_op,
+ *  msParam_t* _attr_name,
+ *  msParam_t* _attr_val,
+ *  msParam_t* _attr_unit,
+ *  ruleExecInfo_t *rei)
+ *
+ * \module core
+ *
+ * \since 4.2.7
+ *
+ * \brief This microservice adds, modifies or removes AVUs on an object
+ *
+ *
+ * \note The object type is also needed:
+ *  \li -d for data object
+ *  \li -R for resource
+ *  \li -G for resource group
+ *  \li -C for collection
+ *  \li -u for user
+ *
+ * \note avu_op is one of:
+ *  \li "add"
+ *  \li "set"
+ *  \li "rm"
+ *  \li "rmw"
+ *
+ * \usage See clients/icommands/test/rules/
+ *
+ * \param[in] item_type - a msParam of type STR_MS_T
+ * \param[in] item_name - a msParam of type STR_MS_T
+ * \param[in] avu_op    - a msParam of type STR_MS_T
+ * \param[in] attrNameParam - a msParam of type STR_MS_T
+ * \param[in] attrValueParam - a msParam of type STR_MS_T
+ * \param[in] attrUnitsParam - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified AVU triples add / set / rm / rmw (rm-with-wildcard)
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval from rsModAVUMetadata
+ * \pre none
+ * \post none
+ * \sa rsModAVUMetadata
+**/
+
+int
+msiModAVUMetadata(
+    msParam_t* _item_type,
+    msParam_t* _item_name,
+    msParam_t* _avu_op,
+    msParam_t* _attr_name,
+    msParam_t* _attr_val,
+    msParam_t* _attr_unit,
+    ruleExecInfo_t* _rei )
+{
+    char *it_str = parseMspForStr( _item_type );
+    if( !it_str ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    char *in_str = parseMspForStr( _item_name );
+    if( !in_str ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    static const std::vector<std::string> v { "add", "set", "rm", "rmw" };
+    char *op_str = parseMspForStr( _avu_op );
+    if( !op_str || std::find(v.begin(), v.end(), op_str) == v.end()) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    char *an_str = parseMspForStr( _attr_name );
+    if( !an_str ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    char *av_str = parseMspForStr( _attr_val );
+    if( !av_str ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    char *au_str = parseMspForStr( _attr_unit );
+    if( !au_str ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    modAVUMetadataInp_t avuOp;
+    memset(&avuOp, 0, sizeof(avuOp));
+    avuOp.arg0 = op_str;
+    avuOp.arg1 = it_str;
+    avuOp.arg2 = in_str;
+    avuOp.arg3 = an_str;
+    avuOp.arg4 = av_str;
+    avuOp.arg5 = au_str;
+
+    _rei->status = rsModAVUMetadata(_rei->rsComm, &avuOp);
+
+    return _rei->status;
+}
