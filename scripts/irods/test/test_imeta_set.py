@@ -1,15 +1,20 @@
 import itertools
 import re
 import sys
+import os
+
 if sys.version_info >= (2, 7):
     import unittest
 else:
     import unittest2 as unittest
 
 from .resource_suite import ResourceBase
-
+from ..configuration import IrodsConfig
+from .rule_texts_for_tests import rule_texts
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
+
+    plugin_name =  IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_ImetaSet, self).setUp()
@@ -84,7 +89,7 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
     def mod_and_check_avu_value(self, user_name, a, v, u, newv):
         self.mod_avu_value(user_name, a, v, u, newv)
         self.check_avu(user_name, a, newv, u)
-        
+
     def mod_and_check_avu_attr(self, user_name, a, v, u, newa):
         self.mod_avu_attr(user_name, a, v, u, newa)
         self.check_avu(user_name, newa, v, u)
@@ -296,6 +301,48 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('imeta mod -d ' + self.testfile + 'a v u u:newa1 u:newa2', 'STDOUT_SINGLELINE', 'Error: New unit specified more than once')
         self.check_avu_data_obj(self.testfile, 'a', 'v', 'u')
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_mod_avu_msvc_4521(self):
+        sescoln = self.admin.session_collection
+        self.admin.assert_icommand(['imeta', 'set', '-d', self.testfile, 'a1', 'v1'])
+        self.admin.assert_icommand(['irule', '-v', '''msiModAVUMetadata("-d","{0}","set","a1","v1","u1")'''.format(sescoln + '/' + self.testfile),'null','null'],
+          'STDOUT_SINGLELINE', "completed successfully")
+        self.admin.assert_icommand(["iquest", "%s %s %s",
+                                    "select META_DATA_ATTR_UNITS,count(META_DATA_ATTR_ID),count(DATA_ID) where DATA_NAME = '{0}'".format(self.testfile)],
+                                    'STDOUT_SINGLELINE', 'u1 1 1')
+        self.admin.assert_icommand(['irule', '-v', '''msiModAVUMetadata("-d","{0}","add","a1","v1","u2")'''.format(sescoln + '/' + self.testfile),'null','null'],
+          'STDOUT_SINGLELINE', "completed successfully")
+        self.admin.assert_icommand(["iquest", "%s %s",
+                                    "select META_DATA_ATTR_UNITS,count(DATA_ID) where DATA_NAME = '{0}'".format(self.testfile)],
+                                    'STDOUT_MULTILINE', ['^u1 1$','^u2 1$'],use_regex=True)
+        self.admin.assert_icommand(['irule', '-v', '''msiModAVUMetadata("-d","{0}","rmw","a1","v1","%")'''.format(sescoln + '/' + self.testfile),'null','null'],
+          'STDOUT_SINGLELINE', "completed successfully")
+        self.admin.assert_icommand(['iquest', "%s", "select count(META_DATA_ATTR_ID) where DATA_NAME = '{0}'".format(self.testfile)],
+          'STDOUT_SINGLELINE',"^0$",use_regex=True)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_mod_avu_msvc_with_rodsuser_invoking_rule_4521(self):
+        rule_file = "test_msiModAVUMetadata.r"
+        rule_string = rule_texts[self.plugin_name][self.__class__.__name__]['test_mod_avu_msvc_with_rodsuser_invoking_rule_4521']
+        expected_output = sorted([
+        "(1,a1:v1:)",
+        "(1,a1:v1:x)",
+        "(1,a2:v2:)",
+        "(1,a2:v2:u2)",
+        "(2,a1:v1:)",
+        "(2,a1:v1:x)",
+        "(2,a2:v2:u)",
+        "(3,a1:v1:x)",
+        "(3,a2:v2:u)"])
+        try:
+            with open(rule_file, 'w') as f:
+                f.write(rule_string)
+            dummy_rc,out,_ = self.user0.assert_icommand("irule -F " + rule_file,'STDOUT','')
+            output_list = filter(None,sorted(out.split("\n")))
+            self.assertTrue( output_list == expected_output )
+        finally:
+            os.unlink(rule_file)
+
     def test_imeta_add_missing_value_27(self):
         self.admin.assert_icommand(['imeta', 'add', '-d', self.testfile, 'a'], 'STDOUT_MULTILINE', ['$', 'Error: Not enough arguments provided to add$', '$'],
                                    use_regex=True)
@@ -372,12 +419,12 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
         self.assertEqual(split_output[3], 'testfile.txt', out)
 
     def test_imeta_qu_resource_too_man_args_496(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-R', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE', 
+        self.admin.assert_icommand(['imeta', 'qu', '-R', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE',
                 ['$', 'Error: Too many arguments provided to imeta qu for the -R option.  Only one KVP pair allowed in search.$', '$'],
                 use_regex=True)
 
     def test_imeta_qu_user_too_man_args_496(self):
-        self.admin.assert_icommand(['imeta', 'qu', '-u', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE', 
+        self.admin.assert_icommand(['imeta', 'qu', '-u', 'target', '=', '1', 'and', 'study', '=', '4616'], 'STDOUT_MULTILINE',
                 ['$', 'Error: Too many arguments provided to imeta qu for the -u option.  Only one KVP pair allowed in search.$', '$'],
                 use_regex=True)
 
