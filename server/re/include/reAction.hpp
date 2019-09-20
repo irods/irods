@@ -127,7 +127,13 @@ int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* objParam,
                                    msParam_t* typeParam,
                                    ruleExecInfo_t *rei );
-
+int msiModAVUMetadata( msParam_t* _item_type,
+                       msParam_t* _item_name,
+                       msParam_t* _avu_op,
+                       msParam_t* _attr_name,
+                       msParam_t* _attr_val,
+                       msParam_t* _attr_unit,
+                       ruleExecInfo_t* _rei   );
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei );
 
@@ -272,6 +278,7 @@ namespace irods {
         table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(msiAclPolicy ) );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
+        table_[ "msiModAVUMetadata" ] = new irods::ms_table_entry( "msiModAVUMetadata", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiModAVUMetadata ) );
         table_[ "msiSetReServerNumProc" ] = new irods::ms_table_entry( "msiSetReServerNumProc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetReServerNumProc ) );
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );
         table_[ "msiTarFileExtract" ] = new irods::ms_table_entry( "msiTarFileExtract", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileExtract ) );
