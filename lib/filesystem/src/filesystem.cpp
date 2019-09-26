@@ -148,7 +148,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 sq_input.maxRows = MAX_SQL_ROWS;
                 sq_input.continueInx = 0;
                 sq_input.sql = "ShowCollAcls";
-                sq_input.args[0] = const_cast<char*>(_p.string().c_str());
+                sq_input.args[0] = const_cast<char*>(_p.c_str());
 
                 if (const auto ec = rxSpecificQuery(&_comm, &sq_input, &gq_output); ec < 0) {
                     throw filesystem_error{"stat error: database query failed", _p, make_error_code(ec)};
