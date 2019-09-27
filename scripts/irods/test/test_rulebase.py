@@ -374,7 +374,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
 
         # make large test file
         self.large_file = '/tmp/largefile'
-        lib.make_file(self.large_file, '64M')
+        lib.make_file(self.large_file, '64M', 'arbitrary')
 
     def tearDown(self):
         del self.pep_name
