@@ -452,7 +452,7 @@ getLastPathElement(char* _logical_path, char* _last_path_element)
 
     std::string path_string = _logical_path;
 
-    if (fs::path::separator == path_string.back()) {
+    if (fs::path::preferred_separator == path_string.back()) {
         path_string = path_string.substr(0, path_string.size() - 1);
         rstrcpy(_last_path_element, path_string.data(), MAX_NAME_LEN);
         return 0;
@@ -468,7 +468,7 @@ getLastPathElement(char* _logical_path, char* _last_path_element)
 
     path_string = object_name.string();
 
-    if (fs::path::separator == path_string.back()) {
+    if (fs::path::preferred_separator == path_string.back()) {
         path_string = path_string.substr(0, path_string.size() - 1);
     }
 
