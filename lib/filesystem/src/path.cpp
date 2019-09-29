@@ -15,7 +15,7 @@ namespace experimental {
 namespace filesystem {
 
     // clang-format off
-    constexpr path::value_type path::separator;
+    constexpr path::value_type path::preferred_separator;
     constexpr const path::value_type* const path::dot;
     constexpr const path::value_type* const path::dot_dot;
     // clang-format on
@@ -40,7 +40,12 @@ namespace filesystem {
 
     auto path::operator/=(const path& _p) -> path&
     {
-        if (!_p.empty()) {
+        if (_p.empty()) {
+            if (!value_.empty() && preferred_separator != value_.back()) {
+                value_ += preferred_separator;
+            }
+        }
+        else {
             if (_p.is_absolute()) {
                 return *this = _p;
             }
@@ -54,10 +59,12 @@ namespace filesystem {
 
     auto path::remove_object_name() -> path&
     {
-        const auto pos = value_.find_last_of(separator);
+	if (has_object_name()) {
+            const auto pos = value_.find_last_of(preferred_separator);
 
-        if (string_type::npos != pos) {
-            value_.erase(pos + 1);
+            if (string_type::npos != pos) {
+                value_.erase(pos + 1);
+            }
         }
 
         return *this;
@@ -92,18 +99,39 @@ namespace filesystem {
     {
         path p;
 
-        for (const auto& e : *this)
+        if (empty()) {
+            return p;
+        }
+
+        const path root_separator = std::string{&preferred_separator, 1};
+
+        for (const auto& next_element : *this)
         {
-            if (e.object_name() == dot) {
-                continue;
+            if (next_element == dot) {
+                p /= {};
             }
-
-            if (e.object_name() == dot_dot) {
-                p.remove_object_name();
-                continue;
+            else if (next_element == dot_dot) {
+                if (p.has_object_name() && p.object_name() != dot_dot) {
+                    p.remove_object_name();
+                }
+                else if (root_separator != p) {
+                    p /= next_element;
+                }
             }
+            else {
+                p /= next_element;
+            }
+        }
 
-            p /= e;
+        if (p.empty()) {
+            p = dot;
+        }
+        else {
+            auto it = std::rbegin(p);
+
+            if (it->empty() && dot_dot == *std::next(it)) {
+                p = p.parent_path();
+            }
         }
 
         return p;
@@ -261,13 +289,13 @@ namespace filesystem {
     auto path::append_separator_if_needed(const path& _p) -> void
     {
         if (value_.empty() ||
-            separator == value_.back() ||
-            separator == _p.value_.front())
+            preferred_separator == value_.back() ||
+            preferred_separator == _p.value_.front())
         {
             return;
         }
 
-        value_ += separator;
+        value_ += preferred_separator;
     }
 
     //
@@ -287,12 +315,12 @@ namespace filesystem {
         // Does the path contain a leading forward slash "/"?
         if (path_ptr_->is_absolute())
         {
-            element_.value_ = path::separator;
+            element_.value_ = path::preferred_separator;
         }
         else
         {
             const auto& full_path = path_ptr_->value_;
-            const auto end = full_path.find_first_of(path::separator);
+            const auto end = full_path.find_first_of(path::preferred_separator);
 
             element_.value_ = (path::string_type::npos != end)
                 ? full_path.substr(0, end)
@@ -339,7 +367,7 @@ namespace filesystem {
         else
         {
             // Found a character that is not a separator.
-            const auto end = fp.find_first_of(separator, pos_);
+            const auto end = fp.find_first_of(preferred_separator, pos_);
 
             if (path::string_type::npos != end)
             {
@@ -379,7 +407,7 @@ namespace filesystem {
             if (0 == pos_ - 1)
             {
                 --pos_;
-                e = separator;
+                e = preferred_separator;
                 return *this;
             }
 

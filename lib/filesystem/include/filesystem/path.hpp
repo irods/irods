@@ -26,7 +26,7 @@ namespace filesystem {
         using const_reverse_iterator    = reverse_iterator;
         // clang-format on
 
-        static constexpr value_type separator = '/';
+        static constexpr value_type preferred_separator = '/';
 
     private:
         // clang-format off
@@ -227,7 +227,7 @@ namespace filesystem {
         auto has_object_name() const -> bool     { return !object_name().empty(); }
         auto has_stem() const -> bool            { return !stem().empty(); }
         auto has_extension() const -> bool       { return !extension().empty(); }
-        auto is_absolute() const -> bool         { return !empty() && separator == value_.front(); }
+        auto is_absolute() const -> bool         { return !empty() && preferred_separator == value_.front(); }
         auto is_relative() const -> bool         { return !is_absolute(); }
         // clang-format on
 

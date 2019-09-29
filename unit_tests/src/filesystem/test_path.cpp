@@ -283,6 +283,54 @@ TEST_CASE("path lexical operations", "[lexical operations]")
 {
     SECTION("normal form of path")
     {
+        // This table holds the expected output of the C++17 Std. Filesystem's
+        // path::lexically_normal() function. The first value represents the string
+        // that lexically normal will be called on. The second value is the expected output.
+        const std::vector<std::pair<std::string, std::string>> paths{
+            {"/tempZone/home/rods/.", "/tempZone/home/rods/"},
+            {"/tempZone/home/rods/..", "/tempZone/home/"},
+            {"/tempZone/home/rods/foo", "/tempZone/home/rods/foo"},
+            {"/tempZone/home/rods/foo.", "/tempZone/home/rods/foo."},
+            {"/tempZone/home/rods/foo^", "/tempZone/home/rods/foo^"},
+            {"/tempZone/home/rods/foo~", "/tempZone/home/rods/foo~"},
+            {"/tempZone/home/rods/foo/", "/tempZone/home/rods/foo/"},
+            {"/tempZone/home/rods/foo/.", "/tempZone/home/rods/foo/"},
+            {"/tempZone/home/rods/foo/..", "/tempZone/home/rods/"},
+            {"tempZone/home/rods/.", "tempZone/home/rods/"},
+            {"tempZone/home/rods/..", "tempZone/home/"},
+            {"tempZone/home/rods/foo", "tempZone/home/rods/foo"},
+            {"tempZone/home/rods/foo.", "tempZone/home/rods/foo."},
+            {"tempZone/home/rods/foo^", "tempZone/home/rods/foo^"},
+            {"tempZone/home/rods/foo~", "tempZone/home/rods/foo~"},
+            {"tempZone/home/rods/foo/", "tempZone/home/rods/foo/"},
+            {"tempZone/home/rods/foo/.", "tempZone/home/rods/foo/"},
+            {"tempZone/home/rods/foo/..", "tempZone/home/rods/"},
+            {"/foo", "/foo"},
+            {"/foo/", "/foo/"},
+            {"foo/", "foo/"},
+            {"/", "/"},
+            {"/.", "/"},
+            {"/..", "/"},
+            {".", "."},
+            {"./", "."},
+            {"./.", "."},
+            {"././.", "."},
+            {"..", ".."},
+            {"../", ".."},
+            {"../..", "../.."},
+            {"../../..", "../../.."},
+            {"../file/../..", "../.."},
+            {"/../file/../..", "/"},
+            {"", ""}
+        };
+
+        for (auto&& p : paths) {
+            DYNAMIC_SECTION("normal form of path [" << p.first << "]")
+            {
+                REQUIRE(p.second == fs::path{p.first}.lexically_normal());
+            }
+        }
+
         REQUIRE("foo/" == fs::path{"foo/./bar/.."}.lexically_normal());
         REQUIRE("foo/" == fs::path{"foo/.///bar/../"}.lexically_normal());
     }
