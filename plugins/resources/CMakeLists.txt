@@ -37,10 +37,6 @@ set(IRODS_RESOURCE_PLUGIN_REPLICATION_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/resources/replication/librepl.cpp
   )
 set(
-  IRODS_RESOURCE_PLUGIN_ROUNDROBIN_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/resources/roundrobin/libroundrobin.cpp
-  )
-set(
   IRODS_RESOURCE_PLUGIN_STRUCTFILE_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/resources/structfile/libstructfile.cpp
   )
@@ -63,7 +59,6 @@ set(
   passthru
   random
   replication
-  roundrobin
   structfile
   univmss
   unixfilesystem
