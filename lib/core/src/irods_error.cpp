@@ -136,6 +136,11 @@ const char *error::status_token_     = " status [";
         std::string  _fcn,
         const error& _rhs ) :
         error(_rhs) {
+ 
+        if (!_msg.empty()) {
+            message_ = _msg;
+        }
+
         if (exception_) {
             exception_->add_message(_msg + ": " + build_result_string( _file, _line, _fcn ));
             return;
