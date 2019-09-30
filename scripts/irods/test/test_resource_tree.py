@@ -119,7 +119,7 @@ def make_resource_tree(width, max_depth):
         # IF INODE
         if node_type == 'inode':
             # determine coordinating resource type
-            resc_type = random.choice(['replication', 'random', 'roundrobin', 'passthru'])
+            resc_type = random.choice(['replication', 'random', 'passthru'])
 
             # determine if resource should be added to inodes (available as parent)
             if depth < max_depth:
