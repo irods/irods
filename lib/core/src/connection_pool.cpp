@@ -12,7 +12,7 @@ constexpr int connection_pool::connection_proxy::uninitialized_index;
 
 connection_pool::connection_proxy::~connection_proxy()
 {
-    if (pool_ && conn_ && uninitialized_index != index_) {
+    if (pool_ && uninitialized_index != index_) {
         pool_->return_connection(index_);
     }
 }
@@ -40,9 +40,31 @@ connection_pool::connection_proxy& connection_pool::connection_proxy::operator=(
     return *this;
 }
 
-connection_pool::connection_proxy::operator rcComm_t&() const noexcept
+connection_pool::connection_proxy::operator bool() const noexcept
 {
+    return nullptr != conn_;
+}
+
+connection_pool::connection_proxy::operator rcComm_t&() const
+{
+    if (!conn_) {
+        throw std::runtime_error{"Invalid connection object"};
+    }
+
     return *conn_;
+}
+
+connection_pool::connection_proxy::operator rcComm_t*() const noexcept
+{
+    return conn_;
+}
+
+rcComm_t* connection_pool::connection_proxy::release()
+{
+    pool_->release_connection(index_);
+    auto conn = conn_;
+    conn_ = nullptr;
+    return conn;
 }
 
 connection_pool::connection_proxy::connection_proxy(connection_pool& _pool,
@@ -146,7 +168,7 @@ bool connection_pool::verify_connection(int _index)
 
     try {
         query<rcComm_t>{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
-        if(std::time(nullptr) - ctx.creation_time > refresh_time_) {
+        if (std::time(nullptr) - ctx.creation_time > refresh_time_) {
             return false;
         }
     }
@@ -159,7 +181,13 @@ bool connection_pool::verify_connection(int _index)
 
 rcComm_t* connection_pool::refresh_connection(int _index)
 {
-    conn_ctxs_[_index].error = {};
+    auto& ctx = conn_ctxs_[_index];
+    ctx.error = {};
+
+    if (ctx.refresh) {
+        ctx.refresh = false;
+        ctx.conn.release();
+    }
 
     if (!verify_connection(_index)) {
         create_connection(_index,
@@ -167,7 +195,7 @@ rcComm_t* connection_pool::refresh_connection(int _index)
                           [] { throw std::runtime_error{"client login error"}; });
     }
 
-    return conn_ctxs_[_index].conn.get();
+    return ctx.conn.get();
 }
 
 connection_pool::connection_proxy connection_pool::get_connection()
@@ -187,6 +215,11 @@ connection_pool::connection_proxy connection_pool::get_connection()
 void connection_pool::return_connection(int _index)
 {
     conn_ctxs_[_index].in_use.store(false);
+}
+
+void connection_pool::release_connection(int _index)
+{
+    conn_ctxs_[_index].refresh = true;
 }
 
 } // namespace irods
