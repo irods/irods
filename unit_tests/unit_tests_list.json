@@ -1,4 +1,5 @@
 [
+    "irods_connection_pool",
     "irods_dstream",
     "irods_filesystem",
     "irods_hierarchy_parser",

@@ -28,7 +28,12 @@ namespace irods
 
             ~connection_proxy();
 
-            operator rcComm_t&() const noexcept;
+            operator bool() const noexcept;
+
+            operator rcComm_t&() const;
+            explicit operator rcComm_t*() const noexcept;
+
+            rcComm_t* release();
 
         private:
             connection_proxy(connection_pool& _pool, rcComm_t& _conn, int _index) noexcept;
@@ -59,6 +64,7 @@ namespace irods
         {
             std::mutex mutex{};
             std::atomic<bool> in_use{};
+            bool refresh{};
             connection_pointer conn{nullptr, rcDisconnect};
             rErrMsg_t error{};
             std::time_t creation_time{};
@@ -73,6 +79,8 @@ namespace irods
         bool verify_connection(int _index);
 
         void return_connection(int _index);
+
+        void release_connection(int _index);
 
         const std::string host_;
         const int port_;
