@@ -1,45 +1,66 @@
 #include "connection_pool.hpp"
 
 #include "irods_query.hpp"
-#include "thread_pool.hpp"
 
 #include <stdexcept>
-#include <thread>
 
 namespace irods {
 
 connection_pool::connection_proxy::~connection_proxy()
 {
-    if(pool_ && conn_ && uninitialized_index != index_) {
+    if (pool_ && uninitialized_index != index_) {
         pool_->return_connection(index_);
     }
 }
 
-connection_pool::connection_proxy::connection_proxy(
-    connection_proxy&& _rhs)
-    : pool_{_rhs.pool_}
-    , conn_{_rhs.conn_}
-    , index_{_rhs.index_}
+connection_pool::connection_proxy::connection_proxy(connection_proxy&& _other)
+    : pool_{_other.pool_}
+    , conn_{_other.conn_}
+    , index_{_other.index_}
 {
-    _rhs.pool_ = nullptr;
-    _rhs.conn_ = nullptr;
-    _rhs.index_ = uninitialized_index;
+    _other.pool_ = nullptr;
+    _other.conn_ = nullptr;
+    _other.index_ = uninitialized_index;
 }
 
-connection_pool::connection_proxy& connection_pool::connection_proxy::operator=(
-    connection_proxy&& _rhs) {
-    pool_ = _rhs.pool_;
-    conn_ = _rhs.conn_;
-    index_ = _rhs.index_;
-    _rhs.pool_ = nullptr;
-    _rhs.conn_ = nullptr;
-    _rhs.index_ = uninitialized_index;
+connection_pool::connection_proxy& connection_pool::connection_proxy::operator=(connection_proxy&& _other)
+{
+    pool_ = _other.pool_;
+    conn_ = _other.conn_;
+    index_ = _other.index_;
+
+    _other.pool_ = nullptr;
+    _other.conn_ = nullptr;
+    _other.index_ = uninitialized_index;
+
     return *this;
 }
 
-connection_pool::connection_proxy::operator rcComm_t&() const noexcept
+connection_pool::connection_proxy::operator bool() const noexcept
 {
+    return nullptr != conn_;
+}
+
+connection_pool::connection_proxy::operator rcComm_t&() const
+{
+    if (!conn_) {
+        throw std::runtime_error{"Invalid connection object"};
+    }
+
     return *conn_;
+}
+
+connection_pool::connection_proxy::operator rcComm_t*() const noexcept
+{
+    return conn_;
+}
+
+rcComm_t* connection_pool::connection_proxy::release()
+{
+    pool_->release_connection(index_);
+    auto conn = conn_;
+    conn_ = nullptr;
+    return conn;
 }
 
 connection_pool::connection_proxy::connection_proxy(connection_pool& _pool,
@@ -68,42 +89,74 @@ connection_pool::connection_pool(int _size,
         throw std::runtime_error{"invalid connection pool size"};
     }
 
-    // Always initialize the first connection to guarantee that the
-    // network plugin is loaded. This guarantees that asynchronous calls
-    // to rcConnect do not cause a segfault.
-    create_connection(0,
-            [] { throw std::runtime_error{"connect error"}; },
-            [] { throw std::runtime_error{"client login error"}; });
-
-    // If the size of the pool is one, then return immediately.
-    if (_size == 1) {
-        return;
-    }
-
-    for (int i = 1; i < _size; ++i) {
+    for (int i = 0; i < _size; ++i) {
         create_connection(i,
-                [] { throw std::runtime_error{"connect error"}; },
-                [] { throw std::runtime_error{"client login error"}; });
+                          [] { throw std::runtime_error{"connect error"}; },
+                          [] { throw std::runtime_error{"client login error"}; });
     }
 }
 
-void connection_pool::create_connection(
-    int _index,
-    std::function<void()> _on_conn_err,
-    std::function<void()> _on_login_err)
+void connection_pool::create_connection(int _index,
+                                        std::function<void()> _on_connect_error,
+                                        std::function<void()> _on_login_error)
 {
-    auto& context = conn_ctxs_[_index];
-    context.creation_time = std::time(nullptr);
-    context.conn.reset(rcConnect(host_.c_str(), port_, username_.c_str(), zone_.c_str(), NO_RECONN, &context.error));
+    auto& ctx = conn_ctxs_[_index];
+    ctx.creation_time = std::time(nullptr);
+    ctx.conn.reset(rcConnect(host_.c_str(),
+                             port_,
+                             username_.c_str(),
+                             zone_.c_str(),
+                             NO_RECONN,
+                             &ctx.error));
 
-    if (!context.conn) {
-        _on_conn_err();
+    if (!ctx.conn) {
+        _on_connect_error();
         return;
     }
 
-    if (clientLogin(context.conn.get()) != 0) {
-        _on_login_err();
+    if (clientLogin(ctx.conn.get()) != 0) {
+        _on_login_error();
     }
+}
+
+bool connection_pool::verify_connection(int _index)
+{
+    auto& ctx = conn_ctxs_[_index];
+
+    if (!ctx.conn) {
+        return false;
+    }
+
+    try {
+        query<rcComm_t>{ctx.conn.get(), "select ZONE_NAME where ZONE_TYPE = 'local'"};
+        if (std::time(nullptr) - ctx.creation_time > refresh_time_) {
+            return false;
+        }
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+
+    return true;
+}
+
+rcComm_t* connection_pool::refresh_connection(int _index)
+{
+    auto& ctx = conn_ctxs_[_index];
+    ctx.error = {};
+
+    if (ctx.refresh) {
+        ctx.refresh = false;
+        ctx.conn.release();
+    }
+
+    if (!verify_connection(_index)) {
+        create_connection(_index,
+                          [] { throw std::runtime_error{"connect error"}; },
+                          [] { throw std::runtime_error{"client login error"}; });
+    }
+
+    return ctx.conn.get();
 }
 
 connection_pool::connection_proxy connection_pool::get_connection()
@@ -125,32 +178,9 @@ void connection_pool::return_connection(int _index)
     conn_ctxs_[_index].in_use.store(false);
 }
 
-bool connection_pool::verify_connection(int _index) {
-    auto& context = conn_ctxs_[_index];
-    if(!context.conn) {
-        return false;
-    }
-    try {
-        irods::query<rcComm_t> qobj{context.conn.get(),
-            "SELECT ZONE_NAME WHERE ZONE_TYPE = 'local'"};
-        if(std::time(nullptr) - context.creation_time > refresh_time_) {
-            return false;
-        }
-    } catch(const irods::exception&) {
-        return false;
-    }
-    return true;
-}
-
-rcComm_t* connection_pool::refresh_connection(int _index) {
-    // Reset rError stack to clear from possible previous use
-    conn_ctxs_[_index].error = {};
-    if(!verify_connection(_index)) {
-        create_connection(_index,
-            [] { throw std::runtime_error{"connect error"}; },
-            [] { throw std::runtime_error{"login error"}; });
-    }
-    return conn_ctxs_[_index].conn.get();
+void connection_pool::release_connection(int _index)
+{
+    conn_ctxs_[_index].refresh = true;
 }
 
 } // namespace irods
