@@ -60,7 +60,7 @@ do
 	shift
 done
 
-for inputstr in $*
+for inputstr in "$@"
 do
 	echo "$inputstr" | egrep -q "[^\]%|^%"  # egrep ensures '%' isn't meant as a literal
 	if [ $? -eq 0 ]
