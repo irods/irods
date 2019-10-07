@@ -437,6 +437,7 @@ TEST_CASE("path decomposition", "[decomposition]")
 {
     const fs::path p = "/a/b/c/d.txt";
 
+    REQUIRE(fs::path{"/"}.parent_path() == "/");
     REQUIRE(p.root_collection() == "/");
     REQUIRE(p.relative_path() == "a/b/c/d.txt");
     REQUIRE(p.parent_path() == "/a/b/c");
