@@ -301,16 +301,12 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
             if (is_collection(to_status)) {
                 copy_data_object(_comm, _from, _to / _from.object_name(), _options);
-
                 return;
             }
 
             copy_data_object(_comm, _from, _to, _options);
-
-            return;
         }
-
-        if (is_collection(from_status)) {
+        else if (is_collection(from_status)) {
             if (copy_options::recursive == (copy_options::recursive & _options) ||
                 copy_options::none == _options)
             {
@@ -893,7 +889,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
         else if (is_collection(s)) {
             sql = "select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = '";
-            sql += _p.parent_path();
+            sql += _p;
             sql += "'";
         }
         else {
