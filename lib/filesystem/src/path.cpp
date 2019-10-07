@@ -215,9 +215,7 @@ namespace filesystem {
 
     auto path::parent_path() const -> path
     {
-        return (empty() || begin() == --end())
-            ? path{}
-            : join(begin(), --end());
+        return !has_relative_path() ? *this : join(begin(), --end());
     }
 
     auto path::object_name() const -> path
