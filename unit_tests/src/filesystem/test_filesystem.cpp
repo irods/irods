@@ -14,6 +14,7 @@
 
 #include "catch.hpp"
 
+#include "filesystem/filesystem.hpp"
 #include "rodsClient.h"
 
 #include "connection_pool.hpp"
@@ -32,6 +33,7 @@
 #include <algorithm>
 #include <thread>
 #include <chrono>
+#include <array>
 
 TEST_CASE("filesystem")
 {
@@ -340,26 +342,62 @@ TEST_CASE("filesystem")
 
     SECTION("metadata management")
     {
-        const fs::path p = user_home / "data_object";
-
+        SECTION("collections")
         {
-            default_transport tp{*comm};
-            dstream{tp, p};
+            const auto p = user_home / "sandbox";
+
+            REQUIRE(fs::client::create_collection(*comm, p));
+
+            const std::array<fs::metadata, 3> metadata{{
+                {"n1", "v1", "u1"},
+                {"n2", "v2", "u2"},
+                {"n3", "v3", "u3"}
+            }};
+
+            REQUIRE(fs::client::set_metadata(*comm, p, metadata[0]));
+            REQUIRE(fs::client::set_metadata(*comm, p, metadata[1]));
+            REQUIRE(fs::client::set_metadata(*comm, p, metadata[2]));
+
+            const auto results = fs::client::get_metadata(*comm, p);
+            REQUIRE_FALSE(results.empty());
+            REQUIRE(std::is_permutation(std::begin(results), std::end(results), std::begin(metadata),
+                                        [](const auto& _lhs, const auto& _rhs)
+                                        {
+                                            return _lhs.attribute == _rhs.attribute &&
+                                                   _lhs.value == _rhs.value &&
+                                                   _lhs.units == _rhs.units;
+                                        }));
+
+            REQUIRE(fs::client::remove_metadata(*comm, p, metadata[0]));
+            REQUIRE(fs::client::remove_metadata(*comm, p, metadata[1]));
+            REQUIRE(fs::client::remove_metadata(*comm, p, metadata[2]));
+
+            REQUIRE(fs::client::remove_all(*comm, p, fs::remove_options::no_trash));
         }
 
-        REQUIRE(fs::client::exists(*comm, p));
+        SECTION("data objects")
+        {
+            const fs::path p = user_home / "data_object";
 
-        REQUIRE(fs::client::set_metadata(*comm, p, {"n1", "v1", "u1"}));
+            {
+                default_transport tp{*comm};
+                dstream{tp, p};
+            }
 
-        const auto results = fs::client::get_metadata(*comm, p);
-        REQUIRE_FALSE(results.empty());
-        REQUIRE(results[0].attribute == "n1");
-        REQUIRE(results[0].value == "v1");
-        REQUIRE(results[0].units == "u1");
+            REQUIRE(fs::client::exists(*comm, p));
 
-        REQUIRE(fs::client::remove_metadata(*comm, p, {"n1", "v1", "u1"}));
+            REQUIRE(fs::client::set_metadata(*comm, p, {"n1", "v1", "u1"}));
 
-        REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
+            const auto results = fs::client::get_metadata(*comm, p);
+            REQUIRE_FALSE(results.empty());
+            REQUIRE(results[0].attribute == "n1");
+            REQUIRE(results[0].value == "v1");
+            REQUIRE(results[0].units == "u1");
+
+            REQUIRE(fs::client::remove_metadata(*comm, p, {"n1", "v1", "u1"}));
+
+            REQUIRE(fs::client::remove(*comm, p, fs::remove_options::no_trash));
+        }
     }
 }
 

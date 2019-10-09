@@ -892,7 +892,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             sql += "'";
         }
         else if (is_collection(s)) {
-            sql = "select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where COLL_NAME = '";
+            sql = "select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = '";
             sql += _p.parent_path();
             sql += "'";
         }
