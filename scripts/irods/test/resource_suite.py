@@ -614,16 +614,23 @@ class ResourceSuite(ResourceBase):
         with open(filepath, 'wt') as f:
             print("TESTFILE -- [" + filepath + "]", file=f, end='')
 
-        # assertions
-        self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
-        self.admin.assert_icommand("iput --purgec " + filename)  # put file
-        self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])  # should be listed once
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed only once
-        self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed only once
+        try:
+            self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+            self.admin.assert_icommand("iput --purgec " + filename)  # put file
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])  # should be listed once
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed only once
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed only once
+            self.admin.assert_icommand(['irm', '-f', filename])
 
-        # local cleanup
-        if os.path.exists(filepath):
-            os.unlink(filepath)
+            self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
+            self.admin.assert_icommand(['iput', '-b', '--purgec', filename])  # put file... in bulk!
+            self.admin.assert_icommand("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", filename])  # should be listed once
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 1 ", filename])  # should be listed only once
+            self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 2 ", filename])  # should be listed only once
+
+        finally:
+            if os.path.exists(filepath):
+                os.unlink(filepath)
 
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup

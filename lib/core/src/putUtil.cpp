@@ -597,6 +597,9 @@ initCondForPut( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 
     if ( rodsArgs->purgeCache == True ) { // JMC - backport 4537
         addKeyVal( &dataObjOprInp->condInput, PURGE_CACHE_KW, "" );
+        if ( rodsArgs->bulk == True ) {
+            addKeyVal( &bulkOprInp->condInput, PURGE_CACHE_KW, "");
+        }
     }
 
 
