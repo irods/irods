@@ -881,35 +881,15 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
  *
  * \brief  By default, the system allows one copy per resource. This microservice sets the number of copies per resource to unlimited.
  *
- * \module core
+ * \deprecated Since 4.2.7, only one replica is allowed on a given resource.
  *
- * \since pre-2.1
- *
- * \author Mike Wan
- *
- * \usage See clients/icommands/test/rules/
- *
- * \param[in,out] rei - The RuleExecInfo structure that is automatically
- *    handled by the rule engine. The user does not include rei as a
- *    parameter in the rule invocation.
- *
- * \DolVarDependence none
- * \DolVarModified - rei->statusStr
- * \iCatAttrDependence none
- * \iCatAttrModified none
- * \sideeffect none
- *
- * \return integer
- * \retval 0 on success
- * \pre none
- * \post none
- * \sa none
  **/
 int
 msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
-    rstrcpy( rei->statusStr, MULTI_COPIES_PER_RESC, MAX_NAME_LEN );
-    return 0;
+    rodsLog( LOG_ERROR, "msiSetMultiReplPerResc is no longer supported as only one replica is allowed on a given resource" );
+    return SYS_NOT_SUPPORTED;
 }
+
 
 /**
  * \fn msiNoChkFilePathPerm (ruleExecInfo_t *rei)
