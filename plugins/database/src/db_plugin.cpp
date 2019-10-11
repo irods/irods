@@ -14316,6 +14316,9 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     } // for idx
 
     std::string not_child_array = not_child_stream.str();
+    if (not_child_array.empty()) {
+        return SUCCESS();
+    }
     not_child_array.pop_back(); // trim last ','
 
 #ifdef ORA_ICAT

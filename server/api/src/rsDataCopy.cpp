@@ -157,7 +157,6 @@ _rsDataCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
     dataOprInp = &dataCopyInp->dataOprInp;
     if ( dataOprInp->oprType == SAME_HOST_COPY_OPR ) {
         /* src is on the same host */
-        rodsLog(LOG_NOTICE, "[%s:%d] - src is on the same host", __FUNCTION__, __LINE__);
         retVal = sameHostCopy( rsComm, dataCopyInp );
         if (retVal >= 0) {
             apply_acPostProcForDataCopyReceived(rsComm, dataOprInp);

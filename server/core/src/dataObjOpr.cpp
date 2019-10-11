@@ -658,41 +658,6 @@ requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead,
     return status;
 }
 
-dataObjInfo_t *
-chkCopyInResc( dataObjInfo_t*& dataObjInfoHead,
-               const std::string& _resc_name, /* default resource returned by rule engine */
-               const char* destRescHier /* from optional condInput */ ) {
-
-    dataObjInfo_t *tmpDataObjInfo;
-
-    tmpDataObjInfo = dataObjInfoHead;
-    dataObjInfo_t* prev = NULL;
-
-
-    while ( tmpDataObjInfo != NULL ) {
-        // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
-        // match as well. - hcj
-        // XXXX  - if ( strcmp( tmpDataObjInfo->rescName, _resc_name.c_str() ) == 0 &&
-        if ( strstr( tmpDataObjInfo->rescHier, _resc_name.c_str() ) != 0 &&
-                ( destRescHier == NULL || strcmp( tmpDataObjInfo->rescHier, destRescHier ) == 0 ) ) {
-            if ( prev != NULL ) {
-                prev->next = tmpDataObjInfo->next;
-            }
-            else {
-                dataObjInfoHead = tmpDataObjInfo->next;
-            }
-            tmpDataObjInfo->next = NULL;
-            return tmpDataObjInfo;
-        }
-
-        prev = tmpDataObjInfo;
-        tmpDataObjInfo = tmpDataObjInfo->next;
-    }
-
-    return NULL;
-}
-
-
 /* matchAndTrimRescGrp - check for matching rescName in dataObjInfoHead
  * and rescGrpInfoHead. If there is a match, unlink and free the
  * rescGrpInfo in rescGrpInfoHead so that they wont be replicated
