@@ -31,9 +31,6 @@ namespace {
         std::string sub_hier;
         parser.str( sub_hier, _current_resc );
 
-        // =-=-=-=-=-=-=-
-        // create a data obj input struct to call rsDataObjRepl which given
-        // the _stage_sync_kw will either stage or sync the data object
         dataObjInp_t data_obj_inp{};
         rstrcpy( data_obj_inp.objPath, _obj_path.c_str(), MAX_NAME_LEN );
         data_obj_inp.createMode = _mode;
@@ -331,9 +328,7 @@ namespace {
             // create a file object so we can resolve a valid hierarchy to which to replicate
             irods::file_object_ptr f_ptr(new irods::file_object(_ctx.comm(), source_info.object_path, "", "", 0, source_info.data_mode, 0));
             // short circuit the magic re-repl
-            // This file_object_ptr is only used for hierarchy resolution, not in the actual repl... may need to set the pdmo for the _ctx.fco
             f_ptr->in_pdmo(irods::hierarchy_parser{source_info.resource_hierarchy}.str(_parent_resc_name));
-            rodsLog(LOG_NOTICE, "[%s:%d] - set pdmo for [%s] on [%s] to [%s]", __FUNCTION__, __LINE__, source_info.object_path.c_str(), source_info.resource_hierarchy.c_str(), f_ptr->in_pdmo().c_str());
 
             // init the parser with the fragment of the upstream hierarchy not including the repl node as it should add itself
             const size_t pos = source_info.resource_hierarchy.find(_parent_resc_name);
@@ -341,8 +336,8 @@ namespace {
                 THROW(SYS_INVALID_INPUT_PARAM, boost::format("missing repl name [%s] in source hier string [%s]") % _parent_resc_name % source_info.resource_hierarchy);
             }
 
-            // substring hier from the root to the parent resc
-            std::string src_frag = source_info.resource_hierarchy.substr(0, pos + _parent_resc_name.size() + 1);
+            // Trim hierarchy up to parent because the resource adds itself later in hierarchy resolution
+            std::string src_frag = irods::hierarchy_parser{source_info.resource_hierarchy}.str(_parent_resc_name);
             irods::hierarchy_parser parser{src_frag};
 
             // resolve the target child resource plugin
@@ -382,9 +377,6 @@ namespace {
             const std::string root_resc = parser.first_resc();
             const std::string dst_hier = parser.str();
             rodsLog(LOG_NOTICE, "%s: creating new replica for data id [%lld] from [%s] on [%s]", __FUNCTION__, data_id_to_replicate, source_info.resource_hierarchy.c_str(), dst_hier.c_str());
-
-            //file_obj->in_pdmo(dst_hier);
-            //rodsLog(LOG_NOTICE, "[%s:%d] - set pdmo for [%s] on [%s] to [%s]", __FUNCTION__, __LINE__, file_obj->logical_path().c_str(), file_obj->in_pdmo().c_str());
 
             const irods::error err_rebalance = repl_for_rebalance(
                 _ctx,

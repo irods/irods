@@ -52,8 +52,6 @@ sortDataObjInfoRandom( dataObjInfo_t **dataObjInfoHead );
 int
 requeDataObjInfoByResc( dataObjInfo_t **dataObjInfoHead, const char *preferedResc,
                         int writeFlag, int topFlag );
-dataObjInfo_t *
-chkCopyInResc( dataObjInfo_t *&dataObjInfoHead, const std::string& _resc_name, const char* destRescHier );
 
 int
 initDataObjInfoQuery( dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
