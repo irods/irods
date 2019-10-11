@@ -109,14 +109,21 @@ def build_icommands(icommands_git_repository, icommands_git_commitish, debug_bui
     return icommands_build_dir
 
 def copy_output_packages(irods_build_dir, icommands_build_dir, output_root_directory):
+    # Packages
     irods_python_ci_utilities.gather_files_satisfying_predicate(
         irods_build_dir,
         irods_python_ci_utilities.append_os_specific_directory(output_root_directory),
-        lambda s:s.endswith(irods_python_ci_utilities.get_package_suffix()))
+        lambda s: s.endswith(irods_python_ci_utilities.get_package_suffix()))
+    # Unit-test binaries
+    irods_python_ci_utilities.gather_files_satisfying_predicate(
+        os.path.join(irods_build_dir, 'unit_tests'),
+        irods_python_ci_utilities.append_os_specific_directory(output_root_directory),
+        lambda s: os.path.basename(s).startswith('irods_'))
+    # iCommands
     irods_python_ci_utilities.gather_files_satisfying_predicate(
         icommands_build_dir,
         irods_python_ci_utilities.append_os_specific_directory(output_root_directory),
-        lambda s:s.endswith(irods_python_ci_utilities.get_package_suffix()))
+        lambda s: s.endswith(irods_python_ci_utilities.get_package_suffix()))
 
 def register_log_handler():
     logging.getLogger().setLevel(logging.INFO)
