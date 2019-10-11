@@ -1047,6 +1047,58 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin rmresc leaf_a")
         self.admin.assert_icommand("iadmin rmresc repl")
 
+    def test_rebalance_for_child_with_substring_in_name(self):
+        hostname = lib.get_hostname()
+        self.admin.assert_icommand("iadmin mkresc rootrepl replication", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc repl replication", 'STDOUT_SINGLELINE', "Creating")
+        self.admin.assert_icommand("iadmin mkresc leaf_a unixfilesystem " + hostname +
+                                   ":/tmp/irods/test_leaf_a", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin mkresc leaf_b unixfilesystem " + hostname +
+                                   ":/tmp/irods/test_leaf_b", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin mkresc leaf_c unixfilesystem " + hostname +
+                                   ":/tmp/irods/test_leaf_c", 'STDOUT_SINGLELINE', "Creating")  # unix
+        self.admin.assert_icommand("iadmin addchildtoresc rootrepl repl")
+        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_a")
+        self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
+
+        temp_file = 'test_rebalance_for_child_with_substring_in_name'
+        lib.make_file(temp_file, 10)
+        try:
+            # put a file in replication hierarchy
+            self.admin.assert_icommand(['iput', '-R', 'rootrepl', temp_file])
+            # force put to standalone resource with a replica
+            self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_b")
+            self.admin.assert_icommand(['iput', '-f', '-R', 'leaf_b', temp_file])
+            # put standalone resource in replication hierarchy
+            # put back removed child in replication hierarchy
+            self.admin.assert_icommand("iadmin addchildtoresc repl leaf_c")
+            self.admin.assert_icommand("iadmin addchildtoresc repl leaf_b")
+
+            self.admin.assert_icommand(['ils', '-l', temp_file], 'STDOUT', '&')
+            self.admin.assert_icommand(['ils', '-l', temp_file], 'STDOUT', 'X')
+            self.admin.assert_icommand_fail(['ils', '-l', temp_file], 'STDOUT', ' 2 ')
+            # rebalance
+            self.admin.assert_icommand("iadmin modresc rootrepl rebalance")
+            # ensure everything went well
+            self.admin.assert_icommand(['ils', '-l', temp_file], 'STDOUT', [' 0 ', '&'])
+            self.admin.assert_icommand(['ils', '-l', temp_file], 'STDOUT', [' 1 ', '&'])
+            self.admin.assert_icommand(['ils', '-l', temp_file], 'STDOUT', [' 2 ', '&'])
+
+        finally:
+            self.admin.assert_icommand(['irm', '-f', temp_file])
+            if (os.path.exists(temp_file)):
+                os.unlink(temp_file)
+
+            self.admin.assert_icommand("iadmin rmchildfromresc rootrepl repl")
+            self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_c")
+            self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_b")
+            self.admin.assert_icommand("iadmin rmchildfromresc repl leaf_a")
+            self.admin.assert_icommand("iadmin rmresc leaf_c")
+            self.admin.assert_icommand("iadmin rmresc leaf_b")
+            self.admin.assert_icommand("iadmin rmresc leaf_a")
+            self.admin.assert_icommand("iadmin rmresc repl")
+            self.admin.assert_icommand("iadmin rmresc rootrepl")
+
     def test_hosts_config(self):
         addy1 = {}
         addy1['address'] = socket.gethostname()
