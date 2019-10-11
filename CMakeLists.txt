@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
+cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
 include(${CMAKE_SOURCE_DIR}/cmake/RequireOutOfSourceBuild.cmake)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -27,19 +27,30 @@ macro(IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIE
   list(APPEND IRODS_PACKAGE_DEPENDENCIES_LIST irods-externals-${DEPENDENCY_SUBDIRECTORY})
 endmacro()
 
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang3.8-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CPPZMQ cppzmq4.1-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ARCHIVE libarchive3.3.2-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(AVRO avro1.7.7-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(BOOST boost1.60.0-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CLANG_RUNTIME clang-runtime3.8-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(JANSSON jansson2.7-0)
-IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ZMQ zeromq4-14.1.3-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CLANG clang6.0-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH(CPPZMQ cppzmq4.2.3-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ARCHIVE libarchive3.3.2-1)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(AVRO avropre190cpp17-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(BOOST boost1.67.0-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CLANG_RUNTIME clang-runtime6.0-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(ZMQ zeromq4-14.1.6-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(JSON json3.1.2-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(SPDLOG spdlog0.17.0-0)
+IRODS_MACRO_CHECK_DEPENDENCY_SET_FULLPATH_ADD_TO_IRODS_PACKAGE_DEPENDENCIES_LIST(CATCH2 catch22.3.0-0)
 
 string(REPLACE ";" ", " IRODS_PACKAGE_DEPENDENCIES_STRING "${IRODS_PACKAGE_DEPENDENCIES_LIST}")
 
-set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
-set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
+if (NOT CLANG_STATIC_ANALYZER)
+  set(CLANG_STATIC_ANALYZER OFF CACHE BOOL "Choose whether to run Clang Static Analyzer." FORCE)
+  message(STATUS "Setting CLANG_STATIC_ANALYZER to 'OFF'.")
+  set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang)
+  set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
+else()
+  set(CLANG_STATIC_ANALYZER ON CACHE BOOL "Choose whether to run Clang Static Analyzer." FORCE)
+  message(STATUS "Setting CLANG_STATIC_ANALYZER to 'ON'.")
+  set(CMAKE_C_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/ccc-analyzer)
+  set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/c++-analyzer)
+endif()
 
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 
@@ -55,12 +66,14 @@ endif()
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic") # export-dynamic so stacktrace entries from executables have function names
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
 add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
 link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1)
+include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
+                    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+                    ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -78,7 +91,7 @@ set(IRODS_VERSION_MINOR "3")
 set(IRODS_VERSION_PATCH "0")
 set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION_PATCH}")
 
-set(IRODS_CXX_STANDARD 14)
+set(IRODS_CXX_STANDARD 17)
 
 set(IRODS_PLATFORM_STRING linux_platform)
 set(IRODS_COMPILE_DEFINITIONS ${IRODS_PLATFORM_STRING} _LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES _LARGEFILE64_SOURCE BOOST_SYSTEM_NO_DEPRECATED)
@@ -224,6 +237,79 @@ configure_file(
   @ONLY
   )
 
+add_library(
+  irods_filesystem_path
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/path.cpp
+  )
+target_include_directories(
+  irods_filesystem_path
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  )
+set_target_properties(irods_filesystem_path PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_path PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_path PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+
+add_library(
+  irods_filesystem_client
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/collection_iterator.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/recursive_collection_iterator.cpp
+  )
+target_include_directories(
+  irods_filesystem_client
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include
+  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
+  ${OPENSSL_INCLUDE_DIR}
+  )
+set_target_properties(irods_filesystem_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+
+add_library(
+  irods_filesystem_server
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/filesystem.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/collection_iterator.cpp
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/src/recursive_collection_iterator.cpp
+  )
+target_include_directories(
+  irods_filesystem_server
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/lib/hasher/include
+  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/api/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
+  ${OPENSSL_INCLUDE_DIR}
+  )
+set_target_properties(irods_filesystem_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_TRANSPORT_ENABLE_SERVER_SIDE_API)
+
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
@@ -302,7 +388,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetRescQuota.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetTempPassword.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetTempPasswordForOther.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetXmsgTicket.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcIESClientHints.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcL3FileGetSingleBuf.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcL3FilePutSingleBuf.cpp
@@ -318,7 +403,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcPhyPathReg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcProcStat.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcQuerySpecColl.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcReadCollection.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRegColl.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRegDataObj.cpp
@@ -327,7 +411,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecDel.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcRuleExecSubmit.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcSendXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcServerReport.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSimpleQuery.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSpecificQuery.cpp
@@ -365,6 +448,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/bunUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/chksumUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/clientLogin.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/connection_pool.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/cpUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getUtil.cpp
@@ -392,6 +476,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  $<TARGET_OBJECTS:irods_filesystem_path>
+  $<TARGET_OBJECTS:irods_filesystem_client>
   )
 add_library(
   irods_client
@@ -408,7 +494,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
@@ -421,12 +506,12 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
@@ -434,7 +519,6 @@ set_property(TARGET irods_client PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_client PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_options(irods_client PRIVATE -Wno-write-strings)
 target_compile_definitions(irods_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
-
 
 set(
   IRODS_LIBIRODS_SERVER_SOURCES
@@ -514,7 +598,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetRescQuota.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetTempPassword.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsGetTempPasswordForOther.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsGetXmsgTicket.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsIESClientHints.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsL3FileGetSingleBuf.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsL3FilePutSingleBuf.cpp
@@ -530,7 +613,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsPhyPathReg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsProcStat.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsQuerySpecColl.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsReadCollection.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRegColl.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRegDataObj.cpp
@@ -539,7 +621,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecDel.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecSubmit.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsSendXmsg.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsServerReport.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSetRoundRobinContext.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSimpleQuery.cpp
@@ -580,6 +661,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/initServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_calling_functions.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_number_validator.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_collection_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_data_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_database_factory.cpp
@@ -599,6 +681,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin_impostor.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_redirect.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_rs_comm_query.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_api_table.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_globals.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_negotiation.cpp
@@ -616,7 +699,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsLog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/xmsgLib.cpp
   ${CMAKE_SOURCE_DIR}/server/drivers/src/fileDriver.cpp
   ${CMAKE_SOURCE_DIR}/server/icat/src/icatHighLevelRoutines.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/extractAvuMS.cpp
@@ -639,10 +721,11 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/reDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reIn2p3SysRule.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reNaraMetaData.cpp
+  ${CMAKE_SOURCE_DIR}/server/re/src/reStruct.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/reSysDataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/sharedmemory.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp
-  ${CMAKE_SOURCE_DIR}/server/re/src/xmsgMS.cpp
+  $<TARGET_OBJECTS:irods_filesystem_server>
   )
 add_library(
   irods_server
@@ -661,7 +744,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
@@ -677,6 +759,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/api/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
@@ -684,7 +767,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
   ${OPENSSL_INCLUDE_DIR}
@@ -694,7 +776,6 @@ set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_server PRIVATE -Wno-write-strings)
-
 
 set(
   IRODS_LIBIRODS_COMMON_SOURCES
@@ -715,6 +796,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_log.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pack_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_parse_command_line_options.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_path_recursion.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pluggable_auth_scheme.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_plugin_name_generator.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp
@@ -744,11 +826,13 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpBase_c.cpp
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpReceiver_c.cpp
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpSender_c.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp
   )
 add_library(
   irods_common
   SHARED
   ${IRODS_LIBIRODS_COMMON_SOURCES}
+  $<TARGET_OBJECTS:irods_filesystem_path>
   )
 target_link_libraries(
   irods_common
@@ -758,7 +842,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
@@ -770,18 +853,18 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   )
 set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_common PROPERTY SOVERSION ${IRODS_VERSION})
-target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irods_common PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(irods_common PRIVATE -Wno-write-strings)
 
 
@@ -830,7 +913,6 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   )
 set_property(TARGET irods_plugin_dependencies PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_plugin_dependencies PROPERTY VERSION ${IRODS_VERSION})
@@ -922,9 +1004,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileReaddir.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileClosedir.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcGeneralUpdate.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcGetXmsgTicket.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcSendXmsg.cpp
-  ${CMAKE_SOURCE_DIR}/lib/api/src/rcRcvXmsg.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFileGet.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSubStructFilePut.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcSyncMountedColl.cpp
@@ -1019,6 +1098,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pack_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pam_auth_object.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_parse_command_line_options.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_path_recursion.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_pluggable_auth_scheme.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_plugin_name_generator.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_random.cpp
@@ -1085,6 +1165,11 @@ set(
   IRODS_LIB_CLIENT_EXEC_SOURCES
   )
 
+set(
+  IRODS_SERVER_CORE_SOURCES
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_logger.cpp 
+  )
+
 add_library(
   RodsAPIs
   STATIC
@@ -1093,6 +1178,10 @@ add_library(
   ${IRODS_LIB_RBUDP_SOURCES}
   ${IRODS_LIB_HASHER_SOURCES}
   ${IRODS_LIB_CLIENT_EXEC_SOURCES}
+  ${IRODS_SERVER_CORE_SOURCES}
+  $<TARGET_OBJECTS:irods_filesystem_path>
+  $<TARGET_OBJECTS:irods_filesystem_client>
+  $<TARGET_OBJECTS:irods_filesystem_server>
   )
 target_link_libraries(
   RodsAPIs
@@ -1102,7 +1191,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
@@ -1115,27 +1203,22 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/rbudp/include
+  ${CMAKE_SOURCE_DIR}/lib/filesystem/include
   ${CMAKE_SOURCE_DIR}/server/core/include
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(RodsAPIs PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(RodsAPIs PRIVATE -Wno-write-strings)
 
 set(
   IRODS_MAIN_EXECUTABLE_IRODSSERVER_SOURCES
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_control_plane.cpp
-  )
-
-set(
-  IRODS_MAIN_EXECUTABLE_IRODSXMSGSERVER_SOURCES
-  ${CMAKE_SOURCE_DIR}/server/core/src/irodsXmsgServer.cpp
   )
 
 set(
@@ -1147,7 +1230,6 @@ set(
   IRODS_MAIN_EXECUTABLES
 #  irodsAgent
   irodsServer
-  irodsXmsgServer
   hostname_resolves_to_local_address
   )
 
@@ -1168,7 +1250,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
-    ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     ${OPENSSL_CRYPTO_LIBRARY}
@@ -1191,7 +1272,6 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/rbudp/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-    ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
@@ -1210,24 +1290,16 @@ endforeach()
 add_executable(
   irodsReServer
   ${CMAKE_SOURCE_DIR}/server/core/src/irodsReServer.cpp
-  ${CMAKE_SOURCE_DIR}/server/core/src/reServerLib.cpp
   )
 target_link_libraries(
   irodsReServer
   PRIVATE
+  irods_server
   irods_client
   irods_common
-  irods_plugin_dependencies
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
-  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
-  ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
-  ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
-  ${OPENSSL_CRYPTO_LIBRARY}
-  ${OPENSSL_SSL_LIBRARY}
   rt
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
@@ -1242,18 +1314,11 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/icat/include
   ${CMAKE_BINARY_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/core/include
-  ${CMAKE_SOURCE_DIR}/lib/hasher/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
-  ${CMAKE_SOURCE_DIR}/lib/rbudp/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
-  ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
-  ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
-  ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
-  ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irodsReServer PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
-target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
 add_executable(
@@ -1290,7 +1355,6 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
-  ${IRODS_EXTERNALS_FULLPATH_JANSSON}/lib/libjansson.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   )
 set_property(TARGET genOSAuth PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
@@ -1308,6 +1372,8 @@ add_subdirectory(plugins/network)
 add_subdirectory(plugins/resources)
 add_subdirectory(plugins/rule_engines)
 add_subdirectory(test/c_api_test)
+add_subdirectory(test/post_install_test)
+add_subdirectory(unit_tests)
 
 include(${CMAKE_SOURCE_DIR}/cmake/development_library.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/runtime_library.cmake)
@@ -1506,7 +1572,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
-    irodsServer irodsReServer irodsXmsgServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
+    irodsServer irodsReServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication roundrobin structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()

@@ -32,12 +32,37 @@ class IrodsController(object):
         _ = self.config.server_config
         _ = self.config.version
 
-    def start(self):
+    def define_log_levels(self, logger):
+        config = self.config.server_config
+
+        # If the log levels are not defined, then add them to server config!
+        if 'log_level' not in config or 'server' not in config['log_level']:
+            logger.debug('Adding log levels to server configuration ...')
+            lib.update_json_file_from_dict(paths.server_config_path(), {
+                'log_level': {
+                    'agent': 'info',
+                    'agent_factory': 'info',
+                    'api': 'info',
+                    'authentication': 'info',
+                    'database': 'info',
+                    'delay_server': 'info',
+                    'legacy': 'info',
+                    'microservice': 'info',
+                    'network': 'info',
+                    'resource': 'info',
+                    'rule_engine': 'info',
+                    'server': 'info'
+                }
+            })
+
+    def start(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling start on IrodsController')
 
         if upgrade_configuration.requires_upgrade(self.config):
             upgrade_configuration.upgrade(self.config)
+
+        self.define_log_levels(l)
 
         try:
             self.config.validate_configuration()
@@ -89,38 +114,58 @@ class IrodsController(object):
                 from . import database_interface
                 database_interface.server_launch_hook(self.config)
 
-            l.info('Starting iRODS server...')
-            lib.execute_command(
-                [self.config.server_executable],
-                cwd=self.config.server_bin_directory,
-                env=self.config.execution_environment)
+            cmd = [self.config.server_executable]
 
-            try_count = 1
-            max_retries = 100
-            while True:
-                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                        irods_port, try_count)
-                with contextlib.closing(socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)) as s:
-                    if s.connect_ex(('127.0.0.1', irods_port)) == 0:
-                        l.debug('Successfully connected to port %s.', irods_port)
-                        if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
-                            raise IrodsError('iRODS port is bound, but server is not started.')
-                        s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
-                        message = s.recv(256)
-                        if message != b'HEARTBEAT':
-                            raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
-                        break
-                if try_count >= max_retries:
-                    raise IrodsError('iRODS server failed to start.')
-                try_count += 1
-                time.sleep(1)
+            if write_to_stdout:
+                l.info('Starting iRODS server in foreground ...')
+
+                cmd.append('-u')
+
+                env_var_name = 'IRODS_ENABLE_TEST_MODE'
+                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
+                    cmd.append('-t')
+
+                lib.execute_command(cmd,
+                                    foreground=True,
+                                    cwd=self.config.server_bin_directory,
+                                    env=self.config.execution_environment)
+            else:
+                l.info('Starting iRODS server ...')
+
+                env_var_name = 'IRODS_ENABLE_TEST_MODE'
+                if test_mode or (env_var_name in os.environ and os.environ[env_var_name] == '1'):
+                    cmd.append('-t')
+
+                lib.execute_command(cmd,
+                                    cwd=self.config.server_bin_directory,
+                                    env=self.config.execution_environment)
+
+                try_count = 1
+                max_retries = 100
+                while True:
+                    l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
+                            irods_port, try_count)
+                    with contextlib.closing(socket.socket(
+                            socket.AF_INET, socket.SOCK_STREAM)) as s:
+                        if s.connect_ex(('127.0.0.1', irods_port)) == 0:
+                            l.debug('Successfully connected to port %s.', irods_port)
+                            if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
+                                raise IrodsError('iRODS port is bound, but server is not started.')
+                            s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
+                            message = s.recv(256)
+                            if message != b'HEARTBEAT':
+                                raise IrodsError('iRODS port returned non-heartbeat message:\n{0}'.format(message))
+                            break
+                    if try_count >= max_retries:
+                        raise IrodsError('iRODS server failed to start.')
+                    try_count += 1
+                    time.sleep(1)
+
+                l.info('Success')
 
         except IrodsError as e:
             l.info('Failure')
             six.reraise(IrodsError, e, sys.exc_info()[2])
-
-        l.info('Success')
 
     def irods_grid_shutdown(self, timeout=20, **kwargs):
         l = logging.getLogger(__name__)
@@ -190,11 +235,11 @@ class IrodsController(object):
 
         l.info('Success')
 
-    def restart(self):
+    def restart(self, write_to_stdout=False, test_mode=False):
         l = logging.getLogger(__name__)
         l.debug('Calling restart on IrodsController')
         self.stop()
-        self.start()
+        self.start(write_to_stdout, test_mode)
 
     def status(self):
         l = logging.getLogger(__name__)
@@ -211,8 +256,7 @@ class IrodsController(object):
         if binaries is None:
             binaries = [
                 self.config.server_executable,
-                self.config.rule_engine_executable,
-                self.config.xmsg_server_executable]
+                self.config.rule_engine_executable]
         d = {}
         for b in binaries:
             pids = lib.get_pids_executing_binary_file(b)

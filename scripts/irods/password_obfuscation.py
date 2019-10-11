@@ -34,6 +34,8 @@ wheel = [
         '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/'
     ]
 
+maximum_password_length = 42
+
 default_password_key = 'a9_3fker'
 default_scramble_prefix = '.E_'
 
@@ -84,6 +86,8 @@ def decode(s, uid=None):
 
 #encode passwords to store in the .irodsA file
 def encode(s, uid=None, mtime=None):
+    if len(s) > maximum_password_length:
+        raise IrodsException("Password exceeds maximum length of {maximum_password_length} characters.".format(**locals()))
     #mtime & 65535 needs to be within 20 seconds of the
     #.irodsA file's mtime & 65535
     if mtime is None:
@@ -212,6 +216,8 @@ def unscramble(s, key=default_password_key, scramble_prefix=default_scramble_pre
 
 #scramble passwords to store in the database
 def scramble(s, key=default_password_key, scramble_prefix=default_scramble_prefix, block_chaining=False):
+    if len(s) > maximum_password_length:
+        raise IrodsException("Password exceeds maximum length of {maximum_password_length} characters.".format(**locals()))
     if key is None:
         key=default_password_key
 

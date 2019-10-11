@@ -84,7 +84,7 @@ def execute_command_timeout(args, timeout=10, **kwargs):
             'The call {0} did not complete within'
             ' {1} seconds.'.format(args, timeout))
 
-def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, **kwargs):
+def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, foreground=False, **kwargs):
     if input is not None:
         if 'stdin' in kwargs and kwargs['stdin'] != subprocess.PIPE:
             raise IrodsError('\'input\' option is mutually exclusive with a \'stdin\' '
@@ -92,8 +92,17 @@ def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.P
         kwargs['stdin'] = subprocess.PIPE
     p = execute_command_nonblocking(args, stdout=stdout, stderr=stderr, **kwargs)
 
-    out, err = communicate_and_log(p, args, input)
-    return (out, err, p.returncode)
+    if foreground == True:
+        while True:
+            line = p.stdout.readline()
+            if line == '' and p.poll() is not None:
+                break
+            sys.stdout.write(line)
+            sys.stdout.flush()
+        return (p.stdout, p.stderr, p.returncode)
+    else:
+        out, err = communicate_and_log(p, args, input)
+        return (out, err, p.returncode)
 
 def check_command_return(args, out, err, returncode, **kwargs):
     if returncode is not None and returncode != 0:

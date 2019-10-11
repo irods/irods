@@ -61,14 +61,14 @@ initServerInfo( int processType, rsComm_t * rsComm) {
         const auto& zone_name = irods::get_server_property<const std::string>(irods::CFG_ZONE_NAME);
         const auto zone_port = irods::get_server_property<const int>( irods::CFG_ZONE_PORT);
 
-        /* que the local zone */
-        status = queZone(
+        /* queue the local zone */
+        status = queueZone(
                 zone_name.c_str(),
                 zone_port, NULL, NULL );
         if ( status < 0 ) {
             rodsLog(
                     LOG_DEBUG,
-                    "initServerInfo - queZone failed %d",
+                    "initServerInfo - queueZone failed %d",
                     status );
             // do not error out
         }
@@ -149,11 +149,16 @@ initLocalServerHost() {
     LocalServerHost->localFlag = LOCAL_HOST;
     LocalServerHost->zoneInfo = ZoneInfoHead;
 
-    matchHostConfig( LocalServerHost );
+    auto status{matchHostConfig(LocalServerHost)};
+    if (status < 0) {
+        const auto err{ERROR(status, "matchHostConfig failed")};
+        irods::log(err);
+        return status;
+    }
 
-    queHostName( ServerHostHead, "localhost", 0 );
+    queueHostName( ServerHostHead, "localhost", 0 );
     char myHostName[MAX_NAME_LEN];
-    int status = gethostname( myHostName, MAX_NAME_LEN );
+    status = gethostname( myHostName, MAX_NAME_LEN );
     if ( status < 0 ) {
         status = SYS_GET_HOSTNAME_ERR - errno;
         rodsLog( LOG_NOTICE,
@@ -161,17 +166,17 @@ initLocalServerHost() {
                  status );
         return status;
     }
-    status = queHostName( ServerHostHead, myHostName, 0 );
+    status = queueHostName( ServerHostHead, myHostName, 0 );
     if ( status < 0 ) {
         return status;
     }
 
-    status = queAddr( ServerHostHead, myHostName );
+    status = queueAddr( ServerHostHead, myHostName );
     if ( status < 0 ) {
         /* some configuration may not be able to resolve myHostName. So don't
          * exit. Just print out warning */
         rodsLog( LOG_NOTICE,
-                 "initLocalServerHost: queAddr error, status = %d",
+                 "initLocalServerHost: queueAddr error, status = %d",
                  status );
         status = 0;
     }
@@ -211,26 +216,6 @@ initRcatServerHostByFile() {
         irods::log( irods::error(e) );
         return e.code();
     }
-
-    // re host
-    // xmsg host
-    try {
-        rodsHostAddr_t    addr;
-        memset( &addr, 0, sizeof( addr ) );
-        rodsServerHost_t* tmp_host = 0;
-        snprintf( addr.hostAddr, sizeof( addr.hostAddr ), "%s", irods::get_server_property<const std::string>(irods::CFG_IRODS_XMSG_HOST_KW).c_str() );
-        int rem_flg = resolveHost(
-                          &addr,
-                          &tmp_host );
-        if ( rem_flg < 0 ) {
-            rodsLog( LOG_SYS_FATAL,
-                     "initRcatServerHostByFile: resolveHost error for %s, status = %d",
-                     addr.hostAddr,
-                     rem_flg );
-            return rem_flg;
-        }
-        tmp_host->xmsgHostFlag = 1;
-    } catch ( const irods::exception& e ) {}
 
     // slave icat host
 
@@ -451,7 +436,7 @@ initZone( rsComm_t *rsComm ) {
         /* REMOTE_ICAT is always on a remote host even if it is one the same
          * host, but will be on different port */
         tmpRodsServerHost->localFlag = REMOTE_HOST; // JMC - bacport 4562
-        queZone( tmpZoneName, addr.portNum, tmpRodsServerHost, NULL );
+        queueZone( tmpZoneName, addr.portNum, tmpRodsServerHost, NULL );
     }
 
     freeGenQueryOut( &genQueryOut );
@@ -564,6 +549,7 @@ cleanup() {
         /* close any opened server to server connection */
         disconnectAllSvrToSvrConn();
     }
+    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
 }
 
 void
@@ -676,24 +662,24 @@ int initHostConfigByFile() {
 
                 // local zone
                 svr_host->zoneInfo = ZoneInfoHead;
-                if ( queRodsServerHost(
+                if ( queueRodsServerHost(
                             &HostConfigHead,
                             svr_host ) < 0 ) {
                     rodsLog(
                             LOG_ERROR,
-                            "queRodsServerHost failed" );
+                            "queueRodsServerHost failed" );
                 }
 
                 for ( const auto& el : addresses ) {
                     try {
-                        if ( queHostName(
+                        if ( queueHostName(
                                     svr_host,
                                     boost::any_cast<const std::string&>(
                                         boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el
                                             ).at("address")
                                         ).c_str(),
                                     0 ) < 0 ) {
-                            rodsLog( LOG_ERROR, "queHostName failed" );
+                            rodsLog( LOG_ERROR, "queueHostName failed" );
                         }
 
                     } catch ( const boost::bad_any_cast& e ) {
@@ -889,6 +875,11 @@ initRsCommWithStartupPack( rsComm_t *rsComm, startupPack_t *startupPack ) {
         }
         rsComm->irodsProt = ( irodsProt_t )atoi( tmpStr );
 
+        if (rsComm->irodsProt != NATIVE_PROT && rsComm->irodsProt != XML_PROT) {
+            rodsLog( LOG_NOTICE, "initRsCommWithStartupPack: Invalid protocol value.");
+            return SYS_GETSTARTUP_PACK_ERR;
+        }
+
         tmpStr = getenv( SP_RECONN_FLAG );
         if ( tmpStr == NULL ) {
             rodsLog( LOG_NOTICE,
@@ -1070,7 +1061,7 @@ setRsCommFromRodsEnv( rsComm_t *rsComm ) {
 }
 
 int
-queAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
+queueAgentProc( agentProc_t *agentProc, agentProc_t **agentProcHead,
         irodsPosition_t position ) {
     if ( agentProc == NULL || agentProcHead == NULL ) {
         return USER__NULL_INPUT_ERR;

@@ -1,0 +1,11 @@
+/var/log/irods/irods.log {
+    weekly
+    rotate 26
+    copytruncate
+    delaycompress
+    compress
+    dateext
+    notifempty
+    missingok
+    su root root
+}

@@ -25,20 +25,22 @@ def install_building_dependencies():
     irods_python_ci_utilities.install_irods_core_dev_repository()
     install_cmake_and_add_to_front_of_path()
     irods_python_ci_utilities.install_os_packages([
-        "irods-externals-avro1.7.7-0",
-        "irods-externals-boost1.60.0-0",
-        "irods-externals-clang-runtime3.8-0",
-        "irods-externals-clang3.8-0",
-        "irods-externals-cppzmq4.1-0",
-        "irods-externals-jansson2.7-0",
-        "irods-externals-libarchive3.3.2-0",
-        "irods-externals-zeromq4-14.1.3-0"
+        "irods-externals-avropre190cpp17-0",
+        "irods-externals-boost1.67.0-0",
+        "irods-externals-catch22.3.0-0",
+        "irods-externals-clang-runtime6.0-0",
+        "irods-externals-clang6.0-0",
+        "irods-externals-cppzmq4.2.3-0",
+        "irods-externals-json3.1.2-0",
+        "irods-externals-libarchive3.3.2-1",
+        "irods-externals-spdlog0.17.0-0",
+        "irods-externals-zeromq4-14.1.6-0"
         ])
     install_os_specific_dependencies()
 
 def install_cmake_and_add_to_front_of_path():
-    irods_python_ci_utilities.install_os_packages(['irods-externals-cmake3.5.2-0'])
-    cmake_path = '/opt/irods-externals/cmake3.5.2-0/bin'
+    irods_python_ci_utilities.install_os_packages(['irods-externals-cmake3.11.4-0'])
+    cmake_path = '/opt/irods-externals/cmake3.11.4-0/bin'
     os.environ['PATH'] = os.pathsep.join([cmake_path, os.environ['PATH']])
 
 def install_os_specific_dependencies():

@@ -4,14 +4,11 @@
 /* rodsAgent.h - header file for rodsAgent
  */
 
-
-
 #ifndef RODS_AGENT_HPP
 #define RODS_AGENT_HPP
 
 #include "rods.h"
 #include "rcGlobalExtern.h"     /* client global */
-#include "rsLog.hpp"
 #include "rodsLog.h"
 #include "sockComm.h"
 #include "getRodsEnv.h"

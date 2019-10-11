@@ -723,7 +723,7 @@ irods::error mock_archive_file_rebalance(
 
     return SUCCESS();
 
-} // mock_archive_file_rebalancec
+} // mock_archive_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle mock_archive file system resources

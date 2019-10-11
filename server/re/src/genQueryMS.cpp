@@ -353,6 +353,7 @@ msiGetMoreRows( msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_
         /* return continuation index separately in case it is needed in conditional expressions */
         resetMsParam( continueInx );
         fillIntInMsParam( continueInx, genQueryOut->continueInx );
+        rei->status = 0;
     }
 
     return rei->status;

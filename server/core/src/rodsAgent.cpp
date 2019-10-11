@@ -4,7 +4,6 @@
 /* rodsAgent.cpp - The main code for rodsAgent
  */
 
-#include <syslog.h>
 #include "rodsAgent.hpp"
 #include "reconstants.hpp"
 #include "rsApiHandler.hpp"
@@ -30,6 +29,8 @@
 #include "irods_threads.hpp"
 #include "irods_re_plugin.hpp"
 #include "irods_re_serialization.hpp"
+#include "irods_logger.hpp"
+#include "irods_at_scope_exit.hpp"
 #include "procLog.h"
 #include "initServer.hpp"
 
@@ -83,13 +84,12 @@ static void set_agent_process_name(const InformationRequiredToSafelyRenameProces
 }
 
 int receiveDataFromServer( int conn_tmp_socket ) {
-    int status;
     ssize_t num_bytes;
     char in_buf[1024];
     memset( in_buf, 0, 1024 );
     bool data_complete = false;
 
-    char ack_buffer[256];
+    char ack_buffer[256]{};
     snprintf( ack_buffer, 256, "OK" );
 
     while (!data_complete) {
@@ -97,7 +97,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         num_bytes = recv( conn_tmp_socket, &in_buf, 1024, 0 );
 
         if ( num_bytes < 0 ) {
-            rodsLog( LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]", errno, strerror( errno ) );
+            rodsLog( LOG_ERROR, "Error receiving data from rodsServer, errno = [%d][%s]", errno, strerror( errno ) );
             return SYS_SOCK_READ_ERR;
         } else if ( num_bytes == 0 ) {
             rodsLog( LOG_ERROR, "Received 0 bytes from rodsServer" );
@@ -115,7 +115,7 @@ int receiveDataFromServer( int conn_tmp_socket ) {
                 // Send acknowledgement that all data has been received
                 num_bytes = send ( conn_tmp_socket, ack_buffer, strlen(ack_buffer) + 1, 0 );
                 if ( num_bytes < 0 ) {
-                    rodsLog( LOG_ERROR, "Error sending acknowledgment to rodsServer, errno = [%d]", errno, strerror( errno ) );
+                    rodsLog( LOG_ERROR, "Error sending acknowledgment to rodsServer, errno = [%d][%s]", errno, strerror( errno ) );
                     return SYS_SOCK_READ_ERR;
                 }
 
@@ -138,8 +138,12 @@ int receiveDataFromServer( int conn_tmp_socket ) {
             std::string lhs = tmpStr.substr(0, i);
             std::string rhs = tmpStr.substr(i+1, tmpStr.size());
 
-            setenv( lhs.c_str(), rhs.c_str(), 1 );
-
+            int status{setenv(lhs.c_str(), rhs.c_str(), 1)};
+            if (status < 0) {
+                irods::log(ERROR(SYS_INTERNAL_ERR,
+                                 (boost::format("setenv([%s],[%s],1) failed with errno = [%d][%s]") %
+                                  lhs.c_str() % rhs.c_str() % errno % strerror(errno)).str().c_str()));
+            }
             tokenized_strings = strtok(NULL, ";");
         }
     }
@@ -164,8 +168,13 @@ int receiveDataFromServer( int conn_tmp_socket ) {
         return SYS_SOCK_READ_ERR;
     }
 
-    setenv( SP_NEW_SOCK, socket_buf, 1 );
-    status = close( conn_tmp_socket );
+    int status{setenv(SP_NEW_SOCK, socket_buf, 1)};
+    if (status < 0) {
+        irods::log(ERROR(SYS_INTERNAL_ERR,
+                         (boost::format("setenv([%s],[%s],1) failed with errno = [%d][%s]") %
+                          SP_NEW_SOCK % socket_buf % errno % strerror(errno)).str().c_str()));
+    }
+    status = close(conn_tmp_socket);
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "close(conn_tmp_socket) failed with errno = [%d]: %s", errno, strerror( errno ) );
     }
@@ -184,9 +193,26 @@ irodsAgentSignalExit( int ) {
 }
 
 int
-runIrodsAgent( sockaddr_un agent_addr ) {
-    int status;
+runIrodsAgentFactory( sockaddr_un agent_addr ) {
+    int status{};
     rsComm_t rsComm;
+
+    using log = irods::experimental::log;
+
+    irods::server_properties::instance().capture();
+    log::agent_factory::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY_KW));
+
+    // Attach the error stack object to the logger and release it once this function returns.
+    log::set_server_type("agent_factory");
+    log::set_error_object(&rsComm.rError);
+
+    log::agent_factory::info("Initializing ...");
+
+    irods::at_scope_exit release_error_stack{[] {
+        log::set_error_object(nullptr);
+    }};
+
+    log::agent_factory::trace("Configuring signals ...");
 
     signal( SIGINT, irodsAgentSignalExit );
     signal( SIGHUP, irodsAgentSignalExit );
@@ -231,26 +257,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         return SYS_SOCK_ACCEPT_ERR;
     }
 
-    // [#3563] reproduce serverize log behavior
-    char* logFile = NULL;
-    getLogfileName( &logFile, NULL, RODS_LOGFILE );
-    LogFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0644 );
-    if ( LogFd < 0 ) {
-        rodsLog( LOG_NOTICE, "runIrodsAgent: Unable to open %s. errno = %d",
-                 logFile, errno );
-        free( logFile );
-        return -1;
-    }
-    ( void ) dup2( LogFd, 0 );
-    ( void ) dup2( LogFd, 1 );
-    ( void ) dup2( LogFd, 2 );
-    close( LogFd );
-    LogFd = 2;
-
     while ( true ) {
-        // [#3563] check for log file roll over
-        chkLogfileName( NULL, RODS_LOGFILE );
-
         // Reap any zombie processes from completed agents
         int reaped_pid, child_status;
         while ( ( reaped_pid = waitpid( -1, &child_status, WNOHANG ) ) > 0 ) {
@@ -289,10 +296,9 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             // select returned, attempt to receive data
             // If 0 bytes are received, socket has been closed
             // If a socket address is on the line, create it and fork a child process
-            char in_buf[1024];
-            memset( in_buf, 0, sizeof(in_buf));
+            char in_buf[1024]{};
+            int tmp_socket{};
             const ssize_t bytes_received = recv( conn_socket, &in_buf, sizeof(in_buf), 0 );
-            int tmp_socket;
             if ( bytes_received == -1 ) {
                 rodsLog(LOG_ERROR, "Error receiving data from rodsServer, errno = [%d]: %s", errno, strerror( errno ) );
                 return SYS_SOCK_READ_ERR;
@@ -303,8 +309,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             } else {
                 // Assume that we have received valid data over the socket connection
                 // Set up the temporary (per-agent) sockets
-                sockaddr_un tmp_socket_addr;
-                memset( &tmp_socket_addr, 0, sizeof(tmp_socket_addr) );
+                sockaddr_un tmp_socket_addr{};
                 tmp_socket_addr.sun_family = AF_UNIX;
                 strncpy( tmp_socket_addr.sun_path, in_buf, sizeof(tmp_socket_addr.sun_path) );
                 unsigned int len = sizeof(tmp_socket_addr);
@@ -314,37 +319,76 @@ runIrodsAgent( sockaddr_un agent_addr ) {
                 // Delete socket if it already exists
                 unlink( tmp_socket_addr.sun_path );
 
-                if ( bind( tmp_socket, (struct sockaddr*) &tmp_socket_addr, len ) == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Unable to bind socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_BIND_ERR;
+                if (-1 == bind(tmp_socket, (struct sockaddr*) &tmp_socket_addr, len) ) {
+                    const auto err{ERROR(SYS_SOCK_BIND_ERR, "Unable to bind socket in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
 
-                if ( listen( tmp_socket, 5) == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Failed to set up socket for listening in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_LISTEN_ERR;
+                if (-1 == listen(tmp_socket, 5)) {
+                    const auto err{ERROR(SYS_SOCK_LISTEN_ERR, "Failed to set up socket for listening in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
 
                 // Send acknowledgement that socket has been created
-                char ack_buffer[256];
+                char ack_buffer[256]{};
                 len = snprintf( ack_buffer, sizeof(ack_buffer), "OK" );
-                send ( conn_socket, ack_buffer, len, 0 );
+                const auto bytes_sent{send(conn_socket, ack_buffer, len, 0)};
+                if (bytes_sent < 0) {
+                    rodsLog(LOG_ERROR, "[%s] - Error sending acknowledgment to rodsServer, errno = [%d][%s]", __FUNCTION__, errno, strerror(errno));
+                    return SYS_SOCK_READ_ERR;
+                }
+
+                // Wait for connection message from main server
+                memset(in_buf, 0, sizeof(in_buf));
+                recv(conn_socket, in_buf, sizeof(in_buf), 0);
+                if (0 != std::string(in_buf).compare("connection_successful")) {
+                    rodsLog(LOG_ERROR, "[%s:%d] - received failure message in connecting to socket from server", __FUNCTION__, __LINE__);
+                    status = close( tmp_socket );
+                    if (status < 0) {
+                        rodsLog(LOG_ERROR, "close(tmp_socket) failed with errno = [%d]: %s", errno, strerror(errno));
+                    }
+                    continue;
+                }
 
                 conn_tmp_socket = accept( tmp_socket, (struct sockaddr*) &tmp_socket_addr, &len);
-                if ( conn_tmp_socket == -1 ) {
-                    rodsLog(LOG_ERROR, "[%s:%d] Failed to accept client socket in receiveDataFromServer", __FUNCTION__, __LINE__);
-                    return SYS_SOCK_ACCEPT_ERR;
+                if (-1 == conn_tmp_socket) {
+                    const auto err{ERROR(SYS_SOCK_ACCEPT_ERR, "Failed to accept client socket in receiveDataFromServer")};
+                    irods::log(err);
+                    return err.code();
                 }
             }
 
             // Data is ready on conn_socket, fork a child process to handle it
+            log::agent_factory::trace("Spawning agent to handle request ...");
             pid_t child_pid = fork();
             if ( child_pid == 0 ) {
+                log::set_server_type("agent");
+
                 // Child process - reload properties and receive data from server process
                 irods::environment_properties::instance().capture();
 
-                receiveDataFromServer( conn_tmp_socket );
+                status = receiveDataFromServer(conn_tmp_socket);
+                if (status < 0) {
+                    const auto err{ERROR(status, "Error in receiveDataFromServer")};
+                    irods::log(err);
+                    //return err.code();
+                }
 
                 irods::server_properties::instance().capture();
+
+                log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
+                log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
+                log::resource::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW));
+                log::database::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DATABASE_KW));
+                log::authentication::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW));
+                log::api::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_API_KW));
+                log::microservice::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW));
+                log::network::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_NETWORK_KW));
+                log::rule_engine::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW));
+
+                log::agent::info("I'm an agent!");
 
                 irods::error ret2 = setRECacheSaltFromEnv();
                 if ( !ret2.ok() ) {
@@ -402,7 +446,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
         cleanupAndExit( status );
     }
 
-    irods::re_serialization::serialization_map_t m = irods::re_serialization::get_serialization_map();
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
     irods::re_plugin_globals->global_re_mgr.call_start_operations();
 
@@ -460,8 +503,7 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     }
 
     if ( rsComm.clientUser.userName[0] != '\0' ) {
-        status = chkAllowedUser( rsComm.clientUser.userName,
-                                 rsComm.clientUser.rodsZone );
+        status = chkAllowedUser( rsComm.clientUser.userName, rsComm.clientUser.rodsZone );
 
         if ( status < 0 ) {
             sendVersion( net_obj, status, 0, NULL, 0 );
@@ -483,7 +525,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
             irods::log( PASS( ret ) );
             sendVersion( net_obj, SERVER_NEGOTIATION_ERROR, 0, NULL, 0 );
             cleanupAndExit( ret.code() );
-
         }
         else {
             // =-=-=-=-=-=-=-
@@ -531,7 +572,6 @@ runIrodsAgent( sockaddr_un agent_addr ) {
 
     new_net_obj->to_server( &rsComm );
     cleanup();
-    irods::re_plugin_globals->global_re_mgr.call_stop_operations();
     free( rsComm.thread_ctx );
     free( rsComm.auth_scheme );
 
@@ -540,23 +580,20 @@ runIrodsAgent( sockaddr_un agent_addr ) {
     return status;
 }
 
-static void set_rule_engine_globals(
-    rsComm_t* _comm ) {
-
+static void set_rule_engine_globals( rsComm_t* _comm )
+{
     irods::set_server_property<std::string>(irods::CLIENT_USER_NAME_KW, _comm->clientUser.userName);
     irods::set_server_property<std::string>(irods::CLIENT_USER_ZONE_KW, _comm->clientUser.rodsZone);
     irods::set_server_property<int>(irods::CLIENT_USER_PRIV_KW, _comm->clientUser.authInfo.authFlag);
     irods::set_server_property<std::string>(irods::PROXY_USER_NAME_KW, _comm->proxyUser.userName);
     irods::set_server_property<std::string>(irods::PROXY_USER_ZONE_KW, _comm->proxyUser.rodsZone);
     irods::set_server_property<int>(irods::PROXY_USER_PRIV_KW, _comm->clientUser.authInfo.authFlag);
-
 } // set_rule_engine_globals
 
-int agentMain(
-    rsComm_t *rsComm ) {
+int agentMain( rsComm_t *rsComm )
+{
     if ( !rsComm ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
-
     }
 
     int status = 0;

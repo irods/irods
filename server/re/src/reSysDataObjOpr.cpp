@@ -12,7 +12,6 @@
 #include "reSysDataObjOpr.hpp"
 #include "genQuery.h"
 #include "getRescQuota.h"
-#include "reServerLib.hpp"
 #include "dataObjOpr.hpp"
 #include "resource.hpp"
 #include "physPath.hpp"
@@ -23,6 +22,7 @@
 
 // =-=-=-=-=-=-=-
 //
+#include "irodsReServer.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_table.hpp"
 #include "irods_server_properties.hpp"
@@ -469,7 +469,6 @@ msiSysChksumDataObj( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
-    int status;
     RE_TEST_MACRO( "    Calling msiSetDataType" )
 
     rei->status = 0;
@@ -482,14 +481,40 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
 
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN] = "";
-    splitPathByKey( dataObjInfoHead->objPath, logicalCollName, sizeof( logicalCollName ), logicalFileName, sizeof( logicalFileName ), '/' );
+    int status{splitPathByKey(dataObjInfoHead->objPath,
+                              logicalCollName,
+                              sizeof(logicalCollName),
+                              logicalFileName,
+                              sizeof(logicalFileName),
+                              '/')};
+    if (status < 0) {
+        const auto err{ERROR(status,
+                             (boost::format("splitPathByKey failed for [%s]") %
+                              dataObjInfoHead->objPath).str().c_str())};
+        irods::log(err);
+        return err.code();
+    }
+
     if ( strlen( logicalFileName ) <= 0 ) {
         return 0;
     }
 
     char logicalFileNameNoExtension[MAX_NAME_LEN] = "";
     char logicalFileNameExt[MAX_NAME_LEN] = "";
-    splitPathByKey( logicalFileName, logicalFileNameNoExtension, sizeof( logicalFileNameNoExtension ), logicalFileNameExt, sizeof( logicalFileNameExt ), '.' );
+    status = splitPathByKey(logicalFileName,
+                            logicalFileNameNoExtension,
+                            sizeof(logicalFileNameNoExtension),
+                            logicalFileNameExt,
+                            sizeof(logicalFileNameExt),
+                            '.');
+    if (status < 0) {
+        const auto err{ERROR(status,
+                             (boost::format("splitPathByKey failed for [%s]") %
+                              dataObjInfoHead->objPath).str().c_str())};
+        irods::log(err);
+        return err.code();
+    }
+
     if ( strlen( logicalFileNameExt ) <= 0 ) {
         return 0;
     }
@@ -523,7 +548,12 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
         return 0;
     }
 
-    svrCloseQueryOut( rei->rsComm, genQueryOut );
+    status = svrCloseQueryOut(rei->rsComm, genQueryOut);
+    if (status < 0) {
+        const auto err{ERROR(status, "svrCloseQueryOut failed")};
+        irods::log(err);
+        return err.code();
+    }
 
     /* register it */
     keyValPair_t regParam;
@@ -538,9 +568,11 @@ msiSetDataTypeFromExt( ruleExecInfo_t *rei ) {
     modDataObjMetaInp.dataObjInfo = dataObjInfoHead;
     modDataObjMetaInp.regParam = &regParam;
 
-    rsModDataObjMeta( rei->rsComm, &modDataObjMetaInp );
-
-    return 0;
+    status = rsModDataObjMeta(rei->rsComm, &modDataObjMetaInp);
+    if (status < 0) {
+        irods::log(ERROR(status, "rsModDataObjMeta failed"));
+    }
+    return status;
 }
 
 /**
@@ -1414,17 +1446,12 @@ msiSetRandomScheme( ruleExecInfo_t *rei ) {
  **/
 int
 msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
-    char *numProcStr;
-    int numProc;
+    int numProc{irods::default_max_number_of_concurrent_re_threads};
+    char* numProcStr = ( char* )xnumProc->inOutStruct;
 
-    numProcStr = ( char* )xnumProc->inOutStruct;
-
-    if ( strcmp( numProcStr, "default" ) == 0 ) {
-        numProc = DEF_NUM_RE_PROCS;
-    }
-    else {
+    if (0 != strcmp(numProcStr, "default")) {
         numProc = atoi( numProcStr );
-        int max_re_procs = 0;
+        int max_re_procs{irods::default_max_number_of_concurrent_re_threads};
         try {
             max_re_procs = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
         } catch ( const irods::exception& e ) {
@@ -1436,7 +1463,7 @@ msiSetReServerNumProc( msParam_t *xnumProc, ruleExecInfo_t *rei ) {
             numProc = max_re_procs;
         }
         else if ( numProc < 0 ) {
-            numProc = DEF_NUM_RE_PROCS;
+            numProc = irods::default_max_number_of_concurrent_re_threads;
         }
     }
     rei->status = numProc;

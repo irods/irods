@@ -77,9 +77,7 @@ def database_already_in_use_by_irods(irods_config):
             else:
                 return False
 
-def setup_database_config(irods_config):
-    l = logging.getLogger(__name__)
-
+def get_database_type():
     if os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libpostgres.so')):
         db_type = 'postgres'
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'libcockroachdb.so')):
@@ -89,7 +87,13 @@ def setup_database_config(irods_config):
     elif os.path.exists(os.path.join(paths.plugins_directory(), 'database', 'liboracle.so')):
         db_type = 'oracle'
     else:
-        raise IrodsError('Database type must be one of postgres, mysql, or oracle.')
+        raise IrodsError('Database type must be one of postgres, cockroachdb, mysql, or oracle.')
+    return db_type
+
+def setup_database_config(irods_config):
+    l = logging.getLogger(__name__)
+
+    db_type = get_database_type()
     l.debug('setup_database_config has been called with database type \'%s\'.', db_type)
 
     l.info('You are configuring an iRODS database plugin. '
@@ -135,6 +139,11 @@ def setup_database_config(irods_config):
                 'Database username',
                 default=[irods_config.database_config.get('db_username', 'irods')])
 
+        if db_type == 'cockroachdb':
+            irods_config.database_config['sslrootcert'] = lib.default_prompt(
+                'Database Root SSL (CA) Cert file',
+                 default=[irods_config.database_config.get('sslrootcert', '')])
+
         confirmation_message = ''.join([
                 '\n',
                 '-------------------------------------------\n',
@@ -144,6 +153,7 @@ def setup_database_config(irods_config):
                 'Database Port: %d\n',
                 'Database Name: %s\n' if irods_config.catalog_database_type != 'oracle' else 'Service Name:  %s\n',
                 'Database User: %s\n',
+                'Database Cert: %s\n' if db_type == 'cockroachdb' else '%s',
                 '-------------------------------------------\n\n',
                 'Please confirm']) % (
                     irods_config.catalog_database_type,
@@ -151,7 +161,8 @@ def setup_database_config(irods_config):
                     irods_config.database_config['db_host'],
                     irods_config.database_config['db_port'],
                     irods_config.database_config['db_name'],
-                    irods_config.database_config['db_username'])
+                    irods_config.database_config['db_username'],
+                    irods_config.database_config['sslrootcert'] if db_type == 'cockroachdb' else '')
 
         if lib.default_prompt(confirmation_message, default=['yes']) in ['', 'y', 'Y', 'yes', 'YES']:
             break

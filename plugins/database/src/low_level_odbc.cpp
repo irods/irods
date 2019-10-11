@@ -240,8 +240,6 @@ cllConnect( icatSessionStruct *icss ) {
   If option is 0, record some of the sql, or clear it (if commit or rollback).
   If option is 1, issue warning the there are some pending (and include
   some of the sql).
-  If option is 2, this is indicating that the previous option 0 call was
-  for an audit-type SQL.
 */
 #define maxPendingToRecord 5
 #define pendingRecordSize 30
@@ -250,7 +248,6 @@ int
 cllCheckPending( const char *sql, int option, int dbType ) {
     static int pendingCount = 0;
     static int pendingIx = 0;
-    static int pendingAudits = 0;
     static char pBuffer[pBufferSize + 2];
     static int firstTime = 1;
 
@@ -263,7 +260,6 @@ cllCheckPending( const char *sql, int option, int dbType ) {
                 strncmp( sql, "rollback", 8 ) == 0 ) {
             pendingIx = 0;
             pendingCount = 0;
-            pendingAudits = 0;
             memset( pBuffer, 0, pBufferSize );
             return 0;
         }
@@ -275,13 +271,8 @@ cllCheckPending( const char *sql, int option, int dbType ) {
         pendingCount++;
         return 0;
     }
-    if ( option == 2 ) {
-        pendingAudits++;
-        return 0;
-    }
 
-    /* if there are some non-Audit pending SQL, log them */
-    if ( pendingCount > pendingAudits ) {
+    if (pendingCount > 0) {
         /* but ignore a single pending "begin" which can be normal */
         if ( pendingIx == 1 ) {
             if ( strncmp( ( char * )&pBuffer[0], "begin", 5 ) == 0 ) {
@@ -320,16 +311,8 @@ cllCheckPending( const char *sql, int option, int dbType ) {
             rodsLog( LOG_NOTICE, "Warning, pending SQL: %s ...",
                      ( char * )&pBuffer[i * pendingRecordSize] );
         }
-        if ( pendingAudits > 0 ) {
-            rodsLog( LOG_NOTICE, "Warning, SQL will be commited with audits" );
-        }
     }
 
-    if ( pendingAudits > 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "Notice, pending Auditing SQL committed at cllDisconnect" );
-        return 1; /* tell caller (cllDisconect) to do a commit */
-    }
     return 0;
 }
 
@@ -340,7 +323,7 @@ int
 cllDisconnect( icatSessionStruct *icss ) {
 
     if ( 1 == cllCheckPending( "", 1, icss->databaseType ) ) {
-        /* auto commit any pending SQLs, including the audit ones */
+        /* auto commit any pending SQLs */
         /* Nothing to do if it fails */
         cllExecSqlNoResult( icss, "commit" ); 
     }
@@ -575,7 +558,10 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         return -1;
     }
 
-    int statementNumber = -1;
+    // Issue 3862:  Set stmtNum to -1 and in cllFreeStatement if the stmtNum is negative do nothing
+    *stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
+
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
@@ -588,7 +574,10 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
     }
 
     icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    memset( myStatement, 0, sizeof( icatStmtStrct ) );
+
     icss->stmtPtr[statementNumber] = myStatement;
+    *stmtNum = statementNumber;
 
     myStatement->stmtPtr = hstmt;
 
@@ -673,6 +662,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
         /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
 
         myStatement->resultValue[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultValue[i], 0, (int)columnLength[i] );
 
         strcpy( ( char * )myStatement->resultValue[i], "" );
 
@@ -688,6 +678,7 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultColName[i], 0, (int)columnLength[i] );
 
 #ifdef ORA_ICAT
         //oracle prints column names (which are case-insensitive) in upper case,
@@ -700,7 +691,6 @@ cllExecSqlWithResult( icatSessionStruct *icss, int *stmtNum, const char *sql ) {
 
     }
 
-    *stmtNum = statementNumber;
     return 0;
 }
 
@@ -742,7 +732,10 @@ cllExecSqlWithResultBV(
         return -1;
     }
 
-    int statementNumber = -1;
+    // Issue 3862:  Set stmtNum to -1 and in cllFreeStatement if the stmtNum is negative do nothing
+    *stmtNum = UNINITIALIZED_STATEMENT_NUMBER;
+
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     for ( int i = 0; i < MAX_NUM_OF_CONCURRENT_STMTS && statementNumber < 0; i++ ) {
         if ( icss->stmtPtr[i] == 0 ) {
             statementNumber = i;
@@ -755,7 +748,10 @@ cllExecSqlWithResultBV(
     }
 
     icatStmtStrct * myStatement = ( icatStmtStrct * )malloc( sizeof( icatStmtStrct ) );
+    memset( myStatement, 0, sizeof( icatStmtStrct ) );
     icss->stmtPtr[statementNumber] = myStatement;
+
+    *stmtNum = statementNumber;
 
     myStatement->stmtPtr = hstmt;
 
@@ -852,6 +848,7 @@ cllExecSqlWithResultBV(
         /*      printf("columnLength[%d]=%d\n",i,columnLength[i]); */
 
         myStatement->resultValue[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultValue[i], 0, (int)columnLength[i] );
 
         myStatement->resultValue[i][0] = '\0';
         // =-=-=-=-=-=-=-
@@ -867,6 +864,7 @@ cllExecSqlWithResultBV(
 
 
         myStatement->resultColName[i] = ( char* )malloc( ( int )columnLength[i] );
+        memset( myStatement->resultColName[i], 0, (int)columnLength[i] );
 #ifdef ORA_ICAT
         //oracle prints column names (which are case-insensitive) in upper case,
         //so to remain consistent with postgres and mysql, we convert them to lower case.
@@ -877,7 +875,7 @@ cllExecSqlWithResultBV(
         strncpy( myStatement->resultColName[i], ( char * )colName, columnLength[i] );
 
     }
-    *stmtNum = statementNumber;
+
     return 0;
 }
 
@@ -954,10 +952,20 @@ cllCurrentValueString( const char *itemName, char *outString, int maxSize ) {
    corresponding resultValue array.
 */
 int
-cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
+cllFreeStatement( icatSessionStruct *icss, int& statementNumber ) {
+
+    // Issue 3862 - Statement number is set to negative until it is 
+    // created.  When the statement is freed it is again set to negative.
+    // Do not free when statementNumber is negative.  If this is called twice 
+    // by a client, after the first call the statementNumber will be negative
+    // and nothing will be done.
+    if (statementNumber < 0) {
+        return 0;
+    }
 
     icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
     if ( myStatement == NULL ) { /* already freed */
+        statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
         return 0;
     }
 
@@ -965,12 +973,13 @@ cllFreeStatement( icatSessionStruct *icss, int statementNumber ) {
 
     SQLRETURN stat = SQLFreeHandle( SQL_HANDLE_STMT, myStatement->stmtPtr );
     if ( stat != SQL_SUCCESS ) {
+        statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
         rodsLog( LOG_ERROR, "cllFreeStatement SQLFreeHandle for statement error: %d", stat );
     }
 
     free( myStatement );
-
     icss->stmtPtr[statementNumber] = NULL; /* indicate that the statement is free */
+    statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
 
     return 0;
 }
@@ -985,10 +994,10 @@ _cllFreeStatementColumns( icatSessionStruct *icss, int statementNumber ) {
     icatStmtStrct * myStatement = icss->stmtPtr[statementNumber];
 
     for ( int i = 0; i < myStatement->numOfCols; i++ ) {
-        free( myStatement->resultValue[i] );
+	free( myStatement->resultValue[i] );
         myStatement->resultValue[i] = NULL;
-        free( myStatement->resultColName[i] );
-        myStatement->resultColName[i] = NULL;
+	free( myStatement->resultColName[i] );
+	myStatement->resultColName[i] = NULL;
     }
     return 0;
 }

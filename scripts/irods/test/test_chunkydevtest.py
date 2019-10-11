@@ -12,6 +12,7 @@ import time
 import shutil
 import random
 import subprocess
+import ustrings
 
 from . import session
 from .. import test
@@ -47,7 +48,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iinit -l", 'STDOUT_SINGLELINE', self.admin.default_resource)
 
         # begin original devtest
-        self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("ilsresc -l", 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT_SINGLELINE', ["relVersion"])
         self.admin.assert_icommand("iuserinfo", 'STDOUT_SINGLELINE', "name: " + username)
@@ -55,7 +56,6 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ipwd", 'STDOUT_SINGLELINE', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT_SINGLELINE', "ils")
         self.admin.assert_icommand("ierror -14000", 'STDOUT_SINGLELINE', "SYS_API_INPUT_ERR")
-        self.admin.assert_icommand("iexecmd hello", 'STDOUT_SINGLELINE', "Hello world")
         self.admin.assert_icommand("ips -v", 'STDOUT_SINGLELINE', "ips")
         self.admin.assert_icommand("iqstat", 'STDOUT_SINGLELINE', "No delayed rules pending for user " + self.admin.username)
 
@@ -526,7 +526,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.copyfile(progname, mysfile)
 
         # iphybun test
-        self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp")
+        self.admin.assert_icommand("iput -rR " + self.testresc + " " + mysdir + " " + irodshome + "/icmdtestp", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         self.admin.assert_icommand("iphybun -KR " + self.anotherresc + " " + irodshome + "/icmdtestp")
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
                                    irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
@@ -610,7 +610,7 @@ class ChunkyDevTest(ResourceBase):
 
         # do test using xml protocol
         os.environ['irodsProt'] = "1"
-        self.admin.assert_icommand("ilsresc", 'STDOUT_SINGLELINE', self.testresc)
+        self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', self.testresc)
         self.admin.assert_icommand("imiscsvrinfo", 'STDOUT_SINGLELINE', "relVersion")
         self.admin.assert_icommand("iuserinfo", 'STDOUT_SINGLELINE', "name: " + username)
         self.admin.assert_icommand("ienv", 'STDOUT_SINGLELINE', "irods_version")
@@ -618,7 +618,6 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("ipwd", 'STDOUT_SINGLELINE', "home")
         self.admin.assert_icommand("ihelp ils", 'STDOUT_SINGLELINE', "ils")
         self.admin.assert_icommand("ierror -14000", 'STDOUT_SINGLELINE', "SYS_API_INPUT_ERR")
-        self.admin.assert_icommand("iexecmd hello", 'STDOUT_SINGLELINE', "Hello world")
         self.admin.assert_icommand("ips -v", 'STDOUT_SINGLELINE', "ips")
         self.admin.assert_icommand("iqstat", 'STDOUT_SINGLELINE', "No delayed rules")
         self.admin.assert_icommand("imkdir " + irodshome + "/icmdtest1")
@@ -725,7 +724,7 @@ class ChunkyDevTest(ResourceBase):
             shutil.rmtree(dir_w + "/testz")
         self.admin.assert_icommand("iget -vPKr --retries 10 -X " + rsfile + " --lfrestart " + lrsfile +
                                    " --rlock -N 2 " + irodshome + "/icmdtest/testz " + dir_w + "/testz", 'STDOUT_SINGLELINE', "testz")
-        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz")
+        self.admin.assert_icommand("irsync -r " + dir_w + "/testz i:" + irodshome + "/icmdtest/testz", "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
         self.admin.assert_icommand("irsync -r i:" + irodshome + "/icmdtest/testz " + dir_w + "/testz")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)

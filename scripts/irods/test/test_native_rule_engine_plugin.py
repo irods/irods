@@ -9,6 +9,8 @@ import inspect
 import json
 import os
 import time
+import tempfile
+from textwrap import dedent
 
 from . import resource_suite
 from .. import test
@@ -20,6 +22,39 @@ from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
 from ..controller import IrodsController
 
+
+
+
+
+
+def exec_icat_command(command):
+    import paramiko
+
+    hostname = 'icat.example.org'
+    port = 22
+    username = 'irods'
+    password = ''
+
+    print('Executing command on '+hostname+': ' + command)
+
+    s = paramiko.SSHClient()
+    s.load_system_host_keys()
+    s.connect(hostname, port, username, password)
+    (stdin, stdout, stderr) = s.exec_command(command)
+
+    ol = []
+    for l in stdout.readlines():
+        ol.append(l)
+
+    el = []
+    for l in stderr.readlines():
+        el.append(l)
+
+    s.close()
+
+    return ol, el
+
+
 class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Native_Rule_Engine_Plugin'
@@ -30,18 +65,215 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
     def tearDown(self):
         super(Test_Native_Rule_Engine_Plugin, self).tearDown()
 
+
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
         with temporary_core_file() as core:
             time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(rules_to_add)
             time.sleep(1)  # remove once file hash fix is committed #2279
-
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.run_icommand(icommand)
 
-        for s in strings_to_check_for:
-            count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), s, start_index=initial_size_of_server_log)
-            assert number_of_strings_to_look_for == count, 'Found {0} instead of {1} occurrences of {2}'.format(count, number_of_strings_to_look_for, s)
+        def check_string_count_in_log_section(string, n_occurrences):
+            count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), string, start_index=initial_size_of_server_log)
+            self.assertTrue (n_occurrences == count, msg='Found {0} instead of {1} occurrences of {2}'.format(count, n_occurrences, string))
+
+        if  isinstance(strings_to_check_for, dict):
+            for s,n  in  strings_to_check_for.items():
+                check_string_count_in_log_section (s,n)
+        else:
+            for s in strings_to_check_for:
+                check_string_count_in_log_section (s,number_of_strings_to_look_for)
+
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_peps_for_parallel_mode_transfers__4404(self):
+
+        (fd, largefile) = tempfile.mkstemp()
+        os.write(fd,"123456789abcdef\n"*(6*1024**2))
+        os.close(fd)
+        temp_base = os.path.basename(largefile)
+        temp_dir  = os.path.dirname(largefile)
+        extrafile = ""
+
+        try:
+            get_peps = dedent("""\
+                pep_api_data_obj_get_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-pre")
+                }
+                pep_api_data_obj_get_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-post")
+                }
+                pep_api_data_obj_get_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-get-except")
+                }
+                """)
+
+            put_peps = dedent("""\
+                pep_api_data_obj_put_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-pre")
+                }
+                pep_api_data_obj_put_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-post")
+                }
+                pep_api_data_obj_put_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+                {
+                    writeLine("serverLog", "data-obj-put-except")
+                }
+                """)
+
+            self.helper_test_pep( put_peps, "iput -f {}".format(largefile),
+                             { "data-obj-put-pre": 1, "data-obj-put-post": 1, "data-obj-put-except": 0 } )
+
+            self.helper_test_pep( get_peps, "iget -f {} {}".format(temp_base,temp_dir),
+                             { "data-obj-get-pre": 1, "data-obj-get-post": 1, "data-obj-get-except": 0 } )
+
+            self.helper_test_pep( put_peps, "iput {}".format(largefile),
+                             { "data-obj-put-pre": 1, "data-obj-put-post": 0, "data-obj-put-except": 1 } )
+
+            self.admin.run_icommand('ichmod null {} {}'.format(self.admin.username,temp_base))
+
+            extrafile = os.path.join(temp_dir, temp_base + ".x")
+
+            self.helper_test_pep( get_peps, "iget {} {}".format(temp_base,extrafile),
+                             { "data-obj-get-pre": 1, "data-obj-get-post": 0, "data-obj-get-except": 1 } )
+
+        finally:
+
+            self.admin.run_icommand('ichmod own {} {}'.format(self.admin.username,temp_base))
+            os.unlink(largefile)
+            if extrafile and os.path.isfile(extrafile):
+                os.unlink(extrafile)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
+       path = self.admin.get_vault_session_path('demoResc')
+
+       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+       os.unlink(os.path.join(path, 'bad_file'))
+       pre_pep_fail = """
+           pep_resource_open_pre(*INST, *CTX, *OUT) {
+               failmsg(-1, "PRE PEP FAIL")
+           }
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
+           }
+       """
+       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+
+       op_fail = """
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
+           }
+       """
+       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+
+       post_pep_fail = """
+           pep_resource_open_post(*INST, *CTX, *OUT) {
+               failmsg(-1, "POST PEP FAIL")
+           }
+           pep_resource_open_except(*INST, *CTX, *OUT) {
+               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
+           }
+       """
+       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    def test_dynamic_policy_enforcement_point_exception_for_apis__4128(self):
+       path = self.admin.get_vault_session_path('demoResc')
+
+       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+       os.unlink(os.path.join(path, 'bad_file'))
+       pre_pep_fail = """
+           pep_api_data_obj_get_pre(*INST, *COMM, *INP, *PORT, *BUF) {
+               failmsg(-1, "PRE PEP FAIL")
+           }
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
+           }
+       """
+       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+
+       op_fail = """
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
+           }
+       """
+       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+
+       post_pep_fail = """
+           pep_api_data_obj_get_post(*INST, *COMM, *INP, *PORT, *BUF) {
+               failmsg(-1, "POST PEP FAIL")
+           }
+           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
+               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
+           }
+       """
+       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
+
+    @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
+    def test_remote_rule_execution(self):
+        # =-=-=-=-=-=-=-=-
+        # stat the icat log to get its current size
+        log_stat_cmd = 'stat -c%s ' + paths.server_log_path()
+        out, err = exec_icat_command(log_stat_cmd)
+
+        if len(err) > 0:
+            for l in err:
+                print('stderr: ' + l)
+            return
+
+        if len(out) <= 0:
+            print('ERROR: LOG SIZE EMPTY')
+            assert(0)
+
+        print('log size: ' + out[0])
+        initial_log_size = int(out[0])
+
+        # =-=-=-=-=-=-=-=-
+        # run the remote rule to write to the log
+        rule_code = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name]
+        print('Executing code:\n'+rule_code)
+        rule_file = 'test_remote_rule_execution.r'
+        with open(rule_file, 'wt') as f:
+            print(rule_code, file=f, end='')
+        out, _, _ = self.admin.run_icommand("irule -F " + rule_file)
+
+        # =-=-=-=-=-=-=-=-
+        # search for the position of the token in the remote log
+        token = 'XXXX - PREP REMOTE EXEC TEST'
+
+        log_search_cmd = 'grep -ob "' + token + '" ' + paths.server_log_path()
+        out, err = exec_icat_command(log_search_cmd)
+        if len(err) > 0:
+            for l in err:
+                print('stderr: ' + l)
+            assert(0)
+
+        if len(out) <= 0:
+            print('ERROR: TOKEN LOCATION EMPTY')
+            assert(0)
+
+        loc_str = out[-1].split(':')[0]
+        print('token location: ' + loc_str)
+
+        token_location = int(loc_str)
+
+        # =-=-=-=-=-=-=-=-
+        # compare initial log size to the location of the token in the file
+        # the token should be located in the file some place after the initial
+        # size of the file
+        if initial_log_size > token_location:
+            assert(0)
+        else:
+            assert(1)
 
     def test_network_pep(self):
         irodsctl = IrodsController()
@@ -139,3 +371,88 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                     paths.server_log_path(), 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
                 assert 0 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
                 os.unlink(trigger_file)
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
+    def test_SYS_NOT_SUPPORTED__4174(self):
+
+        rule_file = 'test_SYS_NOT_SUPPORTED__4174.r'
+        rule_string = '''
+test_SYS_NOT_SUPPORTED__4174_rule {
+    fail(SYS_NOT_SUPPORTED);
+}
+
+INPUT null
+OUTPUT ruleExecOut
+'''
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        self.admin.assert_icommand('irule -F ' + rule_file, 'STDERR_SINGLELINE','SYS_NOT_SUPPORTED')
+        os.unlink(rule_file)
+
+    max_literal_strlen = 1021 # MAX_TOKEN_TEXT_LEN - 2
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only: irods#4311')
+    def test_string_literal__4311(self):
+        rule_text = '''
+main {
+   *b=".%s"
+   msiStrlen(*b,*L)
+   writeLine("stdout",*L)
+}
+INPUT null
+OUTPUT ruleExecOut
+''' % ('a'*self.max_literal_strlen,)
+
+        rule_file = 'test_string_literal__4311.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
+
+        rule_file_2 = 'test_string_literal__4311_noerr.r'
+        with open(rule_file_2, 'w') as f:
+            f.write(rule_text.replace('".','"'))
+        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+
+        os.remove(rule_file)
+        os.remove(rule_file_2)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only: irods#4311')
+    def test_string_input__4311(self):
+
+        rule_text = '''
+main {
+  msiStrlen(*a,*L)
+  writeLine("stdout",*L)
+}
+INPUT *a=".%s"
+OUTPUT ruleExecOut
+''' % ('a'*self.max_literal_strlen,)
+
+        rule_file = 'test_string_input__4311.r'
+
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDERR', ["ERROR"], desired_rc = 4)
+
+        rule_file_2 = 'test_string_input__4311_noerr.r'
+        with open(rule_file_2, 'w') as f:
+            f.write(rule_text.replace('".','"'))
+        self.admin.assert_icommand(['irule', '-F', rule_file_2],'STDOUT_SINGLELINE',str(self.max_literal_strlen))
+
+        os.remove(rule_file)
+        os.remove(rule_file_2)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'rule language only')
+    def test_msiSegFault(self):
+        rule_text = rule_texts[self.plugin_name][self.class_name]['test_msiSegFault']
+        rule_file = 'test_msiSegFault.r'
+        with open(rule_file, 'w') as f:
+            f.write(rule_text)
+        try:
+            # Should get SYS_INTERNAL_ERR because it's a segmentation fault
+            self.admin.assert_icommand(['irule', '-F', rule_file],'STDERR','SYS_INTERNAL_ERR')
+            # Should get CAT_INSUFFICIENT_PRIVILEGE_LEVEL because this is for admin users only
+            self.user0.assert_icommand(['irule', '-F', rule_file],'STDERR','CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+        finally:
+            os.unlink(rule_file)

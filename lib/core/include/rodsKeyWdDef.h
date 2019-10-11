@@ -5,6 +5,8 @@
 #ifndef RODS_KEYWD_DEF_H__
 #define RODS_KEYWD_DEF_H__
 
+// clang-format off
+
 /* The following are the keyWord definition for the condInput key/value pair */
 
 #define ALL_KW 		"all" 		/* operation done on all replica */
@@ -66,6 +68,7 @@
 #define COLLECTION_TYPE_KW    "collectionType"
 #define COLLECTION_INFO1_KW    "collectionInfo1"
 #define COLLECTION_INFO2_KW    "collectionInfo2"
+#define COLLECTION_MTIME_KW    "collectionMtime"
 #define SEL_OBJ_TYPE_KW    "selObjType"
 #define STRUCT_FILE_OPR_KW    	"structFileOpr"
 #define ALL_MS_PARAM_KW    	"allMsParam"
@@ -91,6 +94,7 @@
 /* DATA_SIZE_KW already defined */
 #define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */
 #define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */
+#define OPEN_TYPE_KW        "openType"
 #define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 #define NO_TRANSLATE_LINKPT_KW	"noTranslateMntpt"  /* don't translate mntpt */
@@ -290,7 +294,6 @@
 
 #define INSTANCE_NAME_KW "instance_name"
 
-
-
+// clang-format on
 
 #endif	// RODS_KEYWD_DEF_H__

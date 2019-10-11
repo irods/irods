@@ -1,14 +1,17 @@
 #include "irods_report_plugins_in_json.hpp"
 
+using json = nlohmann::json;
+
 namespace irods {
+
     error add_plugin_type_to_json_array(
         const std::string _plugin_type,
-        const char*        _type_name,
-        json_t*&           _json_array ) {
-
+        const char* _type_name,
+        json& _json_array)
+    {
         std::string plugin_home;
         error ret = resolve_plugin_path( _plugin_type, plugin_home );
-        if ( !ret.ok() ) {
+        if (!ret.ok()) {
             return PASS( ret );
         }
 
@@ -19,30 +22,26 @@ namespace irods {
             return PASS( ret );
         }
 
-        for ( plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
-                itr != plugin_list.end();
-                ++itr ) {
+        for (plugin_name_generator::plugin_list_t::iterator itr = plugin_list.begin();
+             itr != plugin_list.end();
+             ++itr)
+        {
+            json plug{
+                {"name", itr->c_str()},
+                {"type", _type_name},
+                {"version", ""},
+                {"checksum_sha256", ""}
+            };
 
-            json_t* plug = json_object();
-            json_object_set_new( plug, "name",     json_string( itr->c_str() ) );
-            json_object_set_new( plug, "type",     json_string( _type_name ) );
-            json_object_set_new( plug, "version",  json_string( "" ) );
-            json_object_set_new( plug, "checksum_sha256", json_string( "" ) );
-
-            json_array_append_new( _json_array, plug );
+            _json_array.push_back(plug);
         }
 
         return SUCCESS();
     }
 
-    error get_plugin_array(
-        json_t*& _plugins ) {
-        _plugins = json_array();
-        if ( !_plugins ) {
-            return ERROR(
-                       SYS_MALLOC_ERR,
-                       "json_object() failed" );
-        }
+    error get_plugin_array(json& _plugins)
+    {
+        _plugins = json::array();
 
         error ret = add_plugin_type_to_json_array( PLUGIN_TYPE_RESOURCE, "resource", _plugins );
         if ( !ret.ok() ) {
@@ -84,16 +83,12 @@ namespace irods {
         }
 
         return SUCCESS();
-
     } // get_plugin_array
 
-    error serialize_resource_plugin_to_json(
-        const resource_ptr& _resc,
-        json_t*             _entry ) {
-        if ( !_entry ) {
-            return ERROR(
-                       SYS_NULL_INPUT,
-                       "null json object _entry" );
+    error serialize_resource_plugin_to_json(const resource_ptr& _resc, json& _entry)
+    {
+        if (_entry.is_null()) {
+            return ERROR(SYS_NULL_INPUT, "null json object _entry");
         }
 
         std::string host_name;
@@ -150,21 +145,15 @@ namespace irods {
             return PASS(ret);
         }
 
-        json_object_set_new( _entry, "name",            json_string( name.c_str() ) );
-        json_object_set_new( _entry, "type",            json_string( type.c_str() ) );
-        json_object_set_new( _entry, "host",            json_string( host_name.c_str() ) );
-        json_object_set_new( _entry, "vault_path",      json_string( vault.c_str() ) );
-        json_object_set_new( _entry, "context_string",  json_string( context.c_str() ) );
-        json_object_set_new( _entry, "parent_resource", json_string( parent.c_str() ) );
-        json_object_set_new( _entry, "parent_context",  json_string( parent_context.c_str() ) );
-        json_object_set_new( _entry, "free_space",      json_string( freespace.c_str() ) );
-
-        if ( status != INT_RESC_STATUS_DOWN ) {
-            json_object_set_new( _entry, "status", json_string( "up" ) );
-        }
-        else {
-            json_object_set_new( _entry, "status", json_string( "down" ) );
-        }
+        _entry["name"] = name;
+        _entry["type"] = type;
+        _entry["host"] = host_name;
+        _entry["vault_path"] = vault;
+        _entry["context_string"] = context;
+        _entry["parent_resource"] = parent;
+        _entry["parent_context"] = parent_context;
+        _entry["free_space"] = freespace;
+        _entry["status"] = (status != INT_RESC_STATUS_DOWN) ? "up" : "down";
 
         return SUCCESS();
     }

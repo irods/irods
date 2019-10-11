@@ -10,11 +10,15 @@
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "rsGeneralAdmin.hpp"
+#include "rsModAVUMetadata.hpp"
+#include "rsGenQuery.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
 #include <string>
+#include <tuple>
+#include <optional>
 
 // =-=-=-=-=-=-=-
 #include "irods_children_parser.hpp"
@@ -24,9 +28,158 @@
 #include "irods_file_object.hpp"
 #include "irods_resource_constants.hpp"
 #include "irods_load_plugin.hpp"
+#include "irods_at_scope_exit.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_logger.hpp"
+
+using logger = irods::experimental::log;
+
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/date_time.hpp>
 
 extern irods::resource_manager resc_mgr;
 
+int _check_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    // build genquery to find active or stale "rebalance operation" entries for this resource
+    genQueryOut_t* gen_out = nullptr;
+    char tmp_str[MAX_NAME_LEN];
+    genQueryInp_t gen_inp{};
+
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", _resource_name.c_str() );
+    addInxVal( &gen_inp.sqlCondInp, COL_R_RESC_NAME, tmp_str );
+    snprintf( tmp_str, MAX_NAME_LEN, "='rebalance_operation'" );
+    addInxVal( &gen_inp.sqlCondInp, COL_META_RESC_ATTR_NAME, tmp_str );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_VALUE, 1 );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_UNITS, 1 );
+    gen_inp.maxRows = 1;
+    int status = rsGenQuery( _rsComm, &gen_inp, &gen_out );
+    // if existing entry found, report and exit
+    if ( status >= 0 ) {
+        sqlResult_t* hostname_and_pid;
+        sqlResult_t* timestamp;
+        if ( ( hostname_and_pid = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_VALUE ) ) == nullptr ) {
+            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_VALUE failed", __FUNCTION__ );
+            return UNMATCHED_KEY_OR_INDEX;
+        }
+        if ( ( timestamp = getSqlResultByInx( gen_out, COL_META_RESC_ATTR_UNITS ) ) == nullptr ) {
+            rodsLog( LOG_ERROR, "%s: getSqlResultByInx for COL_META_RESC_ATTR_UNITS failed", __FUNCTION__ );
+            return UNMATCHED_KEY_OR_INDEX;
+        }
+        std::stringstream msg;
+        msg << "A rebalance_operation on resource [";
+        msg << _resource_name.c_str();
+        msg << "] is still active (or stale) [";
+        msg << &hostname_and_pid->value[0];
+        msg << "] [";
+        msg << &timestamp->value[0];
+        msg << "]";
+        rodsLog( LOG_ERROR, "%s: %s", __FUNCTION__, msg.str().c_str() );
+        addRErrorMsg( &_rsComm->rError, REBALANCE_ALREADY_ACTIVE_ON_RESOURCE, msg.str().c_str() );
+        return REBALANCE_ALREADY_ACTIVE_ON_RESOURCE;
+    }
+    freeGenQueryOut( &gen_out );
+    clearGenQueryInp( &gen_inp );
+    return 0;
+}
+
+int _set_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    modAVUMetadataInp_t modAVUMetadataInp{};
+    irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
+        free( modAVUMetadataInp.arg0 );
+        free( modAVUMetadataInp.arg1 );
+        free( modAVUMetadataInp.arg2 );
+        free( modAVUMetadataInp.arg3 );
+        free( modAVUMetadataInp.arg4 );
+        free( modAVUMetadataInp.arg5 );
+    }};
+    // get hostname
+    char hostname[MAX_NAME_LEN];
+    gethostname(hostname, MAX_NAME_LEN);
+    // get PID
+    int pid = getpid();
+    // get timestamp in defined format
+    const boost::posix_time::ptime timeUTC = boost::posix_time::second_clock::universal_time();
+    std::stringstream stream;
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet();
+    facet->format("%Y%m%dT%H%M%SZ");
+    stream.imbue(std::locale(std::locale::classic(), facet));
+    stream << timeUTC;
+    // add AVU to resource
+    modAVUMetadataInp.arg0 = strdup( "set" );
+    modAVUMetadataInp.arg1 = strdup( "-R" );
+    modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
+    modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
+    std::string value = std::string(hostname) + std::string(":") + std::to_string(pid);
+    modAVUMetadataInp.arg4 = strdup( value.c_str() );
+    std::string unit = stream.str();
+    modAVUMetadataInp.arg5 = strdup( unit.c_str() );
+    // do it
+    return rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
+}
+
+int _check_and_set_rebalance_timestamp_avu_on_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+
+    int status = _check_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
+    if (status < 0 ){
+        return status;
+    }
+    status = _set_rebalance_timestamp_avu_on_resource(_rsComm, _resource_name);
+    if (status < 0 ){
+        return status;
+    }
+    return 0;
+}
+
+int _remove_rebalance_timestamp_avu_from_resource(
+    rsComm_t* _rsComm,
+    const std::string& _resource_name) {
+    // build genquery to find active or stale "rebalance operation" entries for this resource
+    genQueryOut_t* gen_out = nullptr;
+    char tmp_str[MAX_NAME_LEN];
+    genQueryInp_t gen_inp{};
+
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", _resource_name.c_str() );
+    addInxVal( &gen_inp.sqlCondInp, COL_R_RESC_NAME, tmp_str );
+    snprintf( tmp_str, MAX_NAME_LEN, "='rebalance_operation'" );
+    addInxVal( &gen_inp.sqlCondInp, COL_META_RESC_ATTR_NAME, tmp_str );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_VALUE, 1 );
+    addInxIval( &gen_inp.selectInp, COL_META_RESC_ATTR_UNITS, 1 );
+    gen_inp.maxRows = 1;
+    int status = rsGenQuery( _rsComm, &gen_inp, &gen_out );
+    // if existing entry found, remove it
+    if ( status >= 0 ) {
+        modAVUMetadataInp_t modAVUMetadataInp{};
+        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&] {
+            free( modAVUMetadataInp.arg0 );
+            free( modAVUMetadataInp.arg1 );
+            free( modAVUMetadataInp.arg2 );
+            free( modAVUMetadataInp.arg3 );
+            free( modAVUMetadataInp.arg4 );
+            free( modAVUMetadataInp.arg5 );
+        }};
+        // remove AVU from resource
+        modAVUMetadataInp.arg0 = strdup( "rmw" );
+        modAVUMetadataInp.arg1 = strdup( "-R" );
+        modAVUMetadataInp.arg2 = strdup( _resource_name.c_str() );
+        modAVUMetadataInp.arg3 = strdup( "rebalance_operation" );
+        modAVUMetadataInp.arg4 = strdup( "%" );
+        modAVUMetadataInp.arg5 = strdup( "%" );
+        // do it
+        return rsModAVUMetadata( _rsComm, &modAVUMetadataInp );
+    }
+    else {
+        return 0;
+    }
+}
 
 
 int
@@ -78,16 +231,118 @@ rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
     return status;
 }
 
-int
-_addChildToResource(
-    generalAdminInp_t* _generalAdminInp,
-    rsComm_t*          _rsComm ) {
-
+int _addChildToResource(generalAdminInp_t* _generalAdminInp, rsComm_t* _rsComm)
+{
     int result = 0;
     std::map<std::string, std::string> resc_input;
 
-    if ( strlen( _generalAdminInp->arg2 ) >= NAME_LEN ) {	// resource name
-        return SYS_INVALID_INPUT_PARAM;
+    {
+        const auto length_exceeded = [](const auto& _resource_name)
+        {
+            return std::strlen(_resource_name) >= NAME_LEN;
+        };
+
+        if (length_exceeded(_generalAdminInp->arg2) || length_exceeded(_generalAdminInp->arg3)) {
+            return CAT_RESOURCE_NAME_LENGTH_EXCEEDED;
+        }
+
+        // If the resource names are the same, then return an error.
+        if (std::strncmp(_generalAdminInp->arg2, _generalAdminInp->arg3, NAME_LEN) == 0) {
+            std::string msg = "Cannot add resource [";
+            msg += _generalAdminInp->arg3;
+            msg += "] as child to itself.";
+
+            // TODO Investigate how to detect the verbose flag.
+            // Add this message to the rError stack should happen automatically.
+            // The apiHandler does not know about the verbose flag for iadmin yet.
+            addRErrorMsg(&_rsComm->rError, HIERARCHY_ERROR, msg.c_str());
+            logger::agent::error(msg);
+
+            return HIERARCHY_ERROR;
+        }
+
+        // Case 1: Return CHILD_HAS_PARENT if the child has a parent resource.
+        // Case 2: Return HIERARCHY_ERROR if the child is a parent of the parent.
+
+        const auto is_root_resource = [](const auto& _resource_name) -> std::tuple<irods::error, std::optional<bool>>
+        {
+            std::string hier;
+            if (const auto err = resc_mgr.get_hier_to_root_for_resc(_resource_name, hier); !err.ok()) {
+                return {err, std::nullopt};
+            }
+
+            irods::hierarchy_parser hier_parser;
+            hier_parser.set_string(hier);
+
+            int levels = 0;
+            if (const auto err = hier_parser.num_levels(levels); !err.ok()) {
+                return {err, std::nullopt};
+            }
+
+            return {SUCCESS(), 1 == levels};
+        };
+
+        // Return an error if the child resource already has a parent.
+        if (auto [err, result] = is_root_resource(_generalAdminInp->arg3); err.ok()) {
+            if (result && !*result) {
+                std::string msg = "Child resource [";
+                msg += _generalAdminInp->arg3;
+                msg += "] already has a parent resource.";
+
+                addRErrorMsg(&_rsComm->rError, CHILD_HAS_PARENT, msg.c_str());
+                logger::agent::error(msg);
+
+                return CHILD_HAS_PARENT;
+            }
+        }
+        // The resource manager returns a different error code when a resource doesn't exist.
+        // If "SYS_RESC_DOES_NOT_EXIST" is returned, make sure to translate it to the
+        // appropriate error code to maintain backwards compatibility.
+        else if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
+            addRErrorMsg(&_rsComm->rError, CHILD_NOT_FOUND, err.user_result().c_str());
+            logger::agent::error(err.result());
+            return CHILD_NOT_FOUND;
+        }
+        else {
+            addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
+            logger::agent::error(err.result());
+            return err.code();
+        }
+
+        std::string hier;
+        if (const auto err = resc_mgr.get_hier_to_root_for_resc(_generalAdminInp->arg2, hier); !err.ok()) {
+            // The resource manager returns a different error code when a resource doesn't exist.
+            // If "SYS_RESC_DOES_NOT_EXIST" is returned, make sure to translate it to the
+            // appropriate error code to maintain backwards compatibility.
+            if (err.code() == SYS_RESC_DOES_NOT_EXIST) {
+                addRErrorMsg(&_rsComm->rError, CAT_INVALID_RESOURCE, err.user_result().c_str());
+                logger::agent::error(err.result());
+                return CAT_INVALID_RESOURCE;
+            }
+
+            addRErrorMsg(&_rsComm->rError, err.code(), err.user_result().c_str());
+            logger::agent::error(err.result());
+            return err.code();
+        }
+
+        irods::hierarchy_parser hier_parser;
+        hier_parser.set_string(hier);
+
+        // Return an error if the child resource is an ancestor of the parent resource.
+        if (auto iter = std::find(std::begin(hier_parser), std::end(hier_parser), _generalAdminInp->arg3);
+            std::end(hier_parser) != iter)
+        {
+            std::string msg = "Cannot add ancestor resource [";
+            msg += _generalAdminInp->arg3;
+            msg += "] as child to descendant resource [";
+            msg += _generalAdminInp->arg2;
+            msg += "].";
+
+            addRErrorMsg(&_rsComm->rError, HIERARCHY_ERROR, msg.c_str());
+            logger::agent::error(msg);
+
+            return HIERARCHY_ERROR;
+        }
     }
 
     resc_input[irods::RESOURCE_NAME] = _generalAdminInp->arg2;
@@ -265,7 +520,7 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
+        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPreProcForCreateResource error for %s, stat=%d",
                  resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
@@ -281,7 +536,7 @@ _addResource(
         if ( _rei2.status < 0 ) {
             result = _rei2.status;
         }
-        rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
+        rodsLog( LOG_ERROR, "rsGeneralAdmin: acPostProcForCreateResource error for %s, stat=%d",
                  resc_input[irods::RESOURCE_NAME].c_str(), result );
     }
 
@@ -429,7 +684,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForCreateToken error for %s.%s=%s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForCreateToken error for %s.%s=%s, stat=%d",
                          args[0], args[1], args[2], i );
                 return i;
             }
@@ -447,7 +702,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForCreateToken error for %s.%s=%s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForCreateToken error for %s.%s=%s, stat=%d",
                              args[0], args[1], args[2], i );
                     return i;
                 }
@@ -483,7 +738,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyUser error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -498,7 +753,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyUser error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyUser error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -525,7 +780,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyUserGroup error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -540,7 +795,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyUserGroup error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -608,7 +863,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForModifyResource error for %s and option %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForModifyResource error for %s and option %s, stat=%d",
                          args[0], args[1], i );
                 return i;
             }
@@ -624,9 +879,13 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                 irods::error ret = resc_mgr.resolve( args[0], resc );
                 if ( !ret.ok() ) {
                     irods::log( PASSMSG( "failed to resolve resource", ret ) );
-                    status = -1;
+                    status = ret.code();
                 }
                 else {
+                    int visibility_status = _check_and_set_rebalance_timestamp_avu_on_resource(rsComm, args[0]);
+                    if (visibility_status < 0){
+                        return visibility_status;
+                    }
                     // =-=-=-=-=-=-=-
                     // call the rebalance operation on the resource
                     irods::file_object_ptr obj( new irods::file_object() );
@@ -635,6 +894,10 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         irods::log( PASSMSG( "failed to rebalance resource", ret ) );
                         status = ret.code();
 
+                    }
+                    visibility_status = _remove_rebalance_timestamp_avu_from_resource(rsComm, args[0]);
+                    if (visibility_status < 0){
+                        return visibility_status;
                     }
 
                 }
@@ -656,7 +919,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForModifyResource error for %s and option %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForModifyResource error for %s and option %s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }
@@ -758,7 +1021,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                     i = rei2.status;
                 }
                 rodsLog( LOG_ERROR,
-                         "rsGeneralAdmin:acPreProcForDeleteResource error for %s,stat=%d",
+                         "rsGeneralAdmin: acPreProcForDeleteResource error for %s, stat=%d",
                          resc_name.c_str(), i );
                 return i;
             }
@@ -771,7 +1034,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForDeleteResource error for %s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForDeleteResource error for %s, stat=%d",
                              resc_name.c_str(), i );
                     return i;
                 }
@@ -826,7 +1089,7 @@ _rsGeneralAdmin( rsComm_t *rsComm, generalAdminInp_t *generalAdminInp ) {
                         i = rei2.status;
                     }
                     rodsLog( LOG_ERROR,
-                             "rsGeneralAdmin:acPostProcForDeleteToken error for %s.%s,stat=%d",
+                             "rsGeneralAdmin: acPostProcForDeleteToken error for %s.%s, stat=%d",
                              args[0], args[1], i );
                     return i;
                 }

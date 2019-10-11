@@ -28,6 +28,18 @@ acAclPolicy {
 }
 '''
 
+#===== Test_AllRules =====
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_AllRules']['test_msiTarFileExtract_big_file__issue_4118'] = '''
+myTestRule {{
+    msiTarFileExtract(*File,*Coll,*Resc,*Status);
+    writeLine("stdout","Extract files from a tar file *File into collection *Coll on resource *Resc");
+}}
+INPUT *File="{logical_path_to_tar_file}", *Coll="{logical_path_to_untar_coll}", *Resc="demoResc"
+OUTPUT ruleExecOut
+'''
+
 #===== Test_ICommands_File_Operations =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ICommands_File_Operations'] = {}
@@ -139,6 +151,14 @@ rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Eng
 acSetNumThreads() {
     writeLine("serverLog", "test_rule_engine_2309: get: acSetNumThreads oprType [$oprType]");
 }
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_msiSegFault'] = '''
+test_msiSegFault {{
+    writeLine("stdout", "We are about to segfault...");
+    msiSegFault();
+    writeLine("stdout", "You should never see this line.");
+}}
+OUTPUT ruleExecOut
 '''
 
 #===== Test_Quotas =====
@@ -371,6 +391,181 @@ INPUT *arg1="abc", *arg2="def", *arg3="ghi"
 OUTPUT ruleExecOut
 '''
 
+#===== Test_Remote_Exec =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_no_writeline'] = '''
+test_remote_no_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        *a = "remote";
+    }}
+    writeLine("stdout", "a=*a");
+}}
+INPUT *a="input"
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_in_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+            writeLine("stdout", "Remote in remote writeLine");
+        }}
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_remote_in_delay_writeline'] = '''
+test_remote_writeLine {{
+    delay("<PLUSET>1s</PLUSET>") {{
+        remote("{host}", "<ZONE>{zone}</ZONE>") {{
+            writeLine("serverLog", "Remote in delay writeLine");
+        }}
+        writeLine("serverLog", "Delay writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Remote_Exec']['test_delay_in_remote_writeline'] = '''
+test_remote_writeLine {{
+    remote("{host}", "<ZONE>{zone}</ZONE>") {{
+        delay("<PLUSET>1s</PLUSET>") {{
+            writeLine("serverLog", "Delay in remote writeLine");
+        }}
+        writeLine("stdout", "Remote writeLine");
+    }}
+}}
+INPUT null
+OUTPUT ruleExecOut
+'''
+
+#===== Test_Delay_Queue =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_batch_delay_processing__3941'] = '''
+test_batch_delay_processing {{
+    for(*i = 0; *i < {expected_count}; *i = *i + 1) {{
+        delay("<PLUSET>0.1s</PLUSET>") {{
+            writeLine("serverLog", "delay *i");
+        }}
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_block_with_output_param__3906'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "delayed rule executed");
+    }}
+    *status = "rule queued";
+}}
+INPUT null
+OUTPUT *status
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_with_long_job'] = '''
+test_delay_queue_with_long_job {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "Sleeping...");
+        msiSleep("{long_job_run_time}", "0");
+        writeLine("serverLog", "Waking!");
+    }}
+    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+        delay("<PLUSET>{sooner_delay}s</PLUSET>") {{
+            writeLine("serverLog", "sooner: *i");
+        }}
+    }}
+    for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
+        delay("<PLUSET>{later_delay}s</PLUSET>") {{
+            writeLine("serverLog", "later: *i");
+        }}
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_connection_refresh'] = '''
+test_delay_queue_with_long_job {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "sleep 1...");
+        msiSleep("{sleep_time}", "0");
+        writeLine("serverLog", "wakeup 1!");
+    }}
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "sleep 2...");
+        msiSleep("{sleep_time}", "0");
+        writeLine("serverLog", "wakeup 2!");
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_failed_delay_job'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "We are about to fail...");
+        msiGoodFailure();
+        writeLine("serverLog", "You should never see this line.");
+    }}
+    writeLine("stdout", "rule queued");
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_sigpipe_in_delay_server'] = '''
+test_sigpipe_in_delay_server {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "We are about to segfault...");
+        msiSegFault();
+        writeLine("serverLog", "You should never see this line.");
+    }}
+    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+        writeLine("serverLog", "Follow-up rule executed later!");
+    }}
+    writeLine("stdout", "rule queued");
+}}
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_exception_in_delay_server'] = '''
+test_exception_in_delay_server {{
+    delay("<PLUSET>0.1s</PLUSET>") {{
+        writeLine("serverLog", "Sleeping now...");
+        msiSleep("{sleep_time}", "0");
+        msiSegFault();
+    }}
+    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+        writeLine("serverLog", "Follow-up rule executed later!");
+    }}
+}}
+OUTPUT ruleExecOut
+'''
+
+#===== Test_Execution_Frequency =====
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency']['test_repeat_n_times'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s REPEAT {repeat_n} TIMES</EF>") {{
+        writeLine("serverLog", "{repeat_string}");
+    }}
+}}
+INPUT null
+OUTPUT *status
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Execution_Frequency']['test_double_n_times'] = '''
+test_delay_with_output_param {{
+    delay("<PLUSET>{repeat_delay}s</PLUSET><EF>{repeat_delay}s DOUBLE {repeat_n} TIMES</EF>") {{
+        writeLine("serverLog", "{repeat_string}");
+    }}
+}}
+INPUT null
+OUTPUT *status
+'''
+
 #==============================================================
 #========================== Python ============================
 #==============================================================
@@ -426,6 +621,15 @@ def acSetRescSchemeForCreate(rule_args, callback, rei):
 #===== Test_Native_Rule_Engine_Plugin  =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin'] = {}
+
+rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_remote_rule_execution'] = '''
+def main(rule_args, callback, rei):
+    rule_code = "def main(rule_args, callback, rei):\\n    print('XXXX - PREP REMOTE EXEC TEST')"
+    callback.py_remote('icat.example.org', '', rule_code, '')
+INPUT null
+OUTPUT ruleExecOut
+'''
+
 rule_texts['irods_rule_engine_plugin-python']['Test_Native_Rule_Engine_Plugin']['test_network_pep'] = '''
 def pep_network_agent_start_pre(rule_args, callback, rei):
     rule_args[2] = 'THIS IS AN OUT VARIABLE'
@@ -517,7 +721,7 @@ def acRescQuotaPolicy(rule_args, callback, rei):
 #===== Test_Resource_Compound =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound'] = {}
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRsync__2976'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjRsync(global_vars['*SourceFile'][1:-1], 'IRODS_TO_IRODS', global_vars['*Resource'][1:-1], global_vars['*DestFile'][1:-1], 0)
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
@@ -525,7 +729,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_ms
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}", *DestFile="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiCollRsync__2976'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiCollRsync__2976'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiCollRsync(global_vars['*SourceColl'][1:-1], global_vars['*DestColl'][1:-1], global_vars['*Resource'][1:-1], 'IRODS_TO_IRODS', 0)
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
@@ -533,7 +737,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_ms
 INPUT *SourceColl="{logical_path}", *Resource="{dest_resc}", *DestColl="{logical_path_rsync}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjUnlink__2983'] = '''def test_msiDataObjUnlink(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjUnlink__2983'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjUnlink('objPath=' + global_vars['*SourceFile'][1:-1] + '++++unreg=', 0)
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
@@ -541,7 +745,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_ms
 INPUT *SourceFile="{logical_path}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRepl_as_admin__2988'] = '''def test_msiDataObjRepl(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msiDataObjRepl_as_admin__2988'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjRepl(global_vars['*SourceFile'][1:-1], 'destRescName=' + global_vars['*Resource'][1:-1] + '++++irodsAdmin=', 0)
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
@@ -549,7 +753,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_ms
 INPUT *SourceFile="{logical_path}", *Resource="{dest_resc}"
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def test_msisync_to_archive(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Compound']['test_msisync_to_archive__2962'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msisync_to_archive(global_vars['*RescHier'][1:-1], global_vars['*PhysicalPath'][1:-1], global_vars['*LogicalPath'][1:-1])
     if not out_dict['status']:
         callback.writeLine('stdout', 'ERROR: ' + str(out_dict['code']))
@@ -585,7 +789,7 @@ def pep_resource_resolve_hierarchy_pre(rule_args, callback, rei):
 #===== Test_Resource_Session_Vars__3024 =====
 
 rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'] = {}
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPreprocForDataObjOpen'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjOpen("{target_obj}", 0)
     file_desc = out_dict['arguments'][1]
 
@@ -594,7 +798,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024'
 INPUT null
 OUTPUT ruleExecOut
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def test_{pep_name}(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Resource_Session_Vars__3024']['test_acPostProcForOpen'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjOpen("{target_obj}", 0)
     file_desc = out_dict['arguments'][1]
 
@@ -620,7 +824,7 @@ rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_client_serv
 def acPreConnect(rule_args, callback, rei):
     rule_args[0] = 'CS_NEG_REQUIRE'
 '''
-rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def test_msiDataObjWrite__2795(rule_args, callback, rei):
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_msiDataObjWrite__2795_1'] = '''def main(rule_args, callback, rei):
     out_dict = callback.msiDataObjCreate(global_vars['*TEST_ROOT'][1:-1] + '/test_file.txt', 'null', 0)
     file_desc = out_dict['arguments'][2]
 
@@ -665,6 +869,39 @@ def pep_resource_open_pre(rule_args, callback, rei):
     retStr = ''
     callback.msiGetSystemTime( retStr, '' )
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ImetaSet'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_ImetaSet']['test_mod_avu_msvc_with_rodsuser_invoking_rule_4521'] = '''
+test {
+    msiModAVUMetadata("-C", "*homeColln","set","a1","v1","x")
+    *a.a1 = "v1"
+    *a.a2 = "v2"
+    msiAssociateKeyValuePairsToObj(*a ,"*homeColln","-C" )
+    msiModAVUMetadata("-C", "*homeColln","add","a2","v2","u2")
+    printmeta("1",*b)
+    msiModAVUMetadata("-C", "*homeColln","set","a2","v2","u")
+    printmeta("2",*b)
+    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","")
+    printmeta("3",*b)
+    msiModAVUMetadata("-C", "*homeColln","rmw","%","%","%")
+    printmeta("4",*b)
+}
+printmeta(*id,*z) {
+    msiString2KeyValPair("",*z)
+    foreach (*x in select META_COLL_ATTR_NAME,
+                          META_COLL_ATTR_VALUE,
+                          META_COLL_ATTR_UNITS
+                    where META_COLL_ATTR_NAME like 'a_' and
+                          COLL_NAME like '*homeColln') {
+        *key = *x.META_COLL_ATTR_NAME ++ ":" ++ *x.META_COLL_ATTR_VALUE
+                                      ++ ":" ++ *x.META_COLL_ATTR_UNITS
+        *z.*key = "*id"
+        writeLine("stdout","(*id,*key)")
+    }
+}
+INPUT *homeColln="/$rodsZoneClient/home/$userNameClient"
+OUTPUT ruleExecOut
+'''
+
 # SKIP TEST test_rulebase_update__2585 FOR NON IRODS_RULE_LANGUAGE REPS
 #   Only applicable if using a rule cache
 #rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_rulebase_update__2585'] = '''

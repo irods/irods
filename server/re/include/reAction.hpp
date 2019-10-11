@@ -85,33 +85,6 @@ int recover_print_hello( ruleExecInfo_t *c );
 int recover_msiCreateUser( ruleExecInfo_t *rei );
 int recover_msiCreateCollByAdmin( msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei );
 
-int msiXmsgServerConnect( msParam_t* outConnParam, ruleExecInfo_t *rei );
-int msiXmsgCreateStream( msParam_t* inConnParam,
-                         msParam_t* inGgetXmsgTicketInpParam,
-                         msParam_t* outXmsgTicketInfoParam,
-                         ruleExecInfo_t *rei );
-int msiCreateXmsgInp( msParam_t* inMsgNumber,
-                      msParam_t* inMsgType,
-                      msParam_t* inNumberOfReceivers,
-                      msParam_t* inMsg,
-                      msParam_t* inNumberOfDeliverySites,
-                      msParam_t* inDeliveryAddressList,
-                      msParam_t* inDeliveryPortList,
-                      msParam_t* inMiscInfo,
-                      msParam_t* inXmsgTicketInfoParam,
-                      msParam_t* outSendXmsgInfoParam,
-                      ruleExecInfo_t *rei );
-int msiSendXmsg( msParam_t* inConnParam,
-                 msParam_t* inSendXmsgInpParam,
-                 ruleExecInfo_t *rei );
-int msiRcvXmsg( msParam_t* inConnParam,
-                msParam_t* inTicketNumber,
-                msParam_t* inMsgNumber,
-                msParam_t* outMsgType,
-                msParam_t* outMsg,
-                msParam_t* outSendUser,
-                ruleExecInfo_t *rei );
-int msiXmsgServerDisConnect( msParam_t* inConnParam, ruleExecInfo_t *rei );
 int msiString2KeyValPair( msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei );
 int msiStrArray2String( msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei );
 
@@ -127,18 +100,19 @@ int msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam,
                                    msParam_t* objParam,
                                    msParam_t* typeParam,
                                    ruleExecInfo_t *rei );
-
+int msiModAVUMetadata( msParam_t* _item_type,
+                       msParam_t* _item_name,
+                       msParam_t* _avu_op,
+                       msParam_t* _attr_name,
+                       msParam_t* _attr_val,
+                       msParam_t* _attr_unit,
+                       ruleExecInfo_t* _rei   );
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei );
 
 int
 msiGetContInxFromGenQueryOut( msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei );
 
-int writeXMsg( msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei );
-int readXMsg( msParam_t* inStreamId, msParam_t* inCondRead,
-              msParam_t *outMsgNum, msParam_t *outSeqNum,
-              msParam_t *outHdr, msParam_t *outMsg,
-              msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei );
 int msiSetReplComment( msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
                        msParam_t *inpParam4, ruleExecInfo_t *rei );
 int
@@ -257,12 +231,6 @@ namespace irods {
         table_[ "msiCheckHostAccessControl" ] = new irods::ms_table_entry( "msiCheckHostAccessControl", 0, std::function<int(ruleExecInfo_t*)>( msiCheckHostAccessControl ) );
         table_[ "msiGetIcatTime" ] = new irods::ms_table_entry( "msiGetIcatTime", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetIcatTime ) );
         table_[ "msiGetTaggedValueFromString" ] = new irods::ms_table_entry( "msiGetTaggedValueFromString", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetTaggedValueFromString ) );
-        table_[ "msiXmsgServerConnect" ] = new irods::ms_table_entry( "msiXmsgServerConnect", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiXmsgServerConnect ) );
-        table_[ "msiXmsgCreateStream" ] = new irods::ms_table_entry( "msiXmsgCreateStream", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiXmsgCreateStream ) );
-        table_[ "msiCreateXmsgInp" ] = new irods::ms_table_entry( "msiCreateXmsgInp", 10, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiCreateXmsgInp ) );
-        table_[ "msiSendXmsg" ] = new irods::ms_table_entry( "msiSendXmsg", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSendXmsg ) );
-        table_[ "msiRcvXmsg" ] = new irods::ms_table_entry( "msiRcvXmsg", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRcvXmsg ) );
-        table_[ "msiXmsgServerDisConnect" ] = new irods::ms_table_entry( "msiXmsgServerDisConnect", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiXmsgServerDisConnect ) );
         table_[ "msiString2KeyValPair" ] = new irods::ms_table_entry( "msiString2KeyValPair", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiString2KeyValPair ) );
         table_[ "msiStrArray2String" ] = new irods::ms_table_entry( "msiStrArray2String", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiStrArray2String ) );
         table_[ "msiString2StrArray" ] = new irods::ms_table_entry( "msiString2StrArray", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiString2StrArray ) );
@@ -272,6 +240,7 @@ namespace irods {
         table_[ "msiAclPolicy" ] = new irods::ms_table_entry( "msiAclPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>(msiAclPolicy ) );
         table_[ "msiSetQuota" ] = new irods::ms_table_entry( "msiSetQuota", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>(msiSetQuota ) );
         table_[ "msiRemoveKeyValuePairsFromObj" ] = new irods::ms_table_entry( "msiRemoveKeyValuePairsFromObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiRemoveKeyValuePairsFromObj ) );
+        table_[ "msiModAVUMetadata" ] = new irods::ms_table_entry( "msiModAVUMetadata", 6, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiModAVUMetadata ) );
         table_[ "msiSetReServerNumProc" ] = new irods::ms_table_entry( "msiSetReServerNumProc", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetReServerNumProc ) );
         table_[ "msiPrintGenQueryInp" ] = new irods::ms_table_entry( "msiPrintGenQueryInp", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiPrintGenQueryInp ) );
         table_[ "msiTarFileExtract" ] = new irods::ms_table_entry( "msiTarFileExtract", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiTarFileExtract ) );
@@ -283,8 +252,6 @@ namespace irods {
         table_[ "msiGetContInxFromGenQueryOut" ] = new irods::ms_table_entry( "msiGetContInxFromGenQueryOut", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetContInxFromGenQueryOut ) );
         table_[ "msiSetACL" ] = new irods::ms_table_entry( "msiSetACL", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetACL ) );
         table_[ "msiSetRescQuotaPolicy" ] = new irods::ms_table_entry( "msiSetRescQuotaPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetRescQuotaPolicy ) );
-        table_[ "writeXMsg" ] = new irods::ms_table_entry( "writeXMsg", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( writeXMsg ) );
-        table_[ "readXMsg" ] = new irods::ms_table_entry( "readXMsg", 8, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( readXMsg ) );
         table_[ "msiSetReplComment" ] = new irods::ms_table_entry( "msiSetReplComment", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetReplComment ) );
         table_[ "msiSetBulkPutPostProcPolicy" ] = new irods::ms_table_entry( "msiSetBulkPutPostProcPolicy", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiSetBulkPutPostProcPolicy ) );
         table_[ "msiCutBufferInHalf" ] = new irods::ms_table_entry( "msiCutBufferInHalf", 1, std::function<int(msParam_t*,ruleExecInfo_t*)>( msiCutBufferInHalf ) );

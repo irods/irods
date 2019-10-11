@@ -827,11 +827,19 @@ syncDataObjPhyPathS( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjInp_t myDdataObjInp;
         memset( &myDdataObjInp, 0, sizeof( myDdataObjInp ) );
         rstrcpy( myDdataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
-        getFilePathName( rsComm, dataObjInfo, &myDdataObjInp );
+        status = getFilePathName(rsComm, dataObjInfo, &myDdataObjInp);
     }
     else {
-        getFilePathName( rsComm, dataObjInfo, dataObjInp );
+        status = getFilePathName(rsComm, dataObjInfo, dataObjInp);
     }
+
+    if (status < 0) { 
+        const auto err{ERROR(status,
+                             (boost::format("getFilePathName err for [%s]") %
+                              dataObjInfo->objPath).str().c_str())};
+        irods::log(err);
+        return err.code();
+    }   
 
     if ( strcmp( fileRenameInp.oldFileName, dataObjInfo->filePath ) == 0 ) {
         return 0;
@@ -1320,11 +1328,9 @@ rodsLong_t
 getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
 
 {
-    static char fname[] = "getFileMetadataFromVault";
     rodsStat_t *myStat = NULL;
     int status;
     rodsLong_t mysize;
-    char name_buf[NAME_LEN];
     char sstr_buf[SHORT_STR_LEN];
     char time_buf[TIME_LEN];
 
@@ -1341,24 +1347,6 @@ getFileMetadataFromVault( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo )
         free( myStat );
         return ( rodsLong_t ) SYS_PATH_IS_NOT_A_FILE;
     }
-
-    status = getUnixUsername( myStat->st_uid, name_buf, NAME_LEN );
-    if ( status ) {
-        rodsLog( LOG_ERROR, "%s: could not retrieve username for uid %d",
-                 fname, myStat->st_uid );
-        free( myStat );
-        return status;
-    }
-    addKeyVal( &dataObjInfo->condInput, FILE_OWNER_KW, name_buf );
-
-    status = getUnixGroupname( myStat->st_gid, name_buf, NAME_LEN );
-    if ( status ) {
-        rodsLog( LOG_ERROR, "%s: could not retrieve groupname for gid %d",
-                 fname, myStat->st_gid );
-        free( myStat );
-        return status;
-    }
-    addKeyVal( &dataObjInfo->condInput, FILE_GROUP_KW, name_buf );
 
     snprintf( sstr_buf, SHORT_STR_LEN, "%u", myStat->st_uid );
     addKeyVal( &dataObjInfo->condInput, FILE_UID_KW, sstr_buf );

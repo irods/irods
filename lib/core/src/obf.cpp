@@ -206,6 +206,7 @@ obfGetPw( char *pw ) {
 
 /*
  remove the password file
+ opt: if zero, prompt before removing
  opt: if non-zero, don't ask and don't print error;just remove it if it exists.
 */
 int
@@ -224,7 +225,7 @@ obfRmPw( int opt ) {
         return AUTH_FILE_DOES_NOT_EXIST;
     }
     if ( opt == 0 ) {
-        printf( "Remove %s?:", fileName );
+        printf( "Remove %s?: ", fileName );
         const char *fgets_ret = fgets( inbuf, MAX_NAME_LEN, stdin );
         if ( fgets_ret == NULL || strlen( inbuf ) < 1 || inbuf[0] != 'y' ) {
             return 0;
@@ -331,7 +332,7 @@ obfSavePw( int promptOpt, int fileOpt, int printOpt, const char *pwArg ) {
     if ( i < 1 ) {
         return NO_PASSWORD_ENTERED;
     }
-    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 2 ) {
+    if ( strlen( inbuf ) > MAX_PASSWORD_LEN - 8 ) {
         return PASSWORD_EXCEEDS_MAX_SIZE;
     }
     if ( inbuf[i - 1] == '\n' ) {

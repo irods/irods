@@ -29,6 +29,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_resource_manager.hpp"
 #include "irods_virtual_path.hpp"
+#include "irods_rs_comm_query.hpp"
 #include "modAccessControl.h"
 #include "checksum.hpp"
 
@@ -900,21 +901,6 @@ static int _delColl( rsComm_t *rsComm, collInfo_t *collInfo ) {
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( collIdNum );
 
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_COLL,
-                        collIdNum,
-                        rsComm->clientUser.userName,
-                        rsComm->clientUser.rodsZone,
-                        collInfo->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModColl cmlAudit3 failure %d",
-                 status );
-        _rollback( "_delColl" );
-        return status;
-    }
-
     return status;
 
 } // _delColl
@@ -1437,25 +1423,6 @@ int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, 
         return status;
     }
 
-    char auditStr[30];
-    snprintf( auditStr, sizeof( auditStr ), "inheritance %srecursive %s",
-              recursiveFlag ? "" : "non-",
-              newValue );
-
-    /* Audit */
-    status = cmlAudit5( AU_MOD_ACCESS_CONTROL_COLL,
-                        collIdStr,
-                        "0",
-                        auditStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "_modInheritance cmlAudit5 failure %d",
-                 status );
-        _rollback( "_modInheritance" );
-        return status;
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     return status;
 }
@@ -1471,7 +1438,7 @@ int _modInheritance( int inheritFlag, int recursiveFlag, const char *collIdStr, 
 int setOverQuota( rsComm_t *rsComm ) {
     int status;
     int rowsFound;
-    int statementNum;
+    int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     char myTime[50];
 
     /* For each defined group limit (if any), get a total usage on that
@@ -1558,6 +1525,8 @@ int setOverQuota( rsComm_t *rsComm ) {
         }
     }
 
+    cmlFreeStatement(statementNum, &icss);
+
     /* Handle group quotas on resources */
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "setOverQuota SQL 5" );
@@ -1588,6 +1557,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
+            cmlFreeStatement(statementNum, &icss);
             return status2;
         }
     }
@@ -1595,8 +1565,11 @@ int setOverQuota( rsComm_t *rsComm ) {
         status = 0;
     }
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return status;
     }
+
+    cmlFreeStatement(statementNum, &icss);
 
     /* Handle group quotas on total usage */
 #if ORA_ICAT
@@ -1645,6 +1618,7 @@ int setOverQuota( rsComm_t *rsComm ) {
             status2 = 0;
         }
         if ( status2 != 0 ) {
+            cmlFreeStatement(statementNum, &icss);
             return status2;
         }
     }
@@ -1652,6 +1626,7 @@ int setOverQuota( rsComm_t *rsComm ) {
         status = 0;
     }
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return status;
     }
 
@@ -1660,6 +1635,7 @@ int setOverQuota( rsComm_t *rsComm ) {
        for each user into R_QUOTA_MAIN.  For now tho, this is not done and
        perhaps shouldn't be, to keep it a little less complicated. */
 
+    cmlFreeStatement(statementNum, &icss);
     return status;
 }
 
@@ -2685,6 +2661,10 @@ irods::error db_reg_data_obj_op(
     snprintf( dataSizeNum, MAX_NAME_LEN, "%lld", _data_obj_info->dataSize );
     getNowStr( myTime );
 
+    if (0 == strcmp(_data_obj_info->dataModify, "")) {
+        strcpy(_data_obj_info->dataModify, myTime);
+    }
+
     std::string resc_id_str = boost::lexical_cast<std::string>(_data_obj_info->rescId);
     cllBindVars[0] = dataIdNum;
     cllBindVars[1] = collIdNum;
@@ -2701,7 +2681,7 @@ irods::error db_reg_data_obj_op(
     cllBindVars[12] = _data_obj_info->chksum;
     cllBindVars[13] = _data_obj_info->dataMode;
     cllBindVars[14] = myTime;
-    cllBindVars[15] = myTime;
+    cllBindVars[15] = _data_obj_info->dataModify;
     cllBindVars[16] = data_expiry_ts;
     cllBindVars[17] = "EMPTY_RESC_NAME";
     cllBindVars[18] = "EMPTY_RESC_HIER";
@@ -2773,18 +2753,6 @@ irods::error db_reg_data_obj_op(
             return ERROR( status, "cmlExecuteNoAnswerSql insert access failure" );
         }
     }
-
-    status = cmlAudit3( AU_REGISTER_DATA_OBJ, dataIdNum,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone, "", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegDataObj cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegDataObj" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
 
     if ( !( _data_obj_info->flags & NO_COMMIT_FLAG ) ) {
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -2861,7 +2829,7 @@ irods::error db_reg_replica_op(
     char tSQL[MAX_SQL_SIZE];
     char *cVal[30];
     int i;
-    int statementNumber;
+    int statementNumber = UNINITIALIZED_STATEMENT_NUMBER;
     int nextReplNum;
     char nextRepl[30];
     char theColls[] = "data_id, \
@@ -3044,17 +3012,6 @@ irods::error db_reg_replica_op(
     if ( status < 0 ) {
         rodsLog( LOG_NOTICE, "chlRegReplica cmlFreeStatement failure %d", status );
         return ERROR( status, "cmlFreeStatement failure" );
-    }
-
-    status = cmlAudit3( AU_REGISTER_DATA_REPLICA, objIdString,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone, nextRepl, &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegDataReplica cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegReplica" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -3308,27 +3265,6 @@ irods::error db_unreg_replica_op(
         }
     }
 
-    /* Audit */
-    if ( dataObjNumber[0] != '\0' ) {
-        status = cmlAudit3( AU_UNREGISTER_DATA_OBJ, dataObjNumber,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone, "", &icss );
-    }
-    else {
-        status = cmlAudit3( AU_UNREGISTER_DATA_OBJ, "0",
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            _data_obj_info->objPath, &icss );
-    }
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlUnregDataObj cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlUnregDataObj" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -3431,19 +3367,6 @@ irods::error db_reg_rule_exec_op(
         _rollback( "chlRegRuleExec" );
         return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure" );
 
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_REGISTER_DELAYED_RULE,  ruleExecIdNum,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _re_sub_inp->ruleName, &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegRuleExec cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegRuleExec" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -3561,20 +3484,6 @@ irods::error db_mod_rule_exec_op(
         return ERROR( status, "cmlExecuteNoAnswer(update) failure" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_MODIFY_DELAYED_RULE,  _re_id,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        "", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModRuleExec cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlModRuleExec" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -3667,19 +3576,6 @@ irods::error db_del_rule_exec_op(
                  status );
         _rollback( "chlDelRuleExec" );
         return ERROR( status, "delete failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_DELAYED_RULE,  _re_id,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        "", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelRuleExec cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelRuleExec" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -4023,19 +3919,6 @@ irods::error db_reg_resc_op(
         return ERROR( status, "cmlExectuteNoAnswerSql(insert) failure" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_REGISTER_RESOURCE,  idNum,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        resc_input[irods::RESOURCE_NAME].c_str(), &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegResc" );
-        return ERROR( status, "chlRegResc cmlAudit3 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -4173,7 +4056,6 @@ irods::error db_del_resc_op(
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
 
     int status;
-    char rescId[MAX_NAME_LEN];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlDelResc" );
@@ -4231,11 +4113,10 @@ irods::error db_del_resc_op(
         return PASS( ret );
     }
 
-    /* get rescId for possible audit call; won't be available after delete */
-    rescId[0] = '\0';
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlDelResc SQL 2 " );
     }
+    char rescId[MAX_NAME_LEN]{};
     {
         std::vector<std::string> bindVars;
         bindVars.push_back( _resc_name );
@@ -4288,21 +4169,6 @@ irods::error db_del_resc_op(
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( rescId );
 
-
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_RESOURCE,
-                        rescId,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _resc_name,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelResc cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelResc" );
-        return ERROR( status, "cmlAudi3 failure" );
-    }
 
     if ( _dry_run ) { // JMC
         _rollback( "chlDelResc" );
@@ -4436,7 +4302,6 @@ irods::error db_del_user_re_op(
     int status;
     char iValStr[200];
     char zoneToUse[MAX_NAME_LEN];
-    char userStr[200];
     char userName2[NAME_LEN];
     char zoneName[NAME_LEN];
 
@@ -4575,23 +4440,6 @@ irods::error db_del_user_re_op(
     /* Remove associated AVUs, if any */
     removeMetaMapAndAVU( iValStr );
 
-    /* Audit */
-    snprintf( userStr, sizeof userStr, "%s#%s",
-              userName2, zoneToUse );
-    status = cmlAudit3( AU_DELETE_USER_RE,
-                        iValStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        userStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelUserRE cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelUserRE" );
-        return ERROR( status, "chlDelUserRE cmlAudit3 failure" );
-    }
-
     return SUCCESS();
 
 } // db_del_user_re_op
@@ -4640,7 +4488,7 @@ irods::error db_reg_coll_by_admin_op(
     char currStr2[MAX_SQL_SIZE];
     int status;
     char tSQL[MAX_SQL_SIZE];
-    char userName2[NAME_LEN];
+    char userName[NAME_LEN];
     char zoneName[NAME_LEN];
 
     if ( logSQL != 0 ) {
@@ -4721,7 +4569,7 @@ irods::error db_reg_coll_by_admin_op(
     }
 
     /* Parse input name into user and zone */
-    status = validateAndParseUserName( _coll_info->collOwnerName, userName2, zoneName );
+    status = validateAndParseUserName( _coll_info->collOwnerName, userName, zoneName );
     if ( status ) {
         return ERROR( status, "Invalid username format" );
     }
@@ -4731,7 +4579,7 @@ irods::error db_reg_coll_by_admin_op(
 
     cllBindVars[cllBindVarCount++] = logicalParentDirName;
     cllBindVars[cllBindVarCount++] = _coll_info->collName;
-    cllBindVars[cllBindVarCount++] = userName2;
+    cllBindVars[cllBindVarCount++] = userName;
     if ( strlen( _coll_info->collOwnerZone ) > 0 ) {
         cllBindVars[cllBindVarCount++] = _coll_info->collOwnerZone;
     }
@@ -4769,7 +4617,7 @@ irods::error db_reg_coll_by_admin_op(
     cllCurrentValueString( "R_ObjectID", currStr, MAX_NAME_LEN );
     snprintf( currStr2, MAX_SQL_SIZE, " %s ", currStr );
 
-    cllBindVars[cllBindVarCount++] = userName2;
+    cllBindVars[cllBindVarCount++] = userName;
     cllBindVars[cllBindVarCount++] = zoneName;
     cllBindVars[cllBindVarCount++] = ACCESS_OWN;
     cllBindVars[cllBindVarCount++] = myTime;
@@ -4788,22 +4636,6 @@ irods::error db_reg_coll_by_admin_op(
                  status );
         _rollback( "chlRegCollByAdmin" );
         return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit4( AU_REGISTER_COLL_BY_ADMIN,
-                        currStr2,
-                        "",
-                        userName2,
-                        zoneName,
-                        _ctx.comm()->clientUser.userName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegCollByAdmin cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlRegCollByAdmin" );
-        return ERROR( status, "cmlAudit4 failure" );
     }
 
     return SUCCESS();
@@ -5019,22 +4851,6 @@ irods::error db_reg_coll_op(
         return ERROR( status, "cmlExecuteNoAnswerSql(insert access) failure" );
     }
 
-    /* Audit */
-    status = cmlAudit4( AU_REGISTER_COLL,
-                        currStr2,
-                        "",
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _coll_info->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegColl cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlRegColl" );
-        return ERROR( status, "cmlAudit4 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -5085,7 +4901,6 @@ irods::error db_mod_coll_op(
     rodsLong_t status;
     int count;
     rodsLong_t iVal;
-    char iValStr[60];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModColl" );
@@ -5107,17 +4922,30 @@ irods::error db_mod_coll_op(
             addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
             return ERROR( CAT_UNKNOWN_COLLECTION, "unknown collection" );
         }
+
         if ( iVal == CAT_NO_ACCESS_PERMISSION ) {
-            std::stringstream errMsg;
-            errMsg << "no permission to update collection '" << _coll_info->collName << "'";
-            addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
-            return  ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
+            // Allows elevation of privileges (e.g. irods_rule_engine_plugin-update_collection_mtime).
+            if (irods::is_privileged_client(*_ctx.comm())) {
+                iVal = 0;
+            }
+            else {
+                std::stringstream errMsg;
+                errMsg << "no permission to update collection '" << _coll_info->collName << "'";
+                addRErrorMsg( &_ctx.comm()->rError, 0, errMsg.str().c_str() );
+                return ERROR( CAT_NO_ACCESS_PERMISSION, "no permission" );
+            }
         }
-        return ERROR( iVal, "cmlCheckDir failed" );
+
+        // If client privileges are elevated, then iVal must be checked again because
+        // it could have been modified (e.g. irods_rule_engine_plugin-update_collection_mtime).
+        if (iVal < 0) {
+            return ERROR( iVal, "cmlCheckDir failed" );
+        }
     }
 
     std::string tSQL( "update R_COLL_MAIN set " );
     count = 0;
+
     if ( strlen( _coll_info->collType ) > 0 ) {
         if ( strcmp( _coll_info->collType, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5129,6 +4957,7 @@ irods::error db_mod_coll_op(
         tSQL += "coll_type=? ";
         count++;
     }
+
     if ( strlen( _coll_info->collInfo1 ) > 0 ) {
         if ( strcmp( _coll_info->collInfo1, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5143,6 +4972,7 @@ irods::error db_mod_coll_op(
         tSQL += "coll_info1=? ";
         count++;
     }
+
     if ( strlen( _coll_info->collInfo2 ) > 0 ) {
         if ( strcmp( _coll_info->collInfo2, "NULL_SPECIAL_VALUE" ) == 0 ) {
             /* A special value to indicate NULL */
@@ -5157,13 +4987,28 @@ irods::error db_mod_coll_op(
         tSQL += "coll_info2=? ";
         count++;
     }
+
+    if (strlen(_coll_info->collModify) > 0) {
+        cllBindVars[cllBindVarCount++] = _coll_info->collModify;
+
+        if (count > 0) {
+            tSQL += ',';
+        }
+
+        ++count;
+    }
+    else {
+        tSQL += ',';
+        getNowStr( myTime );
+        cllBindVars[cllBindVarCount++] = myTime;
+    }
+
     if ( count == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "count is 0" );
     }
-    getNowStr( myTime );
-    cllBindVars[cllBindVarCount++] = myTime;
+
     cllBindVars[cllBindVarCount++] = _coll_info->collName;
-    tSQL += ", modify_ts=? where coll_name=?";
+    tSQL += " modify_ts=? where coll_name=?";
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModColl SQL 1" );
@@ -5174,21 +5019,6 @@ irods::error db_mod_coll_op(
         rodsLog( LOG_NOTICE,
                  "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status );
         return ERROR( status, "cmlExecuteNoAnswerSQL(update) failure" );
-    }
-
-    /* Audit */
-    snprintf( iValStr, sizeof iValStr, "%lld", iVal );
-    status = cmlAudit3( AU_REGISTER_COLL,
-                        iValStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _coll_info->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModColl cmlAudit3 failure %d",
-                 status );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     return SUCCESS();
@@ -5295,19 +5125,6 @@ irods::error db_reg_zone_op(
         return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_REGISTER_ZONE,  "0",
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        "", &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegResc cmlAudit3 failure %d",
-                 status );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -5361,7 +5178,6 @@ irods::error db_mod_zone_op(
     int status, OK;
     char myTime[50];
     char zoneId[MAX_NAME_LEN];
-    char commentStr[200];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModZone" );
@@ -5479,21 +5295,6 @@ irods::error db_mod_zone_op(
     }
     if ( OK == 0 ) {
         return ERROR( CAT_INVALID_ARGUMENT, "invalid option" );
-    }
-
-    /* Audit */
-    snprintf( commentStr, sizeof commentStr, "%s %s", _option, _option_value );
-    status = cmlAudit3( AU_MOD_ZONE,
-                        zoneId,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        commentStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModZone cmlAudit3 failure %d",
-                 status );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -5671,7 +5472,6 @@ irods::error db_rename_local_zone_op(
     int status;
     char zoneId[MAX_NAME_LEN];
     char myTime[50];
-    char commentStr[200];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRenameLocalZone" );
@@ -5719,25 +5519,6 @@ irods::error db_rename_local_zone_op(
     }
 
     getNowStr( myTime );
-
-    /* Audit */
-    /* Do this first, before the userName-zone is made invalid;
-       it will be rolledback if an error occurs */
-
-    snprintf( commentStr, sizeof commentStr, "renamed local zone %s to %s",
-              _old_zone, _new_zone );
-    status = cmlAudit3( AU_MOD_ZONE,
-                        "0",
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        commentStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRenameLocalZone cmlAudit3 failure %d",
-                 status );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
 
     /* update coll_owner_zone in R_COLL_MAIN */
     cllBindVars[cllBindVarCount++] = _new_zone;
@@ -5935,21 +5716,6 @@ irods::error db_del_zone_op(
         return ERROR( status, "cmlExecuteNoAnswerSql delete failure" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_ZONE,
-                        "0",
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _zone_name,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelZone cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelZone" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -5992,7 +5758,7 @@ irods::error db_simple_query_op_vector(
     // extract the icss property
 //        icatSessionStruct icss;
 //        _ctx.prop_map().get< icatSessionStruct >( ICSS_PROP, icss );
-    int stmtNum, status, nCols, i, needToGet, didGet;
+    int stmtNum = UNINITIALIZED_STATEMENT_NUMBER, status, nCols, i, needToGet, didGet;
     int rowSize;
     int rows;
     int OK;
@@ -6151,6 +5917,7 @@ irods::error db_simple_query_op_vector(
                          "chlSimpleQuery cmlGetFirstRowFromSqlBV failure %d",
                          status );
             }
+            cmlFreeStatement(stmtNum, &icss);
             return ERROR( status, "cmlGetFirstRowFromSqlBV failure" );
         }
         didGet = 1;
@@ -6173,6 +5940,7 @@ irods::error db_simple_query_op_vector(
                     }
                     return CODE( 0 );
                 }
+                cmlFreeStatement(stmtNum, &icss);
                 return ERROR( status, "cmlGetNextRowFromStatement failed" );
             }
             if ( status < 0 ) {
@@ -6225,6 +5993,7 @@ irods::error db_simple_query_op_vector(
         }
     }
 
+    cmlFreeStatement(stmtNum, &icss);
     return SUCCESS();
 
 } // db_simple_query_op
@@ -6385,23 +6154,6 @@ irods::error db_del_coll_by_admin_op(
 
     snprintf( collIdNum, MAX_NAME_LEN, "%lld", iVal );
     removeMetaMapAndAVU( collIdNum );
-
-    /* Audit (before it's deleted) */
-    status = cmlAudit4( AU_DELETE_COLL_BY_ADMIN,
-                        "select coll_id from R_COLL_MAIN where coll_name=?",
-                        _coll_info->collName,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _coll_info->collName,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelCollByAdmin cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlDelCollByAdmin" );
-        return ERROR( status, "cmlAudit4 failure" );
-    }
-
 
     /* delete the row if it exists */
     cllBindVars[cllBindVarCount++] = _coll_info->collName;
@@ -7580,9 +7332,6 @@ irods::error db_mod_user_op(
     char myTime[50];
     rodsLong_t iVal;
 
-    int auditId;
-    char auditComment[110];
-    char auditUserName[110];
     int groupAdminSettingPassword; // JMC - backport 4772
 
     char userName2[NAME_LEN];
@@ -7640,9 +7389,6 @@ irods::error db_mod_user_op(
 
     getNowStr( myTime );
 
-    auditComment[0] = '\0';
-    snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
-
     status = validateAndParseUserName( _user_name, userName2, zoneName );
     if ( status ) {
         return ERROR( status, "Invalid username format" );
@@ -7665,8 +7411,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 2" );
         }
-        auditId = AU_MOD_USER_TYPE;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
     }
     if ( strcmp( _option, "zone" ) == 0 ||
             strcmp( _option, "zone_name" ) == 0 ) {
@@ -7678,9 +7422,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 3" );
         }
-        auditId = AU_MOD_USER_ZONE;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
-        snprintf( auditUserName, sizeof( auditUserName ), "%s", _user_name );
     }
     if ( strcmp( _option, "addAuth" ) == 0 ) {
         opType = 4;
@@ -7697,8 +7438,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 4" );
         }
-        auditId = AU_ADD_USER_AUTH_NAME;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
     }
     if ( strcmp( _option, "rmAuth" ) == 0 ) {
         rstrcpy( tSQL, form6, MAX_SQL_SIZE );
@@ -7708,9 +7447,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 5" );
         }
-        auditId = AU_DELETE_USER_AUTH_NAME;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
-
     }
 
     if ( strncmp( _option, "rmPamPw", 9 ) == 0 ) {
@@ -7722,8 +7458,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 6" );
         }
-        auditId = AU_MOD_USER_PASSWORD;
-        snprintf( auditComment, sizeof( auditComment ), "%s", "Deleted user iRODS-PAM password (if any)" );
     }
 
     if ( strcmp( _option, "info" ) == 0 ||
@@ -7737,8 +7471,6 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 6" );
         }
-        auditId = AU_MOD_USER_INFO;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
     }
     if ( strcmp( _option, "comment" ) == 0 ||
             strcmp( _option, "r_comment" ) == 0 ) {
@@ -7751,17 +7483,19 @@ irods::error db_mod_user_op(
         if ( logSQL != 0 ) {
             rodsLog( LOG_SQL, "chlModUser SQL 7" );
         }
-        auditId = AU_MOD_USER_COMMENT;
-        snprintf( auditComment, sizeof( auditComment ), "%s", _new_value );
     }
     if ( strcmp( _option, "password" ) == 0 ) {
         int i;
         char userIdStr[MAX_NAME_LEN];
         i = decodePw( _ctx.comm(), _new_value, decoded );
+        if (strlen(decoded) > MAX_PASSWORD_LEN - 8) {
+            return ERROR(PASSWORD_EXCEEDS_MAX_SIZE, "Password must be between 3 and 42 characters");
+        }
         int status2 = icatApplyRule( _ctx.comm(), ( char* )"acCheckPasswordStrength", decoded );
         if ( status2 == NO_RULE_OR_MSI_FUNCTION_FOUND_ERR ) {
             addRErrorMsg( &_ctx.comm()->rError, 0, "acCheckPasswordStrength rule not found" );
         }
+
 
         if ( status2 ) {
             return ERROR( status2, "icatApplyRule failed" );
@@ -7812,7 +7546,6 @@ irods::error db_mod_user_op(
                 rodsLog( LOG_SQL, "chlModUser SQL 10" );
             }
         }
-        auditId = AU_MOD_USER_PASSWORD;
     }
 
     if ( tSQL[0] == '\0' ) {
@@ -7873,16 +7606,6 @@ irods::error db_mod_user_op(
         return ERROR( status, "get user_id failed" );
     }
 
-    status = cmlAudit1( auditId, _ctx.comm()->clientUser.userName,
-                        ( char* )zone.c_str(), auditUserName, auditComment, &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModUser cmlAudit1 failure %d",
-                 status );
-        _rollback( "chlModUser" );
-        return ERROR( status, "cmlAudit1 failed" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -7938,7 +7661,6 @@ irods::error db_mod_group_op(
     char myTime[50];
     char userId[MAX_NAME_LEN];
     char groupId[MAX_NAME_LEN];
-    char commentStr[100];
     char zoneToUse[MAX_NAME_LEN];
 
     char userName2[NAME_LEN];
@@ -8085,22 +7807,6 @@ irods::error db_mod_group_op(
         return ERROR( CAT_INVALID_ARGUMENT, "invalid option" );
     }
 
-    /* Audit */
-    snprintf( commentStr, sizeof commentStr, "%s %s", _option, userId );
-    status = cmlAudit3( AU_MOD_GROUP,
-                        groupId,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        commentStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModGroup cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlModGroup" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -8156,7 +7862,6 @@ irods::error db_mod_resc_op(
     char rescId[MAX_NAME_LEN];
     char rescPath[MAX_NAME_LEN] = "";
     char rescPathMsg[MAX_NAME_LEN + 100];
-    char commentStr[200];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModResc" );
@@ -8527,22 +8232,6 @@ irods::error db_mod_resc_op(
         return ERROR( CAT_INVALID_ARGUMENT, "invalid option" );
     }
 
-    /* Audit */
-    snprintf( commentStr, sizeof commentStr, "%s %s", _option, _option_value );
-    status = cmlAudit3( AU_MOD_RESC,
-                        rescId,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        commentStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModResc cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlModResc" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -8819,22 +8508,6 @@ irods::error db_mod_resc_freespace_op(
         return ERROR( status, "update freespace error" );
     }
 
-    /* Audit */
-    status = cmlAudit4( AU_MOD_RESC_FREE_SPACE,
-                        "select resc_id from R_RESC_MAIN where resc_name=?",
-                        _resc_name,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        updateValueStr,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModRescFreeSpace cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlModRescFreeSpace" );
-        return ERROR( status, "cmlAudit4 failure" );
-    }
-
     return SUCCESS();
 
 } // db_mod_resc_freespace_op
@@ -8876,7 +8549,6 @@ irods::error db_reg_user_re_op(
     char myTime[50];
     int status;
     char seqStr[MAX_NAME_LEN];
-    char auditSQL[MAX_SQL_SIZE];
     char userZone[MAX_NAME_LEN];
     char zoneId[MAX_NAME_LEN];
 
@@ -9074,25 +8746,6 @@ irods::error db_reg_user_re_op(
         }
     }
 
-    /* Audit */
-    snprintf( auditSQL, MAX_SQL_SIZE - 1,
-              "select user_id from R_USER_MAIN where user_name=? and zone_name='%s'",
-              userZone );
-    status = cmlAudit4( AU_REGISTER_USER_RE,
-                        auditSQL,
-                        userName2,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        userZone,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegUserRE cmlAudit4 failure %d",
-                 status );
-        _rollback( "chlRegUserRE" );
-        return ERROR( status, "cmlAudit4 failure" );
-    }
-
     return CODE( status );
 
 } // db_reg_user_re_op
@@ -9266,21 +8919,6 @@ irods::error db_set_avu_metadata_op(
         return ERROR( status, "set avu failed" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_ADD_AVU_METADATA,
-                        objIdStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _type,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlSetAVUMetadata cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlSetAVUMetadata" );
-        return ERROR( status, "cmlAudit3 failed" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
         rodsLog( LOG_NOTICE,
@@ -9387,22 +9025,6 @@ irods::error db_add_avu_metadata_wild_op(
         _rollback( "chlAddAVUMetadataWild" );
         return ERROR( status, "insert failure" );
     }
-
-    /* Audit */
-    status = cmlAudit3( AU_ADD_AVU_WILD_METADATA,
-                        seqNumStr,  /* for WILD, record the AVU id */
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _name,       /* and the input wildcard path */
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlAddAVUMetadataWild cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlAddAVUMetadataWild" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
 
     /* Commit */
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -9718,21 +9340,6 @@ irods::error db_add_avu_metadata_op(
                  status );
         _rollback( "chlAddAVUMetadata" );
         return ERROR( status, "insert failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_ADD_AVU_METADATA,
-                        objIdStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _type,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlAddAVUMetadata cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlAddAVUMetadata" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -10118,24 +9725,6 @@ irods::error db_del_avu_metadata_op(
             return ERROR( status, "delete failure" );
         }
 
-        /* Audit */
-        status = cmlAudit3( AU_DELETE_AVU_METADATA,
-                            objIdStr,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            _type,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlDeleteAVUMetadata cmlAudit3 failure %d",
-                     status );
-            if ( _nocommit != 1 ) {
-                _rollback( "chlDeleteAVUMetadata" );
-            }
-
-            return ERROR( status, "cmlAudit3 failure" );
-        }
-
         if ( _nocommit != 1 ) {
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             if ( status != 0 ) {
@@ -10205,23 +9794,6 @@ irods::error db_del_avu_metadata_op(
             _rollback( "chlDeleteAVUMetadata" );
         }
         return ERROR( status, "delete failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_DELETE_AVU_METADATA,
-                        objIdStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _type,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDeleteAVUMetadata cmlAudit3 failure %d",
-                 status );
-        if ( _nocommit != 1 ) {
-            _rollback( "chlDeleteAVUMetadata" );
-        }
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     if ( _nocommit != 1 ) {
@@ -10313,21 +9885,6 @@ irods::error db_copy_avu_metadata_op(
                  status );
         _rollback( "chlCopyAVUMetadata" );
         return ERROR( status, "insert failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit3( AU_COPY_AVU_METADATA,
-                        objIdStr1,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        objIdStr2,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlCopyAVUMetadata cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlCopyAVUMetadata" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -10498,20 +10055,6 @@ irods::error db_mod_access_control_resc_op(
             _rollback( "chlModAccessControlResc" );
             return ERROR( status, "insert failure" );
         }
-    }
-
-    /* Audit */
-    status = cmlAudit5( AU_MOD_ACCESS_CONTROL_RESOURCE,
-                        rescIdStr,
-                        userIdStr,
-                        myAccessLev,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModAccessControlResc cmlAudit5 failure %d",
-                 status );
-        _rollback( "chlModAccessControlResc" );
-        return ERROR( status, "cmlAudit5 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -10817,20 +10360,6 @@ irods::error db_mod_access_control_op(
                 }
             }
 
-            /* Audit */
-            status = cmlAudit5( AU_MOD_ACCESS_CONTROL_OBJ,
-                                objIdStr,
-                                userIdStr,
-                                myAccessLev,
-                                &icss );
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlModAccessControl cmlAudit5 failure %d",
-                         status );
-                _rollback( "chlModAccessControl" );
-                return ERROR( status, "cmlAudit5 failure" );
-            }
-
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             return ERROR( status, "commit failiure" );
         }
@@ -10849,19 +10378,6 @@ irods::error db_mod_access_control_op(
             return ERROR( status, "delete failure" );
         }
         if ( rmFlag ) { /* just removing */
-            /* Audit */
-            int status = cmlAudit5( AU_MOD_ACCESS_CONTROL_COLL,
-                                    collIdStr,
-                                    userIdStr,
-                                    myAccessLev,
-                                    &icss );
-            if ( status != 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "chlModAccessControl cmlAudit5 failure %d",
-                         status );
-                _rollback( "chlModAccessControl" );
-                return ERROR( status, "cmlAudit5 failure" );
-            }
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             return ERROR( status, "commit failure" );
         }
@@ -10884,20 +10400,6 @@ irods::error db_mod_access_control_op(
             _rollback( "chlModAccessControl" );
             return ERROR( status, "insert failure" );
         }
-        /* Audit */
-        status = cmlAudit5( AU_MOD_ACCESS_CONTROL_COLL,
-                            collIdStr,
-                            userIdStr,
-                            myAccessLev,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModAccessControl cmlAudit5 failure %d",
-                     status );
-            _rollback( "chlModAccessControl" );
-            return ERROR( status, "cmlAudit5 failure" );
-        }
-
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
         return ERROR( status, "commit failure" );
     }
@@ -11038,21 +10540,6 @@ irods::error db_mod_access_control_op(
         return ERROR( status, "delete failure" );
     }
     if ( rmFlag ) { /* just removing */
-
-        /* Audit */
-        status = cmlAudit5( AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE,
-                            collIdStr,
-                            userIdStr,
-                            myAccessLev,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlModAccessControl cmlAudit5 failure %d",
-                     status );
-            _rollback( "chlModAccessControl" );
-            return ERROR( status, "cmlAudit5 failure" );
-        }
-
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
         return ERROR( status, "commit failure" );
     }
@@ -11119,20 +10606,6 @@ irods::error db_mod_access_control_op(
     if ( status != 0 ) {
         _rollback( "chlModAccessControl" );
         return ERROR( status, "insert failure" );
-    }
-
-    /* Audit */
-    status = cmlAudit5( AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE,
-                        collIdStr,
-                        userIdStr,
-                        myAccessLev,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlModAccessControl cmlAudit5 failure %d",
-                 status );
-        _rollback( "chlModAccessControl" );
-        return ERROR( status, "cmlAudit5 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -11285,21 +10758,6 @@ irods::error db_rename_object_op(
                      status );
             _rollback( "chlRenameObject" );
             return ERROR( status, "cmlExecuteNoAnswerSql update2 failure" );
-        }
-
-        /* Audit */
-        status = cmlAudit3( AU_RENAME_DATA_OBJ,
-                            objIdString,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            _new_name,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlRenameObject cmlAudit3 failure %d",
-                     status );
-            _rollback( "chlRenameObject" );
-            return ERROR( status, "cmlAudit3 failure" );
         }
 
         return CODE( status );
@@ -11455,21 +10913,6 @@ irods::error db_rename_object_op(
                      status );
             _rollback( "chlRenameObject" );
             return ERROR( status, "cmlExecuteNoAnswerSql update failure" );
-        }
-
-        /* Audit */
-        status = cmlAudit3( AU_RENAME_COLLECTION,
-                            objIdString,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            _new_name,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlRenameObject cmlAudit3 failure %d",
-                     status );
-            _rollback( "chlRenameObject" );
-            return ERROR( status, "cmlAudit3 failure" );
         }
 
         return CODE( status );
@@ -11701,21 +11144,6 @@ irods::error db_move_object_op(
             return ERROR( status, "cmlExecuteNoAnswerSql update2 failure" );
         }
 
-        /* Audit */
-        status = cmlAudit3( AU_MOVE_DATA_OBJ,
-                            objIdString,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            collIdString,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlMoveObject cmlAudit3 failure %d",
-                     status );
-            _rollback( "chlMoveObject" );
-            return ERROR( status, "cmlAudit3 failure" );
-        }
-
         return CODE( status );
     }
 
@@ -11875,21 +11303,6 @@ irods::error db_move_object_op(
                      status );
             _rollback( "chlMoveObject" );
             return ERROR( status, "cmlExecuteNoAnswerSql update failure" );
-        }
-
-        /* Audit */
-        status = cmlAudit3( AU_MOVE_COLL,
-                            objIdString,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone,
-                            targetCollName,
-                            &icss );
-        if ( status != 0 ) {
-            rodsLog( LOG_NOTICE,
-                     "chlMoveObject cmlAudit3 failure %d",
-                     status );
-            _rollback( "chlMoveObject" );
-            return ERROR( status, "cmlAudit3 failure" );
         }
 
         return CODE( status );
@@ -12070,21 +11483,6 @@ irods::error db_reg_token_op(
         return ERROR( status, "insert failure" );
     }
 
-    /* Audit */
-    status = cmlAudit3( AU_REG_TOKEN,
-                        seqNumStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _name,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegToken cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlRegToken" );
-        return ERROR( status, "cmlAudit3 failure" );
-    }
-
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status < 0 ) {
         return ERROR( status, "commit error" );
@@ -12124,7 +11522,6 @@ irods::error db_del_token_op(
     int status;
     rodsLong_t objId;
     char errMsg[205];
-    char objIdStr[60];
 
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlDelToken" );
@@ -12167,22 +11564,6 @@ irods::error db_del_token_op(
     if ( status != 0 ) {
         _rollback( "chlDelToken" );
         return ERROR( status, "delete failure" );
-    }
-
-    /* Audit */
-    snprintf( objIdStr, sizeof objIdStr, "%lld", objId );
-    status = cmlAudit3( AU_DEL_TOKEN,
-                        objIdStr,
-                        _ctx.comm()->clientUser.userName,
-                        _ctx.comm()->clientUser.rodsZone,
-                        _name,
-                        &icss );
-    if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlDelToken cmlAudit3 failure %d",
-                 status );
-        _rollback( "chlDelToken" );
-        return ERROR( status, "cmlAudit3 failure" );
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
@@ -12793,7 +12174,7 @@ irods::error db_check_quota_op(
        group per-resource, and group global.
     */
     int status;
-    int statementNum;
+    int statementNum = UNINITIALIZED_STATEMENT_NUMBER;
 
     char mySQL[] = "select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
 
@@ -12812,6 +12193,7 @@ irods::error db_check_quota_op(
         rodsLog( LOG_NOTICE,
                  "chlCheckQuota - CAT_SUCCESS_BUT_WITH_NO_INFO" );
         *_quota_status = QUOTA_UNRESTRICTED;
+        cmlFreeStatement(statementNum, &icss);
         return SUCCESS();
     }
 
@@ -12819,10 +12201,12 @@ irods::error db_check_quota_op(
         rodsLog( LOG_NOTICE,
                  "chlCheckQuota - CAT_NO_ROWS_FOUND" );
         *_quota_status = QUOTA_UNRESTRICTED;
+        cmlFreeStatement(statementNum, &icss);
         return SUCCESS();
     }
 
     if ( status != 0 ) {
+        cmlFreeStatement(statementNum, &icss);
         return ERROR( status, "check quota failed" );
     }
 
@@ -13820,7 +13204,7 @@ irods::error db_specific_query_op(
 
     char combinedSQL[MAX_SQL_SIZE];
 
-    int status, statementNum;
+    int status, statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     int numOfCols;
     int attriTextLen;
     int totalLen;
@@ -13898,6 +13282,7 @@ irods::error db_specific_query_op(
                          "chlSpecificQuery cmlGetFirstRowFromSql failure %d",
                          status );
             }
+            cmlFreeStatement(statementNum, &icss);
             return ERROR( status, "cmlGetFirstRowFromSql failure" );
         }
 
@@ -13930,6 +13315,7 @@ irods::error db_specific_query_op(
                 return SUCCESS();
             }
             if ( status < 0 ) {
+                cmlFreeStatement(statementNum, &icss);
                 return ERROR( status, "failed to get next row" );
             }
         }
@@ -13959,6 +13345,7 @@ irods::error db_specific_query_op(
             for ( j = 0; j < numOfCols; j++ ) {
                 tResult = ( char * ) malloc( totalLen );
                 if ( tResult == NULL ) {
+                    cmlFreeStatement(statementNum, &icss);
                     return ERROR( SYS_MALLOC_ERR, "malloc error" );
                 }
                 memset( tResult, 0, totalLen );
@@ -13986,6 +13373,7 @@ irods::error db_specific_query_op(
                 int k;
                 tResult = ( char * ) malloc( totalLen );
                 if ( tResult == NULL ) {
+                    cmlFreeStatement(statementNum, &icss);
                     return ERROR( SYS_MALLOC_ERR, "failed to allocate result" );
                 }
                 memset( tResult, 0, totalLen );
@@ -14073,11 +13461,13 @@ irods::error db_get_distinct_data_obj_count_on_resource_op(
                      &statement_num,
                      0, &icss );
     if ( status != 0 ) {
+        cmlFreeStatement(statement_num, &icss);
         return ERROR( status, "cmlGetFirstRowFromSql failed" );
     }
 
     ( *_count ) = atol( icss.stmtPtr[ statement_num ]->resultValue[0] );
 
+    cmlFreeStatement(statement_num, &icss);
     return SUCCESS();
 
 } // db_get_distinct_data_obj_count_on_resource_op
@@ -14165,6 +13555,7 @@ irods::error db_get_distinct_data_objs_missing_from_child_given_parent_op(
         }
 
         if ( status != 0 ) {
+            cmlFreeStatement(statement_num, &icss);
             return ERROR( status, "failed to get a row" );
         }
 
@@ -14183,6 +13574,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     rodsLong_t                  _count,
     size_t                      _child_index,
     const std::vector<leaf_bundle_t>* _bundles,
+    const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results ) {
 
     // =-=-=-=-=-=-=-
@@ -14198,6 +13590,12 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     if (_bundles->empty()) {
         return ERROR(SYS_INVALID_INPUT_PARAM, "no bundles");
     }
+    if (!_invocation_timestamp) {
+        return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "invocation timestamp is NULL");
+    }
+    if (_invocation_timestamp->empty()) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "invocation timestamp is empty");
+    }
 
     // capture list of child resc ids
     std::stringstream child_array_stream;
@@ -14206,7 +13604,7 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     }
     std::string child_array = child_array_stream.str();
     if (child_array.empty()) {
-        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf arry is empty");
+        return ERROR(SYS_INVALID_INPUT_PARAM, "leaf array is empty");
     }
     child_array.pop_back(); // trim last ','
 
@@ -14224,9 +13622,9 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
     not_child_array.pop_back(); // trim last ','
 
 #ifdef ORA_ICAT
-    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s))) where rownum <= %d") % not_child_array % child_array % _count).str();
+    const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #else
-    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) limit %d") % not_child_array % child_array % _count).str();
+    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s' limit %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #endif
 
     _results->reserve(_count);
@@ -14416,12 +13814,6 @@ irods::error db_mod_ticket_op(
             snprintf( mySessionTicket, sizeof( mySessionTicket ), "%s", _ticket_string );
             snprintf( mySessionClientAddr, sizeof( mySessionClientAddr ), "%s", _ctx.comm()->clientAddr );
         }
-        status = cmlAudit3( AU_USE_TICKET, "0",
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
-        if ( status != 0 ) {
-            return ERROR( status, "cmlAudit3 ticket string failed" );
-        }
         return SUCCESS();
     }
 
@@ -14513,18 +13905,6 @@ irods::error db_mod_ticket_op(
                      "chlModTicket cmlExecuteNoAnswerSql insert failure %d",
                      status );
             return ERROR( status, "insert failure" );
-        }
-        status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
-        if ( status != 0 ) {
-            return ERROR( status, "cmlAudit3 ticket string failed" );
-        }
-        status = cmlAudit3( AU_CREATE_TICKET, seqNumStr,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone, objIdStr, &icss ); /* target obj */
-        if ( status != 0 ) {
-            return ERROR( status, "cmlAudit3 target obj failed" );
         }
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
         if ( status < 0 ) {
@@ -14643,12 +14023,6 @@ irods::error db_mod_ticket_op(
                      "chlModTicket cmlExecuteNoAnswerSql delete 4 failure %d",
                      status );
         }
-        status = cmlAudit3( AU_DELETE_TICKET, ticketIdStr,
-                            _ctx.comm()->clientUser.userName,
-                            _ctx.comm()->clientUser.rodsZone, _ticket_string, &icss );
-        if ( status != 0 ) {
-            return ERROR( status, "cmlAudit3 ticket string failure" );
-        }
         status =  cmlExecuteNoAnswerSql( "commit", &icss );
         if ( status < 0 ) {
             return ERROR( status, "commit failed" );
@@ -14681,12 +14055,6 @@ irods::error db_mod_ticket_op(
                          status );
                 return ERROR( status, "update failure" );
             }
-            status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                _ctx.comm()->clientUser.userName,
-                                _ctx.comm()->clientUser.rodsZone, "uses", &icss );
-            if ( status != 0 ) {
-                return ERROR( status, "cmlAudit3 uses failed" );
-            }
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             if ( status < 0 ) {
                 return ERROR( status, "commit failed" );
@@ -14718,13 +14086,6 @@ irods::error db_mod_ticket_op(
                              status );
                     return ERROR( status, "update failure" );
                 }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "write file",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 write file failure" );
-                }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
@@ -14753,13 +14114,6 @@ irods::error db_mod_ticket_op(
                              "chlModTicket cmlExecuteNoAnswerSql update failure %d",
                              status );
                     return ERROR( status, "update failure" );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "write byte",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 write byte failed" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
@@ -14796,13 +14150,6 @@ irods::error db_mod_ticket_op(
                          status );
                 return ERROR( status, "update failure" );
             }
-            status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                _ctx.comm()->clientUser.userName,
-                                _ctx.comm()->clientUser.rodsZone, "expire",
-                                &icss );
-            if ( status != 0 ) {
-                return ERROR( status, "cmlAudit3 expire failed" );
-            }
             status =  cmlExecuteNoAnswerSql( "commit", &icss );
             if ( status < 0 ) {
                 return ERROR( status, "commit failed" );
@@ -14838,13 +14185,6 @@ irods::error db_mod_ticket_op(
                              status );
                     return ERROR( status, "insert host failure" );
                 }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "add host",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
-                }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
@@ -14877,13 +14217,6 @@ irods::error db_mod_ticket_op(
                              status );
                     return ERROR( status, "insert user failure" );
                 }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "add user",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
-                }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
@@ -14915,13 +14248,6 @@ irods::error db_mod_ticket_op(
                              "chlModTicket cmlExecuteNoAnswerSql insert user failure %d",
                              status );
                     return ERROR( status, "insert failed" );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "add group",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
@@ -14958,13 +14284,6 @@ irods::error db_mod_ticket_op(
                              status );
                     return ERROR( status, "delete failed" );
                 }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "remove host",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
-                }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
@@ -14998,13 +14317,6 @@ irods::error db_mod_ticket_op(
                              status );
                     return ERROR( status, "delete failed" );
                 }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "remove user",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
-                }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
                     return ERROR( status, "commit failed" );
@@ -15036,13 +14348,6 @@ irods::error db_mod_ticket_op(
                              "chlModTicket cmlExecuteNoAnswerSql delete group failure %d",
                              status );
                     return ERROR( status, "delete group failed" );
-                }
-                status = cmlAudit3( AU_MOD_TICKET, ticketIdStr,
-                                    _ctx.comm()->clientUser.userName,
-                                    _ctx.comm()->clientUser.rodsZone, "remove group",
-                                    &icss );
-                if ( status != 0 ) {
-                    return ERROR( status, "cmlAudit3 failed" );
                 }
                 status =  cmlExecuteNoAnswerSql( "commit", &icss );
                 if ( status < 0 ) {
@@ -15679,10 +14984,9 @@ irods::database* plugin_factory(
         DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
         function<error(plugin_context&,const string*, const string*, int, dist_child_result_t*)>(
             db_get_distinct_data_objs_missing_from_child_given_parent_op ) );
-
-    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*>(
+    pg->add_operation<rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*>(
         DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
-        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,dist_child_result_t*)>(
+        function<error(plugin_context&,rodsLong_t,size_t,const std::vector<leaf_bundle_t>*,const std::string*,dist_child_result_t*)>(
             db_get_repl_list_for_leaf_bundles_op));
     return pg;
 

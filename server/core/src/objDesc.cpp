@@ -156,6 +156,10 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
     keyValPair_t *condInput;
     char *tmpPtr;
 
+    // Initialize the bytesWritten to -1 rather than 0.  If this is negative then we
+    // know no bytes have been written.  This is so that zero length files can be handled
+    // similarly to non-zero length files.
+    L1desc[l1descInx].bytesWritten = -1;
 
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if ( dataObjInfo->rescHier[0] == '\0' && resc_hier ) {
@@ -170,6 +174,11 @@ fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
     }
     else {
         rstrcpy( L1desc[l1descInx].in_pdmo, "", MAX_NAME_LEN );
+    }
+
+    const auto open_type{getValByKey(condInput, OPEN_TYPE_KW)};
+    if (open_type) {
+        L1desc[l1descInx].openType = std::atoi(open_type);
     }
 
     if ( dataObjInp != NULL ) {

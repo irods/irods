@@ -18,6 +18,20 @@
     "default_hash_scheme": "SHA256",
     "environment_variables": {},
     "federation": [],
+    "log_level": {
+        "agent": "info",
+        "agent_factory": "info",
+        "api": "info",
+        "authentication": "info",
+        "database": "info",
+        "delay_server": "info",
+        "legacy": "info",
+        "microservice": "info",
+        "network": "info",
+        "resource": "info",
+        "rule_engine": "info",
+        "server": "info"
+    },
     "match_hash_policy": "compatible",
     "plugin_configuration": {
         "authentication" : {},
@@ -40,7 +54,7 @@
                         "regexes_for_supported_peps": [
                             "ac[^ ]*",
                             "msi[^ ]*",
-                            "[^ ]*pep_[^ ]*_(pre|post)"
+                            "[^ ]*pep_[^ ]*_(pre|post|except)"
                         ]
                 },
                 "shared_memory_instance" : "irods_rule_language_rule_engine"
@@ -59,6 +73,5 @@
     "server_control_plane_encryption_algorithm": "AES-256-CBC",
     "server_control_plane_encryption_num_hash_rounds": 16,
     "server_control_plane_timeout_milliseconds": 10000,
-    "xmsg_port": 1279,
     "zone_auth_scheme": "native"
 }

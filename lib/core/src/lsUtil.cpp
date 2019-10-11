@@ -5,6 +5,11 @@
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
 
+#include "filesystem.hpp"
+#include "irods_query.hpp"
+
+#include <boost/format.hpp>
+
 char zoneHint[MAX_NAME_LEN];
 
 int
@@ -17,60 +22,69 @@ lsUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 
     if ( myRodsArgs->ticket == True ) {
         if ( myRodsArgs->ticketString == NULL ) {
-            rodsLog( LOG_ERROR,
-                     "initCondForPut: NULL ticketString error" );
+            rodsLog( LOG_ERROR, "initCondForPut: NULL ticketString error" );
             return USER__NULL_INPUT_ERR;
         }
-        else {
-            setSessionTicket( conn, myRodsArgs->ticketString );
-        }
+
+        setSessionTicket( conn, myRodsArgs->ticketString );
     }
 
     genQueryInp_t genQueryInp;
     initCondForLs( &genQueryInp );
 
     int savedStatus = 0;
+
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
         int status = 0;
         rstrcpy( zoneHint, rodsPathInp->srcPath[i].outPath, MAX_NAME_LEN );
-        if ( rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T ||
-                rodsPathInp->srcPath[i].objState == UNKNOWN_ST ) {
-            status = getRodsObjType( conn, &rodsPathInp->srcPath[i] );
-            if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
-                if ( status == NOT_EXIST_ST ) {
-                    rodsLog( LOG_ERROR,
-                             "lsUtil: srcPath %s does not exist or user lacks access permission",
-                             rodsPathInp->srcPath[i].outPath );
-                }
-                savedStatus = USER_INPUT_PATH_ERR;
-                continue;
+
+        namespace fs = irods::experimental::filesystem;
+
+        auto* src_path = rodsPathInp->srcPath[i].outPath;
+        const auto object_status = fs::client::status(*conn, src_path);
+
+        if (!fs::client::exists(object_status)) {
+            rodsLog(LOG_ERROR, "lsUtil: srcPath %s does not exist or user lacks access permission", src_path);
+            savedStatus = USER_INPUT_PATH_ERR;
+            continue;
+        }
+
+        // Need to populate dataId in srcPath as it is needed for getting permissions info
+        char coll_name[MAX_NAME_LEN]{};
+        char data_name[MAX_NAME_LEN]{};
+        status = splitPathByKey(rodsPathInp->srcPath[i].outPath, coll_name, MAX_NAME_LEN, data_name, MAX_NAME_LEN, '/');
+        if (status < 0) {
+            return status;
+        }
+
+        const std::string query_str{(boost::format(
+            "select DATA_ID where DATA_NAME = '%s' and COLL_NAME = '%s'") % data_name % coll_name).str()};
+        irods::query qobj{conn, query_str};
+        if (qobj.size() > 0) {
+            if (const auto id = qobj.front()[0]; !id.empty()) {
+                rstrcpy(rodsPathInp->srcPath[i].dataId, id.c_str(), sizeof(rodsPathInp->srcPath[i].dataId));
             }
         }
 
-        if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
-            status = lsDataObjUtil( conn, &rodsPathInp->srcPath[i],
-                                    myRodsArgs, &genQueryInp );
+        if (fs::client::is_data_object(object_status)) {
+            status = lsDataObjUtil( conn, &rodsPathInp->srcPath[i], myRodsArgs, &genQueryInp );
         }
-        else if ( rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T ) {
-            status = lsCollUtil( conn, &rodsPathInp->srcPath[i],
-                                 myRodsEnv, myRodsArgs );
+        else if (fs::client::is_collection(object_status)) {
+            status = lsCollUtil( conn, &rodsPathInp->srcPath[i], myRodsEnv, myRodsArgs );
         }
         else {
             /* should not be here */
-            rodsLog( LOG_ERROR,
-                     "lsUtil: invalid ls objType %d for %s",
-                     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath );
+            rodsLog(LOG_ERROR, "lsUtil: invalid ls objType %d for %s", rodsPathInp->srcPath[i].objType, src_path);
             return USER_INPUT_PATH_ERR;
         }
+
         /* XXXX may need to return a global status */
-        if ( status < 0 && status != CAT_NO_ROWS_FOUND &&
-                status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-            rodsLogError( LOG_ERROR, status,
-                          "lsUtil: ls error for %s, status = %d",
-                          rodsPathInp->srcPath[i].outPath, status );
+        if ( status < 0 && status != CAT_NO_ROWS_FOUND && status != SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+            rodsLogError(LOG_ERROR, status, "lsUtil: ls error for %s, status = %d", src_path, status);
             savedStatus = status;
         }
     }
+
     return savedStatus;
 }
 
@@ -116,12 +130,7 @@ lsDataObjUtil( rcComm_t *conn, rodsPath_t *srcPath,
 
 int
 printLsStrShort( char *srcPath ) {
-    char srcElement[MAX_NAME_LEN];
-
-    getLastPathElement( srcPath, srcElement );
-
     printf( "  %s\n", srcPath );
-
     return 0;
 }
 
@@ -543,13 +552,11 @@ printCollCollEnt( collEnt_t *collEnt, int flags ) {
 int
 printSpecLsLong( char *objPath, char *ownerName, char *objSize,
                  char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs ) {
-    char srcElement[MAX_NAME_LEN];
     collEnt_t collEnt;
     int queryFlags;
 
     bzero( &collEnt, sizeof( collEnt ) );
 
-    getLastPathElement( objPath, srcElement );
     collEnt.dataName = objPath;
     collEnt.ownerName = ownerName;
     collEnt.dataSize = strtoll( objSize, 0, 0 );

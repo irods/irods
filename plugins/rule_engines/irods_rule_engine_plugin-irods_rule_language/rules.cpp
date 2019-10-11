@@ -613,13 +613,16 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
     int freeRei = 0;
+
     if ( rei == NULL ) {
         rei = ( ruleExecInfo_t * ) malloc( sizeof( ruleExecInfo_t ) );
         memset( rei, 0, sizeof( ruleExecInfo_t ) );
         freeRei = 1;
     }
+
     rei->status = 0;
     Env *env = defaultEnv( r );
+
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
     Res *res;
     rError_t errmsgBuf;
@@ -644,14 +647,19 @@ Res *parseAndComputeExpressionAdapter( char *inAction, msParamArray_t *inMsParam
         logErrMsg( &errmsgBuf, &rei->rsComm->rError );
         rei->status = RES_ERR_CODE( res );
     }
+
     freeRErrorContent( &errmsgBuf );
+
     if ( freeRei ) {
         free( rei );
     }
+
     if ( recclearDelayed ) {
         clearDelayed();
     }
+
     ruleEngineConfig.clearDelayed = recclearDelayed;
+
     return res;
 
 }

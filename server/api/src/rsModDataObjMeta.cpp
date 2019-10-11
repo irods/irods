@@ -14,6 +14,8 @@
 #include "irods_stacktrace.hpp"
 #include "irods_configuration_keywords.hpp"
 
+#include "boost/format.hpp"
+
 int _call_file_modified_for_modification(
     rsComm_t*         rsComm,
     modDataObjMeta_t* modDataObjMetaInp );
@@ -54,11 +56,19 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         }
     }
     else {
+        // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
+        addKeyVal( modDataObjMetaInp->regParam, IN_REPL_KW, "" );
         status = rcModDataObjMeta( rodsServerHost->conn, modDataObjMetaInp );
+        // Remove the keyword as we will want to replicate on this server (the consumer)
+        rmKeyVal(modDataObjMetaInp->regParam, IN_REPL_KW);
     }
 
     if ( status >= 0 ) {
-        status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+        const auto open_type = getValByKey(modDataObjMetaInp->regParam, OPEN_TYPE_KW);
+        if (!getValByKey(modDataObjMetaInp->regParam, IN_REPL_KW) && open_type &&
+            (OPEN_FOR_WRITE_TYPE == std::atoi(open_type) || CREATE_TYPE == std::atoi(open_type))) {
+            status = _call_file_modified_for_modification( rsComm, modDataObjMetaInp );
+        }
     }
 
     return status;
@@ -242,7 +252,11 @@ int _call_file_modified_for_modification(
             char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
             if ( pdmo_kw != NULL ) {
                 file_obj->in_pdmo( pdmo_kw );
+            }
 
+            const auto open_type{getValByKey(regParam, OPEN_TYPE_KW)};
+            if (open_type) {
+                addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
             }
 
             irods::error ret = fileModified( rsComm, file_obj );
@@ -262,34 +276,45 @@ int _call_file_modified_for_modification(
         freeAllDataObjInfo( dataObjInfoHead );
     }
     else {
-        irods::file_object_ptr file_obj(
-            new irods::file_object(
-                rsComm,
-                dataObjInfo ) );
+        // Construct file_obj twice because ctor gives some info that factory does not
+        irods::file_object_ptr file_obj(new irods::file_object(rsComm, dataObjInfo));
 
-        char* admin_kw = getValByKey( regParam, ADMIN_KW );
-        if ( admin_kw != NULL ) {
-            addKeyVal( (keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "" );
+        // Need to pass along admin keyword here to ensure replicas can be managed
+        dataObjInp_t dataObjInp{};
+        rstrcpy(dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        if (getValByKey(regParam, ADMIN_KW)) {
+            addKeyVal(&dataObjInp.condInput, ADMIN_KW, "");
         }
 
-        char* pdmo_kw = getValByKey( regParam, IN_PDMO_KW );
-        if ( pdmo_kw != NULL ) {
-            file_obj->in_pdmo( pdmo_kw );
+        // Use temporary as file_object_factory overwrites dataObjInfo pointer
+        dataObjInfo_t* tmpDataObjInfo{};
+        auto ret{file_object_factory(rsComm, &dataObjInp, file_obj, &tmpDataObjInfo)};
+        if (!ret.ok()) {
+            irods::log(ret);
+            return ret.code();
         }
-        irods::error ret = fileModified( rsComm, file_obj );
-        if ( !ret.ok() ) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to signal the resource that the data object \"";
-            msg << dataObjInfo->objPath;
-            msg << "\" was modified.";
-            ret = PASSMSG( msg.str(), ret );
-            irods::log( ret );
+        // Factory overwrites rescHier with the resource which holds replica 0 - put it back
+        file_obj->resc_hier(dataObjInfo->rescHier);
+
+        if (getValByKey(regParam, ADMIN_KW)) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "");
+        }
+        const auto pdmo_kw{getValByKey(regParam, IN_PDMO_KW)};
+        if (pdmo_kw) {
+            file_obj->in_pdmo(pdmo_kw);
+        }
+        const auto open_type{getValByKey(regParam, OPEN_TYPE_KW)};
+        if (open_type) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
+        }
+        ret = fileModified(rsComm, file_obj);
+        if (!ret.ok()) {
+            irods::log(PASSMSG((boost::format(
+                       "[%s] - Failed to signal the resource that the data object \"%s\"") %
+                       __FUNCTION__ % dataObjInfo->objPath).str(), ret));
             status = ret.code();
         }
-
     }
 
     return status;
-
 }

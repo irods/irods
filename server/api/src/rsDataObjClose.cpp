@@ -302,6 +302,9 @@ _rsDataObjClose(
     l1descInx = dataObjCloseInp->l1descInx;
     l3descInx = L1desc[l1descInx].l3descInx;
 
+    // Store openType in key/val in case a hop occurs
+    addKeyVal(&regParam, OPEN_TYPE_KW, std::to_string(L1desc[l1descInx].openType).c_str());
+
     if ( l3descInx > 2 ) {
         /* it could be -ive for parallel I/O */
         status = l3Close( rsComm, l1descInx );
@@ -362,7 +365,7 @@ _rsDataObjClose(
 
     /* note that bytesWritten only indicates whether the file has been written
      * to. Not necessarily the size of the file */
-    if ( L1desc[l1descInx].bytesWritten <= 0 &&
+    if ( L1desc[l1descInx].bytesWritten < 0 &&
             L1desc[l1descInx].oprType != REPLICATE_DEST &&
             L1desc[l1descInx].oprType != PHYMV_DEST &&
             L1desc[l1descInx].oprType != COPY_DEST ) {
@@ -580,6 +583,8 @@ _rsDataObjClose(
             if ( pdmo_kw ) {
                 addKeyVal( &regReplicaInp.condInput, IN_PDMO_KW, pdmo_kw );
             }
+            // Store openType in key/val in case a hop occurs
+            addKeyVal(&regReplicaInp.condInput, OPEN_TYPE_KW, std::to_string(L1desc[l1descInx].openType).c_str());
 
             status = rsRegReplica( rsComm, &regReplicaInp );
             clearKeyVal( &regReplicaInp.condInput );

@@ -43,6 +43,8 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#include "boost/lexical_cast.hpp"
+
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
@@ -270,7 +272,9 @@ irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
     rstrcpy( addr.hostAddr, location.c_str(), LONG_NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
 
-    if ( remoteFlag == LOCAL_HOST ) {
+    // We do not need to redirect if we do not need to stat the file which is to be registered
+    const auto size_kw{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
+    if ( size_kw || remoteFlag == LOCAL_HOST ) {
         irods::hierarchy_parser p;
         p.set_string(hier);
         std::string leaf_resc;
@@ -489,6 +493,11 @@ filePathRegRepl( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                            ADMIN_KW ) != NULL ) {
         addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
     }
+    // Data size can be passed via DATA_SIZE_KW to save a stat later
+    const auto data_size_str = getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW);
+    if (nullptr != data_size_str) {
+        addKeyVal(&regReplicaInp.condInput, DATA_SIZE_KW, data_size_str);
+    }
     status = rsRegReplica( rsComm, &regReplicaInp );
     clearKeyVal( &regReplicaInp.condInput );
     freeAllDataObjInfo( dataObjInfoHead );
@@ -520,7 +529,20 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
         irods::log(PASS(ret));
     }
 
-    if ( dataObjInfo.dataSize <= 0 &&
+    auto data_size_str{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
+    try {
+        if (data_size_str) {
+            dataObjInfo.dataSize = boost::lexical_cast<decltype(dataObjInfo.dataSize)>(data_size_str);
+        }
+    }
+    catch (boost::bad_lexical_cast&) {
+        rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
+        dataObjInfo.dataSize = 0;
+        data_size_str = nullptr;
+    }
+
+    if ( nullptr == data_size_str &&
+         dataObjInfo.dataSize <= 0 &&
             ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
             dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
         status = ( int ) dataObjInfo.dataSize;
@@ -529,6 +551,11 @@ filePathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, const char *_resc_na
                  dataObjInfo.objPath, status );
         clearKeyVal( &dataObjInfo.condInput );
         return status;
+    }
+
+    const auto data_modify_str{getValByKey(&phyPathRegInp->condInput, DATA_MODIFY_KW)};
+    if (NULL != data_modify_str) {
+        strcpy(dataObjInfo.dataModify, data_modify_str);
     }
 
     if ( ( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||

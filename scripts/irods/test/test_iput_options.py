@@ -2,6 +2,9 @@ import os
 import re
 import stat
 import sys
+import shutil
+import ustrings
+import commands
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -9,15 +12,19 @@ else:
     import unittest
 
 from .resource_suite import ResourceBase
+from ..configuration import IrodsConfig
 from .. import lib
-from .. import test
+from . import session
 
 class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
     def setUp(self):
+        self.new_paths = []
         super(Test_iPut_Options, self).setUp()
 
     def tearDown(self):
+        for abs_path in self.new_paths:
+            shutil.rmtree(abs_path, ignore_errors = True)
         super(Test_iPut_Options, self).tearDown()
 
     def test_iput_options(self):
@@ -58,6 +65,20 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand('iput -f --metadata "a;v1;u1" ' + filepath)
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'value: v1')
         self.admin.assert_icommand('imeta ls -d ' + self.admin.session_collection + '/file', 'STDOUT_SINGLELINE', 'units: u1')
+
+    def test_iput_recursive_with_period__issue_2010(self):
+        try:
+            new_dir = 'dir_for_test_iput_recursive_with_period_2010'
+            home_dir = IrodsConfig().irods_directory
+            save_dir = os.getcwd()
+            os.chdir(home_dir)
+            lib.make_deep_local_tmp_dir(new_dir, depth=5, files_per_level=30, file_size=57)
+            self.new_paths.append(os.path.abspath(new_dir))
+            os.chdir(new_dir)
+            self.user0.assert_icommand(['iput', '-r', './'], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+            self.user0.assert_icommand_fail('ils -l', 'STDOUT_SINGLELINE', '/.')
+        finally:
+            os.chdir(save_dir)
 
     def test_iput_checksum_zero_length_file__issue_3275(self):
         filename = 'test_iput_checksum_zero_length_file__issue_3275'
@@ -108,42 +129,107 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
 
             os.chmod(os.path.join(bad_sub_dir), 0)
 
-            self.admin.assert_icommand('iput -r ' + test_dir, 'STDERR_SINGLELINE', 'Permission denied')
-            self.admin.assert_icommand('ils test_dir', 'STDOUT_SINGLELINE', 'good_sub_dir')
-            self.admin.assert_icommand('ils test_dir/good_sub_dir', 'STDOUT_SINGLELINE', 'a.txt')
+            # Issue 3988: the iput -r will fail during prescan, which means
+            # that no data transfer will occur at all. The ils command below
+            # should therefore fail.
+            cmd = 'iput -r ' + test_dir
+            _,stderr,_ = self.admin.run_icommand( cmd )
+            self.assertIn( 'directory error: Permission denied',
+                           stderr,
+                           "{0}: Expected stderr: \"...{1}...\", got: \"{2}\"".format(cmd, 'directory error: Permission denied', stderr))
+
+            self.admin.assert_icommand('ils test_dir', 'STDOUT_SINGLELINE', 'test_dir')
+            self.admin.assert_icommand_fail('ils test_dir/good_sub_dir', 'STDOUT_SINGLELINE', 'a.txt')
+
         finally:
             os.chmod(bad_sub_dir, stat.S_IRWXU)
             os.chmod(os.path.join(test_dir, "bad_file"), stat.S_IWRITE)
             os.chmod(os.path.join(bad_sub_dir, "bad_file"), stat.S_IWRITE)
             os.chmod(os.path.join(good_sub_dir, "bad_file"), stat.S_IWRITE)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
-    def test_iput_ignore_symbolic_links__issue_3072(self):
-        # The root directory where all files and symlinks will be stored.
-        parent_dir = 'issue_3072_parent_dir'
-        parent_dir_path = os.path.join(self.admin.local_session_dir, parent_dir)
-        os.mkdir(parent_dir_path)
+    #################################################################
+    # This iput involves a commandline parameter which is a symbolic
+    # link to itself.
+    #############################
+    def test_iput_symlink_to_self_on_commandline_4016(self):
 
-        filename = "test_file.txt"
-        filename_path = os.path.join(parent_dir_path, filename)
-        lib.make_file(filename_path, 1024)
+        ##################################
+        # All of these tests (should) produce the same behavior and results:
+        ########
+        test_list = [
+                        'iput -r {symtoself_path}',
+                        'iput -r {symtoself_path} {target_collection_path}',
+                        'iput -r {goodfile_path} {symtoself_path} {target_collection_path}',
+                    ]
 
-        # This directory will hold the symlink.
-        child_dir_path = os.path.join(parent_dir_path, 'child_dir')
-        os.mkdir(child_dir_path)
+        goodfile = 'goodfile'
+        goodfile_path = os.path.join(self.user0.local_session_dir, goodfile)
+        lib.make_file(goodfile_path, 1)
 
-        # Create a symlink.
-        dangling_symlink = 'dangling.test_file.txt'
-        dangling_symlink_path = os.path.join(child_dir_path, dangling_symlink)
-        os.symlink(filename_path, dangling_symlink_path)
+        symtoself = 'symtoself';
+        symtoself_path = os.path.join(self.user0.local_session_dir, symtoself)
+        lib.execute_command(['ln', '-s', symtoself, symtoself_path])
 
-        # Break the symlink by renaming the target file.
-        os.rename(filename_path, os.path.join(parent_dir_path, 'renamed.test_file.txt'))
+        base_name = 'iput_symlink_to_self_on_commandline_4016'
+        target_collection = 'target_' + base_name
+        target_collection_path = '{self.user0.session_collection}/{target_collection}'.format(**locals())
+        self.user0.run_icommand('imkdir {target_collection_path}'.format(**locals()))
 
-        # Recursively put all directories and files under the
-        # parent directory. Symlinks should be completely ignored.
-        self.admin.assert_icommand('iput -r --link {0}'.format(parent_dir_path))
+        ##################################
+        # Iterate through each of the tests:
+        ########
+        for teststring in test_list:
 
-        # Fail if the dangling symlink was stored in iRODS.
-        self.admin.assert_icommand_fail('ils -lr {0}'.format(parent_dir), 'STDOUT', dangling_symlink)
+            # Run the command:
+            cmd = teststring.format(**locals())
+            stdout,stderr,_ = self.user0.run_icommand(cmd)
 
+            estr = 'Too many levels of symbolic links:'
+            self.assertIn(estr, stderr, '{cmd}: Expected stderr: "...{estr}...", got: "{stderr}"'.format(**locals()))
+
+            # Make sure the usage message is not present in the output
+            self.assertNotIn('Usage:', stdout, '{cmd}: Not expected in stdout: "Usage:", got: "{stdout}"'.format(**locals()))
+
+            # Make sure neither the loop link nor regular file is anywhere in this collection tree:
+            cmd = 'ils -lr {self.user0.session_collection}'.format(**locals())
+            self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', symtoself );
+            self.user0.assert_icommand_fail( cmd, 'STDOUT_SINGLELINE', goodfile );
+
+class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
+
+    def setUp(self):
+        super(Test_iPut_Options_Issue_3883, self).setUp()
+
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # create a compound resource tree
+        self.admin.assert_icommand('iadmin mkresc compoundresc3883 compound', 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand('iadmin mkresc cacheresc3883 unixfilesystem ' + hostname +
+                                   ':/tmp/irods/cacheresc3883', 'STDOUT_SINGLELINE', 'Creating')
+        self.admin.assert_icommand('iadmin mkresc archiveresc3883 unixfilesystem ' + hostname +
+                                   ':/tmp/irods/archiveresc3883', 'STDOUT_SINGLELINE', 'Creating')
+
+        # now connect the tree
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'compoundresc3883', 'cacheresc3883', 'cache'])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'compoundresc3883', 'archiveresc3883', 'archive'])
+
+    def tearDown(self):
+
+        super(Test_iPut_Options_Issue_3883, self).tearDown()
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand(['iadmin', 'rmchildfromresc', 'compoundresc3883', 'cacheresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmchildfromresc', 'compoundresc3883', 'archiveresc3883'])
+
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'compoundresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'cacheresc3883'])
+            admin_session.assert_icommand(['iadmin', 'rmresc', 'archiveresc3883'])
+
+
+    def test_iput_zero_length_file_with_purge_and_checksum_3883(self):
+        filename = 'test_iput_zero_length_file_with_purge_and_checksum_3883'
+        lib.touch(filename)
+        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename])
+        self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
+        os.unlink(filename)

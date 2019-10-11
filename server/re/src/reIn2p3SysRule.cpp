@@ -70,7 +70,8 @@ int rodsMonPerfLog( char *serverName, char *resc, char *output, ruleExecInfo_t *
     std::vector<std::string> value_tokens;
     boost::algorithm::split( value_tokens, output_tokens[7], boost::is_any_of( delim2 ) );
     if ( resc_tokens.size() != disk_tokens.size() || resc_tokens.size() != value_tokens.size() ) {
-        rodsLog( LOG_ERROR, "rodsMonPerfLog: resc_tokens [%ju], disk_tokens [%ju], value_tokens [%ju]. output [%s]", ( uintmax_t )resc_tokens.size(), ( uintmax_t )disk_tokens.size(), ( uintmax_t )value_tokens.size(), output );
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: output [%s]", output);
+        rodsLog( LOG_ERROR, "rodsMonPerfLog: resc_tokens [%ju], disk_tokens [%ju], value_tokens [%ju]", ( uintmax_t )resc_tokens.size(), ( uintmax_t )disk_tokens.size(), ( uintmax_t )value_tokens.size());
         return -1;
     }
 

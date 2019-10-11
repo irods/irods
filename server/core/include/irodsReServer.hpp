@@ -1,33 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef IRODS_RE_SERVER_HPP
+#define IRODS_RE_SERVER_HPP
 
-/* irodsReServer.h - header file for irodsReServer
- */
+namespace irods {
+    constexpr int default_re_server_sleep_time{30};
+    constexpr int default_max_number_of_concurrent_re_threads{4};
+};
 
-
-
-#ifndef RE_SERVER_HPP
-#define RE_SERVER_HPP
-
-#include "rods.h"
-#include "rcGlobalExtern.h"     /* client global */
-#include "rsLog.hpp"
-#include "rodsLog.h"
-#include "sockComm.h"
-#include "getRodsEnv.h"
-#include "rcConnect.h"
-
-#define RE_SERVER_SLEEP_TIME    30
-#define RE_SERVER_EXEC_TIME     120
-
-uint CoreIrbTimeStamp = 0;
-
-/* definition for flagval flags */
-
-#define v_FLAG  0x1
-
-void
-reServerMain( char* logDir );
-int
-reSvrSleep( );
-#endif	/* RE_SERVER_H */
+#endif // IRODS_RE_SERVER_HPP 

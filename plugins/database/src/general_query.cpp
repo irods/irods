@@ -28,8 +28,11 @@
 #include "mid_level.hpp"
 #include "low_level.hpp"
 #include "irods_virtual_path.hpp"
+
 #include <boost/algorithm/string.hpp>
+
 #include <string>
+#include <algorithm>
 
 extern int logSQLGenQuery;
 
@@ -96,6 +99,38 @@ char tableAbbrevs;
 
 int debug = 0;
 int debug2 = 0;
+
+namespace
+{
+    int mask_query_argument(std::string& _condition, std::string::size_type _offset)
+    {
+        if (_condition.empty() || _offset >= _condition.size()) {
+            return -1;
+        }
+
+        const auto bpos = _condition.find_first_of("'", _offset);
+
+        if (bpos == std::string::npos) {
+            return -1;
+        }
+
+        const auto epos = _condition.find_first_of("'", bpos + 1);
+
+        if (epos == std::string::npos) {
+            return -1;
+        }
+
+        std::fill(&_condition[bpos + 1], &_condition[epos], ' ');
+
+        return epos + 1;
+    }
+
+    void mask_query_arguments(std::string& _condition)
+    {
+        int offset = 0;
+        while ((offset = mask_query_argument(_condition, offset)) > -1);
+    }
+} // anonymous namespace
 
 /*
  Used by fklink (below) to find an existing name and return the
@@ -919,7 +954,6 @@ compoundConditionSpecified( char *condition ) {
     return 1;
 }
 
-
 /* When there's a compound condition, need to put () around it, use the
    tablename.column for each part, and put OR or AND between.
    Uses and updates whereSQL in addition to the arguments.
@@ -963,9 +997,28 @@ handleCompoundCondition( char *condition, int prevWhereLen ) {
             return USER_STRLEN_TOOLONG;
         }
 
-        char* orptr = strstr( condPart1, "||" );
-        char* andptr = strstr( condPart1, "&&" );
-        char *cptr = NULL;
+        char* orptr{};
+        char* andptr{};
+
+        {
+            std::string tmp = condPart1;
+
+            // Masking the query arguments (characters surrounded by quotes) is
+            // required in case the arguments contain character sequences that
+            // can trip up the parser (e.g. "&&" and "||"). This allows the parser
+            // to find the correct location of the "and" and "or" operators.
+            mask_query_arguments(tmp);
+
+            if (const auto pos = tmp.find("||"); pos != std::string::npos) {
+                orptr = condPart1 + pos;
+            }
+
+            if (const auto pos = tmp.find("&&"); pos != std::string::npos) {
+                andptr = condPart1 + pos;
+            }
+        }
+
+        char *cptr{};
         int type = 0;
         if ( orptr != NULL && ( andptr == NULL || orptr < andptr ) ) {
             cptr = orptr;
@@ -1835,13 +1888,6 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
             return CAT_UNKNOWN_TABLE;
         }
 
-        if ( genQueryInp.selectInp.inx[i] >= COL_AUDIT_RANGE_START &&
-                genQueryInp.selectInp.inx[i] <= COL_AUDIT_RANGE_END ) {
-            if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return CAT_NO_ACCESS_PERMISSION;
-            }
-        }
-
         if ( Tables[table].cycler < 1 || startingTable == 0 ) {
             startingTable = table;  /* start with a non-cycler, if possible */
         }
@@ -1907,13 +1953,6 @@ generateSQL( genQueryInp_t genQueryInp, char *resultingSQL,
             status = insertWhere( condition, 0 );
             if ( status ) {
                 return status;
-            }
-        }
-
-        if ( genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
-                genQueryInp.sqlCondInp.inx[i] <= COL_AUDIT_RANGE_END ) {
-            if ( accessControlPriv != LOCAL_PRIV_USER_AUTH ) {
-                return CAT_NO_ACCESS_PERMISSION;
             }
         }
 
@@ -2054,7 +2093,6 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
                       icatSessionStruct *icss, int continueFlag ) {
     int i, nCols;
     int userIx = -1, zoneIx = -1, accessIx = -1, dataIx = -1, collIx = -1;
-    int status;
     std::string zoneName;
 
     static char prevDataId[LONG_NAME_LEN];
@@ -2123,6 +2161,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         return CAT_INVALID_ARGUMENT;
     }
 
+    int status{};
     if ( dataIx >= 0 ) {
         if ( continueFlag == 1 ) {
             if ( strcmp( prevDataId,
@@ -2148,6 +2187,7 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
         }
+
         status = cmlCheckDataObjId(
                      icss->stmtPtr[statementNum]->resultValue[dataIx],
                      genQueryInp.condInput.value[userIx],
@@ -2167,13 +2207,14 @@ checkCondInputAccess( genQueryInp_t genQueryInp, int statementNum,
         else {
             zoneName = genQueryInp.condInput.value[zoneIx];
         }
-        cmlCheckDirId(
+        status = cmlCheckDirId(
             icss->stmtPtr[statementNum]->resultValue[collIx],
             genQueryInp.condInput.value[userIx],
             ( char* )zoneName.c_str(),
             genQueryInp.condInput.value[accessIx], icss );
+        prevStatus = status;
     }
-    return 0;
+    return status;
 }
 
 /* Save some pre-provided parameters if msiAclPolicy is STRICT.
@@ -2240,7 +2281,7 @@ int chl_gen_query_access_control_setup_impl(
     char combinedSQL[MAX_SQL_SIZE_GQ];
     char countSQL[MAX_SQL_SIZE_GQ]; /* For Oracle, sql to get the count */
 
-    int status, statementNum;
+    int status, statementNum = UNINITIALIZED_STATEMENT_NUMBER;
     int numOfCols;
     int attriTextLen;
     int totalLen;

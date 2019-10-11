@@ -179,10 +179,18 @@ _rsRmCollRecur( rsComm_t *rsComm, collInp_t *rmCollInp,
                 getValByKey( &rmCollInp->condInput, RMTRASH_KW ) == NULL &&
                 getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) == NULL ) {
             initReiWithDataObjInp( &rei, rsComm, NULL );
-            applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+            status = applyRule("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
             clearKeyVal(rei.condInputData);
             free(rei.condInputData);
-            if ( NO_TRASH_CAN != rei.status ) {
+            if (status < 0) {
+                if (rei.status < 0) {
+                    status = rei.status;
+                }
+                const auto err{ERROR(status, "acTrashPolicy failed")};
+                irods::log(err);
+                return err.code();
+            }
+            if (NO_TRASH_CAN != rei.status) {
                 status = rsMvCollToTrash( rsComm, rmCollInp );
                 if ( status >= 0 && collOprStat != NULL ) {
                     if ( *collOprStat == NULL ) {

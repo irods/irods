@@ -14,6 +14,10 @@ namespace irods {
 
     const std::string CFG_DB_USERNAME_KW( "db_username" );
     const std::string CFG_DB_PASSWORD_KW( "db_password" );
+    const std::string CFG_DB_SSLMODE_KW( "db_sslmode" );
+    const std::string CFG_DB_SSLROOTCERT_KW( "db_sslrootcert" );
+    const std::string CFG_DB_SSLCERT_KW( "db_sslcert" );
+    const std::string CFG_DB_SSLKEY_KW( "db_sslkey" );
     const std::string CFG_ZONE_NAME_KW( "zone_name" );
     const std::string CFG_ZONE_KEY_KW( "zone_key" );
     const std::string CFG_NEGOTIATION_KEY_KW( "negotiation_key" );
@@ -35,6 +39,20 @@ namespace irods {
 
     const std::string CFG_SERVER_PORT_RANGE_START_KW( "server_port_range_start" );
     const std::string CFG_SERVER_PORT_RANGE_END_KW( "server_port_range_end" );
+
+    const std::string CFG_LOG_LEVEL_KW{"log_level"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_LEGACY_KW{"legacy"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_SERVER_KW{"server"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_FACTORY_KW{"agent_factory"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_AGENT_KW{"agent"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW{"delay_server"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_RESOURCE_KW{"resource"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_DATABASE_KW{"database"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_AUTHENTICATION_KW{"authentication"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_API_KW{"api"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_MICROSERVICE_KW{"microservice"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW{"network"};
+    const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW{"rule_engine"};
 
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER(
@@ -63,8 +81,6 @@ namespace irods {
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
     const std::string CFG_IRODS_HOST_KW( "irods_host" );
     const std::string CFG_IRODS_PORT_KW( "irods_port" );
-    const std::string CFG_IRODS_XMSG_HOST_KW( "xmsg_host" );
-    const std::string CFG_IRODS_XMSG_PORT_KW( "xmsg_port" );
     const std::string CFG_IRODS_HOME_KW( "irods_home" );
     const std::string CFG_IRODS_CWD_KW( "irods_cwd" );
     const std::string CFG_IRODS_AUTHENTICATION_SCHEME_KW(
@@ -118,6 +134,8 @@ namespace irods {
         "irods_maximum_number_of_transfer_threads" );
     const std::string CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS(
         "irods_transfer_buffer_size_for_parallel_transfer_in_megabytes" );
+    const std::string CFG_IRODS_CONNECTION_POOL_REFRESH_TIME(
+        "irods_connection_pool_refresh_time_in_seconds");
 
     // legacy ssl environment variables
     const std::string CFG_IRODS_SSL_CA_CERTIFICATE_PATH(
@@ -137,7 +155,6 @@ namespace irods {
     const std::string CFG_ZONE_USER( "zone_user" );
     const std::string CFG_ZONE_PORT( "zone_port" );
     const std::string CFG_ZONE_AUTH_SCHEME( "zone_auth_scheme" );
-    const std::string CFG_XMSG_PORT( "xmsg_port" );
 
     // irods control plane values
     const std::string CFG_SERVER_CONTROL_PLANE_PORT(

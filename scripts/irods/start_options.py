@@ -27,3 +27,11 @@ def add_options(parser):
                       dest='server_reconnect_flag', action='store_true', default=False,
                       help='Causes the server to attempt a reconnect after '
                       'timeout (ten minutes)')
+
+    parser.add_option('--stdout',
+                      dest='write_to_stdout', action='store_true',
+                      help='Write log messages to stdout instead of rsyslog')
+
+    parser.add_option('--test',
+                      dest='test_mode', action='store_true',
+                      help='Additionally write log messages to IRODS_HOME/log/test_mode_output.log')

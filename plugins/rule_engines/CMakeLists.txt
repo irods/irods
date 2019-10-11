@@ -12,7 +12,6 @@ set(
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reHelpers2.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/nre.reLib1.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/parser.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reStruct.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/reVariableMap.gen.cpp
   ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-irods_rule_language/restructs.cpp
@@ -30,9 +29,15 @@ set(
   )
 
 set(
+  IRODS_RULE_ENGINE_PLUGIN-PASSTHROUGH_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/rule_engines/irods_rule_engine_plugin-passthrough/libirods_rule_engine_plugin-passthrough.cpp
+  )
+
+set(
   IRODS_RULE_ENGINE_PLUGINS
   irods_rule_engine_plugin-irods_rule_language
   irods_rule_engine_plugin-cpp_default_policy
+  irods_rule_engine_plugin-passthrough
   )
 
 foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
@@ -73,7 +78,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     dl
     )
 
-  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED IRODS_ENABLE_SYSLOG)
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()

@@ -19,7 +19,6 @@
 
 #include "rods.h"
 #include "rcGlobalExtern.h"	/* client global */
-#include "rsLog.hpp"
 #include "rodsLog.h"
 #include "sockComm.h"
 #include "rsIcatOpr.hpp"
@@ -44,19 +43,14 @@ extern int optind, opterr, optopt;
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
 * for consistence */
 
-int serverize( char *logDir );
-int serverMain( char *logDir );
-int
-procChildren( agentProc_t **agentProcHead );
-agentProc_t *
-getAgentProcByPid( int childPid, agentProc_t **agentProcHead );
+int serverMain();
+int procChildren( agentProc_t **agentProcHead );
+agentProc_t* getAgentProcByPid( int childPid, agentProc_t **agentProcHead );
 
 #if defined(linux_platform) || defined(aix_platform) || defined(solaris_platform) || defined(osx_platform)
-void
-serverExit( int sig );
+void serverExit( int sig );
 #else
-void
-serverExit();
+void serverExit();
 #endif
 
 void
@@ -68,9 +62,6 @@ int
 spawnAgent( agentProc_t *connReq, agentProc_t **agentProcHead );
 int
 execAgent( int newSock, startupPack_t *startupPack );
-int
-queConnectedAgentProc( int childPid, agentProc_t *connReq,
-                       agentProc_t **agentProcHead );
 int
 getAgentProcCnt();
 int

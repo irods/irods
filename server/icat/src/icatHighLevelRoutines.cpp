@@ -39,7 +39,6 @@ int logSQL = 0;
 int logSQLGenQuery = 0;
 int logSQLGenUpdate = 0;
 int logSQL_CML = 0;
-int auditEnabled = 0;
 
 // =-=-=-=-=-=-=-
 // holds the flavor of the catalog for the
@@ -66,14 +65,12 @@ int chlDebug(
         logSQLGenQuery = 1;//chlDebugGenQuery( 1 );
         logSQLGenUpdate = 1;//chlDebugGenUpdate( 1 );
         logSQL_CML = 2;
-        auditEnabled = 1;//cmlDebug( 2 );
     }
     else {
         logSQL = 0;
         logSQLGenQuery = 1;//chlDebugGenQuery( 0 );
         logSQLGenUpdate = 1;//chlDebugGenUpdate( 0 );
         logSQL_CML = 0;
-        auditEnabled = 0;//cmlDebug( 0 );
     }
 
     return 0;
@@ -4288,6 +4285,7 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
     const std::string&   _parent,
     const std::string&   _child,
     int                  _limit,
+    const std::string&   _invocation_timestamp,
     dist_child_result_t& _results ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4327,12 +4325,14 @@ int chlGetDistinctDataObjsMissingFromChildGivenParent(
           const std::string*,
           const std::string*,
           int,
+          const std::string*,
           dist_child_result_t* > ( 0,
                                    irods::DATABASE_OP_GET_DISTINCT_DATA_OBJS_MISSING_FROM_CHILD_GIVEN_PARENT,
                                    ptr,
                                    &_parent,
                                    &_child,
                                    _limit,
+                                   &_invocation_timestamp,
                                    &_results );
 
     return ret.code();
@@ -4663,6 +4663,7 @@ int chlGetReplListForLeafBundles(
     rodsLong_t                  _count,
     size_t                      _child_idx,
     const std::vector<leaf_bundle_t>* _bundles,
+    const std::string*          _invocation_timestamp,
     dist_child_result_t*        _results ) {
     // =-=-=-=-=-=-=-
     // call factory for database object
@@ -4700,6 +4701,7 @@ int chlGetReplListForLeafBundles(
               rodsLong_t,
               size_t,
               const std::vector<leaf_bundle_t>*,
+              const std::string*,
               dist_child_result_t* >(
                   0,
                   irods::DATABASE_OP_GET_REPL_LIST_FOR_LEAF_BUNDLES,
@@ -4707,6 +4709,7 @@ int chlGetReplListForLeafBundles(
                   _count,
                   _child_idx,
                   _bundles,
+                  _invocation_timestamp,
                   _results );
     if (!ret.ok()) {
         irods::log(PASS(ret));

@@ -17,6 +17,7 @@
 #include "irods_server_properties.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_kvp_string_parser.hpp"
+#include "irods_logger.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -562,11 +563,9 @@ irods::error unix_file_create(
             else {
                 irods::kvp_map_t::iterator itr = kvp.begin();
                 for ( ; itr != kvp.end(); ++ itr ) {
-                    rodsLog(
-                        LOG_DEBUG,
-                        "unix_file_create_plugin - kv_pass :: key [%s] - value [%s]",
-                        itr->first.c_str(),
-                        itr->second.c_str() );
+                    irods::experimental::log::resource::debug(
+                        (boost::format("unix_file_create_plugin - kv_pass :: key [%s] - value [%s]") %
+                        itr->first % itr->second).str());
                 } // for itr
             }
         }
@@ -668,11 +667,9 @@ irods::error unix_file_open(
             else {
                 irods::kvp_map_t::iterator itr = kvp.begin();
                 for ( ; itr != kvp.end(); ++ itr ) {
-                    rodsLog(
-                        LOG_DEBUG,
-                        "unix_file_open_plugin - kv_pass :: key [%s] - value [%s]",
-                        itr->first.c_str(),
-                        itr->second.c_str() );
+                    irods::experimental::log::resource::debug(
+                        (boost::format("unix_file_open_plugin - kv_pass :: key [%s] - value [%s]") %
+                        itr->first % itr->second).str());
                 } // for itr
             }
         }
@@ -1210,6 +1207,9 @@ irods::error unix_file_rename(
             // make the call to rename
             int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
 
+            // issue 4326 - plugins must set the physical path to the new path 
+            fco->physical_path(new_full_path);
+
             // =-=-=-=-=-=-=-
             // handle error cases
             int err_status = UNIX_FILE_RENAME_ERR - errno;
@@ -1522,7 +1522,11 @@ irods::error unix_file_resolve_hierarchy(
 
     // =-=-=-=-=-=-=-
     // check that additional info made it
-    rodsLog(LOG_DEBUG, "%s: %s = [%s]", __FUNCTION__, RECURSIVE_OPR__KW, getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW));
+    if (getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW)) {
+        irods::experimental::log::resource::debug(
+            (boost::format("%s: %s found in cond_input for file_obj") %
+            __FUNCTION__ % RECURSIVE_OPR__KW).str());
+    }
 
     // =-=-=-=-=-=-=-
     // get the name of this resource
@@ -1573,7 +1577,7 @@ irods::error unix_file_rebalance(
     irods::plugin_context& _ctx ) {
     return SUCCESS();
 
-} // unix_file_rebalancec
+} // unix_file_rebalance
 
 // =-=-=-=-=-=-=-
 // 3. create derived class to handle unix file system resources

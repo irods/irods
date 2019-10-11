@@ -129,16 +129,15 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     ###################
 
     def test_iexit(self):
-        self.admin.assert_icommand("iexit")  # just go home
+        self.admin.assert_icommand('iexit')  # remove scrambled password file
+        self.admin.assert_icommand(['iinit', self.admin.password]) # restore session for remaining tests
 
     def test_iexit_verbose(self):
-        self.admin.assert_icommand("iexit -v", 'STDOUT_SINGLELINE', "Deleting (if it exists) session envFile:")  # home, verbose
+        self.admin.assert_icommand('iexit -v', 'STDOUT_SINGLELINE', 'Deleting (if it exists) session envFile:', input='y\n')  # remove scrambled password file, verbose
+        self.admin.assert_icommand(['iinit', self.admin.password]) # restore session for remaining tests
 
     def test_iexit_with_bad_option(self):
-        self.admin.assert_icommand_fail("iexit -z")  # run iexit with bad option
-
-    def test_iexit_with_bad_parameter(self):
-        self.admin.assert_icommand_fail("iexit badparameter")  # run iexit with bad parameter
+        self.admin.assert_icommand('iexit -z', 'STDERR_SINGLELINE', 'USER_INPUT_OPTION_ERR')  # run iexit with bad option
 
     ###################
     # ihelp
@@ -232,6 +231,39 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iput {0} 'before after/'".format(self.testfile))
         self.admin.assert_icommand("ils -L 'before after'", 'STDOUT_SINGLELINE', self.testfile)
         self.admin.assert_icommand("ilocate {0}".format(self.testfile), 'STDOUT_SINGLELINE', 'after') # no longer truncating before the space
+
+    def test_ilocate_with_spaces_in_data_object_name__4540(self):
+        try:
+            dirname = 'dir'
+            file_with_spaces = 'file with spaces'
+            lib.make_file(file_with_spaces, 15)
+            self.admin.assert_icommand("imkdir '{0}'".format(dirname))
+            self.admin.assert_icommand("iput '{0}' '{1}'".format(file_with_spaces, dirname))
+            self.admin.assert_icommand("ils -L '{0}'".format(dirname), 'STDOUT_SINGLELINE', file_with_spaces)
+            self.admin.assert_icommand("ilocate '{0}'".format(file_with_spaces), 'STDOUT_SINGLELINE', dirname+'/'+file_with_spaces) # no longer splitting input on spaces
+            self.admin.assert_icommand("ilocate '%h s%'", 'STDOUT_SINGLELINE', dirname+'/'+file_with_spaces) # wildcard works with space as well
+        finally:
+            # cleanup
+            os.unlink(file_with_spaces)
+
+    def test_ilocate_with_spaces_in_data_object_name_and_multiple_arguments__4540(self):
+        try:
+            dirname = 'dir'
+            file_with_spaces = 'file with spaces'
+            otherfile = 'otherfile'
+            lib.make_file(file_with_spaces, 15)
+            lib.make_file(otherfile, 30)
+            self.admin.assert_icommand("imkdir '{0}'".format(dirname))
+            self.admin.assert_icommand("iput '{0}' '{1}'".format(file_with_spaces, dirname))
+            self.admin.assert_icommand("iput '{0}' '{1}'".format(otherfile, dirname))
+            self.admin.assert_icommand("ils -L '{0}'".format(dirname), 'STDOUT_SINGLELINE', file_with_spaces)
+            self.admin.assert_icommand("ilocate '{0}' {1}".format(file_with_spaces, otherfile), 'STDOUT_SINGLELINE', dirname+'/'+file_with_spaces) # no longer splitting input on spaces
+            self.admin.assert_icommand("ilocate '{0}' {1}".format(file_with_spaces, otherfile), 'STDOUT_SINGLELINE', dirname+'/'+otherfile) # no longer splitting input on spaces
+            self.admin.assert_icommand("ilocate '%h s%'", 'STDOUT_SINGLELINE', dirname+'/'+file_with_spaces) # wildcard works with space as well
+        finally:
+            # cleanup
+            os.unlink(file_with_spaces)
+            os.unlink(otherfile)
 
     ###################
     # iquest

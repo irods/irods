@@ -628,6 +628,9 @@ namespace irods {
                             key_word,
                             oper,
                             _out_hier );
+            if (!ret.ok()) {
+                return PASSMSG("Failed to resolve resource hierarchy", ret);
+            }
 
             // make sure the desired hierarchy is in the linked list
             // otherwise get data object info list again,
@@ -709,7 +712,6 @@ namespace irods {
                           create_resc_name.c_str(),
                           _data_obj_inp,
                           _out_hier );
-
             }
             else {
                 // =-=-=-=-=-=-=-
@@ -720,6 +722,9 @@ namespace irods {
                           create_resc_name.c_str(),
                           _data_obj_inp,
                           _out_hier );
+            }
+            if (!ret.ok()) {
+                return PASSMSG("Failed to resolve resource hierarchy", ret);
             }
 
             // make sure the desired hierarchy is in the linked list

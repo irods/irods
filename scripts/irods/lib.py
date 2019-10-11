@@ -190,7 +190,7 @@ def cat(fname, string):
     with open(fname, 'at') as f:
         print(string, file=f, end='')
 
-def make_file(f_name, f_size, contents='zero'):
+def make_file(f_name, f_size, contents='zero', block_size_in_bytes=1000):
     assert contents in ['arbitrary', 'random', 'zero']
     if contents == 'arbitrary' or f_size == 0:
         execute_command(['truncate', '-s', str(f_size), f_name])
@@ -199,7 +199,15 @@ def make_file(f_name, f_size, contents='zero'):
     source = {'zero': '/dev/zero',
               'random': '/dev/urandom'}[contents]
 
-    execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
+    count = f_size / block_size_in_bytes
+    if count > 0:
+        execute_command(['dd', 'if='+source, 'of='+f_name, 'count='+str(count), 'bs='+str(block_size_in_bytes)])
+        leftover_size = f_size % block_size_in_bytes
+        if leftover_size > 0:
+            execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(leftover_size), 'oflag=append', 'conv=notrunc'])
+    else:
+        execute_command(['dd', 'if='+source, 'of='+f_name, 'count=1', 'bs='+str(f_size)])
+
 
 def make_dir_p(directory):
     try:
@@ -308,7 +316,8 @@ def make_environment_dict(username, hostname, zone_name, use_ssl=True):
         'irods_maximum_size_for_single_buffer_in_megabytes': 32,
         'irods_default_number_of_transfer_threads': 4,
         'irods_maximum_number_of_transfer_threads': 64,
-        'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': 4
+        'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': 4,
+        'irods_connection_pool_refresh_time_in_seconds': 300
 
     }
     if use_ssl:
@@ -337,8 +346,7 @@ def get_file_size_by_path(path):
     return os.stat(path).st_size
 
 def write_to_log(log_path, message):
-    with open(log_path, 'at') as f:
-        print(message, file=f, end='')
+    pass
 
 def count_occurrences_of_string_in_log(log_path, string, start_index=0):
     with open(log_path) as f:

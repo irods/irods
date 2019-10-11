@@ -1580,7 +1580,7 @@ resolveInfoForTrim( dataObjInfo_t **dataObjInfoHead,
             return USER_INVALID_REPLICA_INPUT;
         }
     }
-    
+
     int i, status;
     dataObjInfo_t *matchedDataObjInfo = NULL;
     dataObjInfo_t *matchedOldDataObjInfo = NULL;

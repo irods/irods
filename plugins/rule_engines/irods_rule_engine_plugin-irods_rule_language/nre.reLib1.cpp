@@ -1507,10 +1507,3 @@ writeMSrvcsIntoFile( char * inFileName, msrvcStruct_t *myMsrvcStruct,
     return 0;
 }
 
-int
-finalizeRuleEngine() {
-    if ( GlobalREDebugFlag > 5 ) {
-        _writeXMsg( GlobalREDebugFlag, "idbug", "PROCESS END" );
-    }
-    return 0;
-}

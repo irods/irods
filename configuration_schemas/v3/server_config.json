@@ -89,7 +89,6 @@
         "server_control_plane_timeout_milliseconds": {"type": "integer"},
         "server_port_range_end": {"type": "integer"},
         "server_port_range_start": {"type": "integer"},
-        "xmsg_port": {"type": "integer"},
         "zone_auth_scheme" : {"type": "string"},
         "zone_key": {"type": "string", "pattern": "^[A-Za-z0-9_]+$", "maxLength": 49},
         "zone_name": {"type": "string", "pattern": "^[A-Za-z0-9_\\.]+$", "maxLength": 63},

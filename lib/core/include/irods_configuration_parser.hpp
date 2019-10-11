@@ -7,12 +7,13 @@
 
 #include <vector>
 #include <string>
-#include "jansson.h"
 
 #include <unordered_map>
 #include <boost/format.hpp>
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
+
+#include "json.hpp"
 
 namespace irods {
 
@@ -135,8 +136,7 @@ namespace irods {
             error load_json_object(
                 const std::string& ); // file name
 
-            boost::any convert_json(
-                json_t* );            // jansson object
+            boost::any convert_json(const nlohmann::json&);
 
             error copy_and_swap(
                 const std::unordered_map<std::string, boost::any>& );    // object to swap in

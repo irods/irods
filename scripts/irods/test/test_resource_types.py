@@ -1,6 +1,8 @@
 from __future__ import print_function
 import getpass
+import hashlib
 import inspect
+import json
 import os
 import psutil
 import re
@@ -10,6 +12,7 @@ import sys
 import tempfile
 from threading import Timer
 import time
+import ustrings
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -23,15 +26,16 @@ from ..core_file import temporary_core_file, CoreFile
 from .. import test
 from . import settings
 from .. import lib
+from .. import paths
 from .resource_suite import ResourceSuite, ResourceBase
 from .test_chunkydevtest import ChunkyDevTest
 from . import session
 from .rule_texts_for_tests import rule_texts
 
-def statvfs_path_or_parent(path):
-    while not os.path.exists(path):
-        path = os.path.dirname(path)
-    return os.statvfs(path)
+def assert_number_of_replicas(admin_session, logical_path, data_obj_name, replica_count):
+    for i in range(0, replica_count):
+        admin_session.assert_icommand(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [' {} '.format(str(i)), ' & ', data_obj_name])
+    admin_session.assert_icommand_fail(['ils', '-l', logical_path], 'STDOUT_SINGLELINE', [' {} '.format(str(replica_count + 1)), data_obj_name])
 
 class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unittest.TestCase):
 
@@ -51,6 +55,7 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unixA")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB1")
             admin_session.assert_icommand("iadmin addchildtoresc rrResc unixB2")
+            self.child_replication_count = 2
         super(Test_Resource_RandomWithinReplication, self).setUp()
 
     def tearDown(self):
@@ -71,13 +76,73 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
         shutil.rmtree(irods_config.irods_directory + "/unixB1Vault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unixAVault", ignore_errors=True)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_ichksum_no_file_modified_under_replication__4099(self):
+        filename = 'test_ichksum_no_file_modified_under_replication__4099'
+        filepath = lib.create_local_testfile(filename)
+        with open(filepath, 'r') as f:
+            original_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+
+        # put file into iRODS and clean up local
+        self.admin.assert_icommand(['iput', '-K', filepath, filename])
+        os.unlink(filename)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        # corrupt data in replica 0
+        _,out,_ = self.admin.assert_icommand(['iquest', '''"select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '0'"'''.format(filename)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
+        replica_0_resc = out.splitlines()[0].split()[-1].split(';')[-1]
+        phypath_for_data_obj = os.path.join(self.admin.get_vault_session_path(replica_0_resc), filename)
+        with open(phypath_for_data_obj, 'w') as f:
+            f.write("corrupting the data")
+        with open(phypath_for_data_obj, 'r') as f:
+            new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+
+        # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
+        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        # forcibly re-calculate all checksums and ensure that original checksum was not changed
+        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        #cleanup
+        self.admin.assert_icommand(['irm', '-f', filename])
+
+    def test_ibun_creation_to_replication(self):
+        collection_name = 'bundle_me'
+        tar_name = 'bundle.tar'
+        filename = 'test_ibun_creation_to_replication'
+        copy_filename = filename + '_copy'
+        test_data_obj_path = os.path.join(collection_name, filename)
+        test_data_obj_copy_path = os.path.join(collection_name, copy_filename)
+
+        # put file into iRODS and make a copy on a non-replicating resource
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand(['imkdir', collection_name])
+        self.admin.assert_icommand(['iput', filepath, test_data_obj_path])
+        os.unlink(filepath)
+        self.admin.assert_icommand(['icp', '-R', 'TestResc', test_data_obj_path, test_data_obj_copy_path])
+
+        # bundle the collection and ensure that it and its contents replicated properly
+        self.admin.assert_icommand(['ibun', '-c', tar_name, collection_name])
+        assert_number_of_replicas(self.admin, tar_name, tar_name, self.child_replication_count)
+        assert_number_of_replicas(self.admin, test_data_obj_path, filename, self.child_replication_count)
+        self.admin.assert_icommand(['ils', '-l', test_data_obj_copy_path], 'STDOUT_SINGLELINE', [' 0 ', 'TestResc', ' & ', copy_filename])
+        assert_number_of_replicas(self.admin, test_data_obj_copy_path, copy_filename, self.child_replication_count + 1)
+
+        # cleanup
+        self.admin.assert_icommand(['irm', '-r', '-f', collection_name])
+        self.admin.assert_icommand(['irm', '-f', tar_name])
+
     def test_redirect_map_regeneration__3904(self):
         # Setup
         filecount = 50
         dirname = 'test_redirect_map_regeneration__3904'
         lib.create_directory_of_small_files(dirname, filecount)
 
-        self.admin.assert_icommand(['iput', '-r', dirname])
+        self.admin.assert_icommand(['iput', '-r', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # Count the number of recipients of replicas
         hier_ctr = {}
@@ -802,23 +867,41 @@ OUTPUT ruleExecOut
             print('Skipping for plugin name ['+self.plugin_name+']')
 
     def test_key_value_passthru(self):
-        env = os.environ.copy()
-        env['spLogLevel'] = '11'
-        IrodsController(IrodsConfig(injected_environment=env)).restart()
+        file_name = 'file.txt'
+        other_file_name = 'other.txt'
+        try:
+            # load server_config.json to inject new settings
+            server_config_filename = paths.server_config_path()
+            with open(server_config_filename) as f:
+                svr_cfg = json.load(f)
+            svr_cfg['log_level']['resource'] = 'debug'
 
-        lib.make_file('file.txt', 15)
-        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        self.user0.assert_icommand('iput --kv_pass="put_key=val1" file.txt')
-        assert lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'key [put_key] - value [val1]', start_index=initial_log_size) in [1, 2]  # double print if collection missing
+            # dump to a string to repave the existing server_config.json
+            new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
+            with lib.file_backed_up(server_config_filename):
+                # repave the existing server_config.json
+                with open(server_config_filename, 'w') as f:
+                    f.write(new_server_config)
 
-        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        self.user0.assert_icommand('iget -f --kv_pass="get_key=val3" file.txt other.txt')
-        assert lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2]  # double print if collection missing
-        IrodsController().restart()
-        if os.path.exists('file.txt'):
-            os.unlink('file.txt')
-        if os.path.exists('other.txt'):
-            os.unlink('other.txt')
+                IrodsController().restart()
+
+                lib.make_file(file_name, 15)
+                initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+                self.user0.assert_icommand('iput --kv_pass="put_key=val1" {}'.format(file_name))
+                # double print if collection missing
+                self.assertTrue(lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'key [put_key] - value [val1]', start_index=initial_log_size) in [1, 2])
+
+                initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+                self.user0.assert_icommand('iget -f --kv_pass="get_key=val3" {0} {1}'.format(file_name, other_file_name))
+                # double print if collection missing
+                self.assertTrue(lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2])
+
+        finally:
+            IrodsController().restart()
+            if os.path.exists(file_name):
+                os.unlink(file_name)
+            if os.path.exists(other_file_name):
+                os.unlink(other_file_name)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Checks local file")
     def test_ifsck__2650(self):
@@ -1750,6 +1833,32 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         shutil.rmtree(irods_config.irods_directory + "/archiveRescVault", ignore_errors=True)
         shutil.rmtree("rm -rf " + irods_config.irods_directory + "/cacheRescVault", ignore_errors=True)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_ichksum_no_file_modified_under_compound__4085(self):
+        filename = 'test_ichksum_no_file_modified_in_compound__4085'
+        filepath = lib.create_local_testfile(filename)
+        with open(filepath, 'r') as f:
+            original_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+
+        self.admin.assert_icommand(['iput', '-K', filepath, filename])
+        os.unlink(filename)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', 'archiveResc')
+
+        phypath_for_data_obj = os.path.join(self.admin.get_vault_session_path('archiveResc'), filename)
+        original_archive_mtime = str(os.stat(phypath_for_data_obj).st_mtime)
+
+        # trim cache replica
+        self.admin.assert_icommand(['itrim', '-n0', '-N1', filename], 'STDOUT_SINGLELINE', "files trimmed")
+
+        # run ichksum on data object, which will replicate to cache
+        self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        self.assertTrue(str(os.stat(phypath_for_data_obj).st_mtime) == original_archive_mtime, msg='Archive mtime changed after ichksum - not good!')
+
+        #cleanup
+        self.admin.assert_icommand(['irm', '-f', filename])
+
     def test_irsync__2976(self):
         filename = "test_irsync__2976.txt"
         filename_rsync = "test_irsync__2976.txt.rsync"
@@ -1792,7 +1901,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
@@ -1805,7 +1914,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         dir_name = 'test_irsync_for_collection__2976'
         dir_name_rsync = dir_name + '_rsync'
         lib.create_directory_of_small_files(dir_name,10)
-        self.admin.assert_icommand('iput -rR demoResc ' + dir_name)
+        self.admin.assert_icommand('iput -rR demoResc ' + dir_name, "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         logical_path = os.path.join( self.admin.session_collection, dir_name )
         logical_path_rsync = os.path.join( self.admin.session_collection, dir_name_rsync )
@@ -3544,6 +3653,7 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix1Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix2Resc")
             admin_session.assert_icommand("iadmin addchildtoresc demoResc unix3Resc")
+            self.child_replication_count = 3
         super(Test_Resource_Replication, self).setUp()
 
     def tearDown(self):
@@ -3561,6 +3671,66 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
         shutil.rmtree(irods_config.irods_directory + "/unix1RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix2RescVault", ignore_errors=True)
         shutil.rmtree(irods_config.irods_directory + "/unix3RescVault", ignore_errors=True)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "local filesystem check")
+    def test_ichksum_no_file_modified_under_replication__4099(self):
+        filename = 'test_ichksum_no_file_modified_under_replication__4099'
+        filepath = lib.create_local_testfile(filename)
+        with open(filepath, 'r') as f:
+            original_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+
+        # put file into iRODS and clean up local
+        self.admin.assert_icommand(['iput', '-K', filepath, filename])
+        os.unlink(filename)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        # corrupt data in replica 0
+        _,out,_ = self.admin.assert_icommand(['iquest', '''"select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '0'"'''.format(filename)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
+        replica_0_resc = out.splitlines()[0].split()[-1].split(';')[-1]
+        phypath_for_data_obj = os.path.join(self.admin.get_vault_session_path(replica_0_resc), filename)
+        with open(phypath_for_data_obj, 'w') as f:
+            f.write("corrupting the data")
+        with open(phypath_for_data_obj, 'r') as f:
+            new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
+
+        # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
+        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        # forcibly re-calculate all checksums and ensure that original checksum was not changed
+        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
+        self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
+
+        #cleanup
+        self.admin.assert_icommand(['irm', '-f', filename])
+
+    def test_ibun_creation_to_replication(self):
+        collection_name = 'bundle_me'
+        tar_name = 'bundle.tar'
+        filename = 'test_ibun_creation_to_replication'
+        copy_filename = filename + '_copy'
+        test_data_obj_path = os.path.join(collection_name, filename)
+        test_data_obj_copy_path = os.path.join(collection_name, copy_filename)
+
+        # put file into iRODS and make a copy on a non-replicating resource
+        filepath = lib.create_local_testfile(filename)
+        self.admin.assert_icommand(['imkdir', collection_name])
+        self.admin.assert_icommand(['iput', filepath, test_data_obj_path])
+        os.unlink(filepath)
+        self.admin.assert_icommand(['icp', '-R', 'TestResc', test_data_obj_path, test_data_obj_copy_path])
+
+        # bundle the collection and ensure that it and its contents replicated properly
+        self.admin.assert_icommand(['ibun', '-c', tar_name, collection_name])
+        assert_number_of_replicas(self.admin, tar_name, tar_name, self.child_replication_count)
+        assert_number_of_replicas(self.admin, test_data_obj_path, filename, self.child_replication_count)
+        self.admin.assert_icommand(['ils', '-l', test_data_obj_copy_path], 'STDOUT_SINGLELINE', [' 0 ', 'TestResc', ' & ', copy_filename])
+        assert_number_of_replicas(self.admin, test_data_obj_copy_path, copy_filename, self.child_replication_count + 1)
+
+        # cleanup
+        self.admin.assert_icommand(['irm', '-r', '-f', collection_name])
+        self.admin.assert_icommand(['irm', '-f', tar_name])
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_open_write_close_for_repl__3909(self):
@@ -3823,7 +3993,7 @@ OUTPUT ruleExecOut
                 self.admin.assert_icommand("iadmin modresc unix%dResc path /nopes" % (c1), "STDOUT_SINGLELINE", "Previous resource path")
                 filename = "reliableputfile.txt"
                 filepath = lib.create_local_testfile(filename)
-                self.admin.assert_icommand('ilsresc', 'STDOUT_SINGLELINE', "demoResc:replication")
+                self.admin.assert_icommand(['ilsresc', '--ascii'], 'STDOUT_SINGLELINE', "demoResc:replication")
                 self.admin.assert_icommand("ils -L " + filename, 'STDERR_SINGLELINE', "does not exist")  # should not be listed
                 self.admin.assert_icommand("iput " + filename, 'STDERR_SINGLELINE', "put error")  # put file
                 test = i+1 % len(indicies)
@@ -4113,6 +4283,51 @@ OUTPUT ruleExecOut
         if os.path.exists(filepath):
             os.unlink(filepath)
 
+    def test_rebalance_invocation_timestamp__3665(self):
+        # prepare out of balance tree with enough objects to trigger rebalance paging (>500)
+        localdir = '3665_tmpdir'
+        shutil.rmtree(localdir, ignore_errors=True)
+        lib.make_large_local_tmp_dir(dir_name=localdir, file_count=600, file_size=5)
+        self.admin.assert_icommand(['iput', '-r', localdir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'newchild', 'unixfilesystem', test.settings.HOSTNAME_1+':/tmp/newchildVault'], 'STDOUT_SINGLELINE', 'unixfilesystem')
+        self.admin.assert_icommand(['iadmin','addchildtoresc','demoResc','newchild'])
+        # run rebalance with concurrent, interleaved put/trim of new file
+        self.admin.assert_icommand(['ichmod','-r','own','rods',self.admin.session_collection])
+        self.admin.assert_icommand(['ichmod','-r','inherit',self.admin.session_collection])
+        laterfilesize = 300
+        laterfile = '3665_laterfile'
+        lib.make_file(laterfile, laterfilesize)
+        put_thread = Timer(2, subprocess.check_call, [('iput', '-R', 'demoResc', laterfile, self.admin.session_collection)])
+        trim_thread = Timer(3, subprocess.check_call, [('itrim', '-n3', self.admin.session_collection + '/' + laterfile)])
+        put_thread.start()
+        trim_thread.start()
+        self.admin.assert_icommand(['iadmin','modresc','demoResc','rebalance'])
+        put_thread.join()
+        trim_thread.join()
+        # new file should not be balanced (rebalance should have skipped it due to it being newer)
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 0 ', laterfile])
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 1 ', laterfile])
+        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 2 ', laterfile])
+        self.admin.assert_icommand_fail(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 3 ', laterfile])
+        # cleanup
+        os.unlink(laterfile)
+        shutil.rmtree(localdir, ignore_errors=True)
+        self.admin.assert_icommand(['iadmin','rmchildfromresc','demoResc','newchild'])
+        self.admin.assert_icommand(['itrim', '-Snewchild', '-r', '/tempZone'], 'STDOUT_SINGLELINE', 'Total size trimmed')
+        self.admin.assert_icommand(['iadmin','rmresc','newchild'])
+
+    def update_specific_replica_for_data_objs_in_repl_hier(self, name_pair_list, repl_num=0):
+        # determine which resource has replica 0
+        _,out,_ = self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '{1}'".format(name_pair_list[0][0], repl_num)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
+        replica_0_resc = out.splitlines()[0].split()[-1].split(';')[-1]
+        # remove from replication hierarchy
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', 'demoResc', replica_0_resc])
+        # update all the replica 0's
+        for (data_obj_name, filename) in name_pair_list:
+            self.admin.assert_icommand(['iput', '-R', replica_0_resc, '-f', '-n', str(repl_num), filename, data_obj_name])
+        # restore to replication hierarchy
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'demoResc', replica_0_resc])
+
     def test_rebalance_different_sized_replicas__3486(self):
         filename = 'test_rebalance_different_sized_replicas__3486'
         large_file_size = 40000000
@@ -4120,7 +4335,7 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand(['iput', filename])
         small_file_size = 20000
         lib.make_file(filename, small_file_size)
-        self.admin.assert_icommand(['iput', '-f', '-n', '0', filename])
+        self.update_specific_replica_for_data_objs_in_repl_hier([(filename, filename)])
         self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [filename, str(large_file_size)])
         self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', [filename, str(small_file_size)])
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
@@ -4161,7 +4376,7 @@ OUTPUT ruleExecOut
         file_size = 400
         lib.make_file(filename, file_size)
         self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['iput', '-f', '-n', '0', filename])
+        self.update_specific_replica_for_data_objs_in_repl_hier([(filename, filename)])
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
@@ -4204,9 +4419,13 @@ OUTPUT ruleExecOut
         num_data_objects_to_use = default_rebalance_batch_size + 10
         file_size = 327
         lib.make_file(filename, file_size)
+        filename_list = []
         for i in range(num_data_objects_to_use):
-            self.admin.assert_icommand(['iput', filename, filename + '_' + str(i)])
-            self.admin.assert_icommand(['iput', '-R', 'demoResc', '-f', '-n0', filename, filename + '_' + str(i)])
+            data_obj_name = filename + '_' + str(i)
+            self.admin.assert_icommand(['iput', filename, data_obj_name])
+            filename_list.append((data_obj_name, filename))
+        self.update_specific_replica_for_data_objs_in_repl_hier(filename_list)
+
 
         _, out, _ = self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', filename)
         def count_good_and_bad(ils_l_output):
@@ -4228,6 +4447,32 @@ OUTPUT ruleExecOut
         self.assertEqual(num_up_to_date, 3*num_data_objects_to_use)
         self.assertEqual(num_out_of_date, 0)
         os.unlink(filename)
+
+    def test_irepl_to_consumer_repl_hier_from_provider__4319(self):
+        filename = 'test_irepl_to_consumer_repl_hier_from_provider__4319'
+        lib.make_file(filename, 1 * 1024 * 1024 + 1)
+
+        repl_host = test.settings.HOSTNAME_2
+        self.admin.assert_icommand(['iadmin', 'modresc', 'unix2Resc', 'host', repl_host])
+        self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', repl_host])
+        test_resc = 'catalog_provider_resc'
+        self.admin.assert_icommand(['iadmin', 'mkresc', test_resc, 'unixfilesystem', test.settings.ICAT_HOSTNAME + ':/tmp/irods/test_vault'], 'STDOUT_SINGLELINE', "Creating")
+
+        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+
+        try:
+            self.admin.assert_icommand(['iput', '-R', test_resc, filename])
+            self.admin.assert_icommand(['irepl', '-R', 'demoResc', filename])
+
+            self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
+            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'rcDataCopy failed', start_index=initial_log_size))
+            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'SYS_BAD_FILE_DESCRIPTOR', start_index=initial_log_size))
+        finally:
+            self.admin.assert_icommand(['irm', '-f', filename])
+            os.unlink(filename)
+            self.admin.assert_icommand(['iadmin', 'modresc', 'unix2Resc', 'host', test.settings.HOSTNAME_2])
+            self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', test.settings.HOSTNAME_3])
+            self.admin.assert_icommand(['iadmin', 'rmresc', test_resc])
 
 @unittest.skipIf(False == test.settings.USE_MUNGEFS, "These tests require mungefs")
 class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittest.TestCase):

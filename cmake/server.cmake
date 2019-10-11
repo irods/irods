@@ -2,10 +2,8 @@
 
 install(
   TARGETS
-#  irodsAgent
   irodsServer
   irodsReServer
-  irodsXmsgServer
   hostname_resolves_to_local_address
   RUNTIME
   DESTINATION usr/sbin
@@ -40,7 +38,10 @@ install(
   ${CMAKE_SOURCE_DIR}/packaging/host_access_control_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/hosts_config.json.template
   ${CMAKE_SOURCE_DIR}/packaging/irodsMonPerf.config.in
+  ${CMAKE_SOURCE_DIR}/packaging/irods.logrotate
+  ${CMAKE_SOURCE_DIR}/packaging/irods.rsyslog
   ${CMAKE_SOURCE_DIR}/packaging/server_config.json.template
+  ${CMAKE_SOURCE_DIR}/packaging/server_log_setup_instructions.txt
   ${CMAKE_SOURCE_DIR}/packaging/server_setup_instructions.txt
   DESTINATION ${IRODS_HOME_DIRECTORY}/packaging
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
@@ -123,10 +124,17 @@ install(
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/irodsServerMonPerf
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/test_execstream.py
   ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/hello
-  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/univMSSInterface.sh
   DESTINATION ${IRODS_HOME_DIRECTORY}/msiExecCmd_bin
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ WORLD_READ
+  )
+
+install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/msiExecCmd_bin/univMSSInterface.sh.template
+  DESTINATION ${IRODS_HOME_DIRECTORY}/msiExecCmd_bin
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
   )
 
 install(
@@ -161,6 +169,14 @@ install(
 
 install(
   FILES
+  ${CMAKE_BINARY_DIR}/test/post_install_test/irodsTestPutGet
+  DESTINATION usr/sbin
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
+  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+  )
+
+install(
+  FILES
   ${CMAKE_SOURCE_DIR}/irodsctl
   DESTINATION ${IRODS_HOME_DIRECTORY}
   COMPONENT ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
@@ -169,7 +185,7 @@ install(
 
 
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_NAME "irods-server")
-set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${CPACK_DEBIAN_PACKAGE_VERSION}), irods-icommands (= ${CPACK_DEBIAN_PACKAGE_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, python, openssl, python-psutil, python-requests, lsof")
+set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_DEPENDS "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime (= ${CPACK_DEBIAN_PACKAGE_VERSION}), libc6, sudo, libssl1.0.0, libfuse2, python, openssl, python-psutil, python-requests, lsof")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_PROVIDES "irods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_CONFLICTS "eirods")
 set(CPACK_DEBIAN_${IRODS_PACKAGE_COMPONENT_SERVER_NAME_UPPERCASE}_PACKAGE_BREAKS "irods-icat, irods-resource")
@@ -184,9 +200,9 @@ endif()
 
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_NAME "irods-server")
 if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos")
-  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, irods-icommands = ${IRODS_VERSION}, openssl, python, python-psutil, python-requests, python-jsonschema")
+  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, openssl, python, python-psutil, python-requests, python-jsonschema")
 elseif (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "opensuse")
-  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, irods-icommands = ${IRODS_VERSION}, libopenssl1_0_0, python, openssl, python-psutil, python-requests, python-jsonschema")
+  set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PACKAGE_REQUIRES "${IRODS_PACKAGE_DEPENDENCIES_STRING}, irods-runtime = ${IRODS_VERSION}, libopenssl1_0_0, python, openssl, python-psutil, python-requests, python-jsonschema")
 endif()
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_PRE_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/preinst")
 set(CPACK_RPM_${IRODS_PACKAGE_COMPONENT_SERVER_NAME}_POST_INSTALL_SCRIPT_FILE "${CMAKE_SOURCE_DIR}/postinst")

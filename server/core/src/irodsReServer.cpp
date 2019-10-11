@@ -1,487 +1,400 @@
-/*-------------------------------------------------------------------------
- *
- * irodsReServer.cpp -- The iRODS Rule Execution server
- *
- *
- *-------------------------------------------------------------------------
- */
-
-#include "irodsReServer.hpp"
-#include "reServerLib.hpp"
-#include "rsApiHandler.hpp"
-#include "rsIcatOpr.hpp"
-#include <syslog.h>
-#include "miscServerFunct.hpp"
-#include "reconstants.hpp"
+#include "connection_pool.hpp"
 #include "initServer.hpp"
-#include "irods_server_state.hpp"
-#include "irods_exception.hpp"
+#include "irods_at_scope_exit.hpp"
+#include "irods_delay_queue.hpp"
+#include "irods_logger.hpp"
+#include "irods_query.hpp"
+#include "irods_re_structs.hpp"
 #include "irods_server_properties.hpp"
-#include "objMetaOpr.hpp"
-#include "genQuery.h"
-#include "getRodsEnv.h"
+#include "irods_server_state.hpp"
+#include "irodsReServer.hpp"
+#include "miscServerFunct.hpp"
+#include "rodsClient.h"
+#include "rodsPackTable.h"
+#include "rsGlobalExtern.hpp"
+#include "rsLog.hpp"
+#include "ruleExecDel.h"
+#include "ruleExecSubmit.h"
+#include "thread_pool.hpp"
 
-// =-=-=-=-=-=-=-
-// irods includes
-#include "irods_get_full_path_for_config_file.hpp"
+#include <atomic>
+#include <chrono>
+#include <functional>
+#include <thread>
 
-#include "irods_re_plugin.hpp"
-
-#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-using namespace boost::filesystem;
+#include <boost/filesystem/operations.hpp>
+#include <boost/format.hpp>
 
-time_t LastRescUpdateTime;
-char *CurLogfileName = NULL;    /* the path of the current logfile */
-static time_t LogfileLastChkTime = 0;
+using logger = irods::experimental::log;
+namespace {
+    void init_logger() {
+        logger::init();
+        irods::server_properties::instance().capture();
+        logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
+        logger::set_server_type("delay_server");
 
-void
-cleanupAndExit( int status ) {
-#if 0
-    rodsLog( LOG_NOTICE,
-             "Agent exiting with status = %d", status );
-#endif
-
-    if ( status >= 0 ) {
-        exit( 0 );
-    }
-    else {
-        exit( 1 );
-    }
-}
-
-void
-signalExit( int ) {
-#if 0
-    rodsLog( LOG_NOTICE,
-             "caught a signal and exiting\n" );
-#endif
-    cleanupAndExit( SYS_CAUGHT_SIGNAL );
-}
-
-char *
-getLogDir() {
-    char *myDir;
-
-    if ( ( myDir = ( char * ) getenv( "irodsLogDir" ) ) != ( char * ) NULL ) {
-        return myDir;
-    }
-    return DEF_LOG_DIR;
-}
-
-int get_log_file_rotation_time() {
-    char* rotation_time_str = getenv(LOGFILE_INT);
-    if ( rotation_time_str ) {
-        const int rotation_time = atoi(rotation_time_str);
-        if( rotation_time >= 1 ) {
-            return rotation_time;
+        if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
+            logger::set_server_host(hostname);
         }
     }
 
-    try {
-        const int rotation_time = irods::get_advanced_setting<const int>(irods::DEFAULT_LOG_ROTATION_IN_DAYS);
-        if(rotation_time >= 1) {
-            return rotation_time;
+    ruleExecSubmitInp_t fill_rule_exec_submit_inp(
+        const std::vector<std::string>& exec_info) {
+        namespace bfs = boost::filesystem;
+
+        ruleExecSubmitInp_t rule_exec_submit_inp{};
+        rule_exec_submit_inp.packedReiAndArgBBuf = (bytesBuf_t*)malloc(sizeof(bytesBuf_t));
+
+        const auto& rule_exec_id = exec_info[0].c_str();
+        const auto& rei_file_path = exec_info[2].c_str();
+        bfs::path p{rei_file_path};
+        if (!bfs::exists(p)) {
+            const int status{UNIX_FILE_STAT_ERR - errno};
+            THROW(status, (boost::format("stat error for rei file [%s], id [%s]") %
+                  rei_file_path % rule_exec_id).str());
         }
 
-    }
-    catch( irods::exception& _e ) {
-    }
+        rule_exec_submit_inp.packedReiAndArgBBuf->len = static_cast<int>(bfs::file_size(p));
+        rule_exec_submit_inp.packedReiAndArgBBuf->buf = malloc(rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
 
-    return DEF_LOGFILE_INT;
-
-} // get_log_file_rotation_time
-
-void
-getLogfileName( char **logFile, const char *logDir, const char *logFileName ) {
-    time_t myTime;
-    struct tm *mytm;
-    char *logfilePattern; // JMC - backport 4793
-    //char *logfileIntStr;
-    //int logfileInt;
-    int tm_mday = 1;
-    char logfileSuffix[MAX_NAME_LEN]; // JMC - backport 4793
-    char myLogDir[MAX_NAME_LEN];
-
-    /* Put together the full pathname of the logFile */
-
-    if ( logDir == NULL ) {
-        snprintf( myLogDir, MAX_NAME_LEN, "%-s", getLogDir() );
-    }
-    else {
-        snprintf( myLogDir, MAX_NAME_LEN, "%-s", logDir );
-    }
-    *logFile = ( char * ) malloc( strlen( myLogDir ) + strlen( logFileName ) + 24 );
-
-    LogfileLastChkTime = myTime = time( 0 );
-    mytm = localtime( &myTime );
-    const int rotation_time = get_log_file_rotation_time(); /*
-    if ( ( logfileIntStr = getenv( LOGFILE_INT ) ) == NULL ||
-            ( logfileInt = atoi( logfileIntStr ) ) < 1 ) {
-        logfileInt = DEF_LOGFILE_INT;
-    }*/
-
-    tm_mday = ( mytm->tm_mday / rotation_time ) * rotation_time + 1;
-    if ( tm_mday > mytm->tm_mday ) {
-        tm_mday -= rotation_time;
-    }
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4793
-    if ( ( logfilePattern = getenv( LOGFILE_PATTERN ) ) == NULL ) {
-        logfilePattern = DEF_LOGFILE_PATTERN;
-    }
-    mytm->tm_mday = tm_mday;
-    strftime( logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm );
-    sprintf( *logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix );
-    // =-=-=-=-=-=-=-
-}
-
-int
-logFileOpen( int runMode, const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
-#ifdef SYSLOG
-    int logFd = 0;
-#else
-    int logFd;
-#endif
-
-    if ( runMode == SINGLE_PASS && logDir == NULL ) {
-        return 1;
-    }
-
-    if ( logFileName == NULL ) {
-        fprintf( stderr, "logFileOpen: NULL input logFileName\n" );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    getLogfileName( &logFile, logDir, logFileName );
-    if ( NULL == logFile ) { // JMC cppcheck - nullptr
-        fprintf( stderr, "logFileOpen: unable to open log file" );
-        return -1;
-    }
-
-#ifndef SYSLOG
-    logFd = open( logFile, O_CREAT | O_WRONLY | O_APPEND, 0666 );
-#endif
-    if ( logFd < 0 ) {
-        fprintf( stderr, "logFileOpen: Unable to open %s. errno = %d\n",
-                 logFile, errno );
-        free( logFile );
-        return -1 * errno;
-    }
-
-    free( logFile );
-    return logFd;
-}
-
-void
-daemonize( int runMode, int logFd ) {
-    if ( runMode == SINGLE_PASS ) {
-        return;
-    }
-
-    if ( runMode == STANDALONE_SERVER ) {
-        if ( fork() ) {
-            exit( 0 );
+        int fd = open(rei_file_path, O_RDONLY, 0);
+        if (fd < 0) {
+            const int status{UNIX_FILE_STAT_ERR - errno};
+            THROW(status, (boost::format("open error for rei file [%s]") %
+                  rei_file_path).str());
         }
 
-        if ( setsid() < 0 ) {
-            fprintf( stderr, "daemonize" );
-            perror( "cannot create a new session." );
-            exit( 1 );
+        memset(rule_exec_submit_inp.packedReiAndArgBBuf->buf, 0,
+               rule_exec_submit_inp.packedReiAndArgBBuf->len + 1);
+        ssize_t status{read(fd, rule_exec_submit_inp.packedReiAndArgBBuf->buf,
+                        rule_exec_submit_inp.packedReiAndArgBBuf->len)};
+        close(fd);
+        if (rule_exec_submit_inp.packedReiAndArgBBuf->len != static_cast<int>(status)) {
+            if (status >= 0) {
+                THROW(SYS_COPY_LEN_ERR, (boost::format("read error for [%s],toRead [%d], read [%d]") %
+                      rei_file_path % rule_exec_submit_inp.packedReiAndArgBBuf->len % status).str());
+            }
+            status = UNIX_FILE_READ_ERR - errno;
+            irods::log(LOG_ERROR, (boost::format("read error for file [%s], status = [%d]") %
+                       rei_file_path % status).str());
         }
+
+        rstrcpy(rule_exec_submit_inp.ruleExecId, rule_exec_id, NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.ruleName, exec_info[1].c_str(), META_STR_LEN);
+        rstrcpy(rule_exec_submit_inp.reiFilePath, rei_file_path, MAX_NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.userName, exec_info[3].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.exeAddress, exec_info[4].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.exeTime, exec_info[5].c_str(), TIME_LEN);
+        rstrcpy(rule_exec_submit_inp.exeFrequency, exec_info[6].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.priority, exec_info[7].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.lastExecTime, exec_info[8].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.exeStatus, exec_info[9].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.estimateExeTime, exec_info[10].c_str(), NAME_LEN);
+        rstrcpy(rule_exec_submit_inp.notificationAddr, exec_info[11].c_str(), NAME_LEN);
+
+        return rule_exec_submit_inp;
     }
 
-    close( 0 );
-    close( 1 );
-    close( 2 );
+    int update_entry_for_repeat(
+        rcComm_t& _comm,
+        ruleExecSubmitInp_t& _inp,
+        int _exec_status) {
+        // Prepare input for rule exec mod
+        _exec_status = _exec_status > 0 ? 0 : _exec_status;
 
-    ( void ) dup2( logFd, 0 );
-    ( void ) dup2( logFd, 1 );
-    ( void ) dup2( logFd, 2 );
-    close( logFd );
-}
+        // Prepare input for getting next repeat time
+        char current_time[NAME_LEN]{};
+        char* ef_string = _inp.exeFrequency;
+        char next_time[NAME_LEN]{};
+        snprintf(current_time, NAME_LEN, "%ld", std::time(nullptr));
 
-extern int msiAdmClearAppRuleStruct( ruleExecInfo_t *rei );
+        const auto delete_rule_exec_info{[&_comm, &_inp]() -> int {
+            ruleExecDelInp_t rule_exec_del_inp{};
+            rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
+            const int status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
+            if (status < 0) {
+                irods::log(LOG_ERROR, (boost::format(
+                           "%s:%d - rcRuleExecDel failed %d for id %s") %
+                           __FUNCTION__ % __LINE__ % status % rule_exec_del_inp.ruleExecId).str());
+            }
+            return status;
+        }};
 
-int usage( char *prog );
+        const auto update_rule_exec_info = [&](const bool repeat_rule) -> int {
+            ruleExecModInp_t rule_exec_mod_inp{};
+            rstrcpy(rule_exec_mod_inp.ruleId, _inp.ruleExecId, NAME_LEN);
 
-int
-main( int argc, char **argv ) {
-    int status;
-    int c;
-    int runMode = SERVER;
-    int flagval = 0;
-    char *logDir = NULL;
-    char *tmpStr;
-    int logFd;
-    char *ruleExecId = NULL;
-    int jobType = 0;
+            addKeyVal(&rule_exec_mod_inp.condInput, RULE_LAST_EXE_TIME_KW, current_time);
+            addKeyVal(&rule_exec_mod_inp.condInput, RULE_EXE_TIME_KW, next_time);
+            if(repeat_rule) {
+                addKeyVal(&rule_exec_mod_inp.condInput, RULE_EXE_FREQUENCY_KW, ef_string);
+            }
+            const int status = rcRuleExecMod(&_comm, &rule_exec_mod_inp);
+            if (status < 0) {
+                irods::log(LOG_ERROR, (boost::format(
+                           "%s:%d - rcRuleExecMod failed %d for id %s") %
+                           __FUNCTION__ % __LINE__ % status % rule_exec_mod_inp.ruleId).str());
+            }
+            if (rule_exec_mod_inp.condInput.len > 0) {
+                clearKeyVal(&rule_exec_mod_inp.condInput);
+            }
+            return status;
+        };
 
-    ProcessType = CLIENT_PT;
-
-    signal( SIGINT, signalExit );
-    signal( SIGHUP, signalExit );
-    signal( SIGTERM, signalExit );
-    signal( SIGUSR1, signalExit );
-    signal( SIGPIPE, signalExit );
-    /* XXXXX switched to SIG_DFL for embedded python. child process
-     * went away. But probably have to call waitpid.
-     * signal(SIGCHLD, SIG_IGN); */
-    signal( SIGCHLD, SIG_DFL );
-
-    /* Handle option to log sql commands */
-    tmpStr = getenv( SP_LOG_SQL );
-    if ( tmpStr != NULL ) {
-#ifdef SYSLOG
-        int j = atoi( tmpStr );
-        rodsLogSqlReq( j );
-#else
-        rodsLogSqlReq( 1 );
-#endif
-    }
-
-    /* Set the logging level */
-    tmpStr = getenv( SP_LOG_LEVEL );
-    if ( tmpStr != NULL ) {
-        int i;
-        i = atoi( tmpStr );
-        rodsLogLevel( i );
-    }
-    else {
-        rodsLogLevel( LOG_NOTICE ); /* default */
-    }
-
-#ifdef SYSLOG
-    /* Open a connection to syslog */
-    openlog( "rodsReServer", LOG_ODELAY | LOG_PID, LOG_DAEMON );
-#endif
-
-    while ( ( c = getopt( argc, argv, "sSvD:j:t:" ) ) != EOF ) {
-        switch ( c ) {
-        case 's':
-            runMode = SINGLE_PASS;
-            break;
-        case 'S':
-            runMode = STANDALONE_SERVER;
-            break;
-        case 'v':   /* verbose */
-            flagval |= v_FLAG;
-            break;
-        case 'D':   /* user specified a log directory */
-            logDir = strdup( optarg );
-            break;
-        case 'j':
-            runMode = SINGLE_PASS;
-            ruleExecId = strdup( optarg );
-            break;
-        case 't':
-            jobType = atoi( optarg );
-            break;
-        default:
-            usage( argv[0] );
-            return 1;
+        logger::delay_server::debug((boost::format("[%s:%d] - time:[%s],ef:[%s],next:[%s]") %
+            __FUNCTION__ % __LINE__ % current_time % ef_string % next_time).str());
+        const int repeat_status = getNextRepeatTime(current_time, ef_string, next_time);
+        switch(repeat_status) {
+            case 0:
+                // Continue with given delay regardless of success
+                return update_rule_exec_info(false);
+            case 1:
+                // Remove if successful, otherwise update next exec time
+                return !_exec_status ? delete_rule_exec_info() : update_rule_exec_info(false);
+            case 2:
+                // Remove regardless of success
+                return delete_rule_exec_info();
+            case 3:
+                // Update with new exec time and frequency regardless of success
+                return update_rule_exec_info(true);
+            case 4:
+                // Delete if successful, otherwise update with new exec time and frequency
+                return !_exec_status ? delete_rule_exec_info() : update_rule_exec_info(true);
+            default:
+                irods::log(LOG_ERROR, (boost::format(
+                           "%s:%d - getNextRepeatTime returned unknown value %d for id %s") %
+                           __FUNCTION__ % __LINE__ % repeat_status % _inp.ruleExecId).str());
+                return repeat_status; 
         }
     }
 
-    if ( ( logFd = logFileOpen( runMode, logDir, RULE_EXEC_LOGFILE ) ) < 0 ) {
-        return 1;
+    exec_rule_expression_t pack_exec_rule_expression(
+        ruleExecSubmitInp_t& _inp) {
+        exec_rule_expression_t exec_rule{};
+
+        int packed_rei_len = _inp.packedReiAndArgBBuf->len;
+        exec_rule.packed_rei_.len = packed_rei_len;
+        exec_rule.packed_rei_.buf = _inp.packedReiAndArgBBuf->buf;
+
+        size_t rule_len = strlen(_inp.ruleName);
+        exec_rule.rule_text_.buf = (char*)malloc(rule_len+1);
+        exec_rule.rule_text_.len = rule_len+1;
+        rstrcpy( (char*)exec_rule.rule_text_.buf, _inp.ruleName, rule_len+1);
+        return exec_rule;
     }
 
-    daemonize( runMode, logFd );
+    int run_rule_exec(
+        rcComm_t& _comm,
+        ruleExecSubmitInp_t& _inp) {
+        // unpack the rei to get the user information
+        ruleExecInfoAndArg_t* rei_and_arg{};
+        int status = unpackStruct(
+                         _inp.packedReiAndArgBBuf->buf,
+                         (void**)&rei_and_arg,
+                         "ReiAndArg_PI",
+                         RodsPackTable,
+                         NATIVE_PROT);
+        if (status < 0) {
+            logger::delay_server::error((boost::format("[%s] - unpackStruct error. status [%d]") %
+                __FUNCTION__ % status).str());
+            return status;
+        }
 
-    if ( ruleExecId != NULL ) {
-        status = reServerSingleExec( ruleExecId, jobType );
-        if ( status >= 0 ) {
-            return 0;
+        // set the proxy user from the rei before delegating to the agent
+        // following behavior from touchupPackedRei
+        _comm.proxyUser = *rei_and_arg->rei->uoic;
+
+        exec_rule_expression_t exec_rule = pack_exec_rule_expression(_inp);
+        exec_rule.params_ = rei_and_arg->rei->msParamArray;
+        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&exec_rule, &rei_and_arg] {
+            clearBBuf(&exec_rule.rule_text_);
+            if(rei_and_arg->rei) {
+                if(rei_and_arg->rei->rsComm) {
+                    free(rei_and_arg->rei->rsComm);
+                }
+                freeRuleExecInfoStruct(rei_and_arg->rei, (FREE_MS_PARAM | FREE_DOINP));
+            }
+            free(rei_and_arg);
+        }};
+
+        status = rcExecRuleExpression(&_comm, &exec_rule);
+        if (strlen(_inp.exeFrequency) > 0) {
+            return update_entry_for_repeat(_comm, _inp, status);
+        }
+        else if(status < 0) {
+            logger::delay_server::error((boost::format("ruleExec of %s: %s failed.") %
+                _inp.ruleExecId % _inp.ruleName).str());
+            ruleExecDelInp_t rule_exec_del_inp{};
+            rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
+            status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
+            if (status < 0) {
+                logger::delay_server::error((boost::format("rcRuleExecDel failed for %s, stat=%d") %
+                    _inp.ruleExecId % status).str());
+                // Establish a new connection as the original may be invalid
+                rodsEnv env{};
+                _getRodsEnv(env);
+                auto tmp_pool = std::make_shared<irods::connection_pool>(
+                    1,
+                    env.rodsHost,
+                    env.rodsPort,
+                    env.rodsUserName,
+                    env.rodsZone,
+                    env.irodsConnectionPoolRefreshTime);
+                status = rcRuleExecDel(&static_cast<rcComm_t&>(tmp_pool->get_connection()), &rule_exec_del_inp);
+                if (status < 0) {
+                    rodsLog(LOG_ERROR,
+                            "rcRuleExecDel failed again for %s, stat=%d - exiting",
+                            _inp.ruleExecId, status);
+                }
+            }
+            return status;
         }
         else {
-            return 1;
+            // Success - remove rule from catalog
+            ruleExecDelInp_t rule_exec_del_inp{};
+            rstrcpy(rule_exec_del_inp.ruleExecId, _inp.ruleExecId, NAME_LEN);
+            status = rcRuleExecDel(&_comm, &rule_exec_del_inp);
+            if(status < 0) {
+                logger::delay_server::error((boost::format("Failed deleting rule exec %s from catalog") %
+                    rule_exec_del_inp.ruleExecId).str());
+            }
+            return status;
         }
     }
-    else {
-        reServerMain( logDir );
-    }
 
-    return 0;
+    // Task posted to io_service
+    void execute_rule(
+        std::shared_ptr<irods::connection_pool> _conn_pool,
+        irods::delay_queue& _queue,
+        const std::vector<std::string>& _rule_info,
+        const std::atomic_bool& _re_server_terminated) {
+        if (_re_server_terminated) {
+            return;
+        }
+        // Prepare input for rule execution API call
+        ruleExecSubmitInp_t rule_exec_submit_inp{};
+
+        irods::at_scope_exit<std::function<void()>> at_scope_exit{[&rule_exec_submit_inp] {
+            freeBBuf(rule_exec_submit_inp.packedReiAndArgBBuf);
+        }};
+
+        try{
+            rule_exec_submit_inp = fill_rule_exec_submit_inp(_rule_info);
+        } catch(const irods::exception& e) {
+            irods::log(e);
+            return;
+        }
+
+        try {
+            logger::delay_server::trace((boost::format("Executing rule [%s]") % rule_exec_submit_inp.ruleExecId).str());
+            int status = run_rule_exec(_conn_pool->get_connection(), rule_exec_submit_inp);
+            if(status < 0) {
+                logger::delay_server::error((boost::format("Rule exec for [%s] failed. status = [%d]") %
+                    rule_exec_submit_inp.ruleExecId % status).str());
+            }
+        } catch(const std::exception& e) {
+            logger::delay_server::error((boost::format("Exception caught during execution of rule [%s]: [%s]") %
+                rule_exec_submit_inp.ruleExecId % e.what()).str());
+        }
+
+        _queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
+    }
 }
 
-int usage( char *prog ) {
-    fprintf( stderr, "Usage: %s [-sSv] [j jobID] [-t jobType] [-D logDir] \n", prog );
-    fprintf( stderr, "-s   Run like a client process - no fork\n" );
-    fprintf( stderr, "-S   Run like a daemon server process - forked\n" );
-    fprintf( stderr, "-j jobID   Run a single job\n" );
-    fprintf( stderr, "-t jobType An integer for job type. \n" );
-    return 0;
-}
+int main() {
+    init_logger();
+    logger::delay_server::debug("Initializing...");
 
-int
-chkLogfileName( const char *logDir, const char *logFileName ) {
-    char *logFile = NULL;
-    int i;
+    static std::atomic_bool re_server_terminated{};
+    const auto signal_exit_handler = [](int signal) {
+        logger::delay_server::error((boost::format("RE server received signal [%d]") % signal).str());
+        re_server_terminated = true;
+    };
+    signal(SIGINT, signal_exit_handler);
+    signal(SIGHUP, signal_exit_handler);
+    signal(SIGTERM, signal_exit_handler);
+    signal(SIGUSR1, signal_exit_handler);
 
-    time_t myTime = time( 0 );
-    if ( myTime < LogfileLastChkTime + LOGFILE_CHK_INT ) {
-        /* not time yet */
-        return 0;
-    }
+    const auto sleep_time = [] {
+        int sleep_time = irods::default_re_server_sleep_time;
+        try {
+            sleep_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
+        } catch (const irods::exception& e) {
+            irods::log(e);
+        }
+        return sleep_time;
+    }();
 
-    getLogfileName( &logFile, logDir, logFileName );
+    const auto thread_count = [] {
+        int thread_count = irods::default_max_number_of_concurrent_re_threads;
+        try {
+            thread_count = irods::get_advanced_setting<const int>(irods::CFG_MAX_NUMBER_OF_CONCURRENT_RE_PROCS);
+        } catch (const irods::exception& e) {
+            irods::log(e);
+        }
+        return thread_count;
+    }();
 
-    if ( CurLogfileName != NULL && strcmp( CurLogfileName, logFile ) == 0 ) {
-        free( logFile );
-        return 0;
-    }
+    irods::thread_pool thread_pool{thread_count};
 
-    if ( ( i = open( logFile, O_CREAT | O_RDWR | O_APPEND, 0644 ) ) < 0 ) {
-        fprintf( stderr, "Unable to open logFile %s\n", logFile );
-        free( logFile );
-        return -1;
-    }
-    else {
-        lseek( i, 0, SEEK_END );
-    }
+    irods::delay_queue queue;
 
-    if ( CurLogfileName != NULL ) {
-        free( CurLogfileName );
-    }
-
-    CurLogfileName = logFile;
-
-    close( 0 );
-    close( 1 );
-    close( 2 );
-    ( void ) dup2( i, 0 );
-    ( void ) dup2( i, 1 );
-    ( void ) dup2( i, 2 );
-    ( void ) close( i );
-
-    return 0;
-}
-
-
-
-void
-reServerMain( char* logDir ) {
-
-    genQueryOut_t *genQueryOut = NULL;
-    reExec_t reExec;
-    int repeatedQueryErrorCount = 0;
-
-    initReExec( &reExec );
-    LastRescUpdateTime = time( NULL );
-
-    int re_exec_time;
-    try {
-        re_exec_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_EXEC_TIME);
-    } catch ( const irods::exception& e ) {
-        irods::log(e);
-        re_exec_time = RE_SERVER_EXEC_TIME;
-    }
-
-    try {
-        while ( true ) {
-            rodsEnv env;
-            _reloadRodsEnv(env);
-            rErrMsg_t rcConnect_error_msg;
-            memset(&rcConnect_error_msg, 0, sizeof(rcConnect_error_msg));
-            rcComm_t* rc_comm = rcConnect(
-                      env.rodsHost,
-                      env.rodsPort,
-                      env.rodsUserName,
-                      env.rodsZone,
-                      NO_RECONN, &rcConnect_error_msg );
-              if (!rc_comm) {
-                  rodsLog(LOG_ERROR, "rcConnect failed %ji, %s", static_cast<intmax_t>(rcConnect_error_msg.status), rcConnect_error_msg.msg);
-                  reSvrSleep();
-                  continue;
-              }
-
-            int status = clientLogin( rc_comm );
-            if (status < 0) {
-                const int status_rcDisconnect = rcDisconnect(rc_comm);
-                if (status_rcDisconnect < 0) {
-                    rodsLog(LOG_ERROR, "reServerMain: rcDisconnect failed [%d]", status_rcDisconnect);
-                }
-                rodsLog(LOG_ERROR, "clientLogin failed %d", status);
-                reSvrSleep();
-                continue;
-            }
-
-#ifndef SYSLOG
-            chkLogfileName( logDir, RULE_EXEC_LOGFILE );
-#endif
-            status = getReInfo( rc_comm, &genQueryOut );
-            if ( status < 0 ) {
-                if ( status != CAT_NO_ROWS_FOUND ) {
-                    rodsLog(LOG_ERROR, "reServerMain: getReInfo error. status = %d", status );
-                } else {   // JMC - backport 4520
-                    repeatedQueryErrorCount++;
-                }
-                rcDisconnect( rc_comm );
-                reSvrSleep( );
-                continue;
-            }
-            else {   // JMC - backport 4520
-                repeatedQueryErrorCount = 0;
-            }
-
-            const time_t endTime = time( NULL ) + re_exec_time;
-            int runCnt = runQueuedRuleExec( rc_comm, &reExec, &genQueryOut, endTime, 0 );
-
-            if ( runCnt > 0 ||
-                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
-                /* need to refresh */
-                closeQueryOut( rc_comm, genQueryOut );
-                freeGenQueryOut( &genQueryOut );
-                status = getReInfo( rc_comm, &genQueryOut );
-                if ( status < 0 ) {
-                    rcDisconnect( rc_comm );
-                    reSvrSleep( );
-                    continue;
+    while(!re_server_terminated) {
+        try {
+            rodsEnv env{};
+            _getRodsEnv(env);
+            auto query_conn_pool = std::make_shared<irods::connection_pool>(
+                1,
+                env.rodsHost,
+                env.rodsPort,
+                env.rodsUserName,
+                env.rodsZone,
+                env.irodsConnectionPoolRefreshTime);
+            auto query_conn = query_conn_pool->get_connection();
+            const auto now = std::to_string(std::time(nullptr));
+            const auto qstr = (boost::format(
+                "SELECT RULE_EXEC_ID, \
+                        RULE_EXEC_NAME, \
+                        RULE_EXEC_REI_FILE_PATH, \
+                        RULE_EXEC_USER_NAME, \
+                        RULE_EXEC_ADDRESS, \
+                        RULE_EXEC_TIME, \
+                        RULE_EXEC_FREQUENCY, \
+                        RULE_EXEC_PRIORITY, \
+                        RULE_EXEC_LAST_EXE_TIME, \
+                        RULE_EXEC_STATUS, \
+                        RULE_EXEC_ESTIMATED_EXE_TIME, \
+                        RULE_EXEC_NOTIFICATION_ADDR \
+                WHERE RULE_EXEC_TIME <= '%s'") % now).str();
+            irods::query<rcComm_t> qobj{&static_cast<rcComm_t&>(query_conn), qstr};
+            if(qobj.size() > 0) {
+                rodsEnv env{};
+                _getRodsEnv(env);
+                auto conn_pool = std::make_shared<irods::connection_pool>(
+                    std::min<int>(thread_count, qobj.size()),
+                    env.rodsHost,
+                    env.rodsPort,
+                    env.rodsUserName,
+                    env.rodsZone,
+                    env.irodsConnectionPoolRefreshTime);
+                for(const auto& result: qobj) {
+                    const auto& rule_id = result[0];
+                    if(queue.contains_rule_id(rule_id)) {
+                        continue;
+                    }
+                    logger::delay_server::trace((boost::format("Enqueueing rule [%s]") % rule_id).str());
+                    queue.enqueue_rule(rule_id);
+                    irods::thread_pool::post(thread_pool, [conn_pool, &queue, result] {
+                        execute_rule(conn_pool, queue, result, re_server_terminated);
+                    });
                 }
             }
-
-            /* run the failed job */
-            runCnt = runQueuedRuleExec(
-                         rc_comm,
-                         &reExec,
-                         &genQueryOut,
-                         endTime,
-                         RE_FAILED_STATUS );
-            closeQueryOut( rc_comm, genQueryOut );
-            freeGenQueryOut( &genQueryOut );
-            if ( runCnt > 0 ||
-                    ( genQueryOut != NULL && genQueryOut->continueInx > 0 ) ) {
-                rcDisconnect( rc_comm );
-                reSvrSleep();
-                continue;
-            } else {
-                /* nothing got run */
-                reSvrSleep( );
-            }
-
-            rcDisconnect( rc_comm );
-        } // while
-
-        rodsLog(LOG_NOTICE, "rule engine is exiting");
-    } catch (const irods::exception& e_) {
-        rodsLog(LOG_ERROR, "rule engine is exiting because of irods::exception");
-        std::cerr << e_.what() << std::endl;
-        return;
+        } catch(const std::exception& e) {
+            irods::log(LOG_ERROR, e.what());
+        } catch(const irods::exception& e) {
+            irods::log(e);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
     }
-} // reServerMain
-
-int reSvrSleep( ) {
-    int re_sleep_time;
-    try {
-        re_sleep_time = irods::get_advanced_setting<const int>(irods::CFG_RE_SERVER_SLEEP_TIME);
-    } catch ( const irods::exception& e ) {
-        irods::log(e);
-        re_sleep_time = RE_SERVER_SLEEP_TIME;
-    }
-
-    rodsSleep( re_sleep_time, 0 );
-
-    return 0;
 }

@@ -185,6 +185,7 @@ extern "C" {
         _env->irodsMaxSizeForSingleBuffer       = 32;
         _env->irodsDefaultNumberTransferThreads = 4;
         _env->irodsTransBufferSizeForParaTrans  = 4;
+        _env->irodsConnectionPoolRefreshTime    = 300;
 
         // default auth scheme
         snprintf(
@@ -205,10 +206,6 @@ extern "C" {
             _env->rodsHost );
 
         capture_string_property(
-            irods::CFG_IRODS_XMSG_HOST_KW,
-            _env->xmsgHost );
-
-        capture_string_property(
             irods::CFG_IRODS_HOME_KW,
             _env->rodsHome );
 
@@ -223,10 +220,6 @@ extern "C" {
         capture_integer_property(
             irods::CFG_IRODS_PORT_KW,
             _env->rodsPort );
-
-        capture_integer_property(
-            irods::CFG_IRODS_XMSG_PORT_KW,
-            _env->xmsgPort );
 
         capture_string_property(
             irods::CFG_IRODS_DEFAULT_RESOURCE_KW,
@@ -347,6 +340,10 @@ extern "C" {
         capture_integer_property(
             irods::CFG_IRODS_TRANS_BUFFER_SIZE_FOR_PARA_TRANS,
             _env->irodsTransBufferSizeForParaTrans );
+
+        capture_integer_property(
+            irods::CFG_IRODS_CONNECTION_POOL_REFRESH_TIME,
+            _env->irodsConnectionPoolRefreshTime );
 
         capture_string_property(
             irods::CFG_IRODS_PLUGINS_HOME_KW,
@@ -481,20 +478,10 @@ extern "C" {
             env_var,
             _env->rodsHost );
 
-        env_var = irods::CFG_IRODS_XMSG_HOST_KW;
-        capture_string_env_var(
-            env_var,
-            _env->xmsgHost );
-
         env_var = irods::CFG_IRODS_PORT_KW;
         capture_integer_env_var(
             env_var,
             _env->rodsPort );
-
-        env_var = irods::CFG_IRODS_XMSG_PORT_KW;
-        capture_integer_env_var(
-            env_var,
-            _env->xmsgPort );
 
         env_var = irods::CFG_IRODS_HOME_KW;
         capture_string_env_var(

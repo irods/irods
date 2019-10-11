@@ -59,8 +59,10 @@ from irods.configuration import IrodsConfig
 from irods.controller import IrodsController
 from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
+from irods.password_obfuscation import maximum_password_length
+from irods.logging_infrastructure import setup_rsyslog_and_logrotate, rsyslog_config_path, logrotate_config_path
 
-def setup_server(irods_config, json_configuration_file=None):
+def setup_server(irods_config, json_configuration_file=None, test_mode=False):
     l = logging.getLogger(__name__)
 
     check_hostname()
@@ -88,6 +90,7 @@ def setup_server(irods_config, json_configuration_file=None):
         irods_user, irods_group = get_irods_user_and_group(irods_config)
 
     setup_service_account(irods_config, irods_user, irods_group)
+    setup_rsyslog_and_logrotate(register_tty=False)
 
     #Do the rest of the setup as the irods user
     if os.getuid() == 0:
@@ -123,32 +126,30 @@ def setup_server(irods_config, json_configuration_file=None):
         database_interface.setup_catalog(irods_config, default_resource_directory=default_resource_directory)
 
     l.info(irods.lib.get_header('Starting iRODS...'))
-    IrodsController(irods_config).start()
+    IrodsController(irods_config).start(test_mode=test_mode)
 
     if irods_config.is_resource:
         irods.lib.execute_command(['iadmin', 'mkresc', irods_config.server_config['default_resource_name'], 'unixfilesystem', ':'.join([irods.lib.get_hostname(), default_resource_directory]), ''])
 
     test_put(irods_config)
 
+    l.info(irods.lib.get_header('Log Configuration Notes'))
+    l.info(('The iRODS log file is managed by rsyslog and logrotate.\n'
+            'The locations of the log file and configuration files are listed below.\n\n'
+            '  Log File Path               : ' + irods.paths.server_log_path() + '\n'
+            '  Rsyslog Configuration Path  : ' + rsyslog_config_path() + '\n'
+            '  Logrotate Configuration Path: ' + logrotate_config_path() + '\n\n'
+            'iRODS will never touch these configuration files again.\n'
+            'If you need to make adjustments, you must do so manually.'))
+
     l.info(irods.lib.get_header('iRODS is installed and running'))
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
+    l.info(irods.lib.get_header('Running Post-Install Test'))
 
-    l.info(irods.lib.get_header('Attempting test put'))
-
-    test_text = 'This is a test file written by the iRODS installation script.'
-    with tempfile.NamedTemporaryFile(mode='wt', suffix=irods_config.server_config['default_resource_name']) as f:
-        print(test_text, file=f, end='')
-        f.flush()
-        l.info('Putting the test file into iRODS...')
-        irods.lib.execute_command(['iput', f.name])
-        test_file_name = os.path.basename(f.name)
-    l.info('Getting the test file from iRODS...')
-    if irods.lib.execute_command(['iget', test_file_name, '-'])[0] != test_text:
-        raise IrodsError('The text retrieved from iRODS did not match the text in the file put into iRODS')
-    l.info('Removing the test file from iRODS...')
-    irods.lib.execute_command(['irm', '-f', test_file_name])
+    if 0 != irods.lib.execute_command_permissive(irods.paths.test_put_get_executable())[2]:
+        raise IrodsError('Post-install test failed. Please check your configuration.')
 
     l.info('Success.')
 
@@ -371,7 +372,7 @@ def setup_client_environment(irods_config):
 
     irods_config.admin_password = irods.lib.prompt(
         'iRODS server\'s administrator password',
-        input_filter=irods.lib.character_count_filter(minimum=1, field='Admin password'),
+        input_filter=irods.lib.character_count_filter(minimum=3, maximum=maximum_password_length, field='Admin password'),
         echo=False)
 
     print('\n', end='')
@@ -401,6 +402,7 @@ def setup_client_environment(irods_config):
             'irods_maximum_size_for_single_buffer_in_megabytes': irods_config.server_config['advanced_settings']['maximum_size_for_single_buffer_in_megabytes'],
             'irods_default_number_of_transfer_threads': irods_config.server_config['advanced_settings']['default_number_of_transfer_threads'],
             'irods_transfer_buffer_size_for_parallel_transfer_in_megabytes': irods_config.server_config['advanced_settings']['transfer_buffer_size_for_parallel_transfer_in_megabytes'],
+            'irods_connection_pool_refresh_time_in_seconds': 300,
         }
     if not os.path.exists(os.path.dirname(irods_config.client_environment_path)):
         os.makedirs(os.path.dirname(irods_config.client_environment_path), mode=0o700)
@@ -433,7 +435,9 @@ def main():
 
 
     try:
-        setup_server(irods_config, json_configuration_file=options.json_configuration_file)
+        setup_server(irods_config,
+                     json_configuration_file=options.json_configuration_file,
+                     test_mode=options.test_mode)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')

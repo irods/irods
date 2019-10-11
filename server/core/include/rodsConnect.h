@@ -64,7 +64,6 @@ typedef struct rodsServerHost {
     rcComm_t *conn;
     int rcatEnabled;
     int reHostFlag;
-    int xmsgHostFlag;
     int localFlag;
     int status;
     void *zoneInfo;
@@ -90,21 +89,21 @@ extern "C" {
 #endif
 
 int
-queAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
+queueAddr( rodsServerHost_t *rodsServerHost, char *myHostName );
 int
-queHostName( rodsServerHost_t *rodsServerHost, const char *myHostName, int topFlag );
+queueHostName( rodsServerHost_t *rodsServerHost, const char *myHostName, int topFlag );
 int
-queRodsServerHost( rodsServerHost_t **rodsServerHostHead,
+queueRodsServerHost( rodsServerHost_t **rodsServerHostHead,
                    rodsServerHost_t *myRodsServerHost );
 rodsServerHost_t *
 mkServerHost( char *myHostAddr, char *zoneName );
 int
-queZone( const char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
+queueZone( const char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
          rodsServerHost_t *slaveServerHost );
 int
 matchHostConfig( rodsServerHost_t *myRodsServerHost );
 int
-queConfigName( rodsServerHost_t *configServerHost,
+queueConfigName( rodsServerHost_t *configServerHost,
                rodsServerHost_t *myRodsServerHost );
 int
 getAndConnRcatHost( rsComm_t *rsComm, int rcatType, const char *rcatZoneHint,
@@ -135,8 +134,6 @@ int
 resetRcatHost( int rcatType, const char *rcatZoneHint );
 int
 isLocalHost( const char *hostAddr );
-int
-getXmsgHost( rodsServerHost_t **rodsServerHost );
 int
 getLocalZoneInfo( zoneInfo_t **outZoneInfo );
 char *

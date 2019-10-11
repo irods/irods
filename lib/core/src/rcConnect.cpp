@@ -77,6 +77,11 @@ rcComm_t* _rcConnect(
 
     if ( ( tmpStr = getenv( IRODS_PROT ) ) != NULL ) {
         conn->irodsProt = ( irodsProt_t )atoi( tmpStr );
+
+        if (conn->irodsProt != NATIVE_PROT && conn->irodsProt != XML_PROT) {
+            rodsLog(LOG_ERROR, "Invalid protocol value.");
+            return nullptr;
+        }
     }
     else {
         conn->irodsProt = NATIVE_PROT;
@@ -352,22 +357,6 @@ cleanRcComm( rcComm_t *conn ) {
 
     return 0;
 }
-
-rcComm_t *
-rcConnectXmsg( rodsEnv *myRodsEnv, rErrMsg_t *errMsg ) {
-    rcComm_t *conn;
-
-    if ( myRodsEnv == NULL ) {
-        fprintf( stderr, "rcConnectXmsg: NULL myRodsEnv input\n" );
-        return NULL;
-    }
-
-    conn = rcConnect( myRodsEnv->xmsgHost, myRodsEnv->xmsgPort,
-                      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 0, errMsg );
-
-    return conn;
-}
-
 
 void
 cliReconnManager( rcComm_t *conn ) {

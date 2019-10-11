@@ -388,10 +388,6 @@ class IrodsConfig(object):
         return paths.server_log_path()
 
     @property
-    def re_log_path(self):
-        return paths.re_log_path()
-
-    @property
     def server_bin_directory(self):
         return paths.server_bin_directory()
 
@@ -402,10 +398,6 @@ class IrodsConfig(object):
     @property
     def rule_engine_executable(self):
         return paths.rule_engine_executable()
-
-    @property
-    def xmsg_server_executable(self):
-        return paths.xmsg_server_executable()
 
     @property
     def database_schema_update_directory(self):

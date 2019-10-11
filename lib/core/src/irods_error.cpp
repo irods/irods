@@ -15,6 +15,13 @@
 #include <sstream>
 
 namespace irods {
+
+// =-=-=-=-=-=-=-
+// Static private const char * strings:
+const char *error::iRODS_token_      = "iRODS";
+const char *error::colon_token_      = " : ";
+const char *error::status_token_     = " status [";
+
 // =-=-=-=-=-=-=-
 // private - helper fcn to build the result string
     std::string error::build_result_string(
@@ -41,7 +48,7 @@ namespace irods {
             line_info = _file + ":<unknown line number>:" + _fcn;
         }
 
-        size_t pos = line_info.find( "iRODS" );
+        size_t pos = line_info.find( error::iRODS_token_ );
         if ( std::string::npos != pos ) {
             line_info = line_info.substr( pos );
         }
@@ -53,8 +60,8 @@ namespace irods {
 
         // =-=-=-=-=-=-=-
         // compose resulting message given all components
-        result += line_info + " : " +
-                  + " status [" + irods_err + "]  errno [" + errno_str + "]"
+        result += line_info + error::colon_token_ +
+                error::status_token_ + irods_err + "]  errno [" + errno_str + "]"
                   + " -- message [" + message_ + "]";
 
         free( errno_str );
@@ -129,6 +136,11 @@ namespace irods {
         std::string  _fcn,
         const error& _rhs ) :
         error(_rhs) {
+ 
+        if (!_msg.empty()) {
+            message_ = _msg;
+        }
+
         if (exception_) {
             exception_->add_message(_msg + ": " + build_result_string( _file, _line, _fcn ));
             return;
@@ -194,18 +206,49 @@ namespace irods {
         // compose single string of the result stack for print out
         std::string result;
         std::string tabs = "";
-        for ( size_t i = 0; i < result_stack_.size(); ++i ) {
-            if ( i != 0 ) {
+        for (auto rit = result_stack_.rbegin() ; rit != result_stack_.rend(); ++rit)
+        {
+            if (rit != result_stack_.rbegin())
+            {
                 result += "\n";
             }
             result += tabs;
-            result += result_stack_[ result_stack_.size() - 1 - i ];
+            result += *rit;
             tabs += "\t";
 
-        } // for i
+        }
 
         // add extra newline for formatting
         result += "\n\n";
+        return result;
+
+    } // result
+
+// =-=-=-=-=-=-=-
+// public - return a user-consumable composite result.
+    std::string error::user_result() const {
+        if ( exception_ ) {
+            return exception_->what();
+        }
+
+        // compose single string of the result stack for print out
+        std::string result;
+        for (auto rit = result_stack_.rbegin() ; rit != result_stack_.rend(); ++rit)
+        {
+            if (rit != result_stack_.rbegin())
+            {
+                result += "\n";
+            }
+            std::string msg = *rit;
+            std::string tok = error::colon_token_;
+            tok += error::status_token_;
+            size_t pos = msg.find( tok );
+            if ( std::string::npos != pos ) {
+                msg = msg.substr( pos+tok.size() );
+            }
+            result += msg;
+        }
+        result += "\n";
         return result;
 
     } // result

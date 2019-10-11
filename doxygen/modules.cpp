@@ -74,8 +74,6 @@
     @defgroup msi_icat iCAT Microservices
     @brief iCAT System Services
 
-    @defgroup msi_xmsg XMessaging System Microservices
-
     @defgroup msi_string String Manipulation Microservices
 
     @defgroup msi_email Email Microservices

@@ -155,10 +155,19 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
     }
     else {
-        initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
-        applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
+        initReiWithDataObjInp(&rei, rsComm, dataObjUnlinkInp);
+        status = applyRule("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
+        if (status < 0) {
+            if (rei.status < 0) {
+                status = rei.status;
+            }
+            const auto err{ERROR(status, "acTrashPolicy failed")};
+            irods::log(err);
+            freeAllDataObjInfo(dataObjInfoHead);
+            return err.code();
+        }
 
         if ( NO_TRASH_CAN != rei.status ) {
             status = rsMvDataObjToTrash( rsComm, dataObjUnlinkInp, &dataObjInfoHead );

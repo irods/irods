@@ -25,6 +25,9 @@ def scripts_directory():
     return os.path.dirname(os.path.dirname(os.path.abspath(
         inspect.stack()[0][1])))
 
+def test_directory():
+    return os.path.join(scripts_directory(), 'irods', 'test')
+
 def server_config_path():
     return os.path.join(
         config_directory(),
@@ -96,22 +99,13 @@ def server_test_directory():
         'bin')
 
 def server_parent_log_path():
-    return sorted([os.path.join(log_directory(), name)
-            for name in os.listdir(log_directory())
-            if name.startswith('rodsServerLog')],
-        key=lambda path: os.path.getctime(path))[-1]
+    return server_log_path()
 
 def server_log_path():
-    return sorted([os.path.join(log_directory(), name)
-            for name in os.listdir(log_directory())
-            if name.startswith('rodsLog')],
-        key=lambda path: os.path.getctime(path))[-1]
-
-def re_log_path():
-    return sorted([os.path.join(log_directory(), name)
-            for name in os.listdir(log_directory())
-            if name.startswith('reLog')],
-        key=lambda path: os.path.getctime(path))[-1]
+    env_var_name = 'IRODS_ENABLE_TEST_MODE'
+    if env_var_name in os.environ and os.environ[env_var_name] == '1':
+        return '/var/lib/irods/log/test_mode_output.log'
+    return '/var/log/irods/irods.log'
 
 def server_bin_directory():
     return os.path.join(
@@ -129,10 +123,8 @@ def rule_engine_executable():
         server_bin_directory(),
         'irodsReServer')
 
-def xmsg_server_executable():
-    return os.path.join(
-        server_bin_directory(),
-        'irodsXmsgServer')
+def test_put_get_executable():
+    return os.path.join(server_bin_directory(), 'irodsTestPutGet')
 
 def service_account_file_path():
     return os.path.join(config_directory(), 'service_account.config')

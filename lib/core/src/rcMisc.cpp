@@ -26,14 +26,18 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <map>
+#include <random>
 #include <openssl/md5.h>
 
 // =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
+#include "irods_exception.hpp"
 #include "irods_log.hpp"
 #include "irods_random.hpp"
+#include "irods_path_recursion.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -43,7 +47,6 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
 #include <boost/generator_iterator.hpp>
-using namespace boost::filesystem;
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -52,7 +55,9 @@ using namespace boost::filesystem;
 
 int
 isPath( char *myPath ) {
-    path p( myPath );
+    namespace fs = boost::filesystem;
+
+    fs::path p( myPath );
 
     if ( exists( p ) ) {
         return 1;
@@ -64,7 +69,9 @@ isPath( char *myPath ) {
 
 rodsLong_t
 getFileSize( char *myPath ) {
-    path p( myPath );
+    namespace fs = boost::filesystem;
+
+    fs::path p( myPath );
 
     if ( exists( p ) && is_regular_file( p ) ) {
         return file_size( p );
@@ -2540,7 +2547,9 @@ isHomeColl( char * myPath ) {
 
 int
 openRestartFile( char * restartFile, rodsRestart_t * rodsRestart ) {
-    path p( restartFile );
+    namespace fs = boost::filesystem;
+
+    fs::path p( restartFile );
     char buf[MAX_NAME_LEN * 3];
     char *inptr;
     char tmpStr[MAX_NAME_LEN];
@@ -3456,38 +3465,6 @@ keyValFromString( char * string, keyValPair_t** list ) {
     return 0;
 }
 
-int
-clearSendXmsgInfo( sendXmsgInfo_t * sendXmsgInfo ) {
-    if ( sendXmsgInfo == NULL ) {
-        return 0;
-    }
-
-    if ( sendXmsgInfo->msg != NULL ) {
-        free( sendXmsgInfo->msg );
-    }
-
-    if ( sendXmsgInfo->deliPort != NULL ) {
-        free( sendXmsgInfo->deliPort );
-    }
-
-    if ( sendXmsgInfo->miscInfo != NULL ) {
-        free( sendXmsgInfo->miscInfo );
-    }
-
-    if ( sendXmsgInfo->deliAddress != NULL &&
-            *sendXmsgInfo->deliAddress != NULL ) {
-        int i;
-
-        for ( i = 0; i < sendXmsgInfo->numDeli; i++ ) {
-            free( sendXmsgInfo->deliAddress[i] );
-        }
-        free( sendXmsgInfo->deliAddress );
-    }
-    memset( sendXmsgInfo, 0, sizeof( sendXmsgInfo_t ) );
-
-    return 0;
-}
-
 void
 clearModAccessControlInp( void* voidInp ) {
     modAccessControlInp_t * modAccessControlInp = ( modAccessControlInp_t* )voidInp;
@@ -4055,14 +4032,62 @@ getRandomArray( int **randomArray, int size ) {
     for ( int i = 0; i < size; i++ ) {
         ( *randomArray )[i] = i + 1;
     }
-    std::random_shuffle( *randomArray, *randomArray + size );
+
+    static std::mt19937 urng{std::random_device{}()};
+    std::shuffle(*randomArray, *randomArray + size, urng);
 
     return 0;
 }
 
+// isPathSymlink_err() replaces isPathSymlink() below, which is being deprecated.
+// Returns:
+//         0  - treat the parameter path as NOT a symlink
+//         1  - treat the parameter path as a symlink
+//        <0 - Error code (message in the message stack)
 int
-isPathSymlink( rodsArguments_t* rodsArgs, const char* myPath ) {
-    return is_symlink({myPath}) ? 1 : 0;
+isPathSymlink_err( rodsArguments_t* rodsArgs, const char* myPath )
+{
+    // This function (isPathSymlink) now uses the new
+    // is_path_valid_for_recursion() defined in irods_path_recursion.cpp/hpp.
+    try {
+        if (irods::is_path_valid_for_recursion(rodsArgs, myPath))
+        {
+            // treat this path like a symlink
+            return 0;
+        }
+        else
+        {
+            // treat this path like it's not a symlink, even if it is.
+            return 1;
+        }
+    } catch ( const irods::exception& _e ) {
+        rodsLog( LOG_ERROR, _e.client_display_what() );
+        // The soon-to-be deprecated version of isPathSymlink() returned
+        // 0 or 1, and no error condition.  This function returns
+        // a negative error code that can be checked for.
+        return _e.code();
+    }
+}
+
+// This function will be deprecated in a future release.
+// Please start using the function above this one instead.
+// This function loses errors, even as it prints them to
+// stderr. The new function above returns < 0 with error
+// numbers in addition to the old 0 or 1.
+int
+isPathSymlink( rodsArguments_t* rodsArgs, const char* myPath )
+{
+    int status = isPathSymlink_err(rodsArgs, myPath );
+
+    if (status < 0)
+    {
+        // Returning 1 here means that the path will not participate.
+        // This loses some information - but at least the error stack
+        // will contain the error message, and will be displayed
+        // to the user.
+        return 1;
+    }
+    return status;    // 0 or 1
 }
 
 void

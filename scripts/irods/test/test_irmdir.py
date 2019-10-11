@@ -29,6 +29,7 @@ class Test_Irmdir(resource_suite.ResourceBase, unittest.TestCase):
         rods_filename = self.admin.session_collection + '/' + filename
         self.admin.assert_icommand(['iput', filename, rods_filename])
         self.admin.assert_icommand(['irmdir', rods_filename], 'STDOUT_SINGLELINE', 'Collection does not exist')
+        self.admin.assert_icommand(['irm', '-f', rods_filename])
         os.unlink(filename)
 
     def test_irmdir_of_collection_containing_dataobj(self):
@@ -60,21 +61,41 @@ class Test_Irmdir(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imkdir', rods_collname])
 
     def test_irmdir_dash_p(self):
-        collname_1 = 'test_collection_1'
-        collname_2 = 'test_collection_2'
-        collname_3 = 'subdir'
-        collname_4 = 'subsubdir'
-        collname_5 = 'subsubsubdir'
-        rods_collname_1 = self.admin.session_collection + '/' + collname_1
-        rods_collname_2 = self.admin.session_collection + '/' + collname_2
-        rods_collname_3 = rods_collname_2 + '/' + collname_3
-        rods_collname_4 = rods_collname_3 + '/' + collname_4
-        rods_collname_5 = rods_collname_4 + '/' + collname_5
-        self.admin.assert_icommand(['imkdir', rods_collname_1])
-        self.admin.assert_icommand(['imkdir', rods_collname_2])
-        self.admin.assert_icommand(['imkdir', rods_collname_3])
-        self.admin.assert_icommand(['imkdir', rods_collname_4])
-        self.admin.assert_icommand(['imkdir', rods_collname_5])
-        self.admin.assert_icommand(['irmdir', '-p', rods_collname_5], 'STDOUT_SINGLELINE', [ '[' + self.admin.session_collection + ']', 'Collection is not empty'])
-        # If irmdir failed, attempting to make a directory with the same name will also fail
-        self.admin.assert_icommand(['imkdir', rods_collname_2])
+        path = 'a/b/c'
+        col_d = 'd'
+        col_e = 'd/e'
+
+        abs_path = os.path.join(self.admin.session_collection, path)
+        abs_path_to_col_d = os.path.join(self.admin.session_collection, path, col_d)
+
+        self.admin.assert_icommand(['imkdir', '-p', os.path.join(path, col_e)])
+        self.admin.assert_icommand(['icd', path])
+        self.admin.assert_icommand(['ils'], 'STDOUT_MULTILINE', [abs_path, 'C- {0}'.format(abs_path_to_col_d)])
+        self.admin.assert_icommand(['irmdir', '-p', col_e])
+        self.admin.assert_icommand(['ils', col_e], 'STDERR', '/{0} does not exist '.format(col_e))
+        self.admin.assert_icommand(['icd', self.admin.session_collection])
+        self.admin.assert_icommand(['irmdir', '-p', path])
+        self.admin.assert_icommand(['ils', path], 'STDERR', '/{0} does not exist '.format(path))
+
+        # Trying to remove a collection that does not exist produces an error.
+        self.admin.assert_icommand(['irmdir', '-p', 'x/y/z'], 'STDERR', 'Collection does not exist')
+
+        # Trying to remove a collection that is not empty produces an error.
+        self.admin.assert_icommand(['imkdir', '-p', 'a/b/c'])
+        self.admin.assert_icommand(['imkdir', '-p', 'a/b/d'])
+        self.admin.assert_icommand(['irmdir', '-p', 'a/b'], 'STDERR', 'Collection is not empty')
+        self.admin.assert_icommand(['irmdir', 'a/b/c'])
+        self.admin.assert_icommand(['irmdir', 'a/b/d'])
+        self.admin.assert_icommand(['irmdir', '-p', 'a/b'])
+
+        # Trying to remove a data object produces an error.
+        filename = 'test_irmdir_of_dataobj'
+        lib.make_file(filename, 1024, 'arbitrary')
+        rods_filename = os.path.join(self.admin.session_collection, filename)
+        self.admin.assert_icommand(['iput', filename, rods_filename])
+        self.admin.assert_icommand(['irmdir', '-p', rods_filename], 'STDERR', 'Path does not point to a collection')
+        self.admin.assert_icommand(['irm', '-f', rods_filename])
+        os.unlink(filename)
+
+    def test_irmdir_no_input(self):
+        self.admin.assert_icommand('irmdir', 'STDOUT_SINGLELINE', 'No collection names specified.')

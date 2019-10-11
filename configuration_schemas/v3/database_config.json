@@ -7,7 +7,11 @@
         "db_name": {"type": "string"},
         "db_password": {"type": "string"},
         "db_port": {"type": "integer"},
-        "db_username": {"type": "string"}
+        "db_username": {"type": "string"},
+        "db_sslmode": {"type": "string"},
+        "db_sslrootcert": {"type": "string"},
+        "db_sslcert": {"type": "string"},
+        "db_sslkey": {"type": "string"}
     },
     "required": [
         "db_host",

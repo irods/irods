@@ -12,6 +12,7 @@ import os
 import subprocess
 import sys
 import fnmatch
+import json
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -19,10 +20,11 @@ else:
     import unittest
 
 from irods.configuration import IrodsConfig
+from irods.controller import IrodsController
 import irods.test
 import irods.test.settings
 import irods.log
-
+import irods.paths
 
 def run_irodsctl_with_arg(arg):
     irodsctl = os.path.join(IrodsConfig().irods_directory, 'irodsctl')
@@ -62,9 +64,30 @@ def optparse_callback_federation(option, opt_str, value, parser):
 def add_class_path_prefix(name):
     return "irods.test." + name
 
+def is_testfile(filename):
+    name, ext = os.path.splitext(filename)
+    return name.startswith('test_') and ext == '.py'
+
+def get_plugin_tests():
+    additional_plugin_tests = []
+    root = irods.paths.test_directory()
+    for curdir, _, entries in os.walk(os.path.join(root, 'plugins')):
+        for entry in entries:
+            module = '.'.join(os.path.split(os.path.relpath(curdir, root))).strip('.')
+            if is_testfile(entry):
+                additional_plugin_tests.append('.'.join([module, os.path.splitext(entry)[0]]))
+    return additional_plugin_tests
+
 def run_tests_from_names(names, buffer_test_output, xml_output, skipUntil):
     loader = unittest.TestLoader()
-    suites = [loader.loadTestsFromName(add_class_path_prefix(name)) for name in names] # test files used to be standalone python packages, now that they are in the irods python module, they cannot be loaded directly, but must be loaded with the full module path
+    suites = []
+    for name in names:
+        full_name = add_class_path_prefix(name)
+        try:
+            suite = loader.loadTestsFromName(full_name)
+            suites.append(suite)
+        except AttributeError as e:
+            raise ImportError("Could not load '" + full_name + "'. Please ensure the file exists and all imports (including imports in imported files) are valid.")
 
     if skipUntil == None:
         markers = [["",""]]
@@ -133,6 +156,7 @@ if __name__ == '__main__':
     parser.add_option('--run_specific_test', metavar='dotted name')
     parser.add_option('--skip_until', action="store")
     parser.add_option('--run_python_suite', action='store_true')
+    parser.add_option('--run_plugin_tests', action='store_true')
     parser.add_option('--include_auth_tests', action='store_true')
     parser.add_option('--run_devtesty', action='store_true')
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
@@ -148,21 +172,32 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(0)
 
+    univmss_testing = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh')
+    if not os.path.exists(univmss_testing):
+        univmss_template = os.path.join(IrodsConfig().irods_directory, 'msiExecCmd_bin', 'univMSSInterface.sh.template')
+        with open(univmss_template) as f:
+            univmss_contents = f.read().replace('template-','')
+        with open(univmss_testing, 'w') as f:
+            f.write(univmss_contents)
+        os.chmod(univmss_testing, 0o544)
+
     test_identifiers = []
     if options.run_specific_test:
         test_identifiers.append(options.run_specific_test)
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
     if options.run_python_suite:
-        test_identifiers.extend(['test_ssl', 'test_xmsg', 'test_iadmin', 'test_resource_types', 'test_catalog', 'test_rulebase',
-                                 'test_resource_tree', 'test_load_balanced_suite', 'test_icommands_file_operations', 'test_imeta_set',
-                                 'test_all_rules', 'test_iscan', 'test_ipasswd', 'test_ichmod', 'test_iput_options', 'test_ireg', 'test_irsync',
-                                 'test_iticket', 'test_irodsctl', 'test_resource_configuration', 'test_control_plane',
-                                 'test_native_rule_engine_plugin', 'test_quotas', 'test_ils', 'test_irmdir', 'test_ichksum',
-                                 'test_iquest', 'test_imeta_help', 'test_irepl', 'test_itrim', 'test_irm'])
+        with open(os.path.join(IrodsConfig().scripts_directory, 'core_tests_list.json'), 'r') as f:
+            test_identifiers.extend(json.loads(f.read()))
+    if options.run_plugin_tests:
+        test_identifiers.extend(get_plugin_tests())
 
+    IrodsController().restart(test_mode=True)
     results = run_tests_from_names(test_identifiers, options.buffer_test_output, options.xml_output, options.skip_until)
     print(results)
+
+    os.remove(univmss_testing)
+
     if not results.wasSuccessful():
         sys.exit(1)
 

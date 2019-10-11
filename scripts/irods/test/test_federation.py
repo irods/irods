@@ -10,7 +10,9 @@ import tempfile
 import time
 import shutil
 import socket
+import ustrings
 
+from .. import paths
 from .. import test
 from . import settings
 from . import session
@@ -218,7 +220,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # time listing of collection
         t0 = time.time()
@@ -254,7 +256,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # new collection should be there
         test_session.assert_icommand(
@@ -378,7 +380,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local test dir
         shutil.rmtree(dir_path)
@@ -425,7 +427,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         remote_session.assert_icommand(
-            "iput -fr {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -fr {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # new collection should be there
         remote_session.assert_icommand(
@@ -500,7 +502,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # new collection should be there
         test_session.assert_icommand(
@@ -698,7 +700,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in local collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {local_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local test dir
         shutil.rmtree(dir_path)
@@ -795,7 +797,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # sync dir with remote collection
         test_session.assert_icommand(
-            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters))
+            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # new collection should be there
         test_session.assert_icommand(
@@ -831,7 +833,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # put dir in local collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {local_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {local_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local test dir
         shutil.rmtree(dir_path)
@@ -883,7 +885,7 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # sync dir with remote collection
         test_session.assert_icommand(
-            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters))
+            "irsync -r {dir_path} i:{remote_home_collection}/{dir_name}".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # remove local test dir
         shutil.rmtree(dir_path)
@@ -988,61 +990,87 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
 
         # list remote resources
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_DEF_RESOURCE)
+            "ilsresc --ascii -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_DEF_RESOURCE)
 
     @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 0) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0), 'No resource hierarchies before iRODS 4')
     def test_ilsresc_z_child_resc(self):
         # pick session(s) for the test
         test_session = self.user_sessions[0]
         test_session.assert_icommand(
-            "ilsresc -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
+            "ilsresc --ascii -z {remote_zone}".format(**self.config), 'STDOUT_SINGLELINE', test.settings.FEDERATION.REMOTE_PT_RESC_HIER.split(';')[1])
+
+    def run_remote_writeLine_test(self, config, zone_info):
+        # Some inputs and expected values
+        localnum_before = 1
+        localnum_after = 3
+        localstring = 'one'
+        inputnum_before = 4
+        inputnum_after = 6
+        inputstring = 'four'
+        remotenum = 0
+        remotestring = 'zero'
+        expected_before_remote = 'stdout before remote: {0}, {1}, {2}, {3}'.format(
+            inputnum_before, inputstring, localnum_before, localstring)
+        expected_from_remote = 'stdout from remote: {0}, {1}, {2}, {3}, {4}, {5}'.format(
+            inputnum_before, inputstring, localnum_before, localstring, remotenum, remotestring)
+        expected_after_remote = 'stdout after remote: {0}, {1}, {2}, {3}'.format(
+            inputnum_after, inputstring, localnum_after, localstring)
+
+        if zone_info is 'local':
+            zone = config['local_zone']
+            host = socket.gethostname()
+            # TODO: Add support for remote with #4164
+            expected_from_remote_log = 'serverLog from remote: {0}, {1}, {2}, {3}, {4}, {5}'.format(
+                inputnum_before, inputstring, localnum_before, localstring, remotenum, remotestring)
+        else:
+            zone = config['remote_zone']
+            host = config['remote_host']
+
+        # Write a line to the serverLog in the local zone using remote execution block
+        rule_string = '''
+myTestRule {{
+    *localnum = {0};
+    *localstring = "{1}";
+    writeLine("stdout", "stdout before remote: *inputnum, *inputstring, *localnum, *localstring");
+    remote("{2}", "<ZONE>{3}</ZONE>") {{
+        *remotenum = {4};
+        *remotestring = "{5}";
+        writeLine("serverLog", "serverLog from remote: *inputnum, *inputstring, *localnum, *localstring, *remotenum, *remotestring");
+        writeLine("stdout", "stdout from remote: *inputnum, *inputstring, *localnum, *localstring, *remotenum, *remotestring");
+        *inputnum = *inputnum + 1
+        *localnum = *localnum + 1
+    }}
+    *inputnum = *inputnum + 1
+    *localnum = *localnum + 1
+    writeLine("stdout", "stdout after remote: *inputnum, *inputstring, *localnum, *localstring");
+}}
+INPUT *inputnum={6}, *inputstring="{7}"
+OUTPUT ruleExecOut
+            '''.format(localnum_before, localstring, host, zone, remotenum, remotestring, inputnum_before, inputstring)
+
+        rule_file = "test_rule_file.r"
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        # TODO: Add support for remote with #4164
+        if zone_info is 'local':
+            initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
+
+        # Execute rule and ensure that output is empty (success)
+        self.user_sessions[0].assert_icommand(['irule', '-F', rule_file], 'STDOUT_MULTILINE', [expected_before_remote, expected_from_remote, expected_after_remote])
+
+        # TODO: Add support for remote with #4164
+        if zone_info is 'local':
+            log_output_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), expected_from_remote_log, start_index=initial_log_size)
+            self.assertTrue(1 == log_output_count, msg='Expected 1 but found {}'.format(log_output_count))
+        os.remove(rule_file)
 
     def test_remote_writeLine_localzone_3722(self):
-        parameters = self.config.copy()
-        parameters['local_host'] = socket.gethostname()
-        rule_file = "test_rule_file.r"
-
-        # Write a line to the serverLog in the local zone using remote execution
-        rule_string = '''
-myTestRule {{
-    remote("{local_host}", "<ZONE>{local_zone}</ZONE>") {{
-        writeLine("serverLog", "test_remote_writeLine_localzone_3722");
-    }}
-}}
-INPUT *myvar="hello"
-OUTPUT ruleExecOut
-            '''.format( **parameters )
-
-        with open(rule_file, 'w') as f:
-            f.write(rule_string)
-
-        # Execute rule and ensure that output is empty (success)
-        test_session = self.user_sessions[0]
-        test_session.assert_icommand('irule -F ' + rule_file)
-        os.remove(rule_file)
+        self.run_remote_writeLine_test(self.config.copy(), 'local')
 
     def test_remote_writeLine_remotezone_3722(self):
-        parameters = self.config.copy()
-        rule_file = "test_rule_file.r"
+        self.run_remote_writeLine_test(self.config.copy(), 'remote')
 
-        # Write a line to the serverLog in the remote zone using remote execution
-        rule_string = '''
-myTestRule {{
-    remote("{remote_host}", "<ZONE>{remote_zone}</ZONE>") {{
-        writeLine("serverLog", "test_remote_writeLine_remotezone_3722");
-    }}
-}}
-INPUT *myvar="hello"
-OUTPUT ruleExecOut
-            '''.format( **parameters )
-
-        with open(rule_file, 'w') as f:
-            f.write(rule_string)
-
-        # Execute rule and ensure that output is empty (success)
-        test_session = self.user_sessions[0]
-        test_session.assert_icommand('irule -F ' + rule_file)
-        os.remove(rule_file)
 
 class Test_Admin_Commands(unittest.TestCase):
 
@@ -1131,7 +1159,7 @@ class Test_Microservices(SessionsMixin, unittest.TestCase):
 
         # put dir in remote collection
         test_session.assert_icommand(
-            "iput -r {dir_path} {remote_home_collection}/".format(**parameters))
+            "iput -r {dir_path} {remote_home_collection}/".format(**parameters), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
 
         # new collection should be there
         test_session.assert_icommand(
@@ -1301,3 +1329,93 @@ OUTPUT ruleExecOut
         test_session.assert_icommand(
             "irm -f {remote_home_collection}/{filename}".format(**parameters))
         os.remove(filepath)
+
+class Test_Recursive_Icp(SessionsMixin, unittest.TestCase):
+
+    def setUp(self):
+        super(Test_Recursive_Icp, self).setUp()
+
+        # load federation settings in dictionary (all lower case)
+        self.config = {}
+        for key, val in test.settings.FEDERATION.__dict__.items():
+            if not key.startswith('__'):
+                self.config[key.lower()] = val
+        self.config['local_zone'] = self.user_sessions[0].zone_name
+
+        # Use 10 files; expected value is -1 due to 0-based indexing
+        self.file_count1 = 10
+        self.file_count2 = self.file_count1 * 2
+        self.local_dir1 = 'test_recursive_icp1'
+        self.local_dir2 = 'test_recursive_icp2'
+        lib.create_directory_of_small_files(self.local_dir1, self.file_count1)
+        lib.create_directory_of_small_files(self.local_dir2, self.file_count2)
+
+        test_session = self.user_sessions[0]
+        source_coll_name = 'source_coll'
+        self.local_source_coll = os.path.join(test_session.home_collection, source_coll_name)
+        test_session.assert_icommand(['imkdir', self.local_source_coll])
+
+        test_session.assert_icommand(['irsync', '-r', self.local_dir1, self.local_dir2, 'i:{}'.format(self.local_source_coll)], 'STDOUT_SINGLELINE', ustrings.recurse_ok_string())
+
+    def tearDown(self):
+        test_session = self.user_sessions[0]
+        test_session.assert_icommand(['irm', '-rf', self.local_source_coll])
+        shutil.rmtree(self.local_dir1)
+        shutil.rmtree(self.local_dir2)
+        super(Test_Recursive_Icp, self).tearDown()
+
+    # recursive icp of local source collection
+    def cp_recursive_local_source_test(self, source_coll, flat_coll=True, remote_zone=True, in_target=False):
+        test_session = self.user_sessions[0]
+        try:
+            # prepare names for home collection and target collection
+            if remote_zone:
+                home_coll = test_session.remote_home_collection(test.settings.FEDERATION.REMOTE_ZONE)
+            else:
+                home_coll = test_session.home_collection
+            target_coll = os.path.join(home_coll, 'cp_recursive_local_source_test')
+            # create target collection and copy source into it
+            test_session.assert_icommand(['imkdir', target_coll])
+            if in_target:
+                test_session.assert_icommand(['icd', target_coll])
+                test_session.assert_icommand(['icp', '-r', source_coll, '.'])
+            else:
+                test_session.assert_icommand(['icp', '-r', source_coll, target_coll])
+            # ensure all files are in the collection
+            test_session.assert_icommand(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count1 - 1)))
+            if flat_coll:
+                test_session.assert_icommand_fail(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count2 - 1)))
+            else:
+                test_session.assert_icommand(['ils', '-lr', target_coll], 'STDOUT_SINGLELINE', '& {}'.format(str(self.file_count2 - 1)))
+        finally:
+            # cleanup
+            test_session.assert_icommand(['irm', '-rf', target_coll])
+
+    def test_icp_single_dir_localzone_in_home(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=False, in_target=False)
+
+    def test_icp_single_dir_localzone_in_target(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=False, in_target=True)
+
+    def test_icp_single_dir_remotezone_in_home(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=True, in_target=False)
+
+    def test_icp_single_dir_remotezone_in_target(self):
+        source_coll = os.path.join(self.local_source_coll, self.local_dir1)
+        self.cp_recursive_local_source_test(source_coll, flat_coll=True, remote_zone=True, in_target=True)
+
+    def test_icp_tree_localzone_in_home(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=False, in_target=False)
+
+    def test_icp_tree_localzone_in_target(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=False, in_target=True)
+
+    def test_icp_tree_remotezone_in_home(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=False)
+
+    def test_icp_tree_remotezone_in_target(self):
+        self.cp_recursive_local_source_test(self.local_source_coll, flat_coll=False, remote_zone=True, in_target=True)
+

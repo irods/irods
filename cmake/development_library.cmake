@@ -22,7 +22,9 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/base64.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/bunUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
@@ -69,19 +71,23 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pack_table.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pam_auth_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_parse_command_line_options.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_path_recursion.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_pluggable_auth_scheme.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_base.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_context.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_plugin_name_generator.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_query.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_random.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_serialization.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_server_properties.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_ssl_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_stacktrace.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_state_table.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_string_tokenize.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_tcp_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_threads.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_virtual_path.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mcollUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/microservice.hpp
@@ -124,7 +130,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsQuota.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsType.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rodsUser.h
-  ${CMAKE_SOURCE_DIR}/lib/core/include/rodsXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rsyncUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/scanUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/sockComm.h
@@ -133,6 +138,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/sslSockComm.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/stringOpr.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/termiosUtil.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/thread_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/trimUtil.h
   )
 
@@ -150,6 +156,8 @@ set(
   IRODS_LIB_API_INCLUDE_HEADERS
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiHeaderAll.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumber.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumberData.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/apiNumberMap.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiPackTable.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/apiTable.hpp
   ${CMAKE_SOURCE_DIR}/lib/api/include/authCheck.h
@@ -229,7 +237,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/getRescQuota.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/getTempPassword.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/getTempPasswordForOther.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/getXmsgTicket.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/get_hier_from_leaf_id.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ies_client_hints.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/l3FileGetSingleBuf.h
@@ -246,7 +253,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/phyPathReg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/procStat.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/querySpecColl.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/rcvXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/readCollection.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regColl.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/regDataObj.h
@@ -255,7 +261,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecDel.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecMod.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecSubmit.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/sendXmsg.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/server_report.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/set_round_robin_context.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/simpleQuery.h
@@ -379,7 +384,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetRescQuota.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPassword.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsGetTempPasswordForOther.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsGetXmsgTicket.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsIESClientHints.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FileGetSingleBuf.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsL3FilePutSingleBuf.hpp
@@ -395,7 +399,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsPhyPathReg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsProcStat.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsQuerySpecColl.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsRcvXmsg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsReadCollection.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRegColl.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRegDataObj.hpp
@@ -404,7 +407,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecDel.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecMod.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecSubmit.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsSendXmsg.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsServerReport.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSetRoundRobinContext.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSimpleQuery.hpp
@@ -449,8 +451,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/fileOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/initServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsReServer.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/irodsXmsgServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_api_calling_functions.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_at_scope_exit.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_collection_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_data_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_database_constants.hpp
@@ -464,6 +466,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_generic_database_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_get_l1desc.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_linked_list_iterator.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_logger.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_logger.tpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_mysql_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_oracle_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_physical_object.hpp
@@ -475,6 +479,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_resource_plugin_impostor.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_resource_redirect.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_resource_types.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/irods_rs_comm_query.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_api_call.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_api_table.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_control_plane.hpp
@@ -494,7 +499,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/rsIcatOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rsLog.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/specColl.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/xmsgLib.hpp
   )
 
 set(
@@ -543,6 +547,71 @@ install(
   ${IRODS_SERVER_DRIVERS_INCLUDE_HEADERS}
   DESTINATION usr/include/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  )
+
+# Install the "contents" of the "include" directory into the "irods" directory.
+# This way of installing is required to maintain the directory structure. Without it,
+# the filesystem headers would be installed in a flat manner which would make it unusable.
+#
+# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
+# This scheme allows developers to see what headers will be installed. It also keeps files
+# that aren't meant to be installed out.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/lib/filesystem/include/
+  DESTINATION usr/include/irods
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */filesystem.hpp
+    PATTERN */filesystem/collection_entry.hpp
+    PATTERN */filesystem/collection_iterator.hpp
+    PATTERN */filesystem/config.hpp
+    PATTERN */filesystem/copy_options.hpp
+    PATTERN */filesystem/detail.hpp
+    PATTERN */filesystem/filesystem.hpp
+    PATTERN */filesystem/filesystem_error.hpp
+    PATTERN */filesystem/object_status.hpp
+    PATTERN */filesystem/path.hpp
+    PATTERN */filesystem/path_traits.hpp
+    PATTERN */filesystem/permissions.hpp
+    PATTERN */filesystem/recursive_collection_iterator.hpp
+  )
+
+# Install the "contents" of the "include" directory into the "irods/plugins/api" directory.
+# API plugins are installed in a separate directory to signal to the user that the headers
+# inside this directory are for plugins only.
+#
+# For details about "FILES_MATCHING" and "PATTERN", search for "filesystem" in this file.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/api/include/
+  DESTINATION usr/include/irods/plugins/api
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */api_plugin_number.h
+    PATTERN */api_plugin_number_map.hpp
+    PATTERN */api_plugin_number_data.h
+    PATTERN */get_file_descriptor_info.h
+  )
+
+# Install the "contents" of the "transport" directory into the "irods/transport" directory.
+# This way of installing is required to maintain the directory structure. Without it,
+# the filesystem headers would be installed in a flat manner which would make it unusable.
+#
+# The "FILES_MATCHING" and "PATTERN" options instruct the build what files should be copied.
+# This scheme allows developers to see what headers will be installed. It also keeps files
+# that aren't meant to be installed out.
+#
+# NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/lib/core/include/transport/
+  DESTINATION usr/include/irods/transport
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  FILES_MATCHING
+    PATTERN */transport/transport.hpp
+    PATTERN */transport/default_transport.hpp
   )
 
 install(

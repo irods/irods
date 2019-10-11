@@ -101,7 +101,6 @@ namespace irods {
     const std::string RESOURCE_CREATE_PATH( "resource_property_create_path" );
     const std::string RESOURCE_QUOTA_OVERRUN( "resource_property_quota_overrun" );
 
-
 }; // namespace irods
 
 #endif // __IRODS_RESOURCE_CONSTANTS_HPP__

@@ -10,9 +10,21 @@
  * @brief Defines ERRORS for iRODS server and agents
  */
 
-
 #ifndef RODS_ERROR_TABLE_H__
 #define RODS_ERROR_TABLE_H__
+
+/**
+ * IMPORTANT - END OF LIFE ERROR CODES
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Error codes having a prefix of "END_OF_LIFE_" must NEVER be used
+ * in new code.
+ *
+ * This prefix is an indicator to the implementer that the error code
+ * is no longer used by iRODS.
+ *
+ * These error codes only exist as placeholders.
+ */
 
 /**
  * @defgroup error_codes iRODS ERROR Codes
@@ -41,11 +53,13 @@
 namespace {
     namespace irods_error_map_construction {
         std::map<const int, const std::string> irods_error_map;
+        std::map<const std::string, const int> irods_error_name_map;
 
         //We pass the variable as a const reference here to silence
         //unused variable warnings in a controlled manner
         int create_error( const std::string& err_name, const int err_code, const int& ) {
             irods_error_map.insert( std::pair<const int, const std::string>( err_code, err_name ) );
+            irods_error_name_map.insert( std::pair<const std::string, const int>( err_name, err_code ) );
             return err_code;
         }
     }
@@ -56,6 +70,8 @@ namespace {
 enum IRODS_ERROR_ENUM
 {
 #endif
+
+// clang-format off
 
 /* 1,000 - 299,000 - system type */
 /** @defgroup system_errors System ERRORs
@@ -123,9 +139,9 @@ NEW_ERROR(SYS_REG_OBJ_IN_SPEC_COLL,                    -57000)
 NEW_ERROR(SYS_DEST_SPEC_COLL_SUB_EXIST,                -58000)
 NEW_ERROR(SYS_SRC_DEST_SPEC_COLL_CONFLICT,             -59000)
 NEW_ERROR(SYS_UNKNOWN_SPEC_COLL_CLASS,                 -60000)
-NEW_ERROR(SYS_DUPLICATE_XMSG_TICKET,                   -61000)
-NEW_ERROR(SYS_UNMATCHED_XMSG_TICKET,                   -62000)
-NEW_ERROR(SYS_NO_XMSG_FOR_MSG_NUMBER,                  -63000)
+NEW_ERROR(END_OF_LIFE_SYS_DUPLICATE_XMSG_TICKET,       -61000) // EOL since iRODS v4.3.0
+NEW_ERROR(END_OF_LIFE_SYS_UNMATCHED_XMSG_TICKET,       -62000) // EOL since iRODS v4.3.0
+NEW_ERROR(END_OF_LIFE_SYS_NO_XMSG_FOR_MSG_NUMBER,      -63000) // EOL since iRODS v4.3.0
 NEW_ERROR(SYS_COLLINFO_2_FORMAT_ERR,                   -64000)
 NEW_ERROR(SYS_CACHE_STRUCT_FILE_RESC_ERR,              -65000)
 NEW_ERROR(SYS_NOT_SUPPORTED,                           -66000)
@@ -217,6 +233,7 @@ NEW_ERROR(SYS_SOCK_WRITE_ERR,                          -161000)
 NEW_ERROR(SYS_SOCK_CONNECT_ERR,                        -162000)
 NEW_ERROR(SYS_OPERATION_IN_PROGRESS,                   -163000)
 NEW_ERROR(SYS_REPLICA_DOES_NOT_EXIST,                  -164000)
+NEW_ERROR(SYS_UNKNOWN_ERROR,                           -165000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */
@@ -360,6 +377,9 @@ NEW_ERROR(S3_GET_ERROR,                                -703000)
 NEW_ERROR(S3_FILE_UNLINK_ERR,                          -715000)
 NEW_ERROR(S3_FILE_STAT_ERR,                            -716000)
 NEW_ERROR(S3_FILE_COPY_ERR,                            -717000)
+NEW_ERROR(S3_FILE_OPEN_ERR,                            -718000)
+NEW_ERROR(S3_FILE_SEEK_ERR,                            -719000)
+NEW_ERROR(S3_FILE_RENAME_ERR,                          -720000)
 
 /* DDN WOS error */
 NEW_ERROR(WOS_PUT_ERR,                                 -750000)
@@ -457,6 +477,7 @@ NEW_ERROR(CAT_INVALID_CHILD,                           -857000)
 NEW_ERROR(CAT_INVALID_OBJ_COUNT,                       -858000) // hcj
 NEW_ERROR(CAT_INVALID_RESOURCE_NAME,                   -859000) // JMC
 NEW_ERROR(CAT_STATEMENT_TABLE_FULL,                    -860000) // JMC
+NEW_ERROR(CAT_RESOURCE_NAME_LENGTH_EXCEEDED,           -861000)
 /** @} */
 
 /* 880,000 to 889,000  Deprecated  */
@@ -767,6 +788,7 @@ NEW_ERROR(SERVER_NEGOTIATION_ERROR,             -1825000)
 NEW_ERROR(INVALID_KVP_STRING,                   -1826000)
 NEW_ERROR(PLUGIN_ERROR_MISSING_SHARED_OBJECT,   -1827000)
 NEW_ERROR(RULE_ENGINE_ERROR,                    -1828000)
+NEW_ERROR(REBALANCE_ALREADY_ACTIVE_ON_RESOURCE, -1829000)
 /** @} */
 
 
@@ -872,5 +894,7 @@ NEW_ERROR(SYS_NO_HANDLER_REPLY_MSG,                    -99999999)
 #ifndef MAKE_IRODS_ERROR_MAP
 };
 #endif
+
+// clang-format on
 
 #endif /* RODS_ERROR_TABLE_H__ */
