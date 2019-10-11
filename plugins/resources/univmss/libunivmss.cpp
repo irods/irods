@@ -621,7 +621,7 @@ irods::error univ_mss_file_sync_to_arch(
     execCmd_t execCmdInp;
     std::memset(&execCmdInp, 0, sizeof(execCmdInp));
     rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "syncToArch %s %s", _cache_file_name, filename.c_str() );
+    snprintf( execCmdInp.cmdArgv, sizeof( execCmdInp.cmdArgv ), "syncToArch '%s' '%s'", _cache_file_name, filename.c_str() );
     rstrcpy( execCmdInp.execAddr, "localhost", LONG_NAME_LEN );
     status = _rsExecCmd( &execCmdInp, &execCmdOut );
     if ( status == 0 ) {
