@@ -39,6 +39,24 @@ TEST_CASE("test_hierarchy_parser", "[hierarchy]") {
         REQUIRE_THROWS_WITH(p.next("f"),
                             Catch::Contains(std::to_string(CHILD_NOT_FOUND)));
     }
+    SECTION("add_child") {
+        p.add_child("f");
+        REQUIRE("f" == p.next("e"));
+        REQUIRE_THROWS_WITH(p.next("f"),
+                            Catch::Contains(std::to_string(NO_NEXT_RESC_FOUND)));
+        REQUIRE_THAT(p.add_child(irods::hierarchy_parser::delimiter()).code(),
+                     equals_irods_error(SYS_INVALID_INPUT_PARAM));
+    }
+    SECTION("add_parent") {
+        p.add_parent("z");
+        REQUIRE("a" == p.next("z"));
+        p.add_parent("c2", "c");
+        REQUIRE("c" == p.next("c2"));
+        REQUIRE_THROWS_WITH(p.add_parent("nope", "nope"),
+                            Catch::Contains(std::to_string(CHILD_NOT_FOUND)));
+        REQUIRE_THROWS_WITH(p.add_parent(irods::hierarchy_parser::delimiter()),
+                            Catch::Contains(std::to_string(SYS_INVALID_INPUT_PARAM)));
+    }
 }
 
 TEST_CASE("test_hierarchy_parser_standalone_resource", "[standalone]") {
@@ -76,6 +94,12 @@ TEST_CASE("test_hierarchy_parser_delimiter_nonsense", "[hierarchy][delim][pathol
         REQUIRE("a" == p.first_resc());
         REQUIRE("e" == p.last_resc());
         REQUIRE(corrected_str == p.str());
+        REQUIRE_THAT(p.add_child(parser::delimiter()).code(),
+                     equals_irods_error(SYS_INVALID_INPUT_PARAM));
+        REQUIRE(corrected_str == p.str());
+        REQUIRE_THROWS_WITH(p.add_parent(parser::delimiter()),
+                            Catch::Contains(std::to_string(SYS_INVALID_INPUT_PARAM)));
+        REQUIRE(corrected_str == p.str());
     }
     SECTION("leading delimiter") {
         const std::string str = ";a;b;c;d;e";
@@ -90,15 +114,14 @@ TEST_CASE("test_hierarchy_parser_delimiter_nonsense", "[hierarchy][delim][pathol
 }
 
 TEST_CASE("test_hierarchy_parser_set_string_empty", "[delim][empty][pathological]") {
+    parser p;
     SECTION("delimiter") {
-        parser p;
-        irods::error e = p.set_string(parser::delimiter());
-        REQUIRE_THAT(e.code(), equals_irods_error(SYS_INVALID_INPUT_PARAM));
+        REQUIRE_THAT(p.set_string(parser::delimiter()).code(),
+                     equals_irods_error(SYS_INVALID_INPUT_PARAM));
     }
     SECTION("empty string") {
-        parser p;
-        irods::error e = p.set_string("");
-        REQUIRE_THAT(e.code(), equals_irods_error(SYS_INVALID_INPUT_PARAM));
+        REQUIRE_THAT(p.set_string({}).code(),
+                     equals_irods_error(SYS_INVALID_INPUT_PARAM));
     }
 }
 
