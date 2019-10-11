@@ -485,9 +485,6 @@ irods::error repl_file_modified(irods::plugin_context& _ctx) {
     irods::hierarchy_parser sub_parser{};
     sub_parser.set_string(file_obj->in_pdmo());
     if (sub_parser.resc_in_hier(name)) {
-        irods::log(LOG_NOTICE,
-                   (boost::format("[%s:%d] - pdmo for [%s]") %
-                    __FUNCTION__ % __LINE__ % file_obj->in_pdmo()).str());
         return SUCCESS();
     }
 
