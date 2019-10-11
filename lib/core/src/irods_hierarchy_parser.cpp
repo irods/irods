@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "fmt/format.h"
+
 namespace irods {
 
     static const std::string DELIM = ";";
@@ -87,10 +89,28 @@ namespace irods {
 
     error hierarchy_parser::add_child(
         const std::string& _resc ) {
+        if (_resc == hierarchy_parser::delimiter()) {
+            return ERROR(SYS_INVALID_INPUT_PARAM, "invalid resource name");
+        }
 
-        error result = SUCCESS();
         resc_list_.push_back( _resc );
-        return result;
+        return SUCCESS();
+    }
+
+    void hierarchy_parser::add_parent(
+        const std::string& _parent,
+        const std::string& _child) {
+        if (_parent == hierarchy_parser::delimiter()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "invalid resource name");
+        }
+        auto it = resc_list_.begin();
+        if (!_child.empty()) {
+            it = std::find(resc_list_.begin(), resc_list_.end(), _child);
+            if (it == resc_list_.end()) {
+                THROW(CHILD_NOT_FOUND, fmt::format("resource [{}] not in hierarchy.", _child));
+            }
+        }
+        resc_list_.insert(it, _parent);
     }
 
     error hierarchy_parser::first_resc(

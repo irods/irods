@@ -45,6 +45,9 @@ namespace irods {
              */
             std::string str(const std::string& _term_resc = "") const;
 
+            // Add a resource in front of the specified resource, if applicable.
+            void add_parent(const std::string& _parent, const std::string& _child = {});
+
             /// @brief Adds another level of hierarchy by adding the specified child resource
             error add_child( const std::string& _resc );
 
