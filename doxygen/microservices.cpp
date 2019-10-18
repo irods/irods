@@ -160,7 +160,6 @@
   - #msiSetDefaultResc - Sets the default resource
   - #msiSetNoDirectRescInp - Sets a list of resources that cannot be used by a normal user directly
   - #msiSetRescSortScheme - Sets the scheme for selecting the best resource to use
-  - #msiSetMultiReplPerResc - Sets the number of copies per resource to unlimited
   - #msiSetDataObjPreferredResc - Specifies the preferred copy to use, if the data has multiple copies
   - #msiSetDataObjAvoidResc - Specifies the copy to avoid
   - #msiSetGraftPathScheme - Sets the scheme for composing the physical path in the vault to GRAFT_PATH

@@ -175,7 +175,6 @@ namespace irods {
         table_[ "msiDataObjRepl" ] = new irods::ms_table_entry( "msiDataObjRepl", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjRepl ) );
         table_[ "msiDataObjCopy" ] = new irods::ms_table_entry( "msiDataObjCopy", 4, std::function<int(msParam_t*,msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiDataObjCopy ) );
         table_[ "msiExtractNaraMetadata" ] = new irods::ms_table_entry( "msiExtractNaraMetadata", 0, std::function<int(ruleExecInfo_t*)>( msiExtractNaraMetadata ) );
-        table_[ "msiSetMultiReplPerResc" ] = new irods::ms_table_entry( "msiSetMultiReplPerResc", 0, std::function<int(ruleExecInfo_t*)>( msiSetMultiReplPerResc ) );
         table_[ "msiGetObjType" ] = new irods::ms_table_entry( "msiGetObjType", 2, std::function<int(msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiGetObjType ) );
         table_[ "msiAssociateKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiAssociateKeyValuePairsToObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiAssociateKeyValuePairsToObj ) );
         table_[ "msiSetKeyValuePairsToObj" ] = new irods::ms_table_entry( "msiSetKeyValuePairsToObj", 3, std::function<int(msParam_t*,msParam_t*,msParam_t*,ruleExecInfo_t*)>( msiSetKeyValuePairsToObj ) );
