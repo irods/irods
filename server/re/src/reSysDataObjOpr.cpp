@@ -877,21 +877,6 @@ msiOprDisallowed( ruleExecInfo_t *rei ) {
 
 
 /**
- * \fn msiSetMultiReplPerResc (ruleExecInfo_t *rei)
- *
- * \brief  By default, the system allows one copy per resource. This microservice sets the number of copies per resource to unlimited.
- *
- * \deprecated Since 4.2.7, only one replica is allowed on a given resource.
- *
- **/
-int
-msiSetMultiReplPerResc( ruleExecInfo_t *rei ) {
-    rodsLog( LOG_ERROR, "msiSetMultiReplPerResc is no longer supported as only one replica is allowed on a given resource" );
-    return SYS_NOT_SUPPORTED;
-}
-
-
-/**
  * \fn msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  *
  * \brief  This microservice does not check file path permissions when registering a file. This microservice is REPLACED by msiSetChkFilePathPerm

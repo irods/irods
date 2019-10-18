@@ -214,7 +214,6 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
                 "rulemsiSetDataTypeFromExt",
                 "rulemsiSetDefaultResc",
                 "rulemsiSetGraftPathScheme",
-                "rulemsiSetMultiReplPerResc",
                 "rulemsiSetNoDirectRescInp",
                 "rulemsiSetNumThreads",
                 "rulemsiSetPublicUserOpr",
