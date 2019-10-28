@@ -1,11 +1,11 @@
 #ifndef IRODS_EXCEPTION_HPP
 #define IRODS_EXCEPTION_HPP
 
+#include <cinttypes>
 #include <exception>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <inttypes.h>
 #include <boost/format.hpp>
 
 #include <irods_stacktrace.hpp>
@@ -52,7 +52,7 @@ namespace irods {
             void assemble_client_display_what() const throw();
 
         private:
-            int64_t                   code_;
+            int64_t                    code_;
             std::vector< std::string > message_stack_;
             uint32_t                   line_number_;
             std::string                function_name_;
