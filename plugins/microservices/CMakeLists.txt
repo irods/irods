@@ -1,1 +1,2 @@
 add_subdirectory(administration)
+add_subdirectory(msi_atomic_apply_metadata_operations)
