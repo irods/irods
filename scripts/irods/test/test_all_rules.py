@@ -5,6 +5,7 @@ import shutil
 import sys
 import getpass
 import tempfile
+import json
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -878,3 +879,72 @@ OUTPUT ruleExecOut
             self.admin.run_icommand(['iadmin', 'rmchildfromresc', destination_resource, leaf_resource])
             self.admin.run_icommand(['iadmin', 'rmresc', destination_resource])
             self.admin.run_icommand(['iadmin', 'rmresc', leaf_resource])
+
+    def test_msi_atomic_apply_metadata_operations__issue_4484(self):
+        def do_test(entity_name, entity_type, operation, expected_output=None):
+            json_input = json.dumps({
+                'entity_name': entity_name,
+                'entity_type': entity_type,
+                'operations': [
+                    {
+                        'operation': operation,
+                        'attribute': 'issue_4484_name',
+                        'value': 'issue_4484_value',
+                        'units': 'issue_4484_units'
+                    }
+                ]
+            })
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            rule = "msi_atomic_apply_metadata_operations('{0}', *ignored)".format(json_input)
+            self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'null'])
+
+            # Convert entity type to correct type for imeta.
+            imeta_type = '-u'
+            if   entity_type == 'resource':    imeta_type = '-R'
+            elif entity_type == 'collection':  imeta_type = '-C'
+            elif entity_type == 'data_object': imeta_type = '-d'
+
+            if   expected_output is not None: imeta_output = expected_output
+            elif operation == 'set':          imeta_output = ['issue_4484_name', 'issue_4484_value', 'issue_4484_units']
+            elif operation == 'remove':       imeta_output = ['None']
+
+            self.admin.assert_icommand(['imeta', 'ls', imeta_type, entity_name], 'STDOUT', imeta_output)
+
+        do_test(self.admin.username, 'user', 'set')
+        do_test(self.admin.username, 'user', 'remove')
+
+        do_test(self.admin.default_resource, 'resource', 'set')
+        do_test(self.admin.default_resource, 'resource', 'remove')
+
+        do_test(self.admin.session_collection, 'collection', 'set')
+        do_test(self.admin.session_collection, 'collection', 'remove')
+
+        filename = os.path.join(self.admin.local_session_dir, 'issue_4484.txt')
+        lib.make_file(filename, 1, 'arbitrary')
+        self.admin.assert_icommand(['iput', filename])
+        data_object = os.path.join(self.admin.session_collection, os.path.basename(filename))
+        do_test(data_object, 'data_object', 'set')
+        do_test(data_object, 'data_object', 'remove')
+
+        # Verify that the PEPs for the API plugin are firing.
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            # Add PEPs to the core.re file.
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    pep_atomic_apply_metadata_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                        *kvp.'atomic_pre_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+
+                    pep_atomic_apply_metadata_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                        *kvp.'atomic_post_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+                '''.format(data_object))
+
+            do_test(data_object, 'data_object', 'set', ['atomic_pre_fired', 'atomic_post_fired'])
+
