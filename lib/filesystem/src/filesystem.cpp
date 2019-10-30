@@ -47,11 +47,13 @@
 // clang-format on
 
 #include "rcMisc.h"
+#include "rodsErrorTable.h"
 #include "irods_log.hpp"
 #include "irods_error.hpp"
 #include "irods_exception.hpp"
 #include "irods_query.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "query_builder.hpp"
 
 #include <cctype>
 #include <cstring>
@@ -61,6 +63,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <optional>
 
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
@@ -122,6 +125,19 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return perms::null;
         }
 
+        auto get_zone_name(const path& _p) -> std::optional<std::string>
+        {
+            using difference_type = path::iterator::difference_type;
+
+            auto iter = std::begin(_p);
+
+            if (constexpr difference_type hops = 2; std::distance(iter, std::end(_p)) >= hops) {
+                return *++iter;
+            }
+            
+            return std::nullopt;
+        }
+
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
         {
             if (DATA_OBJ_T == _s.type) {
@@ -131,34 +147,30 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 sql += _p.object_name();
                 sql += "' and DATA_TOKEN_NAMESPACE = 'access_type'";
 
-                for (const auto& row : irods::query{&_comm, sql}) {
+                irods::experimental::query_builder qb;
+
+                if (const auto zone = get_zone_name(_p); zone) {
+                    qb.zone_hint(*zone);
+                }
+
+                for (const auto& row : qb.build(_comm, sql)) {
                     _s.prms.push_back({row[0], to_permission_enum(row[1])});
                 }
             }
             else if (COLL_OBJ_T == _s.type) {
-                specificQueryInp_t sq_input{};
-                genQueryOut_t* gq_output{};
+                irods::experimental::query_builder qb;
 
-                irods::at_scope_exit at_scope_exit{[gq_output]() mutable {
-                    if (gq_output) {
-                        freeGenQueryOut(&gq_output);
-                    }
-                }};
+                std::vector<std::string> args{_p.string()};
 
-                sq_input.maxRows = MAX_SQL_ROWS;
-                sq_input.continueInx = 0;
-                sq_input.sql = "ShowCollAcls";
-                sq_input.args[0] = const_cast<char*>(_p.c_str());
+                qb.type(irods::experimental::query_type::specific)
+                  .bind_arguments(args);
 
-                if (const auto ec = rxSpecificQuery(&_comm, &sq_input, &gq_output); ec < 0) {
-                    throw filesystem_error{"stat error: database query failed", _p, make_error_code(ec)};
+                if (const auto zone = get_zone_name(_p); zone) {
+                    qb.zone_hint(*zone);
                 }
 
-                for (int r = 0; r < gq_output->rowCnt; ++r) {
-                    auto offset = r * gq_output->sqlResult[2].len;
-                    const char* perm = gq_output->sqlResult[2].value + offset;
-                    offset = r * gq_output->sqlResult[0].len;
-                    _s.prms.push_back({gq_output->sqlResult[0].value + offset, to_permission_enum(perm)});
+                for (const auto& row : qb.build(_comm, "ShowCollAcls")) {
+                    _s.prms.push_back({row[0], to_permission_enum(row[2])});
                 }
             }
         }
@@ -604,10 +616,16 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         colls_sql += _p;
         colls_sql += "%'";
 
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = get_zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
         std::uintmax_t count = 0;
 
         for (const auto& sql : {data_obj_sql, colls_sql}) {
-            for (const auto& row : irods::query{&_comm, sql}) {
+            for (const auto& row : qb.build(_comm, sql)) {
                 count += std::stoull(row[0]);
             }
         }
@@ -806,15 +824,21 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             }
         }
 
-        std::vector<checksum> checksums;
-
         std::string sql = "select DATA_REPL_NUM, DATA_CHECKSUM, DATA_SIZE, DATA_REPL_STATUS where DATA_NAME = '";
         sql += _p.object_name();
         sql += "' and COLL_NAME = '";
         sql += _p.parent_path();
         sql += "'";
 
-        for (const auto& row : irods::query{&_comm, sql}) {
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = get_zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        std::vector<checksum> checksums;
+
+        for (const auto& row : qb.build(_comm, sql)) {
             checksums.push_back({std::stoi(row[0]), row[1], std::stoull(row[2]), row[3] == "1"});
         }
 
@@ -896,9 +920,15 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             throw filesystem_error{"cannot get metadata: unknown object type", _p};
         }
 
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = get_zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
         std::vector<metadata> results;
 
-        for (const auto& row : irods::query{&_comm, sql}) {
+        for (const auto& row : qb.build(_comm, sql)) {
             results.push_back({row[0], row[1], row[2]});
         }
 
