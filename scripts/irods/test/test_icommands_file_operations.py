@@ -14,6 +14,7 @@ import tempfile
 import time
 import shutil
 import ustrings
+import re
 
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
@@ -41,6 +42,27 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
     def tearDown(self):
         shutil.rmtree(self.testing_tmp_dir)
         super(Test_ICommands_File_Operations, self).tearDown()
+
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
+    def test_re_serialization__prep_13(self):
+        try:
+            IrodsController().stop()
+            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+            with temporary_core_file() as core:
+                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                IrodsController().start()
+                with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_13') as f:
+                    lib.make_file(f.name, 80, contents='arbitrary')
+                    self.admin.assert_icommand(['iput', f.name])
+            occur = lib.count_occurrences_of_regexp_in_log( paths.server_log_path(),
+                                                            (r'^.*writeLine: inString =\s*(\S+)=(\S*).*$',re.M),
+                                                            start_index=initial_size_of_server_log)
+            self.assertTrue(3 == len(occur))
+            self.assertTrue(occur[0].group(1) == 'physical_path'   and occur[0].group(2).startswith(os.path.sep))
+            self.assertTrue(occur[1].group(1) == 'logical_path'    and occur[1].group(2).startswith('/'))
+            self.assertTrue(occur[2].group(1) == 'proxy_user_name' and occur[2].group(2) == self.admin.username)
+        finally:
+            IrodsController().restart()
 
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
