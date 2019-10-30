@@ -348,6 +348,22 @@ def get_file_size_by_path(path):
 def write_to_log(log_path, message):
     pass
 
+def count_occurrences_of_regexp_in_log(log_path, pattern, start_index=0):
+    occurrences = []
+    target = None
+    if isinstance(pattern,(tuple,list)):
+        pattern = [pattern[0].encode('ascii')] + list(pattern[1:])
+    elif isinstance(pattern,re._pattern_type):
+        target = pattern
+    else:
+        pattern = [pattern.encode('ascii')]  # assume string-like
+    if target is None: target=re.compile(*pattern)
+    with open(log_path) as f:
+        m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        occurrences.extend(j for j in target.finditer(m[start_index:]))
+        m.close()
+    return occurrences
+
 def count_occurrences_of_string_in_log(log_path, string, start_index=0):
     with open(log_path) as f:
         m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
