@@ -35,7 +35,8 @@ set(TEST_INCLUDE_LIST test_config/irods_linked_list_iterator
                       test_config/irods_filesystem
                       test_config/irods_dstream
                       test_config/irods_logical_paths_and_special_characters
-                      test_config/irods_connection_pool)
+                      test_config/irods_connection_pool
+                      test_config/irods_query_builder)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     unset_irods_test_variables()
