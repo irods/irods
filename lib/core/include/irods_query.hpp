@@ -2,17 +2,20 @@
 #define IRODS_QUERY_HPP
 
 #ifdef RODS_SERVER
-#include "rsGenQuery.hpp"
-#include "specificQuery.h"
-#include "rsSpecificQuery.hpp"
+    #include "rsGenQuery.hpp"
+    #include "specificQuery.h"
+    #include "rsSpecificQuery.hpp"
 #else
-#include "genQuery.h"
-#include "specificQuery.h"
+    #include "genQuery.h"
+    #include "specificQuery.h"
 #endif
+
 #include "irods_log.hpp"
 #include "rcMisc.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 char *getCondFromString( char * t );
 
@@ -58,9 +61,9 @@ namespace irods {
             }
         } // convert_string_to_query_type
 
-        class query_impl_base {
-            public:
-
+        class query_impl_base
+        {
+        public:
             size_t size() {
                 if(!gen_output_) {
                     return 0;
@@ -117,18 +120,19 @@ namespace irods {
             virtual ~query_impl_base() {
             }
 
-            query_impl_base(
-                connection_type*   _comm,
-                const uint32_t     _query_limit,
-                const uint32_t     _row_offset,
-                const std::string& _q) :
-                comm_{_comm},
-                query_limit_{_query_limit},
-                row_offset_{_row_offset},
-                query_string_{_q},
-                gen_output_{} {
-            };
-            protected:
+            query_impl_base(connection_type*   _comm,
+                            const uint32_t     _query_limit,
+                            const uint32_t     _row_offset,
+                            const std::string& _query_string)
+                : comm_{_comm}
+                , query_limit_{_query_limit}
+                , row_offset_{_row_offset}
+                , query_string_{_query_string}
+                , gen_output_{}
+            {
+            }
+
+        protected:
             connection_type* comm_;
             const uint32_t query_limit_;
             const uint32_t row_offset_;
@@ -136,8 +140,9 @@ namespace irods {
             genQueryOut_t* gen_output_;
         }; // class query_impl_base
 
-        class gen_query_impl : public query_impl_base {
-            public:
+        class gen_query_impl : public query_impl_base
+        {
+        public:
             virtual ~gen_query_impl() {
                 if(this->gen_output_ && this->gen_output_->continueInx) {
                     // Close statements for this query
@@ -172,16 +177,21 @@ namespace irods {
                            &this->gen_output_);
             } // fetch_page
 
-            gen_query_impl(
-                connection_type* _comm,
-                int                      _query_limit,
-                int                      _row_offset,
-                const std::string&       _query_string) :
-                query_impl_base(_comm, _query_limit, _row_offset, _query_string) {
-
+            gen_query_impl(connection_type*   _comm,
+                           int                _query_limit,
+                           int                _row_offset,
+                           const std::string& _query_string,
+                           const std::string& _zone_hint)
+                : query_impl_base(_comm, _query_limit, _row_offset, _query_string)
+            {
                 memset(&gen_input_, 0, sizeof(gen_input_));
                 gen_input_.maxRows = MAX_SQL_ROWS;
                 gen_input_.rowOffset = _row_offset;
+
+                if (!_zone_hint.empty()) {
+                    addKeyVal(&gen_input_.condInput, ZONE_KW, _zone_hint.c_str());
+                }
+
                 const int fill_err = fillGenQueryInpFromStrCond(
                                          const_cast<char*>(_query_string.c_str()),
                                          &gen_input_);
@@ -193,22 +203,21 @@ namespace irods {
                 }
             } // ctor
 
-            private:
-            genQueryInp_t gen_input_; 
-            #ifdef RODS_SERVER
-                const std::function<
-                    int(connection_type*,
-                        genQueryInp_t*,
-                        genQueryOut_t**)>
-                            gen_query_fcn{rsGenQuery};
-            #else
-                const std::function<
-                    int(connection_type*,
-                        genQueryInp_t*,
-                        genQueryOut_t**)>
-                            gen_query_fcn{rcGenQuery};
-            #endif
-
+        private:
+            genQueryInp_t gen_input_;
+#ifdef RODS_SERVER
+            const std::function<
+                int(connection_type*,
+                    genQueryInp_t*,
+                    genQueryOut_t**)>
+                        gen_query_fcn{rsGenQuery};
+#else
+            const std::function<
+                int(connection_type*,
+                    genQueryInp_t*,
+                    genQueryOut_t**)>
+                        gen_query_fcn{rcGenQuery};
+#endif
         }; // class gen_query_impl
 
         class spec_query_impl : public query_impl_base {
@@ -247,16 +256,27 @@ namespace irods {
                            &this->gen_output_);
             } // fetch_page
 
-            spec_query_impl(
-                connection_type* _comm,
-                int                      _query_limit,
-                int                      _row_offset,
-                const std::string&       _query_string) :
-                query_impl_base(_comm, _query_limit, _row_offset, _query_string) {
-
+            spec_query_impl(connection_type*                _comm,
+                            int                             _query_limit,
+                            int                             _row_offset,
+                            const std::string&              _query_string,
+                            const std::string&              _zone_hint,
+                            const std::vector<std::string>* _args)
+                : query_impl_base(_comm, _query_limit, _row_offset, _query_string)
+            {
                 memset(&spec_input_, 0, sizeof(spec_input_));
                 spec_input_.maxRows = MAX_SQL_ROWS;
                 spec_input_.sql = const_cast<char*>(_query_string.c_str());
+
+                if (!_zone_hint.empty()) {
+                    addKeyVal(&spec_input_.condInput, ZONE_KW, _zone_hint.c_str());
+                }
+
+                if (_args) {
+                    for (decltype(_args->size()) i = 0; i < _args->size(); ++i) {
+                        spec_input_.args[i] = const_cast<char*>((*_args)[i].data());
+                    }
+                }
 
                 int spec_err = spec_query_fcn(
                                    _comm,
@@ -353,8 +373,7 @@ namespace irods {
             }
 
             bool operator!=(const iterator& _rhs) const {
-                bool val = !(*this == _rhs);
-                return val;
+                return !(*this == _rhs);
             }
 
             value_type operator*() {
@@ -405,48 +424,67 @@ namespace irods {
             }
         }; // class iterator
 
-        explicit query(
-            connection_type* _comm,
-            const std::string&       _query_string,
-            uintmax_t                _query_limit = 0,
-            uintmax_t                _row_offset  = 0,
-            query_type               _query_type = GENERAL) {
-                if(_query_type == GENERAL) {
-                    query_impl_ = std::make_shared<gen_query_impl>(
-                                      _comm,
-                                      _query_limit,
-                                      _row_offset,
-                                      _query_string);
-                }
-                else if(_query_type == SPECIFIC) {
-                    query_impl_ = std::make_shared<spec_query_impl>(
-                                      _comm,
-                                      _query_limit,
-                                      _row_offset,
-                                      _query_string);
-                }
+        query(connection_type*                _comm,
+              const std::string&              _query_string,
+              const std::vector<std::string>* _specific_query_args,
+              const std::string&              _zone_hint,
+              uintmax_t                       _query_limit,
+              uintmax_t                       _row_offset,
+              query_type                      _query_type)
+            : iter_{}
+            , query_impl_{}
+        {
+            if(_query_type == GENERAL) {
+                query_impl_ = std::make_shared<gen_query_impl>(
+                                  _comm,
+                                  _query_limit,
+                                  _row_offset,
+                                  _query_string,
+                                  _zone_hint);
+            }
+            else if(_query_type == SPECIFIC) {
+                query_impl_ = std::make_shared<spec_query_impl>(
+                                  _comm,
+                                  _query_limit,
+                                  _row_offset,
+                                  _query_string,
+                                  _zone_hint,
+                                  _specific_query_args);
+            }
 
-                const int fetch_err = query_impl_->fetch_page();
-                if(fetch_err < 0) {
-                    if(CAT_NO_ROWS_FOUND == fetch_err) {
-                        iter_ = std::make_unique<iterator>();
-                    }
-                    else {
-                        THROW(
-                            fetch_err,
-                            boost::format("query failed for [%s] type [%d]") %
-                            _query_string %
-                            _query_type);
-                    }
-                }
-
-                if(query_impl_->results_valid()) {
-                    iter_ = std::make_unique<iterator>(query_impl_);
-                }
-                else {
+            const int fetch_err = query_impl_->fetch_page();
+            if(fetch_err < 0) {
+                if(CAT_NO_ROWS_FOUND == fetch_err) {
                     iter_ = std::make_unique<iterator>();
                 }
+                else {
+                    THROW(
+                        fetch_err,
+                        boost::format("query failed for [%s] type [%d]") %
+                        _query_string %
+                        _query_type);
+                }
+            }
+
+            if(query_impl_->results_valid()) {
+                iter_ = std::make_unique<iterator>(query_impl_);
+            }
+            else {
+                iter_ = std::make_unique<iterator>();
+            }
         } // ctor
+
+        query(connection_type*   _comm,
+              const std::string& _query_string,
+              uintmax_t          _query_limit = 0,
+              uintmax_t          _row_offset  = 0,
+              query_type         _query_type  = GENERAL)
+            : query{_comm, _query_string, nullptr, {}, _query_limit, _row_offset, _query_type}
+        {
+        } // ctor
+
+        query(query&&) = default;
+        query& operator=(query&&) = default;
 
         ~query() {
         }
@@ -454,9 +492,11 @@ namespace irods {
         iterator   begin() {
             return *iter_;
         }
+
         iterator   end()   {
             return iterator();
         }
+
         value_type front() {
             return (*(*iter_));
         }
@@ -464,6 +504,7 @@ namespace irods {
         size_t size()  {
             return query_impl_->size();
         }
+
     private:
         std::unique_ptr<iterator>        iter_;
         std::shared_ptr<query_impl_base> query_impl_;
