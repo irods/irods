@@ -596,9 +596,10 @@ rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] 
 
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_re_serialization__prep_13'] = '''
 def pep_resource_create_post(rule_args,callback,rei):
-    callback.writeLine("serverLog","physical_path="   + rule_args[1]["physical_path"]   + " ")    # write out variables from pluginContext
-    callback.writeLine("serverLog","logical_path="    + rule_args[1]["logical_path"]    + " ")
-    callback.writeLine("serverLog","proxy_user_name=" + rule_args[1]["proxy_user_name"] + " ")
+    d = rule_args[1].map()
+    callback.writeLine("serverLog","physical_path="   + d["physical_path"]   + " ")    # write out variables from pluginContext
+    callback.writeLine("serverLog","logical_path="    + d["logical_path"]    + " ")
+    callback.writeLine("serverLog","proxy_user_name=" + d["proxy_user_name"] + " ")
 '''
 
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_delay_in_dynamic_pep__3342'] = ''' 
