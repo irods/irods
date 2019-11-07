@@ -13587,8 +13587,23 @@ irods::error db_get_repl_list_for_leaf_bundles_op(
 
 #ifdef ORA_ICAT
     const std::string query = (boost::format("select data_id from (select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s') where rownum <= %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
+#elif MY_ICAT
+    /* MySQL (MariaDB doesn't get 'except' until v10.3)*/
+    const std::string query = (boost::format(
+        "select distinct data_id from R_DATA_MAIN "
+        "  where resc_id in (%s) and data_id not in ( "
+        "    select data_id from R_DATA_MAIN "
+        "      where resc_id in (%s) "
+        "  ) and modify_ts <= '%s' limit %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
 #else
-    const std::string query = (boost::format("select distinct data_id from R_DATA_MAIN where data_id in (select data_id from R_DATA_MAIN where resc_id in (%s)) and data_id not in (select data_id from R_DATA_MAIN where resc_id in (%s)) and modify_ts <= '%s' limit %d") % not_child_array % child_array % _invocation_timestamp->c_str() % _count).str();
+    /* Postgres */
+    const std::string query = (boost::format(
+        "select distinct data_id from R_DATA_MAIN "
+        "  where resc_id in (%s) and modify_ts <= '%s' "
+        "except "
+        "  select data_id from R_DATA_MAIN "
+        "    where resc_id in (%s) "
+        "limit %d") % not_child_array % _invocation_timestamp->c_str() % child_array % _count).str();
 #endif
 
     _results->reserve(_count);
