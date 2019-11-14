@@ -107,7 +107,7 @@ clearInxVal( inxValPair_t *inxValPair );
 int
 moveKeyVal( keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal );
 int
-rmKeyVal( keyValPair_t *condInput, char *keyWord );
+rmKeyVal( keyValPair_t *condInput, const char *keyWord );
 int
 sendTranHeader( int sock, int oprType, int flags, rodsLong_t offset,
                 rodsLong_t length );
