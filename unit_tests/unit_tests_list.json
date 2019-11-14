@@ -3,6 +3,7 @@
     "irods_dstream",
     "irods_filesystem",
     "irods_hierarchy_parser",
+    "irods_key_value_proxy",
     "irods_lifetime_manager",
     "irods_linked_list_iterator",
     "irods_logical_paths_and_special_characters",
