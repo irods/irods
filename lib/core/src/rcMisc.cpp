@@ -704,7 +704,7 @@ getIvalByInx( inxIvalPair_t *inxIvalPair, int inx, int *outValue ) {
 }
 
 int
-rmKeyVal( keyValPair_t *condInput, char *keyWord ) {
+rmKeyVal( keyValPair_t *condInput, const char *keyWord ) {
     int i, j;
 
     if ( condInput == NULL ) {

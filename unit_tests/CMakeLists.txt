@@ -30,12 +30,13 @@ endif()
 # List of cmake files defined under ./cmake/test_config.
 # Each file in the ./cmake/test_config directory defines variables for a specific test.
 # New tests should be added to this list.
-set(TEST_INCLUDE_LIST test_config/irods_linked_list_iterator
-                      test_config/irods_hierarchy_parser
-                      test_config/irods_filesystem
+set(TEST_INCLUDE_LIST test_config/irods_connection_pool
                       test_config/irods_dstream
+                      test_config/irods_filesystem
+                      test_config/irods_hierarchy_parser
+                      test_config/irods_lifetime_manager
+                      test_config/irods_linked_list_iterator
                       test_config/irods_logical_paths_and_special_characters
-                      test_config/irods_connection_pool
                       test_config/irods_query_builder)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
