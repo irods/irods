@@ -2,6 +2,7 @@
 #define IRODS_LIFETIME_MANAGER_HPP
 
 #include "rcMisc.h"
+
 #include <utility>
 
 namespace irods::experimental {
