@@ -28,6 +28,11 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Delay_Queue, self).tearDown()
 
+    def no_delayed_rules(self):
+        expected_str = 'No delayed rules pending for user'
+        out,_,_ = self.admin.run_icommand(['iqstat'])
+        return expected_str in out
+
     def count_strings_in_queue(self, string):
         _,out,_ = self.admin.assert_icommand(['iqstat'], 'STDOUT', 'id     name')
         count = 0
@@ -153,7 +158,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     lambda: lib.log_message_occurrences_equals_count(
                         msg='Waking!',
                         start_index=initial_size_of_server_log))
-                self.admin.assert_icommand(['iqstat'], 'STDOUT', 'No delayed rules pending for user')
+                lib.delayAssert(self.no_delayed_rules)
 
         finally:
             os.remove(rule_file)
@@ -201,7 +206,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     msg='writeLine: inString = delay ',
                     count=expected_count,
                     start_index=initial_size_of_server_log))
-            self.admin.assert_icommand(['iqstat'], 'STDOUT', 'No delayed rules pending for user')
+            lib.delayAssert(self.no_delayed_rules)
 
         os.remove(rule_file)
 
