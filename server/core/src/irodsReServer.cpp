@@ -9,6 +9,7 @@
 #include "irods_server_state.hpp"
 #include "irodsReServer.hpp"
 #include "miscServerFunct.hpp"
+#include "query_processor.hpp"
 #include "rodsClient.h"
 #include "rodsPackTable.h"
 #include "rsGlobalExtern.hpp"
@@ -19,6 +20,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <functional>
 #include <thread>
 
@@ -28,6 +30,8 @@
 
 using logger = irods::experimental::log;
 namespace {
+    static std::atomic_bool re_server_terminated{};
+
     void init_logger() {
         logger::init();
         irods::server_properties::instance().capture();
@@ -219,6 +223,12 @@ namespace {
         }};
 
         status = rcExecRuleExpression(&_comm, &exec_rule);
+        if (re_server_terminated) {
+            logger::delay_server::info(
+                (boost::format("Rule [%s] completed with status [%d] but RE server was terminated.") %
+                _inp.ruleExecId % status).str());
+        }
+
         if (strlen(_inp.exeFrequency) > 0) {
             return update_entry_for_repeat(_comm, _inp, status);
         }
@@ -243,9 +253,9 @@ namespace {
                     env.irodsConnectionPoolRefreshTime);
                 status = rcRuleExecDel(&static_cast<rcComm_t&>(tmp_pool->get_connection()), &rule_exec_del_inp);
                 if (status < 0) {
-                    rodsLog(LOG_ERROR,
-                            "rcRuleExecDel failed again for %s, stat=%d - exiting",
-                            _inp.ruleExecId, status);
+                    logger::delay_server::error(
+                            (boost::format("rcRuleExecDel failed again for %s, stat=%d - exiting") %
+                            _inp.ruleExecId % status).str());
                 }
             }
             return status;
@@ -263,16 +273,14 @@ namespace {
         }
     }
 
-    // Task posted to io_service
     void execute_rule(
-        std::shared_ptr<irods::connection_pool> _conn_pool,
-        irods::delay_queue& _queue,
-        const std::vector<std::string>& _rule_info,
-        const std::atomic_bool& _re_server_terminated) {
-        if (_re_server_terminated) {
+        irods::delay_queue& queue,
+        const std::vector<std::string>& rule_info)
+    {
+        if (re_server_terminated) {
             return;
         }
-        // Prepare input for rule execution API call
+
         ruleExecSubmitInp_t rule_exec_submit_inp{};
 
         irods::at_scope_exit<std::function<void()>> at_scope_exit{[&rule_exec_submit_inp] {
@@ -280,15 +288,16 @@ namespace {
         }};
 
         try{
-            rule_exec_submit_inp = fill_rule_exec_submit_inp(_rule_info);
+            rule_exec_submit_inp = fill_rule_exec_submit_inp(rule_info);
         } catch(const irods::exception& e) {
             irods::log(e);
             return;
         }
 
         try {
+            auto conn_pool = irods::make_connection_pool();
             logger::delay_server::trace((boost::format("Executing rule [%s]") % rule_exec_submit_inp.ruleExecId).str());
-            int status = run_rule_exec(_conn_pool->get_connection(), rule_exec_submit_inp);
+            int status = run_rule_exec(conn_pool->get_connection(), rule_exec_submit_inp);
             if(status < 0) {
                 logger::delay_server::error((boost::format("Rule exec for [%s] failed. status = [%d]") %
                     rule_exec_submit_inp.ruleExecId % status).str());
@@ -298,7 +307,46 @@ namespace {
                 rule_exec_submit_inp.ruleExecId % e.what()).str());
         }
 
-        _queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
+        if (!re_server_terminated) {
+            queue.dequeue_rule(std::string(rule_exec_submit_inp.ruleExecId));
+        }
+    }
+
+    auto make_delay_queue_query_processor(
+        irods::thread_pool& thread_pool,
+        irods::delay_queue& queue) -> irods::query_processor<rcComm_t>
+    {
+        using result_row = irods::query_processor<rsComm_t>::result_row;
+        const auto now = std::to_string(std::time(nullptr));
+        const auto qstr = (boost::format(
+            "SELECT RULE_EXEC_ID, \
+                    RULE_EXEC_NAME, \
+                    RULE_EXEC_REI_FILE_PATH, \
+                    RULE_EXEC_USER_NAME, \
+                    RULE_EXEC_ADDRESS, \
+                    RULE_EXEC_TIME, \
+                    RULE_EXEC_FREQUENCY, \
+                    RULE_EXEC_PRIORITY, \
+                    RULE_EXEC_LAST_EXE_TIME, \
+                    RULE_EXEC_STATUS, \
+                    RULE_EXEC_ESTIMATED_EXE_TIME, \
+                    RULE_EXEC_NOTIFICATION_ADDR \
+            WHERE RULE_EXEC_TIME <= '%s'") % now).str();
+        const auto job = [&](const result_row& result) -> void
+        {
+            const auto& rule_id = result[0];
+            if(queue.contains_rule_id(rule_id)) {
+                return;
+            }
+            logger::delay_server::debug(
+                (boost::format("Enqueueing rule [%s]")
+                % rule_id).str());
+            queue.enqueue_rule(rule_id);
+            irods::thread_pool::post(thread_pool, [&queue, result] {
+                execute_rule(queue, result);
+            });
+        };
+        return {qstr, job};
     }
 }
 
@@ -306,10 +354,12 @@ int main() {
     init_logger();
     logger::delay_server::debug("Initializing...");
 
-    static std::atomic_bool re_server_terminated{};
+    static std::condition_variable term_cv;
+    static std::mutex term_m;
     const auto signal_exit_handler = [](int signal) {
         logger::delay_server::error((boost::format("RE server received signal [%d]") % signal).str());
         re_server_terminated = true;
+        term_cv.notify_all();
     };
     signal(SIGINT, signal_exit_handler);
     signal(SIGHUP, signal_exit_handler);
@@ -326,6 +376,14 @@ int main() {
         return sleep_time;
     }();
 
+    const auto go_to_sleep = [&sleep_time]() {
+        std::unique_lock<std::mutex> sleep_lock{term_m};
+        const auto until = std::chrono::system_clock::now() + std::chrono::seconds(sleep_time);
+        if (std::cv_status::no_timeout == term_cv.wait_until(sleep_lock, until)) {
+            logger::delay_server::debug("RE server awoken by a notification");
+        }
+    };
+
     const auto thread_count = [] {
         int thread_count = irods::default_max_number_of_concurrent_re_threads;
         try {
@@ -337,64 +395,33 @@ int main() {
     }();
 
     irods::thread_pool thread_pool{thread_count};
-
     irods::delay_queue queue;
 
-    while(!re_server_terminated) {
-        try {
-            rodsEnv env{};
-            _getRodsEnv(env);
-            auto query_conn_pool = std::make_shared<irods::connection_pool>(
-                1,
-                env.rodsHost,
-                env.rodsPort,
-                env.rodsUserName,
-                env.rodsZone,
-                env.irodsConnectionPoolRefreshTime);
-            auto query_conn = query_conn_pool->get_connection();
-            const auto now = std::to_string(std::time(nullptr));
-            const auto qstr = (boost::format(
-                "SELECT RULE_EXEC_ID, \
-                        RULE_EXEC_NAME, \
-                        RULE_EXEC_REI_FILE_PATH, \
-                        RULE_EXEC_USER_NAME, \
-                        RULE_EXEC_ADDRESS, \
-                        RULE_EXEC_TIME, \
-                        RULE_EXEC_FREQUENCY, \
-                        RULE_EXEC_PRIORITY, \
-                        RULE_EXEC_LAST_EXE_TIME, \
-                        RULE_EXEC_STATUS, \
-                        RULE_EXEC_ESTIMATED_EXE_TIME, \
-                        RULE_EXEC_NOTIFICATION_ADDR \
-                WHERE RULE_EXEC_TIME <= '%s'") % now).str();
-            irods::query<rcComm_t> qobj{&static_cast<rcComm_t&>(query_conn), qstr};
-            if(qobj.size() > 0) {
-                rodsEnv env{};
-                _getRodsEnv(env);
-                auto conn_pool = std::make_shared<irods::connection_pool>(
-                    std::min<int>(thread_count, qobj.size()),
-                    env.rodsHost,
-                    env.rodsPort,
-                    env.rodsUserName,
-                    env.rodsZone,
-                    env.irodsConnectionPoolRefreshTime);
-                for(const auto& result: qobj) {
-                    const auto& rule_id = result[0];
-                    if(queue.contains_rule_id(rule_id)) {
-                        continue;
+    try {
+        while(!re_server_terminated) {
+            try {
+                auto delay_queue_processor = make_delay_queue_query_processor(thread_pool, queue);
+                auto query_conn_pool = irods::make_connection_pool();
+                auto query_conn = query_conn_pool->get_connection();
+                auto future = delay_queue_processor.execute(thread_pool, static_cast<rcComm_t&>(query_conn));
+                auto errors = future.get();
+                if(errors.size() > 0) {
+                    for(const auto& [code, msg] : errors) {
+                        logger::delay_server::error(
+                            (boost::format("executing delayed rule failed - [%d]::[%s]")
+                            % code
+                            % msg).str());
                     }
-                    logger::delay_server::trace((boost::format("Enqueueing rule [%s]") % rule_id).str());
-                    queue.enqueue_rule(rule_id);
-                    irods::thread_pool::post(thread_pool, [conn_pool, &queue, result] {
-                        execute_rule(conn_pool, queue, result, re_server_terminated);
-                    });
                 }
+            } catch(const std::exception& e) {
+                irods::log(LOG_ERROR, e.what());
+            } catch(const irods::exception& e) {
+                irods::log(e);
             }
-        } catch(const std::exception& e) {
-            irods::log(LOG_ERROR, e.what());
-        } catch(const irods::exception& e) {
-            irods::log(e);
+            go_to_sleep();
         }
-        std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
+    } catch(const irods::exception& e) {
+        irods::log(e);
     }
+    logger::delay_server::info("RE server exiting...");
 }
