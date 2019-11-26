@@ -1,6 +1,3 @@
-
-
-
 #include "irods_re_serialization.hpp"
 #include "irods_plugin_context.hpp"
 #include "rodsErrorTable.h"
@@ -365,6 +362,32 @@ namespace irods {
                 return ERROR(
                          INVALID_ANY_CAST,
                          "failed to cast dataObjInp ptr" );
+            }
+
+            return SUCCESS();
+        } // serialize_dataObjInp_ptr
+
+        static error serialize_openedDataObjInp_ptr(
+                boost::any               _p,
+                serialized_parameter_t& _out) { 
+            try {
+                auto* l = boost::any_cast<openedDataObjInp_t*>(_p);
+
+                if (l) {
+                    _out["bytes_written"] = boost::lexical_cast<std::string>(l->bytesWritten);
+                    _out["l1descInx"]     = boost::lexical_cast<std::string>(l->l1descInx);
+                    _out["length"]        = boost::lexical_cast<std::string>(l->len);
+                    _out["offset"]        = boost::lexical_cast<std::string>(l->offset);
+                    _out["opr_type"]      = boost::lexical_cast<std::string>(l->oprType);
+                    _out["whence"]        = boost::lexical_cast<std::string>(l->whence);
+
+                    serialize_keyValPair(l->condInput, _out);
+                } else {
+                    _out["openedDataObjInp_ptr"] = "nullptr";
+                }
+            }
+            catch ( std::exception& ) {
+                return ERROR(INVALID_ANY_CAST, "failed to cast openedDataObjInp ptr");
             }
 
             return SUCCESS();
@@ -956,6 +979,7 @@ namespace irods {
                 { std::type_index(typeid(rsComm_t*)), serialize_rsComm_ptr },
                 { std::type_index(typeid(plugin_context)), serialize_plugin_context },
                 { std::type_index(typeid(dataObjInp_t*)), serialize_dataObjInp_ptr },
+                { std::type_index(typeid(openedDataObjInp_t*)), serialize_openedDataObjInp_ptr },
                 { std::type_index(typeid(authResponseInp_t*)), serialize_authResponseInp_ptr },
                 { std::type_index(typeid(dataObjInfo_t*)), serialize_dataObjInfo_ptr },
                 { std::type_index(typeid(keyValPair_t*)), serialize_keyValPair_ptr },
