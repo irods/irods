@@ -29,7 +29,7 @@ TEST_CASE("dstream", "[iostreams]")
         // Guarantees that the stream is closed before clean up.
         {
             io::client::default_transport xport{conn};
-            io::dstream stream{xport, path};
+            io::odstream stream{xport, path};
             REQUIRE(stream.is_open());
 
             // Move construct.
@@ -38,7 +38,7 @@ TEST_CASE("dstream", "[iostreams]")
             REQUIRE(other_stream.is_open());
             
             // Construct and then move assign the stream.
-            io::dstream another_stream;
+            io::odstream another_stream;
             REQUIRE_FALSE(another_stream.is_open());
 
             another_stream = std::move(other_stream);

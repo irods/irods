@@ -59,7 +59,6 @@ TEST_CASE("filesystem")
     // clang-format off
     namespace fs = irods::experimental::filesystem;
 
-    using dstream           = irods::experimental::io::dstream;
     using odstream          = irods::experimental::io::odstream;
     using default_transport = irods::experimental::io::client::default_transport;
     // clang-format on
@@ -80,7 +79,7 @@ TEST_CASE("filesystem")
 
         {
             default_transport tp{conn};        
-            dstream{tp, sandbox / "file1.txt"};
+            odstream{tp, sandbox / "file1.txt"};
         }
 
         REQUIRE(fs::client::exists(conn, sandbox / "file1.txt"));
@@ -108,7 +107,7 @@ TEST_CASE("filesystem")
 
         {
             default_transport tp{conn};        
-            dstream{tp, d1};
+            odstream{tp, d1};
         }
 
         REQUIRE(fs::client::exists(conn, d1));
@@ -363,7 +362,7 @@ TEST_CASE("filesystem")
 
         {
             default_transport tp{conn};
-            dstream{tp, p};
+            odstream{tp, p};
         }
 
         REQUIRE(fs::client::is_data_object(conn, p));
@@ -406,7 +405,7 @@ TEST_CASE("filesystem")
 
             {
                 default_transport tp{conn};
-                dstream{tp, p};
+                odstream{tp, p};
             }
 
             REQUIRE(fs::client::exists(conn, p));

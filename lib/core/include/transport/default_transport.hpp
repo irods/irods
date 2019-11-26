@@ -228,7 +228,7 @@ namespace NAMESPACE_IMPL {
                 return O_CREAT | O_WRONLY | O_APPEND;
             }
             else if ((ios_base::out | ios_base::in) == m) {
-                return O_CREAT | O_RDWR;
+                return O_RDWR;
             }
             else if ((ios_base::out | ios_base::in | ios_base::trunc) == m) {
                 return O_CREAT | O_RDWR | O_TRUNC;
