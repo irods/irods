@@ -222,5 +222,18 @@ void connection_pool::release_connection(int _index)
     conn_ctxs_[_index].refresh = true;
 }
 
+std::shared_ptr<connection_pool> make_connection_pool(int size)
+{
+    rodsEnv env{};
+    _getRodsEnv(env);
+    return std::make_shared<irods::connection_pool>(
+        size,
+        env.rodsHost,
+        env.rodsPort,
+        env.rodsUserName,
+        env.rodsZone,
+        env.irodsConnectionPoolRefreshTime);
+}
+
 } // namespace irods
 
