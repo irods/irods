@@ -248,6 +248,13 @@ namespace irods {
         bool timeout_flg = false;
         int  proc_cnt = getAgentProcCnt();
 
+        // kill the delay server
+        rodsLog(LOG_DEBUG, "[%s:%d] - sending kill to delay server", __FUNCTION__, __LINE__);
+        ret = kill_server( irods::RE_PID_KW );
+        if ( !ret.ok() ) {
+            irods::log( PASS( ret ) );
+        }
+
         while ( proc_cnt > 0 && !timeout_flg ) {
             // takes sec, millisec
             ctrl_plane_sleep(
@@ -264,12 +271,6 @@ namespace irods {
             proc_cnt = getAgentProcCnt();
 
         } // while
-
-        // kill the rule engine server
-        ret = kill_server( irods::RE_PID_KW );
-        if ( !ret.ok() ) {
-            irods::log( PASS( ret ) );
-        }
 
         // kill the xmessage server
         ret = kill_server( irods::XMSG_PID_KW );
