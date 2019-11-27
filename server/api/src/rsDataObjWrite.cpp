@@ -163,18 +163,25 @@ l3Write( rsComm_t *rsComm, int l1descInx, int len,
         rstrcpy( subStructFileWriteInp.addr.hostAddr, location.c_str(), NAME_LEN );
         rstrcpy( subStructFileWriteInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
         bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
-
     }
     else {
         memset( &fileWriteInp, 0, sizeof( fileWriteInp ) );
         fileWriteInp.fileInx = L1desc[l1descInx].l3descInx;
         fileWriteInp.len = len;
-        bytesWritten = rsFileWrite( rsComm, &fileWriteInp,
-                                    dataObjWriteInpBBuf );
+        bytesWritten = rsFileWrite( rsComm, &fileWriteInp, dataObjWriteInpBBuf );
+
         if ( bytesWritten > 0 ) {
-            L1desc[l1descInx].bytesWritten += bytesWritten;
+            auto& bw = L1desc[l1descInx].bytesWritten;
+
+            if (bw == -1) {
+                bw = bytesWritten;
+            }
+            else {
+                bw += bytesWritten;
+            }
         }
     }
+
     return bytesWritten;
 }
 
