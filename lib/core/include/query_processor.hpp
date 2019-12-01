@@ -47,7 +47,7 @@ namespace irods
                 errors errs;
 
                 try {
-                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_, type_}) {
+                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_, 0, type_}) {
                         try {
                             job_(row);
                         }
