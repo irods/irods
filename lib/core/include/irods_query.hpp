@@ -282,11 +282,10 @@ namespace irods {
                                    _comm,
                                    &spec_input_,
                                    &this->gen_output_);
-                if(spec_err < 0) {
-                    THROW(
-                        spec_err,
-                        boost::format("query fill failed for [%s]") %
-                        _query_string);
+                if (spec_err < 0) {
+                    if (CAT_NO_ROWS_FOUND != spec_err) {
+                        THROW(spec_err, boost::format("query fill failed for [%s]") % _query_string);
+                    }
                 }
             } // ctor
 
