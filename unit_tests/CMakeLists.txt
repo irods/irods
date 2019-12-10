@@ -40,7 +40,8 @@ set(TEST_INCLUDE_LIST test_config/irods_connection_pool
                       test_config/irods_lifetime_manager
                       test_config/irods_linked_list_iterator
                       test_config/irods_logical_paths_and_special_characters
-                      test_config/irods_query_builder)
+                      test_config/irods_query_builder
+                      test_config/irods_shared_memory_object)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     unset_irods_test_variables()
