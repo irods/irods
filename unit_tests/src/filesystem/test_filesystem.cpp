@@ -324,6 +324,34 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::remove(conn, sandbox / "f3.txt", fs::remove_options::no_trash));
         REQUIRE(fs::client::remove_all(conn, col1, fs::remove_options::no_trash));
         REQUIRE(fs::client::remove_all(conn, col2, fs::remove_options::no_trash));
+
+        SECTION("iteration over an empty collection")
+        {
+            const auto p = sandbox / "empty.d";
+            REQUIRE(fs::client::create_collection(conn, p));
+
+            const auto count_entries = [](auto& iter)
+            {
+                int count = 0;
+
+                for (auto&& e : iter) {
+                    static_cast<void>(e);
+                    ++count;
+                }
+
+                REQUIRE(0 == count);
+            };
+
+            fs::client::collection_iterator iter{conn, p};
+            REQUIRE(fs::client::collection_iterator{} == iter);
+            count_entries(iter);
+
+            fs::client::recursive_collection_iterator recursive_iter{conn, p};
+            REQUIRE(fs::client::recursive_collection_iterator{} == recursive_iter);
+            count_entries(recursive_iter);
+
+            REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
+        }
     }
 
     SECTION("object type checking")
