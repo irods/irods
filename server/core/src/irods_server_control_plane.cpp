@@ -99,7 +99,7 @@ namespace irods {
         avro::EncoderPtr e = avro::binaryEncoder();
         e->init( *out );
         avro::encode( *e, cmd );
-        boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
+        std::shared_ptr<std::vector<uint8_t>> data = avro::snapshot(*out);
 
         buffer_crypt crypt(
             shared_secret.size(),  // key size
