@@ -167,19 +167,40 @@ namespace NAMESPACE_IMPL {
             else if (COLL_OBJ_T == _s.type) {
                 irods::experimental::query_builder qb;
 
-                std::vector<std::string> args{_p.string()};
-
-                qb.type(irods::experimental::query_type::specific)
-                  .bind_arguments(args);
-
                 const auto zone = get_zone_name(_p);
 
                 if (zone) {
                     qb.zone_hint(*zone);
                 }
 
-                for (const auto& row : qb.build(_comm, "ShowCollAcls")) {
-                    _s.prms.push_back({row[0], to_permission_enum(row[2])});
+                try {
+                    std::vector<std::string> args{_p.string()};
+
+                    qb.type(irods::experimental::query_type::specific)
+                      .bind_arguments(args);
+
+                    for (const auto& row : qb.build(_comm, "ShowCollAcls")) {
+                        _s.prms.push_back({row[0], to_permission_enum(row[2])});
+                    }
+                }
+                catch (...) {
+                    // Fallback to GenQuery if the specific query fails (does not exist).
+                    //
+                    // In the case where the specific query, "ShowCollAcls", does not exist,
+                    // this implementation is required to fallback to GenQuery. The following
+                    // code does not require any information from the exception object, therefore
+                    // it is ignored.
+
+                    qb.type(irods::experimental::query_type::general);
+
+                    std::string sql = "select COLL_USER_NAME, COLL_ZONE_NAME, COLL_ACCESS_NAME "
+                                      "where COLL_TOKEN_NAMESPACE = 'access_type' and COLL_NAME = '";
+                    sql += _p.c_str();
+                    sql += "'";
+
+                    for (const auto& row : qb.build(_comm, sql)) {
+                        _s.prms.push_back({row[0], to_permission_enum(row[2])});
+                    }
                 }
             }
         }
