@@ -93,6 +93,8 @@ columnName_t columnNames[] = {
     { COL_COLL_COMMENTS,      "COLL_COMMENTS", },
     { COL_COLL_CREATE_TIME,   "COLL_CREATE_TIME", },
     { COL_COLL_MODIFY_TIME,   "COLL_MODIFY_TIME", },
+    { COL_COLL_USER_NAME,     "COLL_USER_NAME", },
+    { COL_COLL_USER_ZONE,     "COLL_ZONE_NAME", },
 
     { COL_COLL_ACCESS_TYPE,     "COLL_ACCESS_TYPE", },
     { COL_COLL_ACCESS_NAME,     "COLL_ACCESS_NAME", },
