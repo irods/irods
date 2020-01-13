@@ -212,7 +212,7 @@ irods::error prepare_command_for_transport(
     avro::EncoderPtr e = avro::binaryEncoder();
     e->init( *out );
     avro::encode( *e, _cmd );
-    boost::shared_ptr< std::vector< uint8_t > > data = avro::snapshot( *out );
+    std::shared_ptr<std::vector<uint8_t>> data = avro::snapshot(*out);
 
     // encrypt outgoing request
     std::vector< unsigned char > enc_data(
