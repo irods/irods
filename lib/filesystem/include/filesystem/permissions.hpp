@@ -18,7 +18,9 @@ namespace irods::experimental::filesystem
     struct entity_permission
     {
         std::string name;
+        std::string zone;
         perms prms;
+        std::string type;
     };
 } // namespace irods::experimental::filesystem
 
