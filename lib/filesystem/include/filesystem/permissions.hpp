@@ -20,7 +20,9 @@ namespace filesystem {
     struct entity_permission
     {
         std::string name;
+        std::string zone;
         perms prms;
+        std::string type;
     };
 
 } // namespace filesystem
