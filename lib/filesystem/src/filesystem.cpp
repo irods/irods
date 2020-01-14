@@ -146,7 +146,8 @@ namespace NAMESPACE_IMPL {
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
         {
             if (DATA_OBJ_T == _s.type) {
-                std::string sql = "select USER_NAME, DATA_ACCESS_NAME where COLL_NAME = '";
+                std::string sql = "select DATA_USER_NAME, DATA_ZONE_NAME, DATA_ACCESS_NAME, USER_TYPE "
+                                   "where COLL_NAME = '";
                 sql += _p.parent_path();
                 sql += "' and DATA_NAME = '";
                 sql += _p.object_name();
@@ -161,7 +162,7 @@ namespace NAMESPACE_IMPL {
                 }
 
                 for (const auto& row : qb.build(_comm, sql)) {
-                    _s.prms.push_back({row[0], to_permission_enum(row[1])});
+                    _s.prms.push_back({row[0], row[1], to_permission_enum(row[2]), row[3]});
                 }
             }
             else if (COLL_OBJ_T == _s.type) {
@@ -180,7 +181,7 @@ namespace NAMESPACE_IMPL {
                       .bind_arguments(args);
 
                     for (const auto& row : qb.build(_comm, "ShowCollAcls")) {
-                        _s.prms.push_back({row[0], to_permission_enum(row[2])});
+                        _s.prms.push_back({row[0], row[1], to_permission_enum(row[2]), row[3]});
                     }
                 }
                 catch (...) {
@@ -193,13 +194,13 @@ namespace NAMESPACE_IMPL {
 
                     qb.type(irods::experimental::query_type::general);
 
-                    std::string sql = "select COLL_USER_NAME, COLL_ZONE_NAME, COLL_ACCESS_NAME "
+                    std::string sql = "select COLL_USER_NAME, COLL_ZONE_NAME, COLL_ACCESS_NAME, USER_TYPE "
                                       "where COLL_TOKEN_NAMESPACE = 'access_type' and COLL_NAME = '";
                     sql += _p.c_str();
                     sql += "'";
 
                     for (const auto& row : qb.build(_comm, sql)) {
-                        _s.prms.push_back({row[0], to_permission_enum(row[2])});
+                        _s.prms.push_back({row[0], row[1], to_permission_enum(row[2]), row[3]});
                     }
                 }
             }
