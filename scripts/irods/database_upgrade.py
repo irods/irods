@@ -79,6 +79,15 @@ def run_update(irods_config, cursor):
             group_id = row[0]
             database_connect.execute_sql_statement(cursor, "insert into R_USER_GROUP values (?,?,?,?);", group_id, group_id, timestamp, timestamp)
 
+        # Add specific query that allows listing all groups a user is a member of.
+        sql = ("insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) "
+               "values ('listGroupsForUser', "
+                        "'select group_user_id, user_name from R_USER_GROUP ug"
+                        " inner join R_USER_MAIN u on ug.group_user_id = u.user_id"
+                        " where user_type_name = ''rodsgroup'' and ug.user_id = (select user_id from R_USER_MAIN where user_name = ? and user_type_name != ''rodsgroup'')', "
+                        "'1580297960');")
+        database_connect.execute_sql_statement(cursor, sql)
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 
