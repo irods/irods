@@ -8,5 +8,6 @@
     "irods_linked_list_iterator",
     "irods_logical_paths_and_special_characters",
     "irods_query_builder",
-    "irods_shared_memory_object"
+    "irods_shared_memory_object",
+    "irods_user_administration"
 ]

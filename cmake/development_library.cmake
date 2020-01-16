@@ -28,6 +28,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/group.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/guiProgressCallback.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_assert.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_constants.hpp
@@ -144,6 +145,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/termiosUtil.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/thread_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/trimUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/user.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/user_administration.hpp
   )
 
 set(
