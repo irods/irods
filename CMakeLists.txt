@@ -307,6 +307,42 @@ target_compile_options(irods_filesystem_server PRIVATE -fPIC -Wno-write-strings)
 target_compile_definitions(irods_filesystem_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API IRODS_IO_TRANSPORT_ENABLE_SERVER_SIDE_API)
 
 
+add_library(
+  irods_user_administration_client
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/core/src/user_administration.cpp
+  )
+target_include_directories(
+  irods_user_administration_client
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  )
+set_target_properties(irods_user_administration_client PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_user_administration_client PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_user_administration_client PRIVATE ${IRODS_COMPILE_DEFINITIONS})
+
+add_library(
+  irods_user_administration_server
+  OBJECT
+  ${CMAKE_SOURCE_DIR}/lib/core/src/user_administration.cpp
+  )
+target_include_directories(
+  irods_user_administration_server
+  PRIVATE
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/api/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  )
+set_target_properties(irods_user_administration_server PROPERTIES CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_options(irods_user_administration_server PRIVATE -fPIC -Wno-write-strings)
+target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API)
+
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
@@ -452,6 +488,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/cpUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/group.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_c_api.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_api_table.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_client_negotiation.cpp
@@ -476,8 +513,10 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/user.cpp
   $<TARGET_OBJECTS:irods_filesystem_path>
   $<TARGET_OBJECTS:irods_filesystem_client>
+  $<TARGET_OBJECTS:irods_user_administration_client>
   )
 add_library(
   irods_client
@@ -732,6 +771,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/re/src/testMS.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/xmsgMS.cpp
   $<TARGET_OBJECTS:irods_filesystem_server>
+  $<TARGET_OBJECTS:irods_user_administration_server>
   )
 add_library(
   irods_server
@@ -1078,6 +1118,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/fsckUtil.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getRodsEnv.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/group.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_factory.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_auth_manager.cpp
@@ -1152,6 +1193,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/sslSockComm.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/stringOpr.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/trimUtil.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/user.cpp
   )
 
 set(
@@ -1185,6 +1227,8 @@ add_library(
   $<TARGET_OBJECTS:irods_filesystem_path>
   $<TARGET_OBJECTS:irods_filesystem_client>
   $<TARGET_OBJECTS:irods_filesystem_server>
+  $<TARGET_OBJECTS:irods_user_administration_client>
+  $<TARGET_OBJECTS:irods_user_administration_server>
   )
 target_link_libraries(
   RodsAPIs
