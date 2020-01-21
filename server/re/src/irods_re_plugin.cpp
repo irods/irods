@@ -51,7 +51,10 @@ namespace irods{
             fillStrInMsParam( t, const_cast<char*>( (*(boost::any_cast<std::string *>(itr))).c_str() ));
         } else if(itr.type() == typeid(msParam_t*)) {
             memset(t, 0, sizeof(*t));
-            replMsParam(boost::any_cast<msParam_t*>(itr), t);
+            auto msp = boost::any_cast<msParam_t*>(itr);
+            fillMsParam(t, msp->label, msp->type, msp->inOutStruct, msp->inpOutBuf);
+            msp->inOutStruct = nullptr;
+            msp->inpOutBuf = nullptr;
         } else {
             return ERROR(-1, "cannot convert parameter");
         }
