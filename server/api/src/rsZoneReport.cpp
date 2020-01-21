@@ -76,8 +76,7 @@ static void report_server_connect_error(
     irods::error err = ERROR(_error, msg.str());
     irods::log( err );
 
-    // FIXME: This does not compile against JSON 3.4.0
-    _resc_arr.push_back({"ERROR", msg});
+    _resc_arr.push_back({"ERROR", msg.str()});
 }
 
 static
