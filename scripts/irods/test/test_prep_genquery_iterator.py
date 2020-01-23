@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import ast
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -22,6 +23,12 @@ from ..paths import (config_directory as irods_config_dir,
 GENQUERY_MODULE_BASENAME = 'genquery.py'
 
 Allow_Intensive_Memory_Use = False
+
+def _module_attribute(module,name,default=None):
+    value = getattr(module,name,default)
+    if callable(value):
+        return value()
+    return value
 
 #  -------------
 #  This function will be necessary until PREP tests are separate from the irods core repository:
@@ -58,7 +65,7 @@ def genquery_module_available():
             try:
                 sys.path.insert(0,IRODS_CONFIG_DIR)
                 import genquery
-                if getattr(genquery,'AUTO_CLOSE_QUERIES',None): Allow_Intensive_Memory_Use = True
+                if _module_attribute(genquery,'AUTO_CLOSE_QUERIES'): Allow_Intensive_Memory_Use = True
                 idx =  sys.path.index(IRODS_CONFIG_DIR)
             except ImportError: # not fatal, past versions were only importable via PREP
                 pass
@@ -127,7 +134,194 @@ class Test_Genquery_Iterator(resource_suite.ResourceBase, unittest.TestCase):
                                      "/" + os.path.split(self.test_dir_path)[-1] )
 
 
-    # remove the next line when msiGetMoreRows always returns an accurate value for continueInx
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
+    def test_query_objects_case_insensitive(self):
+
+        if not self.full_test : return
+        os.mkdir(self.dir_for_coll)
+        filename = "MyFiLe.TsT"
+        for dummy in range(3):
+            fullpath = os.path.join(self.dir_for_coll,filename)
+            open(fullpath,"wb").write(b"bytes")
+            filename = filename.lower() if dummy == 0 else filename.upper()
+        lib.execute_command ('tar -cf {} {}'.format(self.bundled_coll, self.dir_for_coll))
+        self.admin.assert_icommand('icd')
+        self.admin.assert_icommand('iput -f {}'.format(self.bundled_coll))
+        self.admin.assert_icommand('ibun -x {} .'.format(self.bundled_coll))
+        test_coll = self.test_admin_coll_path
+
+        with generateRuleFile(names_list = self.to_unlink,
+                              prefix = "query_case_insensitive_") as f:
+            rule_file = f.name
+            rule_text = dedent('''\
+            from genquery import *
+            def main(args,callback,rei):
+                q1 = Query(callback,'DATA_ID',
+                     "COLL_NAME = '{{c}}' and DATA_NAME = '{{d}}'".format(c='{test_coll}',d='{filename}'),
+                     case_sensitive=True)
+                q2 = Query(callback,'DATA_ID',
+                     "COLL_NAME = '{{c}}' and DATA_NAME = '{{d}}'".format(c='{test_coll}'.upper(),d='{filename}'.lower()),
+                     case_sensitive=False)
+                L= [ len([i for i in q]) for q in (q1,q2) ]
+                callback.writeLine('stdout', repr(L).replace(chr(0x20),''))
+            OUTPUT ruleExecOut
+            ''')
+            print(rule_text.format(**locals()), file=f, end='')
+
+        output, err, rc = self.admin.run_icommand("irule -F " + rule_file)
+        self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
+        self.assertEqual(output.strip(), "[1,3]")
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
+    def test_query_objects(self):
+        if not self.full_test : return
+        os.mkdir(self.dir_for_coll)
+        interesting = [0,1,2,100,254,255,256,257,258,510,511,512,513,514]
+        octals = ['%04o'%x for x in interesting]
+        max_count = sorted(interesting)[-1]
+        for x in range(max_count+1):
+             fname = os.path.join(self.dir_for_coll,'%04o'%x)
+             with open(fname,'wb') as fb:
+                 fb.write(os.urandom(x))
+        lib.execute_command ('tar -cf {} {}'.format(self.bundled_coll, self.dir_for_coll))
+        self.admin.assert_icommand('icd')
+        self.admin.assert_icommand('iput -f {}'.format(self.bundled_coll))
+        self.admin.assert_icommand('ibun -x {} .'.format(self.bundled_coll))
+        test_coll = self.test_admin_coll_path
+        rule_file = ""
+        output=""
+        rule_header = dedent("""\
+            from genquery import *
+            def main(rule_args,callback,rei):
+                TestCollection = "{test_coll}"
+            """)
+        rule_footer = dedent("""\
+            INPUT null
+            OUTPUT ruleExecOut
+            """)
+
+        frame_rule = lambda text,indent=4: \
+            rule_header+('\n'+' '*indent+('\n'+' '*indent).join(dedent(text).split("\n"))
+                        )+"\n"+rule_footer
+        #--------------------------------
+        test_cases = [(
+            frame_rule('''\
+                L = []
+                for j in {octals}:
+                    cond_string= "COLL_NAME = '{{c}}' and DATA_NAME < '{{ltparam}}'".format(c=TestCollection,ltparam=j)
+                    q = Query(callback,
+                              columns=["DATA_NAME"],
+                              conditions=cond_string)
+                    L.append(q.total_rows())
+                callback.writeLine("stdout", repr(L))
+                '''),
+            "total_rows_",
+            lambda : ast.literal_eval(output) == interesting
+        ), ( #----------------
+            frame_rule('''\
+                row_format = lambda row:"{{COLL_NAME}}/{{order(DATA_NAME)}}".format(**row)
+                q = Query(callback,
+                          columns=["order(DATA_NAME)","COLL_NAME"],
+                          output=AS_DICT,
+                          offset=0,limit=1,
+                          conditions="COLL_NAME = '{{c}}'".format(c=TestCollection))
+                res_1=[row_format(r) for r in q]
+                row_count = q.total_rows()
+                res_2=[row_format(r) for r in q.copy(offset=row_count-1)]
+                callback.writeLine('stdout',repr( [len(x) for x in res_1,res_2] +\
+                                                  [
+                                                   (res_1 + res_2 ==
+                                                    [TestCollection+"/"+x for x in ["%04o"%y for y in 0,{max_count}]])
+                                                  ] ))
+                '''),
+            "offset_limit_",
+            lambda: True # lambda : output.replace(" ","").strip() == "[1,1,True]"
+        ), ( #----------------
+            frame_rule('''\
+                q = Query(callback,
+                          columns=["DATA_ID"],
+                          conditions="COLL_NAME = '{{c}}'".format(c=TestCollection))
+                q_iter = iter( q )
+                first_row = next(q_iter)
+                callback.writeLine('stdout',repr([1+len([row for row in q_iter]),
+                                                  q.copy().total_rows()]))
+                '''),
+            "copy_query_",
+            lambda : ast.literal_eval(output) == [ max_count+1 ]*2
+        ), ( #----------------
+            frame_rule('''\
+                from genquery import Option
+                callback.msiModAVUMetadata("-C",TestCollection,"set", "aa", "bb", "cc")
+                callback.msiModAVUMetadata("-C",TestCollection,"add", "aa", "bb", "dd")
+                q = Query(callback,
+                          columns=["META_COLL_ATTR_NAME","COLL_NAME"],
+                          conditions="META_COLL_ATTR_NAME = 'aa' and COLL_NAME = '{{c}}'".format(c=TestCollection)
+                )
+                d0 = [ i for i in q ]
+                d1 = [ i for i in q.copy(options=Option.NO_DISTINCT) ]
+                callback.msiModAVUMetadata("-C",TestCollection,"rmw", "aa", "bb", "%")
+                b = repr([len(d0),len(d1)])
+                callback.writeLine('stdout',b)
+                callback.msiDeleteUnusedAVUs()
+                '''),
+            "no_distinct_",
+            lambda : ast.literal_eval(output) == [1,2]
+        ), ( #----------------
+            frame_rule('''\
+                import itertools
+                q = Query(callback,
+                          columns=["order_asc(DATA_NAME)"],
+                          conditions="DATA_NAME like '03%' and COLL_NAME = '{{c}}'".format(c=TestCollection)
+                )
+                q2 = q.copy(conditions="DATA_NAME like '05%' and COLL_NAME = '{{c}}'".format(c=TestCollection))
+                chained_queries = itertools.chain(q, q2)
+                compare_this = [x for x in ('%04o'%y for y in range({max_count}+1)) if x[:2] in ('03','05')]
+                callback.writeLine('stdout',repr([x for x in chained_queries] == compare_this and len(compare_this)==128))
+                '''),
+            "iter_chained_queries_",
+            lambda : ast.literal_eval(output) is True
+        ), ( #----------------
+            frame_rule('''\
+                #import pprint # - for DEBUG only
+                import itertools
+                q = Query(callback,
+                          columns=["DATA_NAME"],
+                          conditions="COLL_NAME = '{{c}}'".format(c=TestCollection)
+                )
+                n_results={max_count}+1
+                chunking_results = dict()
+                for chunk_size in set([1,2,3,4,5,6,7,8,10,16,32,50,64,100,128,200,256,400,510,512,513,
+                 n_results-2,n_results-1,n_results,n_results+1,n_results+2]):
+                    q_iter = iter(q.copy())
+                    L=[]
+                    while True:
+                        chunk = [row for row in itertools.islice(q_iter, 0, chunk_size)]
+                        if not chunk: break
+                        L.append(chunk)
+                    chunking_results[chunk_size] = L
+                check_Lresult = lambda chunkSize,L:\
+                  [int(x[0],8) for x in L] == list(range(0,n_results,chunkSize)) and \
+                  (0==len(L) or 1+((n_results-1)%chunkSize) == len(L[-1]))
+                #callback.writeLine('serverLog',pprint.pformat(chunking_results)) # - for DEBUG only
+                callback.writeLine('stdout',repr(list(check_Lresult(k,chunking_results[k]) for k in chunking_results)))
+                '''),
+            "chunked_queries_via_islice_",
+            lambda : list(filter(lambda result:result is False, ast.literal_eval(output))) == []
+        ), ('','','')]
+        #--------------------------------
+        for rule_text, file_prefix, assertion in test_cases:
+            if not rule_text: break
+            with generateRuleFile(names_list = self.to_unlink,
+                                  prefix = file_prefix) as f:
+                rule_file = f.name
+                print(rule_text.format(**locals()), file=f, end='')
+            output, err, rc = self.admin.run_icommand("irule -F " + rule_file)
+            self.assertTrue(rc == 0, "icommand status ret = {r} output = '{o}' err='{e}'".format(r=rc,o=output,e=err))
+            assertResult=assertion()
+            if  not  assertResult: print( "failing output ====> " + output + "\n<====" )
+            self.assertTrue(assertResult, "test failed for prefix: {}".format(file_prefix))
+
+# remove the next line when msiGetMoreRows always returns an accurate value for continueInx
     @unittest.skipIf(Allow_Intensive_Memory_Use, 'Replace nested multiples-of-256 pending rsGenQuery continueInx fix')
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for python REP')
     def test_multiples_256(self):
