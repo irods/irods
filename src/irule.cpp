@@ -91,9 +91,9 @@ irods::error parseProgramOptions(
     char* _argv[],
     boost::program_options::variables_map &_vm ) {
     namespace po = boost::program_options;
-    
+
     po::options_description opt_desc( "options" );
-    
+
     opt_desc.add_options()
         ( "help,h",                              "Show command usage" )
         ( "test,t",                              "Test mode" )
@@ -106,10 +106,10 @@ irods::error parseProgramOptions(
                                                  "Run rule on specified instance" )
         ( "parameters", po::value< std::vector< std::string > >()->multitoken(),
                                                  "Rule input/output parameters" );
-    
+
     po::positional_options_description pos_desc;
     pos_desc.add( "parameters", -1 );
-    
+
     try {
         po::store(
             po::command_line_parser(
@@ -151,7 +151,7 @@ main( int argc, char **argv ) {
     char saveFile[MAX_NAME_LEN];
     char ruleFile[MAX_NAME_LEN];
     char cmdLineInput[MAX_NAME_LEN];
-    err = parseProgramOptions( argc, argv, argsMap ); 
+    err = parseProgramOptions( argc, argv, argsMap );
 
     if ( !err.ok() ) {
         std::cerr << "Error in parsing command line arguments" << std::endl;
@@ -405,7 +405,7 @@ main( int argc, char **argv ) {
                 fprintf(stderr, "Use -h for help.\n" );
                 exit( 3 );
             }
-            
+
             snprintf( execMyRuleInp.myRule, META_STR_LEN, "@external rule { %s }", parameters.at(0).c_str() );
             rstrcpy( cmdLineInput, parameters.at(1).c_str(), MAX_NAME_LEN );
 
@@ -780,7 +780,8 @@ usage() {
         "     (string parameters must be quoted)",
         "     (your shell may require escaping and/or single quotes)",
         " ",
-        "Example rules are given in:   clients/icommands/test/rules/",
+        "Example rules can be found at:",
+        "    https://github.com/irods/irods_client_icommands/tree/master/test/rules",
         " ",
         "In either form, the 'rule' that is processed is either a rule name or a",
         "rule definition (which may be a complete rule or a subset).",
@@ -798,7 +799,7 @@ usage() {
         "                                     then the file is fetched from an iRODS server",
         " --list,-l                         - list file if -F option is used",
         " --verbose,-v                      - verbose",
-        " --available,-a                    - list all available rule engine instances",   
+        " --available,-a                    - list all available rule engine instances",
         " --rule-engine-plugin-instance,-r  - run rule on the specified rule engine instance",
         " --help,-h                         - this help",
         ""
