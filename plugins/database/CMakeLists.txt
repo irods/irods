@@ -26,14 +26,6 @@ set(
   oracle
   )
 
-if (NOT IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD)
-  if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "ubuntu" AND IRODS_LINUX_DISTRIBUTION_VERSION_MAJOR STREQUAL "16")
-    set(IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD "default_storage_engine" CACHE STRING "Keyword used when setting MySQL default storage engine for session." FORCE)
-  else()
-    set(IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD "storage_engine" CACHE STRING "Keyword used when setting MySQL default storage engine for session." FORCE)
-  endif()
-  message(STATUS "Setting unspecified IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD to '${IRODS_MYSQL_DEFAULT_STORAGE_ENGINE_KEYWORD}'. This is the correct setting for normal builds.")
-endif()
 configure_file(
   ${CMAKE_SOURCE_DIR}/plugins/database/src/icatSysTables.sql.pp.in
   ${CMAKE_BINARY_DIR}/plugins/database/src/icatSysTables.sql.pp
