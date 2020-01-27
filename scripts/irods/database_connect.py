@@ -418,6 +418,18 @@ def setup_database_values(irods_config, cursor=None, default_resource_directory=
             admin_user_id,
             timestamp,
             timestamp)
+    execute_sql_statement(cursor,
+            "insert into R_USER_GROUP values (?,?,?,?);",
+            admin_group_id,
+            admin_group_id,
+            timestamp,
+            timestamp)
+    execute_sql_statement(cursor,
+            "insert into R_USER_GROUP values (?,?,?,?);",
+            public_group_id,
+            public_group_id,
+            timestamp,
+            timestamp)
 
     #password
     scrambled_password = password_obfuscation.scramble(irods_config.admin_password,
