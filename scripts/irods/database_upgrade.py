@@ -3,6 +3,7 @@ from .exceptions import IrodsError, IrodsWarning
 
 import logging
 import re
+import time
 
 def run_update(irods_config, cursor):
     l = logging.getLogger(__name__)
@@ -68,6 +69,15 @@ def run_update(irods_config, cursor):
     elif new_schema_version == 6:
         database_connect.execute_sql_statement(cursor, "create index idx_data_main7 on R_DATA_MAIN (resc_id);")
         database_connect.execute_sql_statement(cursor, "create index idx_data_main8 on R_DATA_MAIN (data_is_dirty);")
+
+    elif new_schema_version == 7:
+        timestamp = '{0:011d}'.format(int(time.time()))
+        sql = ("select distinct group_user_id from r_user_group "
+               "where group_user_id not in (select distinct group_user_id from r_user_group where group_user_id = user_id);")
+        rows = database_connect.execute_sql_statement(cursor, sql).fetchall()
+        for row in rows:
+            group_id = row[0]
+            database_connect.execute_sql_statement(cursor, "insert into R_USER_GROUP values (?,?,?,?);", group_id, group_id, timestamp, timestamp)
 
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
