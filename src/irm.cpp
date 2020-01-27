@@ -38,6 +38,12 @@ main( int argc, char **argv ) {
         usage();
         exit( 0 );
     }
+    // Since 4.2.8
+    // This deprecation message is specific to irm, not to general unlinking
+    if (True == myRodsArgs.unmount) {
+        printf("-U is deprecated.  Please use iunreg instead.\n");
+        exit(1);
+    }
 
     if ( argc - optind <= 0 ) {
         rodsLog( LOG_ERROR, "irm: no input" );
@@ -119,6 +125,8 @@ usage() {
         " ",
         "Note that -n has been deprecated.  Please use itrim instead.",
         " ",
+        "Note that -U has been deprecated.  Please use iunreg instead.",
+        " ",
         "Options are:",
         " -f  force - Immediate removal of data-objects without putting them in trash .",
         " -n  replNum - [Deprecated] the replica to remove; if not specified remove all replicas.",
@@ -127,7 +135,7 @@ usage() {
         " -r  recursive - remove the whole subtree; the collection, all data-objects",
         "     in the collection, and any subcollections and sub-data-objects in the",
         "     collection.",
-        " -U  unregister the file or collection",
+        " -U  [Deprecated] unregister the file or collection",
         " -v  verbose",
         " -V  Very verbose",
         " --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
