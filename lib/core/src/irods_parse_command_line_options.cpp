@@ -103,9 +103,6 @@ static int parse_program_options(
         _rods_args.bulk = 1;
     }
     if ( global_prog_ops_var_map.count( "force" ) ) {
-        _rods_args.bulk = 1;
-    }
-    if ( global_prog_ops_var_map.count( "force" ) ) {
         _rods_args.force = 1;
     }
     if ( global_prog_ops_var_map.count( "redirect" ) ) {
