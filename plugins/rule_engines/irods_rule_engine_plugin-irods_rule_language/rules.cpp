@@ -204,15 +204,17 @@ int parseAndComputeRule( char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveF
 
     int errloc;
 
+    RuleDesc *rd = NULL;
+    Res *res = NULL;
+
     /* add rules into ext rule set */
     rescode = parseRuleSet( e, ruleEngineConfig.extRuleSet, ruleEngineConfig.extFuncDescIndex, &errloc, errmsg, r );
     deletePointer( e );
     if ( rescode != 0 ) {
-        return RE_PARSER_ERROR;
+        rescode = RE_PARSER_ERROR;
+        RETURN;
     }
 
-    RuleDesc *rd = NULL;
-    Res *res = NULL;
     /* add rules into rule index */
     int i;
     for ( i = tempLen; i < ruleEngineConfig.extRuleSet->len; i++ ) {
