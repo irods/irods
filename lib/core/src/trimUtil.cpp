@@ -163,6 +163,11 @@ initCondForTrim( rodsArguments_t *rodsArgs,
         addKeyVal( &dataObjInp->condInput, DRYRUN_KW, "" );
     }
 
+    // See rmUtil
+    if (rodsArgs->unmount == True) {
+        dataObjInp->oprType = UNREG_OPR;
+    }
+
     return 0;
 }
 
