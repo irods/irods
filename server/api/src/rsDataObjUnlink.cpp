@@ -287,8 +287,17 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) == NULL ) {
         return 0;
     }
+
+    char* accessPerm{};
+    if (!getValByKey(&dataObjUnlinkInp->condInput, ADMIN_KW)) {
+        accessPerm = ACCESS_DELETE_OBJECT;
+    }
+    else if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+        return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+    }
+
     status = getDataObjInfo( rsComm, dataObjUnlinkInp,
-                             &dataObjInfoHead, ACCESS_DELETE_OBJECT, 1 );
+                             &dataObjInfoHead, accessPerm, 1 );
 
     if ( status < 0 ) {
         return status;

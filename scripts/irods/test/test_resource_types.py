@@ -925,7 +925,7 @@ OUTPUT ruleExecOut
         new_digest = lib.file_digest(file_vault_full_path, 'sha256', encoding='base64')
         self.admin.assert_icommand('ifsck ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['CORRUPTION', 'not consistent with iRODS object'])  # ifsck
         # unregister, reregister (to update filesize in iCAT), recalculate checksum, and confirm
-        self.admin.assert_icommand('irm -U ' + full_logical_path)
+        self.admin.assert_icommand('iunreg ' + full_logical_path)
         self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['WARNING: checksum not available'])  # ifsck
         self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT_MULTILINE',
