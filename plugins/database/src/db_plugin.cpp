@@ -3071,7 +3071,6 @@ irods::error db_unreg_replica_op(
     char tSQL[MAX_SQL_SIZE];
     char replNumber[30];
     char dataObjNumber[30];
-    char cVal[MAX_NAME_LEN];
     int adminMode;
     int trashMode;
     char *theVal;
@@ -3143,26 +3142,8 @@ irods::error db_unreg_replica_op(
         }
         else {
             if ( _data_obj_info->replNum >= 0 && _data_obj_info->dataId >= 0 ) {
-                /* Check for a different replica */
                 snprintf( dataObjNumber, sizeof dataObjNumber, "%lld",
                           _data_obj_info->dataId );
-                snprintf( replNumber, sizeof replNumber, "%d", _data_obj_info->replNum );
-                if ( logSQL != 0 ) {
-                    rodsLog( LOG_SQL, "chlUnregDataObj SQL 2" );
-                }
-                {
-                    std::vector<std::string> bindVars;
-                    bindVars.push_back( dataObjNumber );
-                    bindVars.push_back( replNumber );
-                    status = cmlGetStringValueFromSql(
-                                 "select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
-                                 cVal, sizeof cVal, bindVars, &icss );
-                }
-                if ( status != 0 ) {
-                    addRErrorMsg( &_ctx.comm()->rError, 0,
-                                  "This is the last replica, removal by admin not allowed" );
-                    return ERROR( CAT_LAST_REPLICA, "This is the last replica, removal by admin not allowed" );
-                }
             }
             else {
                 addRErrorMsg( &_ctx.comm()->rError, 0,

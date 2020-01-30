@@ -278,7 +278,13 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
         memset( *collOprStat, 0, sizeof( collOprStat_t ) );
     }
 
-
+    if (getValByKey(&rmCollInp->condInput, ADMIN_KW)) {
+        if (LOCAL_PRIV_USER_AUTH != rsComm->clientUser.authInfo.authFlag) {
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+        }
+        addKeyVal(&tmpCollInp.condInput, ADMIN_KW, "");
+        addKeyVal(&dataObjInp.condInput, ADMIN_KW, "");
+    }
 
     if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW ) != NULL ) {
         if ( isTrashPath( rmCollInp->collName ) == False ) {
@@ -376,7 +382,11 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
                 return status;
             }
             status = _rsRmCollRecur( rsComm, &tmpCollInp, collOprStat );
-            rei.status = status;
+            if (status < 0) {
+                rodsLog(LOG_ERROR,
+                        "[%s]:_rsRmCollRecur error for [%s],stat=[%d]",
+                        __FUNCTION__, tmpCollInp.collName, status );
+            }
             rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
                                     NO_SAVE_REI );
             if ( rei.status < 0 ) {
@@ -429,7 +439,6 @@ _rsPhyRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
 int
 svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
     int status;
-    collInfo_t collInfo;
 
     rodsServerHost_t *rodsServerHost = NULL;
 
@@ -451,10 +460,10 @@ svrUnregColl( rsComm_t *rsComm, collInp_t *rmCollInp ) {
         }
 
         if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            memset( &collInfo, 0, sizeof( collInfo ) );
+            collInfo_t collInfo{};
             rstrcpy( collInfo.collName, rmCollInp->collName, MAX_NAME_LEN );
-            if ( getValByKey( &rmCollInp->condInput, ADMIN_RMTRASH_KW )
-                    != NULL ) {
+            if (getValByKey(&rmCollInp->condInput, ADMIN_RMTRASH_KW) ||
+                getValByKey(&rmCollInp->condInput, ADMIN_KW)) {
                 status = chlDelCollByAdmin( rsComm, &collInfo );
                 if ( status >= 0 ) {
                     chlCommit( rsComm );
