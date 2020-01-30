@@ -13,8 +13,15 @@
 int
 rmUtil( rcComm_t *conn, rodsArguments_t *myRodsArgs,
         rodsPathInp_t *rodsPathInp ) {
-    if ( rodsPathInp == NULL ) {
+    if (!rodsPathInp) {
         return USER__NULL_INPUT_ERR;
+    }
+
+    if (True == myRodsArgs->dryrun) {
+        rodsLog(LOG_ERROR,
+                "%s: option --dryrun is not valid",
+                __FUNCTION__);
+        return USER_INPUT_OPTION_ERR;
     }
 
     collInp_t collInp;
@@ -141,6 +148,10 @@ initCondForRm( rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp,
         addKeyVal( &collInp->condInput, RECURSIVE_OPR__KW, "" );
     }
 
+    if (True == rodsArgs->admin) {
+        addKeyVal(&dataObjInp->condInput, ADMIN_KW, "");
+        addKeyVal(&collInp->condInput, ADMIN_KW, "");
+    }
 
     /* XXXXX need to add -u register cond */
 
