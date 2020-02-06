@@ -682,13 +682,12 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \since 4.2.7
  *
- * \brief This microservice adds, modifies or removes AVUs on an object
+ * \brief This microservice adds, modifies, or removes AVUs on an item
  *
  *
- * \note The object type is also needed:
+ * \note The item type is also needed:
  *  \li -d for data object
  *  \li -R for resource
- *  \li -G for resource group
  *  \li -C for collection
  *  \li -u for user
  *
@@ -718,7 +717,7 @@ msiRemoveKeyValuePairsFromObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval USER_PARAM_TYPE_ERR when input parameter doesn't match the type
  * \retval from rsModAVUMetadata
  * \pre none
  * \post none
