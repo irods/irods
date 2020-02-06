@@ -57,7 +57,7 @@ extern char *__loc1;
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval USER_PARAM_TYPE_ERR when input parameter doesn't match the type
  * \retval INVALID_REGEXP if the tags are not correct
  * \retval NO_VALUES_FOUND if there are no tags identified
  * \retval from addTagStruct
@@ -300,7 +300,7 @@ int msiGetTaggedValueFromString( msParam_t *inTagParam, msParam_t *inStrParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval USER_PARAM_TYPE_ERR when input parameter doesn't match the type
  * \retval INVALID_REGEXP if the tags are not correct
  * \retval from addKeyVal
  * \pre none
@@ -432,7 +432,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameters don't match the type from addAVUMetadataFromKVPairs
+ * \retval USER_PARAM_TYPE_ERR when input parameters don't match the type from addAVUMetadataFromKVPairs
  * \pre none
  * \post none
  * \sa addAVUMetadataFromKVPairs
@@ -505,7 +505,7 @@ msiAssociateKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameters don't match the type from addAVUMetadataFromKVPairs
+ * \retval USER_PARAM_TYPE_ERR when input parameters don't match the type from addAVUMetadataFromKVPairs
  * \pre none
  * \post none
  * \sa
@@ -564,7 +564,7 @@ msiSetKeyValuePairsToObj( msParam_t *metadataParam, msParam_t* objParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval USER_PARAM_TYPE_ERR when input parameter doesn't match the type
  * \retval  getObjType
  * \pre none
  * \post none
@@ -633,7 +633,7 @@ msiGetObjType( msParam_t *objParam, msParam_t *typeParam,
  *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval USER_PARAM_TYPE_ERR when input parameter doesn't match the type
  * \retval from removeAVUMetadataFromKVPairs
  * \pre none
  * \post none
