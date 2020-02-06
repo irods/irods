@@ -72,8 +72,8 @@ def run_update(irods_config, cursor):
 
     elif new_schema_version == 7:
         timestamp = '{0:011d}'.format(int(time.time()))
-        sql = ("select distinct group_user_id from r_user_group "
-               "where group_user_id not in (select distinct group_user_id from r_user_group where group_user_id = user_id);")
+        sql = ("select distinct group_user_id from R_USER_GROUP "
+               "where group_user_id not in (select distinct group_user_id from R_USER_GROUP where group_user_id = user_id);")
         rows = database_connect.execute_sql_statement(cursor, sql).fetchall()
         for row in rows:
             group_id = row[0]
