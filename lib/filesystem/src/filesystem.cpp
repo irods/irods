@@ -291,9 +291,18 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         auto has_prefix(const path& _p, const path& _prefix) -> bool
         {
-            using std::begin;
-            using std::end;
-            return std::search(begin(_p), end(_p), begin(_prefix), end(_prefix)) != end(_p);
+            if (_p == _prefix) {
+                return false;
+            }
+
+            auto p_iter = std::begin(_prefix);
+            auto p_last = std::end(_prefix);
+            auto c_iter = std::begin(_p);
+            auto c_last = std::end(_p);
+
+            for (; p_iter != p_last && c_iter != c_last && *p_iter == *c_iter; ++p_iter, ++c_iter);
+
+            return (p_iter == p_last);
         }
     } // anonymous namespace
 
