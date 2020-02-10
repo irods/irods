@@ -6,6 +6,7 @@
 #include "transport/default_transport.hpp"
 #include "rcMisc.h"
 #include "rodsPath.h"
+#include "irods_at_scope_exit.hpp"
 
 #include "boost/program_options.hpp"
 
@@ -74,6 +75,11 @@ int main(int argc, char* argv[])
 
         irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 600};
         auto conn = conn_pool.get_connection();
+
+        irods::at_scope_exit print_errors_on_exit{[&conn] {
+            printErrorStack(static_cast<rcComm_t*>(conn)->rError);
+        }};
+
         io::client::default_transport tp{conn};
 
         const auto stream_operation = vm["stream_operation"].as<std::string>();
