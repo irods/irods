@@ -11,6 +11,7 @@ else:
     import unittest2 as unittest
 
 from .. import lib
+from .. import test
 from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from . import metaclass_unittest_test_case_generator
@@ -801,3 +802,33 @@ OUTPUT ruleExecOut
                 os.unlink(known_file_name)
             if os.path.exists(tar_file_name):
                 os.unlink(tar_file_name)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_msiRenameCollection_does_rename_collections__issue_4597(self):
+        src = os.path.join(self.admin.session_collection, 'col.a')
+        dst = os.path.join(self.admin.session_collection, 'col.a.renamed')
+        self.admin.assert_icommand(['imkdir', src])
+
+        rule_file = os.path.join(self.admin.local_session_dir, 'test_rule_file.r')
+        rule_string = '''
+main {{
+    *src = "{0}";
+    *dst = "{1}";
+    msiRenameCollection(*src, *dst);
+}}
+INPUT null
+OUTPUT ruleExecOut'''
+
+        with open(rule_file, 'wt') as f:
+            print(rule_string.format(src, dst), file=f, end='')
+
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file])
+        self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
+
+        with open(rule_file, 'wt') as f:
+            print(rule_string.format(dst, os.path.basename(src)), file=f, end='')
+
+        self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ['-358000 OBJ_PATH_DOES_NOT_EXIST'])
+        self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
+
