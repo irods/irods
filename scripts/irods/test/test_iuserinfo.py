@@ -74,4 +74,4 @@ class Test_IUserinfo(resource_suite.ResourceBase, unittest.TestCase):
         self.admin_session.assert_icommand(['iuserinfo', 'this#should#fail'], 'STDOUT', 'Failed parsing input')
 
     def test_iuserinfo_group(self):
-        self.admin_session.assert_icommand(['iuserinfo', 'public'], 'STDOUT', 'Not a member of any group')
+        self.admin_session.assert_icommand(['iuserinfo', 'public'], 'STDOUT', 'member of group: public')
