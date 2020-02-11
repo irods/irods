@@ -76,10 +76,10 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
         # bad URL
         self.admin.assert_icommand("izonereport > %s" % (zone_report), use_unsafe_shell=True)
         if jsonschema_installed:
-            assert_command('python %s %s https://example.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
+            assert_command('python %s %s https://irods.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
                                ['WARNING: Validation Failed'], desired_rc=2)
         else:
-            assert_command('python %s %s https://example.org/badurl' % (validate_json_path, zone_report),
+            assert_command('python %s %s https://irods.org/badurl' % (validate_json_path, zone_report),
                                'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
 
         # good URL
