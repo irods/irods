@@ -8,8 +8,13 @@
 #include "generalAdmin.h"
 #include "miscServerFunct.hpp"
 #include "irods_server_properties.hpp"
+#include "rodsErrorTable.h"
 #include "rsGeneralAdmin.hpp"
 #include "irods_re_structs.hpp"
+#include "rodsLog.h"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
 
 /**
  * \fn msiCreateUser (ruleExecInfo_t *rei)
@@ -435,32 +440,38 @@ msiRenameLocalZone( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei 
  * \sa none
  **/
 int
-msiRenameCollection( msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei ) {
-    int status;
+msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
+{
     std::string svc_role;
-    irods::error ret = get_catalog_service_role(svc_role);
-    if(!ret.ok()) {
+
+    if (irods::error ret = get_catalog_service_role(svc_role); !ret.ok()) {
         irods::log(PASS(ret));
         return ret.code();
     }
 
-    if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        char *oldNameStr;
-        char *newNameStr;
+    if (irods::CFG_SERVICE_ROLE_PROVIDER == svc_role) {
+        namespace fs = irods::experimental::filesystem;
 
-        oldNameStr = ( char * ) oldName->inOutStruct;
-        newNameStr = ( char * ) newName->inOutStruct;
-        status = chlRenameColl( rei->rsComm, oldNameStr, newNameStr );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-        status = SYS_NO_RCAT_SERVER_ERR;
-    } else {
-        rodsLog(
-            LOG_ERROR,
-            "role not supported [%s]",
-            svc_role.c_str() );
-        status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        const fs::path src_path = static_cast<const char*>(oldName->inOutStruct);
+        const fs::path dst_path = static_cast<const char*>(newName->inOutStruct);
+
+        try {
+            fs::server::rename(*rei->rsComm, src_path, dst_path);
+        }
+        catch (const fs::filesystem_error& e) {
+            rodsLog(LOG_ERROR, "msiRenameCollection failed: [%s]", e.what());
+            return e.code().value();
+        }
     }
-    return status;
+    else if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
+        return SYS_NO_RCAT_SERVER_ERR;
+    }
+    else {
+        rodsLog(LOG_ERROR, "role not supported [%s]", svc_role.c_str());
+        return SYS_SERVICE_ROLE_NOT_SUPPORTED;
+    }
+
+    return 0;
 }
 
 /**
