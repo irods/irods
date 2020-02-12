@@ -600,6 +600,8 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
  *  a copy of the file just uploaded or copied data object to the specified
  *  replResc.
  *
+ * \deprecated Since 4.2.8, use msiDataObjRepl instead.
+ *
  * \module core
  *
  * \since pre-2.1
@@ -632,6 +634,7 @@ msiStageDataObj( msParam_t *xcacheResc, ruleExecInfo_t *rei ) {
  * \post none
  * \sa none
  **/
+[[deprecated("msiSysReplDataObj is no longer supported, use msiDataObjRepl instead")]]
 int
 msiSysReplDataObj( msParam_t *xcacheResc, msParam_t *xflag,
                    ruleExecInfo_t *rei ) {
