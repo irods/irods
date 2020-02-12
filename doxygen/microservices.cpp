@@ -177,8 +177,8 @@
   - #msiSetResource  - sets the resource from default
   - #msiSortDataObj - Sort the replica randomly when choosing which copy to use
   - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer
-  - #msiSysChksumDataObj - Checksums a data object
-  - #msiSysReplDataObj - Replicates a data object
+  - #msiSysChksumDataObj - Checksums a data object - Deprecated, use #msiDataObjChksum
+  - #msiSysReplDataObj - Replicates a data object - Deprecated, use #msiDataObjRepl
   - #msiSysMetaModify - Modifies system metadata
   - #msiStageDataObj - Stages the data object to the specified resource before operation
   - #msiNoChkFilePathPerm - Does not check file path permission when registering a file
