@@ -1,14 +1,7 @@
 #include "filesystem/recursive_collection_iterator.hpp"
 
-#include "filesystem/filesystem_error.hpp"
-
-#include <iostream>
-
-namespace irods {
-namespace experimental {
-namespace filesystem {
-namespace NAMESPACE_IMPL {
-
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
+{
     // Constructors and destructor
 
     recursive_collection_iterator::recursive_collection_iterator(rxComm& _comm,
@@ -76,8 +69,5 @@ namespace NAMESPACE_IMPL {
         ctx_->stack.pop();
     }
 
-} // namespace NAMESPACE_IMPL
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 

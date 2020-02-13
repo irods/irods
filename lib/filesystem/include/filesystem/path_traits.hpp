@@ -5,10 +5,8 @@
 #include <vector>
 #include <list>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     class collection_entry;
         
     namespace path_traits
@@ -25,9 +23,6 @@ namespace filesystem {
         template <> constexpr bool is_pathable<collection_entry>  = true;
         // clang-format on
     } // namespace path_traits
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_PATH_TRAITS_HPP

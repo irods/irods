@@ -6,10 +6,8 @@
 
 #include <vector>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     enum class object_type
     {
         none,
@@ -62,9 +60,6 @@ namespace filesystem {
         object_type type_;
         std::vector<entity_permission> perms_;
     };
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_OBJECT_STATUS_HPP

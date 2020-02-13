@@ -5,18 +5,23 @@
 #include "filesystem/filesystem_error.hpp"
 
 #include "rodsDef.h"
+#include "rodsErrorTable.h"
 
 #include <cstring>
+#include <system_error>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-namespace detail {
+namespace irods::experimental::filesystem::detail
+{
+    inline auto make_error_code(int _ec) noexcept -> std::error_code
+    {
+        return {_ec, std::system_category()};
+    }
 
-    inline void throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p)
+    inline auto throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p) -> void
     {
         if (std::strlen(_p.c_str()) > MAX_NAME_LEN) {
-            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size"};
+            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size",
+                                                                    make_error_code(USER_PATH_EXCEEDS_MAX)};
         }
     }
 
@@ -24,10 +29,6 @@ namespace detail {
     {
         return path::preferred_separator == _c;
     }
-
-} // namespace detail
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem::detail
 
 #endif // IRODS_FILESYSTEM_DETAIL_HPP

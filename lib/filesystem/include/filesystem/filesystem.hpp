@@ -17,10 +17,8 @@
 
 #include <boost/variant.hpp>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     class path;
 
     using object_time_type = std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>;
@@ -112,9 +110,6 @@ namespace filesystem {
 
         auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
     } // namespace NAMESPACE_IMPL
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_FILESYSTEM_HPP

@@ -11,11 +11,8 @@
 #include <iterator>
 #include <memory>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-namespace NAMESPACE_IMPL {
-
+namespace irods::experimental::filesystem::NAMESPACE_IMPL
+{
     enum class collection_options
     {
         none,
@@ -92,10 +89,6 @@ namespace NAMESPACE_IMPL {
     {
         return {};
     }
-
-} // namespace NAMESPACE_IMPL
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
 #endif // IRODS_FILESYSTEM_COLLECTION_ITERATOR_HPP

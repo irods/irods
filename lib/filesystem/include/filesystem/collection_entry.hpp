@@ -8,10 +8,8 @@
 
 #include <chrono>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     namespace NAMESPACE_IMPL
     {
         class collection_iterator;
@@ -65,9 +63,6 @@ namespace filesystem {
         mutable std::string owner_;
         mutable std::string data_type_;
     };
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_COLLECTION_ENTRY_HPP
