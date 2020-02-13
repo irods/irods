@@ -39,5 +39,4 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
 
                 coll_path = os.path.join(self.admin.session_collection, "i4370_test_collection")
                 self.admin.assert_icommand(['imkdir', coll_path])
-                self.assertTrue(lib.count_occurrences_of_string_in_log(paths.server_log_path(), prefix + coll_path) == 1)
-
+                lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=prefix + coll_path))

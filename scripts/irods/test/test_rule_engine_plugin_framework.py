@@ -131,9 +131,17 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             # Search the log file for instances of CAT_PASSWORD_EXPIRED and RULE_ENGINE_CONTINUE.
             # Should only find CAT_PASSWORD_EXPIRED.
             msg_1 = "Returned '{0}' to REPF.".format(str(CAT_PASSWORD_EXPIRED))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=msg_1,
+                    start_index=log_offset))
             msg_2 = "Returned '{0}' to REPF.".format(str(RULE_ENGINE_CONTINUE))
-            self.assertTrue(lib.count_occurrences_of_string_in_log(paths.server_log_path(), msg_1, log_offset) == 1)
-            self.assertTrue(lib.count_occurrences_of_string_in_log(paths.server_log_path(), msg_2, log_offset) == 0)
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=msg_2,
+                    count=0,
+                    start_index=log_offset))
+
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_continuation_followed_by_an_error(self):
@@ -200,13 +208,6 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
                 self.assertTrue(mm.find(msg_2, index) != -1)
                 mm.close()
 
-def delayAssert(a, interval=1, maxrep=100):
-    for i in range(maxrep):
-        time.sleep(interval)  # wait for test to fire
-        if a():
-            break
-    assert a()
-
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
@@ -260,5 +261,5 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['irule', '-r', native_plugin_name, '-F', rule_file])
             self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'writeLine')
 
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Test_Plugin_Instance_Delay', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Test_Plugin_Instance_Delay', start_index=initial_log_size))
 
