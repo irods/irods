@@ -7,10 +7,8 @@
 #include <system_error>
 #include <string>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     class path;
 
     class filesystem_error
@@ -56,9 +54,6 @@ namespace filesystem {
         path p1_;
         path p2_;
     };
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_ERROR_HPP

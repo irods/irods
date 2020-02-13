@@ -9,10 +9,8 @@
 #include <istream>
 #include <ostream>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     class path
     {
     public:
@@ -384,9 +382,6 @@ namespace filesystem {
     inline auto swap(path& _lhs, path& _rhs) noexcept -> void { _lhs.swap(_rhs); }
 
     auto hash_value(const path& _p) noexcept -> std::size_t;
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_PATH_HPP

@@ -10,10 +10,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/functional/hash.hpp>
 
-namespace irods {
-namespace experimental {
-namespace filesystem {
-
+namespace irods::experimental::filesystem
+{
     // clang-format off
     constexpr path::value_type path::preferred_separator;
     constexpr const path::value_type* const path::dot;
@@ -464,8 +462,5 @@ namespace filesystem {
         const auto pstr = _p.string();
         return boost::hash_range(std::begin(pstr), std::end(pstr));
     }
-
-} // namespace filesystem
-} // namespace experimental
-} // namespace irods
+} // namespace irods::experimental::filesystem
 
