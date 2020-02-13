@@ -5,15 +5,23 @@
 #include "filesystem/filesystem_error.hpp"
 
 #include "rodsDef.h"
+#include "rodsErrorTable.h"
 
 #include <cstring>
+#include <system_error>
 
 namespace irods::experimental::filesystem::detail
 {
-    inline void throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p)
+    inline auto make_error_code(int _ec) noexcept -> std::error_code
+    {
+        return {_ec, std::system_category()};
+    }
+
+    inline auto throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p) -> void
     {
         if (std::strlen(_p.c_str()) > MAX_NAME_LEN) {
-            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size"};
+            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size",
+                                                                    make_error_code(USER_PATH_EXCEEDS_MAX)};
         }
     }
 
