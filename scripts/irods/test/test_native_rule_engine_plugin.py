@@ -75,8 +75,11 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             self.admin.run_icommand(icommand)
 
         def check_string_count_in_log_section(string, n_occurrences):
-            count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), string, start_index=initial_size_of_server_log)
-            self.assertTrue (n_occurrences == count, msg='Found {0} instead of {1} occurrences of {2}'.format(count, n_occurrences, string))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=string,
+                    count=n_occurrences,
+                    start_index=initial_size_of_server_log))
 
         if  isinstance(strings_to_check_for, dict):
             for s,n  in  strings_to_check_for.items():
@@ -355,9 +358,15 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand('iput {0}'.format(trigger_file))
-                assert 1 == lib.count_occurrences_of_string_in_log(
-                    paths.server_log_path(), 'writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='writeLine: inString = test_rule_engine_2309: put: acSetNumThreads oprType [1]',
+                        start_index=initial_size_of_server_log))
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='RE_UNABLE_TO_READ_SESSION_VAR',
+                        count=0,
+                        start_index=initial_size_of_server_log))
                 os.unlink(trigger_file)
 
             with temporary_core_file() as core:
@@ -367,9 +376,15 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand('iget {0}'.format(trigger_file), use_unsafe_shell=True)
-                assert 1 == lib.count_occurrences_of_string_in_log(
-                    paths.server_log_path(), 'writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]', start_index=initial_size_of_server_log)
-                assert 0 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'RE_UNABLE_TO_READ_SESSION_VAR', start_index=initial_size_of_server_log)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='writeLine: inString = test_rule_engine_2309: get: acSetNumThreads oprType [2]',
+                        start_index=initial_size_of_server_log))
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='RE_UNABLE_TO_READ_SESSION_VAR',
+                        count = 0,
+                        start_index=initial_size_of_server_log))
                 os.unlink(trigger_file)
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')

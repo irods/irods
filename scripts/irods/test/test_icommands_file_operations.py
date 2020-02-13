@@ -208,10 +208,12 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
                 # look for occurences of debug sequences in the log
                 rec_op_kw_string = 'unix_file_resolve_hierarchy: recursiveOpr found in cond_input for file_obj'
-                rec_op_kw_string_count = lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, rec_op_kw_string, start_index=initial_size_of_server_log)
-
-                # assertions
-                self.assertEqual(rec_op_kw_string_count, files_per_level * depth)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg=rec_op_kw_string,
+                        count=files_per_level * depth,
+                        server_log_path=IrodsConfig().server_log_path,
+                        start_index=initial_size_of_server_log))
 
         finally:
             IrodsController().restart()
@@ -682,9 +684,10 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             with tempfile.NamedTemporaryFile(prefix='test_delay_in_dynamic_pep__3342') as f:
                 lib.make_file(f.name, 80, contents='arbitrary')
                 self.admin.assert_icommand(['iput', '-f', f.name])
-            time.sleep(35)
-            assert 1 == lib.count_occurrences_of_string_in_log(paths.server_log_path(),
-                'writeLine: inString = dynamic pep in delay', start_index=initial_size_of_server_log)
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg='writeLine: inString = dynamic pep in delay',
+                    start_index=initial_size_of_server_log))
 
     def test_iput_bulk_check_acpostprocforput__2841(self):
         # prepare test directory
@@ -701,7 +704,11 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['iput', '-frb', dirname], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-                assert number_of_files == lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = acPostProcForPut called for', start_index=initial_size_of_server_log)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='writeLine: inString = acPostProcForPut called for',
+                        count=number_of_files,
+                        start_index=initial_size_of_server_log))
                 shutil.rmtree(dirname)
 
     def test_large_irods_maximum_size_for_single_buffer_in_megabytes_2880(self):
@@ -883,7 +890,11 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
 
         initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
         self.admin.assert_icommand(['irm', '-rf', collection_to_delete])
-        self.assertEqual(0, lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'ERROR', start_index=initial_size_of_server_log))
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg='ERROR',
+                count=0,
+                start_index=initial_size_of_server_log))
         os.unlink(filename)
 
     def test_ichksum_file_size_verification__3537(self):
