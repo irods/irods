@@ -68,14 +68,11 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
-                time.sleep(re_server_sleep_time + 2)
-                actual_count = lib.count_occurrences_of_string_in_log(
-                    paths.server_log_path(),
-                    'We are about to fail...',
-                    start_index=initial_size_of_server_log)
-                # RE server tries 2 times before failing out
-                expected_count = 2
-                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='We are about to fail...',
+                        count=2,
+                        start_index=initial_size_of_server_log))
 
         finally:
             os.remove(rule_file)
@@ -125,31 +122,38 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['irule', '-F', rule_file])
                 actual_count = self.count_strings_in_queue('writeLine')
                 expected_count = delay_job_batch_size * 2 + 2
-                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} in delay queue, found {actual_count}'.format(**locals()))
 
-                # "Sooner" rules should have executed
+                # "Sooner" rules should execute
                 expected_count = delay_job_batch_size
-                time.sleep(re_server_sleep_time + 2)
-                start_time = time.time()
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='sooner:',
+                        count=expected_count,
+                        start_index=initial_size_of_server_log))
+                self.assertTrue(0 == self.count_strings_in_queue('sooner:'))
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='later:',
+                        count=0,
+                        start_index=initial_size_of_server_log))
+                self.assertTrue(delay_job_batch_size == self.count_strings_in_queue('later:'))
                 self.assertTrue(1 == self.count_strings_in_queue('Sleeping...'))
-                sooner_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'sooner:', start_index=initial_size_of_server_log)
-                self.assertTrue(expected_count == sooner_count, msg='expected {expected_count} occurrences in serverLog, found {sooner_count}'.format(**locals()))
-                later_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'later:', start_index=initial_size_of_server_log)
-                self.assertTrue(0 == later_count, msg='expected 0 occurrences in serverLog, found {later_count}'.format(**locals()))
 
-                # "Later" rules should have executed... but long-running job should still be in queue
-                time.sleep(re_server_sleep_time + 2)
+                # "Later" rules should execute... but long-running job should still be in queue
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='later:',
+                        count=expected_count,
+                        start_index=initial_size_of_server_log))
+                self.assertTrue(0 == self.count_strings_in_queue('later:'))
                 self.assertTrue(1 == self.count_strings_in_queue('Sleeping...'))
-                later_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'later:', start_index=initial_size_of_server_log)
-                self.assertTrue(expected_count == later_count, msg='expected {expected_count} occurrences in serverLog, found {later_count}'.format(**locals()))
 
                 # Wait for long-running job to finish and make sure it has
-                sleep_time = long_job_run_time - (time.time() - start_time)
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='Waking!',
+                        start_index=initial_size_of_server_log))
                 self.admin.assert_icommand(['iqstat'], 'STDOUT', 'No delayed rules pending for user')
-                waking_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Waking!', start_index=initial_size_of_server_log)
-                self.assertTrue(1 == waking_count, msg='expected 1 occurrence in serverLog, found {waking_count}'.format(**locals()))
 
         finally:
             os.remove(rule_file)
@@ -190,13 +194,14 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file])
             actual_count = self.count_strings_in_queue('writeLine')
-            self.assertTrue(expected_count == actual_count, msg='expected {expected_count} in delay queue, found {actual_count}'.format(**locals()))
 
             # Wait for messages to get written out and ensure that all the messages were written to serverLog
-            time.sleep(re_server_sleep_time + 2)
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg='writeLine: inString = delay ',
+                    count=expected_count,
+                    start_index=initial_size_of_server_log))
             self.admin.assert_icommand(['iqstat'], 'STDOUT', 'No delayed rules pending for user')
-            actual_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = delay ', start_index=initial_size_of_server_log)
-            self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
 
         os.remove(rule_file)
 
@@ -233,9 +238,10 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
             # Fire off rule and wait for message to get written out to serverLog
             initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
-            time.sleep(re_server_sleep_time + 2)
-            actual_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'writeLine: inString = delayed rule executed', start_index=initial_size_of_server_log)
-            self.assertTrue(1 == actual_count, msg='expected 1 occurrence in serverLog, found {actual_count}'.format(**locals()))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg='writeLine: inString = delayed rule executed',
+                    start_index=initial_size_of_server_log))
 
         os.remove(rule_file)
 
@@ -342,22 +348,18 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
-                time.sleep(re_server_sleep_time + 2)
-                actual_count = lib.count_occurrences_of_string_in_log(
-                    paths.server_log_path(),
-                    'We are about to segfault...',
-                    start_index=initial_size_of_server_log)
-                expected_count = 1
-                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+                # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rcExecRuleExpression)
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='We are about to segfault...',
+                        start_index=initial_size_of_server_log))
 
                 # See if the later rule is executed (i.e. delay server is still alive)
-                time.sleep(longer_delay_time * 2)
-                actual_count = lib.count_occurrences_of_string_in_log(
-                    paths.server_log_path(),
-                    'Follow-up rule executed later!',
-                    start_index=initial_size_of_server_log)
-                expected_count = 1
-                self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='Follow-up rule executed later!',
+                        start_index=initial_size_of_server_log))
+
 
         finally:
             os.remove(rule_file)
@@ -408,27 +410,22 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                         self.admin.assert_icommand(['irule', '-F', rule_file])
                         time.sleep(2)
                         os.unlink(odbc_ini_file)
-                        time.sleep(5)
+                        time.sleep(delay_job_sleep_time * 2)
 
                     # Restore .odbc.ini and wait for delay server to execute rule properly
-                    time.sleep(delay_job_sleep_time * 2)
+                    # The delay server should not have zombified, so the later rule should have executed
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg='Follow-up rule executed later!',
+                            start_index=initial_size_of_server_log))
 
                     # The delay server should have caught the exception from the connection error on trying to delete the rule the first time
                     unexpected_string = 'terminating with uncaught exception of type std::runtime_error: connect error'
-                    actual_count = lib.count_occurrences_of_string_in_log(
-                        paths.re_log_path(),
-                        unexpected_string,
-                        start_index=initial_size_of_re_log)
-                    expected_count = 0
-                    self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in reLog, found {actual_count}'.format(**locals()))
-
-                    # The delay server should not have zombified, so the later rule should have executed
-                    actual_count = lib.count_occurrences_of_string_in_log(
-                        paths.server_log_path(),
-                        'Follow-up rule executed later!',
-                        start_index=initial_size_of_server_log)
-                    expected_count = 1
-                    self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrences in serverLog, found {actual_count}'.format(**locals()))
+                    lib.delayAssert(
+                        lambda: lib.log_message_occurrences_equals_count(
+                            msg=unexpected_string,
+                            count=0,
+                            start_index=initial_size_of_server_log))
 
         finally:
             os.remove(rule_file)
@@ -457,10 +454,11 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
         super(Test_Execution_Frequency, self).tearDown()
 
     def assert_repeat_in_log(self, string, start_index, expected_count):
-        actual_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(),
-                                                              string, start_index=start_index)
-        expected_count = expected_count
-        self.assertTrue(expected_count == actual_count, msg='expected {expected_count} occurrence in serverLog, found {actual_count}'.format(**locals()))
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg=string,
+                count=expected_count,
+                start_index=start_index))
 
     #def test_repeat_for_ever(self):
     #def test_repeat_until_success(self):
@@ -495,7 +493,6 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
                 self.admin.assert_icommand(['irule', '-F', rule_file])
 
                 for i in range(repeat_n):
-                    time.sleep(repeat_delay + self.re_server_sleep_time)
                     self.assert_repeat_in_log(string, initial_size_of_server_log, i + 1)
 
         finally:
@@ -536,13 +533,7 @@ class Test_Execution_Frequency(resource_suite.ResourceBase, unittest.TestCase):
                 string = 'writeLine: inString = {}'.format(repeat_string)
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file])
-
-                sleep_time = repeat_delay
                 for i in range(repeat_n):
-                    if i > 1:
-                        sleep_time *= 2
-
-                    time.sleep(sleep_time + self.re_server_sleep_time)
                     self.assert_repeat_in_log(string, initial_size_of_server_log, i + 1)
 
         finally:

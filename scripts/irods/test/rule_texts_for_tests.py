@@ -492,7 +492,7 @@ test_delay_queue_with_long_job {{
 OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_connection_refresh'] = '''
-test_delay_queue_with_long_job {{
+test_delay_queue_connection_refresh {{
     delay("<PLUSET>0.1s</PLUSET>") {{
         writeLine("serverLog", "sleep 1...");
         msiSleep("{sleep_time}", "0");
