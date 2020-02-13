@@ -1,9 +1,5 @@
 #include "filesystem/recursive_collection_iterator.hpp"
 
-#include "filesystem/filesystem_error.hpp"
-
-#include <iostream>
-
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
     // Constructors and destructor

@@ -56,8 +56,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         ctx_->handle = rxOpenCollection(&_comm, &input);
 
         if (ctx_->handle < 0) {
-            throw filesystem_error{"could not open collection for reading [handle => " +
-                                   std::to_string(ctx_->handle) + ']'};
+            throw filesystem_error{"could not open collection for reading [handle => " + std::to_string(ctx_->handle) + ']',
+                                   detail::make_error_code(ctx_->handle)};
         }
 
         // Point to the first entry.
@@ -81,8 +81,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 return *this;
             }
             
-            throw filesystem_error{"could not read collection entry [error code => " +
-                                   std::to_string(ec) + ']'};
+            throw filesystem_error{"could not read collection entry [error code => " + std::to_string(ec) + ']',
+                                   detail::make_error_code(ec)};
         }
 
         irods::at_scope_exit<std::function<void()>> at_scope_exit{[e] {
