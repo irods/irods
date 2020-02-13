@@ -30,7 +30,12 @@ class Test_LogLevels(unittest.TestCase):
         IrodsController().restart()
 
         # There should be no LOG_SQL lines in the log at this point.  None.
-        self.assertEqual( lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, ' LOG_SQL: ', initial_log_size), 0 )
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg=' LOG_SQL: ',
+                count=0,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=initial_log_size))
 
         # PART 2:
         # The second measurement is for when more than 20 lines with
@@ -47,5 +52,10 @@ class Test_LogLevels(unittest.TestCase):
         IrodsController().restart()
 
         # There should be more than 20 LOG_SQL lines in the log at this point.
-        self.assertGreater( lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, ' LOG_SQL: ', initial_log_size), 20 )
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_greater_than_count(
+                msg=' LOG_SQL: ',
+                count=20,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=initial_log_size))
 

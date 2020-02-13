@@ -40,8 +40,11 @@ class Test_Irule(ResourceBase, unittest.TestCase):
         # With the above invalid parameter ("hi"),  irule should return an error code to OS...
         self.assertNotEqual (rc, 0)
         # and shouldn't run the requested operation:  i.e., writing to the log.
-        occur = lib.count_occurrences_of_string_in_log( svr_log_path , "\nHello", start_index = initial_log_size )
-        self.assertEqual (occur, 0)
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg='\nHello',
+                count=0,
+                start_index=initial_log_size))
 
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language',
                          'tests cache update - only applicable for irods_rule_language REP')

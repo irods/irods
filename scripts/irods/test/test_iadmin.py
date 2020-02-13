@@ -1223,8 +1223,11 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
             debug_message = 'loading impostor resource for [{0}] of type [{1}] with context [] and load_plugin message'.format(name_of_bogus_resource, name_of_missing_plugin)
-            debug_message_count = lib.count_occurrences_of_string_in_log(irods_config.server_log_path, debug_message, start_index=initial_size_of_server_log)
-            self.assertTrue(1 == debug_message_count, msg='Found {} messages in log but expected 1'.format(debug_message_count))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=debug_message,
+                    server_log_path=irods_config.server_log_path,
+                    start_index=initial_size_of_server_log))
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         IrodsController().restart()
@@ -1244,8 +1247,13 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         initial_size_of_server_log = lib.get_file_size_by_path(irods_config.server_log_path)
         self.admin.assert_icommand(['ils'], 'STDOUT_SINGLELINE', self.admin.zone_name) # creates an agent, which instantiates the resource hierarchy
 
-        assert 0 < lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'dlerror', start_index=initial_size_of_server_log)
-        assert 0 < lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'PLUGIN_ERROR', start_index=initial_size_of_server_log)
+        for msg in ['dlerror', 'PLUGIN_ERROR']:
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_greater_than_count(
+                    msg=msg,
+                    count=0,
+                    server_log_path=irods_config.server_log_path,
+                    start_index=initial_size_of_server_log))
 
         self.admin.assert_icommand(['iadmin', 'rmresc', name_of_bogus_resource])
         os.remove(path_of_corrupt_so)

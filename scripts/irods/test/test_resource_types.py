@@ -817,7 +817,10 @@ OUTPUT ruleExecOut
             self.assertTrue('status = -32000 SYS_INVALID_RESC_INPUT' in stderr)
 
             msg = 'could not find existing non-root path from vault path'
-            self.assertTrue(1 == lib.count_occurrences_of_string_in_log(paths.server_log_path(), msg, log_offset))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=msg,
+                    start_index=log_offset))
 
         os.unlink(rule_file_path)
 
@@ -884,7 +887,13 @@ OUTPUT ruleExecOut
 
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
         self.user0.assert_icommand('iget -f --kv_pass="get_key=val3" file.txt other.txt')
-        assert lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'key [get_key] - value [val3]', start_index=initial_log_size) in [1, 2]  # double print if collection missing
+        # double print if collection missing
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_is_one_of_list_of_counts(
+                msg='key [get_key] - value [val3]',
+                expected_value_list=[1,2],
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=initial_log_size))
         IrodsController().restart()
         if os.path.exists('file.txt'):
             os.unlink('file.txt')
@@ -1512,8 +1521,12 @@ class Test_Resource_CompoundWithUnivmss(ChunkyDevTest, ResourceSuite, unittest.T
         irods_config = IrodsConfig()
         initial_log_size = lib.get_file_size_by_path(irods_config.server_log_path)
         self.admin.assert_icommand("irm " + self.testfile ) # remove archive replica
-        count = lib.count_occurrences_of_string_in_log(irods_config.server_log_path, 'argv:stageToCache', start_index=initial_log_size)
-        assert 0 == count
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg='argv:stageToCache',
+                count=0,
+                server_log_path=irods_config.server_log_path,
+                start_index=initial_log_size))
 
     def test_irm_specific_replica(self):
         self.admin.assert_icommand("ils -L " + self.testfile, 'STDOUT_SINGLELINE', self.testfile)  # should be listed
@@ -3623,7 +3636,6 @@ class Test_Resource_RoundRobin(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-
 class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
 
@@ -4368,7 +4380,12 @@ OUTPUT ruleExecOut
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
-        self.assertEquals(2, lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'updating out-of-date replica for data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg='updating out-of-date replica for data id [{0}]'.format(str(data_id)),
+                count=2,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=initial_log_size))
         os.unlink(filename)
 
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Reads server log')
@@ -4381,7 +4398,12 @@ OUTPUT ruleExecOut
         initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
         self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
         data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
-        self.assertEquals(2, lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'creating new replica for data id [{0}]'.format(str(data_id)), start_index=initial_log_size))
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg='creating new replica for data id [{0}]'.format(str(data_id)),
+                count=2,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=initial_log_size))
         os.unlink(filename)
 
     def test_rebalance_batching_replica_creation__3570(self):
@@ -4453,8 +4475,13 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['irepl', '-R', 'demoResc', filename])
 
             self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
-            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'rcDataCopy failed', start_index=initial_log_size))
-            self.assertTrue(0 == lib.count_occurrences_of_string_in_log(IrodsConfig().server_log_path, 'SYS_BAD_FILE_DESCRIPTOR', start_index=initial_log_size))
+            for msg in ['rcDataCopy failed', 'SYS_BAD_FILE_DESCRIPTOR']:
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg=msg,
+                        count=0,
+                        server_log_path=IrodsConfig().server_log_path,
+                        start_index=initial_log_size))
         finally:
             self.admin.assert_icommand(['irm', '-f', filename])
             os.unlink(filename)
@@ -4578,13 +4605,12 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
             expected_message = self.failure_message
 
         irods_config = IrodsConfig()
-        fail_message_count = lib.count_occurrences_of_string_in_log(
-                                  irods_config.server_log_path,
-                                  expected_message,
-                                  start_index=self.log_message_starting_location)
-        self.assertTrue(fail_message_count == expected_count,
-                        msg='counted:[{0}]; expected:[{1}]'.format(
-                            str(fail_message_count), str(expected_count)))
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg=expected_message,
+                count=expected_count,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=self.log_message_starting_location))
         self.log_message_starting_location = lib.get_file_size_by_path(irods_config.server_log_path)
 
     # Generate a context string for replication resource

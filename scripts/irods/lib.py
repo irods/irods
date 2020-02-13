@@ -291,7 +291,8 @@ def cat(fname, string):
         print(string, file=f, end='')
 
 def make_file(f_name, f_size, contents='zero', block_size_in_bytes=1000):
-    assert contents in ['arbitrary', 'random', 'zero']
+    if contents not in ['arbitrary', 'random', 'zero']:
+        raise AssertionError
     if contents == 'arbitrary' or f_size == 0:
         execute_command(['truncate', '-s', str(f_size), f_name])
         return
@@ -324,8 +325,8 @@ def make_large_local_tmp_dir(dir_name, file_count, file_size):
         make_file(os.path.join(dir_name, "junk" + str(i).zfill(4)),
                   file_size)
     local_files = os.listdir(dir_name)
-    assert len(local_files) == file_count, "dd loop did not make all " + \
-        str(file_count) + " files"
+    if len(local_files) != file_count:
+        raise AssertionError("dd loop did not make all " + str(file_count) + " files")
     return local_files
 
 def make_deep_local_tmp_dir(root_name, depth=10, files_per_level=50, file_size=100):
@@ -646,3 +647,31 @@ class callback_on_change_dict(dict):
     def setdefault(self, *args, **kwargs):
         super(callback_on_change_dict, self).setdefault(*args, **kwargs)
         self.callback()
+
+def delayAssert(a, interval=1, maxrep=100):
+    for _ in range(maxrep):
+        time.sleep(interval)  # wait for test to fire
+        if a():
+            break
+    if not a():
+        raise AssertionError
+
+def log_message_occurrences_equals_count(msg, count=1, server_log_path=None, start_index=0):
+    if server_log_path is None:
+        server_log_path=paths.server_log_path()
+    return count == count_occurrences_of_string_in_log(server_log_path, msg, start_index)
+
+def log_message_occurrences_greater_than_count(msg, count=1, server_log_path=None, start_index=0):
+    if server_log_path is None:
+        server_log_path=paths.server_log_path()
+    return count_occurrences_of_string_in_log(server_log_path, msg, start_index) > count
+
+def log_message_occurrences_fewer_than_count(msg, count=1, server_log_path=None, start_index=0):
+    if server_log_path is None:
+        server_log_path=paths.server_log_path()
+    return count_occurrences_of_string_in_log(server_log_path, msg, start_index) < count
+
+def log_message_occurrences_is_one_of_list_of_counts(msg, expected_value_list=None, server_log_path=None, start_index=0):
+    if server_log_path is None:
+        server_log_path=paths.server_log_path()
+    return count_occurrences_of_string_in_log(server_log_path, msg, start_index) in expected_value_list

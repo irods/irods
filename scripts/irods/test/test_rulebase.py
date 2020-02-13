@@ -23,13 +23,6 @@ from ..controller import IrodsController
 from ..core_file import temporary_core_file
 from .rule_texts_for_tests import rule_texts
 
-def delayAssert(a, interval=1, maxrep=100):
-            for i in range(maxrep):
-                time.sleep(interval)  # wait for test to fire
-                if a():
-                    break
-            assert a()
-
 class Test_Rulebase(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Rulebase'
@@ -156,7 +149,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
 
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_2585', start_index=initial_log_size))
 
             # repave rule with new string
             os.unlink(test_re)
@@ -166,7 +159,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_2585', start_index=initial_log_size))
 
         # cleanup
         IrodsController().restart()
@@ -188,12 +181,17 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
                     processes.append(subprocess.Popen(["ils"]))
                 for p in processes:
                     p.wait()
-                assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'stack trace', start_index=initial_log_size) == 0
-	
+                lib.delayAssert(
+                    lambda: lib.log_message_occurrences_equals_count(
+                        msg='stack trace',
+                        count=0,
+                        start_index=initial_log_size))
+
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
     def test_fast_updates__2279(self):
-            rc, _, _ = self.admin.assert_icommand("bash rulebase_fastswap_test_2276.sh", 'STDOUT_SINGLELINE', 'etc')
+            fastswap_test_script = os.path.join('/var', 'lib', 'irods', 'scripts', 'rulebase_fastswap_test_2276.sh')
+            rc, _, _ = self.admin.assert_icommand(['bash', fastswap_test_script], 'STDOUT_SINGLELINE', 'etc')
             assert rc == 0
 	
     @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'tests cache update - only applicable for irods_rule_language REP')
@@ -228,7 +226,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             # checkpoint log to know where to look for the string
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
-            assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_NODELAY', start_index=initial_log_size)
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_1_NODELAY', start_index=initial_log_size))
 
             time.sleep(5) # ensure modify time is sufficiently different
 
@@ -241,7 +239,7 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand('irule -F ' + rule_file)
             #time.sleep(35)  # wait for test to fire
-            assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_NODELAY', start_index=initial_log_size)
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_STRING_TO_FIND_2_NODELAY', start_index=initial_log_size))
 
         # cleanup
         os.unlink(test_re)
@@ -322,8 +320,8 @@ class Test_Rulebase(ResourceBase, unittest.TestCase):
             put_resource = self.testresc
             self.user0.assert_icommand("iput -R {put_resource} {filename}".format(**locals()), "EMPTY")
 
-            assert lib.count_occurrences_of_string_in_log(irods_config.server_log_path,
-                                                          "TEST_STRING_TO_FIND_DEFECT_3560", start_index=initial_log_size)
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(irods_config.server_log_path,
+                                                          "TEST_STRING_TO_FIND_DEFECT_3560", start_index=initial_log_size))
 
         # cleanup
         IrodsController().restart()
@@ -357,9 +355,10 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand('irule -F ' + rule_file)
             os.unlink(rule_file)
 
-            log_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'TEST_MARKER_test_acPreProcForExecCmd__3867', start_index=initial_log_size)
-
-            assert 1 == log_count
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg='TEST_MARKER_test_acPreProcForExecCmd__3867',
+                    start_index=initial_log_size))
 
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
@@ -584,7 +583,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
                 os.unlink(client_rule_file)
 
             # confirm that PEP was hit by looking for pep name in server log
-            assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), pep_name, start_index=initial_log_size)
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), pep_name, start_index=initial_log_size))
 
             # check that resource session vars were written to the server log
             for line in resource_property_list:
@@ -592,7 +591,7 @@ class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
                 property = line.rsplit('=', 1)[1].strip()
                 if property:
                     if column != 'RESC_MODIFY_TIME':
-                        assert lib.count_occurrences_of_string_in_log(paths.server_log_path(), property, start_index=initial_log_size)
+                        lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), property, start_index=initial_log_size))
 
         # cleanup
         user_session.run_icommand('irm -f {target_obj}'.format(**locals()))
@@ -680,7 +679,7 @@ class Test_Remote_Exec(ResourceBase, unittest.TestCase):
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file_path], 'STDOUT', 'Remote writeLine')
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay in remote writeLine', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay in remote writeLine', start_index=initial_log_size))
         finally:
             if os.path.exists(rule_file_path):
                 os.unlink(rule_file_path)
@@ -692,8 +691,8 @@ class Test_Remote_Exec(ResourceBase, unittest.TestCase):
         try:
             initial_log_size = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file_path])
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Remote in delay writeLine', start_index=initial_log_size))
-            delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay writeLine', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Remote in delay writeLine', start_index=initial_log_size))
+            lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Delay writeLine', start_index=initial_log_size))
         finally:
             if os.path.exists(rule_file_path):
                 os.unlink(rule_file_path)

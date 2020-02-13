@@ -1061,8 +1061,10 @@ OUTPUT ruleExecOut
 
         # TODO: Add support for remote with #4164
         if zone_info is 'local':
-            log_output_count = lib.count_occurrences_of_string_in_log(paths.server_log_path(), expected_from_remote_log, start_index=initial_log_size)
-            self.assertTrue(1 == log_output_count, msg='Expected 1 but found {}'.format(log_output_count))
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=expected_from_remote_log,
+                    start_index=initial_log_size))
         os.remove(rule_file)
 
     def test_remote_writeLine_localzone_3722(self):
