@@ -4506,6 +4506,7 @@ OUTPUT ruleExecOut
             self.admin.assert_icommand(['iadmin', 'modresc', 'unix3Resc', 'host', test.settings.HOSTNAME_3])
             self.admin.assert_icommand(['iadmin', 'rmresc', test_resc])
 
+@unittest.skip('FIXME: Remove this line on resolution of #4727')
 @unittest.skipIf(False == test.settings.USE_MUNGEFS, "These tests require mungefs")
 class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittest.TestCase):
     def setUp(self):
