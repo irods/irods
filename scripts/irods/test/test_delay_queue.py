@@ -68,10 +68,16 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+
+                # Expected count is 3 because...
+                # 1. writeLine writes the string
+                # 2. rsExecRuleExpression writes the rule text on failure
+                # 3. delayed execution server writes the failed rule text under delay_server category
+                expected_count = 3
                 lib.delayAssert(
                     lambda: lib.log_message_occurrences_equals_count(
                         msg='We are about to fail...',
-                        count=2,
+                        count=expected_count,
                         start_index=initial_size_of_server_log))
 
         finally:
@@ -350,12 +356,14 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 # Fire off rule and wait for message to get written out to serverLog
                 initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
-                # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rcExecRuleExpression)
+
+                # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rsExecRuleExpression)
+                expected_count = 2
                 lib.delayAssert(
                     lambda: lib.log_message_occurrences_equals_count(
                         msg='We are about to segfault...',
+                        count=expected_count,
                         start_index=initial_size_of_server_log))
-
 
                 # See if the later rule is executed (i.e. delay server is still alive)
                 lib.delayAssert(
