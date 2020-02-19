@@ -32,8 +32,10 @@ using logger = irods::experimental::log;
 namespace {
     static std::atomic_bool re_server_terminated{};
 
-    void init_logger() {
-        logger::init();
+    void init_logger(
+        const bool write_to_stdout,
+        const bool enable_test_mode) {
+        logger::init(write_to_stdout, enable_test_mode);
         irods::server_properties::instance().capture();
         logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
         logger::set_server_type("delay_server");
@@ -348,10 +350,27 @@ namespace {
         };
         return {qstr, job};
     }
-}
+} // anonymous namespace
 
-int main() {
-    init_logger();
+int main(int argc, char **argv) {
+    bool enable_test_mode = false;
+    bool write_to_stdout = false;
+    int c{};
+    while (EOF != (c = getopt(argc, argv, "tu"))) {
+        switch (c) {
+            case 't':
+                enable_test_mode = true;
+                break;
+            case 'u':
+                write_to_stdout = true;
+                break;
+            default:
+                std::cerr << "Only -t and -u are supported" << std::endl;
+                exit(1);
+        }
+    }
+
+    init_logger(write_to_stdout, enable_test_mode);
     logger::delay_server::debug("Initializing...");
 
     static std::condition_variable term_cv;

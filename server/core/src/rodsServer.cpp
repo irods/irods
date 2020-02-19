@@ -327,7 +327,7 @@ main( int argc, char **argv )
         return SYS_FORK_ERROR;
     }
 
-    return serverMain();
+    return serverMain(enable_test_mode, write_to_stdout);
 }
 
 static bool instantiate_shared_memory_for_plugin( const std::unordered_map<std::string, boost::any>& _plugin_object ) {
@@ -396,8 +396,10 @@ static irods::error uninstantiate_shared_memory( ) {
 
 } // uninstantiate_shared_memory
 
-int
-serverMain() {
+int serverMain(
+    const bool enable_test_mode = false,
+    const bool write_to_stdout = false)
+{
     int acceptErrCnt = 0;
 
     // set re cache salt here
@@ -415,7 +417,7 @@ serverMain() {
     irods::re_plugin_globals.reset(new irods::global_re_plugin_mgr);
 
     rsComm_t svrComm;
-    int status = initServerMain( &svrComm );
+    int status = initServerMain(&svrComm, enable_test_mode, write_to_stdout);
     if ( status < 0 ) {
         rodsLog( LOG_ERROR, "serverMain: initServerMain error. status = %d",
                  status );
@@ -1151,8 +1153,11 @@ recordServerProcess( rsComm_t *svrComm ) {
     return 0;
 }
 
-int
-initServerMain( rsComm_t *svrComm ) {
+int initServerMain(
+    rsComm_t *svrComm,
+    const bool enable_test_mode = false,
+    const bool write_to_stdout = false)
+{
     memset( svrComm, 0, sizeof( *svrComm ) );
     int status = getRodsEnv( &svrComm->myEnv );
     if ( status < 0 ) {
@@ -1215,6 +1220,12 @@ initServerMain( rsComm_t *svrComm ) {
             close( svrComm->sock );
             std::vector<char *> av;
             av.push_back( "irodsReServer" );
+            if (enable_test_mode) {
+                av.push_back("-t");
+            }
+            if (write_to_stdout) {
+                av.push_back("-u");
+            }
             av.push_back( NULL );
             rodsLog( LOG_NOTICE, "Starting irodsReServer" );
             execv( av[0], &av[0] );
