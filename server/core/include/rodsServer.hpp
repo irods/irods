@@ -43,7 +43,9 @@ extern int optind, opterr, optopt;
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
 * for consistence */
 
-int serverMain();
+int serverMain(
+    const bool enable_test_mode,
+    const bool write_to_stdout);
 int procChildren( agentProc_t **agentProcHead );
 agentProc_t* getAgentProcByPid( int childPid, agentProc_t **agentProcHead );
 
@@ -72,8 +74,10 @@ int
 chkConnectedAgentProcQue();
 int
 recordServerProcess( rsComm_t *svrComm );
-int
-initServerMain( rsComm_t *svrComm );
+int initServerMain(
+    rsComm_t *svrComm,
+    const bool enable_test_mode,
+    const bool write_to_stdout);
 int
 addConnReqToQue( rsComm_t *rsComm, int sock );
 int
