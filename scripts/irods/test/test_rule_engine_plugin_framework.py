@@ -329,3 +329,71 @@ OUTPUT ruleExecOut
 
             lib.delayAssert(lambda: lib.count_occurrences_of_string_in_log(paths.server_log_path(), 'Test_Plugin_Instance_Delay', start_index=initial_log_size))
 
+def delay_assert(command, interval=1, maxrep=5):
+    success = False
+    for _ in range(maxrep):
+        time.sleep(interval)  # wait for test to fire
+        try:
+            command()
+            success = True
+            break
+        except AssertionError:
+            continue
+    if not success:
+        raise AssertionError
+
+class Test_Plugin_Instance_CppDefault(ResourceBase, unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
+    def setUp(self):
+        super(Test_Plugin_Instance_CppDefault, self).setUp()
+
+    def tearDown(self):
+        super(Test_Plugin_Instance_CppDefault, self).tearDown()
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_delay_rule(self):
+        flag_file = self.admin.session_collection + '/flag_file'
+        new_rule = """
+create_flag_object(*p, *c) {{
+msiDataObjCreate("{0}", "forceFlag=", *out)
+}}""".format(flag_file)
+
+        delay_rule = """
+{
+    "policy" : "irods_policy_enqueue_rule",
+    "delay_conditions" : "",
+    "payload" : {
+        "policy" : "irods_policy_execute_rule",
+        "payload" : {
+            "policy_to_invoke" : "create_flag_object",
+            "parameters" : {
+            },
+            "configuration" : {
+            }
+        }
+    }
+}
+INPUT null
+OUTPUT ruleExecOut
+        """
+        rule_file = tempfile.NamedTemporaryFile(mode='wt', dir='/tmp', delete=False).name + '.r'
+        with open(rule_file, 'w') as f:
+            f.write(delay_rule)
+
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(new_rule)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+
+            self.admin.assert_icommand(['irule', '-F', rule_file])
+            self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'irods_policy_execute_rule')
+
+
+            delay_assert(lambda: self.admin.assert_icommand(['ils', '-l', flag_file],  'STDOUT_SINGLELINE', 'flag_file'))
+
+
+
+
+
