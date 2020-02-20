@@ -24,7 +24,7 @@ int rsExecMyRule(
     if ( available_str ) {
         std::vector< std::string > instance_names;
         irods::error ret = list_rule_plugin_instances( instance_names );
-        
+
         if ( !ret.ok() ) {
             irods::log( PASS( ret ) );
             return ret.code();
@@ -87,7 +87,11 @@ int rsExecMyRule(
                            my_rule_text,
                            _exec_inp->inpParamArray,
                            out_param_desc);
-    if(!err.ok()) {
+    if(inst_name.empty()) {
+        freeRErrorContent(&rei.rsComm->rError);
+    }
+
+    if(!inst_name.empty() && !err.ok()) {
         rodsLog(
             LOG_ERROR,
             "%s : %d, %s",
@@ -103,7 +107,7 @@ int rsExecMyRule(
     *_out_arr = rei.msParamArray;
     rei.msParamArray = NULL;
 
-    if ( err.code() < 0 ) {
+    if (!inst_name.empty() &&  err.code() < 0 ) {
         rodsLog( LOG_ERROR,
                  "rsExecMyRule : execMyRule error for %s, status = %d",
                  _exec_inp->myRule, err.code() );
