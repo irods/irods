@@ -508,7 +508,7 @@ OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_failed_delay_job'] = '''
 test_delay_with_output_param {{
-    delay("<PLUSET>0.1s</PLUSET>") {{
+    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
         writeLine("serverLog", "We are about to fail...");
         msiGoodFailure();
         writeLine("serverLog", "You should never see this line.");
@@ -519,12 +519,12 @@ OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_sigpipe_in_delay_server'] = '''
 test_sigpipe_in_delay_server {{
-    delay("<PLUSET>0.1s</PLUSET>") {{
+    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
         writeLine("serverLog", "We are about to segfault...");
         msiSegFault();
         writeLine("serverLog", "You should never see this line.");
     }}
-    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+    delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
         writeLine("serverLog", "Follow-up rule executed later!");
     }}
     writeLine("stdout", "rule queued");
@@ -533,12 +533,12 @@ OUTPUT ruleExecOut
 '''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_exception_in_delay_server'] = '''
 test_exception_in_delay_server {{
-    delay("<PLUSET>0.1s</PLUSET>") {{
+    delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
         writeLine("serverLog", "Sleeping now...");
         msiSleep("{sleep_time}", "0");
         msiSegFault();
     }}
-    delay("<PLUSET>{longer_delay_time}s</PLUSET>") {{
+    delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
         writeLine("serverLog", "Follow-up rule executed later!");
     }}
 }}
