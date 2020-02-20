@@ -33,6 +33,7 @@
 
 #include "configuration.hpp"
 #include "irods_server_properties.hpp"
+#include "json.hpp"
 
 #define STATIC_PEP(NAME) static_policy_enforcement_points[#NAME] = NAME
 
@@ -906,7 +907,11 @@ irods::error list_rules(irods::default_re_ctx&, std::vector<std::string>& rule_v
     return SUCCESS();
 }
 
-irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list<boost::any>& _ps, irods::callback _eff_hdlr) {
+irods::error exec_rule(
+    irods::default_re_ctx&,
+    const std::string&     _rn,
+    std::list<boost::any>& _ps,
+    irods::callback        _eff_hdlr) {
     ruleExecInfo_t * rei;
     irods::error err;
 
@@ -925,17 +930,205 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
             _rn.c_str() );
         return SUCCESS();
     }
-}
+} // exec_rule
 
-irods::error exec_rule_text(irods::default_re_ctx&, const std::string& _rt, msParamArray_t* _ms_params, const std::string& out_desc, irods::callback _eff_hdlr) {
-    rodsLog( LOG_DEBUG, "exec_rule_text not supported in the cpp_default_policy rule engine plugin");
-    return ERROR( SYS_NOT_SUPPORTED, "exec_rule_text not supported in the cpp_default_policy rule engine plugin" );
-}
+namespace {
+    auto collapse_error_stack(rError_t& _error) -> std::string {
+        std::stringstream ss;
+        for(int i = 0; i < _error.len; ++i) {
+            rErrMsg_t* err_msg = _error.errMsg[i];
+            if(err_msg->status != STDOUT_STATUS) {
+                ss << "status: " << err_msg->status << " ";
+            }
 
-irods::error exec_rule_expression(irods::default_re_ctx&, const std::string& _rt, msParamArray_t* _ms_params, irods::callback _eff_hdlr) {
-    rodsLog( LOG_DEBUG, "exec_rule_expression not supported in the cpp_default_policy rule engine plugin");
-    return ERROR( SYS_NOT_SUPPORTED, "exec_rule_expression not supported in the cpp_default_policy rule engine plugin" );
-}
+            ss << err_msg->msg << " - ";
+        }
+        return ss.str();
+    } // collapse_error_stack
+
+    void invoke_policy(
+        ruleExecInfo_t*        _rei,
+        const std::string&     _action,
+        std::list<boost::any>& _args) {
+        irods::rule_engine_context_manager<
+            irods::unit,
+            ruleExecInfo_t*,
+            irods::AUDIT_RULE> re_ctx_mgr(
+                    irods::re_plugin_globals->global_re_mgr,
+                    _rei);
+        irods::error err = re_ctx_mgr.exec_rule(_action, irods::unpack(_args));
+        if(!err.ok()) {
+            if(_rei->status < 0) {
+                std::string msg = collapse_error_stack(_rei->rsComm->rError);
+                THROW(_rei->status, msg);
+            }
+
+            THROW(err.code(), err.result());
+        }
+    } // invoke_policy
+} // namespace
+
+int _delayExec(const char* rule, const char* recov, const char* condition, ruleExecInfo_t*);
+
+irods::error exec_rule_text(
+    irods::default_re_ctx&,
+    const std::string& _rule_text,
+    msParamArray_t*    _ms_params,
+    const std::string& _out_desc,
+    irods::callback    _eff_hdlr) {
+
+    using json = nlohmann::json;
+
+    ruleExecInfo_t* rei;
+    irods::error    err;
+    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
+        return err;
+    }
+
+    try {
+        // skip the first line: @external
+        std::string rule_text{_rule_text};
+        if(_rule_text.find("@external") != std::string::npos) {
+            rule_text = _rule_text.substr(10);
+        }
+
+        auto rule{json::parse(rule_text)};
+        std::string policy = rule["policy"];
+        if(policy.empty()) {
+            return ERROR(
+                       SYS_NOT_SUPPORTED,
+                       "exec_rule_text : policy is not supported");
+        }
+
+        auto payload{rule["payload"]};
+        if(payload.empty()) {
+            return ERROR(
+                       SYS_NOT_SUPPORTED,
+                       "exec_rule_text : payload is empty");
+        }
+
+        if("irods_policy_enqueue_rule" == policy) {
+            std::string delay_cond{rule["delay_conditions"]};
+
+            const auto err = _delayExec(payload.dump().c_str(), "",
+                                        delay_cond.c_str(), rei);
+            if(err < 0) {
+                return ERROR(err, "delayExec failed");
+            }
+        }
+        else {
+            std::string policy_to_invoke{payload["policy_to_invoke"]};
+            std::string parameter_string{payload["parameters"].dump()};
+            std::string configuration_string{payload["configuration"].dump()};
+
+            std::list<boost::any> arguments;
+            arguments.push_back(boost::any(std::ref(parameter_string)));
+            arguments.push_back(boost::any(std::ref(configuration_string)));
+
+            invoke_policy(rei, policy_to_invoke, arguments);
+        }
+    }
+    catch(const json::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+    catch(const irods::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+    catch(const std::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+
+    return SUCCESS();//CODE(RULE_ENGINE_CONTINUE);
+
+} // exec_rule_text
+
+irods::error exec_rule_expression(
+    irods::default_re_ctx&,
+    const std::string& _rule_text,
+    msParamArray_t*    _ms_params,
+    irods::callback    _eff_hdlr) {
+
+    using json = nlohmann::json;
+
+    ruleExecInfo_t* rei;
+    irods::error    err;
+    if(!(err = _eff_hdlr("unsafe_ms_ctx", &rei)).ok()) {
+        return err;
+    }
+
+    try {
+        json  rule{json::parse(_rule_text)};
+        std::string policy = rule["policy"];
+        if(policy.empty() || "irods_policy_execute_rule" != policy) {
+            return ERROR(
+                       SYS_NOT_SUPPORTED,
+                       "exec_rule_text is not supported");
+        }
+
+        auto payload{rule["payload"]};
+        if(payload.empty()) {
+            return ERROR(
+                       SYS_NOT_SUPPORTED,
+                       "exec_rule_text is not supported");
+        }
+
+        std::string policy_to_invoke{payload["policy_to_invoke"]};
+        std::string parameter_string{payload["parameters"].dump()};
+        std::string configuration_string{payload["configuration"].dump()};
+
+        std::list<boost::any> arguments;
+        arguments.push_back(boost::any(std::ref(parameter_string)));
+        arguments.push_back(boost::any(std::ref(configuration_string)));
+        invoke_policy(rei, policy_to_invoke, arguments);
+    }
+    catch(const json::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+    catch(const irods::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+    catch(const std::exception& e) {
+        addRErrorMsg(
+            &rei->rsComm->rError,
+            SYS_INVALID_INPUT_PARAM,
+            e.what());
+        return ERROR(
+                   SYS_NOT_SUPPORTED,
+                   e.what());
+    }
+    return SUCCESS();//CODE(RULE_ENGINE_CONTINUE);
+
+} // exec_rule_expression
 
 extern "C"
 irods::pluggable_rule_engine<irods::default_re_ctx>* plugin_factory( const std::string& _inst_name,
