@@ -92,7 +92,7 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         re_server_sleep_time = 3
         sooner_delay = 1
         later_delay = re_server_sleep_time * 2
-        long_job_run_time = re_server_sleep_time * 3
+        long_job_run_time = re_server_sleep_time * 10
 
         parameters = {}
         parameters['delay_job_batch_size'] = delay_job_batch_size
