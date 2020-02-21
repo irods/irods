@@ -98,6 +98,7 @@ msiSetDefaultResc( msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
  * \deprecated Since 4.0, use a resource composition of a similar type.
  *
  **/
+[[deprecated("msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type")]]
 int
 msiSetRescSortScheme( msParam_t*, ruleExecInfo_t* ) {
     rodsLog( LOG_ERROR, "msiSetRescSortScheme is no longer supported, please use a resource composition of a similar type" );
@@ -381,6 +382,8 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
  *
  * \brief  This microservice performs a checksum on the uploaded or copied data object.
  *
+ * \deprecated Since 4.2.8, use msiDataObjChksum instead.
+ *
  * \module core
  *
  * \since pre-2.1
@@ -405,34 +408,12 @@ msiSortDataObj( msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
  * \post none
  * \sa none
  **/
+[[deprecated("msiSysChksumDataObj is no longer supported, use msiDataObjChksum instead")]]
 int
 msiSysChksumDataObj( ruleExecInfo_t *rei ) {
-    dataObjInfo_t *dataObjInfoHead;
-    char *chksumStr = NULL;
-
-    RE_TEST_MACRO( "    Calling msiSysChksumDataObj" )
-
-    rei->status = 0;
-
-    /* don't cache replicate or copy operation */
-
-    dataObjInfoHead = rei->doi;
-
-    if ( dataObjInfoHead == NULL ) {
-        return 0;
-    }
-
-    if ( strlen( dataObjInfoHead->chksum ) == 0 ) {
-        /* not already checksumed */
-        rei->status = dataObjChksumAndReg( rei->rsComm, dataObjInfoHead,
-                                           &chksumStr );
-        if ( chksumStr != NULL ) {
-            rstrcpy( dataObjInfoHead->chksum, chksumStr, NAME_LEN );
-            free( chksumStr );
-        }
-    }
-
-    return 0;
+    rodsLog(LOG_ERROR,
+        "msiSysChksumDataObj is no longer supported, use msiDataObjChksum instead");
+    return SYS_NOT_SUPPORTED;
 }
 
 /**
