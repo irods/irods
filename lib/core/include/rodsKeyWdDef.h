@@ -50,6 +50,7 @@
 #define DATA_ID_KW     "dataId"
 #define COLL_ID_KW     "collId"
 #define DATA_MODE_KW   "dataMode"
+#define DATA_NAME_KW            "data_name"
 #define STATUS_STRING_KW     "statusString"
 #define DATA_MAP_ID_KW    "dataMapId"
 #define NO_PARA_OP_KW    "noParaOpr"
@@ -81,8 +82,7 @@
 #define ZONE_KW    		"zone"
 #define REMOTE_ZONE_OPR_KW    	"remoteZoneOpr"
 #define REPL_DATA_OBJ_INP_KW   	"replDataObjInp"
-#define CROSS_ZONE_CREATE_KW   	"replDataObjInp"  /* use the same for backward
-* compatibility */
+#define CROSS_ZONE_CREATE_KW   	"replDataObjInp"  /* use the same for backward compatibility */
 #define VERIFY_VAULT_SIZE_EQUALS_DATABASE_SIZE_KW    "verifyVaultSizeEqualsDatabaseSize"
 #define QUERY_BY_DATA_ID_KW   	"queryByDataID"
 #define SU_CLIENT_USER_KW   	"suClientUser"

@@ -46,7 +46,7 @@ typedef struct RodsPathInp {
 int
 parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv );
 int
-parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath );
+parseRodsPathStr( const char *inPath, rodsEnv *myRodsEnv, char *outPath );
 int
 addSrcInPath( rodsPathInp_t *rodsPathInp, const char *inPath );
 int
