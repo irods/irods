@@ -27,7 +27,7 @@
  */
 
 int
-parseRodsPathStr( char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
+parseRodsPathStr( const char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
     int status;
     rodsPath_t rodsPath;
 

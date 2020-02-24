@@ -66,7 +66,7 @@ class ChunkyDevTest(ResourceBase):
         self.admin.assert_icommand("iput -kf " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
-        self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', "foo1")
+        self.admin.assert_icommand("ils " + irodshome + "/icmdtest", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest/foo1",
                                    'STDOUT_SINGLELINE', username + "#" + irodszone + ":own")
         self.admin.assert_icommand("ichmod read " + testuser1 + " " + irodshome + "/icmdtest/foo1")
@@ -624,7 +624,7 @@ class ChunkyDevTest(ResourceBase):
         # make a directory of large files
         self.admin.assert_icommand("iput -kf  " + test_file + "  " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest1/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
-        self.admin.assert_icommand("iadmin ls " + irodshome + "/icmdtest1", 'STDOUT_SINGLELINE', "foo1")
+        self.admin.assert_icommand("ils " + irodshome + "/icmdtest1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ichmod read " + self.user0.username + " " + irodshome + "/icmdtest1/foo1")
         self.admin.assert_icommand("ils -A " + irodshome + "/icmdtest1/foo1",
                                    'STDOUT_SINGLELINE', self.user0.username + "#" + irodszone + ":read")

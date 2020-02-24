@@ -89,6 +89,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_virtual_path.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/query_builder.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/key_value_proxy.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/lifetime_manager.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mcollUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/microservice.hpp

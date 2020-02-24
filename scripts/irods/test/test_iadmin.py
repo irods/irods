@@ -1545,3 +1545,185 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         check_and_remove_rebalance_visibility_metadata(10); # try 10 times
         # fire parallel rebalance
         self.admin.assert_icommand("iadmin modresc repl rebalance")
+
+class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
+    def setUp(self):
+        super(Test_Iadmin_modrepl, self).setUp()
+
+    def tearDown(self):
+        super(Test_Iadmin_modrepl, self).tearDown()
+
+    # TODO: Add tests with invalid inputs to various columns
+    def test_modifying_columns(self):
+        dumb_string = 'garbage'
+        dumb_int = 16
+        cols = {
+            #"COLL_ID" : dumb_int,
+            "DATA_CREATE_TIME" : dumb_string,
+            "DATA_CHECKSUM" : dumb_string,
+            "DATA_EXPIRY" : '00000000016',
+            #"DATA_ID" : dumb_string,
+            "DATA_REPL_STATUS" : dumb_int,
+            #"DATA_MAP_ID" : dumb_int,
+            "DATA_MODE" : dumb_string,
+            #"DATA_NAME" : dumb_string,
+            "DATA_OWNER_NAME" : dumb_string,
+            "DATA_OWNER_ZONE" : dumb_string,
+            "DATA_PATH" : dumb_string,
+            #"DATA_REPL_NUM" : dumb_int, # TODO: CAPTURE IN A SPECIAL TEST
+            "DATA_SIZE" : dumb_int,
+            "DATA_STATUS" : dumb_string,
+            "DATA_TYPE_NAME" : 'image',
+            "DATA_VERSION" : dumb_string,
+            "DATA_MODIFY_TIME" : '00000000016',
+            "DATA_COMMENTS" : dumb_string,
+            #"DATA_RESC_GROUP_NAME" : dumb_string,
+            #"DATA_RESC_HIER" : dumb_string,
+            #"DATA_RESC_ID" : dumb_int # TODO: CAPTURE IN A SPECIAL TEST
+            #"DATA_RESC_NAME" : dumb_string
+        }
+
+        filename = 'test_modifying_columns'
+        original_file_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.touch(original_file_path)
+        try:
+            object_path = os.path.join(self.admin.session_collection, filename)
+            self.admin.assert_icommand(['iput', original_file_path, object_path])
+            repl_num = 0
+            for k in cols:
+                self.admin.assert_icommand(
+                    ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', str(repl_num)],
+                    'STDOUT', str(k))
+                self.admin.assert_icommand(
+                    ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', str(repl_num), str(k), str(cols[k])])
+                self.admin.assert_icommand(
+                    ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', str(repl_num)],
+                    'STDOUT', '{0}: {1}'.format(k, str(cols[k])))
+        finally:
+            if os.path.exists(original_file_path):
+                os.unlink(original_file_path)
+
+    def test_input_parameters_valid(self):
+        filename = 'test_input_parameters_valid'
+        original_file_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.touch(original_file_path)
+        try:
+            object_path = os.path.join(self.admin.session_collection, filename)
+            self.admin.assert_icommand(['iput', original_file_path, object_path])
+            self.admin.assert_icommand(['irepl', '-R', 'TestResc', object_path])
+            query = ''' "select DATA_ID where DATA_NAME = '{}'" '''.format(filename)
+            data_id,_,_ = self.admin.run_icommand(['iquest', '%s', query])
+            data_object_option = {
+                'logical_path' : object_path,
+                'data_id' : data_id.rstrip()
+            }
+            replica_option = {
+                'replica_number' : '1',
+                'resource_hierarchy' : 'TestResc'
+            }
+
+            for d in data_object_option:
+                for r in replica_option:
+                    value = '_'.join([data_object_option[d], replica_option[r]])
+                    self.admin.assert_icommand(
+                        ['iadmin', 'ls', d, data_object_option[d], r, replica_option[r]],
+                        'STDOUT', 'DATA_COMMENTS')
+                    self.admin.assert_icommand(
+                        ['iadmin', 'modrepl', d, data_object_option[d], r, replica_option[r], 'DATA_COMMENTS', value])
+                    self.admin.assert_icommand(
+                        ['iadmin', 'ls', d, data_object_option[d], r, replica_option[r]],
+                        'STDOUT', 'DATA_COMMENTS: ' + value)
+                    self.admin.assert_icommand_fail(
+                        ['iadmin', 'ls', d, data_object_option[d], 'resource_hierarchy', self.admin.default_resource],
+                        'STDOUT', 'DATA_COMMENTS: ' + value)
+        finally:
+            if os.path.exists(original_file_path):
+                os.unlink(original_file_path)
+
+    def test_input_parameters_invalid(self):
+        filename = 'test_input_parameters_invalid'
+        original_file_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.touch(original_file_path)
+        try:
+            object_path = os.path.join(self.admin.session_collection, filename)
+            self.admin.assert_icommand(['iput', original_file_path, object_path])
+
+            initial_ls_output,_,_ = self.admin.run_icommand(
+                ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', '0'])
+
+            garbage_str = 'nopes'
+            self.admin.assert_icommand(
+                ['iadmin', 'modrepl', 'data_id', garbage_str, 'replica_number', '0', 'DATA_COMMENTS', 'nopes'],
+                'STDERR', 'Invalid input [{}] for data_id.'.format(garbage_str))
+            self.admin.assert_icommand(
+                ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', garbage_str, 'DATA_COMMENTS', 'nopes'],
+                'STDERR', 'Invalid input [{}] for replica_number.'.format(garbage_str))
+
+            ending_ls_output,_,_ = self.admin.run_icommand(
+                ['iadmin', 'ls', 'logical_path', object_path, 'replica_number', '0'])
+            self.assertEqual(initial_ls_output, ending_ls_output)
+        finally:
+            if os.path.exists(original_file_path):
+                os.unlink(original_file_path)
+
+    def test_modifying_restricted_columns(self):
+        dumb_string = 'garbage'
+        dumb_int = 16
+        cols = {
+            "COLL_ID" : dumb_int,
+            #"DATA_CREATE_TIME" : dumb_string,
+            #"DATA_CHECKSUM" : dumb_string,
+            #"DATA_EXPIRY" : '00000000016',
+            "DATA_ID" : dumb_string,
+            #"DATA_REPL_STATUS" : dumb_int,
+            "DATA_MAP_ID" : dumb_int,
+            #"DATA_MODE" : dumb_string,
+            "DATA_NAME" : dumb_string,
+            #"DATA_OWNER_NAME" : dumb_string,
+            #"DATA_OWNER_ZONE" : dumb_string,
+            #"DATA_PATH" : dumb_string,
+            #"DATA_REPL_NUM" : dumb_int,
+            #"DATA_SIZE" : dumb_int,
+            #"DATA_STATUS" : dumb_string,
+            #"DATA_TYPE_NAME" : 'image',
+            #"DATA_VERSION" : dumb_string,
+            #"DATA_MODIFY_TIME" : '00000000016',
+            #"DATA_COMMENTS" : dumb_string,
+            "DATA_RESC_GROUP_NAME" : dumb_string,
+            "DATA_RESC_HIER" : dumb_string,
+            #"DATA_RESC_ID" : dumb_string
+            "DATA_RESC_NAME" : dumb_string
+        }
+
+        filename = 'test_modifying_restricted_columns'
+        original_file_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.touch(original_file_path)
+
+        try:
+            object_path = os.path.join(self.admin.session_collection, filename)
+            self.admin.assert_icommand(['iput', original_file_path, object_path])
+            for k in cols:
+                query = ''' "select {0} where COLL_NAME = '{1}' and DATA_NAME = '{2}' '''.format(
+                    k, os.path.dirname(object_path), os.path.basename(object_path))
+                self.admin.assert_icommand_fail(['iquest', query], 'STDOUT', str(cols[k]))
+                self.admin.assert_icommand(
+                    ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', '0', str(k), str(cols[k])],
+                    'STDERR', 'Invalid attribute specified.')
+                self.admin.assert_icommand_fail(['iquest', query], 'STDOUT', str(cols[k]))
+        finally:
+            if os.path.exists(original_file_path):
+                os.unlink(original_file_path)
+
+    def test_modrepl_as_rodsuser(self):
+        filename = 'test_modrepl_as_rodsuser'
+        original_file_path = os.path.join(self.user0.local_session_dir, filename)
+        lib.touch(original_file_path)
+        try:
+            object_path = os.path.join(self.user0.session_collection, filename)
+            self.user0.assert_icommand(['iput', original_file_path, object_path])
+            self.user0.assert_icommand(
+                ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', '0', 'DATA_COMMENTS', 'nopes'],
+                'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+        finally:
+            if os.path.exists(original_file_path):
+                os.unlink(original_file_path)
