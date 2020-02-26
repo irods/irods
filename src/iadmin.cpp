@@ -1,21 +1,22 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/*
-   Initial version of an administrator interface
-*/
-
-#include "rodsClient.h"
-#include "parseCommandLine.h"
-#include "irods_string_tokenize.hpp"
+#include "filesystem.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_string_tokenize.hpp"
+#include "key_value_proxy.hpp"
+#include "parseCommandLine.h"
+#include "query_builder.hpp"
+#include "rodsClient.h"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <string>
+#include <string_view>
 #include <termios.h>
 #include <unistd.h>
-#include <string>
+#include <variant>
+#include <vector>
+
+#include "boost/lexical_cast.hpp"
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -37,6 +38,268 @@ rodsEnv myEnv;
 int lastCommandStatus = 0;
 
 void usage( char *subOpt );
+
+namespace {
+
+namespace fs = irods::experimental::filesystem;
+using attrs_t = std::vector<std::pair<std::string_view, std::string_view>>;
+const attrs_t genquery_attrs = {
+    {"COLL_ID", COLL_ID_KW}, // not modifiable with iadmin modrepl
+    {"DATA_CREATE_TIME", DATA_CREATE_KW},
+    {"DATA_CHECKSUM", CHKSUM_KW},
+    {"DATA_EXPIRY", DATA_EXPIRY_KW},
+    {"DATA_ID", DATA_ID_KW}, // not modifiable with iadmin modrepl
+    {"DATA_REPL_STATUS", REPL_STATUS_KW},
+    {"DATA_MAP_ID", DATA_MAP_ID_KW}, // not modifiable with iadmin modrepl
+    {"DATA_MODE", DATA_MODE_KW},
+    {"DATA_NAME", DATA_NAME_KW}, // not modifiable with iadmin modrepl
+    {"DATA_OWNER_NAME", DATA_OWNER_KW},
+    {"DATA_OWNER_ZONE", DATA_OWNER_ZONE_KW},
+    {"DATA_PATH", FILE_PATH_KW},
+    {"DATA_REPL_NUM", REPL_NUM_KW},
+    {"DATA_SIZE", DATA_SIZE_KW},
+    {"DATA_STATUS", STATUS_STRING_KW},
+    {"DATA_TYPE_NAME", DATA_TYPE_KW},
+    {"DATA_VERSION", VERSION_KW},
+    {"DATA_MODIFY_TIME", DATA_MODIFY_KW},
+    {"DATA_COMMENTS", DATA_COMMENTS_KW},
+    //{"DATA_RESC_GROUP_NAME", DATA_RESC_GROUP_NAME_KW}, // missing from genquery since 4.2
+    {"DATA_RESC_HIER", RESC_HIER_STR_KW}, // not modifiable with iadmin modrepl
+    {"DATA_RESC_ID", RESC_ID_KW},
+    {"DATA_RESC_NAME", RESC_NAME_KW} // not modifiable with iadmin modrepl
+};
+
+
+using args_vector_t = std::vector<std::string_view>;
+auto get_args_vector(
+    char** argv,
+    const std::size_t argc) -> args_vector_t
+{
+    args_vector_t args;
+    int i = 0;
+    while (0 != strcmp(argv[i], "")) {
+        args.push_back(argv[i++]);
+    }
+
+    if (args.size() < argc) {
+        throw std::invalid_argument("Input arguments do not match expected values.");
+    }
+    return args;
+} // get_args_vector
+
+using bigint_type = int64_t;
+using data_object_option_t = std::variant<bigint_type, fs::path>;
+using data_id_t = std::variant_alternative<0, data_object_option_t>::type;
+using logical_path_t = std::variant_alternative<1, data_object_option_t>::type;
+auto get_data_object_value(
+    const std::string_view option,
+    const std::string_view input) -> data_object_option_t
+{
+    data_object_option_t v;
+    if ("data_id" == option) {
+        try {
+            v = boost::lexical_cast<data_id_t>(input.data());
+        } catch (const boost::bad_lexical_cast&) {
+            std::stringstream msg;
+            msg << "Invalid input [" << input << "] for data_id.";
+            throw std::invalid_argument(msg.str());
+        }
+    }
+    else if ("logical_path" == option) {
+        const auto logical_path = fs::path{input.data()}.lexically_normal();
+        if (!logical_path.is_absolute()) {
+            throw std::invalid_argument("Provided logical_path must be absolute.");
+        }
+        v = logical_path;
+    }
+    return v;
+} // get_data_object_value
+
+using int_type = int;
+using repl_option_t = std::variant<int_type, std::string_view>;
+using replica_number_t = std::variant_alternative<0, repl_option_t>::type;
+using resource_hierarchy_t = std::variant_alternative<1, repl_option_t>::type;
+auto get_replica_value(
+    const std::string_view option,
+    const std::string_view input) -> repl_option_t
+{
+    repl_option_t v;
+    if ("replica_number" == option) {
+        try {
+            v = boost::lexical_cast<replica_number_t>(input.data());
+            if (veryVerbose) {
+                std::cout << __FUNCTION__ << ": cast [" << std::get<replica_number_t>(v) << "]";
+                std::cout << " from [" << input.data() << "]" << std::endl;
+            }
+        } catch (const boost::bad_lexical_cast&) {
+            std::stringstream msg;
+            msg << "Invalid input [" << input << "] for replica_number.";
+            throw std::invalid_argument(msg.str());
+        }
+    }
+    else if ("resource_hierarchy" == option) {
+        v = input.data();
+    }
+    return v;
+} // get_replica_value
+
+auto modify_replica(
+    char** tokens) -> int
+{
+    const std::vector<std::string_view> genquery_attrs_blacklist = {
+        "COLL_ID",
+        "DATA_ID",
+        "DATA_MAP_ID",
+        "DATA_NAME",
+        "DATA_RESC_HIER",
+        "DATA_RESC_NAME"
+    };
+
+    const auto get_attribute_to_modify_from_input{
+        [&genquery_attrs_blacklist](const std::string_view attr) -> std::string_view
+        {
+            const auto attr_pair = std::find_if(
+                std::cbegin(genquery_attrs),
+                std::cend(genquery_attrs),
+                [&attr](const auto& a) {
+                    return 0 == attr.compare(a.first);
+                });
+            const auto attr_in_genquery_attrs_and_not_blacklisted{
+                std::cend(genquery_attrs) != attr_pair && 
+                std::none_of(
+                    std::cbegin(genquery_attrs_blacklist),
+                    std::cend(genquery_attrs_blacklist),
+                    [&attr](const auto& a) {
+                        return 0 == attr.compare(a);
+                    })
+            };
+            if (!attr_in_genquery_attrs_and_not_blacklisted) {
+                throw std::invalid_argument("Invalid attribute specified.");
+            }
+            return attr_pair->second;
+        }
+    };
+
+    try {
+        dataObjInfo_t info{};
+        const auto args = get_args_vector(tokens, 7);
+        const auto data_object_option = get_data_object_value(args[1], args[2]);
+        if (const auto id = std::get_if<data_id_t>(&data_object_option)) {
+            info.dataId = *id;
+        }
+        else if (const auto path = std::get_if<logical_path_t>(&data_object_option)) {
+            rstrcpy(info.objPath, path->string().c_str(), MAX_NAME_LEN);
+        }
+        else {
+            std::cerr << "Invalid data object option specified." << std::endl;
+            return -2;
+        }
+
+        const auto replica_option = get_replica_value(args[3], args[4]);
+        if (const auto num = std::get_if<replica_number_t>(&replica_option)) {
+            info.replNum = *num;
+        }
+        else if (const auto hier = std::get_if<resource_hierarchy_t>(&replica_option)) {
+            rstrcpy(info.rescHier, hier->data(), MAX_NAME_LEN);
+        }
+        else {
+            std::cerr << "Invalid replica option specified." << std::endl;
+            return -2;
+        }
+
+        const auto key = get_attribute_to_modify_from_input(args[5]);
+        auto [kvp, lm] = irods::experimental::make_key_value_proxy();
+        kvp[key.data()] = args[6].data();
+        kvp[ADMIN_KW] = "";
+
+        modDataObjMeta_t inp{};
+        inp.regParam = &kvp.get();
+        inp.dataObjInfo = &info;
+        if(const int status = rcModDataObjMeta(Conn, &inp); status) {
+            char* sub_error_name{};
+            const char* error_name = rodsErrorName(status, &sub_error_name);
+            std::cerr << "rcModDataObjMeta failed when modifying replica: [" << error_name << " (" << status << ")]" << std::endl;
+            printErrorStack(Conn->rError);
+            return -2;
+        }
+    }
+    catch (const std::exception& e) {
+        std::cerr << "An error occurred:\n" << e.what() << std::endl;
+        return -2;
+    }
+    return 0;
+} // modify_replica
+
+auto ls_replica(
+    char** tokens) -> int
+{
+    try {
+        const auto args = get_args_vector(tokens, 5);
+        std::stringstream q_str;
+        q_str << "select";
+        for (auto c = std::begin(genquery_attrs); c != std::end(genquery_attrs); ++c) {
+            q_str << " " << c->first;
+            if (std::next(c) != std::end(genquery_attrs)) {
+                q_str << ",";
+            }
+        }
+
+        const auto data_object_option = get_data_object_value(args[1], args[2]);
+        if (const auto id = std::get_if<data_id_t>(&data_object_option)) {
+            q_str << " where DATA_ID = '" << *id << "'";
+        }
+        else if (const auto path = std::get_if<logical_path_t>(&data_object_option)) {
+            const auto dirname = path->parent_path().string();
+            q_str << " where COLL_NAME = '" << dirname << "'";
+            const auto basename = path->object_name().string();
+            q_str << " and DATA_NAME = '" << basename << "'";
+        }
+        else {
+            std::cerr << "Invalid data object option specified." << std::endl;
+            return -2;
+        }
+
+        const auto replica_option = get_replica_value(args[3], args[4]);
+        if (const auto num = std::get_if<replica_number_t>(&replica_option)) {
+            q_str << " and DATA_REPL_NUM = '" << *num << "'";
+        }
+        else if (const auto hier = std::get_if<resource_hierarchy_t>(&replica_option)) {
+            q_str << " and DATA_RESC_HIER = '" << *hier << "'";
+        }
+        else {
+            std::cerr << "Invalid replica option specified." << std::endl;
+            return -2;
+        }
+
+        if (veryVerbose) {
+            std::cout << "query:[" << q_str.str() << "]" << std::endl;
+        }
+
+        auto q = irods::experimental::query_builder{}
+            .zone_hint(Conn->clientUser.rodsZone)
+            .build<rcComm_t>(*Conn, q_str.str());
+
+        if (std::begin(q) == std::end(q)) {
+            std::cout << "No results found." << std::endl;
+            return -3;
+        }
+
+        size_t index = 0;
+        for (auto&& result : q) {
+            for (auto&& r : result) {
+                std::cout << genquery_attrs[index++].first << ": ";
+                std::cout << r << std::endl;
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        std::cerr << "An error occurred:\n" << e.what() << std::endl;
+        return -2;
+    }
+    return 0;
+} // ls_replica
+
+} // anonymous namespace
 
 /* print the results of a simple query, converting time values if
    necessary.  Called recursively.
@@ -341,59 +604,6 @@ showGroup( char *groupName ) { // JMC - backport 4742
     }
     return 0;
     // =-=-=-=-=-=-=-
-}
-
-int
-showFile( char *file ) {
-    simpleQueryInp_t simpleQueryInp;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-    if ( file == 0 || *file == '\0' ) {
-        fprintf( stderr, "Need to specify a data_id number\n" );
-        return USER__NULL_INPUT_ERR;
-    }
-    simpleQueryInp.form = 2;
-    simpleQueryInp.sql = "select * from R_DATA_MAIN where data_id=?";
-    simpleQueryInp.arg1 = file;
-    simpleQueryInp.maxBufSize = 1024;
-    return doSimpleQuery( simpleQueryInp );
-}
-
-int
-showDir( char *dir ) {
-    simpleQueryInp_t simpleQueryInp;
-    int status;
-
-    memset( &simpleQueryInp, 0, sizeof( simpleQueryInp_t ) );
-    simpleQueryInp.control = 0;
-
-    if ( dir == 0 || *dir == '\0' ) {
-        dir = "/";
-    }
-    printf( "Contents of collection %s\n", dir );
-
-    simpleQueryInp.form = 1;
-    simpleQueryInp.sql = "select data_name, data_id, data_repl_num from R_DATA_MAIN where coll_id =(select coll_id from R_COLL_MAIN where coll_name=?)";
-    simpleQueryInp.arg1 = dir;
-    simpleQueryInp.maxBufSize = 1024;
-    if ( debug ) {
-        simpleQueryInp.maxBufSize = 20;
-    }
-
-    printf( "Files (data objects) (name, data_id, repl_num):\n" );
-    status = doSimpleQuery( simpleQueryInp );
-    if ( status < 0 ) {
-        // error case
-    }
-
-    simpleQueryInp.form = 1;
-    simpleQueryInp.sql =
-        "select coll_name from R_COLL_MAIN where parent_coll_name=?";
-    simpleQueryInp.arg1 = dir;
-    simpleQueryInp.maxBufSize = 1024;
-    printf( "Subcollections:\n" );
-    return doSimpleQuery( simpleQueryInp );
 }
 
 int
@@ -810,11 +1020,7 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return 0;
     }
     if ( strcmp( cmdToken[0], "ls" ) == 0 ) {
-        showDir( cmdToken[1] );
-        return 0;
-    }
-    if ( strcmp( cmdToken[0], "lf" ) == 0 ) {
-        showFile( cmdToken[1] );
+        ls_replica(cmdToken);
         return 0;
     }
     if ( strcmp( cmdToken[0], "lz" ) == 0 ) {
@@ -1345,6 +1551,10 @@ doCommand( char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return status;
     }
 
+    if (0 == strcmp(cmdToken[0], "modrepl")) {
+        return modify_replica(cmdToken);
+    }
+
     /* test is only used for testing so is not included in the help */
     if ( strcmp( cmdToken[0], "test" ) == 0 ) {
         char* result;
@@ -1582,11 +1792,10 @@ void usageMain() {
         " luan Name (list users associated with auth name (GSI/Kerberos)",
         " lt [name] [subname] (list token info)",
         " lr [name] (list resource info)",
-        " ls [name] (list directory: subdirs and files)",
+        " ls [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] (list replica info)",
         " lz [name] (list zone info)",
         " lg [name] (list group info (user member list))",
         " lgd name  (list group details)",
-        " lf DataId (list file details; DataId is the number (from ls))",
         " mkuser Name[#Zone] Type (make user)",
         " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
         " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
@@ -1621,6 +1830,7 @@ void usageMain() {
         " rum (remove unused metadata (user-defined AVUs)",
         " asq 'SQL query' [Alias] (add specific query)",
         " rsq 'SQL query' or Alias (remove specific query)",
+        " modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
         " help (or h) [command] (this help, or more details on a command)",
         "Also see 'irmtrash -M -u user' for the admin mode of removing trash and",
         "similar admin modes in irepl, iphymv, and itrim.",
@@ -1688,10 +1898,15 @@ usage( char *subOpt ) {
         ""
     };
     char *lsMsgs[] = {
-        "ls [name] (list directory: subdirs and files)",
-        "This was a test function used before we had the ils command.",
-        "It lists collections and data-objects in a somewhat different",
-        "way than ils.  This is seldom of value but has been left in for now.",
+        "ls [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] (list replica info)",
+        "List attributes of a replica in the catalog.",
+        " ",
+        "The logical_path must refer to a data object registered in the catalog.",
+        " ",
+        "The replica to modify must be specified. There are 2 options for doing so:",
+        "    1. replica_number - An integer representing the replica number",
+        "    2. resource - Resource hierarchy hosting the target replica",
+        " ",
         ""
     };
     char *lzMsgs[] = {
@@ -1713,14 +1928,6 @@ usage( char *subOpt ) {
     char *lgdMsgs[] = {
         " lgd name (list group details)",
         "Lists some details about the user group.",
-        ""
-    };
-    char *lfMsgs[] = {
-        " lf DataId (list file details; DataId is the number (from ls))",
-        "This was a test function used before we had the ils command.",
-        "It lists data-objects in a somewhat different",
-        "way than ils.  This is seldom of value but has been left in for now.",
-
         ""
     };
     char *mkuserMsgs[] = {
@@ -2171,6 +2378,39 @@ usage( char *subOpt ) {
         ""
     };
 
+    char* modrepl_usage[] = {
+        "modrepl [logical_path <string>|data_id <int>] [replica_number <int>|resource_hierarchy <string>] ATTR_NAME VALUE",
+        " "
+        "Change some attribute of a replica, i.e. a row in R_DATA_MAIN."
+        " ",
+        "The logical_path must be a full path which refers to a data object",
+        "registered in the catalog. Alternatively, data_id can be provided as an integer.",
+        " ",
+        "The replica to modify must be specified. There are 2 options for doing so:",
+        "    1. replica_number - An integer representing the replica number",
+        "    2. resource_hierarchy - Full resource hierarchy hosting the target replica",
+        " ",
+        "ATTR_NAME is the GenQuery attribute to be modified with VALUE.",
+        "The following attributes are accepted for modification:",
+        "   DATA_CREATE_TIME",
+        "   DATA_CHECKSUM",
+        "   DATA_EXPIRY",
+        "   DATA_REPL_STATUS",
+        "   DATA_MODE",
+        "   DATA_OWNER_NAME",
+        "   DATA_OWNER_ZONE",
+        "   DATA_PATH",
+        "   DATA_REPL_NUM",
+        "   DATA_SIZE",
+        "   DATA_STATUS",
+        "   DATA_TYPE_NAME",
+        "   DATA_VERSION",
+        "   DATA_MODIFY_TIME",
+        "   DATA_COMMENTS",
+        "   DATA_RESC_ID",
+        ""
+    };
+
     char *helpMsgs[] = {
         " help (or h) [command] (general help, or more details on a command)",
         " If you specify a command, a brief description of that command",
@@ -2180,7 +2420,7 @@ usage( char *subOpt ) {
 
     char *subCmds[] = {"lu", "lua", "luan", "luz", "lt", "lr",
                        "ls", "lz",
-                       "lg", "lgd", "lf", "mkuser",
+                       "lg", "lgd", "mkuser",
                        "moduser", "aua", "rua", "rpp",
                        "rmuser", "mkdir", "rmdir", "mkresc",
                        "modresc", "modrescdatapaths", "rmresc",
@@ -2190,13 +2430,13 @@ usage( char *subOpt ) {
                        "rfg", "at", "rt", "spass", "dspass",
                        "ctime",
                        "suq", "sgq", "lq", "cu",
-                       "rum", "asq", "rsq",
+                       "rum", "asq", "rsq", "modrepl",
                        "help", "h"
                       };
 
     char **pMsgs[] = { luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs,
                        lsMsgs, lzMsgs,
-                       lgMsgs, lgdMsgs, lfMsgs, mkuserMsgs,
+                       lgMsgs, lgdMsgs, mkuserMsgs,
                        moduserMsgs, auaMsgs, ruaMsgs, rppMsgs,
                        rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs,
                        modrescMsgs, modrescDataPathsMsgs, rmrescMsgs,
@@ -2206,7 +2446,7 @@ usage( char *subOpt ) {
                        rfgMsgs, atMsgs, rtMsgs, spassMsgs, dspassMsgs,
                        ctimeMsgs,
                        suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
-                       rumMsgs, asqMsgs, rsqMsgs,
+                       rumMsgs, asqMsgs, rsqMsgs, modrepl_usage,
                        helpMsgs, helpMsgs
                      };
 
