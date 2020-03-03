@@ -260,15 +260,7 @@ namespace {
                         "rcRuleExecDel failed for %s, stat=%d",
                         _inp.ruleExecId, status);
                 // Establish a new connection as the original may be invalid
-                rodsEnv env{};
-                _getRodsEnv(env);
-                auto tmp_pool = std::make_shared<irods::connection_pool>(
-                    1,
-                    env.rodsHost,
-                    env.rodsPort,
-                    env.rodsUserName,
-                    env.rodsZone,
-                    env.irodsConnectionPoolRefreshTime);
+                auto tmp_pool = irods::make_connection_pool();
                 status = rcRuleExecDel(&static_cast<rcComm_t&>(tmp_pool->get_connection()), &rule_exec_del_inp);
                 if (status < 0) {
                     irods::log(LOG_ERROR,
