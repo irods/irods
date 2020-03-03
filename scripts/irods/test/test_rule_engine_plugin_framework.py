@@ -274,6 +274,22 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
 
         IrodsController().restart()
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_repf_supports_skipping_operations_and_nrep_returns_positive_error_codes_to_repf__issues_4752_4753(self):
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            # Disable puts by returning RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('pep_api_data_obj_put_pre(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) { 5001000 }')
+
+            filename = os.path.join(self.admin.local_session_dir, 'skip_operation.txt')
+            lib.make_file(filename, 1, 'arbitrary')
+
+            self.admin.assert_icommand(['iput', filename])
+            self.admin.assert_icommand(['ils', os.path.basename(filename)], 'STDERR_SINGLELINE', '{} does not exist'.format(os.path.basename(filename)))
+
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin

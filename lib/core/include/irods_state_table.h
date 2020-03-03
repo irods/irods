@@ -26,6 +26,7 @@ enum IRODS_STATE_ENUM
 // 5,000,000 - 5,999,999 - Rule Engine
 // clang-format off
 NEW_STATE(RULE_ENGINE_CONTINUE,              5000000)
+NEW_STATE(RULE_ENGINE_SKIP_OPERATION,        5001000)
 // clang-format on
 #ifndef MAKE_IRODS_STATE_MAP
 };
