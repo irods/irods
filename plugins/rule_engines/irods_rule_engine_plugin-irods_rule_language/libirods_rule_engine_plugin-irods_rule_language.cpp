@@ -348,7 +348,7 @@ irods::error exec_rule(irods::default_re_ctx&, const std::string& _rn, std::list
         return ERROR(ret, msg.str());
     }
 
-    return SUCCESS();
+    return CODE(ret);
 }
 
 irods::error exec_rule_text(
