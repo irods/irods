@@ -40,3 +40,27 @@ class Test_Dynamic_PEPs(session.make_sessions_mixin([('otherrods', 'rods')], [])
                 coll_path = os.path.join(self.admin.session_collection, "i4370_test_collection")
                 self.admin.assert_icommand(['imkdir', coll_path])
                 lib.delayAssert(lambda: lib.log_message_occurrences_equals_count(msg=prefix + coll_path))
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_finally_peps_are_supported__issue_4773(self):
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            msg = 'FINALLY PEPS SUPPORTED!!!'
+
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    pep_api_data_obj_put_finally(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {{ 
+                        writeLine("serverLog", "{0}");
+                    }}
+                '''.format(msg))
+
+            filename = os.path.join(self.admin.local_session_dir, 'finally_peps.txt')
+            lib.make_file(filename, 1, 'arbitrary')
+
+            # Check log for message written by the finally PEP.
+            log_offset = lib.get_file_size_by_path(paths.server_log_path())
+            self.admin.assert_icommand(['iput', filename])
+            lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+

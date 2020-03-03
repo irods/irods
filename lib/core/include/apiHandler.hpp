@@ -21,6 +21,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/any.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_at_scope_exit.hpp"
 
 #include "irods_re_namespaceshelper.hpp"
 #include "irods_re_plugin.hpp"
@@ -30,8 +31,8 @@
 #include <utility>
 #include <type_traits>
 
-namespace irods {
-
+namespace irods
+{
 // NOOP function for clearInStruct
     void clearInStruct_noop( void* );
 
@@ -63,12 +64,10 @@ namespace irods {
         std::function<void( void* )> clearInStruct;	// free input struct function
 
         int(*call_wrapper)(...);        // wraps the api call for type casting
-
     }; // struct apidef_t
 
     template <typename Integer,
-              typename std::enable_if_t<std::is_integral<Integer>::value, int> = 0
-    >
+              typename std::enable_if_t<std::is_integral<Integer>::value, int> = 0>
     bool is_acceptable_error(Integer error_code) {
         static const std::vector<Integer> acceptable_errors {
             SYS_NO_HANDLER_REPLY_MSG //... others as necessary
@@ -78,11 +77,15 @@ namespace irods {
         );
     }
 
-    template < typename... types_t >
+    template <typename... types_t>
     class api_call_adaptor {
+    private:
         std::function<int(rsComm_t*, types_t...)> fcn_;
+
     public:
-        api_call_adaptor( std::function<int(rsComm_t*, types_t...)> _fcn ): fcn_(_fcn) {
+        api_call_adaptor( std::function<int(rsComm_t*, types_t...)> _fcn )
+            : fcn_(_fcn)
+        {
         }
 
         irods::error operator()( irods::plugin_context&, rsComm_t* _comm, types_t... _t ) {
@@ -97,234 +100,243 @@ namespace irods {
 
     }; // class api_call_adaptor
 
+    class api_entry : public irods::plugin_base
+    {
+    private:
+        using rule_engine_context_manager_type = rule_engine_context_manager<unit, ruleExecInfo_t*, AUDIT_RULE>;
 
-    class api_entry : public irods::plugin_base {
-        public:
-            /// =-=-=-=-=-=-=-
-            /// @brief adaptor from old api sig to new plugin sig
-            template<typename... types_t>
-                error add_operation(
-                        const std::string& _op,
-                        std::function<int(types_t...)> _f ) {
-                    if ( _op.empty() ) {
-                        std::stringstream msg;
-                        msg << "empty operation key [" << _op << "]";
-                        return ERROR(
-                                SYS_INVALID_INPUT_PARAM,
-                                msg.str() );
+    public:
+        /// =-=-=-=-=-=-=-
+        /// @brief adaptor from old api sig to new plugin sig
+        template<typename... types_t>
+        error add_operation(const std::string& _op, std::function<int(types_t...)> _f)
+        {
+            if ( _op.empty() ) {
+                std::stringstream msg;
+                msg << "empty operation key [" << _op << "]";
+                return ERROR(SYS_INVALID_INPUT_PARAM, msg.str());
+            }
+
+            operation_name = _op;
+            operations_[operation_name] = _f;
+
+            return SUCCESS();
+        } // add_operation
+
+        template<typename... types_t>
+        int call_handler(rsComm_t* _comm, types_t... _t)
+        {
+            using namespace std;
+
+            if( !operations_.has_entry(operation_name) ) {
+                rodsLog(LOG_ERROR, "missing api operation [%s]", operation_name.c_str());
+                return SYS_INVALID_INPUT_PARAM;
+            }
+
+            try {
+                using fcn_t = std::function<int(rsComm_t*, types_t...)>;
+                fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
+#ifdef ENABLE_RE
+                irods::plugin_property_map prop_map;
+                irods::plugin_context ctx(_comm,prop_map);
+                ruleExecInfo_t rei;
+                memset( &rei, 0, sizeof( rei ) );
+                if (_comm) {
+                    rei.rsComm      = _comm;
+                    rei.uoic        = &_comm->clientUser;
+                    rei.uoip        = &_comm->proxyUser;
+                }
+
+                rule_engine_context_manager_type re_ctx_mgr(re_plugin_globals->global_re_mgr, &rei);
+
+                // Always run the finally-PEP at scope exit.
+                at_scope_exit invoke_finally_pep{[&] {
+                    error finally_err = invoke_policy_enforcement_point(re_ctx_mgr,
+                                                                        ctx,
+                                                                        operation_name,
+                                                                        "finally",
+                                                                        forward<types_t>(_t)...);
+
+                    if (!finally_err.ok()) {
+                        irods::log(PASS(finally_err));
                     }
+                }};
 
-                    operation_name = _op;
-                    operations_[operation_name] = _f;
+                error op_err = SUCCESS();
 
-                    return SUCCESS();
+                // invoke the pre-pep for this operation
+                error pre_err = invoke_policy_enforcement_point(
+                                    re_ctx_mgr,
+                                    ctx,
+                                    operation_name,
+                                    "pre",
+                                    std::forward<types_t>(_t)...);
 
-                } // add_operation
+                if (pre_err.code() != RULE_ENGINE_SKIP_OPERATION) {
+                    if (!pre_err.ok()) {
+                        // if the pre-pep fails, invoke the exception pep
+                        error except_err = invoke_policy_enforcement_point(
+                                           re_ctx_mgr,
+                                           ctx,
+                                           operation_name,
+                                           "except",
+                                           std::forward<types_t>(_t)...);
 
-            template<typename... types_t>
-                int call_handler(
-                    rsComm_t* _comm,
-                    types_t... _t ) {
-                    using namespace std;
-                    if( !operations_.has_entry(operation_name) ) {
-                        rodsLog(
-                            LOG_ERROR,
-                            "missing api operation [%s]",
-                            operation_name.c_str() );
-                        return SYS_INVALID_INPUT_PARAM;
-                    }
-
-
-                    try {
-                        typedef std::function<int(rsComm_t*, types_t...)> fcn_t;
-                        fcn_t fcn = boost::any_cast<fcn_t>( operations_[ operation_name ] );
-                        #ifdef ENABLE_RE
-                        irods::plugin_property_map prop_map;
-                        irods::plugin_context ctx(_comm,prop_map);
-                        ruleExecInfo_t rei;
-                        memset( &rei, 0, sizeof( rei ) );
-                        if (_comm) {
-                            rei.rsComm      = _comm;
-                            rei.uoic        = &_comm->clientUser;
-                            rei.uoip        = &_comm->proxyUser;
+                        if (!except_err.ok()) {
+                            irods::log(PASS(except_err));
                         }
 
-                        rule_engine_context_manager<
-                            irods::unit,
-                            ruleExecInfo_t*,
-                            AUDIT_RULE > re_ctx_mgr(
-                                re_plugin_globals->global_re_mgr,
-                                &rei );
+                        return pre_err.code();
+                    }
 
-                        // invoke the pre-pep for this operation
-                        error pre_err = invoke_policy_enforcement_point(
-                                            re_ctx_mgr,
-                                            ctx,
-                                            operation_name,
-                                            "pre",
-                                            std::forward<types_t>(_t)...);
-                        if(!pre_err.ok()) {
-                            // if the pre-pep fails, invoke the exception pep
-                            error except_err = invoke_policy_enforcement_point(
+                    using adapted_func_type = std::function<error(irods::plugin_context&, rsComm_t*, types_t...)>;
+                    adapted_func_type adapted_fcn{api_call_adaptor<types_t...>(fcn)};
+                    op_err = adapted_fcn(ctx, _comm, forward<types_t>(_t)...);
+
+                    if (!op_err.ok() && !is_acceptable_error(op_err.code())) {
+                        // if the operation fails, invoke the exception pep
+                        error except_err = invoke_policy_enforcement_point(
                                                re_ctx_mgr,
                                                ctx,
                                                operation_name,
                                                "except",
-                                               std::forward<types_t>(_t)...);
-                            if(!except_err.ok()) {
-                                irods::log(PASS(except_err));
-                            }
-                            return pre_err.code();
-                        }
+                                               forward<types_t>(_t)...);
 
-                        std::function<error(irods::plugin_context&, rsComm_t*,types_t...)> adapted_fcn{
-                                api_call_adaptor<types_t...>(fcn) };
-
-                        error op_err = adapted_fcn( ctx, _comm, forward<types_t>(_t)...);
-
-                        if (!op_err.ok()  && !is_acceptable_error(op_err.code())) {
-                            // if the operation fails, invoke the exception pep
-                            error except_err = invoke_policy_enforcement_point(
-                                                   re_ctx_mgr,
-                                                   ctx,
-                                                   operation_name,
-                                                   "except",
-                                                   forward<types_t>(_t)...);
-                            if(!except_err.ok()) {
-                                irods::log(PASS(except_err));
-                            }
-                            return op_err.code();
-                        }
-
-                        // invoke the post-pep for this operation
-                        error post_err = invoke_policy_enforcement_point(
-                                             re_ctx_mgr,
-                                             ctx,
-                                             operation_name,
-                                             "post",
-                                             forward<types_t>(_t)...);
-                        if(!post_err.ok()) {
-                            // if the post-pep fails, invoke the exception pep
-                            error except_err = invoke_policy_enforcement_point(
-                                                   re_ctx_mgr,
-                                                   ctx,
-                                                   operation_name,
-                                                   "except",
-                                                   forward<types_t>(_t)...);
-                            if(!except_err.ok()) {
-                                irods::log(PASS(except_err));
-                            }
-                            return post_err.code();
+                        if (!except_err.ok()) {
+                            irods::log(PASS(except_err));
                         }
 
                         return op_err.code();
-
-                        #else
-                        return fcn(_comm, _t...);
-                        #endif
-                    }
-                    catch( const boost::bad_any_cast& ) {
-                        std::string msg( "failed for call - " );
-                        msg += operation_name;
-                        irods::log( ERROR(
-                                    INVALID_ANY_CAST,
-                                    msg ) );
-                        return INVALID_ANY_CAST;
                     }
 
-                    return 0;
+                    // invoke the post-pep for this operation
+                    error post_err = invoke_policy_enforcement_point(
+                                         re_ctx_mgr,
+                                         ctx,
+                                         operation_name,
+                                         "post",
+                                         forward<types_t>(_t)...);
+                    if (!post_err.ok()) {
+                        // if the post-pep fails, invoke the exception pep
+                        error except_err = invoke_policy_enforcement_point(
+                                               re_ctx_mgr,
+                                               ctx,
+                                               operation_name,
+                                               "except",
+                                               forward<types_t>(_t)...);
 
-                } // call_handler
+                        if (!except_err.ok()) {
+                            irods::log(PASS(except_err));
+                        }
 
+                        return post_err.code();
+                    }
 
-                // =-=-=-=-=-=-=-
-                // ctors
-                api_entry(
-                    apidef_t& );
+                    return op_err.code();
+                }
 
-                api_entry( const api_entry& );
+                return op_err.code();
+#else // ENABLE_RE
+                return fcn(_comm, _t...);
+#endif // ENABLE_RE
+            }
+            catch (const boost::bad_any_cast&) {
+                std::string msg( "failed for call - " );
+                msg += operation_name;
+                irods::log(ERROR(INVALID_ANY_CAST, msg));
+                return INVALID_ANY_CAST;
+            }
 
-                // =-=-=-=-=-=-=-
-                // operators
-                api_entry& operator=( const api_entry& );
+            return 0;
+        } // call_handler
 
-                // =-=-=-=-=-=-=-
-                // attributes
-                int            apiNumber;      /* the API number */
-                char*          apiVersion;     /* The API version of this call */
-                int            clientUserAuth; /* Client user authentication level.
-                                            * NO_USER_AUTH, REMOTE_USER_AUTH,
-                                            * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
-                                            * LOCAL_PRIV_USER_AUTH */
-                int            proxyUserAuth;                    /* same for proxyUser */
-                const char*    inPackInstruct; /* the packing instruct for the input
-                                            * struct */
-                int inBsFlag;                  /* input bytes stream flag. 0 ==> no input
-                                            * byte stream. 1 ==> we have an input byte
-                                            * stream */
-                const char*    outPackInstruct;/* the packing instruction for the
-                                            * output struct */
-                int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
-                                            * stream. 1 ==> we have an output byte stream
-                                            */
-                funcPtr        call_wrapper; // wraps the api call for type casting
-                std::string    in_pack_key;
-                std::string    out_pack_key;
-                std::string    in_pack_value;
-                std::string    out_pack_value;
-                std::string    operation_name;
+        // =-=-=-=-=-=-=-
+        // ctors
+        api_entry( apidef_t& );
 
-                lookup_table< std::string>   extra_pack_struct;
+        api_entry( const api_entry& );
 
-                std::function<void( void* )> clearInStruct;		//free input struct function
+        // =-=-=-=-=-=-=-
+        // operators
+        api_entry& operator=( const api_entry& );
 
-        private:
-            template<typename... types_t>
-            error invoke_policy_enforcement_point(
-                rule_engine_context_manager<
-                                    unit,
-                                    ruleExecInfo_t*,
-                                    AUDIT_RULE > _re_ctx_mgr,
-                plugin_context      _ctx,
-                const std::string&  _operation_name,
-                const std::string&  _class,
-                types_t...          _t) {
-                bool ret = false;
-                error saved_op_err = SUCCESS();
-                for ( auto& ns : NamespacesHelper::Instance()->getNamespaces() ) {
-                    std::string rule_name = ns + "pep_" + _operation_name + "_" + _class;
+        // =-=-=-=-=-=-=-
+        // attributes
+        int            apiNumber;      /* the API number */
+        char*          apiVersion;     /* The API version of this call */
+        int            clientUserAuth; /* Client user authentication level.
+                                    * NO_USER_AUTH, REMOTE_USER_AUTH,
+                                    * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
+                                    * LOCAL_PRIV_USER_AUTH */
+        int            proxyUserAuth;                    /* same for proxyUser */
+        const char*    inPackInstruct; /* the packing instruct for the input
+                                    * struct */
+        int inBsFlag;                  /* input bytes stream flag. 0 ==> no input
+                                    * byte stream. 1 ==> we have an input byte
+                                    * stream */
+        const char*    outPackInstruct;/* the packing instruction for the
+                                    * output struct */
+        int            outBsFlag;      /* output bytes stream. 0 ==> no output byte
+                                    * stream. 1 ==> we have an output byte stream
+                                    */
+        funcPtr        call_wrapper; // wraps the api call for type casting
+        std::string    in_pack_key;
+        std::string    out_pack_key;
+        std::string    in_pack_value;
+        std::string    out_pack_value;
+        std::string    operation_name;
 
-                    if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
-                        if (_re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
-                            error op_err = _re_ctx_mgr.exec_rule(
-                                               rule_name,
-                                               instance_name_,
-                                               _ctx,
-                                               std::forward<types_t>(_t)...);
-                            if (!op_err.ok()) {
-                                rodsLog(
-                                     LOG_DEBUG,
-                                    "%s-pep rule [%s] failed with error code [%d]",
-                                    _class.c_str(),
-                                    rule_name.c_str(),
-                                    op_err.code());
-                                saved_op_err = op_err;
-                            }
-                        } else {
-                            rodsLog(
-                                LOG_DEBUG10,
-                                "Rule [%s] passes regex test, but does not exist",
-                                rule_name.c_str() );
+        lookup_table< std::string>   extra_pack_struct;
+
+        std::function<void( void* )> clearInStruct;		//free input struct function
+
+    private:
+        template<typename... types_t>
+        error invoke_policy_enforcement_point(
+            rule_engine_context_manager_type _re_ctx_mgr,
+            plugin_context                   _ctx,
+            const std::string&               _operation_name,
+            const std::string&               _class,
+            types_t...                       _t)
+        {
+            bool ret = false;
+            error saved_op_err = SUCCESS();
+            error skip_op_err = SUCCESS();
+
+            for (auto& ns : NamespacesHelper::Instance()->getNamespaces()) {
+                std::string rule_name = ns + "pep_" + _operation_name + "_" + _class;
+
+                if (RuleExistsHelper::Instance()->checkOperation( rule_name ) ) {
+                    if (_re_ctx_mgr.rule_exists(rule_name, ret).ok() && ret) {
+                        error op_err = _re_ctx_mgr.exec_rule(rule_name, instance_name_, _ctx, std::forward<types_t>(_t)...);
+
+                        if (!op_err.ok()) {
+                            rodsLog(LOG_DEBUG, "%s-pep rule [%s] failed with error code [%d]", _class.c_str(), rule_name.c_str(), op_err.code());
+                            saved_op_err = op_err;
+                        }
+                        else if (op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
+                            skip_op_err = op_err;
                         }
                     }
+                    else {
+                        rodsLog(LOG_DEBUG10, "Rule [%s] passes regex test, but does not exist", rule_name.c_str());
+                    }
                 }
-                return saved_op_err;
+            }
 
-            } // invoke_policy_enforcement_point
+            if (!saved_op_err.ok()) {
+                return saved_op_err;
+            }
+
+            if (skip_op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
+                return skip_op_err;
+            }
+
+            return saved_op_err;
+        } // invoke_policy_enforcement_point
     }; // class api_entry
 
     typedef boost::shared_ptr< api_entry > api_entry_ptr;
-
 
 /// =-=-=-=-=-=-=-
 /// @brief class which will hold statically compiled and dynamically loaded api handles
@@ -334,10 +346,6 @@ namespace irods {
             ~api_entry_table();
 
     }; // class api_entry_table
-
-
-
-
 
 /// =-=-=-=-=-=-=-
 /// @brief load api plugins
