@@ -4,6 +4,7 @@ import socket
 import shutil
 import sys
 import getpass
+import tempfile
 
 if sys.version_info >= (2, 7):
     import unittest
@@ -832,3 +833,48 @@ OUTPUT ruleExecOut'''
         self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ['-358000 OBJ_PATH_DOES_NOT_EXIST'])
         self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
 
+    def test_msiDataObjPhymv_to_resource_hierarchy__3234(self):
+        source_resource = self.admin.default_resource
+        destination_resource = 'phymv_pt'
+        path_to_leaf_resource_vault = tempfile.mkdtemp()
+        leaf_resource = 'leafresc'
+        resource_hierarchy = ';'.join([destination_resource, leaf_resource])
+        data_object_name = 'phymv_obj'
+        logical_path = os.path.join(self.admin.session_collection, data_object_name)
+
+        rule_file = os.path.join(self.admin.local_session_dir, 'test_msiDataObjPhymv_to_resource_hierarchy__3234.r')
+        rule_string = '''
+test_msiDataObjPhymv_to_resource_hierarchy__3234 {{
+    *logical_path = "{0}"
+    *destination_resource = "{1}";
+    *source_resource = "{2}";
+    msiDataObjPhymv(*logical_path, *destination_resource, *source_resource, "", "", *status);
+    writeLine("stdout", "msiDataObjPhymv status:[*status]");
+}}
+OUTPUT ruleExecOut
+'''
+
+        try:
+            self.admin.assert_icommand(['iadmin', 'mkresc', destination_resource, 'passthru'], 'STDOUT', destination_resource)
+            self.admin.assert_icommand(['iadmin', 'mkresc', leaf_resource, 'unixfilesystem',
+                socket.gethostname() + ':' + path_to_leaf_resource_vault], 'STDOUT', 'unixfilesystem')
+            self.admin.assert_icommand(['iadmin', 'addchildtoresc', destination_resource, leaf_resource])
+
+            with open(rule_file, 'wt') as f:
+                print(rule_string.format(logical_path, destination_resource, source_resource), file=f, end='')
+            self.admin.assert_icommand(['iput', rule_file, logical_path])
+            self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'],
+                'STDOUT', 'DATA_RESC_HIER: {}'.format(source_resource))
+
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDOUT', 'msiDataObjPhymv status')
+            self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'],
+                'STDOUT', 'DATA_RESC_HIER: {}'.format(resource_hierarchy))
+
+        finally:
+            if os.path.exists(rule_file):
+                os.unlink(rule_file)
+            self.admin.assert_icommand(['irm', '-f', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmchildfromresc', destination_resource, leaf_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', destination_resource])
+            self.admin.run_icommand(['iadmin', 'rmresc', leaf_resource])
