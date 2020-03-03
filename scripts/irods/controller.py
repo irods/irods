@@ -108,7 +108,7 @@ class IrodsController(object):
                     six.reraise(IrodsError,
                             IrodsError('Could not bind port {0}.'.format(irods_port)),
                             sys.exc_info()[2])
-            l.debug('Socket %s bound and released successfully.')
+            l.debug('Socket %s bound and released successfully.', irods_port)
 
             if self.config.is_catalog:
                 from . import database_interface
