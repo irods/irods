@@ -11,7 +11,7 @@ from .. import test
 from .. import lib
 from ..configuration import IrodsConfig
 
-class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
 
     def setUp(self):
         super(Test_IRepl, self).setUp()
@@ -162,4 +162,56 @@ class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             self.admin.assert_icommand('iadmin rmresc {0}_resc'.format(name))
 
         self.admin.assert_icommand('iadmin rmresc comp_resc')
+
+    def test_irepl_data_object_with_no_permission__4479(self):
+        user0 = self.user_sessions[0]
+        resource_1 = 'resource1'
+        resource_1_vault = os.path.join(user0.local_session_dir, resource_1 + 'vault')
+        resource_2 = 'resource2'
+        resource_2_vault = os.path.join(user0.local_session_dir, resource_2 + 'vault')
+
+        try:
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', resource_1, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_1, resource_1_vault])],
+                'STDOUT', 'unixfilesystem')
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', resource_2, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_2, resource_2_vault])],
+                'STDOUT', 'unixfilesystem')
+
+            filename = 'test_irepl_data_object_with_no_permission__4479'
+            physical_path = os.path.join(user0.local_session_dir, filename)
+            lib.make_file(physical_path, 1024)
+            logical_path = os.path.join(user0.session_collection, filename)
+            #logical_path_sans_zone = os.sep.join(str(logical_path).split(os.sep)[2:])
+            #resource_1_repl_path = os.path.join(resource_1_vault, logical_path_sans_zone)
+            #resource_2_repl_path = os.path.join(resource_2_vault, logical_path_sans_zone)
+
+            # Put data object to play with...
+            user0.assert_icommand(
+                ['iput', '-R', resource_1, physical_path, logical_path])
+            self.admin.assert_icommand(
+                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', resource_1],
+                'STDOUT', 'DATA_REPL_STATUS: 1')
+            self.admin.assert_icommand(['iscan', '-d', logical_path])
+
+            # Attempt to replicate data object for which admin has no permissions...
+            self.admin.assert_icommand(
+                ['irepl', '-R', resource_2, logical_path],
+                'STDERR', 'CAT_NO_ACCESS_PERMISSION')
+            self.admin.assert_icommand(
+                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', resource_2],
+                'STDOUT', 'No results found.')
+            # TODO: #4770 Use test tool to assert that file was not created on resource_2 (i.e. iscan on remote physical file)
+
+            # Try again with admin flag (with success)
+            self.admin.assert_icommand(['irepl', '-M', '-R', resource_2, logical_path])
+            self.admin.assert_icommand(
+                ['iadmin', 'ls', 'logical_path', logical_path, 'resource_hierarchy', resource_2],
+                'STDOUT', 'DATA_REPL_STATUS: 1')
+            self.admin.assert_icommand(['iscan', '-d', logical_path])
+
+        finally:
+            user0.run_icommand(['irm', '-f', logical_path])
+            self.admin.assert_icommand(['iadmin', 'rmresc', resource_1])
+            self.admin.assert_icommand(['iadmin', 'rmresc', resource_2])
 
