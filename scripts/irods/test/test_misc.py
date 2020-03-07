@@ -9,8 +9,11 @@ else:
 from . import session
 from .. import test
 from .. import lib
+from ..configuration import IrodsConfig
 
 class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
 
     def setUp(self):
         super(Test_Misc, self).setUp()
@@ -25,4 +28,23 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         env['irodsProt'] = '2'
         out, err, ec = lib.execute_command_permissive(['ils'], env=env)
         self.assertTrue('Invalid protocol value.' in err)
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_disallow_registration_of_path_with_missing_data_object_name__issue_4494(self):
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    test_registration_issue_4494 {{ 
+                        *lpath = '{0}';
+                        *ppath = '';
+                        msiPhyPathReg(*lpath, 'null', *ppath, 'null', *status);
+                    }}
+                '''.format(self.admin.session_collection + '/'))
+
+            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            self.admin.assert_icommand(['irule', '-r', rep, 'test_registration_issue_4494', 'null', 'ruleExecOut'],
+                                       'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
 
