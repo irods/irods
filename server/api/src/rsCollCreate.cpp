@@ -29,8 +29,44 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_configuration_keywords.hpp"
 
-int
-rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp ) {
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem/path.hpp"
+
+#include <algorithm>
+#include <string_view>
+
+namespace fs = irods::experimental::filesystem;
+
+namespace
+{
+    auto has_trailing_double_path_separators(std::string_view path) -> bool
+    {
+        if (!path.empty()) {
+            auto iter = std::rbegin(path);
+            return *iter == '/' && *++iter == '/';
+        }
+
+        return false;
+    }
+
+    auto is_special_path(fs::path p) -> bool
+    {
+        static const auto special_paths = {".", ".."};
+
+        return std::any_of(std::begin(special_paths),
+                           std::end(special_paths),
+                           [p = p.object_name()](const auto& sp) { return sp == p; });
+    }
+} // anonymous namespace
+
+int rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp )
+{
+    if (is_special_path(collCreateInp->collName) ||
+        has_trailing_double_path_separators(collCreateInp->collName))
+    {
+        return USER_INPUT_PATH_ERR;
+    }
+
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     ruleExecInfo_t rei;

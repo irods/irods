@@ -48,3 +48,38 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             self.admin.assert_icommand(['irule', '-r', rep, 'test_registration_issue_4494', 'null', 'ruleExecOut'],
                                        'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_disallow_creation_of_collections_with_path_navigation_elements_as_the_name__issue_4750(self):
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    test_dot_issue_4750 {{ 
+                        *path = '{0}';
+                        *recursive = 0;
+                        msiCollCreate(*path, *recursive, *status);
+                    }}
+
+                    test_dot_dot_issue_4750 {{ 
+                        *path = '{1}';
+                        *recursive = 0;
+                        msiCollCreate(*path, *recursive, *status);
+                    }}
+
+                    test_slash_slash_issue_4750 {{ 
+                        *path = '{2}';
+                        *recursive = 0;
+                        msiCollCreate(*path, *recursive, *status);
+                    }}
+                '''.format(self.admin.session_collection + '/.',
+                           self.admin.session_collection + '/..',
+                           self.admin.session_collection + '//'))
+
+            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+
+            for rule in ['test_dot_issue_4750', 'test_dot_dot_issue_4750', 'test_slash_slash_issue_4750']:
+                self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'],
+                                           'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+
