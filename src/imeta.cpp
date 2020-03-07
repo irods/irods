@@ -9,10 +9,14 @@
 #include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "rodsPath.h"
 
 #include <sstream>
 #include <string>
 #include <vector>
+#include <tuple>
+#include <string_view>
+#include <algorithm>
 
 #include "boost/program_options.hpp"
 #include "boost/optional.hpp"
@@ -38,32 +42,54 @@ int printCount = 0;
 
 int usage( const char *subOpt );
 
-int do_command(
-    const std::string& _cmd,
-    const std::vector<std::string>& _sub_args);
-
 int do_interactive();
 
 int display_help(const std::vector<std::string>& _sub_args);
 
-int do_command(
-    const std::string& _cmd,
-    const std::vector<std::string>& _sub_args);
+int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_args);
 
 int do_interactive();
 
-po::variables_map parse_sub_args (
-    const std::vector<std::string>& _sub_args, const po::options_description& _desc, const po::positional_options_description& _pos);
+std::tuple<int, std::string> prepare_name(std::string_view object_type, std::string_view name);
 
-/*
- print the results of a general query.
- */
-void
-printGenQueryResults( rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
-                      char *descriptions[] ) {
+po::variables_map parse_sub_args(const std::vector<std::string>& _sub_args,
+                                 const po::options_description& _desc,
+                                 const po::positional_options_description& _pos);
+
+std::tuple<int, std::string> prepare_name(std::string_view object_type, std::string_view name)
+{
+    const auto is_path_type = [object_type]() noexcept
+    {
+        using namespace std::string_view_literals;
+        const auto types = {"-d"sv, "-C"sv, "-ld"sv};
+        return std::any_of(std::begin(types), std::end(types), [object_type](auto type) {
+            return type == object_type;
+        });
+    };
+
+    if (!is_path_type()) {
+        return {0, name.data()};
+    }
+
+    std::unique_ptr<char[]> temp_path{new char[MAX_NAME_LEN]};
+
+    if (const auto ec = parseRodsPathStr(name.data(), &myEnv, temp_path.get()); ec) {
+        return {ec, {}};
+    }
+
+    const auto deleter = [](char* p) { std::free(p); };
+    std::unique_ptr<char, decltype(deleter)> escaped_path{escape_path(temp_path.get()), deleter};
+
+    return {0, escaped_path.get()};
+}
+
+// print the results of a general query.
+void printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, char *descriptions[])
+{
     int i, j;
     char localTime[TIME_LEN];
     lastCommandStatus = status;
+
     if ( status == CAT_NO_ROWS_FOUND ) {
         lastCommandStatus = 0;
     }
@@ -1288,9 +1314,7 @@ std::vector<std::string> reorder_arguments(
     return args;
 }
 
-int do_command(
-    const std::string& _cmd,
-    const std::vector<std::string>& _sub_args) {
+int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_args) {
 
     if ( _sub_args.size() >= MAX_CMD_TOKENS ) {
         std::cout << "Unrecognized input, too many input tokens\n";
@@ -1351,15 +1375,22 @@ int do_command(
             units = sub_vm["units"].as<std::string>();
         }
 
-        int status = modAVUMetadata( (char*) _cmd.c_str(),
-                        (char*) sub_vm["object_type"].as<std::string>().c_str(),
-                        (char*) sub_vm["name"].as<std::string>().c_str(),
-                        (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                        (char*) sub_vm["value"].as<std::string>().c_str(),
-                        (char*) units.c_str(),
-                        "",
-                        "",
-                        "" );
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
+        status = modAVUMetadata((char*) _cmd.c_str(),
+                                (char*) sub_vm["object_type"].as<std::string>().c_str(),
+                                name.data(),
+                                (char*) sub_vm["attribute"].as<std::string>().c_str(),
+                                (char*) sub_vm["value"].as<std::string>().c_str(),
+                                (char*) units.c_str(),
+                                "",
+                                "",
+                                "" );
 
         if ( _cmd == "addw" ) {
             std::cout << "AVU added to " << status << " data-objects\n";
@@ -1419,15 +1450,22 @@ int do_command(
             units = sub_vm["units"].as<std::string>();
         }
 
-        int status = modAVUMetadata( (char*) _cmd.c_str(),
-                        (char*) sub_vm["object_type"].as<std::string>().c_str(),
-                        (char*) sub_vm["name"].as<std::string>().c_str(),
-                        (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                        (char*) sub_vm["value"].as<std::string>().c_str(),
-                        (char*) units.c_str(),
-                        "",
-                        "",
-                        "" );
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
+        status = modAVUMetadata((char*) _cmd.c_str(),
+                                (char*) sub_vm["object_type"].as<std::string>().c_str(),
+                                name.data(),
+                                (char*) sub_vm["attribute"].as<std::string>().c_str(),
+                                (char*) sub_vm["value"].as<std::string>().c_str(),
+                                (char*) units.c_str(),
+                                "",
+                                "",
+                                "" );
 
         return status < 0 ? status : 0;
     } else if ( _cmd == "rmi" ) {
@@ -1472,15 +1510,22 @@ int do_command(
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        int status = modAVUMetadata( (char*) _cmd.c_str(),
-                        (char*) sub_vm["object_type"].as<std::string>().c_str(),
-                        (char*) sub_vm["name"].as<std::string>().c_str(),
-                        (char*) sub_vm["metadata_id"].as<std::string>().c_str(),
-                        "",
-                        "",
-                        "",
-                        "",
-                        "" );
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
+        status = modAVUMetadata((char*) _cmd.c_str(),
+                                (char*) sub_vm["object_type"].as<std::string>().c_str(),
+                                name.data(),
+                                (char*) sub_vm["metadata_id"].as<std::string>().c_str(),
+                                "",
+                                "",
+                                "",
+                                "",
+                                "" );
 
         return status < 0 ? status : 0;
     } else if ( _cmd == "mod" ) {
@@ -1652,16 +1697,23 @@ int do_command(
             }
         }
 
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
         std::vector<std::string> new_args = reorder_arguments(new_attribute, new_value, new_units);
-        int status = modAVUMetadata( (char*) _cmd.c_str(),
-                        (char*) sub_vm["object_type"].as<std::string>().c_str(),
-                        (char*) sub_vm["name"].as<std::string>().c_str(),
-                        (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                        (char*) sub_vm["value"].as<std::string>().c_str(),
-                        (char*) units.c_str(),
-                        (char*) new_args[0].c_str(),
-                        (char*) new_args[1].c_str(),
-                        (char*) new_args[2].c_str() );
+        status = modAVUMetadata((char*) _cmd.c_str(),
+                                (char*) sub_vm["object_type"].as<std::string>().c_str(),
+                                name.data(),
+                                (char*) sub_vm["attribute"].as<std::string>().c_str(),
+                                (char*) sub_vm["value"].as<std::string>().c_str(),
+                                (char*) units.c_str(),
+                                (char*) new_args[0].c_str(),
+                                (char*) new_args[1].c_str(),
+                                (char*) new_args[2].c_str() );
 
         return status < 0 ? status : 0;
     } else if ( _cmd == "set" ) {
@@ -1716,15 +1768,22 @@ int do_command(
             new_units = sub_vm["new_units"].as<std::string>();
         }
 
-        int status = modAVUMetadata( (char*) _cmd.c_str(),
-                        (char*) sub_vm["object_type"].as<std::string>().c_str(),
-                        (char*) sub_vm["name"].as<std::string>().c_str(),
-                        (char*) sub_vm["attribute"].as<std::string>().c_str(),
-                        (char*) sub_vm["new_value"].as<std::string>().c_str(),
-                        (char*) new_units.c_str(),
-                        "",
-                        "",
-                        "" );
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
+        status = modAVUMetadata((char*) _cmd.c_str(),
+                                (char*) sub_vm["object_type"].as<std::string>().c_str(),
+                                name.data(),
+                                (char*) sub_vm["attribute"].as<std::string>().c_str(),
+                                (char*) sub_vm["new_value"].as<std::string>().c_str(),
+                                (char*) new_units.c_str(),
+                                "",
+                                "",
+                                "" );
 
         return status < 0 ? status : 0;
     } else if ( _cmd == "ls" ||
@@ -1778,34 +1837,35 @@ int do_command(
             attribute = sub_vm["attribute"].as<std::string>();
         }
 
+        auto [status, name] = prepare_name(sub_vm["object_type"].as<std::string>(),
+                                           sub_vm["name"].as<std::string>());
+
+        if (status) {
+            return status;
+        }
+
         std::string obj_type = sub_vm["object_type"].as<std::string>();
 
         if ( obj_type == "-ld") {
             longMode = 1;
-
-            showDataObj( (char*) sub_vm["name"].as<std::string>().c_str(),
-                         (char*) attribute.c_str(),
-                         wild );
-        } else if ( obj_type == "-d" ) {
-            showDataObj( (char*) sub_vm["name"].as<std::string>().c_str(),
-                         (char*) attribute.c_str(),
-                         wild );
-        } else if ( obj_type == "-C" ) {
-            showColl( (char*) sub_vm["name"].as<std::string>().c_str(),
-                      (char*) attribute.c_str(),
-                      wild );
-        } else if ( obj_type == "-R" ) {
-            showResc( (char*) sub_vm["name"].as<std::string>().c_str(),
-                      (char*) attribute.c_str(),
-                      wild );
-        } else {
-            showUser( (char*) sub_vm["name"].as<std::string>().c_str(),
-                      (char*) attribute.c_str(),
-                      wild );
+            showDataObj(name.data(), (char*) attribute.c_str(), wild);
+        }
+        else if ( obj_type == "-d" ) {
+            showDataObj(name.data(), (char*) attribute.c_str(), wild);
+        }
+        else if ( obj_type == "-C" ) {
+            showColl(name.data(), (char*) attribute.c_str(), wild);
+        }
+        else if ( obj_type == "-R" ) {
+            showResc(name.data(), (char*) attribute.c_str(), wild);
+        }
+        else {
+            showUser(name.data(), (char*) attribute.c_str(), wild);
         }
 
         return 0;
-    } else if ( _cmd == "qu" ) {
+    }
+    else if ( _cmd == "qu" ) {
         // Query objects with matching AVUs
         po::options_description qu_desc( "qu options" );
         qu_desc.add_options()
@@ -2030,22 +2090,18 @@ int display_help(const std::vector<std::string>& _sub_args) {
     return 0;
 }
 
-int
-main( int argc, const char **argv ) {
-
+int main( int argc, const char **argv )
+{
     signal( SIGPIPE, SIG_IGN );
 
-    rErrMsg_t errMsg;
+    rodsLogLevel(LOG_ERROR);
 
     rodsArguments_t myRodsArgs;
-
-    rodsLogLevel( LOG_ERROR );
-
-
     boost::optional<std::tuple<po::parsed_options, po::variables_map>> options_and_map;
     try {
-        options_and_map = parse_program_options( argc, argv, myRodsArgs );
-    } catch( const irods::exception& ) {
+        options_and_map = parse_program_options(argc, argv, myRodsArgs);
+    }
+    catch (const irods::exception&) {
         std::cout << "Use -h for help\n";
         return 1;
     }
@@ -2057,8 +2113,7 @@ main( int argc, const char **argv ) {
 
     std::vector< std::string > command_to_be_parsed;
     if (!command_mode) {
-        command_to_be_parsed =
-            po::collect_unrecognized( parsed.options, po::include_positional );
+        command_to_be_parsed = po::collect_unrecognized( parsed.options, po::include_positional );
     }
 
     if (command_to_be_parsed.size() > 0 && (command_to_be_parsed[0] == "h" || command_to_be_parsed[0] == "help")) {
@@ -2067,8 +2122,7 @@ main( int argc, const char **argv ) {
 
     int status = getRodsEnv( &myEnv );
     if ( status < 0 ) {
-        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d",
-                 status );
+        rodsLog( LOG_ERROR, "main: getRodsEnv error. status = %d", status );
         return 1;
     }
 
@@ -2083,17 +2137,14 @@ main( int argc, const char **argv ) {
     irods::pack_entry_table& pk_tbl  = irods::get_pack_table();
     init_api_table( api_tbl, pk_tbl );
 
+    rErrMsg_t errMsg;
     Conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                       myEnv.rodsZone, 0, &errMsg );
 
     if ( Conn == NULL ) {
         char *mySubName = NULL;
         const char *myName = rodsErrorName( errMsg.status, &mySubName );
-        rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
-                 myName,
-                 mySubName,
-                 errMsg.status,
-                 errMsg.msg );
+        rodsLog( LOG_ERROR, "rcConnect failure %s (%s) (%d) %s", myName, mySubName, errMsg.status, errMsg.msg );
         free( mySubName );
 
         return 2;
@@ -2117,6 +2168,7 @@ main( int argc, const char **argv ) {
     if ( lastCommandStatus != 0 ) {
         return 4;
     }
+
     return 0;
 }
 
@@ -2481,20 +2533,25 @@ usage( const char *subOpt ) {
     return 0;
 }
 
-po::variables_map parse_sub_args(const std::vector<std::string>& _sub_args, const po::options_description& _desc, const po::positional_options_description& _pos) {
+po::variables_map parse_sub_args(const std::vector<std::string>& _sub_args,
+                                 const po::options_description& _desc,
+                                 const po::positional_options_description& _pos)
+{
     try {
         po::variables_map sub_vm;
         po::store(
-                po::command_line_parser(_sub_args).
-                options( _desc ).
-                positional( _pos ).
-                style(po::command_line_style::unix_style ^
-                    po::command_line_style::allow_short).
-                allow_unregistered().
-                run(), sub_vm );
-        po::notify( sub_vm );
+            po::command_line_parser(_sub_args)
+                .options(_desc)
+                .positional(_pos)
+                .style(po::command_line_style::unix_style ^ po::command_line_style::allow_short)
+                .allow_unregistered()
+                .run(),
+            sub_vm);
+        po::notify(sub_vm);
+
         return sub_vm;
-    } catch ( po::error& _e ) {
+    }
+    catch (po::error& _e) {
         std::cout << std::endl
             << "Error: "
             << _e.what()
