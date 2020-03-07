@@ -43,6 +43,9 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
 #include "boost/lexical_cast.hpp"
 
 // =-=-=-=-=-=-=-
@@ -57,7 +60,6 @@ static pathnamePatterns_t *ExcludePatterns = NULL;
 /* function to read pattern file from a data server */
 pathnamePatterns_t *
 readPathnamePatternsFromFile( rsComm_t *rsComm, char *filename, char* );
-
 
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with
  * no checking for path Perm.
@@ -86,12 +88,19 @@ rsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
 }
 
 int
-irsPhyPathReg( rsComm_t *rsComm, dataObjInp_t *phyPathRegInp ) {
+irsPhyPathReg(rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
+{
+    namespace fs = irods::experimental::filesystem;
+
+    // Also covers checking of empty paths.
+    if (fs::path{phyPathRegInp->objPath}.object_name().empty()) {
+        return USER_INPUT_PATH_ERR;
+    }
+
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag;
     rodsHostAddr_t addr;
-
 
     // =-=-=-=-=-=-=-
     // NOTE:: resource_redirect can wipe out the specColl due to a call to getDataObjIncSpecColl
