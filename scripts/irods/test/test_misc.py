@@ -83,3 +83,37 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
                 self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'],
                                            'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_catalog_reflects_truncation_on_open__issues_4483_4628(self):
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            filename = os.path.join(self.admin.local_session_dir, 'truncated_file')
+            lib.make_file(filename, 1024, 'arbitrary')
+            self.admin.assert_icommand(['iput', filename])
+
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    test_truncate_on_open_4483_4628 {{ 
+                        *path = '{0}';
+                        *ec = 0;
+
+                        msiDataObjOpen('objPath=*path++++openFlags=O_WRONLYO_TRUNC', *fd);
+
+                        msiSplitPath(*path, *parent_path, *data_object);
+                        foreach (*row in select DATA_SIZE where COLL_NAME = *parent_path and DATA_NAME = *data_object) {{
+                            if (*row.DATA_SIZE != '0') {{
+                                *ec = -1;
+                            }}
+                        }}
+
+                        msiDataObjClose(*fd, *status);
+
+                        *ec;
+                    }}
+                '''.format(os.path.join(self.admin.session_collection, os.path.basename(filename))))
+
+            rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            self.admin.assert_icommand(['irule', '-r', rep, 'test_truncate_on_open_4483_4628', 'null', 'ruleExecOut'])
+
