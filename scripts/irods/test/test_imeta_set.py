@@ -11,6 +11,7 @@ else:
 from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from .rule_texts_for_tests import rule_texts
+from .. import lib
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
@@ -374,6 +375,31 @@ class Test_ImetaSet(ResourceBase, unittest.TestCase):
     def test_imeta_cp_missing_obj_name_27(self):
         self.admin.assert_icommand(['imeta', 'cp', '-d', '-d', self.testfile], 'STDOUT_MULTILINE', ['$', 'Error: Not enough arguments provided to cp$', '$'],
                                    use_regex=True)
+
+    def test_imeta_handles_relative_paths__issue_4682(self):
+        data_object = 'foo'
+        filename = os.path.join(self.admin.local_session_dir, data_object)
+        lib.make_file(filename, 1, 'arbitrary')
+
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('.', data_object)],      'STDOUT', ['None'])
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('.', '.', data_object)], 'STDOUT', ['None'])
+
+        session_collection = os.path.basename(self.admin.session_collection)
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('..', session_collection, data_object)], 'STDOUT', ['None'])
+
+        # Data objects would not normally end in a trailing slash. These tests demonstrate that imeta, like
+        # all other icommands, properly removes trailing slashes during processing which allows the server to
+        # handle the request without exploding on an invalid path.
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('.', data_object) + '/'],       'STDOUT', ['None'])
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('.', data_object) + '//'],      'STDOUT', ['None'])
+        self.admin.assert_icommand(['imeta', 'ls', '-d', os.path.join('.', '.', data_object) + '//'], 'STDOUT', ['None'])
+
+    def test_imeta_handles_trailing_slashes_on_collections__issue_4559(self):
+        collection = 'trailing_slash_test.d'
+        self.admin.assert_icommand(['imkdir', collection])
+        self.admin.assert_icommand(['imeta', 'ls', '-C', os.path.join(collection) + '/'],  'STDOUT', ['None'])
+        self.admin.assert_icommand(['imeta', 'ls', '-C', os.path.join(collection) + '//'], 'STDOUT', ['None'])
 
 class Test_ImetaQu(ResourceBase, unittest.TestCase):
 
