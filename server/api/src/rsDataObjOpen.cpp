@@ -16,6 +16,7 @@
 #include "rsDataObjOpen.hpp"
 #include "apiNumber.h"
 #include "rsDataObjCreate.hpp"
+#include "rsModDataObjMeta.hpp"
 #include "rsSubStructFileOpen.hpp"
 #include "rsFileOpen.hpp"
 #include "rsDataObjRepl.hpp"
@@ -39,6 +40,10 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
+
+#include "irods_logger.hpp"
+
+using logger = irods::experimental::log;
 
 int
 rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
@@ -390,24 +395,52 @@ _rsDataObjOpenWithObjInfo( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 }
 
-int
-dataOpen( rsComm_t *rsComm, int l1descInx ) {
-    dataObjInfo_t *myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-    int status;
+int dataOpen(rsComm_t *rsComm, int l1descInx)
+{
+    auto& fd = L1desc[l1descInx];
+    dataObjInfo_t *info = fd.dataObjInfo;
 
+    int status = l3Open(rsComm, l1descInx);
 
-    status = l3Open( rsComm, l1descInx );
-
-    if ( status <= 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "dataOpen: l3Open of %s failed, status = %d",
-                 myDataObjInfo->filePath, status );
+    if (status <= 0) {
+        rodsLog(LOG_NOTICE, "dataOpen: l3Open of %s failed, status = %d", info->filePath, status);
         return status;
     }
-    else {
-        L1desc[l1descInx].l3descInx = status;
-        return 0;
+
+    fd.l3descInx = status;
+
+    // Set the size of the data object to zero in the catalog if the file was truncated.
+    // It is important that the catalog reflect truncation immediately because operations
+    // following the open may depend on the size of the data object.
+    if (fd.dataObjInp->openFlags & O_TRUNC) {
+        if (const auto access_mode = (fd.dataObjInp->openFlags & O_ACCMODE);
+            access_mode == O_WRONLY || access_mode == O_RDWR)
+        {
+            dataObjInfo_t path_input{};
+            rstrcpy(path_input.objPath, fd.dataObjInp->objPath, MAX_NAME_LEN);
+
+            keyValPair_t reg_params{};
+            addKeyVal(&reg_params, DATA_SIZE_KW, "0");
+
+            modDataObjMeta_t input{};
+            input.dataObjInfo = &path_input;
+            input.regParam = &reg_params;
+
+            if (const auto ec = rsModDataObjMeta(rsComm, &input); ec != 0) {
+                logger::api::error("dataOpen: Could not update size of data object [status = {}, path = {}]",
+                                   ec, path_input.objPath);
+                return ec;
+            }
+
+            fd.dataSize = 0;
+
+            if (fd.dataObjInfo) {
+                fd.dataObjInfo->dataSize = 0;
+            }
+        }
     }
+
+    return 0;
 }
 
 int
