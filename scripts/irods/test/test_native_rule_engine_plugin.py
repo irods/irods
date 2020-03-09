@@ -327,7 +327,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         with open(rule_file1, 'wt') as f:
             print(rule_string1, file=f, end='')
 
-        out, _, _ = self.admin.run_icommand("irule -F " + rule_file1)
+        out, _, _ = self.admin.run_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + rule_file1)
         assert 'Update session variable $userNameClient not allowed' in out
 
         rule_file2 = "rule2_2242.r"
@@ -336,7 +336,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         with open(rule_file2, 'wt') as f:
             print(rule_string2, file=f, end='')
 
-        self.admin.assert_icommand("irule -F " + rule_file2, "EMPTY")
+        self.admin.assert_icommand("irule -r irods_rule_engine_plugin-irods_rule_language-instance -F " + rule_file2, "EMPTY")
 
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads re server log')
     def test_rule_engine_2309(self):
