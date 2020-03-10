@@ -4255,39 +4255,6 @@ OUTPUT ruleExecOut
         if os.path.exists(filepath):
             os.unlink(filepath)
 
-    def test_rebalance_invocation_timestamp__3665(self):
-        # prepare out of balance tree with enough objects to trigger rebalance paging (>500)
-        localdir = '3665_tmpdir'
-        shutil.rmtree(localdir, ignore_errors=True)
-        lib.make_large_local_tmp_dir(dir_name=localdir, file_count=600, file_size=5)
-        self.admin.assert_icommand(['iput', '-r', localdir], "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-        self.admin.assert_icommand(['iadmin', 'mkresc', 'newchild', 'unixfilesystem', test.settings.HOSTNAME_1+':/tmp/newchildVault'], 'STDOUT_SINGLELINE', 'unixfilesystem')
-        self.admin.assert_icommand(['iadmin','addchildtoresc','demoResc','newchild'])
-        # run rebalance with concurrent, interleaved put/trim of new file
-        self.admin.assert_icommand(['ichmod','-r','own','rods',self.admin.session_collection])
-        self.admin.assert_icommand(['ichmod','-r','inherit',self.admin.session_collection])
-        laterfilesize = 300
-        laterfile = '3665_laterfile'
-        lib.make_file(laterfile, laterfilesize)
-        put_thread = Timer(2, subprocess.check_call, [('iput', '-R', 'demoResc', laterfile, self.admin.session_collection)])
-        trim_thread = Timer(3, subprocess.check_call, [('itrim', '-n3', self.admin.session_collection + '/' + laterfile)])
-        put_thread.start()
-        trim_thread.start()
-        self.admin.assert_icommand(['iadmin','modresc','demoResc','rebalance'])
-        put_thread.join()
-        trim_thread.join()
-        # new file should not be balanced (rebalance should have skipped it due to it being newer)
-        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 0 ', laterfile])
-        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 1 ', laterfile])
-        self.admin.assert_icommand(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 2 ', laterfile])
-        self.admin.assert_icommand_fail(['ils', '-l', laterfile], 'STDOUT_SINGLELINE', [str(laterfilesize), ' 3 ', laterfile])
-        # cleanup
-        os.unlink(laterfile)
-        shutil.rmtree(localdir, ignore_errors=True)
-        self.admin.assert_icommand(['iadmin','rmchildfromresc','demoResc','newchild'])
-        self.admin.assert_icommand(['itrim', '-Snewchild', '-r', '/tempZone'], 'STDOUT_SINGLELINE', 'Total size trimmed')
-        self.admin.assert_icommand(['iadmin','rmresc','newchild'])
-
     def update_specific_replica_for_data_objs_in_repl_hier(self, name_pair_list, repl_num=0):
         # determine which resource has replica 0
         _,out,_ = self.admin.assert_icommand(['iquest', "select DATA_RESC_HIER where DATA_NAME = '{0}' and DATA_REPL_NUM = '{1}'".format(name_pair_list[0][0], repl_num)], 'STDOUT_SINGLELINE', 'DATA_RESC_HIER')
@@ -4340,42 +4307,6 @@ OUTPUT ruleExecOut
             f.write('i'*filesize)
         _, _, rc = self.admin.assert_icommand(['ifsck', '-KrR', 'demoResc;unix1Resc', vault_path], 'STDOUT_SINGLELINE', ['CORRUPTION', filename, 'checksum'])
         self.assertNotEqual(rc, 0, 'ifsck should have non-zero error code on checksum mismatch')
-        os.unlink(filename)
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Reads server log')
-    def test_rebalance_logging_replica_update__3463(self):
-        filename = 'test_rebalance_logging_replica_update__3463'
-        file_size = 400
-        lib.make_file(filename, file_size)
-        self.admin.assert_icommand(['iput', filename])
-        self.update_specific_replica_for_data_objs_in_repl_hier([(filename, filename)])
-        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
-        data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
-        lib.delayAssert(
-            lambda: lib.log_message_occurrences_equals_count(
-                msg='updating out-of-date replica for data id [{0}]'.format(str(data_id)),
-                count=2,
-                server_log_path=IrodsConfig().server_log_path,
-                start_index=initial_log_size))
-        os.unlink(filename)
-
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, 'Reads server log')
-    def test_rebalance_logging_replica_creation__3463(self):
-        filename = 'test_rebalance_logging_replica_creation__3463'
-        file_size = 400
-        lib.make_file(filename, file_size)
-        self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['itrim', '-S', 'demoResc', '-N1', filename], 'STDOUT_SINGLELINE', 'Number of files trimmed = 1.')
-        initial_log_size = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-        self.admin.assert_icommand(['iadmin', 'modresc', 'demoResc', 'rebalance'])
-        data_id = session.get_data_id(self.admin, self.admin.session_collection, filename)
-        lib.delayAssert(
-            lambda: lib.log_message_occurrences_equals_count(
-                msg='creating new replica for data id [{0}]'.format(str(data_id)),
-                count=2,
-                server_log_path=IrodsConfig().server_log_path,
-                start_index=initial_log_size))
         os.unlink(filename)
 
     def test_rebalance_batching_replica_creation__3570(self):
