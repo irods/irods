@@ -354,12 +354,6 @@ class Test_Plugin_Instance_CppDefault(ResourceBase, unittest.TestCase):
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_delay_rule(self):
-        flag_file = self.admin.session_collection + '/flag_file'
-        new_rule = """
-create_flag_object(*p, *c) {{
-msiDataObjCreate("{0}", "forceFlag=", *out)
-}}""".format(flag_file)
-
         delay_rule = """
 {
     "policy" : "irods_policy_enqueue_rule",
@@ -382,18 +376,21 @@ OUTPUT ruleExecOut
         with open(rule_file, 'w') as f:
             f.write(delay_rule)
 
+        flag_file = self.admin.session_collection + '/flag_file'
+        new_rule = """
+create_flag_object(*p, *c) {{
+msiDataObjCreate("{0}", "forceFlag=", *out)
+}}""".format(flag_file)
+
         with temporary_core_file() as core:
-            time.sleep(1)  # remove once file hash fix is committed #2279
             core.add_rule(new_rule)
-            time.sleep(1)  # remove once file hash fix is committed #2279
 
-            self.admin.assert_icommand(['irule', '-F', rule_file])
-            self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'irods_policy_execute_rule')
+            config = IrodsConfig()
+            with lib.file_backed_up(config.server_config_path):
+                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController().restart()
 
-
-            delay_assert(lambda: self.admin.assert_icommand(['ils', '-l', flag_file],  'STDOUT_SINGLELINE', 'flag_file'))
-
-
-
-
-
+                self.admin.assert_icommand(['irule', '-F', rule_file])
+                self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'irods_policy_execute_rule')
+                delay_assert(lambda: self.admin.assert_icommand(['ils', '-l', flag_file],  'STDOUT_SINGLELINE', 'flag_file'))
