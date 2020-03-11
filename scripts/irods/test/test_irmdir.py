@@ -99,3 +99,19 @@ class Test_Irmdir(resource_suite.ResourceBase, unittest.TestCase):
 
     def test_irmdir_no_input(self):
         self.admin.assert_icommand('irmdir', 'STDOUT_SINGLELINE', 'No collection names specified.')
+
+    def test_irmdir_removes_collection_even_if_sibling_exists__issue_4788(self):
+        col_a = 'foo'
+        self.admin.assert_icommand(['imkdir', col_a])
+
+        col_b = 'foot'
+        self.admin.assert_icommand(['imkdir', col_b])
+
+        filename = 'issue_4788'
+        file_path = os.path.join(self.admin.local_session_dir, filename)
+        lib.make_file(file_path, 1024, 'arbitrary')
+        self.admin.assert_icommand(['iput', file_path, os.path.join(col_b, filename)])
+
+        self.admin.assert_icommand(['irmdir', col_a])
+        self.admin.assert_icommand(['ils', col_a], 'STDERR', ['{0} does not exist'.format(os.path.join(self.admin.session_collection, col_a))])
+
