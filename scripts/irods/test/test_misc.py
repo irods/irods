@@ -117,3 +117,9 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
             self.admin.assert_icommand(['irule', '-r', rep, 'test_truncate_on_open_4483_4628', 'null', 'ruleExecOut'])
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_return_error_on_incompatible_open_flags__issue_4782(self):
+        rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        rule = "msiDataObjOpen('objPath=++++openFlags=O_RDONLYO_TRUNC', *fd)"
+        self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-404000 USER_INCOMPATIBLE_OPEN_FLAGS'])
+

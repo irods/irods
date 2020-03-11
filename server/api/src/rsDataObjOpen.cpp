@@ -46,7 +46,12 @@
 using logger = irods::experimental::log;
 
 int
-rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
+rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp )
+{
+    if ((dataObjInp->openFlags & O_ACCMODE) == O_RDONLY && (dataObjInp->openFlags & O_TRUNC)) {
+        return USER_INCOMPATIBLE_OPEN_FLAGS;
+    }
+
     int status, l1descInx;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
