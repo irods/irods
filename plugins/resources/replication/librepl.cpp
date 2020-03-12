@@ -1631,13 +1631,21 @@ class repl_resource : public irods::resource {
                 }
 
                 if ( kvp_map.find( NUM_REPL_KW ) != kvp_map.end() ) {
+                    irods::log(LOG_WARNING,
+                               (boost::format(
+                               "[%s] - resource [%s] is using deprecated context string [%s]") %
+                               __FUNCTION__ %
+                               _inst_name %
+                               NUM_REPL_KW).str());
                     try {
                         int num_repl = boost::lexical_cast< int >( kvp_map[ NUM_REPL_KW ] );
                         if( num_repl <= 0 ) {
                             irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                            boost::format( "%s:%d - [%s] is 0" ) %
-                                            __FUNCTION__ % __LINE__ %
-                                            NUM_REPL_KW.c_str() ) );
+                                            boost::format(
+                                            "[%s] - [%s] for resource [%s] is 0" ) %
+                                            __FUNCTION__ %
+                                            NUM_REPL_KW %
+                                            _inst_name) );
                         }
                         else {
                             properties_.set< size_t >( NUM_REPL_KW, static_cast< size_t >( num_repl ) );
@@ -1645,8 +1653,11 @@ class repl_resource : public irods::resource {
                     }
                     catch ( const boost::bad_lexical_cast& ) {
                         irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format( "failed to cast [%s] to value [%s]" ) %
-                                        NUM_REPL_KW.c_str() %
+                                        boost::format(
+                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]") %
+                                        __FUNCTION__ %
+                                        NUM_REPL_KW %
+                                        _inst_name %
                                         kvp_map[ NUM_REPL_KW ] ) );
                     }
                 }
@@ -1658,8 +1669,10 @@ class repl_resource : public irods::resource {
                         const int int_retry_attempts = boost::lexical_cast< int >( kvp_map[ irods::RETRY_ATTEMPTS_KW ] );
                         if ( int_retry_attempts < 0 ) {
                             irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                           boost::format( "%s:%d - [%s] is < 0; using default value [%d]" ) %
-                                           __FUNCTION__ % __LINE__ %
+                                           boost::format(
+                                           "[%s] - [%s] for resource [%s] is < 0; using default value [%d]" ) %
+                                           __FUNCTION__ %
+                                           _inst_name %
                                            irods::RETRY_ATTEMPTS_KW.c_str() %
                                            irods::DEFAULT_RETRY_ATTEMPTS ) );
                         }
@@ -1669,8 +1682,11 @@ class repl_resource : public irods::resource {
                     }
                     catch ( const boost::bad_lexical_cast& ) {
                         irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format( "failed to cast [%s] to value [%s]; using default value [%d]" ) %
-                                        irods::RETRY_ATTEMPTS_KW.c_str() %
+                                        boost::format(
+                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
+                                        __FUNCTION__ %
+                                        irods::RETRY_ATTEMPTS_KW %
+                                        _inst_name %
                                         kvp_map[ irods::RETRY_ATTEMPTS_KW ] %
                                         irods::DEFAULT_RETRY_ATTEMPTS ) );
                     }
@@ -1684,10 +1700,12 @@ class repl_resource : public irods::resource {
                         const int int_retry_delay = boost::lexical_cast< int >( kvp_map[ irods::RETRY_FIRST_DELAY_IN_SECONDS_KW ] );
                         if ( int_retry_delay <= 0 ) {
                             irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                            boost::format( "%s:%d - [%s] is <= 0; using default value [%d]" ) %
-                                            __FUNCTION__ % __LINE__ %
-                                            irods::RETRY_FIRST_DELAY_IN_SECONDS_KW.c_str() %
-                                            irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) );
+                                           boost::format(
+                                           "[%s] - [%s] for resource [%s] is <= 0; using default value [%d]" ) %
+                                           __FUNCTION__ %
+                                           _inst_name %
+                                           irods::RETRY_FIRST_DELAY_IN_SECONDS_KW.c_str() %
+                                           irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) );
                         }
                         else {
                             retry_delay_in_seconds = static_cast< decltype( retry_delay_in_seconds ) >( int_retry_delay );
@@ -1695,8 +1713,11 @@ class repl_resource : public irods::resource {
                     }
                     catch ( const boost::bad_lexical_cast& ) {
                         irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format( "failed to cast [%s] to value [%s]; using default value [%d]" ) %
-                                        irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
+                                        boost::format(
+                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
+                                        __FUNCTION__ %
+                                        irods::RETRY_FIRST_DELAY_IN_SECONDS_KW.c_str() %
+                                        _inst_name %
                                         kvp_map[ irods::RETRY_FIRST_DELAY_IN_SECONDS_KW ] %
                                         irods::DEFAULT_RETRY_FIRST_DELAY_IN_SECONDS ) );
                     }
@@ -1709,17 +1730,22 @@ class repl_resource : public irods::resource {
                         backoff_multiplier = boost::lexical_cast< decltype( backoff_multiplier ) >( kvp_map[ irods::RETRY_BACKOFF_MULTIPLIER_KW ] );
                         if ( backoff_multiplier < 1 ) {
                             irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                            boost::format( "%s:%d - [%s] is < 1; using default value [%f]" ) %
-                                            __FUNCTION__ % __LINE__ %
-                                            irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
-                                            irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) );
+                                           boost::format(
+                                           "[%s] - [%s] for resource [%s] is < 1; using default value [%d]" ) %
+                                           __FUNCTION__ %
+                                           _inst_name %
+                                           irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
+                                           irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) );
                             backoff_multiplier = irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER;
                         }
                     }
                     catch ( const boost::bad_lexical_cast& ) {
                         irods::log( ERROR( SYS_INVALID_INPUT_PARAM,
-                                        boost::format( "failed to cast [%s] to value [%s]; using default value [%f]" ) %
+                                        boost::format(
+                                        "[%s] - failed to cast [%s] for resource [%s] to value [%s]; using default value [%d]") %
+                                        __FUNCTION__ %
                                         irods::RETRY_BACKOFF_MULTIPLIER_KW.c_str() %
+                                        _inst_name %
                                         kvp_map[ irods::RETRY_BACKOFF_MULTIPLIER_KW ] %
                                         irods::DEFAULT_RETRY_BACKOFF_MULTIPLIER ) );
                     }
