@@ -270,7 +270,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // filter out any possible replicas that are not on this resource
             if ( resc_hier != collEnt->resc_hier ) {
                 rodsLog(
-                    LOG_NOTICE,//LOG_DEBUG,
+                    LOG_DEBUG,
                     "_rsStructFileBundle - skipping [%s] on resc [%s]",
                     collEnt->phyPath,
                     collEnt->resc_hier );
