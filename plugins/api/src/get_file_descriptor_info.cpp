@@ -254,11 +254,18 @@ namespace
 
     auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*
     {
-        char* buf = new char[_s.length() + 1]{};
+        constexpr auto allocate = [](const auto bytes) noexcept
+        {
+            return std::memset(std::malloc(bytes), 0, bytes);
+        };
+
+        const auto buf_size = _s.length() + 1;
+
+        auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
         std::strncpy(buf, _s.c_str(), _s.length());
 
-        bytesBuf_t* bbp = new bytesBuf_t{};
-        bbp->len = _s.length();
+        auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
+        bbp->len = buf_size;
         bbp->buf = buf;
 
         return bbp;
