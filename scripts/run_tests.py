@@ -114,6 +114,7 @@ if __name__ == '__main__':
     parser.add_option('--run_python_suite', action='store_true')
     parser.add_option('--run_plugin_tests', action='store_true')
     parser.add_option('--include_auth_tests', action='store_true')
+    parser.add_option('--include_timing_tests', action='store_true')
     parser.add_option('--run_devtesty', action='store_true')
     parser.add_option('--topology_test', type='choice', choices=['icat', 'resource'], action='callback', callback=optparse_callback_topology_test, metavar='<icat|resource>')
     parser.add_option('--catch_keyboard_interrupt', action='callback', callback=optparse_callback_catch_keyboard_interrupt)
@@ -142,6 +143,8 @@ if __name__ == '__main__':
         test_identifiers.append(options.run_specific_test)
     if options.include_auth_tests:
         test_identifiers.append('test_auth')
+    if options.include_timing_tests:
+        test_identifiers.append('timing_tests')
     if options.run_python_suite:
         with open(os.path.join(IrodsConfig().scripts_directory, 'core_tests_list.json'), 'r') as f:
             test_identifiers.extend(json.loads(f.read()))
