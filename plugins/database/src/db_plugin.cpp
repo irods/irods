@@ -2141,7 +2141,7 @@ irods::error db_mod_data_obj_meta_op(
     std::vector<const char *> updateVals;
 
     const std::vector<std::string_view> regParamNames = {
-        //COLL_ID_KW,
+        COLL_ID_KW,
         DATA_CREATE_KW,
         CHKSUM_KW,
         DATA_EXPIRY_KW,
@@ -2149,7 +2149,7 @@ irods::error db_mod_data_obj_meta_op(
         REPL_STATUS_KW,
         //DATA_MAP_ID_KW,
         DATA_MODE_KW,
-        //DATA_NAME_KW,
+        DATA_NAME_KW,
         DATA_OWNER_KW,
         DATA_OWNER_ZONE_KW,
         FILE_PATH_KW,
@@ -2167,7 +2167,7 @@ irods::error db_mod_data_obj_meta_op(
     };
 
     const std::vector<std::string_view> colNames = {
-        //"coll_id",
+        "coll_id",
         "create_ts",
         "data_checksum",
         "data_expiry_ts",
@@ -2175,7 +2175,7 @@ irods::error db_mod_data_obj_meta_op(
         "data_is_dirty",
         //"data_map_id",
         "data_mode",
-        //"data_name",
+        "data_name",
         "data_owner_name",
         "data_owner_zone",
         "data_path",
