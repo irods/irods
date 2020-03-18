@@ -512,6 +512,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/rsGlobalExtern.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rsIcatOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/rsLog.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/scoped_privileged_client.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/specColl.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/xmsgLib.hpp
   )
