@@ -202,7 +202,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     register_handlers();
 
     initProcLog();
-
+    
     int listen_socket, conn_socket, conn_tmp_socket;
     struct sockaddr_un client_addr;
     unsigned int len = sizeof(agent_addr);
@@ -432,10 +432,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     // load server side pluggable api entries
     irods::api_entry_table&  RsApiTable   = irods::get_server_api_table();
     irods::pack_entry_table& ApiPackTable = irods::get_pack_table();
-    ret = irods::init_api_table(
-              RsApiTable,
-              ApiPackTable,
-              false );
+    ret = irods::init_api_table(RsApiTable, ApiPackTable, false);
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return 1;
@@ -443,11 +440,8 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
 
     // =-=-=-=-=-=-=-
     // load client side pluggable api entries
-    irods::api_entry_table&  RcApiTable = irods::get_client_api_table();
-    ret = irods::init_api_table(
-              RcApiTable,
-              ApiPackTable,
-              false );
+    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
+    ret = irods::init_api_table(RcApiTable, ApiPackTable, false);
     if ( !ret.ok() ) {
         irods::log( PASS( ret ) );
         return 1;
