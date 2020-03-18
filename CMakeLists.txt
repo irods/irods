@@ -698,6 +698,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUnregDataObj.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUserAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsZoneReport.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/client_api_whitelist.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/collection.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/dataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp

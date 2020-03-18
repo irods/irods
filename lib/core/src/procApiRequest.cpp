@@ -8,6 +8,10 @@
 #include "irods_network_factory.hpp"
 #include "irods_client_api_table.hpp"
 
+#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+    #include "irods_server_api_table.hpp"
+#endif // RODS_SERVER || RODS_CLERVER
+
 // =-=-=-=-=-=-=-
 // irods includes
 #include "procApiRequest.h"
@@ -451,15 +455,24 @@ _cliGetCollOprStat( rcComm_t *conn, collOprStat_t **collOprStat ) {
             return SYS_SOCK_WRITE_ERR;
         }
     }
-    return readAndProcApiReply( conn, conn->apiInx,
-                                ( void ** ) collOprStat, NULL );
+    return readAndProcApiReply( conn, conn->apiInx, ( void ** ) collOprStat, NULL );
 }
 
-int
-apiTableLookup( int apiNumber ) {
-    irods::api_entry_table& RcApiTable = irods::get_client_api_table();
-    if ( RcApiTable.find( apiNumber ) != RcApiTable.end() ) {
+int apiTableLookup(int apiNumber)
+{
+    if (auto& api_table = irods::get_client_api_table();
+        api_table.find(apiNumber) != std::end(api_table))
+    {
         return apiNumber;
     }
+
+#if defined(RODS_SERVER) || defined(RODS_CLERVER)
+    if (auto& api_table = irods::get_server_api_table();
+        api_table.find(apiNumber) != std::end(api_table))
+    {
+        return apiNumber;
+    }
+#endif // RODS_SERVER || RODS_CLERVER
+
     return SYS_UNMATCHED_API_NUM;
 }

@@ -197,8 +197,6 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                     database_config = json.load(f)
                 config_dict['plugin_configuration'].setdefault('database', {})[database_config.pop('catalog_database_type')] = database_config
 
-
-
     config_dict['schema_version'] = 'v%d' % (next_schema_version)
     return config_dict
 

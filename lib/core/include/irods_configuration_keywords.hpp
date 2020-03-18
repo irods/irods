@@ -54,6 +54,8 @@ namespace irods {
     const std::string CFG_LOG_LEVEL_CATEGORY_NETWORK_KW{"network"};
     const std::string CFG_LOG_LEVEL_CATEGORY_RULE_ENGINE_KW{"rule_engine"};
 
+    const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW{"client_api_whitelist_policy"};
+
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER(
         "maximum_size_for_single_buffer_in_megabytes" );

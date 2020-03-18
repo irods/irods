@@ -1723,7 +1723,7 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             self.user0.assert_icommand(['iput', original_file_path, object_path])
             self.user0.assert_icommand(
                 ['iadmin', 'modrepl', 'logical_path', object_path, 'replica_number', '0', 'DATA_COMMENTS', 'nopes'],
-                'STDERR', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
+                'STDERR', 'SYS_NO_API_PRIV')
         finally:
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
