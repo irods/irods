@@ -40,6 +40,7 @@ set(TEST_INCLUDE_LIST test_config/irods_connection_pool
                       test_config/irods_linked_list_iterator
                       test_config/irods_logical_paths_and_special_characters
                       test_config/irods_query_builder
+                      test_config/irods_scoped_privileged_client
                       test_config/irods_shared_memory_object
                       test_config/irods_user_administration)
 
