@@ -40,6 +40,8 @@ namespace irods {
     const std::string CFG_SERVER_PORT_RANGE_START_KW( "server_port_range_start" );
     const std::string CFG_SERVER_PORT_RANGE_END_KW( "server_port_range_end" );
 
+    const std::string CFG_CLIENT_API_WHITELIST_POLICY_KW{"client_api_whitelist_policy"};
+
     // advanced settings
     const std::string CFG_MAX_SIZE_FOR_SINGLE_BUFFER(
         "maximum_size_for_single_buffer_in_megabytes" );

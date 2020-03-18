@@ -10,18 +10,21 @@
 #include "rcMisc.h"
 #include "miscServerFunct.hpp"
 #include "regReplica.h"
+#include "rodsErrorTable.h"
 #include "unregDataObj.h"
 #include "modAVUMetadata.h"
 #include "sockComm.h"
 #include "irods_re_structs.hpp"
 #include "sslSockComm.h"
 #include "irods_client_server_negotiation.hpp"
-
+#include "apiNumber.h"
+#include "api_plugin_number.h"
+#include "client_api_whitelist.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#include <setjmp.h>
+#include <csetjmp>
 jmp_buf Jenv;
 
 // =-=-=-=-=-=-=-
@@ -32,24 +35,17 @@ jmp_buf Jenv;
 #include "sockCommNetworkInterface.hpp"
 #include "irods_hierarchy_parser.hpp"
 
+#include <iterator>
+#include <algorithm>
 
-int rsApiHandler(
-    rsComm_t*   rsComm,
-    int         apiNumber,
-    bytesBuf_t* inputStructBBuf,
-    bytesBuf_t* bsBBuf ) {
-    int apiInx;
-    int status = 0;
-    char *myInStruct = NULL;
-    void *myOutStruct = NULL;
-    bytesBuf_t myOutBsBBuf;
-    int retVal = 0;
-    int numArg = 0;
-    void *myArgv[4];
-    memset( &myOutBsBBuf, 0, sizeof( bytesBuf_t ) );
-    memset( &rsComm->rError, 0, sizeof( rError_t ) );
+int rsApiHandler(rsComm_t*   rsComm,
+                 int         apiNumber,
+                 bytesBuf_t* inputStructBBuf,
+                 bytesBuf_t* bsBBuf)
+{
+    memset(&rsComm->rError, 0, sizeof(rError_t));
 
-    apiInx = apiTableLookup( apiNumber );
+    const int apiInx = apiTableLookup( apiNumber );
 
     // =-=-=-=-=-=-=-
     // create a network object
@@ -60,10 +56,9 @@ int rsApiHandler(
         return apiInx;
     }
 
-    if ( apiInx < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber );
-        /* cannot use sendApiReply because it does not know apiInx */
+    if (apiInx < 0) {
+        rodsLog(LOG_ERROR, "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
+        // cannot use sendApiReply because it does not know apiInx
         sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL, NULL, NULL,
                      apiInx, rsComm->irodsProt );
         return apiInx;
@@ -71,7 +66,11 @@ int rsApiHandler(
 
     rsComm->apiInx = apiInx;
 
-    status = chkApiVersion( apiInx );
+    void *myOutStruct = NULL;
+    bytesBuf_t myOutBsBBuf;
+    memset( &myOutBsBBuf, 0, sizeof( bytesBuf_t ) );
+
+    int status = chkApiVersion( apiInx );
     if ( status < 0 ) {
         sendApiReply( rsComm, apiInx, status, myOutStruct, &myOutBsBBuf );
         return status;
@@ -112,6 +111,8 @@ int rsApiHandler(
         return SYS_API_INPUT_ERR;
     }
 
+    char *myInStruct = NULL;
+
     if ( inputStructBBuf->len > 0 ) {
         status = unpackStruct( inputStructBBuf->buf, ( void ** )( static_cast< void * >( &myInStruct ) ),
                                ( char* )RsApiTable[apiInx]->inPackInstruct, RodsPackTable, rsComm->irodsProt );
@@ -133,6 +134,9 @@ int rsApiHandler(
         return SYS_API_INPUT_ERR;
     }
 
+    void *myArgv[4];
+    int numArg = 0;
+
     if ( RsApiTable[apiInx]->inPackInstruct != NULL ) {
         myArgv[numArg] = myInStruct;
         numArg++;
@@ -153,6 +157,7 @@ int rsApiHandler(
         numArg++;
     };
 
+    int retVal = 0;
     if ( numArg == 0 ) {
         retVal = api_entry->call_wrapper(
                      api_entry.get(),
@@ -368,44 +373,40 @@ chkApiVersion( int apiInx ) {
     return 0;
 }
 
-int
-chkApiPermission( rsComm_t * rsComm, int apiInx ) {
-    int clientUserAuth;
-    int proxyUserAuth;
-    int xmsgSvrOnly;
-    int xmsgSvrAlso;
+int chkApiPermission(rsComm_t* rsComm, int apiInx)
+{
+    auto& api_table = irods::get_server_api_table();
+    auto api_entry = api_table[apiInx];
+    const auto xmsgSvrOnly = api_entry->clientUserAuth & XMSG_SVR_ONLY;
+    const auto xmsgSvrAlso = api_entry->clientUserAuth & XMSG_SVR_ALSO;
 
-    irods::api_entry_table& RsApiTable = irods::get_server_api_table();
-    clientUserAuth = RsApiTable[apiInx]->clientUserAuth;
-
-    xmsgSvrOnly = clientUserAuth & XMSG_SVR_ONLY;
-    xmsgSvrAlso = clientUserAuth & XMSG_SVR_ALSO;
-
-    if ( ProcessType == XMSG_SERVER_PT ) {
-        if ( ( xmsgSvrOnly + xmsgSvrAlso ) == 0 ) {
-            rodsLog( LOG_ERROR,
-                     "chkApiPermission: xmsgServer not allowed to handle api %d",
-                     RsApiTable[apiInx]->apiNumber );
+    if (ProcessType == XMSG_SERVER_PT) {
+        if ((xmsgSvrOnly + xmsgSvrAlso) == 0) {
+            rodsLog(LOG_ERROR, "chkApiPermission: xmsgServer not allowed to handle api %d", api_entry->apiNumber);
             return SYS_NO_API_PRIV;
         }
     }
-    else if ( xmsgSvrOnly != 0 ) {
-        rodsLog( LOG_ERROR,
-                 "chkApiPermission: non xmsgServer not allowed to handle api %d",
-                 RsApiTable[apiInx]->apiNumber );
+    else if (xmsgSvrOnly != 0) {
+        rodsLog(LOG_ERROR, "chkApiPermission: non xmsgServer not allowed to handle api %d", api_entry->apiNumber);
         return SYS_NO_API_PRIV;
     }
 
-    clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
-
-    if ( clientUserAuth > rsComm->clientUser.authInfo.authFlag ) {
+    const int clientUserAuth = api_entry->clientUserAuth & 0xfff; // Remove XMSG_SVR_* flags
+    if (clientUserAuth > rsComm->clientUser.authInfo.authFlag) {
         return SYS_NO_API_PRIV;
     }
 
-    proxyUserAuth = RsApiTable[apiInx]->proxyUserAuth & 0xfff;
-    if ( proxyUserAuth > rsComm->proxyUser.authInfo.authFlag ) {
+    const int proxyUserAuth = api_entry->proxyUserAuth & 0xfff;
+    if (proxyUserAuth > rsComm->proxyUser.authInfo.authFlag) {
         return SYS_NO_API_PRIV;
     }
+
+    auto& whitelist = irods::client_api_whitelist::instance();
+
+    if (whitelist.enforce(*rsComm) && !whitelist.contains(api_entry->apiNumber)) {
+        return SYS_NO_API_PRIV;
+    }
+
     return 0;
 }
 
