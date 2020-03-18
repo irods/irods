@@ -35,6 +35,9 @@
 #include <functional>
 #include <utility>
 #include <type_traits>
+#include <vector>
+#include <string>
+#include <string_view>
 
 namespace irods
 {
@@ -382,17 +385,23 @@ namespace irods
 
     typedef boost::shared_ptr< api_entry > api_entry_ptr;
 
-/// =-=-=-=-=-=-=-
-/// @brief class which will hold statically compiled and dynamically loaded api handles
-    class api_entry_table : public lookup_table< api_entry_ptr, size_t, boost::hash< size_t > > {
-        public:
-            api_entry_table( apidef_t[], size_t );
-            ~api_entry_table();
+    /// =-=-=-=-=-=-=-
+    /// @brief class which will hold statically compiled and dynamically loaded api handles
+    class api_entry_table
+        : public lookup_table<api_entry_ptr, size_t, boost::hash<size_t>>
+    {
+    public:
+        api_entry_table(apidef_t defs[], size_t size);
 
+        auto is_plugin_loaded(std::string_view plugin_name) -> bool;
+        auto mark_plugin_as_loaded(std::string_view plugin_name) -> void;
+
+    private:
+        std::vector<std::string> loaded_plugins_;
     }; // class api_entry_table
 
-/// =-=-=-=-=-=-=-
-/// @brief load api plugins
+    /// =-=-=-=-=-=-=-
+    /// @brief load api plugins
     error init_api_table(
         api_entry_table&  _api_tbl,    // table holding api entries
         pack_entry_table& _pack_tbl,   // table for pack struct ref

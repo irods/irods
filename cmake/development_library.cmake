@@ -455,6 +455,7 @@ set(
 
 set(
   IRODS_SERVER_CORE_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/core/include/client_api_whitelist.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/collection.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/fileOpr.hpp

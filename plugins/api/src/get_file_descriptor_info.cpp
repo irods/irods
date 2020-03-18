@@ -2,8 +2,8 @@
 #include "rodsDef.h"
 #include "rcConnect.h"
 #include "rodsPackInstruct.h"
-
 #include "apiHandler.hpp"
+#include "client_api_whitelist.hpp"
 
 #include <functional>
 
@@ -331,6 +331,10 @@ extern "C"
 auto plugin_factory(const std::string& _instance_name,
                     const std::string& _context) -> irods::api_entry*
 {
+#ifdef RODS_SERVER
+    irods::client_api_whitelist::instance().add(GET_FILE_DESCRIPTOR_INFO_APN);
+#endif // RODS_SERVER
+
     // clang-format off
     irods::apidef_t def{GET_FILE_DESCRIPTOR_INFO_APN,    // API number
                         RODS_API_VERSION,                // API version
