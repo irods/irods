@@ -171,7 +171,7 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                                 ('regexes_for_supported_peps', [
                                         'ac[^ ]*',
                                         'msi[^ ]*',
-                                        '[^ ]*pep_[^ ]*_(pre|post)'
+                                        '[^ ]*pep_[^ ]*_(pre|post|except)'
                                     ]
                                 )
                             ]
