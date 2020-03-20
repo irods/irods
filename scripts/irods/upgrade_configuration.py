@@ -154,9 +154,7 @@ def run_schema_update(config_dict, schema_name, next_schema_version):
                 for f in config_dict['federation']:
                     f['catalog_provider_hosts'] = [f.pop('icat_host')]
             config_dict['rule_engine_namespaces'] = [
-                    '',
-                    'audit_',
-                    'indexing_'
+                    ''
                 ]
             config_dict.setdefault('plugin_configuration', {})['rule_engines'] = [
                     {
