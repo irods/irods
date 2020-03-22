@@ -39,16 +39,6 @@ namespace fs = irods::experimental::filesystem;
 
 namespace
 {
-    auto has_trailing_double_path_separators(std::string_view path) -> bool
-    {
-        if (!path.empty()) {
-            auto iter = std::rbegin(path);
-            return *iter == '/' && *++iter == '/';
-        }
-
-        return false;
-    }
-
     auto is_special_path(fs::path p) -> bool
     {
         static const auto special_paths = {".", ".."};
@@ -59,13 +49,13 @@ namespace
     }
 } // anonymous namespace
 
-int rsCollCreate( rsComm_t *rsComm, collInp_t *collCreateInp )
+int rsCollCreate(rsComm_t* rsComm, collInp_t* collCreateInp)
 {
-    if (is_special_path(collCreateInp->collName) ||
-        has_trailing_double_path_separators(collCreateInp->collName))
-    {
+    if (is_special_path(collCreateInp->collName)) {
         return USER_INPUT_PATH_ERR;
     }
+
+    remove_trailing_path_separators(collCreateInp->collName);
 
     int status;
     rodsServerHost_t *rodsServerHost = NULL;

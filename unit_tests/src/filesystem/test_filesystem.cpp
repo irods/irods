@@ -351,6 +351,27 @@ TEST_CASE("filesystem")
 
             REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
         }
+
+        SECTION("trailing path separators are ignored when iterating over a collection")
+        {
+            auto p = sandbox;
+            p += fs::path::preferred_separator;
+            for (auto&& e : fs::client::collection_iterator{conn, p}) { static_cast<void>(e); };
+            for (auto&& e : fs::client::recursive_collection_iterator{conn, p}) { static_cast<void>(e); };
+        }
+
+        SECTION("collection iterators throw an exception when passed a data object path")
+        {
+            const auto p = sandbox / "foo";
+
+            default_transport tp{conn};
+            odstream{tp, p} << "test file";
+            REQUIRE(fs::client::exists(conn, p));
+
+            const auto* expected_msg = "could not open collection for reading [handle => -834000]";
+            REQUIRE_THROWS(fs::client::collection_iterator{conn, p}, expected_msg);
+            REQUIRE_THROWS(fs::client::recursive_collection_iterator{conn, p}, expected_msg);
+        }
     }
 
     SECTION("object type checking")

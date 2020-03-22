@@ -69,6 +69,12 @@ clearRodsPath( rodsPath_t *rodsPath );
 // The character array returned is dynamically allocated. The caller is expected
 // to deallocate this memory using "free".
 char* escape_path(const char* _path);
+
+// Returns a non-zero value if the path ends with a trailing path separator ("/"), else zero.
+int has_trailing_path_separator(const char* path);
+
+// Removes trailing slashes from path in-place.
+void remove_trailing_path_separators(char* path);
 #ifdef __cplusplus
 }
 #endif

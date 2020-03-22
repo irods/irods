@@ -523,3 +523,38 @@ char* escape_path(const char* _path)
     return escaped_path_c_str;
 }
 
+int has_trailing_path_separator(const char* path)
+{
+    if (std::string_view p = path; !p.empty()) {
+        namespace fs = irods::experimental::filesystem;
+        return *std::rbegin(p) == fs::path::preferred_separator;
+    }
+
+    return 0;
+}
+
+void remove_trailing_path_separators(char* path)
+{
+    if (!path) {
+        return;
+    }
+
+    namespace fs = irods::experimental::filesystem;
+
+    const fs::path p = path;
+
+    // If the last path element is not empty, then the path does not
+    // end with trailing slashes.
+    if (!std::rbegin(p)->empty()) {
+        return;
+    }
+
+    fs::path new_p;
+
+    for (auto iter = std::begin(p), end = std::prev(std::end(p)); iter != end; ++iter) {
+        new_p /= *iter;
+    }
+
+    std::strcpy(path, new_p.c_str());
+}
+

@@ -13,29 +13,25 @@
 #include "rsObjStat.hpp"
 #include "rsCloseCollection.hpp"
 
-int
-rsOpenCollection( rsComm_t *rsComm, collInp_t *openCollInp ) {
-    int status;
-    int handleInx;
-    collHandle_t *collHandle;
+int rsOpenCollection(rsComm_t* rsComm, collInp_t* openCollInp)
+{
+    int handleInx = allocCollHandle();
 
-    handleInx = allocCollHandle();
-
-    if ( handleInx < 0 ) {
+    if (handleInx < 0) {
         return handleInx;
     }
 
-    collHandle = &CollHandle[handleInx];
+    collHandle_t *collHandle = &CollHandle[handleInx];
+    int status = rsInitQueryHandle(&collHandle->queryHandle, rsComm);
 
-    status = rsInitQueryHandle( &collHandle->queryHandle, rsComm );
-
-    if ( status < 0 ) {
+    if (status < 0) {
         return status;
     }
 
-    rstrcpy( collHandle->dataObjInp.objPath, openCollInp->collName, MAX_NAME_LEN );
+    remove_trailing_path_separators(openCollInp->collName);
+    rstrcpy(collHandle->dataObjInp.objPath, openCollInp->collName, MAX_NAME_LEN);
 
-    if ( ( openCollInp->flags & INCLUDE_CONDINPUT_IN_QUERY ) != 0 ) {
+    if ((openCollInp->flags & INCLUDE_CONDINPUT_IN_QUERY) != 0) {
         replKeyVal( &openCollInp->condInput, &collHandle->dataObjInp.condInput );
     }
 
