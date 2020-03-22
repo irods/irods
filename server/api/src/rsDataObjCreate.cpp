@@ -34,7 +34,6 @@
 
 #include "irods_hierarchy_parser.hpp"
 
-
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
@@ -65,7 +64,7 @@ namespace {
         }
         return status;
     }
-}
+} // anonymous namespace
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -73,11 +72,14 @@ namespace {
  * and registration will be done.
  *
  * return value -  > 2 - success with phy open
- *                < 0 - failure
+ *                 < 0 - failure
  */
+int rsDataObjCreate(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
+{
+    if (has_trailing_path_separator(dataObjInp->objPath)) {
+        return USER_INPUT_PATH_ERR;
+    }
 
-int
-rsDataObjCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     int l1descInx;
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;

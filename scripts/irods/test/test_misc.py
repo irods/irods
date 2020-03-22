@@ -79,9 +79,11 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
             rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
 
-            for rule in ['test_dot_issue_4750', 'test_dot_dot_issue_4750', 'test_slash_slash_issue_4750']:
-                self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'],
-                                           'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+            for rule in ['test_dot_issue_4750', 'test_dot_dot_issue_4750']:
+                self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+
+            self.admin.assert_icommand(['irule', '-r', rep, 'test_slash_slash_issue_4750', 'null', 'ruleExecOut'],
+                                       'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_catalog_reflects_truncation_on_open__issues_4483_4628(self):
@@ -122,4 +124,23 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
         rule = "msiDataObjOpen('objPath=++++openFlags=O_RDONLYO_TRUNC', *fd)"
         self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-404000 USER_INCOMPATIBLE_OPEN_FLAGS'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_trailing_slashes_are_removed_when_creating_collections__issue_3892(self):
+        collection = os.path.join(self.admin.session_collection, 'col_3892.d')
+        self.admin.assert_icommand(['imkdir', collection])
+
+        rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        rule = 'msiCollCreate("{0}", 0, *ignored)'.format(collection + '/')
+        self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
+
+    def test_trailing_slashes_generate_an_error_when_opening_data_objects__issue_3892(self):
+        data_object = os.path.join(self.admin.session_collection, 'dobj_3892')
+
+        rep = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        rule = 'msiDataObjOpen("objPath={0}++++openFlags=O_WRONLYO_TRUNC", *fd)'.format(data_object + '/')
+        self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+
+        rule = 'msiDataObjCreate("{0}", "", *out)'.format(data_object + '/')
+        self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
 

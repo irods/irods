@@ -30,27 +30,31 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
 
-int
-rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-              portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf ) {
+int rsDataObjGet(rsComm_t* rsComm,
+                 dataObjInp_t* dataObjInp,
+                 portalOprOut_t** portalOprOut,
+                 bytesBuf_t* dataObjOutBBuf)
+{
+    if (dataObjOutBBuf == NULL) {
+        rodsLog(LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet.");
+        return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    remove_trailing_path_separators(dataObjInp->objPath);
+
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
-    if ( dataObjOutBBuf == NULL ) {
-        rodsLog( LOG_ERROR, "dataObjOutBBuf was null in call to rsDataObjGet." );
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
 
-    resolveLinkedPath( rsComm, dataObjInp->objPath, &specCollCache,
-                       &dataObjInp->condInput );
-    remoteFlag = getAndConnRemoteZone( rsComm, dataObjInp, &rodsServerHost,
-                                       REMOTE_OPEN );
+    resolveLinkedPath(rsComm, dataObjInp->objPath, &specCollCache, &dataObjInp->condInput);
+    remoteFlag = getAndConnRemoteZone(rsComm, dataObjInp, &rodsServerHost, REMOTE_OPEN);
 
-    if ( remoteFlag < 0 ) {
+    if (remoteFlag < 0) {
         return remoteFlag;
     }
-    else if ( remoteFlag == LOCAL_HOST ) {
+
+    if ( remoteFlag == LOCAL_HOST ) {
         // dataObjInfo_t linked list
         dataObjInfo_t *dataObjInfoHead = NULL;
 
@@ -76,7 +80,6 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             // we resolved the redirect and have a host, set the hier str for subsequent
             // api calls, etc.
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
         }
         else {
             // file object for file_object_factory
@@ -88,40 +91,40 @@ rsDataObjGet( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             // get replicas vector populated
             irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
 
-        }// if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL )
+        } // if ( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL )
 
         status = _rsDataObjGet( rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG, dataObjInfoHead );
-
     }
     else {
-        int l1descInx;
-        status = _rcDataObjGet( rodsServerHost->conn, dataObjInp, portalOprOut,
-                                dataObjOutBBuf );
+        status = _rcDataObjGet(rodsServerHost->conn, dataObjInp, portalOprOut, dataObjOutBBuf);
 
         if ( status < 0 ) {
             return status;
         }
+
         if ( status == 0 || dataObjOutBBuf->len > 0 ) {
             /* data included in buf */
             return status;
         }
-        else if ( !( *portalOprOut ) ) {
+
+        if ( !( *portalOprOut ) ) {
             rodsLog( LOG_ERROR, "_rcDataObjGet returned a %d status code, but left portalOprOut null.", status );
             return SYS_INVALID_PORTAL_OPR;
         }
-        else {
-            /* have to allocate a local l1descInx to keep track of things
-             * since the file is in remote zone. It sets remoteL1descInx,
-             * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
-             * rsComplete knows what to do */
-            l1descInx = allocAndSetL1descForZoneOpr(
-                            ( *portalOprOut )->l1descInx, dataObjInp, rodsServerHost, NULL );
-            if ( l1descInx < 0 ) {
-                return l1descInx;
-            }
-            ( *portalOprOut )->l1descInx = l1descInx;
-            return status;
+
+        /* have to allocate a local l1descInx to keep track of things
+         * since the file is in remote zone. It sets remoteL1descInx,
+         * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that
+         * rsComplete knows what to do */
+        int l1descInx = allocAndSetL1descForZoneOpr((*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
+
+        if (l1descInx < 0) {
+            return l1descInx;
         }
+
+        (*portalOprOut)->l1descInx = l1descInx;
+
+        return status;
     }
 
     return status;
