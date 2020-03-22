@@ -5,6 +5,7 @@
 
 #include "dataObjOpen.h"
 #include "dataObjOpenAndStat.h"
+#include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"
@@ -45,9 +46,12 @@
 
 using logger = irods::experimental::log;
 
-int
-rsDataObjOpen( rsComm_t *rsComm, dataObjInp_t *dataObjInp )
+int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
+    if (has_trailing_path_separator(dataObjInp->objPath)) {
+        return USER_INPUT_PATH_ERR;
+    }
+
     if ((dataObjInp->openFlags & O_ACCMODE) == O_RDONLY && (dataObjInp->openFlags & O_TRUNC)) {
         return USER_INCOMPATIBLE_OPEN_FLAGS;
     }
