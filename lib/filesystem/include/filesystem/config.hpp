@@ -58,7 +58,7 @@
     #define rxDataObjChksum         rcDataObjChksum
     #define rxModAccessControl      rcModAccessControl
     #define rxModAVUMetadata        rcModAVUMetadata
-    #define rxModDataObjMeta        rcModDataObjMeta
+    #define rxModDataObjMeta        rc_data_object_modify_info
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 

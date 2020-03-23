@@ -42,7 +42,7 @@
     #include "modColl.h"
     #include "rmColl.h"
     #include "modAVUMetadata.h"
-    #include "modDataObjMeta.h"
+    #include "data_object_modify_info.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
