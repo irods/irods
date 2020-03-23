@@ -62,12 +62,45 @@ set(
   irods_client
   )
 
+# data_object_modify_info API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_data_object_modify_info_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_modify_info.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_data_object_modify_info_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/data_object_modify_info.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_data_object_modify_info_server
+  RODS_SERVER
+  ENABLE_RE
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_data_object_modify_info_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_data_object_modify_info_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_data_object_modify_info_client
+  irods_client
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
   helloworld_client
   irods_get_file_descriptor_info_server
   irods_get_file_descriptor_info_client
+  irods_data_object_modify_info_server
+  irods_data_object_modify_info_client
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})
@@ -84,8 +117,9 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_SOURCE_DIR}/lib/core/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/plugins/api/include
-    ${CMAKE_SOURCE_DIR}/server/drivers/include
+    ${CMAKE_SOURCE_DIR}/server/api/include
     ${CMAKE_SOURCE_DIR}/server/core/include
+    ${CMAKE_SOURCE_DIR}/server/drivers/include
     ${CMAKE_SOURCE_DIR}/server/icat/include
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
