@@ -349,6 +349,7 @@ target_compile_definitions(irods_user_administration_server PRIVATE ${IRODS_COMP
 set(
   IRODS_LIBIRODS_CLIENT_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_get_file_descriptor_info.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rc_data_object_modify_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthPluginRequest.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthRequest.cpp
