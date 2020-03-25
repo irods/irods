@@ -27,7 +27,7 @@ int main () {
     }
     rErrMsg_t errMsg;
 
-    init_client_api_table();
+    load_client_api_plugins();
 
     rcComm_t* conn = rcConnect( myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName, myEnv.rodsZone, 1, &errMsg );
 

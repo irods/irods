@@ -10,5 +10,5 @@ namespace irods
         static int client_num_api_defs = sizeof(client_api_table_inp) / sizeof(irods::apidef_t);
         static api_entry_table client_api_table(client_api_table_inp, client_num_api_defs);
         return client_api_table;
-    } // client_api_table
+    }
 } // namespace irods
