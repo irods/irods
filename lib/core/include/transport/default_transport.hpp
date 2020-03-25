@@ -236,7 +236,7 @@ namespace NAMESPACE_IMPL {
             else if ((ios_base::out | ios_base::in | ios_base::app) == m ||
                      (ios_base::in | ios_base::app) == m)
             {
-                return O_CREAT | O_RDWR | O_APPEND | O_TRUNC;
+                return O_CREAT | O_RDWR | O_APPEND;
             }
 
             return translation_error;

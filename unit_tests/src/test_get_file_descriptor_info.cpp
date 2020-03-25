@@ -1,54 +1,53 @@
 #include "catch.hpp"
 
-#include "rcConnect.h"
 #include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
 #include "filesystem.hpp"
 #include "get_file_descriptor_info.h"
+#include "irods_at_scope_exit.hpp"
 
 #include <json.hpp>
 
 TEST_CASE("get_file_descriptor_info")
 {
+    // clang-format off
     namespace fs = irods::experimental::filesystem;
     namespace io = irods::experimental::io;
     using json   = nlohmann::json;
+    // clang-format on
 
-    auto& api_table = irods::get_client_api_table();
-    auto& pack_table = irods::get_pack_table();
-    init_api_table(api_table, pack_table);
+    load_client_api_plugins();
 
     rodsEnv env;
-    REQUIRE(getRodsEnv(&env) == 0);
+    _getRodsEnv(env);
 
-    irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 600};
+    auto conn_pool = irods::make_connection_pool();
+    auto conn = conn_pool->get_connection();
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
 
-    auto conn = conn_pool.get_connection();
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
 
-    const auto sandbox = fs::path{env.rodsHome} / "irods_unit_tests_sandbox";
-    const auto data_object_path = sandbox / "dstream_data_object.txt";
+    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    }};
 
-    fs::client::create_collection(conn, sandbox);
-
+    const auto path = sandbox / "data_object.txt";
     char* json_output = nullptr;
 
     // Guarantees that the stream is closed before clean up.
     {
         io::client::default_transport tp{conn};
-        io::odstream out{tp, data_object_path};
+        io::odstream out{tp, path};
         REQUIRE(out.is_open());
 
         const auto json_input = json{{"fd", out.file_descriptor()}}.dump();
 
         REQUIRE(rc_get_file_descriptor_info(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_output) == 0);
     }
-
-    // Clean up.
-    fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash);
 
     json info;
     REQUIRE_NOTHROW(info = json::parse(json_output));
