@@ -8,8 +8,6 @@
 
 namespace irods {
 
-constexpr int connection_pool::connection_proxy::uninitialized_index;
-
 connection_pool::connection_proxy::~connection_proxy()
 {
     if (pool_ && uninitialized_index != index_) {
