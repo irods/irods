@@ -4,6 +4,7 @@
 #include "rodsClient.h"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "data_object_modify_info.h"
 
 void usage();
 
@@ -238,9 +239,9 @@ doMod( rcComm_t *Conn, char *objPath, char *time ) {
     modDataObjMetaInp.regParam = &regParam;
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
-    status = rcModDataObjMeta( Conn, &modDataObjMetaInp );
+    status = rc_data_object_modify_info( Conn, &modDataObjMetaInp );
     if ( status ) {
-        rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
+        rodsLogError( LOG_ERROR, status, "rc_data_object_modify_info failure" );
     }
     return status;
 }
@@ -263,9 +264,9 @@ doModDatatype( rcComm_t *Conn, char *objPath, char *dataType ) {
     modDataObjMetaInp.regParam = &regParam;
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
-    status = rcModDataObjMeta( Conn, &modDataObjMetaInp );
+    status = rc_data_object_modify_info( Conn, &modDataObjMetaInp );
     if ( status ) {
-        rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
+        rodsLogError( LOG_ERROR, status, "rc_data_object_modify_info failure" );
     }
     return status;
 }
@@ -295,9 +296,9 @@ doModComment( rcComm_t *Conn, char *objPath, int numRepl, char *theComment ) {
     modDataObjMetaInp.regParam = &regParam;
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
-    status = rcModDataObjMeta( Conn, &modDataObjMetaInp );
+    status = rc_data_object_modify_info( Conn, &modDataObjMetaInp );
     if ( status ) {
-        rodsLogError( LOG_ERROR, status, "rcModDataObjMeta failure" );
+        rodsLogError( LOG_ERROR, status, "rc_data_object_modify_info failure" );
     }
     return status;
 }
