@@ -8,6 +8,7 @@
 #include <mutex>
 #include <atomic>
 #include <string>
+#include <functional>
 
 namespace irods
 {

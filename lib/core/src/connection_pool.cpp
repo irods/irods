@@ -1,8 +1,10 @@
 #include "connection_pool.hpp"
 
 #include "irods_query.hpp"
+#include "thread_pool.hpp"
 
 #include <stdexcept>
+#include <thread>
 
 namespace irods {
 
@@ -89,10 +91,45 @@ connection_pool::connection_pool(int _size,
         throw std::runtime_error{"invalid connection pool size"};
     }
 
-    for (int i = 0; i < _size; ++i) {
-        create_connection(i,
-                          [] { throw std::runtime_error{"connect error"}; },
-                          [] { throw std::runtime_error{"client login error"}; });
+    // Always initialize the first connection to guarantee that the
+    // network plugin is loaded. This guarantees that asynchronous calls
+    // to rcConnect do not cause a segfault.
+    create_connection(0,
+                      [] { throw std::runtime_error{"connect error"}; },
+                      [] { throw std::runtime_error{"client login error"}; });
+
+    // If the size of the pool is one, then return immediately.
+    if (_size == 1) {
+        return;
+    }
+
+    // Initialize the rest of the connection pool asynchronously.
+
+    irods::thread_pool thread_pool{std::min<int>(_size, std::thread::hardware_concurrency())};
+
+    std::atomic<bool> connect_error{};
+    std::atomic<bool> login_error{};
+
+    for (int i = 1; i < _size; ++i) {
+        irods::thread_pool::post(thread_pool, [this, i, &connect_error, &login_error] {
+            if (connect_error.load() || login_error.load()) {
+                return;
+            }
+
+            create_connection(i,
+                              [&connect_error] { connect_error.store(true); },
+                              [&login_error] { login_error.store(true); });
+        });
+    }
+
+    thread_pool.join();
+
+    if (connect_error.load()) {
+        throw std::runtime_error{"connect error"};
+    }
+
+    if (login_error.load()) {
+        throw std::runtime_error{"client login error"};
     }
 }
 
