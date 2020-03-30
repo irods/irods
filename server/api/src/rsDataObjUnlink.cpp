@@ -34,11 +34,48 @@
 #include "rsRegDataObj.hpp"
 #include "rcMisc.h"
 
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
+
+#define RODS_SERVER
+#include "irods_query.hpp"
+#undef RODS_SERVER
+
+#include "boost/filesystem/path.hpp"
+
+#include <string>
+#include <string_view>
+
+namespace
+{
+    auto is_data_object_in_vault(rsComm_t& comm,
+                                 const boost::filesystem::path& logical_path,
+                                 std::string_view resc_hier) -> std::tuple<int, bool>
+    {
+        std::string vault_path;
+        if (const auto err = irods::get_vault_path_for_hier_string(resc_hier.data(), vault_path); !err.ok()) {
+            return {err.code(), false};
+        }
+
+        namespace fs = boost::filesystem;
+
+        std::string gql = "select DATA_PATH where COLL_NAME = '";
+        gql += logical_path.parent_path().c_str();
+        gql += "' and DATA_NAME = '";
+        gql += logical_path.filename().c_str();
+        gql += '\'';
+
+        std::string physical_path;
+        for (auto&& row : irods::query{&comm, gql}) {
+            physical_path = row[0];
+        }
+
+        // Return whether the vault path is the prefix of the physical path.
+        return {0, has_prefix(physical_path.data(), vault_path.data())};
+    }
+} // anonymous namespace
 
 int
 rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
@@ -87,7 +124,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     // =-=-=-=-=-=-=-
     // determine the resource hierarchy if one is not provided
     if ( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        std::string       hier;
+        std::string hier;
         irods::error ret = irods::resolve_resource_hierarchy( irods::UNLINK_OPERATION,
                            rsComm, dataObjUnlinkInp, hier, &dataObjInfoHead );
         if ( !ret.ok() ) {
@@ -107,19 +144,32 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     } // if keyword
 
-    if ( getValByKey(
-                &dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW ) != NULL ||
-            getValByKey(
-                &dataObjUnlinkInp->condInput, RMTRASH_KW ) != NULL ) {
+    if (getValByKey(&dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW) != NULL ||
+        getValByKey(&dataObjUnlinkInp->condInput, RMTRASH_KW) != NULL)
+    {
         if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
             return SYS_INVALID_FILE_PATH;
         }
+
         rmTrashFlag = 1;
+
+        // Check if the data object is in a vault. If so, then unregister it.
+        // This keeps registered files from being permanently deleted.
+
+        const auto* resc_hier = getValByKey(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW);
+        const auto [ec, in_vault] = is_data_object_in_vault(*rsComm, dataObjUnlinkInp->objPath, resc_hier);
+
+        if (ec) {
+            return ec;
+        }
+
+        if (!in_vault) {
+            dataObjUnlinkInp->oprType = UNREG_OPR;
+        }
     }
 
     dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
-    status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp,
-                                    &dataObjInfoHead );
+    status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
 
     if ( status < 0 ) {
         char* sys_error = NULL;
@@ -148,11 +198,13 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         }
     }
 
-    if ( dataObjUnlinkInp->oprType == UNREG_OPR ||
-            getValByKey( &dataObjUnlinkInp->condInput, FORCE_FLAG_KW ) != NULL ||
-            getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != NULL ||
-            getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ||
-            dataObjInfoHead->specColl != NULL || rmTrashFlag == 1 ) {
+    if (dataObjUnlinkInp->oprType == UNREG_OPR ||
+        getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
+        getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
+        getValByKey(&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) != NULL ||
+        dataObjInfoHead->specColl != NULL ||
+        rmTrashFlag == 1)
+    {
         status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
     }
     else {
@@ -168,10 +220,8 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
             freeAllDataObjInfo( dataObjInfoHead );
             return status;
         }
-        else {
-            status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp,
-                                       &dataObjInfoHead );
-        }
+
+        status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
     }
 
     initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
@@ -198,32 +248,29 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     return status;
 }
 
-int
-_rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-                  dataObjInfo_t **dataObjInfoHead ) {
-    int status;
-    int retVal = 0;
+int _rsDataObjUnlink(rsComm_t *rsComm,
+                     dataObjInp_t *dataObjUnlinkInp,
+                     dataObjInfo_t **dataObjInfoHead)
+{
     dataObjInfo_t *tmpDataObjInfo, *myDataObjInfoHead;
-
-    status = chkPreProcDeleteRule( rsComm, dataObjUnlinkInp, *dataObjInfoHead );
+    int status = chkPreProcDeleteRule( rsComm, dataObjUnlinkInp, *dataObjInfoHead );
     if ( status < 0 ) {
         return status;
     }
 
-
     myDataObjInfoHead = *dataObjInfoHead;
     if ( strstr( myDataObjInfoHead->dataType, BUNDLE_STR ) != NULL ) { // JMC - backport 4658
-        int numSubfiles; // JMC - backport 4552
         if ( rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
         }
+
         if ( getValByKey( &dataObjUnlinkInp->condInput, REPL_NUM_KW ) != NULL ) {
             return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
         }
 
         // =-=-=-=-=-=-=-
         // JMC - backport 4552
-        numSubfiles = getNumSubfilesInBunfileObj( rsComm, myDataObjInfoHead->objPath );
+        int numSubfiles = getNumSubfilesInBunfileObj( rsComm, myDataObjInfoHead->objPath );
         if ( numSubfiles > 0 ) {
             if ( getValByKey( &dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW ) != NULL ) {
                 /* not empty. Nothing to do */
@@ -240,6 +287,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                         return status;
                     }
                 } // status < 0
+
                 /* dataObjInfoHead may be outdated */
                 *dataObjInfoHead = NULL;
                 status = getDataObjInfoIncSpecColl( rsComm, dataObjUnlinkInp, dataObjInfoHead );
@@ -252,6 +300,7 @@ _rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     } // if strcmp
     // =-=-=-=-=-=-=-
 
+    int retVal = 0;
     tmpDataObjInfo = *dataObjInfoHead;
     while ( tmpDataObjInfo != NULL ) {
         status = dataObjUnlinkS( rsComm, dataObjUnlinkInp, tmpDataObjInfo );
