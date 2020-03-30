@@ -553,3 +553,24 @@ void remove_trailing_path_separators(char* path)
     std::strcpy(path, new_p.c_str());
 }
 
+int has_prefix(const char* path, const char* prefix)
+{
+    namespace fs = irods::experimental::filesystem;
+
+    const fs::path parent = prefix;
+    const fs::path child = path;
+
+    if (parent == child) {
+        return false;
+    }
+
+    auto p_iter = std::begin(parent);
+    auto p_last = std::end(parent);
+    auto c_iter = std::begin(child);
+    auto c_last = std::end(child);
+
+    for (; p_iter != p_last && c_iter != c_last && *p_iter == *c_iter; ++p_iter, ++c_iter);
+
+    return (p_iter == p_last);
+}
+
