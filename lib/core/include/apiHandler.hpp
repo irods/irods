@@ -1,10 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* apiHandler.h - header file for apiHandler.h
- */
-
-
+/* apiHandler.h - header file for apiHandler.h */
 
 #ifndef API_HANDLER_HPP
 #define API_HANDLER_HPP
@@ -294,6 +291,7 @@ namespace irods
         std::function<void( void* )> clearInStruct;		//free input struct function
 
     private:
+#ifdef ENABLE_RE
         template<typename... types_t>
         error invoke_policy_enforcement_point(
             rule_engine_context_manager_type _re_ctx_mgr,
@@ -319,6 +317,12 @@ namespace irods
                         }
                         else if (op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
                             skip_op_err = op_err;
+
+                            if (_class != "pre") {
+                                rodsLog(LOG_WARNING, "RULE_ENGINE_SKIP_OPERATION (%d) incorrectly returned from PEP [%s]! "
+                                                     "RULE_ENGINE_SKIP_OPERATION should only be returned from pre-PEPs!",
+                                                     RULE_ENGINE_SKIP_OPERATION, rule_name.c_str());
+                            }
                         }
                     }
                     else {
@@ -337,6 +341,7 @@ namespace irods
 
             return saved_op_err;
         } // invoke_policy_enforcement_point
+#endif // ENABLE_RE
     }; // class api_entry
 
     typedef boost::shared_ptr< api_entry > api_entry_ptr;

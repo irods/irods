@@ -370,6 +370,12 @@ namespace irods
                         }
                         else if (op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
                             skip_op_err = op_err;
+
+                            if (_class != "pre") {
+                                rodsLog(LOG_WARNING, "RULE_ENGINE_SKIP_OPERATION (%d) incorrectly returned from PEP [%s]! "
+                                                     "RULE_ENGINE_SKIP_OPERATION should only be returned from pre-PEPs!",
+                                                     RULE_ENGINE_SKIP_OPERATION, rule_name.c_str());
+                            }
                         }
                     }
                     else {
