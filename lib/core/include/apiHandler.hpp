@@ -338,6 +338,7 @@ namespace irods
         std::function<void( void* )> clearInStruct;		//free input struct function
 
     private:
+#ifdef ENABLE_RE
         template<typename... types_t>
         error invoke_policy_enforcement_point(
             rule_engine_context_manager_type _re_ctx_mgr,
@@ -346,6 +347,10 @@ namespace irods
             const std::string&               _class,
             types_t...                       _t)
         {
+#ifdef IRODS_ENABLE_SYSLOG
+            using log = irods::experimental::log::rule_engine;
+#endif // IRODS_ENABLE_SYSLOG
+
             bool ret = false;
             error saved_op_err = SUCCESS();
             error skip_op_err = SUCCESS();
@@ -358,16 +363,28 @@ namespace irods
                         error op_err = _re_ctx_mgr.exec_rule(rule_name, instance_name_, _ctx, std::forward<types_t>(_t)...);
 
                         if (!op_err.ok()) {
-                            rodsLog(LOG_DEBUG, "%s-pep rule [%s] failed with error code [%d]", _class.c_str(), rule_name.c_str(), op_err.code());
+#ifdef IRODS_ENABLE_SYSLOG
+                            log::debug("{}-pep rule [{}] failed with error code [{}]", _class, rule_name, op_err.code());
+#endif // IRODS_ENABLE_SYSLOG
                             saved_op_err = op_err;
                         }
                         else if (op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
                             skip_op_err = op_err;
+
+#ifdef IRODS_ENABLE_SYSLOG
+                            if (_class != "pre") {
+                                log::warn("RULE_ENGINE_SKIP_OPERATION ({}) incorrectly returned from PEP [{}]! "
+                                          "RULE_ENGINE_SKIP_OPERATION should only be returned from pre-PEPs!",
+                                          RULE_ENGINE_SKIP_OPERATION, rule_name);
+                            }
+#endif // IRODS_ENABLE_SYSLOG
                         }
                     }
+#ifdef IRODS_ENABLE_SYSLOG
                     else {
-                        rodsLog(LOG_DEBUG10, "Rule [%s] passes regex test, but does not exist", rule_name.c_str());
+                        log::trace("Rule [{}] passes regex test, but does not exist", rule_name);
                     }
+#endif // IRODS_ENABLE_SYSLOG
                 }
             }
 
@@ -381,6 +398,7 @@ namespace irods
 
             return saved_op_err;
         } // invoke_policy_enforcement_point
+#endif // ENABLE_RE
     }; // class api_entry
 
     typedef boost::shared_ptr< api_entry > api_entry_ptr;

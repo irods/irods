@@ -282,6 +282,56 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
             self.admin.assert_icommand(['iput', filename])
             self.admin.assert_icommand(['ils', os.path.basename(filename)], 'STDERR_SINGLELINE', '{} does not exist'.format(os.path.basename(filename)))
 
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_repf_logs_warning_if_skip_operation_code_is_returned_from_non_pre_peps__issue_4800(self):
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            config.server_config['log_level']['rule_engine'] = 'trace'
+            lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+
+            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+            # Test Post-PEPs and Finally-PEPs.
+            for pep_suffix in ['post', 'finally']:
+                with lib.file_backed_up(core_re_path):
+                    # Return RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
+                    with open(core_re_path, 'a') as core_re:
+                        core_re.write('pep_api_data_obj_put_{0}(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) {{ 5001000 }}'.format(pep_suffix))
+
+                    filename = os.path.join(self.admin.local_session_dir, 'foo')
+                    lib.make_file(filename, 1, 'arbitrary')
+
+                    # Capture the current size of the log file. This will be used as the starting
+                    # point for searching the log file for a particular string.
+                    log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+                    self.admin.assert_icommand(['iput', filename])
+
+                    msg = 'RULE_ENGINE_SKIP_OPERATION (5001000) incorrectly returned from PEP [pep_api_data_obj_put_{0}]'.format(pep_suffix)
+                    lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+
+                    self.admin.assert_icommand(['irm', os.path.basename(filename)])
+
+            # Test Except-PEPs.
+            with lib.file_backed_up(core_re_path):
+                # Return RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write('pep_api_data_obj_put_pre(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) { -1 }\n')
+                    core_re.write('pep_api_data_obj_put_except(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) { 5001000 }\n')
+
+                filename = os.path.join(self.admin.local_session_dir, 'foo')
+                lib.make_file(filename, 1, 'arbitrary')
+
+                # Capture the current size of the log file. This will be used as the starting
+                # point for searching the log file for a particular string.
+                log_offset = lib.get_file_size_by_path(paths.server_log_path())
+
+                self.admin.assert_icommand_fail(['iput', filename])
+
+                msg = 'RULE_ENGINE_SKIP_OPERATION (5001000) incorrectly returned from PEP [pep_api_data_obj_put_except]'
+                lib.delayAssert(lambda: lib.log_message_occurrences_greater_than_count(msg=msg, count=0, start_index=log_offset))
+
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
 
     plugin_name = IrodsConfig().default_rule_engine_plugin
