@@ -75,6 +75,21 @@ int has_trailing_path_separator(const char* path);
 
 // Removes trailing slashes from path in-place.
 void remove_trailing_path_separators(char* path);
+
+/// Returns whether \p path starts with \p prefix.
+///
+/// \p path and \p prefix are expected to be null-terminated strings.
+/// The behavior is undefined if either string is not null-terminated.
+///
+/// \since 4.2.8
+///
+/// \param[in] path   The path to search.
+/// \param[in] prefix The path to look for.
+///
+/// \return An interger value.
+/// \retval non-zero If \p path starts with \p prefix.
+/// \retval 0        Otherwise.
+int has_prefix(const char* path, const char* prefix);
 #ifdef __cplusplus
 }
 #endif
