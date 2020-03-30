@@ -820,7 +820,7 @@ target_include_directories(
 set_property(TARGET irods_server PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
-target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER IRODS_ENABLE_SYSLOG ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_server PRIVATE -Wno-write-strings)
 
 set(
