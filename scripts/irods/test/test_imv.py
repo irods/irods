@@ -40,3 +40,17 @@ class Test_Imv(session.make_sessions_mixin([('otherrods', 'rods')], []), unittes
                 self.admin.assert_icommand(['imv', src, dst])
                 self.admin.assert_icommand('ils', 'STDOUT', dst)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_imv_prints_error_on_non_existent_collection__issue_4414(self):
+        # Put a file into iRODS.
+        filename = os.path.join(self.admin.local_session_dir, 'foo')
+        lib.make_file(filename, 1024, 'arbitrary')
+        self.admin.assert_icommand(['iput', filename])
+
+        # Try to move the data object under a non-existent collection.
+        data_object = os.path.basename(filename)
+        new_path = os.path.join(self.admin.session_collection, 'non_existent_collection.d', data_object)
+        _, stderr, ec = self.admin.run_icommand(['imv', data_object, new_path])
+        self.assertTrue('-814000 CAT_UNKNOWN_COLLECTION' in stderr)
+        self.assertTrue(ec != 0)
+
