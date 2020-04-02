@@ -225,13 +225,12 @@ namespace irods
         }
 
         try {
-            rodsLog(LOG_DEBUG, "Added API number [%d] to the client API whitelist.", api_number);
             api_numbers_.push_back(api_number);
+            rodsLog(LOG_DEBUG, "Added API number [%d] to the client API whitelist.", api_number);
         }
         catch (const std::exception& e) {
-            const auto ec = SYS_INTERNAL_ERR;
-            const auto* msg = "Could not add API number to whitelist [error_code => %d, exception => %s]";
-            rodsLog(LOG_ERROR, msg, ec, e.what());
+            rodsLog(LOG_ERROR, "Could not add API number [%d] to whitelist [error_code => %d, exception => %s]",
+                    api_number, SYS_INTERNAL_ERR, e.what());
         }
     }
 } // namespace irods
