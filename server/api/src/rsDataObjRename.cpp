@@ -6,7 +6,9 @@
 #include "objMetaOpr.hpp"
 #include "dataObjOpr.hpp"
 #include "collection.hpp"
+#include "rcMisc.h"
 #include "resource.hpp"
+#include "rodsErrorTable.h"
 #include "specColl.hpp"
 #include "physPath.hpp"
 #include "subStructFileRename.h"
@@ -29,8 +31,6 @@
 #include "rsFileReaddir.hpp"
 #include "rsDataObjClose.hpp"
 #include "rsRmColl.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"
@@ -340,11 +340,10 @@ _rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
         if ( strcmp( srcColl, destColl ) != 0 ) {
             /* move. The destColl is the target  */
             status = isColl( rsComm, destColl, &destId );
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "_rsDataObjRename: dest coll %s does not exist, status = %d",
-                         destColl, status );
-                return status;
+            if (status < 0) {
+                rodsLog(LOG_ERROR, "_rsDataObjRename: Destination collection does not exist [collection = %s, error_code = %d]",
+                        destColl, status);
+                return CAT_UNKNOWN_COLLECTION;
             }
 
             /**  June 1 2009 for pre-post processing rule hooks **/
