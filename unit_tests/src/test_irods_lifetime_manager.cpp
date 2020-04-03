@@ -92,9 +92,9 @@ TEST_CASE("test_bytesBuf_t", "[lib]")
     bytesBuf_t* buf = get_pointer_to_struct<bytesBuf_t>();
     irods::experimental::lifetime_manager lm{*buf};
     const std::string str = "this is only a test";
-    buf->buf = get_pointer_to_struct<char*>();
+    buf->buf = get_pointer_to_struct<char>(str.size() + 1);
     std::strncpy(static_cast<char*>(buf->buf), str.c_str(), str.size());
-    buf->len = str.size();
+    buf->len = str.size() + 1;
     REQUIRE(str == static_cast<char*>(buf->buf));
 }
 
