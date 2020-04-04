@@ -13,18 +13,17 @@ import time
 import irods_python_ci_utilities
 
 
-def build(icommands_git_repository, icommands_git_commitish, debug_build, output_root_directory):
-    install_building_dependencies()
+def build(icommands_git_repository, icommands_git_commitish, debug_build, output_root_directory, externals_directory):
+    install_building_dependencies(externals_directory)
     irods_build_dir = build_irods(debug_build)
     install_irods_dev_and_runtime(irods_build_dir)
     icommands_build_dir = build_icommands(icommands_git_repository, icommands_git_commitish, debug_build)
     if output_root_directory:
         copy_output_packages(irods_build_dir, icommands_build_dir, output_root_directory)
 
-def install_building_dependencies():
-    irods_python_ci_utilities.install_irods_core_dev_repository()
-    install_cmake_and_add_to_front_of_path()
-    irods_python_ci_utilities.install_os_packages([
+def install_building_dependencies(externals_directory):
+    externals_list = [
+        'irods-externals-cmake3.11.4-0',
         'irods-externals-avro1.9.0-0',
         'irods-externals-boost1.67.0-0',
         'irods-externals-catch22.3.0-0',
@@ -34,11 +33,22 @@ def install_building_dependencies():
         'irods-externals-json3.7.3-0',
         'irods-externals-libarchive3.3.2-1',
         'irods-externals-zeromq4-14.1.6-0'
-        ])
+        ]
+    if externals_directory is None or externals_directory == 'None':
+        irods_python_ci_utilities.install_irods_core_dev_repository()
+        irods_python_ci_utilities.install_os_packages(externals_list)
+    else:
+        package_suffix = irods_python_ci_utilities.get_package_suffix()
+        os_specific_directory = irods_python_ci_utilities.append_os_specific_directory(externals_directory)
+        externals = []
+        for irods_externals in externals_list:
+            externals.append(glob.glob(os.path.join(os_specific_directory, irods_externals + '*.{0}'.format(package_suffix)))[0])
+        irods_python_ci_utilities.install_os_packages_from_files(externals)
+
+    add_cmake_to_front_of_path()
     install_os_specific_dependencies()
 
-def install_cmake_and_add_to_front_of_path():
-    irods_python_ci_utilities.install_os_packages(['irods-externals-cmake3.11.4-0'])
+def add_cmake_to_front_of_path():
     cmake_path = '/opt/irods-externals/cmake3.11.4-0/bin'
     os.environ['PATH'] = os.pathsep.join([cmake_path, os.environ['PATH']])
 
@@ -139,6 +149,7 @@ def main():
     parser.add_option('--debug_build', default='false')
     parser.add_option('--icommands_git_commitish')
     parser.add_option('--icommands_git_repository')
+    parser.add_option('--externals_packages_directory')
     parser.add_option('--output_root_directory')
     parser.add_option('--just_install_dependencies', action='store_true', default=False)
     parser.add_option('--verbose', action='store_true', default=False)
@@ -148,7 +159,7 @@ def main():
         register_log_handler()
 
     if options.just_install_dependencies:
-        install_building_dependencies()
+        install_building_dependencies(options.externals_packages_directory)
         return
 
     if options.debug_build not in ['false', 'true']:
@@ -165,7 +176,7 @@ def main():
 
     build(
         options.icommands_git_repository, options.icommands_git_commitish,
-        options.debug_build == 'true', options.output_root_directory)
+        options.debug_build == 'true', options.output_root_directory, options.externals_packages_directory)
 
 if __name__ == '__main__':
     main()
