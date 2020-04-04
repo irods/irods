@@ -12,6 +12,7 @@
 #include "physPath.hpp"
 #include "dataObjOpr.hpp"
 #include "rodsDef.h"
+#include "rodsPath.h"
 #include "rsGlobalExtern.hpp"
 #include "fileChksum.h"
 #include "modDataObjMeta.h"
@@ -1057,13 +1058,7 @@ isInVault( dataObjInfo_t *dataObjInfo ) {
     }
     len = vault_path.size();
 
-    if ( strncmp( vault_path.c_str(),
-                  dataObjInfo->filePath, len ) == 0 ) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    return has_prefix(dataObjInfo->filePath, vault_path.c_str());
 }
 
 int
