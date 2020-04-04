@@ -65,56 +65,6 @@ fi
 #echo "PACKAGEUPGRADE=[$PACKAGEUPGRADE]"
 
 if [ "$PACKAGEUPGRADE" == "false" ] ; then
-    # =-=-=-=-=-=-=-
-    # determine if we can remove the resource from the zone
-    if [ "$SERVER_TYPE" == "resource" ] ; then
-
-        hn=`hostname`
-        dn=`hostname -d`
-        fhn="$hn.$dn"
-        echo "Testing Safe Resource Removal"
-        do_not_remove="FALSE"
-
-        # =-=-=-=-=-=-=-
-        # do a dryrun on the resource removal to determine if this resource server can
-        # be safely removed without harming any data
-            resources_to_remove=()
-        for resc in `su -c "iadmin lr" $IRODS_SERVICE_ACCOUNT_NAME`; do
-            # =-=-=-=-=-=-=-
-            # for each resource determine its location.  if it is this server then dryrun
-            loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $IRODS_SERVICE_ACCOUNT_NAME )
-
-            if [[ $loc == $hn || $loc == $fhn ]]; then
-                rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $IRODS_SERVICE_ACCOUNT_NAME )
-                if [[ "x$rem" == "x" ]]; then
-                    # =-=-=-=-=-=-=-
-                    # dryrun for a local resource was a failure, set a flag
-                    do_not_remove="TRUE"
-                else
-                    # =-=-=-=-=-=-=-
-                    # dryrun for a local resource was a success, add resc to array for removal
-                    echo "  Adding [$resc] for removal..."
-                    resources_to_remove+=($resc)
-                fi
-            fi
-        done
-
-        if [[ "$do_not_remove" == "TRUE" ]]; then
-                # hard stop
-            echo "ERROR :: Unable To Remove a Locally Resident Resource.  Aborting."
-            echo "      :: Please run 'iadmin rmresc --dryrun RESOURCE_NAME' on local resources for more information."
-            exit 1
-        else
-            # loop through and remove the resources
-            for delresc in ${resources_to_remove[*]}; do
-                echo "  Removing Resource [$delresc]"
-                su -c "iadmin rmresc $delresc" $IRODS_SERVICE_ACCOUNT_NAME
-                if [ $? != 0 ] ; then
-                    exit 1
-                fi
-            done
-        fi
-    fi
 
     # =-=-=-=-=-=-=-
     # stop any running iRODS Processes
