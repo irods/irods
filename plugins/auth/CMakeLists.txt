@@ -30,6 +30,7 @@ set(
   IRODS_AUTH_PLUGIN_COMPILE_DEFINITIONS_server
   RODS_SERVER
   ENABLE_RE
+  IRODS_ENABLE_SYSLOG
   )
 
 set(
@@ -40,6 +41,7 @@ set(
 set(
   IRODS_AUTH_PLUGIN_LINK_LIBRARIES_server
   irods_server
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   )
 
 set(
@@ -68,9 +70,9 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         ${CMAKE_SOURCE_DIR}/server/drivers/include
         ${CMAKE_SOURCE_DIR}/server/icat/include
         ${CMAKE_SOURCE_DIR}/server/re/include
-        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-        ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
         ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
+        ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+        ${IRODS_EXTERNALS_FULLPATH_FMT}/include
         ${OPENSSL_INCLUDE_DIR}
         )
 

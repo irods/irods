@@ -125,6 +125,7 @@ template <log::level Level>
 class log::logger<Category>::impl
 {
 public:
+#ifdef IRODS_ENABLE_SYSLOG
     template <typename T>
     using is_iterable = decltype(std::begin(std::declval<std::decay_t<T>>()));
 
@@ -174,6 +175,20 @@ public:
             log_message(_first, _last);
         }
     }
+#else
+    // Clients should not have access to the logger, therefore we provide a
+    // different implementation to allow inclusion of the logger without
+    // breaking any existing implementation.
+
+    constexpr void operator()(std::initializer_list<log::key_value> _list) const noexcept
+    {
+    }
+
+    template <typename ...Args>
+    constexpr void operator()(Args&&...) const noexcept
+    {
+    }
+#endif // IRODS_ENABLE_SYSLOG
 
 private:
     struct tag
@@ -320,6 +335,7 @@ private:
               typename = std::enable_if_t<std::is_same_v<ValueType, log::key_value>>>
     void log_message(ForwardIt _first, ForwardIt _last) const
     {
+#ifdef IRODS_ENABLE_SYSLOG
         const auto msg = to_json_string(_first, _last);
 
         if constexpr (Level == level::trace) {
@@ -342,6 +358,7 @@ private:
         }
 
         append_to_r_error_stack(_first, _last);
+#endif // IRODS_ENABLE_SYSLOG
     }
 
     template <typename ForwardIt>
