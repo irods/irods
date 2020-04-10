@@ -6,9 +6,9 @@
 #include "stringOpr.h"
 #include "irods_exception.hpp"
 
+#include <ctime>
 #include <string>
 
-#include <time.h>
 #include <sys/time.h>
 
 namespace irods {

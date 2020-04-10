@@ -16,9 +16,7 @@
     #include "irods_at_scope_exit.hpp"
 #endif
 
-#ifdef IRODS_ENABLE_SYSLOG
-    #include "irods_logger.hpp"
-#endif // IRODS_ENABLE_SYSLOG
+#include "irods_logger.hpp"
 
 #include "irods_error.hpp"
 #include "irods_lookup_table.hpp"
@@ -357,9 +355,7 @@ namespace irods
             const std::string&               _class,
             types_t...                       _t)
         {
-#ifdef IRODS_ENABLE_SYSLOG
             using log = irods::experimental::log::rule_engine;
-#endif // IRODS_ENABLE_SYSLOG
 
             bool ret = false;
             error saved_op_err = SUCCESS();
@@ -373,28 +369,22 @@ namespace irods
                         error op_err = _re_ctx_mgr.exec_rule(rule_name, instance_name_, _ctx, _out_param, std::forward<types_t>(_t)...);
 
                         if (!op_err.ok()) {
-#ifdef IRODS_ENABLE_SYSLOG
                             log::debug("{}-pep rule [{}] failed with error code [{}]", _class, rule_name, op_err.code());
-#endif // IRODS_ENABLE_SYSLOG
                             saved_op_err = op_err;
                         }
                         else if (op_err.code() == RULE_ENGINE_SKIP_OPERATION) {
                             skip_op_err = op_err;
 
-#ifdef IRODS_ENABLE_SYSLOG
                             if (_class != "pre") {
                                 log::warn("RULE_ENGINE_SKIP_OPERATION ({}) incorrectly returned from PEP [{}]! "
                                           "RULE_ENGINE_SKIP_OPERATION should only be returned from pre-PEPs!",
                                           RULE_ENGINE_SKIP_OPERATION, rule_name);
                             }
-#endif // IRODS_ENABLE_SYSLOG
                         }
                     }
-#ifdef IRODS_ENABLE_SYSLOG
                     else {
                         log::trace("Rule [{}] passes regex test, but does not exist", rule_name);
                     }
-#endif // IRODS_ENABLE_SYSLOG
                 }
             }
 
