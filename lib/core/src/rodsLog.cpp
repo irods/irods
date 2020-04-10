@@ -10,17 +10,18 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include "irods_socket_information.hpp"
 
 #ifdef SYSLOG
-#ifndef windows_platform
-#include <syslog.h>
-#endif
+    #ifndef windows_platform
+        #include <syslog.h>
+    #endif
 #endif
 
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
-#include <time.h>
+#include <ctime>
 #include <map>
 #include <string>
+#include <string_view>
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
@@ -29,15 +30,15 @@ const static std::map<const int, const std::string> irods_error_map = irods_erro
 #include "irods_logger.hpp"
 
 #ifndef windows_platform
-#include <unistd.h>
+    #include <unistd.h>
 #endif
 
 #ifdef windows_platform
-#include "irodsntutil.hpp"
+    #include "irodsntutil.hpp"
 #endif
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300
-#include <stdarg.h>
+#include <cstdarg>
 
 #include <iostream>
 
@@ -81,8 +82,9 @@ std::string create_log_error_prefix() {
     return ret;
 }
 
-void forward_to_syslog(int _log_level, const std::string& _msg)
+void forward_to_syslog(int _log_level, std::string_view _msg)
 {
+#if defined(IRODS_ENABLE_SYSLOG) && (defined(RODS_SERVER) || defined(RODS_CLERVER))
     if (CLIENT_PT == ::ProcessType) {
         return;
     }
@@ -119,6 +121,7 @@ void forward_to_syslog(int _log_level, const std::string& _msg)
     else {
         info(_msg);
     }
+#endif // defined(IRODS_ENABLE_SYSLOG) && (defined(RODS_SERVER) || defined(RODS_CLERVER))
 }
 
 /*
