@@ -1,14 +1,6 @@
 # TODO static dev libraries?
 # TODO symlinks for h -> hpp headers?
 
-install(
-  TARGETS
-    RodsAPIs
-  ARCHIVE
-    DESTINATION usr/lib
-    COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
-  )
-
 set(
   IRODS_GENERATED_HEADERS
   ${CMAKE_BINARY_DIR}/lib/core/include/irods_version.h

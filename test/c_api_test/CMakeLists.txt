@@ -14,6 +14,8 @@ target_include_directories(
 target_link_libraries(
   mytest
   PRIVATE
-  RodsAPIs
+  irods_common
+  irods_client
+  c++
   ${CMAKE_THREAD_LIBS_INIT}
   )
