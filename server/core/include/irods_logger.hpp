@@ -20,7 +20,7 @@
 #include <sstream>
 #include <chrono>
 
-#include <spdlog.h> // Bundles and includes the fmt library.
+#include <spdlog/spdlog.h> // Bundles and includes the fmt library.
 #include <json.hpp>
 
 #include <boost/range/iterator_range_core.hpp>

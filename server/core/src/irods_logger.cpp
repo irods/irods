@@ -12,6 +12,9 @@
 #include "boost/interprocess/sync/named_mutex.hpp"
 #include "boost/interprocess/sync/scoped_lock.hpp"
 
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/syslog_sink.h>
+
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -46,18 +49,18 @@ public:
     }
 
 protected:
-    void _sink_it(const spdlog::details::log_msg& _msg) override
+    void sink_it_(const spdlog::details::log_msg& _msg) override
     {
         try {
             ipc::scoped_lock<ipc::named_mutex> lock{mutex_};
-            file_ << _msg.raw.c_str() << std::endl;
+            file_ << _msg.payload.data() << std::endl;
         }
         catch (const ipc::interprocess_exception& e) {
             file_ << "ERROR: " << e.what() << std::endl;
         }
     }
 
-    void _flush() override
+    void flush_() override
     {
     }
 
@@ -95,18 +98,18 @@ public:
     }
 
 protected:
-    void _sink_it(const spdlog::details::log_msg& _msg) override
+    void sink_it_(const spdlog::details::log_msg& _msg) override
     {
         try {
             ipc::scoped_lock<ipc::named_mutex> lock{mutex_};
-            std::cout << _msg.raw.c_str() << std::endl;
+            std::cout << _msg.payload.data() << std::endl;
         }
         catch (const ipc::interprocess_exception& e) {
             std::cerr << "ERROR: " << e.what() << std::endl;
         }
     }
 
-    void _flush() override
+    void flush_() override
     {
     }
 
@@ -126,7 +129,7 @@ void log::init(bool _write_to_stdout, bool _enable_test_mode) noexcept
     }
     else {
         static const char* id = "";
-        sinks.push_back(std::make_shared<spdlog::sinks::syslog_sink>(id, LOG_PID, LOG_LOCAL0));
+        sinks.push_back(std::make_shared<spdlog::sinks::syslog_sink_st>(id, LOG_PID, LOG_LOCAL0, false));
     }
 
     if (_enable_test_mode) {
