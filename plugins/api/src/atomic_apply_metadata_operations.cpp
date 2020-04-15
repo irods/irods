@@ -39,6 +39,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <chrono>
 #include <system_error>
@@ -426,10 +427,10 @@ namespace
             }
         }
         else {
-            const auto* json_input = static_cast<const char*>(_input->buf);
+            std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
             char* json_output = nullptr;
 
-            const auto ec = rc_atomic_apply_metadata_operations(rodsServerHost->conn, json_input, &json_output);
+            const auto ec = rc_atomic_apply_metadata_operations(rodsServerHost->conn, json_input.data(), &json_output);
             *_output = to_bytes_buffer(json_output);
 
             return ec;

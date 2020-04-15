@@ -17,7 +17,7 @@ auto rc_atomic_apply_metadata_operations(rcComm_t* _comm, const char* _json_inpu
 
     bytesBuf_t input_buf{};
     input_buf.buf = const_cast<char*>(_json_input);
-    input_buf.len = static_cast<int>(std::strlen(_json_input));
+    input_buf.len = static_cast<int>(std::strlen(_json_input)) + 1;
 
     bytesBuf_t* output_buf{};
 

@@ -147,6 +147,7 @@
 
  \subsection msiotheruser Other User Microservices
   - #msiModAVUMetadata - Modifies AVU metadata on a user, resource, data object, or collection
+  - #msi_atomic_apply_metadata_operations - Atomically modifies multiple AVUs on a single user, resource, data object, or collection
   - #msiExtractNaraMetadata - Extracts NARA style metadata from a local configuration file
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection
   - #msiRegisterData - Registers a new data object
