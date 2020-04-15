@@ -15,7 +15,7 @@ typedef struct {
     char *columnName;
 } columnName_t;
 
-columnName_t columnNames[] = {
+const columnName_t columnNames[] = {
     { COL_ZONE_ID,          "ZONE_ID", },
     { COL_ZONE_NAME,        "ZONE_NAME", },
 
@@ -378,9 +378,8 @@ columnName_t columnNames[] = {
     { COL_TICKET_COLL_NAME,                "TICKET_COLL_NAME", },
     { COL_TICKET_OWNER_NAME,               "TICKET_OWNER_NAME", },
     { COL_TICKET_OWNER_ZONE,               "TICKET_OWNER_ZONE", },
-
 };
 
-int NumOfColumnNames = sizeof( columnNames ) / sizeof( columnName_t );
+const int NumOfColumnNames = sizeof( columnNames ) / sizeof( columnName_t );
 
 #endif	/* GEN_QUERY_NAMES_H__ */

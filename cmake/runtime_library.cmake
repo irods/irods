@@ -5,8 +5,8 @@ install(
   irods_plugin_dependencies
   irods_server
   EXPORT IRODSTargets
-  LIBRARY
-  DESTINATION usr/lib
+  ARCHIVE DESTINATION usr/lib
+  LIBRARY DESTINATION usr/lib
   COMPONENT ${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME}
   )
 

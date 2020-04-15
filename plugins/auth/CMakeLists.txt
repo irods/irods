@@ -78,8 +78,8 @@ foreach(PLUGIN ${IRODS_AUTH_PLUGINS})
         ${IRODS_CURRENT_PLUGIN_TARGET}
         PRIVATE
         ${IRODS_AUTH_PLUGIN_LINK_LIBRARIES_${TYPE}}
-        irods_common
-        irods_plugin_dependencies
+        #irods_common
+        #irods_plugin_dependencies
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
         ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
         ${OPENSSL_CRYPTO_LIBRARY}

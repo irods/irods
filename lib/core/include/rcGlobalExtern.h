@@ -11,11 +11,11 @@
 #include "msParam.h"
 #include "guiProgressCallback.h"
 
-extern packConstant_t PackConstantTable[];
+extern const packConstant_t PackConstantTable[];
 extern const packInstruct_t RodsPackTable[];
 extern int ProcessType;
-extern packType_t packTypeTable[];
-extern int NumOfPackTypes;
+extern const packType_t packTypeTable[];
+extern const int NumOfPackTypes;
 extern int NumOfApi;
 extern char *dataObjCond[];
 extern char *compareOperator[];

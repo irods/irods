@@ -30,7 +30,7 @@ foreach(PLUGIN ${IRODS_MICROSERVICE_ADMINISTRATION_PLUGINS})
     ${PLUGIN}
     PRIVATE
     irods_server
-    irods_common
+    #irods_common
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${CURL_LIBRARIES}

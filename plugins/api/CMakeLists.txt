@@ -170,8 +170,8 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${PLUGIN}
     PRIVATE
     ${IRODS_API_PLUGIN_LINK_LIBRARIES_${PLUGIN}}
-    irods_plugin_dependencies
-    irods_common
+    #irods_plugin_dependencies
+    #irods_common
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
@@ -180,7 +180,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     )
 
   target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
-  target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
+  target_compile_options(${PLUGIN} PRIVATE -fPIC -Wno-write-strings -Wno-ignored-qualifiers)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()
 
