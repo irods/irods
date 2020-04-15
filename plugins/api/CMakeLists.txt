@@ -119,7 +119,6 @@ set(
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_metadata_operations_server
   irods_server
-  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   )
 
@@ -180,7 +179,7 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${OPENSSL_CRYPTO_LIBRARY}
     )
 
-  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED SPDLOG_FMT_EXTERNAL SPDLOG_NO_TLS)
+  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()

@@ -96,7 +96,14 @@ set(IRODS_VERSION "${IRODS_VERSION_MAJOR}.${IRODS_VERSION_MINOR}.${IRODS_VERSION
 set(IRODS_CXX_STANDARD 17)
 
 set(IRODS_PLATFORM_STRING linux_platform)
-set(IRODS_COMPILE_DEFINITIONS ${IRODS_PLATFORM_STRING} _LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES _LARGEFILE64_SOURCE BOOST_SYSTEM_NO_DEPRECATED)
+set(IRODS_COMPILE_DEFINITIONS ${IRODS_PLATFORM_STRING} 
+                              _LARGEFILE_SOURCE
+                              _FILE_OFFSET_BITS=64
+                              _LARGE_FILES
+                              _LARGEFILE64_SOURCE
+                              BOOST_SYSTEM_NO_DEPRECATED
+                              SPDLOG_FMT_EXTERNAL
+                              SPDLOG_NO_TLS)
 
 if (NOT IRODS_LINUX_DISTRIBUTION_NAME)
   execute_process(
@@ -827,7 +834,7 @@ target_include_directories(
 set_property(TARGET irods_server PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
-target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER IRODS_ENABLE_SYSLOG SPDLOG_FMT_EXTERNAL SPDLOG_NO_TLS ${IRODS_COMPILE_DEFINITIONS})
+target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER IRODS_ENABLE_SYSLOG ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(irods_server PRIVATE -Wno-write-strings)
 
 set(
