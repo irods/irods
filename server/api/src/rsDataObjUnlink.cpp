@@ -4,6 +4,7 @@
 /* See dataObjUnlink.h for a description of this API call.*/
 
 #include "dataObjUnlink.h"
+#include "rodsErrorTable.h"
 #include "rodsLog.h"
 #include "rodsConnect.h"
 #include "icatDefines.h"
@@ -44,41 +45,13 @@
 #undef RODS_SERVER
 
 #include "boost/filesystem/path.hpp"
+#include "fmt/format.h"
 
 #include <string>
 #include <string_view>
 
-namespace
+int rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp )
 {
-    auto is_data_object_in_vault(rsComm_t& comm,
-                                 const boost::filesystem::path& logical_path,
-                                 std::string_view resc_hier) -> std::tuple<int, bool>
-    {
-        std::string vault_path;
-        if (const auto err = irods::get_vault_path_for_hier_string(resc_hier.data(), vault_path); !err.ok()) {
-            return {err.code(), false};
-        }
-
-        namespace fs = boost::filesystem;
-
-        std::string gql = "select DATA_PATH where COLL_NAME = '";
-        gql += logical_path.parent_path().c_str();
-        gql += "' and DATA_NAME = '";
-        gql += logical_path.filename().c_str();
-        gql += '\'';
-
-        std::string physical_path;
-        for (auto&& row : irods::query{&comm, gql}) {
-            physical_path = row[0];
-        }
-
-        // Return whether the vault path is the prefix of the physical path.
-        return {0, has_prefix(physical_path.data(), vault_path.data())};
-    }
-} // anonymous namespace
-
-int
-rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     // Deprecation messages must be handled by doing the following.
     // The native rule engine may erase all messages in the rError array.
     // The only way to guarantee that messages are received by the client
@@ -144,28 +117,14 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
         addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     } // if keyword
 
-    if (getValByKey(&dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW) != NULL ||
-        getValByKey(&dataObjUnlinkInp->condInput, RMTRASH_KW) != NULL)
+    if (getValByKey(&dataObjUnlinkInp->condInput, ADMIN_RMTRASH_KW) ||
+        getValByKey(&dataObjUnlinkInp->condInput, RMTRASH_KW))
     {
         if ( isTrashPath( dataObjUnlinkInp->objPath ) == False ) {
             return SYS_INVALID_FILE_PATH;
         }
 
         rmTrashFlag = 1;
-
-        // Check if the data object is in a vault. If so, then unregister it.
-        // This keeps registered files from being permanently deleted.
-
-        const auto* resc_hier = getValByKey(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW);
-        const auto [ec, in_vault] = is_data_object_in_vault(*rsComm, dataObjUnlinkInp->objPath, resc_hier);
-
-        if (ec) {
-            return ec;
-        }
-
-        if (!in_vault) {
-            dataObjUnlinkInp->oprType = UNREG_OPR;
-        }
     }
 
     dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
@@ -187,8 +146,7 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     if ( rmTrashFlag == 1 ) {
         char *tmpAge;
         int ageLimit;
-        if ( ( tmpAge = getValByKey( &dataObjUnlinkInp->condInput, AGE_KW ) )
-                != NULL ) {
+        if ( ( tmpAge = getValByKey( &dataObjUnlinkInp->condInput, AGE_KW ) ) != NULL ) {
             ageLimit = atoi( tmpAge ) * 60;
             if ( ( time( 0 ) - atoi( dataObjInfoHead->dataModify ) ) < ageLimit ) {
                 /* younger than ageLimit. Nothing to do */
@@ -199,10 +157,10 @@ rsDataObjUnlink( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     }
 
     if (dataObjUnlinkInp->oprType == UNREG_OPR ||
-        getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
-        getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
-        getValByKey(&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) != NULL ||
-        dataObjInfoHead->specColl != NULL ||
+        getValByKey(&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) ||
+        getValByKey(&dataObjUnlinkInp->condInput, REPL_NUM_KW) ||
+        getValByKey(&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) ||
+        dataObjInfoHead->specColl ||
         rmTrashFlag == 1)
     {
         status = _rsDataObjUnlink( rsComm, dataObjUnlinkInp, &dataObjInfoHead );
@@ -391,15 +349,45 @@ resolveDataObjReplStatus( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp ) {
     return status;
 }
 
-int
-dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-                dataObjInfo_t *dataObjInfo ) {
+int dataObjUnlinkS(rsComm_t* rsComm,
+                   dataObjInp_t* dataObjUnlinkInp,
+                   dataObjInfo_t* dataObjInfo)
+{
+    // Because this function may change the "oprType", we must make sure that
+    // the "oprType" is restored to it's original value before leaving. This is
+    // necessary because other replicas may not require adjustments to the "oprType"
+    // (i.e. The registered vs non-registered replica case).
+    irods::at_scope_exit restore_opr_type{[dataObjUnlinkInp, old_value = dataObjUnlinkInp->oprType] {
+        dataObjUnlinkInp->oprType = old_value;
+    }};
+
+    // Verify if the replica is in a vault or not. If the replica is not in a vault,
+    // then the server must not delete the replica. Instead, the replica must be unregistered
+    // to avoid loss of data.
+    {
+        std::string vault_path;
+        if (const auto err = irods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path); !err.ok()) {
+            return SYS_INTERNAL_ERR;
+        }
+
+        if (!has_prefix(dataObjInfo->filePath, vault_path.data())) {
+            dataObjUnlinkInp->oprType = UNREG_OPR;
+
+            rodsLog(LOG_NOTICE,
+                    "Replica is not in a vault. Unregistering replica and leaving it on "
+                    "disk as-is [data_object=%s, physical_object=%s].",
+                    dataObjUnlinkInp->objPath,
+                    dataObjInfo->filePath);
+        }
+    }
+
     int status = 0;
     unregDataObj_t unregDataObjInp;
 
     if ( dataObjInfo->specColl == NULL ) {
-        if ( dataObjUnlinkInp->oprType            == UNREG_OPR &&
-                rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
+        if (dataObjUnlinkInp->oprType == UNREG_OPR &&
+            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH)
+        {
             ruleExecInfo_t rei;
 
             initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
@@ -460,7 +448,6 @@ dataObjUnlinkS( rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     }
 
     if ( dataObjUnlinkInp->oprType != UNREG_OPR ) {
-
         // Set the in_pdmo flag
         char* in_pdmo = getValByKey( &dataObjUnlinkInp->condInput, IN_PDMO_KW );
         if ( in_pdmo != NULL ) {

@@ -57,3 +57,18 @@ class Test_Irm(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
         self.admin.assert_icommand("irm -r '{0}'".format(collection))
         self.admin.assert_icommand("ils -l '{0}'".format(self.admin.session_collection_trash), 'STDOUT', collection)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_irm_with_force_does_not_delete_registered_data_objects__issue_4848(self):
+        # Register a file into iRODS.
+        filename = 'foo'
+        filepath = os.path.join(self.admin.local_session_dir, filename)
+        lib.make_file(filepath, 1024, 'arbitrary')
+        data_object = os.path.join(self.admin.session_collection, filename)
+        self.admin.assert_icommand(['ireg', filepath, data_object])
+
+        # Remove the data object from iRODS and show that the data object
+        # was unregistered instead of being deleted because it was not
+        # in a vault.
+        self.admin.assert_icommand(['irm', '-f', data_object])
+        self.assertTrue(os.path.exists(filepath))
+
