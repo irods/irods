@@ -6,6 +6,7 @@ else:
     import unittest
 
 import os
+import shutil
 
 from . import session
 from . import settings
@@ -137,3 +138,33 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
 
         self.admin.assert_icommand(['irm', '-f', filename])
 
+    def test_chksum_catalog_verify_not_exhausting_statements__issue_4732(self):
+
+        Statement_Table_Size = 50
+        filecount = Statement_Table_Size + 10
+        dirname = 'ichksum_targets_4732'
+        lib.create_directory_of_small_files(dirname, filecount)
+        try:
+            _,err,rcAdm = self.admin.run_icommand(['iput', '-r','-k', dirname])
+            _,err,rcUsr = self.user0.run_icommand(['iput', '-r','-k', dirname])
+            self.assertTrue(rcAdm == 0 and rcUsr == 0, '**** could not iput -r -k directory/ies in test for #4732')
+            tests = [ (self.admin, ['ichksum','--verify','-r','-KM',dirname], 'CAT_STATEMENT_TABLE_FULL' ),
+                      (self.admin, ['ichksum','--verify','-r','-K', dirname], 'CAT_NO_ACCESS_PERMISSION' ),
+                      (self.user0, ['ichksum','--verify','-r','-K', dirname], 'CAT_NO_ACCESS_PERMISSION' ) ]
+            for user,cmd,guard_err in tests:
+                _,err,rc = user.run_icommand( cmd )
+                self.assertTrue (guard_err not in err, 'ichksum incurred statement table exhaustion #4732')
+                self.assertTrue (err == '', 'ichksum produced unwelcome STDERR output')
+                self.assertTrue (rc == 0, 'ichksum returned nonzero error code during routine operation')
+        finally:
+            clean_exit = True
+            try:
+                self.user0.assert_icommand(['irm', '-rf', dirname])
+            except:
+                clean_exit = False
+            try:
+                self.admin.assert_icommand(['irm', '-rf', dirname])
+            except:
+                clean_exit = False
+            shutil.rmtree(dirname, ignore_errors=True)
+            self.assertTrue (clean_exit, '**** inadequate clean-up in test for #4732 ***')
