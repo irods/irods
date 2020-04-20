@@ -1066,16 +1066,24 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                 indent=4,
                 ensure_ascii=False)
 
-        hostuser = getpass.getuser()
-        temp_file = 'file_to_test_hosts_config'
-        lib.make_file(temp_file, 10)
-        self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
-                                   hostuser, 'STDOUT_SINGLELINE', "jimbo")
-        self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
-        self.admin.assert_icommand("irm -f jimbofile")
-        self.admin.assert_icommand("iadmin rmresc jimboResc")
+        try:
+            hostuser = getpass.getuser()
+            temp_file = 'file_to_test_hosts_config'
+            lib.make_file(temp_file, 10)
+            self.admin.assert_icommand("iadmin mkresc jimboResc unixfilesystem jimbo:/tmp/%s/jimboResc" %
+                                       hostuser, 'STDOUT_SINGLELINE', "jimbo")
+            self.admin.assert_icommand("iput -R jimboResc " + temp_file + " jimbofile")
+            self.admin.assert_icommand("irm -f jimbofile")
 
-        os.system('mv %s %s' % (orig_file, hosts_config))
+            big_file = 'big_file_to_test_hosts_config'
+            lib.make_file(big_file, 35000000)
+            self.admin.assert_icommand("iput -R jimboResc " + big_file + " bigjimbofile")
+            self.admin.assert_icommand("ils -L bigjimbofile", 'STDOUT_SINGLELINE', 'bigjimbofile')
+            self.admin.assert_icommand("irm -f bigjimbofile")
+        finally:
+            self.admin.assert_icommand("iadmin rmresc jimboResc")
+
+            os.system('mv %s %s' % (orig_file, hosts_config))
 
     def test_host_access_control(self):
         my_ip = socket.gethostbyname(socket.gethostname())
