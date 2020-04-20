@@ -799,6 +799,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
@@ -824,6 +825,7 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
   ${OPENSSL_INCLUDE_DIR}
   )
@@ -898,6 +900,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_random.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
@@ -916,6 +919,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 set_property(TARGET irods_common PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_common PROPERTY VERSION ${IRODS_VERSION})
@@ -1248,6 +1252,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
@@ -1266,6 +1271,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET RodsAPIs PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
@@ -1363,6 +1369,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   rt
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
@@ -1379,6 +1386,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/lib/core/include
   ${CMAKE_SOURCE_DIR}/lib/api/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   )
 set_property(TARGET irodsReServer PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS})

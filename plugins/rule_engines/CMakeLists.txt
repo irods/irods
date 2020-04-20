@@ -63,6 +63,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/icat/include
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     ${OPENSSL_INCLUDE_DIR}
     )
@@ -75,6 +76,7 @@ foreach(PLUGIN ${IRODS_RULE_ENGINE_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     dl
     )
 

@@ -72,6 +72,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${CMAKE_SOURCE_DIR}/plugins/database/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     )
 
@@ -84,6 +85,7 @@ foreach(PLUGIN ${IRODS_DATABASE_PLUGINS})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${ODBC_LIBRARY}
     )
 
