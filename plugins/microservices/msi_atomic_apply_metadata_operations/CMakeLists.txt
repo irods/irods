@@ -17,12 +17,14 @@ target_include_directories(${IRODS_PLUGIN_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/li
                                                           ${CMAKE_SOURCE_DIR}/server/core/include
                                                           ${CMAKE_SOURCE_DIR}/server/icat/include
                                                           ${CMAKE_SOURCE_DIR}/server/re/include
-                                                          ${IRODS_EXTERNALS_FULLPATH_BOOST}/include)
+                                                          ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+                                                          ${IRODS_EXTERNALS_FULLPATH_FMT}/include)
 
 target_link_libraries(${IRODS_PLUGIN_TARGET} PRIVATE irods_server
                                                      irods_common
                                                      ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
-                                                     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so)
+                                                     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+                                                     ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so)
 
 install(TARGETS ${IRODS_PLUGIN_TARGET}
         LIBRARY DESTINATION ${IRODS_PLUGINS_DIRECTORY}/microservices

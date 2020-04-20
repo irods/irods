@@ -91,6 +91,7 @@ foreach(PLUGIN ${IRODS_RESOURCE_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/re/include
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include
     )
 
@@ -99,9 +100,10 @@ foreach(PLUGIN ${IRODS_RESOURCE_PLUGINS})
     PRIVATE
     irods_server
     irods_common
+    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${OPENSSL_CRYPTO_LIBRARY}
     )
 

@@ -118,7 +118,6 @@ set(
 set(
   IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_metadata_operations_server
   irods_server
-  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
   ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   )
 
@@ -159,10 +158,10 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${CMAKE_SOURCE_DIR}/server/drivers/include
     ${CMAKE_SOURCE_DIR}/server/icat/include
     ${CMAKE_SOURCE_DIR}/server/re/include
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
-    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
     ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/include
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
     ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
     )
 
@@ -172,13 +171,14 @@ foreach(PLUGIN ${IRODS_API_PLUGINS})
     ${IRODS_API_PLUGIN_LINK_LIBRARIES_${PLUGIN}}
     irods_plugin_dependencies
     irods_common
+    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-    ${IRODS_EXTERNALS_FULLPATH_ARCHIVE}/lib/libarchive.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${OPENSSL_CRYPTO_LIBRARY}
     )
 
-  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
+  target_compile_definitions(${PLUGIN} PRIVATE ${IRODS_API_PLUGIN_COMPILE_DEFINITIONS_${PLUGIN}} ${IRODS_COMPILE_DEFINITIONS})
   target_compile_options(${PLUGIN} PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
   set_property(TARGET ${PLUGIN} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 endforeach()
