@@ -4508,19 +4508,30 @@ auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> s
         }
 
         for(const auto entry : hosts_config.at("host_entries")) {
-            const std::string address0 = entry.at("addresses").at(0).at("address");
-            const std::string address1 = entry.at("addresses").at(1).at("address");
-            if(address1 == name_to_resolve) {
-                resolved_name = address0;
-                break;
-            }
-        }
+            const auto addresses = entry.at("addresses");
+            const std::string target_name{addresses.at(0).at("address")};
+
+            for( json::size_type i = 1; i < addresses.size(); ++i) {
+                const auto alias{addresses.at(i).at("address")};
+                if(alias == name_to_resolve) {
+                    resolved_name = target_name;
+                    break;
+                }
+            } // for alias
+        } // for entry
     }
     catch(const json::exception& e) {
-        std::cout << e.what() << "\n";
+        rodsLog(
+            LOG_ERROR,
+            "%s :: caught exception: ",
+            __FUNCTION__,
+            e.what());
     }
     catch(...) {
-        std::cout << "CAUGHT ANOTHER EXCEPTION" << "\n" << std::flush;
+        rodsLog(
+            LOG_ERROR,
+            "%s :: caught unknown exception",
+            __FUNCTION__);
     }
 
     return resolved_name;
