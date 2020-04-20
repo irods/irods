@@ -1041,7 +1041,10 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         addy2 = {}
         addy2['address'] = 'jimbo'
 
-        addresses = [addy1, addy2]
+        addy3 = {}
+        addy3['address'] = 'larry'
+
+        addresses = [addy1, addy2, addy3]
 
         remote = {}
         remote['address_type'] = 'local'
@@ -1077,11 +1080,14 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
 
             big_file = 'big_file_to_test_hosts_config'
             lib.make_file(big_file, 35000000)
-            self.admin.assert_icommand("iput -R jimboResc " + big_file + " bigjimbofile")
-            self.admin.assert_icommand("ils -L bigjimbofile", 'STDOUT_SINGLELINE', 'bigjimbofile')
-            self.admin.assert_icommand("irm -f bigjimbofile")
+            self.admin.assert_icommand("iadmin mkresc larryResc unixfilesystem larry:/tmp/%s/larryResc" %
+                                       hostuser, 'STDOUT_SINGLELINE', "larry")
+            self.admin.assert_icommand("iput -R larryResc " + big_file + " biglarryfile")
+            self.admin.assert_icommand("ils -L biglarryfile", 'STDOUT_SINGLELINE', 'biglarryfile')
+            self.admin.assert_icommand("irm -f biglarryfile")
         finally:
             self.admin.assert_icommand("iadmin rmresc jimboResc")
+            self.admin.assert_icommand("iadmin rmresc larryResc")
 
             os.system('mv %s %s' % (orig_file, hosts_config))
 
