@@ -21,6 +21,8 @@
 #include "putUtil.h"
 #include "sockComm.h"
 
+#include "json.hpp"
+
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
@@ -38,6 +40,7 @@
 #include "irods_log.hpp"
 #include "irods_random.hpp"
 #include "irods_path_recursion.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -4447,12 +4450,58 @@ static std::string stringify_addrinfo_hints(const struct addrinfo *_hints) {
     return ret;
 }
 
+auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> std::string
+{
+    using json = nlohmann::json;
+    static json hosts_config{};
+
+    std::string resolved_name{name_to_resolve};
+
+    try {
+        if(hosts_config.empty()) {
+            std::string cfg_file;
+            irods::error err = irods::get_full_path_for_config_file(HOST_CONFIG_FILE, cfg_file);
+            if(!err.ok()) {
+                rodsLog(
+                    LOG_ERROR,
+                    "%s :: failed to resolve path for [%s]",
+                    __FUNCTION__,
+                    HOST_CONFIG_FILE);
+                return "INVALID_HOST_NAME";
+            }
+
+            hosts_config = json::parse(std::ifstream{cfg_file});
+        }
+
+        for(const auto entry : hosts_config.at("host_entries")) {
+            const std::string address0 = entry.at("addresses").at(0).at("address");
+            const std::string address1 = entry.at("addresses").at(1).at("address");
+            if(address1 == name_to_resolve) {
+                resolved_name = address0;
+                break;
+            }
+        }
+    }
+    catch(const json::exception& e) {
+        std::cout << e.what() << "\n";
+    }
+    catch(...) {
+        std::cout << "CAUGHT ANOTHER EXCEPTION" << "\n" << std::flush;
+    }
+
+    return resolved_name;
+
+} // resolve_hostname_from_hosts_config
+
 int
 getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res) {
+
+    const auto hostname = resolve_hostname_from_hosts_config(_node);
+
     *_res = 0;
     const int max_retry = 300;
     for (int i=0; i<max_retry; ++i) {
-        const int ret_getaddrinfo = getaddrinfo(_node, _service, _hints, _res);
+        const int ret_getaddrinfo = getaddrinfo(hostname.c_str(), _service, _hints, _res);
         if (   ret_getaddrinfo == EAI_AGAIN
             || ret_getaddrinfo == EAI_NONAME
             || ret_getaddrinfo == EAI_NODATA) { // retryable errors
@@ -4471,19 +4520,19 @@ getaddrinfo_with_retry(const char *_node, const char *_service, const struct add
             if (ret_getaddrinfo == EAI_SYSTEM) {
                 const int errno_copy = errno;
                 std::string hint_str = stringify_addrinfo_hints(_hints);
-                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable system error [%d] [%s] [%d] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), errno_copy, _node, hint_str.c_str());
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable system error [%d] [%s] [%d] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), errno_copy, hostname.c_str(), hint_str.c_str());
             } else {
                 std::string hint_str = stringify_addrinfo_hints(_hints);
-                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable error [%d] [%s] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), _node, hint_str.c_str());
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable error [%d] [%s] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), hostname.c_str(), hint_str.c_str());
             }
             return USER_RODS_HOSTNAME_ERR;
         } else {
             return 0;
         }
-        rodsLog(LOG_DEBUG, "getaddrinfo_with_retry retrying getaddrinfo. retry count [%d] hostname [%s]", i, _node);
+        rodsLog(LOG_DEBUG, "getaddrinfo_with_retry retrying getaddrinfo. retry count [%d] hostname [%s]", i, hostname.c_str());
     }
     std::string hint_str = stringify_addrinfo_hints(_hints);
-    rodsLog(LOG_ERROR, "getaddrinfo_with_retry address resolution timeout [%s] [%s]", _node, hint_str.c_str());
+    rodsLog(LOG_ERROR, "getaddrinfo_with_retry address resolution timeout [%s] [%s]", hostname.c_str(), hint_str.c_str());
     return USER_RODS_HOSTNAME_ERR;
 }
 
