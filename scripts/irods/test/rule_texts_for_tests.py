@@ -74,6 +74,14 @@ acSetRescSchemeForCreate {
 }
 '''
 
+#===== Test_Icp  =====
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Icp'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Icp']['test_icp_closes_file_descriptors__4862'] = '''
+acSetRescSchemeForCreate {
+}
+'''
+
 #===== Test_Native_Rule_Engine_Plugin  =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin'] = {}
@@ -625,6 +633,14 @@ def acSetRescSchemeForCreate(rule_args, callback, rei):
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_iput_resc_scheme_null'] = ''' 
 def acSetRescSchemeForCreate(rule_args, callback, rei): 
     callback.msiSetDefaultResc('demoResc','null');
+'''
+
+#===== Test_Icp  =====
+
+rule_texts['irods_rule_engine_plugin-python']['Test_Icp'] = {}
+rule_texts['irods_rule_engine_plugin-python']['Test_Icp']['test_icp_closes_file_descriptors__4862'] = '''
+def acSetRescSchemeForCreate(rule_args, callback, rei): 
+    pass
 '''
 
 #===== Test_Native_Rule_Engine_Plugin  =====
