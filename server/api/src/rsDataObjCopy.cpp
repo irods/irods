@@ -30,6 +30,120 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_redirect.hpp"
 
+namespace {
+
+int close_objects(
+    rsComm_t* comm,
+    const int dest_l1_inx,
+    const int opr_status,
+    transferStat_t **transStat)
+{
+    openedDataObjInp_t close_inp{.l1descInx = dest_l1_inx};
+    if (opr_status >= 0) {
+        int src_l1_inx = L1desc[dest_l1_inx].srcL1descInx;
+        dataObjInp_t* dest_data_obj_inp  = L1desc[dest_l1_inx].dataObjInp;
+        dataObjInfo_t* src_data_obj_info = L1desc[src_l1_inx].dataObjInfo;
+        if (dest_data_obj_inp && src_data_obj_info) {
+            *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
+            memset( *transStat, 0, sizeof( transferStat_t ) );
+            ( *transStat )->bytesWritten = src_data_obj_info->dataSize;
+            ( *transStat )->numThreads = dest_data_obj_inp->numThreads;
+            close_inp.bytesWritten = src_data_obj_info->dataSize;
+        }
+    }
+    const auto close_status = rsDataObjClose(comm, &close_inp);
+    if (close_status < 0) {
+        rodsLog(LOG_ERROR, "[%s] - Failed closing data object:[%d]",
+            __FUNCTION__, close_status);
+    }
+    return close_status;
+} // close_objects
+
+int _rsDataObjCopy(
+    rsComm_t *rsComm,
+    int destL1descInx,
+    int existFlag)
+{
+    dataObjInp_t *srcDataObjInp, *destDataObjInp;
+    dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
+    int srcL1descInx;
+    int status = 0;
+
+    destDataObjInp  = L1desc[destL1descInx].dataObjInp;
+    destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+    srcL1descInx    = L1desc[destL1descInx].srcL1descInx;
+
+    srcDataObjInp  = L1desc[srcL1descInx].dataObjInp;
+    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+
+    if ( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInp is NULL" );
+        return -1;
+    }
+    if ( destDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
+        return -1;
+    }
+    if ( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
+        return -1;
+    }
+    if ( srcDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
+        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInfo is NULL" );
+        return -1;
+    }
+
+    if ( L1desc[srcL1descInx].l3descInx <= 2 ) {
+
+        /* no physical file was opened */
+        status = l3DataCopySingleBuf( rsComm, destL1descInx );
+
+        /* has not been registered yet because of NO_OPEN_FLAG_KW */
+        if ( status    >= 0                    &&
+                existFlag == 0                    &&
+                destDataObjInfo->specColl == NULL &&
+                L1desc[destL1descInx].remoteZoneHost == NULL ) {
+            /* If the dest is in remote zone, register in _rsDataObjClose there */
+            status = svrRegDataObj(rsComm, destDataObjInfo);
+            if (CAT_UNKNOWN_COLLECTION == status) {
+                /* collection does not exist. make one */
+                char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
+                status = splitPathByKey(destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("splitPathByKey failed for [%s]") %
+                                          destDataObjInfo->objPath).str().c_str())};
+                    irods::log(err);
+                }
+                status = rsMkCollR(rsComm, "/", parColl);
+                if (status < 0) {
+                    const auto err{ERROR(status,
+                                         (boost::format("rsMkCollR for [%s] failed") %
+                                          parColl).str().c_str())};
+                    irods::log(err);
+                }
+                status = svrRegDataObj(rsComm, destDataObjInfo);
+            }
+            if (status < 0) {
+                irods::log(LOG_NOTICE,
+                           (boost::format("[%s] - svrRegDataObj for [%s] failed, status = [%d]") %
+                            __FUNCTION__ % destDataObjInfo->objPath % status).str().c_str());
+                return status;
+            }
+        }
+    }
+    else {
+        destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
+                                     destDataObjInfo->rescHier, srcDataObjInfo->rescHier, 0 );
+        srcDataObjInp->numThreads = destDataObjInp->numThreads;
+        status = dataObjCopy( rsComm, destL1descInx );
+    }
+
+    return status;
+}
+
+} // anonymous namespace
+
 int
 rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
                transferStat_t **transStat ) {
@@ -127,6 +241,14 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     }
 
     if ( destL1descInx < 0 ) {
+        // Close source resource before returning - leaks L1 descriptors
+        openedDataObjInp_t close_inp{.l1descInx = srcL1descInx};
+        if(const auto close_status = rsDataObjClose(rsComm, &close_inp);
+           close_status < 0) {
+            rodsLog(LOG_ERROR, "[%s] - Failed closing source replica for [%s]:[%d]",
+                __FUNCTION__, srcDataObjInp->objPath, close_status);
+        }
+
         clearKeyVal( &destDataObjInp->condInput );
         std::stringstream msg;
         char* sys_error = NULL;
@@ -160,101 +282,14 @@ rsDataObjCopy( rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     L1desc[destL1descInx].dataSize =
         L1desc[srcL1descInx].dataObjInfo->dataSize;
 
-    status = _rsDataObjCopy( rsComm, destL1descInx, existFlag, transStat );
+    status = _rsDataObjCopy(rsComm, destL1descInx, existFlag);
+
+    const int close_status = close_objects(rsComm, destL1descInx, status, transStat);
 
     clearKeyVal( &destDataObjInp->condInput );
-
-    return status;
-}
-
-int
-_rsDataObjCopy( rsComm_t *rsComm, int destL1descInx, int existFlag,
-                transferStat_t **transStat ) {
-    dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    openedDataObjInp_t dataObjCloseInp;
-    dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-    int srcL1descInx;
-    int status = 0, status2;
-
-    destDataObjInp  = L1desc[destL1descInx].dataObjInp;
-    destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
-    srcL1descInx    = L1desc[destL1descInx].srcL1descInx;
-
-    srcDataObjInp  = L1desc[srcL1descInx].dataObjInp;
-    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-
-    if ( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInp is NULL" );
-        return -1;
-    }
-    if ( destDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
-        return -1;
-    }
-    if ( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
-        return -1;
-    }
-    if ( srcDataObjInfo == NULL ) { // JMC cppcheck - null ptr ref
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInfo is NULL" );
-        return -1;
-    }
-
-    if ( L1desc[srcL1descInx].l3descInx <= 2 ) {
-
-        /* no physical file was opened */
-        status = l3DataCopySingleBuf( rsComm, destL1descInx );
-
-        /* has not been registered yet because of NO_OPEN_FLAG_KW */
-        if ( status    >= 0                    &&
-                existFlag == 0                    &&
-                destDataObjInfo->specColl == NULL &&
-                L1desc[destL1descInx].remoteZoneHost == NULL ) {
-            /* If the dest is in remote zone, register in _rsDataObjClose there */
-            status = svrRegDataObj( rsComm, destDataObjInfo );
-            if ( status == CAT_UNKNOWN_COLLECTION ) {
-                /* collection does not exist. make one */
-                char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-                splitPathByKey( destDataObjInfo->objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/' );
-                status = svrRegDataObj( rsComm, destDataObjInfo );
-                rsMkCollR( rsComm, "/", parColl );
-                status = svrRegDataObj( rsComm, destDataObjInfo );
-            }
-            if ( status < 0 ) {
-                rodsLog( LOG_NOTICE,
-                         "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
-                         destDataObjInfo->objPath, status );
-                return status;
-            }
-        }
-
-    }
-    else {
-        if ( srcDataObjInfo != NULL ) {
-            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
-                                         destDataObjInfo->rescHier, srcDataObjInfo->rescHier, 0 );
-
-        }
-
-        srcDataObjInp->numThreads = destDataObjInp->numThreads;
-
-        status = dataObjCopy( rsComm, destL1descInx );
-    }
-
-    memset( &dataObjCloseInp, 0, sizeof( dataObjCloseInp ) );
-    dataObjCloseInp.l1descInx = destL1descInx;
-    if ( status >= 0 ) {
-        *transStat = ( transferStat_t* )malloc( sizeof( transferStat_t ) );
-        memset( *transStat, 0, sizeof( transferStat_t ) );
-        ( *transStat )->bytesWritten = srcDataObjInfo->dataSize;
-        ( *transStat )->numThreads = destDataObjInp->numThreads;
-        dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
-    }
-
-    status2 = rsDataObjClose( rsComm, &dataObjCloseInp );
-
-    if ( status ) {
+    if (status) {
         return status;
     }
-    return status2;
+    return close_status;
 }
+
