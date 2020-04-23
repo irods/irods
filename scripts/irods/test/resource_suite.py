@@ -532,6 +532,8 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         if os.path.exists(datafilename):
             os.unlink(datafilename)
+        if os.path.exists(fullpath):
+            os.unlink(fullpath)
 
     def test_admin_local_iput_relative_physicalpath_into_server_bin(self):
         # local setup
