@@ -4496,12 +4496,7 @@ auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> s
             std::string cfg_file;
             irods::error err = irods::get_full_path_for_config_file(HOST_CONFIG_FILE, cfg_file);
             if(!err.ok()) {
-                rodsLog(
-                    LOG_ERROR,
-                    "%s :: failed to resolve path for [%s]",
-                    __FUNCTION__,
-                    HOST_CONFIG_FILE);
-                return "INVALID_HOST_NAME";
+                return name_to_resolve;
             }
 
             hosts_config = json::parse(std::ifstream{cfg_file});
