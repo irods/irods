@@ -236,6 +236,19 @@ int rsDataObjTrim(
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
+    // Deprecation messages must be handled by doing the following.
+    // The native rule engine may erase all messages in the rError array.
+    // The only way to guarantee that messages are received by the client
+    // is to add them to the rError array when the function returns.
+    irods::at_scope_exit at_scope_exit{[&] {
+        // itrim -N
+        if (getValByKey(&dataObjInp->condInput, COPIES_KW)) {
+            addRErrorMsg(&rsComm->rError,
+                         DEPRECATED_PARAMETER,
+                         "Specifying a minimum number of replicas to keep is deprecated.");
+        }
+    }};
+
     // -S and -n are incompatible...
     const char* resc_name = getValByKey(&dataObjInp->condInput, RESC_NAME_KW);
     const char* repl_num = getValByKey(&dataObjInp->condInput, REPL_NUM_KW);
