@@ -83,6 +83,13 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             for i in range(replicas):
                 self.admin.assert_icommand('iadmin rmresc resc_{0}'.format(i))
 
+    def test_itrim_option_N_is_deprecated__issue_4860(self):
+        data_object = 'foo'
+        filename = os.path.join(self.admin.local_session_dir, data_object)
+        lib.make_file(filename, 1)
+        self.admin.assert_icommand(['iput', filename])
+        self.admin.assert_icommand(['itrim', '-N2', data_object], 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
+
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_itrim_removes_in_vault_registered_replicas_from_disk__issue_5362(self):
         resc_name = 'issue_5362_resc'
