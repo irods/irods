@@ -101,16 +101,19 @@ main( int argc, char **argv ) {
     else {
         exit( 0 );
     }
-
 }
 
 void
 usage() {
     char *msgs[] = {
         "Usage: irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
+        " ",
         "Remove one or more data-object or collection from iRODS space. By default, ",
         "the data-objects are moved to the trash collection (/myZone/trash) unless",
         "either the -f option or the -n option is used.",
+        " ",
+        "Registered non-vault replicas are never deleted from the filesystem. They ",
+        "are unregistered and left on disk as-is.",
         " ",
         "The -U option allows the unregistering of the data object or collection",
         "without deleting the physical file. Normally, a normal user cannot",

@@ -93,12 +93,10 @@ main( int argc, char **argv ) {
     else {
         exit( 0 );
     }
-
 }
 
 void
 usage() {
-
     char *msgs[] = {
         "Usage: itrim [-hMrvV] [--age age_in_minutes] [--dryrun] [-n replNum]|[-S srcResource] [-N numCopies] dataObj|collection ... ",
         " ",
@@ -108,6 +106,9 @@ usage() {
         "these options are used, the replicas will be trimmed until there are",
         "numCopies left. The old copies will be trimmed first, then the 'cache'",
         "class copies.",
+        " ",
+        "Registered non-vault replicas are never deleted from the filesystem. They ",
+        "are unregistered and left on disk as-is.",
         " ",
         "Note that if both are used at the same time, the server will return an error",
         "if -n violates the requirements of -N.",
