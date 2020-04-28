@@ -533,7 +533,7 @@ class ChunkyDevTest(ResourceBase):
         out, _ = lib.execute_command(['ils', '-L', os.path.join(irodshome, 'icmdtestp', 'sfile1')])
         bunfile = out.split()[-1]
         print(bunfile)
-        self.admin.assert_icommand("irepl --purgec -R " + self.anotherresc + " " + bunfile)
+        self.admin.assert_icommand("irepl --purgec -R " + self.anotherresc + " " + bunfile, 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
         self.admin.assert_icommand("itrim -rS " + self.testresc + " -N1 " +
                                    irodshome + "/icmdtestp", 'STDOUT_SINGLELINE', "files trimmed")
         # get the name of bundle file

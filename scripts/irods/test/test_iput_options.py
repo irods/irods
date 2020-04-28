@@ -258,6 +258,6 @@ class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
     def test_iput_zero_length_file_with_purge_and_checksum_3883(self):
         filename = 'test_iput_zero_length_file_with_purge_and_checksum_3883'
         lib.touch(filename)
-        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename])
+        self.user0.assert_icommand(['iput', '-R', 'compoundresc3883', '--purgec', '-k', filename], 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
         self.user0.assert_icommand(['ils', '-L'], 'STDOUT_SINGLELINE', 'sha2:47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=')
         os.unlink(filename)
