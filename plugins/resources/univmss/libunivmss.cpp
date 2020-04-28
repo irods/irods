@@ -17,6 +17,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_re_structs.hpp"
+#include "voting.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -704,206 +705,38 @@ irods::error univ_mss_file_modified(
 } // univ_mss_file_modified
 
 // =-=-=-=-=-=-=-
-// redirect_get - code to determine redirection for get operation
-irods::error univ_mss_file_resolve_hierarchy_create(
-    irods::plugin_property_map& _prop_map,
-    const std::string&           _curr_host,
-    float&                       _out_vote ) {
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( !get_ret.ok() ) {
-        return PASSMSG( "univ_mss_file_resolve_hierarchy_create - failed to get 'status' property", get_ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // if the status is down, vote no.
-    if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        _out_vote = 0.0;
-        return SUCCESS();
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the resource host for comparison to curr host
-    std::string host_name;
-    get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-    if ( !get_ret.ok() ) {
-        return PASSMSG( "univ_mss_file_resolve_hierarchy_create - failed to get 'location' property", get_ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // vote higher if we are on the same host
-    if ( _curr_host == host_name ) {
-        _out_vote = 1.0;
-    }
-    else {
-        _out_vote = 0.5;
-    }
-
-    return SUCCESS();
-
-} // univ_mss_file_resolve_hierarchy_create
-
-// =-=-=-=-=-=-=-
-// redirect_get - code to determine redirection for get operation
-irods::error univ_mss_file_resolve_hierarchy_open(
-    irods::plugin_property_map& _prop_map,
-    irods::file_object_ptr         _file_obj,
-    const std::string&           _resc_name,
-    const std::string&           _curr_host,
-    float&                       _out_vote ) {
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( !get_ret.ok() ) {
-        return PASSMSG( "univ_mss_file_resolve_hierarchy_open - failed to get 'status' property", get_ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // if the status is down, vote no.
-    if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        _out_vote = 0.0;
-        return SUCCESS();
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the resource host for comparison to curr host
-    std::string host_name;
-    get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-    if ( !get_ret.ok() ) {
-        return PASSMSG( "univ_mss_file_resolve_hierarchy_open - failed to get 'location' property", get_ret );
-    }
-
-    // =-=-=-=-=-=-=-
-    // set a flag to test if were at the curr host, if so we vote higher
-    bool curr_host = ( _curr_host == host_name );
-
-    // =-=-=-=-=-=-=-
-    // make some flags to clairify decision making
-    bool need_repl = ( _file_obj->repl_requested() > -1 );
-
-    // =-=-=-=-=-=-=-
-    // set up variables for iteration
-    irods::error final_ret = SUCCESS();
-    std::vector< irods::physical_object > objs = _file_obj->replicas();
-    std::vector< irods::physical_object >::iterator itr = objs.begin();
-
-    // =-=-=-=-=-=-=-
-    // initially set vote to 0.0
-    _out_vote = 0.0;
-
-    // =-=-=-=-=-=-=-
-    // check to see if the replica is in this resource, if one is requested
-    for ( ; itr != objs.end(); ++itr ) {
-        // =-=-=-=-=-=-=-
-        // run the hier string through the parser and get the last
-        // entry.
-        std::string last_resc;
-        irods::hierarchy_parser parser;
-        parser.set_string( itr->resc_hier() );
-        parser.last_resc( last_resc );
-
-        // =-=-=-=-=-=-=-
-        // more flags to simplify decision making
-        bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() );
-        bool resc_us = ( _resc_name == last_resc );
-
-        // =-=-=-=-=-=-=-
-        // success - correct resource and dont need a specific
-        //           replication, or the repl nums match
-        if ( resc_us ) {
-            if ( !need_repl || ( need_repl && repl_us ) ) {
-                if ( curr_host ) {
-                    _out_vote = 1.0;
-                }
-                else {
-                    _out_vote = 0.5;
-                }
-                break;
-            }
-
-        } // if resc_us
-
-    } // for itr
-
-    return SUCCESS();
-
-} // redirect_get
-
-// =-=-=-=-=-=-=-
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error univ_mss_file_resolve_hierarchy(
-    irods::plugin_context& _ctx,
-    const std::string*                  _opr,
-    const std::string*                  _curr_host,
-    irods::hierarchy_parser*           _out_parser,
-    float*                              _out_vote ) {
-    // =-=-=-=-=-=-=-
-    // check the context validity
-    irods::error ret = _ctx.valid< irods::file_object >();
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - resource context is invalid";
-        return PASSMSG( msg.str(), ret );
+    irods::plugin_context&   _ctx,
+    const std::string*       _opr,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote)
+{
+    namespace irv = irods::experimental::resource::voting;
+
+    if (irods::error ret = _ctx.valid<irods::file_object>(); !ret.ok()) {
+        return PASSMSG("Invalid resource context.", ret);
     }
 
-    // =-=-=-=-=-=-=-
-    // check incoming parameters
-    if ( !_opr ) {
-        return ERROR( -1, "univ_mss_file_resolve_hierarchy- null operation" );
-    }
-    if ( !_curr_host ) {
-        return ERROR( -1, "univ_mss_file_resolve_hierarchy- null operation" );
-    }
-    if ( !_out_parser ) {
-        return ERROR( -1, "univ_mss_file_resolve_hierarchy- null outgoing hier parser" );
-    }
-    if ( !_out_vote ) {
-        return ERROR( -1, "univ_mss_file_resolve_hierarchy- null outgoing vote" );
+    if (!_opr || !_curr_host || !_out_parser || !_out_vote) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid input parameter.");
     }
 
-    // =-=-=-=-=-=-=-
-    // cast down the chain to our understood object type
-    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-    // =-=-=-=-=-=-=-
-    // get the name of this resource
-    std::string resc_name;
-    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << "univ_mss_file_resolve_hierarchy- failed in get property for name";
-        return ERROR( -1, msg.str() );
+    _out_parser->add_child(irods::get_resource_name(_ctx));
+    *_out_vote = irv::vote::zero;
+    try {
+        *_out_vote = irv::calculate(*_opr, _ctx, *_curr_host, *_out_parser);
+        return SUCCESS();
     }
-
-    // =-=-=-=-=-=-=-
-    // add ourselves to the hierarchy parser by default
-    _out_parser->add_child( resc_name );
-
-    // =-=-=-=-=-=-=-
-    // test the operation to determine which choices to make
-    if ( irods::OPEN_OPERATION == ( *_opr ) || irods::UNLINK_OPERATION == ( *_opr )) {
-        // =-=-=-=-=-=-=-
-        // call redirect determination for 'get' operation
-        return univ_mss_file_resolve_hierarchy_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-
+    catch(const std::out_of_range& e) {
+        return ERROR(INVALID_OPERATION, e.what());
     }
-    else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
-        // =-=-=-=-=-=-=-
-        // call redirect determination for 'create' operation
-        return univ_mss_file_resolve_hierarchy_create( _ctx.prop_map(), ( *_curr_host ), ( *_out_vote ) );
+    catch (const irods::exception& e) {
+        return irods::error{e};
     }
-
-    // =-=-=-=-=-=-=-
-    // must have been passed a bad operation
-    std::stringstream msg;
-    msg << "univ_mss_file_resolve_hierarchy- operation not supported [";
-    msg << ( *_opr ) << "]";
-    return ERROR( -1, msg.str() );
-
+    return ERROR(SYS_UNKNOWN_ERROR, "An unknown error occurred while resolving hierarchy.");
 } // univ_mss_file_resolve_hierarchy
 
 

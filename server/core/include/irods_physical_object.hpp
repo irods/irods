@@ -90,6 +90,10 @@ namespace irods {
             inline rodsLong_t resc_id()          const {
                 return resc_id_;
             }
+            inline float vote() const
+            {
+                return vote_;
+            } // vote
 
             // =-=-=-=-=-=-=-
             // mutators
@@ -159,6 +163,10 @@ namespace irods {
             inline void resc_id( rodsLong_t _id )                  {
                 resc_id_ = _id;
             }
+            inline void vote(const float vote)
+            {
+                vote_ = vote;
+            } // vote
 
         private:
             int         replica_status_;
@@ -183,6 +191,7 @@ namespace irods {
             std::string modify_ts_;
             std::string resc_hier_;
             rodsLong_t  resc_id_;
+            float       vote_;
 
     }; // physical_object
 

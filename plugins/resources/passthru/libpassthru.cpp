@@ -68,6 +68,24 @@
 const std::string WRITE_WEIGHT_KW( "write" );
 const std::string READ_WEIGHT_KW( "read" );
 
+namespace {
+
+auto apply_weight_to_object_votes(
+    irods::plugin_context& ctx,
+    const double weight) -> void
+{
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(ctx.fco());
+    for (auto& r : file_obj->replicas()) {
+        rodsLog(LOG_NOTICE,
+            "[%s:%d] - applying weight [%f] to vote [%f] for [%s]",
+            __FUNCTION__, __LINE__,
+            weight, r.vote(),
+            r.resc_hier().c_str());
+        r.vote(r.vote() * weight);
+    }
+} // apply_weight_to_object_votes
+
+} // anonymous namespace
 
 // =-=-=-=-=-=-=-
 // 2. Define operations which will be called by the file*
@@ -725,40 +743,18 @@ irods::error passthru_file_resolve_hierarchy(
     const std::string*                  _opr,
     const std::string*                  _curr_host,
     irods::hierarchy_parser*           _out_parser,
-    float*                              _out_vote ) {
-    // =-=-=-=-=-=-=-
-    // check incoming parameters
+    float*                              _out_vote )
+{
     irods::error result = SUCCESS();
     irods::error ret = passthru_check_params( _ctx );
     if ( !ret.ok() ) {
         result = PASSMSG( "passthru_file_resolve_hierarchy - invalid resource context.", ret );
     }
-    if ( !_opr ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "passthru_file_resolve_hierarchy - null operation" );
-    }
-    if ( !_curr_host ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "passthru_file_resolve_hierarchy - null operation" );
-    }
-    if ( !_out_parser ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "passthru_file_resolve_hierarchy - null outgoing hier parser" );
-    }
-    if ( !_out_vote ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "passthru_file_resolve_hierarchy - null outgoing vote" );
+    if (!_opr || !_curr_host || !_out_parser || !_out_vote) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid input parameter.");
     }
 
-    // =-=-=-=-=-=-=-
-    // get the name of this resource
-    std::string resc_name;
-    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-    if ( !ret.ok() ) {
-        std::stringstream msg;
-        msg << "passthru_file_resolve_hierarchy - failed in get property for name";
-        return ERROR( -1, msg.str() );
-    }
-
-    // =-=-=-=-=-=-=-
-    // add ourselves to the hierarchy parser by default
-    _out_parser->add_child( resc_name );
+    _out_parser->add_child(irods::get_resource_name(_ctx));
 
     irods::resource_ptr resc;
     ret = passthru_get_first_child_resc( _ctx.prop_map(), resc );
@@ -788,6 +784,7 @@ irods::error passthru_file_resolve_hierarchy(
         }
         else {
             ( *_out_vote ) *= read_weight;
+            apply_weight_to_object_votes(_ctx, read_weight);
         }
 
     }
@@ -800,6 +797,7 @@ irods::error passthru_file_resolve_hierarchy(
         }
         else {
             ( *_out_vote ) *= write_weight;
+            apply_weight_to_object_votes(_ctx, write_weight);
         }
     }
 
