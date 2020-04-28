@@ -434,9 +434,9 @@ irods::error create_replication_list(
         ret = child->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
                   _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), &operation, &host_name, &parser, &out_vote );
         if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
-            return PASSMSG((boost::format(
-                            "[%s] - Failed calling redirect on the child \"%s\".") %
-                            __FUNCTION__ % entry.first).str(), ret);
+            rodsLog(LOG_WARNING,
+                "[%s] - failed resolving hierarchy for [%s]",
+                __FUNCTION__, entry.first.c_str());
         }
         else if (out_vote > 0.0) {
             repl_vector.push_back(parser);
@@ -1325,31 +1325,36 @@ irods::error add_self_to_hierarchy(
 } // add_self_to_hierarchy
 
 /// @brief Loop through the children and call resolve hierarchy on each one to populate the hierarchy vector
-irods::error resolve_children(
-    irods::plugin_context& _ctx,
-    const std::string*             _operation,
-    const std::string*             _curr_host,
-    irods::hierarchy_parser&       _parser,
-    redirect_map_t&                _redirect_map ) {
-
+std::pair<redirect_map_t, irods::error> resolve_children(
+    irods::plugin_context& ctx,
+    const std::string& operation,
+    const std::string& local_hostname,
+    irods::hierarchy_parser& out_parser)
+{
+    redirect_map_t map;
     irods::resource_child_map* cmap_ref;
-    _ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
+    ctx.prop_map().get<irods::resource_child_map*>(irods::RESC_CHILD_MAP_PROP, cmap_ref);
+    if (cmap_ref->empty()) {
+        return {map, ERROR(CHILD_NOT_FOUND, "No children found for resource")};
+    }
 
+    irods::error last_err = SUCCESS();
     float out_vote{};
     for (auto& entry : *cmap_ref) {
-        auto parser{_parser};
+        auto parser{out_parser};
         const auto ret{entry.second.second->call<const std::string*, const std::string*, irods::hierarchy_parser*, float*>(
-                        _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _operation, _curr_host, &parser, &out_vote)};
+                        ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, ctx.fco(), &operation, &local_hostname, &parser, &out_vote)};
         if (!ret.ok() && CHILD_NOT_FOUND != ret.code()) {
-            return PASSMSG((boost::format(
-                            "[%s] - Failed calling redirect on the child \"%s\".") %
-                            __FUNCTION__ % entry.first).str(), ret);
+            rodsLog(LOG_WARNING,
+                "[%s] - failed resolving hierarchy for [%s]",
+                __FUNCTION__, entry.first.c_str());
+            last_err = ret;
         }
         else {
-            _redirect_map.insert(std::pair<float, irods::hierarchy_parser>(out_vote, parser));
+            map.insert({out_vote, parser});
         }
     }
-    return SUCCESS();
+    return {map, last_err};
 } // resolve_children
 
 /// @brief honor the read context string keyword if present
@@ -1442,10 +1447,9 @@ irods::error repl_file_resolve_hierarchy(
     }
 
     // Resolve each one of our children and put into redirect_map
-    redirect_map_t redirect_map;
-    ret = resolve_children(_ctx, _operation, _curr_host, *_inout_parser, redirect_map);
-    if (!ret.ok()) {
-        return PASS(ret);
+    auto [redirect_map, last_err] = resolve_children(_ctx, *_operation, *_curr_host, *_inout_parser);
+    if (redirect_map.empty()) {
+        return last_err;
     }
 
     // Select a resolved hierarchy from redirect_map for the operation

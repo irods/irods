@@ -18,9 +18,6 @@
 
 namespace irods {
 
-    using vote_type = std::tuple<irods::physical_object, irods::hierarchy_parser, float>;
-    using vote_list_type = std::vector<vote_type>;
-
     class file_object : public data_object {
         public:
             // =-=-=-=-=-=-=-
@@ -92,7 +89,8 @@ namespace irods {
             virtual int                            repl_requested()  const {
                 return repl_requested_;
             }
-            virtual std::vector< physical_object > replicas()        const {
+            // IF IT BLOWS UP, THIS IS WHY (ref)
+            virtual const std::vector< physical_object >& replicas() const {
                 return replicas_;
             }
             virtual const std::string&             in_pdmo()         const {
@@ -122,8 +120,8 @@ namespace irods {
             virtual void replicas( const std::vector< physical_object >& _v ) {
                 replicas_ = _v;
             }
-            virtual vote_list_type& vote_list() {
-                return vote_list_;
+            virtual std::vector<physical_object>& replicas() {
+                return replicas_;
             }
 
         protected:
@@ -145,7 +143,6 @@ namespace irods {
             std::vector< physical_object > replicas_;        // structures holding replica info initialized
             // by factory fcn from
             // dataObjInfoHead
-            vote_list_type vote_list_;
 
     }; // class file_object
 

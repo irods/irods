@@ -765,16 +765,22 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
             self.admin.assert_icommand("itrim -N1 -n 2 foo2 foo4 foo5", 'STDOUT_SINGLELINE', "files trimmed")
 
             # =-=-=-=-=-=-=-
+            # visualize our pruning
+            self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+
+            # =-=-=-=-=-=-=-
             # dirty up a foo10 repl to ensure that code path is tested also
-            self.admin.assert_icommand("iadmin modresc unixA2 status down")
+            down_resource = 'unixA2'
+            resources = ['unixA1', 'unixA2', 'unixB1', 'unixB2']
+            self.admin.assert_icommand(['iadmin', 'modresc', down_resource, 'status', 'down'])
             test1_path = os.path.join(self.admin.local_session_dir, 'test1')
             lib.make_file(test1_path, 1500, 'arbitrary')
             self.admin.assert_icommand("iput -fR pt %s foo10" % (test1_path))
-            self.admin.assert_icommand("iadmin modresc unixA2 status up")
-
-            # =-=-=-=-=-=-=-
-            # visualize our pruning
-            self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "foo")
+            self.admin.assert_icommand(['iadmin', 'modresc', down_resource, 'status', 'up'])
+            # Ensure resource marked down does not receive an update
+            for resc in resources:
+                desired_status = 'X' if resc is down_resource else '&'
+                self.admin.assert_icommand(['ils', '-l', 'foo10'], 'STDOUT_SINGLELINE', [resc, desired_status, "foo10"])
 
             # =-=-=-=-=-=-=-
             # call rebalance function - the thing were actually testing... finally.

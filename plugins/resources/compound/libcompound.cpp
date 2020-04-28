@@ -24,6 +24,7 @@
 #include "irods_kvp_string_parser.hpp"
 #include "irods_lexical_cast.hpp"
 #include "irods_random.hpp"
+#include "irods_at_scope_exit.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -38,6 +39,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
+
+#include <fmt/format.h>
 
 /// =-=-=-=-=-=-=-
 /// @brief constant to reference the operation type for
@@ -596,6 +599,17 @@ irods::error repl_object(
 
     int source_l1descInx{};
     int destination_l1descInx{};
+    const irods::at_scope_exit close_l1_descriptors{
+        [&]()
+        {
+            if (destination_l1descInx > 0) {
+                close_replica(_ctx, destination_l1descInx);
+            }
+            if (source_l1descInx > 0) {
+                close_replica(_ctx, source_l1descInx);
+            }
+        }
+    };
     if (STAGE_OBJ_KW == keyword) {
         try {
             source_l1descInx = open_source_replica(_ctx, obj, src_hier);
@@ -740,14 +754,6 @@ irods::error repl_object(
 
     if ( !ret.ok() ) {
         return PASS( ret );
-    }
-
-    //clearKeyVal( &data_obj_inp.condInput );
-    if (destination_l1descInx > 0) {
-        close_replica(_ctx, destination_l1descInx);
-    }
-    if (source_l1descInx > 0) {
-        close_replica(_ctx, source_l1descInx);
     }
 
     if ( destination_l1descInx < 0 ) {
@@ -1496,6 +1502,12 @@ irods::error open_for_prefer_archive_policy(
         return PASS( ret );
     }
 
+    std::string operation{irods::OPEN_OPERATION};
+    ret = _ctx.prop_map().get<std::string>(OPERATION_TYPE, operation);
+    if (!ret.ok()) {
+        rodsLog(LOG_NOTICE, "[%s] - operation not found in property map; using open.", __FUNCTION__);
+    }
+
     // =-=-=-=-=-=-=-
     // repave the repl requested temporarily
     irods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
@@ -1509,7 +1521,7 @@ irods::error open_for_prefer_archive_policy(
     ret = arch_resc->call < const std::string*, const std::string*,
     irods::hierarchy_parser*, float* > (
         _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
-        &irods::OPEN_OPERATION, &_curr_host,
+        &operation, &_curr_host,
         &arch_check_parser, &arch_check_vote );
     if ( !ret.ok() || 0.0 == arch_check_vote ) {
         rodsLog(
@@ -1525,7 +1537,7 @@ irods::error open_for_prefer_archive_policy(
         ret = cache_resc->call < const std::string*, const std::string*,
         irods::hierarchy_parser*, float* > (
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
-            &irods::OPEN_OPERATION, &_curr_host,
+            &operation, &_curr_host,
             &cache_check_parser, &cache_check_vote );
         if ( !ret.ok() ) {
             return PASS( ret );
@@ -1623,6 +1635,9 @@ irods::error open_for_prefer_archive_policy(
     dst_hier += current_name +
                 irods::hierarchy_parser::delimiter() +
                 cache_name;
+    rodsLog(LOG_NOTICE, "[%s:%d] - inp_hier:[%s],dst_hier:[%s]",
+        __FUNCTION__, __LINE__,
+        inp_hier.c_str(), dst_hier.c_str());
 
     // =-=-=-=-=-=-=-
     // set the vote and hier parser
@@ -1699,14 +1714,19 @@ irods::error open_for_prefer_cache_policy(
         return PASS( ret );
     }
 
+    std::string operation{irods::OPEN_OPERATION};
+    ret = _ctx.prop_map().get<std::string>(OPERATION_TYPE, operation);
+    if (!ret.ok()) {
+        rodsLog(LOG_NOTICE, "[%s] - operation not found in property map; using open.", __FUNCTION__);
+    }
+
     // =-=-=-=-=-=-=-
     // ask the cache if it has the data object in question, politely
     float                    cache_check_vote   = 0.0;
     irods::hierarchy_parser cache_check_parser = ( *_out_parser );
-    ret = cache_resc->call < const std::string*, const std::string*,
-    irods::hierarchy_parser*, float* > (
+    ret = cache_resc->call < const std::string*, const std::string*, irods::hierarchy_parser*, float* > (
         _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
-        &irods::OPEN_OPERATION, _curr_host,
+        &operation, _curr_host,
         &cache_check_parser, &cache_check_vote );
     if ( !ret.ok() ) {
         irods::log(ret);
@@ -1729,7 +1749,7 @@ irods::error open_for_prefer_cache_policy(
         ret = arch_resc->call < const std::string*, const std::string*,
         irods::hierarchy_parser*, float* > (
             _ctx.comm(), irods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(),
-            &irods::OPEN_OPERATION, _curr_host,
+            &operation, _curr_host,
             &arch_check_parser, &arch_check_vote );
         if ( !ret.ok() ) {
             irods::log(ret);
@@ -1771,7 +1791,6 @@ irods::error open_for_prefer_cache_policy(
         // object is in the cache as to not hit the DB again
         // the first vote was zero so we must add the name to
         // the resource hierarchy
-        cache_check_parser.add_child( cache_resc_name );
         ( *_out_parser ) = cache_check_parser;
         ( *_out_vote ) = arch_check_vote;
         std::string hier;
@@ -1855,6 +1874,31 @@ irods::error compound_file_redirect_open(
 
 } // compound_file_redirect_open
 
+void replace_archive_for_replica(
+    irods::plugin_context& ctx,
+    const irods::hierarchy_parser& voted_hier)
+{
+    irods::resource_ptr arch_resc;
+    get_archive(ctx, arch_resc);
+    std::string archive_resc_name{};
+    arch_resc->get_property<std::string>(irods::RESOURCE_NAME, archive_resc_name);
+
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(ctx.fco());
+    for (auto& r : file_obj->replicas()) {
+        rodsLog(LOG_NOTICE,
+            "[%s:%d] - vote:[%f],voted_hier:[%s],hier:[%s],arch:[%s]",
+            __FUNCTION__, __LINE__,
+            r.vote(),
+            voted_hier.str().c_str(),
+            r.resc_hier().c_str(),
+            archive_resc_name.c_str());
+        if (irods::hierarchy_parser{r.resc_hier()}.last_resc() == archive_resc_name) {
+            r.resc_hier(voted_hier.str());
+            break;
+        }
+    }
+} // replace_archive_for_replica
+
 /// =-=-=-=-=-=-=-
 /// @brief - used to allow the resource to determine which host
 ///          should provide the requested operation
@@ -1907,11 +1951,8 @@ irods::error compound_file_resolve_hierarchy(
 
     // =-=-=-=-=-=-=-
     // test the operation to determine which choices to make
-    if ( irods::OPEN_OPERATION == ( *_opr ) ||
-            irods::WRITE_OPERATION  == ( *_opr ) ) {
-        if ( irods::WRITE_OPERATION  == ( *_opr ) ) {
-            _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
-        }
+    if (irods::OPEN_OPERATION == *_opr || irods::WRITE_OPERATION == *_opr) {
+        _ctx.prop_map().set< std::string >( OPERATION_TYPE, ( *_opr ) );
         // If the hierarchy contains the archive, just vote 1.0 and return, don't get the cache
         auto ret = compound_file_redirect_open( _ctx, _opr, _curr_host, _out_parser, _out_vote );
         if (ret.ok()) {
