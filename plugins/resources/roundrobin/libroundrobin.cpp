@@ -1021,6 +1021,7 @@ irods::error get_next_valid_child_resource(
 
         // =-=-=-=-=-=-=-
         // forward the 'put' redirect to the appropriate child
+        irods::hierarchy_parser parser{*_out_parser};
         err = resc->call < const std::string*,
             const std::string*,
             irods::hierarchy_parser*,
@@ -1030,13 +1031,11 @@ irods::error get_next_valid_child_resource(
                     _ctx.fco(),
                     _opr,
                     _curr_host,
-                    _out_parser,
+                    &parser,
                     _out_vote );
         if ( !err.ok() ) {
-            rodsLog(
-                    LOG_ERROR,
-                    "forward of put redirect failed" );
-            continue;
+            irods::log(err);
+            //continue;
 
         }
 
@@ -1044,6 +1043,7 @@ irods::error get_next_valid_child_resource(
             // =-=-=-=-=-=-=-
             // we found a valid child, set out variable
             child_found = true;
+            *_out_parser = parser;
 
         }
         else {
@@ -1054,7 +1054,6 @@ irods::error get_next_valid_child_resource(
                 return PASSMSG( "update_next_child_resource failed", err );
 
             }
-
         }
 
     } // while

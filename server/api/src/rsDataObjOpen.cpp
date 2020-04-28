@@ -715,9 +715,7 @@ int rsDataObjOpen(
         try {
             const auto operation = (dataObjInp->openFlags & O_CREAT) ?
                 irods::CREATE_OPERATION : irods::OPEN_OPERATION;
-            auto result = irods::resolve_resource_hierarchy(operation, rsComm, *dataObjInp, &dataObjInfoHead);
-            auto file_obj = std::get<irods::file_object_ptr>(result);
-            const auto hier = std::get<std::string>(result);
+            auto [file_obj, hier] = irods::resolve_resource_hierarchy(operation, rsComm, *dataObjInp, &dataObjInfoHead);
             addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str());
             return _rsDataObjOpen(rsComm, *dataObjInp, dataObjInfoHead, file_obj);
         }

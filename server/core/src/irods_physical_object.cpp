@@ -12,7 +12,8 @@ namespace irods {
         , map_id_{-1}
         , size_{-1}
         , id_{-1}
-        , coll_id_{-1} {
+        , coll_id_{-1}
+    {
     } // ctor
 
 // =-=-=-=-=-=-=-
@@ -39,7 +40,9 @@ namespace irods {
         , create_ts_{_rhs.create_ts_}
         , modify_ts_{_rhs.modify_ts_}
         , resc_hier_{_rhs.resc_hier_}
-        , resc_id_{_rhs.resc_id_} {
+        , resc_id_{_rhs.resc_id_}
+        , vote_{_rhs.vote_}
+    {
     } // cctor
 
 // =-=-=-=-=-=-=-
@@ -72,7 +75,8 @@ namespace irods {
             create_ts_       = _rhs.create_ts_;
             modify_ts_       = _rhs.modify_ts_;
             resc_hier_       = _rhs.resc_hier_;
-            resc_id_       = _rhs.resc_id_;
+            resc_id_         = _rhs.resc_id_;
+            vote_            = _rhs.vote_;
 
         } // if
 
