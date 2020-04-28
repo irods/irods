@@ -1,6 +1,7 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "irods_resource_plugin.hpp"
+#include "irods_resource_redirect.hpp"
 #include "irods_load_plugin.hpp"
 
 // =-=-=-=-=-=-=-
@@ -9,6 +10,8 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // dlopen, etc
@@ -83,4 +86,34 @@ namespace irods {
         }
     } // children
 
-}; // namespace irods
+auto get_resource_name(plugin_context& ctx) -> std::string
+{
+    std::string resc_name{};
+    if (error err = ctx.prop_map().get<std::string>(RESOURCE_NAME, resc_name); !err.ok()) {
+        THROW(err.code(), err.result());
+    }
+    return resc_name;
+} // get_resource_name
+
+auto get_resource_status(plugin_context& ctx) -> int
+{
+    int resc_status{}; 
+    if (error err = ctx.prop_map().get<int>(RESOURCE_STATUS, resc_status); !err.ok()) {
+        const irods::error ret = PASSMSG("Failed to get \"status\" property.", err);
+        THROW(ret.code(), ret.result());
+    }
+    return resc_status;
+} // get_resource_status
+
+auto get_resource_location(plugin_context& ctx) -> std::string
+{
+    std::string host_name{};
+    if (error err = ctx.prop_map().get<std::string>(RESOURCE_LOCATION, host_name); !err.ok()) {
+        const irods::error ret = PASSMSG("Failed to get \"location\" property.", err);
+        THROW(ret.code(), ret.result());
+    }
+    return host_name;
+} // get_resource_location
+
+} // namespace irods
+

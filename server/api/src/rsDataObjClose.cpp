@@ -312,8 +312,6 @@ _rsDataObjClose(
     int status = 0;
     char tmpStr[MAX_NAME_LEN];
     modDataObjMeta_t modDataObjMetaInp;
-    dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
-    int srcL1descInx;
     int updateChksumFlag = 0;
 
     int l1descInx = dataObjCloseInp->l1descInx;
@@ -491,15 +489,15 @@ _rsDataObjClose(
 
     if (L1desc[l1descInx].oprType == REPLICATE_DEST ||
              L1desc[l1descInx].oprType == PHYMV_DEST ) {
-        destDataObjInfo = L1desc[l1descInx].dataObjInfo;
-        srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        dataObjInfo_t *destDataObjInfo = L1desc[l1descInx].dataObjInfo;
+        int srcL1descInx = L1desc[l1descInx].srcL1descInx;
         if ( srcL1descInx <= 2 ) {
             rodsLog( LOG_NOTICE,
                      "%s: srcL1descInx %d out of range",
                      __FUNCTION__, srcL1descInx );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
-        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        dataObjInfo_t *srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
         snprintf( tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus );
         addKeyVal( &regParam, REPL_STATUS_KW, tmpStr );

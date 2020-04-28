@@ -18,6 +18,7 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_logger.hpp"
+#include "voting.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -30,7 +31,6 @@
 // boost includes
 #include <boost/function.hpp>
 #include <boost/any.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
 // =-=-=-=-=-=-=-
@@ -58,6 +58,8 @@
 #endif
 #include <dirent.h>
 
+#include <fmt/format.h>
+
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
@@ -81,7 +83,6 @@
 const std::string DEFAULT_VAULT_DIR_MODE( "default_vault_directory_mode_kw" );
 const std::string HIGH_WATER_MARK( "high_water_mark" ); // no longer used
 const std::string REQUIRED_FREE_INODES_FOR_CREATE("required_free_inodes_for_create"); // no longer used
-const std::string MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES("minimum_free_space_for_create_in_bytes");
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update
@@ -90,77 +91,81 @@ const std::string MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES("minimum_free_space_for
 static irods::error unix_file_copy(
     const int mode,
     const char* srcFileName,
-    const char* destFileName ) {
+    const char* destFileName)
+{
+    struct stat statbuf;
+    int status = stat( srcFileName, &statbuf );
+    int err_status = errno;
+    if ( status < 0 ) {
+        return ERROR(UNIX_FILE_STAT_ERR, fmt::format(
+            "stat failed on \"{}\", status: {}",
+            srcFileName, err_status));
+    }
 
-    irods::error result = SUCCESS();
+    if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
+        return ERROR(UNIX_FILE_STAT_ERR, fmt::format(
+            "srcFileName \"{}\" is not a regular file.",
+            srcFileName, err_status));
+    }
 
-    int inFd = open( srcFileName, O_RDONLY, 0 );
-    int err_status = UNIX_FILE_OPEN_ERR - errno;
+    int inFd{-1};
+    int outFd{-1};
+    const irods::at_scope_exit close_fds{
+        [&]()
+        {
+            if (inFd > 0) close(inFd);
+            if (outFd > 0) close(outFd);
+        }
+    };
+
+    inFd = open( srcFileName, O_RDONLY, 0 );
+    err_status = UNIX_FILE_OPEN_ERR - errno;
     if ( inFd < 0 ) {
-        std::stringstream msg_stream;
-        msg_stream << "Open error for srcFileName \"" << srcFileName << "\", status = " << err_status;
-        result = ERROR( err_status, msg_stream.str() );
+        return ERROR(err_status, fmt::format(
+            "Open error for srcFileName \"{}\", status = {}",
+            srcFileName, err_status));
     }
-    else {
-        struct stat statbuf;
-        int status = stat( srcFileName, &statbuf );
-        err_status = errno;
-        if ( status < 0 ) {
-            std::stringstream msg_stream;
-            msg_stream << "stat failed on \"" << srcFileName << "\", status: " << err_status;
-            result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
-        }
-        else if ( ( statbuf.st_mode & S_IFREG ) == 0 ) {
-            std::stringstream msg_stream;
-            msg_stream << "srcFileName \"" << srcFileName << "\" is not a regular file.";
-            result = ERROR( UNIX_FILE_STAT_ERR, msg_stream.str() );
-        }
-        else {
-            int outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
-            err_status = UNIX_FILE_OPEN_ERR - errno;
-            if ( outFd < 0 ) {
-                std::stringstream msg_stream;
-                msg_stream << "Open error for destFileName \"" << destFileName << "\", status = " << err_status;
-                result = ERROR( err_status, msg_stream.str() );
-                irods::log(result);
-            }
-            else {
-                size_t trans_buff_size;
-                try {
-                    trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
-                } catch ( const irods::exception& e ) {
-                    close( inFd );
-                    close( outFd );
-                    return irods::error(e);
-                }
 
-                std::vector<char> myBuf( trans_buff_size );
-                int bytesRead;
-                rodsLong_t bytesCopied = 0;
-                while ( result.ok() && ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
-                    int bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
-                    err_status = UNIX_FILE_WRITE_ERR - errno;
-                    if ( ( result = ASSERT_ERROR( bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
-                                                  destFileName, status ) ).ok() ) {
-                        bytesCopied += bytesWritten;
-                    }
-                    else {
-                        irods::log(result);
-                    }
-                }
-
-                close( outFd );
-
-                if ( result.ok() ) {
-                    result = ASSERT_ERROR( bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
-                                           bytesCopied, statbuf.st_size, srcFileName );
-                }
-            }
-        }
-        close( inFd );
+    outFd = open( destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode );
+    err_status = UNIX_FILE_OPEN_ERR - errno;
+    if ( outFd < 0 ) {
+        return ERROR(err_status, fmt::format(
+            "Open error for destFileName \"{}\", status = {}",
+            destFileName, err_status));
     }
-    return result;
-}
+
+    size_t trans_buff_size;
+    try {
+        trans_buff_size = irods::get_advanced_setting<const int>(irods::CFG_TRANS_BUFFER_SIZE_FOR_PARA_TRANS) * 1024 * 1024;
+    }
+    catch ( const irods::exception& e ) {
+        return irods::error(e);
+    }
+
+    std::vector<char> myBuf( trans_buff_size );
+    int bytesRead{};
+    rodsLong_t bytesCopied = 0;
+    while ( ( bytesRead = read( inFd, ( void * ) myBuf.data(), trans_buff_size ) ) > 0 ) {
+        int bytesWritten = write( outFd, ( void * ) myBuf.data(), bytesRead );
+        err_status = UNIX_FILE_WRITE_ERR - errno;
+        if (bytesWritten <= 0) {
+            irods::log(ERROR(
+                err_status, fmt::format(
+                    "Write error for destFileName {}, status = {}",
+                    destFileName, status)));
+            break;
+        }
+        bytesCopied += bytesWritten;
+    }
+
+    if (bytesCopied != statbuf.st_size) {
+        return ERROR(SYS_COPY_LEN_ERR, fmt::format(
+            "Copied size {} does not match source size {} of {}",
+            bytesCopied, statbuf.st_size, srcFileName));
+    }
+
+    return SUCCESS();
+} // unix_file_copy
 
 
 
@@ -453,90 +458,31 @@ irods::error stat_vault_path(
 
 } // stat_vault_path
 
-void warn_if_deprecated_context_string_set(irods::plugin_context& _ctx) {
+void warn_if_deprecated_context_string_set(
+    irods::plugin_context& _ctx)
+{
     std::string resource_name;
     irods::error ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
     if (!ret.ok()) {
-        rodsLog(LOG_ERROR, "warn_if_deprecated_context_string_set: failed to get resource name");
+        rodsLog(LOG_ERROR,
+            "%s: failed to get resource name",
+            __FUNCTION__);
     }
 
-    std::string holder;
-    ret = _ctx.prop_map().get<std::string>(HIGH_WATER_MARK, holder);
-    if (ret.code() != KEY_NOT_FOUND) {
-        rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), HIGH_WATER_MARK.c_str());
-    }
+    const std::vector<const std::string> deprecated_keys{HIGH_WATER_MARK, REQUIRED_FREE_INODES_FOR_CREATE};
 
-    ret = _ctx.prop_map().get<std::string>(REQUIRED_FREE_INODES_FOR_CREATE, holder);
-    if (ret.code() != KEY_NOT_FOUND) {
-        rodsLog(LOG_NOTICE, "warn_if_deprecated_context_string_set: resource [%s] is using deprecated context string [%s]", resource_name.c_str(), REQUIRED_FREE_INODES_FOR_CREATE.c_str());
+    for (const auto& k : deprecated_keys) {
+        std::string holder{};
+        irods::error result = _ctx.prop_map().get<std::string>(k, holder);
+        if (KEY_NOT_FOUND != result.code()) {
+            rodsLog(LOG_NOTICE,
+                "%s: resource [%s] is using deprecated context string [%s]",
+                __FUNCTION__,
+                resource_name.c_str(),
+                k.c_str());
+        }
     }
-}
-
-static bool replica_exceeds_resource_free_space(irods::plugin_context& _ctx, rodsLong_t _file_size) {
-    std::string resource_name;
-    irods::error ret = _ctx.prop_map().get<std::string>(irods::RESOURCE_NAME, resource_name);
-    if (!ret.ok()) {
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: failed to get resource name");
-    }
-
-    if (_file_size < 0) {
-        return false;
-    }
-
-    std::string minimum_free_space_string;
-    irods::error err = _ctx.prop_map().get<std::string>(MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES, minimum_free_space_string);
-    if (err.code() == KEY_NOT_FOUND) {
-        return false;
-    } else if (!err.ok()) {
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: failed to get MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES property for resource [%s]", resource_name.c_str());
-        irods::log(err);
-        return true;
-    }
-
-    if (minimum_free_space_string.size()>0 && minimum_free_space_string[0] == '-') {  // do sign check on string because boost::lexical_cast will wrap negative numbers around instead of throwing when casting string to unsigned
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: minimum free space < 0 [%s] for resource [%s]", minimum_free_space_string.c_str(), resource_name.c_str());
-        return true;
-    }
-
-    uintmax_t minimum_free_space = 0;
-    try {
-        minimum_free_space = boost::lexical_cast<uintmax_t>(minimum_free_space_string);
-    } catch (const boost::bad_lexical_cast&) {
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: invalid MINIMUM_FREE_SPACE_FOR_CREATE_IN_BYTES [%s] for resource [%s]", minimum_free_space_string.c_str(), resource_name.c_str());
-        return true;
-    }
-
-    std::string resource_free_space_string;
-    err = _ctx.prop_map().get<std::string>(irods::RESOURCE_FREESPACE, resource_free_space_string);
-    if (!err.ok()) {
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: minimum free space constraint was requested, and failed to get resource free space for resource [%s]", resource_name.c_str());
-        irods::log(err);
-        return true;
-    }
-
-    if (resource_free_space_string.size()>0 && resource_free_space_string[0] == '-') {  // do sign check on string because boost::lexical_cast will wrap negative numbers around instead of throwing when casting string to unsigned
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: resource free space < 0 [%s] for resource [%s]", resource_free_space_string.c_str(), resource_name.c_str());
-        return true;
-    }
-
-    uintmax_t resource_free_space = 0;
-    try {
-        resource_free_space = boost::lexical_cast<uintmax_t>(resource_free_space_string);
-    } catch (const boost::bad_lexical_cast&) {
-        rodsLog(LOG_ERROR, "replica_exceeds_resource_free_space: invalid free space [%s] for resource [%s]", resource_free_space_string.c_str(), resource_name.c_str());
-        return true;
-    }
-
-    if (minimum_free_space > resource_free_space) {
-        return true;
-    }
-
-    if (resource_free_space - minimum_free_space < static_cast<uint64_t>(_file_size)) {
-        return true;
-    }
-
-    return false;
-}
+} // warn_if_deprecated_context_string_set
 
 // =-=-=-=-=-=-=-
 // interface for POSIX create
@@ -1302,6 +1248,9 @@ irods::error unix_file_sync_to_arch(
         // cast down the hierarchy to the desired object
         irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
+        rodsLog(LOG_NOTICE, "[%s:%d] - performing file copy of [%s]",
+            __FUNCTION__, __LINE__,
+            _cache_file_name);
         ret = unix_file_copy( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
         result = ASSERT_PASS( ret, "Failed" );
     }
@@ -1311,311 +1260,6 @@ irods::error unix_file_sync_to_arch(
 } // unix_file_sync_to_arch
 
 // =-=-=-=-=-=-=-
-// redirect_create - code to determine redirection for create operation
-irods::error unix_resolve_hierarchy_create(
-    irods::plugin_context& _ctx,
-    const std::string&             _resc_name,
-    const std::string&             _curr_host,
-    float&                         _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _ctx.prop_map().get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if ( INT_RESC_STATUS_DOWN == resc_status ) {
-            _out_vote = 0.0;
-            result.code( SYS_RESC_IS_DOWN );
-            // result = PASS( result );
-        }
-        else {
-            // vote no if the file size exceeds the high water mark
-            irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-            rodsLong_t file_size = fco->size();
-            if( replica_exceeds_resource_free_space( _ctx, file_size ) ) {
-                _out_vote = 0.0;
-                return CODE(USER_FILE_TOO_LARGE);
-            }
-
-            warn_if_deprecated_context_string_set(_ctx);
-
-            // =-=-=-=-=-=-=-
-            // get the resource host for comparison to curr host
-            std::string host_name;
-            get_ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_LOCATION, host_name );
-            if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // vote higher if we are on the same host
-                if ( _curr_host == host_name ) {
-                    _out_vote = 1.0;
-                }
-                else {
-                    _out_vote = 0.5;
-                }
-            }
-
-            rodsLog(
-                LOG_DEBUG,
-                "create :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
-                _resc_name.c_str(),
-                _curr_host.c_str(),
-                host_name.c_str(),
-                _out_vote );
-
-        }
-    }
-    return result;
-
-} // unix_resolve_hierarchy_create
-
-// =-=-=-=-=-=-=-
-// redirect_open - code to determine redirection for open operation
-irods::error unix_resolve_hierarchy_open(
-    irods::plugin_property_map&   _prop_map,
-    irods::file_object_ptr        _file_obj,
-    const std::string&             _resc_name,
-    const std::string&             _curr_host,
-    float&                         _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // initially set a good default
-    _out_vote = 0.0;
-
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if ( INT_RESC_STATUS_DOWN != resc_status ) {
-
-            // =-=-=-=-=-=-=-
-            // get the resource host for comparison to curr host
-            std::string host_name;
-            get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-            if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // set a flag to test if were at the curr host, if so we vote higher
-                bool curr_host = ( _curr_host == host_name );
-
-                // =-=-=-=-=-=-=-
-                // make some flags to clarify decision making
-                bool need_repl = ( _file_obj->repl_requested() > -1 );
-
-                // =-=-=-=-=-=-=-
-                // set up variables for iteration
-                irods::error final_ret = SUCCESS();
-                std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
-
-                // =-=-=-=-=-=-=-
-                // check to see if the replica is in this resource, if one is requested
-                for ( ; itr != objs.end(); ++itr ) {
-                    // =-=-=-=-=-=-=-
-                    // run the hier string through the parser and get the last
-                    // entry.
-                    std::string last_resc;
-                    irods::hierarchy_parser parser;
-                    parser.set_string( itr->resc_hier() );
-                    parser.last_resc( last_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // more flags to simplify decision making
-                    bool repl_us  = ( _file_obj->repl_requested() == itr->repl_num() );
-                    bool resc_us  = ( _resc_name == last_resc );
-                    bool is_good_replica = ( GOOD_REPLICA == itr->replica_status() );
-
-                    // =-=-=-=-=-=-=-
-                    // success - correct resource and don't need a specific
-                    //           replication, or the repl nums match
-                    if ( resc_us ) {
-                        // =-=-=-=-=-=-=-
-                        // if a specific replica is requested then we
-                        // ignore all other criteria
-                        if ( need_repl ) {
-                            if ( repl_us ) {
-                                _out_vote = 1.0;
-                            }
-                            else {
-                                // =-=-=-=-=-=-=-
-                                // repl requested and we are not it, vote
-                                // very low
-                                _out_vote = 0.25;
-                            }
-                        }
-                        else {
-                            // =-=-=-=-=-=-=-
-                            // if no repl is requested consider replica status
-                            if ( is_good_replica ) {
-                                // =-=-=-=-=-=-=-
-                                // if our repl is marked good then a local copy
-                                // wins, otherwise vote middle of the road
-                                if ( curr_host ) {
-                                    _out_vote = 1.0;
-                                }
-                                else {
-                                    _out_vote = 0.5;
-                                }
-                            }
-                            else {
-                                // =-=-=-=-=-=-=-
-                                // repl is not good, vote very low
-                                irods::experimental::log::resource::debug("repl is not good, vote very low");
-                                _out_vote = 0.25;
-                            }
-                        }
-
-                        rodsLog(
-                            LOG_DEBUG,
-                            "open :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
-                            _resc_name.c_str(),
-                            _curr_host.c_str(),
-                            host_name.c_str(),
-                            _out_vote );
-
-                        break;
-
-                    } // if resc_us
-
-                } // for itr
-            }
-        }
-        else {
-            result.code( SYS_RESC_IS_DOWN );
-            result = PASS( result );
-        }
-    }
-
-    return result;
-
-} // unix_resolve_hierarchy_open
-
-irods::error unix_resolve_hierarchy_unlink(
-    irods::plugin_property_map&   _prop_map,
-    irods::file_object_ptr        _file_obj,
-    const std::string&             _resc_name,
-    const std::string&             _curr_host,
-    float&                         _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // initially set a good default
-    _out_vote = 0.0;
-
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if (!get_ret.ok()) {
-        return PASSMSG("Failed to get \"status\" property.", get_ret);
-    }
-
-    // =-=-=-=-=-=-=-
-    // if the status is down, vote no.
-    if ( INT_RESC_STATUS_DOWN == resc_status ) {
-        result.code( SYS_RESC_IS_DOWN );
-        return PASS( result );
-    }
-
-    // =-=-=-=-=-=-=-
-    // get the resource host for comparison to curr host
-    std::string host_name;
-    get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-    if (!get_ret.ok()) {
-        return PASSMSG("Failed to get \"location\" property.", get_ret);
-    }
-
-    // =-=-=-=-=-=-=-
-    // set a flag to test if were at the curr host, if so we vote higher
-    bool curr_host = ( _curr_host == host_name );
-
-    // =-=-=-=-=-=-=-
-    // make some flags to clarify decision making
-    bool need_repl = ( _file_obj->repl_requested() > -1 );
-
-    // =-=-=-=-=-=-=-
-    // set up variables for iteration
-    irods::error final_ret = SUCCESS();
-    std::vector< irods::physical_object > objs = _file_obj->replicas();
-    std::vector< irods::physical_object >::iterator itr = objs.begin();
-
-    // =-=-=-=-=-=-=-
-    // check to see if the replica is in this resource, if one is requested
-    for ( ; itr != objs.end(); ++itr ) {
-        // =-=-=-=-=-=-=-
-        // more flags to simplify decision making
-        const bool repl_us  = ( _file_obj->repl_requested() == itr->repl_num() );
-        const bool resc_us  = ( _resc_name == irods::hierarchy_parser{itr->resc_hier()}.last_resc() );
-        const bool is_stale_replica = ( STALE_REPLICA == itr->replica_status() );
-
-        // =-=-=-=-=-=-=-
-        // success - correct resource and don't need a specific
-        //           replication, or the repl nums match
-        if ( resc_us ) {
-            // =-=-=-=-=-=-=-
-            // if a specific replica is requested then we
-            // ignore all other criteria
-            if ( need_repl ) {
-                if ( repl_us ) {
-                    _out_vote = 1.0;
-                }
-                else {
-                    // =-=-=-=-=-=-=-
-                    // repl requested and we are not it, vote
-                    // very low
-                    _out_vote = 0.25;
-                }
-            }
-            else {
-                // =-=-=-=-=-=-=-
-                // if no repl is requested consider replica status
-                if ( is_stale_replica ) {
-                    // =-=-=-=-=-=-=-
-                    // if our repl is marked good then a local copy
-                    // wins, otherwise vote middle of the road
-                    if ( curr_host ) {
-                        _out_vote = 1.0;
-                    }
-                    else {
-                        _out_vote = 0.5;
-                    }
-                }
-                else {
-                    // =-=-=-=-=-=-=-
-                    // repl is not good, vote very low
-                    irods::experimental::log::resource::debug("repl is not stale, vote very low");
-                    _out_vote = 0.25;
-                }
-            }
-
-            rodsLog(
-                    LOG_DEBUG,
-                    "open :: resc name [%s] curr host [%s] resc host [%s] vote [%f]",
-                    _resc_name.c_str(),
-                    _curr_host.c_str(),
-                    host_name.c_str(),
-                    _out_vote );
-
-            break;
-
-        } // if resc_us
-
-    } // for itr
-
-    return result;
-
-} // unix_resolve_hierarchy_unlink
-
-// =-=-=-=-=-=-=-
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error unix_file_resolve_hierarchy(
@@ -1623,74 +1267,42 @@ irods::error unix_file_resolve_hierarchy(
     const std::string*       _opr,
     const std::string*       _curr_host,
     irods::hierarchy_parser* _out_parser,
-    float*                   _out_vote ) {
+    float*                   _out_vote )
+{
+    namespace irv = irods::experimental::resource::voting;
 
-    // =-=-=-=-=-=-=-
-    // check the context validity
-    irods::error ret = _ctx.valid< irods::file_object >();
-    if ( !ret.ok() ) {
-        return PASSMSG( "Invalid resource context.", ret );
+    if (irods::error ret = _ctx.valid<irods::file_object>(); !ret.ok()) {
+        return PASSMSG("Invalid resource context.", ret);
     }
 
-    // =-=-=-=-=-=-=-
-    // check incoming parameters
-    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameter." );
+    if (!_opr || !_curr_host || !_out_parser || !_out_vote) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid input parameter.");
     }
 
-    // =-=-=-=-=-=-=-
-    // cast down the chain to our understood object type
-    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
+    if (irods::CREATE_OPERATION == *_opr) {
+        warn_if_deprecated_context_string_set(_ctx);
+    }
 
-    // =-=-=-=-=-=-=-
-    // check that additional info made it
+    irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
     if (getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW)) {
         irods::experimental::log::resource::debug(
             (boost::format("%s: %s found in cond_input for file_obj") %
             __FUNCTION__ % RECURSIVE_OPR__KW).str());
     }
 
-    // =-=-=-=-=-=-=-
-    // get the name of this resource
-    std::string resc_name;
-    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-    if ( !ret.ok() ) {
-        return PASSMSG( "Failed in get property for name.", ret );
+    _out_parser->add_child(irods::get_resource_name(_ctx));
+    *_out_vote = irv::vote::zero;
+    try {
+        *_out_vote = irv::calculate(*_opr, _ctx, *_curr_host, *_out_parser);
+        return SUCCESS();
     }
-
-    // =-=-=-=-=-=-=-
-    // test the operation to determine which choices to make
-    if ( irods::OPEN_OPERATION  == ( *_opr ) || irods::WRITE_OPERATION == ( *_opr )) {
-        ret = unix_resolve_hierarchy_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-        if ( !ret.ok() ) {
-            ret = PASSMSG( "Failed resolving hierarchy for open.", ret );
-        }
+    catch(const std::out_of_range& e) {
+        return ERROR(INVALID_OPERATION, e.what());
     }
-    else if (irods::UNLINK_OPERATION == *_opr) {
-        ret = unix_resolve_hierarchy_unlink( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-        if ( !ret.ok() ) {
-            ret = PASSMSG( "Failed resolving hierarchy for unlink.", ret );
-        }
+    catch (const irods::exception& e) {
+        return irods::error(e);
     }
-    else if ( irods::CREATE_OPERATION == ( *_opr ) ) {
-        ret = unix_resolve_hierarchy_create( _ctx, resc_name, ( *_curr_host ), ( *_out_vote ) );
-        if ( !ret.ok() ) {
-            ret = PASSMSG( "Failed resolving hierarchy for create.", ret );
-        }
-    }
-    else {
-        // =-=-=-=-=-=-=-
-        // must have been passed a bad operation
-        ret = ERROR( INVALID_OPERATION, "Operation not supported." );
-    }
-
-    // add ourselves to the hierarchy if we have any vote
-    if( *_out_vote > 0 && ret.ok() ) {
-        _out_parser->add_child( resc_name );
-    }
-
-    return ret;
-
+    return ERROR(SYS_UNKNOWN_ERROR, "An unknown error occurred while resolving hierarchy.");
 } // unix_file_resolve_hierarchy
 
 // =-=-=-=-=-=-=-

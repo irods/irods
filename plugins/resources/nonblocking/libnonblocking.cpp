@@ -14,6 +14,7 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
+#include "voting.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -1246,226 +1247,38 @@ irods::error non_blocking_file_sync_to_arch(
 } // non_blocking_file_sync_to_arch
 
 // =-=-=-=-=-=-=-
-// redirect_create - code to determine redirection for create operation
-irods::error non_blocking_file_redirect_create(
-    irods::plugin_property_map&   _prop_map,
-    const std::string&             _curr_host,
-    float&                         _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if ( INT_RESC_STATUS_DOWN == resc_status ) {
-            _out_vote = 0.0;
-        }
-        else {
-
-            // =-=-=-=-=-=-=-
-            // get the resource host for comparison to curr host
-            std::string host_name;
-            get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-            if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // vote higher if we are on the same host
-                if ( _curr_host == host_name ) {
-                    _out_vote = 1.0;
-                }
-                else {
-                    _out_vote = 0.5;
-                }
-            }
-        }
-    }
-    return result;
-
-} // non_blocking_file_redirect_create
-
-// =-=-=-=-=-=-=-
-// redirect_open - code to determine redirection for open operation
-irods::error non_blocking_file_redirect_open(
-    irods::plugin_property_map&   _prop_map,
-    irods::file_object_ptr        _file_obj,
-    const std::string&             _resc_name,
-    const std::string&             _curr_host,
-    float&                         _out_vote ) {
-    irods::error result = SUCCESS();
-
-    // =-=-=-=-=-=-=-
-    // initially set a good default
-    _out_vote = 0.0;
-
-    // =-=-=-=-=-=-=-
-    // determine if the resource is down
-    int resc_status = 0;
-    irods::error get_ret = _prop_map.get< int >( irods::RESOURCE_STATUS, resc_status );
-    if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"status\" property." ) ).ok() ) {
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if ( INT_RESC_STATUS_DOWN != resc_status ) {
-
-            // =-=-=-=-=-=-=-
-            // get the resource host for comparison to curr host
-            std::string host_name;
-            get_ret = _prop_map.get< std::string >( irods::RESOURCE_LOCATION, host_name );
-            if ( ( result = ASSERT_PASS( get_ret, "Failed to get \"location\" property." ) ).ok() ) {
-
-                // =-=-=-=-=-=-=-
-                // set a flag to test if were at the curr host, if so we vote higher
-                bool curr_host = ( _curr_host == host_name );
-
-                // =-=-=-=-=-=-=-
-                // make some flags to clairify decision making
-                bool need_repl = ( _file_obj->repl_requested() > -1 );
-
-                // =-=-=-=-=-=-=-
-                // set up variables for iteration
-                irods::error final_ret = SUCCESS();
-                std::vector< irods::physical_object > objs = _file_obj->replicas();
-                std::vector< irods::physical_object >::iterator itr = objs.begin();
-
-                // =-=-=-=-=-=-=-
-                // check to see if the replica is in this resource, if one is requested
-                for ( ; itr != objs.end(); ++itr ) {
-                    // =-=-=-=-=-=-=-
-                    // run the hier string through the parser and get the last
-                    // entry.
-                    std::string last_resc;
-                    irods::hierarchy_parser parser;
-                    parser.set_string( itr->resc_hier() );
-                    parser.last_resc( last_resc );
-
-                    // =-=-=-=-=-=-=-
-                    // more flags to simplify decision making
-                    bool repl_us  = ( _file_obj->repl_requested() == itr->repl_num() );
-                    bool resc_us  = ( _resc_name == last_resc );
-                    bool is_good_replica = ( GOOD_REPLICA == itr->replica_status() );
-
-                    // =-=-=-=-=-=-=-
-                    // success - correct resource and dont need a specific
-                    //           replication, or the repl nums match
-                    if ( resc_us ) {
-                        // =-=-=-=-=-=-=-
-                        // if a specific replica is requested then we
-                        // ignore all other criteria
-                        if ( need_repl ) {
-                            if ( repl_us ) {
-                                _out_vote = 1.0;
-                            }
-                            else {
-                                // =-=-=-=-=-=-=-
-                                // repl requested and we are not it, vote
-                                // very low
-                                _out_vote = 0.25;
-                            }
-                        }
-                        else {
-                            // =-=-=-=-=-=-=-
-                            // if no repl is requested consider replica status
-                            if ( is_good_replica ) {
-                                // =-=-=-=-=-=-=-
-                                // if our repl is marked good then a local copy
-                                // wins, otherwise vote middle of the road
-                                if ( curr_host ) {
-                                    _out_vote = 1.0;
-                                }
-                                else {
-                                    _out_vote = 0.5;
-                                }
-                            }
-                            else {
-                                // =-=-=-=-=-=-=-
-                                // repl is not good, vote very low
-                                _out_vote = 0.25;
-                            }
-                        }
-
-                        break;
-
-                    } // if resc_us
-
-                } // for itr
-            }
-        }
-    }
-    return result;
-
-} // non_blocking_file_redirect_open
-
-// =-=-=-=-=-=-=-
 // used to allow the resource to determine which host
 // should provide the requested operation
 irods::error non_blocking_file_resolve_hierarchy(
-    irods::plugin_context& _ctx,
-    const std::string*                  _opr,
-    const std::string*                  _curr_host,
-    irods::hierarchy_parser*           _out_parser,
-    float*                              _out_vote ) {
+    irods::plugin_context&   _ctx,
+    const std::string*       _opr,
+    const std::string*       _curr_host,
+    irods::hierarchy_parser* _out_parser,
+    float*                   _out_vote)
+{
+    namespace irv = irods::experimental::resource::voting;
 
-    // =-=-=-=-=-=-=-
-    // check the context validity
-    irods::error ret = _ctx.valid< irods::file_object >();
-    if ( !ret.ok() ) {
-        return PASSMSG( "Invalid resource context.", ret );
+    if (irods::error ret = _ctx.valid<irods::file_object>(); !ret.ok()) {
+        return PASSMSG("Invalid resource context.", ret);
     }
 
-    // =-=-=-=-=-=-=-
-    // check incoming parameters
-    if ( NULL == _opr || NULL == _curr_host || NULL == _out_parser || NULL == _out_vote ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, "Invalid input parameter." );
+    if (!_opr || !_curr_host || !_out_parser || !_out_vote) {
+        return ERROR(SYS_INVALID_INPUT_PARAM, "Invalid input parameter.");
     }
 
-    // =-=-=-=-=-=-=-
-    // get the name of this resource
-    std::string resc_name;
-    ret = _ctx.prop_map().get< std::string >( irods::RESOURCE_NAME, resc_name );
-    if ( !ret.ok() ) {
-        return PASSMSG( "Failed in get property for name.", ret );
+    _out_parser->add_child(irods::get_resource_name(_ctx));
+    *_out_vote = irv::vote::zero;
+    try {
+        *_out_vote = irv::calculate(*_opr, _ctx, *_curr_host, *_out_parser);
+        return SUCCESS();
     }
-
-    // =-=-=-=-=-=-=-
-    // add ourselves to the hierarchy parser by default
-    _out_parser->add_child( resc_name );
-
-    // =-=-=-=-=-=-=-
-    // test the operation to determine which choices to make
-    if ( irods::OPEN_OPERATION == ( *_opr ) ||
-         irods::UNLINK_OPERATION == ( *_opr )) {
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        irods::file_object_ptr file_obj = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // call redirect determination for 'open' operation
-        ret = non_blocking_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, ( *_curr_host ), ( *_out_vote ) );
-        if ( !ret.ok() ) {
-            ret = PASSMSG( "Failed redirecting for open.", ret );
-        }
+    catch(const std::out_of_range& e) {
+        return ERROR(INVALID_OPERATION, e.what());
     }
-    else if ( irods::CREATE_OPERATION == ( *_opr ) ||
-              irods::WRITE_OPERATION  == ( *_opr ) ) {
-        // =-=-=-=-=-=-=-
-        // call redirect determination for 'create' operation
-        ret = non_blocking_file_redirect_create( _ctx.prop_map(), ( *_curr_host ), ( *_out_vote ) );
-        if ( !ret.ok() ) {
-            ret = PASSMSG( "Failed redirecting for create.", ret );
-        }
+    catch (const irods::exception& e) {
+        return irods::error(e);
     }
-    else {
-        // =-=-=-=-=-=-=-
-        // must have been passed a bad operation
-        ret = ERROR( INVALID_OPERATION, "Operation not supported." );
-    }
-
-    return ret;
-
+    return ERROR(SYS_UNKNOWN_ERROR, "An unknown error occurred while resolving hierarchy.");
 } // non_blocking_file_resolve_hierarchy
 
 // =-=-=-=-=-=-=-

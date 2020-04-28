@@ -755,6 +755,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsLog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/voting.cpp
   ${CMAKE_SOURCE_DIR}/server/drivers/src/fileDriver.cpp
   ${CMAKE_SOURCE_DIR}/server/icat/src/icatHighLevelRoutines.cpp
   ${CMAKE_SOURCE_DIR}/server/re/src/extractAvuMS.cpp

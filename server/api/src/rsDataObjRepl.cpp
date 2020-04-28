@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjRepl.h for a description of this API call.*/
-
-
 #include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
 #include "dataObjCreate.h"
@@ -53,6 +47,7 @@
 #include "irods_server_api_call.hpp"
 #include "irods_random.hpp"
 #include "irods_string_tokenize.hpp"
+#include "voting.hpp"
 
 #include <string_view>
 #include <vector>
@@ -79,9 +74,7 @@ repl_input_tuple construct_input_tuple(
         return {_inp, obj};
     }
 
-    auto result = irods::resolve_resource_hierarchy(_operation, rsComm, _inp);
-    auto obj = std::get<irods::file_object_ptr>(result);
-    const auto hier = std::get<std::string>(result);
+    auto [obj, hier] = irods::resolve_resource_hierarchy(_operation, rsComm, _inp);
     addKeyVal(&_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
     return {_inp, obj};
 } // construct_input_tuple
@@ -229,6 +222,8 @@ int repl_data_obj(
     rsComm_t* rsComm,
     const dataObjInp_t& dataObjInp)
 {
+    namespace irv = irods::experimental::resource::voting;
+
     // Make sure the requested source and destination resources are valid
     dataObjInp_t destination_inp{};
     dataObjInp_t source_inp{};
@@ -245,14 +240,19 @@ int repl_data_obj(
 
     int status{};
     if (getValByKey(&dataObjInp.condInput, ALL_KW)) {
-        for (const auto& v : file_obj->vote_list()) {
-            const auto& o = std::get<irods::physical_object>(v);
-            const auto& voted_hier = std::get<irods::hierarchy_parser>(v);
-            if (GOOD_REPLICA == (o.replica_status() & 0x0F)) {
+        for (const auto& r : file_obj->replicas()) {
+            rodsLog(LOG_NOTICE, "[%s:%d] - hier:[%s],status:[%d],vote:[%f]",
+                __FUNCTION__, __LINE__,
+                r.resc_hier().c_str(),
+                r.replica_status(),
+                r.vote());
+            if (GOOD_REPLICA == (r.replica_status() & 0x0F)) {
                 continue;
             }
-            addKeyVal(&destination_inp.condInput, RESC_HIER_STR_KW, voted_hier.str().c_str());
-            status = replicate_data(rsComm, source_inp, destination_inp);
+            if (r.vote() > irv::vote::zero) {
+                addKeyVal(&destination_inp.condInput, RESC_HIER_STR_KW, r.resc_hier().c_str());
+                status = replicate_data(rsComm, source_inp, destination_inp);
+            }
         }
     }
     else {
