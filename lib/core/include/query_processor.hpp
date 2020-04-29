@@ -19,11 +19,11 @@ namespace irods
     {
     public:
         // clang-format off
-        using error      = std::tuple<int, std::string>;
-        using errors     = std::vector<error>;
-        using result_row = typename query<ConnectionType>::value_type;
-        using job        = std::function<void (const result_row&)>;
-        using query_type = typename query<ConnectionType>::query_type;
+        using error        = std::tuple<int, std::string>;
+        using errors       = std::vector<error>;
+        using result_row   = typename query<ConnectionType>::value_type;
+        using job          = std::function<void (const result_row&)>;
+        using query_type   = typename query<ConnectionType>::query_type;
         // clang-format on
 
         query_processor(const std::string& _query, job _job, uint32_t _limit = 0, query_type _type = query_type::GENERAL)
@@ -36,40 +36,67 @@ namespace irods
 
         query_processor(const query_processor&) = delete;
         query_processor& operator=(const query_processor&) = delete;
+        uint32_t size() { return size_; }
 
-        std::future<errors> execute(thread_pool& _thread_pool, ConnectionType& _conn)
+        class future
         {
-            std::promise<errors> p;
+            friend query_processor;
 
-            auto future = p.get_future();
+            std::vector<std::shared_ptr<std::promise<error>>> promises;
 
-            thread_pool::defer(_thread_pool, [this, p = std::move(p), conn = std::move(_conn)]() mutable {
-                errors errs;
+            void push_back(std::shared_ptr<std::promise<error>> p) {
+                promises.push_back(p);
+            }
 
-                try {
-                    for (auto&& row : query<ConnectionType>{&conn, query_, limit_, 0, type_}) {
-                        try {
-                            job_(row);
-                        }
-                        catch (const irods::exception& e) {
-                            errs.emplace_back(e.code(), e.what());
-                        }
-                        catch (const std::exception& e) {
-                            errs.emplace_back(SYS_UNKNOWN_ERROR, e.what());
-                        }
+            public:
+            auto get() {
+                errors errs{};
+                errs.reserve(promises.size());
+                for(auto&& p : promises) {
+                    auto&& e = p->get_future().get();
+                    if(std::get<0>(e) < 0) {
+                        errs.push_back(std::move(e));
                     }
                 }
-                catch (...) {
-                    errs.emplace_back(SYS_UNKNOWN_ERROR, "Unknown error occurred while processing job.");
-                }
 
-                p.set_value(std::move(errs));
-            });
+                return errs;
+            }
+        };
 
-            return future;
+        auto execute(thread_pool& _thread_pool, ConnectionType& _conn)
+        {
+            future f;
+            query<ConnectionType> q{&_conn, query_, limit_, 0, type_};
+
+            size_ = q.size();
+
+            for (auto&& r : q) {
+               auto p = std::make_shared<std::promise<error>>();
+               f.push_back(p);
+
+               thread_pool::post(_thread_pool, [this, p, r]() mutable {
+                    try {
+                        job_(r);
+                        p->set_value({0, ""});
+                    }
+                    catch (const irods::exception& e) {
+                        p->set_value({e.code(), e.what()});
+                    }
+                    catch (const std::exception& e) {
+                        p->set_value({SYS_UNKNOWN_ERROR, e.what()});
+                    }
+                    catch (...) {
+                        p->set_value({SYS_UNKNOWN_ERROR, "Unknown error occurred while processing job."});
+                    }
+                });
+
+            } // for row
+
+            return f;
         }
 
     private:
+        uint32_t size_;
         std::string query_;
         job job_;
         uint32_t limit_;
