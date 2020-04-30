@@ -108,6 +108,8 @@ namespace irods::experimental::filesystem
 
         auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
 
+        auto add_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
+
         auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
     } // namespace NAMESPACE_IMPL
 } // namespace irods::experimental::filesystem
