@@ -57,6 +57,8 @@
 
 #include <boost/optional.hpp>
 
+#include "fmt/format.h"
+
 #include <cctype>
 #include <cstring>
 #include <string>
@@ -311,6 +313,59 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             for (; p_iter != p_last && c_iter != c_last && *p_iter == *c_iter; ++p_iter, ++c_iter);
 
             return (p_iter == p_last);
+        }
+
+        auto do_metadata_op(rxComm& _comm, const path& _p, const metadata& _metadata, std::string_view op) -> bool
+        {
+            if (_p.empty()) {
+                throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
+            }
+
+            detail::throw_if_path_length_exceeds_limit(_p);
+
+            modAVUMetadataInp_t input{};
+
+            char* command = const_cast<char*>(op.data());
+            input.arg0 = command;
+
+            char type[3]{};
+
+            if (const auto s = status(_comm, _p); is_data_object(s)) {
+                std::strncpy(type, "-d", std::strlen("-d"));
+            }
+            else if (is_collection(s)) {
+                std::strncpy(type, "-C", std::strlen("-C"));
+            }
+            else {
+                std::string_view op_full_name = (op == "rm") ? "remove" : op;
+                throw filesystem_error{fmt::format("cannot {} metadata: unknown object type", op_full_name), _p,
+                                       make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
+            }
+
+            input.arg1 = type;
+
+            char path_buf[MAX_NAME_LEN]{};
+            std::strncpy(path_buf, _p.c_str(), std::strlen(_p.c_str()));
+            input.arg2 = path_buf;
+
+            char attr_buf[MAX_NAME_LEN]{};
+            std::strncpy(attr_buf, _metadata.attribute.c_str(), _metadata.attribute.size());
+            input.arg3 = attr_buf;
+
+            char value_buf[MAX_NAME_LEN]{};
+            std::strncpy(value_buf, _metadata.value.c_str(), _metadata.value.size());
+            input.arg4 = value_buf;
+
+            char units_buf[MAX_NAME_LEN]{};
+            std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
+            input.arg5 = units_buf;
+
+            if (const auto ec = rxModAVUMetadata(&_comm, &input); ec != 0) {
+                std::string_view op_full_name = (op == "rm") ? "remove" : op;
+                throw filesystem_error{fmt::format("cannot {} metadata", op_full_name), _p, make_error_code(ec)};
+            }
+
+            return true;
         }
     } // anonymous namespace
 
@@ -1005,110 +1060,17 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
     {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
+        return do_metadata_op(_comm, _p, _metadata, "set");
+    }
 
-        detail::throw_if_path_length_exceeds_limit(_p);
-
-        modAVUMetadataInp_t input{};
-
-        char command[] = "set";
-        input.arg0 = command;
-
-        char type[3]{};
-
-        const auto s = status(_comm, _p);
-
-        if (is_data_object(s)) {
-            std::strncpy(type, "-d", std::strlen("-d"));
-        }
-        else if (is_collection(s)) {
-            std::strncpy(type, "-C", std::strlen("-C"));
-        }
-        else {
-            throw filesystem_error{"cannot set metadata: unknown object type", _p, make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
-        }
-
-        input.arg1 = type;
-
-        char path_buf[MAX_NAME_LEN]{};
-        std::strncpy(path_buf, _p.c_str(), std::strlen(_p.c_str()));
-        input.arg2 = path_buf;
-
-        char attr_buf[MAX_NAME_LEN]{};
-        std::strncpy(attr_buf, _metadata.attribute.c_str(), _metadata.attribute.size());
-        input.arg3 = attr_buf;
-
-        char value_buf[MAX_NAME_LEN]{};
-        std::strncpy(value_buf, _metadata.value.c_str(), _metadata.value.size());
-        input.arg4 = value_buf;
-
-        char units_buf[MAX_NAME_LEN]{};
-        std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
-        input.arg5 = units_buf;
-
-        const auto ec = rxModAVUMetadata(&_comm, &input);
-
-        if (ec != 0) {
-            throw filesystem_error{"cannot set metadata", _p, make_error_code(ec)};
-        }
-
-        return true;
+    auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
+    {
+        return do_metadata_op(_comm, _p, _metadata, "add");
     }
 
     auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
     {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
-        detail::throw_if_path_length_exceeds_limit(_p);
-
-        modAVUMetadataInp_t input{};
-
-        char command[] = "rm";
-        input.arg0 = command;
-
-        char type[3]{};
-
-        const auto s = status(_comm, _p);
-
-        if (is_data_object(s)) {
-            std::strncpy(type, "-d", std::strlen("-d"));
-        }
-        else if (is_collection(s)) {
-            std::strncpy(type, "-C", std::strlen("-C"));
-        }
-        else {
-            throw filesystem_error{"cannot remove metadata: unknown object type", _p, make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
-        }
-
-        input.arg1 = type;
-
-        char path_buf[MAX_NAME_LEN]{};
-        std::strncpy(path_buf, _p.c_str(), std::strlen(_p.c_str()));
-        input.arg2 = path_buf;
-
-        char attr_buf[MAX_NAME_LEN]{};
-        std::strncpy(attr_buf, _metadata.attribute.c_str(), _metadata.attribute.size());
-        input.arg3 = attr_buf;
-
-        char value_buf[MAX_NAME_LEN]{};
-        std::strncpy(value_buf, _metadata.value.c_str(), _metadata.value.size());
-        input.arg4 = value_buf;
-
-        char units_buf[MAX_NAME_LEN]{};
-        std::strncpy(units_buf, _metadata.units.c_str(), _metadata.units.size());
-        input.arg5 = units_buf;
-
-        const auto ec = rxModAVUMetadata(&_comm, &input);
-
-        if (ec != 0) {
-            throw filesystem_error{"cannot remove metadata", _p, make_error_code(ec)};
-        }
-
-        return true;
+        return do_metadata_op(_comm, _p, _metadata, "rm");
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 

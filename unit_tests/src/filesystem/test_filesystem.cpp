@@ -393,6 +393,93 @@ TEST_CASE("filesystem")
 
     SECTION("metadata management")
     {
+        SECTION("basic operations")
+        {
+            const fs::path p = sandbox / "data_object.a";
+
+            {
+                default_transport tp{conn};
+                odstream{tp, p};
+            }
+
+            fs::metadata md{"n1", "v1", "u1"};
+            REQUIRE(fs::client::set_metadata(conn, p, md));
+
+            irods::at_scope_exit remove_metadata{[&] {
+                for (auto&& md : {fs::metadata{"n1", "v1", "u1"},
+                                              {"n1", "v2", "u2"},
+                                              {"n1", "v2", "u1"},
+                                              {"n1", "v1", "u2"}})
+                {
+                    try { fs::client::remove_metadata(conn, p, md); } catch (...) {}
+                }
+            }};
+
+            const auto results = fs::client::get_metadata(conn, p);
+            REQUIRE(results.size() == 1);
+            REQUIRE(results[0].attribute == md.attribute);
+            REQUIRE(results[0].value == md.value);
+            REQUIRE(results[0].units == md.units);
+
+            SECTION("set operation updates metadata attached to a single object")
+            {
+                md.value = "v2";
+                md.units = "u2";
+                REQUIRE(fs::client::set_metadata(conn, p, md));
+
+                const auto results = fs::client::get_metadata(conn, p);
+                REQUIRE(results.size() == 1);
+                REQUIRE(results[0].attribute == md.attribute);
+                REQUIRE(results[0].value == md.value);
+                REQUIRE(results[0].units == md.units);
+            }
+
+            SECTION("set operation attaches new metadata and detaches old metadata if existing metadata is attached to multiple objects")
+            {
+                const fs::path q = sandbox / "data_object.b";
+
+                {
+                    default_transport tp{conn};
+                    odstream{tp, q};
+                }
+
+                REQUIRE(fs::client::set_metadata(conn, q, md));
+
+                auto results = fs::client::get_metadata(conn, q);
+                REQUIRE(results.size() == 1);
+                REQUIRE(results[0].attribute == md.attribute);
+                REQUIRE(results[0].value == md.value);
+                REQUIRE(results[0].units == md.units);
+
+                md.value = "v2";
+                md.units = "u2";
+                REQUIRE(fs::client::set_metadata(conn, p, md));
+                REQUIRE(fs::client::get_metadata(conn, p).size() == 1);
+            }
+
+            SECTION("add operation allows reuse of attribute names when the value or units result in unique metadata")
+            {
+                md.value = "v2";
+                REQUIRE(fs::client::add_metadata(conn, p, md));
+                REQUIRE(fs::client::get_metadata(conn, p).size() == 2);
+
+                md.value = "v1";
+                md.units = "u2";
+                REQUIRE(fs::client::add_metadata(conn, p, md));
+                REQUIRE(fs::client::get_metadata(conn, p).size() == 3);
+            }
+
+            SECTION("remove operation")
+            {
+                REQUIRE(fs::client::remove_metadata(conn, p, md));
+                REQUIRE(fs::client::get_metadata(conn, p).empty());
+
+                REQUIRE(fs::client::set_metadata(conn, sandbox, md));
+                REQUIRE(fs::client::remove_metadata(conn, sandbox, md));
+                REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
+            }
+        }
+
         SECTION("collections")
         {
             const std::array<fs::metadata, 3> metadata{{
@@ -418,6 +505,7 @@ TEST_CASE("filesystem")
             REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[0]));
             REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[1]));
             REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[2]));
+            REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
         }
 
         SECTION("data objects")
@@ -429,9 +517,8 @@ TEST_CASE("filesystem")
                 odstream{tp, p};
             }
 
-            REQUIRE(fs::client::exists(conn, p));
-
-            REQUIRE(fs::client::set_metadata(conn, p, {"n1", "v1", "u1"}));
+            fs::metadata md{"n1", "v1", "u1"};
+            REQUIRE(fs::client::set_metadata(conn, p, md));
 
             const auto results = fs::client::get_metadata(conn, p);
             REQUIRE_FALSE(results.empty());
@@ -439,9 +526,16 @@ TEST_CASE("filesystem")
             REQUIRE(results[0].value == "v1");
             REQUIRE(results[0].units == "u1");
 
-            REQUIRE(fs::client::remove_metadata(conn, p, {"n1", "v1", "u1"}));
+            REQUIRE(fs::client::remove_metadata(conn, p, md));
+            REQUIRE(fs::client::get_metadata(conn, p).empty());
+        }
 
-            REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
+        SECTION("exceptions use the full name of the operation")
+        {
+            fs::metadata md{"n1", "v1", "u1"};
+            REQUIRE_THROWS(fs::client::set_metadata(conn, "invalid_path", md), "cannot set metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", md), "cannot add metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", md), "cannot remove metadata: unknown object type");
         }
     }
 }
