@@ -57,37 +57,37 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "collection"},
             {"operations", json::array({
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "the_attr"},
                     {"value", "the_val"},
                     {"units", "the_units"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "name"},
                     {"value", "john doe"},
                     {"units", ""}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "a0"},
                     {"value", "v0"},
                     {"units", "u0"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "a1"},
                     {"value", "v1"},
                     {"units", "u1"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "a2"},
                     {"value", "v2"},
                     {"units", "u2"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "a3"},
                     {"value", "v3"},
                     {"units", "u3"}
@@ -99,7 +99,7 @@ TEST_CASE("atomic_apply_metadata_operations")
                     {"units", ""}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "occupation"},
                     {"value", "software developer"},
                     {"units", "C++"}
@@ -120,12 +120,12 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "collection"},
             {"operations", json::array({
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "the_attr"},
                     {"value", "the_val"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "name"},
                     {"value", "john doe"}
                 },
@@ -135,7 +135,7 @@ TEST_CASE("atomic_apply_metadata_operations")
                     {"value", "john doe"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "occupation"},
                     {"value", "software developer"}
                 }
@@ -174,7 +174,7 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "collection"},
             {"operations", json::array({
                 {
-                    {"__operation", "set"},
+                    {"__operation", "add"},
                     {"attribte", "the_attr"},
                     {"units", "the_units"}
                 }
@@ -194,7 +194,7 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "collection"},
             {"operations", json::array({
                 {
-                    {"operation", "add"},
+                    {"operation", "update"},
                     {"attribute", "the_attr"},
                     {"value", "the_val"},
                     {"units", "the_units"}
@@ -215,7 +215,7 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "data_object"},
             {"operations", json::array({
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "the_attr"},
                     {"value", "the_val"},
                     {"units", "the_units"}
@@ -257,13 +257,13 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "user"},
             {"operations", json::array({
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "irods_user"},
                     {"value", env.rodsUserName},
                     {"units", "rodsadmin"}
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "renci_position"},
                     {"value", "research_developer"}
                 },
@@ -289,12 +289,12 @@ TEST_CASE("atomic_apply_metadata_operations")
             {"entity_type", "resource"},
             {"operations", json::array({
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "this_was_set_atomically"},
                     {"value", "it worked!"},
                 },
                 {
-                    {"operation", "set"},
+                    {"operation", "add"},
                     {"attribute", "the_atomic_attribute_name"},
                     {"value", "the_atomic_value"},
                     {"units", "the_atomic_units"}

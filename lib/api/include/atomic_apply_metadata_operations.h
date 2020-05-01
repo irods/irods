@@ -47,7 +47,7 @@ extern "C" {
 /// executed in order.
 ///
 /// \p operation must be one of the following:
-/// - set
+/// - add
 /// - remove
 ///
 /// \p units are optional.

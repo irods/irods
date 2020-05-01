@@ -591,6 +591,7 @@ install(
     PATTERN */filesystem/copy_options.hpp
     PATTERN */filesystem/detail.hpp
     PATTERN */filesystem/filesystem.hpp
+    PATTERN */filesystem/filesystem.tpp
     PATTERN */filesystem/filesystem_error.hpp
     PATTERN */filesystem/object_status.hpp
     PATTERN */filesystem/path.hpp

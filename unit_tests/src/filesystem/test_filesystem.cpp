@@ -530,12 +530,45 @@ TEST_CASE("filesystem")
             REQUIRE(fs::client::get_metadata(conn, p).empty());
         }
 
-        SECTION("exceptions use the full name of the operation")
+        SECTION("exceptions")
         {
-            fs::metadata md{"n1", "v1", "u1"};
-            REQUIRE_THROWS(fs::client::set_metadata(conn, "invalid_path", md), "cannot set metadata: unknown object type");
-            REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", md), "cannot add metadata: unknown object type");
-            REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", md), "cannot remove metadata: unknown object type");
+            std::array<fs::metadata, 3> metadata{{
+                {"n1", "v1", "u1"},
+                {"n2", "v2", "u2"},
+                {"n3", "v3", "u3"}
+            }};
+
+            REQUIRE_THROWS(fs::client::set_metadata(conn, "invalid_path", metadata[0]), "cannot set metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", metadata[0]), "cannot add metadata: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", metadata[0]), "cannot remove metadata: unknown object type");
+
+            // Atomic bulk operations.
+            REQUIRE_THROWS(fs::client::add_metadata(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+            REQUIRE_THROWS(fs::client::remove_metadata(conn, "invalid_path", metadata), "cannot apply metadata operations: unknown object type");
+        }
+
+        SECTION("atomic operations")
+        {
+            std::array<fs::metadata, 3> metadata{{
+                {"n1", "v1", "u1"},
+                {"n2", "v2", "u2"},
+                {"n3", "v3", "u3"}
+            }};
+
+            REQUIRE_NOTHROW(fs::client::add_metadata(conn, sandbox, metadata));
+
+            auto results = fs::client::get_metadata(conn, sandbox);
+            REQUIRE(results.size() == 3);
+            REQUIRE(std::is_permutation(std::begin(results), std::end(results), std::begin(metadata),
+                                        [](const auto& _lhs, const auto& _rhs)
+                                        {
+                                            return _lhs.attribute == _rhs.attribute &&
+                                                   _lhs.value == _rhs.value &&
+                                                   _lhs.units == _rhs.units;
+                                        }));
+
+            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, metadata));
+            REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
         }
     }
 }
