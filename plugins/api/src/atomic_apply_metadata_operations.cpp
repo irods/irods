@@ -349,7 +349,7 @@ namespace
                 md.units = _op.at("units").get<std::string>();
             }
 
-            if (const auto op_code = _op.at("operation").get<std::string>(); op_code == "set") {
+            if (const auto op_code = _op.at("operation").get<std::string>(); op_code == "add") {
                 if (auto meta_id = get_meta_id(_db_conn, md); meta_id > -1) {
                     if (!is_metadata_attached_to_object(_db_conn, _object_id, meta_id)) {
                         attach_metadata_to_object(_db_conn, _object_id, meta_id);
