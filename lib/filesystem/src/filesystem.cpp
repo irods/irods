@@ -2,8 +2,6 @@
 
 #include "filesystem/path.hpp"
 #include "filesystem/collection_iterator.hpp"
-#include "filesystem/filesystem_error.hpp"
-#include "filesystem/detail.hpp"
 
 // clang-format off
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
