@@ -5,16 +5,26 @@
 #include "filesystem/object_status.hpp"
 #include "filesystem/permissions.hpp"
 #include "filesystem/copy_options.hpp"
+#include "filesystem/filesystem_error.hpp"
+#include "filesystem/detail.hpp"
 
 #include "rcConnect.h"
 
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #include "rs_atomic_apply_metadata_operations.hpp"
+#else
+    #include "atomic_apply_metadata_operations.h"
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+
+#include "json.hpp"
+
 #include <cstdint>
 #include <string>
-#include <istream>
-#include <ostream>
 #include <chrono>
 #include <vector>
 #include <variant>
+#include <type_traits>
+#include <algorithm>
 
 namespace irods::experimental::filesystem
 {
@@ -109,7 +119,25 @@ namespace irods::experimental::filesystem
 
         auto add_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
 
+        template <typename Iterator>
+        auto add_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
+
+        template <typename Container,
+                  typename = decltype(std::begin(std::declval<Container>())),
+                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto add_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void;
+
         auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
+
+        template <typename Iterator>
+        auto remove_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
+
+        template <typename Container,
+                  typename = decltype(std::begin(std::declval<Container>())),
+                  typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
+        auto remove_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void;
+
+        #include "filesystem/filesystem.tpp"
     } // namespace NAMESPACE_IMPL
 } // namespace irods::experimental::filesystem
 
