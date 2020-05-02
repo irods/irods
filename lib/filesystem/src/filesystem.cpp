@@ -305,7 +305,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return (p_iter == p_last);
         }
 
-        auto do_metadata_op(rxComm& _comm, const path& _p, const metadata& _metadata, std::string_view op) -> bool
+        auto do_metadata_op(rxComm& _comm, const path& _p, const metadata& _metadata, std::string_view op) -> void
         {
             if (_p.empty()) {
                 throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
@@ -354,8 +354,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 std::string_view op_full_name = (op == "rm") ? "remove" : op;
                 throw filesystem_error{fmt::format("cannot {} metadata", op_full_name), _p, make_error_code(ec)};
             }
-
-            return true;
         }
     } // anonymous namespace
 
@@ -1016,19 +1014,19 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return results;
     }
 
-    auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
+    auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        return do_metadata_op(_comm, _p, _metadata, "set");
+        do_metadata_op(_comm, _p, _metadata, "set");
     }
 
-    auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
+    auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        return do_metadata_op(_comm, _p, _metadata, "add");
+        do_metadata_op(_comm, _p, _metadata, "add");
     }
 
-    auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> bool
+    auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void
     {
-        return do_metadata_op(_comm, _p, _metadata, "rm");
+        do_metadata_op(_comm, _p, _metadata, "rm");
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
