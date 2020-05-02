@@ -403,7 +403,7 @@ TEST_CASE("filesystem")
             }
 
             fs::metadata md{"n1", "v1", "u1"};
-            REQUIRE(fs::client::set_metadata(conn, p, md));
+            REQUIRE_NOTHROW(fs::client::set_metadata(conn, p, md));
 
             irods::at_scope_exit remove_metadata{[&] {
                 for (auto&& md : {fs::metadata{"n1", "v1", "u1"},
@@ -425,7 +425,7 @@ TEST_CASE("filesystem")
             {
                 md.value = "v2";
                 md.units = "u2";
-                REQUIRE(fs::client::set_metadata(conn, p, md));
+                REQUIRE_NOTHROW(fs::client::set_metadata(conn, p, md));
 
                 const auto results = fs::client::get_metadata(conn, p);
                 REQUIRE(results.size() == 1);
@@ -443,7 +443,7 @@ TEST_CASE("filesystem")
                     odstream{tp, q};
                 }
 
-                REQUIRE(fs::client::set_metadata(conn, q, md));
+                REQUIRE_NOTHROW(fs::client::set_metadata(conn, q, md));
 
                 auto results = fs::client::get_metadata(conn, q);
                 REQUIRE(results.size() == 1);
@@ -453,29 +453,29 @@ TEST_CASE("filesystem")
 
                 md.value = "v2";
                 md.units = "u2";
-                REQUIRE(fs::client::set_metadata(conn, p, md));
+                REQUIRE_NOTHROW(fs::client::set_metadata(conn, p, md));
                 REQUIRE(fs::client::get_metadata(conn, p).size() == 1);
             }
 
             SECTION("add operation allows reuse of attribute names when the value or units result in unique metadata")
             {
                 md.value = "v2";
-                REQUIRE(fs::client::add_metadata(conn, p, md));
+                REQUIRE_NOTHROW(fs::client::add_metadata(conn, p, md));
                 REQUIRE(fs::client::get_metadata(conn, p).size() == 2);
 
                 md.value = "v1";
                 md.units = "u2";
-                REQUIRE(fs::client::add_metadata(conn, p, md));
+                REQUIRE_NOTHROW(fs::client::add_metadata(conn, p, md));
                 REQUIRE(fs::client::get_metadata(conn, p).size() == 3);
             }
 
             SECTION("remove operation")
             {
-                REQUIRE(fs::client::remove_metadata(conn, p, md));
+                REQUIRE_NOTHROW(fs::client::remove_metadata(conn, p, md));
                 REQUIRE(fs::client::get_metadata(conn, p).empty());
 
-                REQUIRE(fs::client::set_metadata(conn, sandbox, md));
-                REQUIRE(fs::client::remove_metadata(conn, sandbox, md));
+                REQUIRE_NOTHROW(fs::client::set_metadata(conn, sandbox, md));
+                REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, md));
                 REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
             }
         }
@@ -488,9 +488,9 @@ TEST_CASE("filesystem")
                 {"n3", "v3", "u3"}
             }};
 
-            REQUIRE(fs::client::set_metadata(conn, sandbox, metadata[0]));
-            REQUIRE(fs::client::set_metadata(conn, sandbox, metadata[1]));
-            REQUIRE(fs::client::set_metadata(conn, sandbox, metadata[2]));
+            REQUIRE_NOTHROW(fs::client::set_metadata(conn, sandbox, metadata[0]));
+            REQUIRE_NOTHROW(fs::client::set_metadata(conn, sandbox, metadata[1]));
+            REQUIRE_NOTHROW(fs::client::set_metadata(conn, sandbox, metadata[2]));
 
             const auto results = fs::client::get_metadata(conn, sandbox);
             REQUIRE_FALSE(results.empty());
@@ -502,9 +502,9 @@ TEST_CASE("filesystem")
                                                    _lhs.units == _rhs.units;
                                         }));
 
-            REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[0]));
-            REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[1]));
-            REQUIRE(fs::client::remove_metadata(conn, sandbox, metadata[2]));
+            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, metadata[0]));
+            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, metadata[1]));
+            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, sandbox, metadata[2]));
             REQUIRE(fs::client::get_metadata(conn, sandbox).empty());
         }
 
@@ -518,7 +518,7 @@ TEST_CASE("filesystem")
             }
 
             fs::metadata md{"n1", "v1", "u1"};
-            REQUIRE(fs::client::set_metadata(conn, p, md));
+            REQUIRE_NOTHROW(fs::client::set_metadata(conn, p, md));
 
             const auto results = fs::client::get_metadata(conn, p);
             REQUIRE_FALSE(results.empty());
@@ -526,7 +526,7 @@ TEST_CASE("filesystem")
             REQUIRE(results[0].value == "v1");
             REQUIRE(results[0].units == "u1");
 
-            REQUIRE(fs::client::remove_metadata(conn, p, md));
+            REQUIRE_NOTHROW(fs::client::remove_metadata(conn, p, md));
             REQUIRE(fs::client::get_metadata(conn, p).empty());
         }
 

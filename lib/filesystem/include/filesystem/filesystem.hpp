@@ -116,9 +116,9 @@ namespace irods::experimental::filesystem
 
         auto get_metadata(rxComm& _comm, const path& _path) -> std::vector<metadata>;
 
-        auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
+        auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
 
-        auto add_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
+        auto add_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
 
         template <typename Iterator>
         auto add_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
@@ -128,7 +128,7 @@ namespace irods::experimental::filesystem
                   typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
         auto add_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void;
 
-        auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> bool;
+        auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
 
         template <typename Iterator>
         auto remove_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
