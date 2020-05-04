@@ -922,25 +922,25 @@ OUTPUT ruleExecOut
             elif entity_type == 'data_object': imeta_type = '-d'
 
             if   expected_output is not None: imeta_output = expected_output
-            elif operation == 'set':          imeta_output = ['issue_4484_name', 'issue_4484_value', 'issue_4484_units']
+            elif operation == 'add':          imeta_output = ['issue_4484_name', 'issue_4484_value', 'issue_4484_units']
             elif operation == 'remove':       imeta_output = ['None']
 
             self.admin.assert_icommand(['imeta', 'ls', imeta_type, entity_name], 'STDOUT', imeta_output)
 
-        do_test(self.admin.username, 'user', 'set')
+        do_test(self.admin.username, 'user', 'add')
         do_test(self.admin.username, 'user', 'remove')
 
-        do_test(self.admin.default_resource, 'resource', 'set')
+        do_test(self.admin.default_resource, 'resource', 'add')
         do_test(self.admin.default_resource, 'resource', 'remove')
 
-        do_test(self.admin.session_collection, 'collection', 'set')
+        do_test(self.admin.session_collection, 'collection', 'add')
         do_test(self.admin.session_collection, 'collection', 'remove')
 
         filename = os.path.join(self.admin.local_session_dir, 'issue_4484.txt')
         lib.make_file(filename, 1, 'arbitrary')
         self.admin.assert_icommand(['iput', filename])
         data_object = os.path.join(self.admin.session_collection, os.path.basename(filename))
-        do_test(data_object, 'data_object', 'set')
+        do_test(data_object, 'data_object', 'add')
         do_test(data_object, 'data_object', 'remove')
 
         # Verify that the PEPs for the API plugin are firing.
@@ -962,5 +962,5 @@ OUTPUT ruleExecOut
                     }}
                 '''.format(data_object))
 
-            do_test(data_object, 'data_object', 'set', ['atomic_pre_fired', 'atomic_post_fired'])
+            do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
 
