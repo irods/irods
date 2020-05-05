@@ -1,5 +1,6 @@
 // =-=-=-=-=-=-=-
 #include "irods_client_server_negotiation.hpp"
+#include "irods_configuration_keywords.hpp"
 #include "irods_kvp_string_parser.hpp"
 #include "irods_server_properties.hpp"
 
@@ -30,7 +31,7 @@ namespace irods {
 
             // =-=-=-=-=-=-=-
             // start with local SID
-            const auto& svr_sid = irods::get_server_property<const std::string>(LOCAL_ZONE_SID_KW);
+            const auto& svr_sid = irods::get_server_property<const std::string>(CFG_ZONE_KEY_KW);
 
             // =-=-=-=-=-=-=-
             // sign SID
