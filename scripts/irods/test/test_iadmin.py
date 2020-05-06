@@ -1721,6 +1721,8 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
 
+    @unittest.skip(("Fails if run under an account with read permission on the server config. "
+                    "Requires a pure client environment."))
     def test_modrepl_as_rodsuser(self):
         filename = 'test_modrepl_as_rodsuser'
         original_file_path = os.path.join(self.user0.local_session_dir, filename)
