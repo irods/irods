@@ -880,6 +880,8 @@ OUTPUT ruleExecOut
             self.admin.run_icommand(['iadmin', 'rmresc', destination_resource])
             self.admin.run_icommand(['iadmin', 'rmresc', leaf_resource])
 
+    @unittest.skip(("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
+                    "For more details, see https://github.com/irods/irods/issues/4917"))
     def test_msi_atomic_apply_metadata_operations__issue_4484(self):
         def do_test(entity_name, entity_type, operation, expected_output=None):
             json_input = json.dumps({
