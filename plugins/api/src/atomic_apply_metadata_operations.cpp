@@ -60,20 +60,42 @@ namespace
     //
 
     auto call_atomic_apply_metadata_operations(irods::api_entry*, rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
+
     auto is_input_valid(const bytesBuf_t*) -> std::tuple<bool, std::string>;
+
     auto to_bytes_buffer(const std::string& _s) -> bytesBuf_t*;
+
     auto get_file_descriptor(const bytesBuf_t& _buf) -> int;
+
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json;
+
     auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const std::string& _entity_type) -> int;
-    auto new_database_connection() -> nanodbc::connection;
-    auto user_has_permission_to_modify_metadata(rsComm_t& _comm, nanodbc::connection& _db_conn, int _object_id, const std::string& _entity_type) -> bool;
+
+    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>;
+
+    auto user_has_permission_to_modify_metadata(rsComm_t& _comm,
+                                                nanodbc::connection& _db_conn,
+                                                int _object_id,
+                                                const std::string& _entity_type) -> bool;
+
     auto execute_transaction(nanodbc::connection& _db_conn, std::function<int(nanodbc::transaction&)> _func) -> int;
+
     auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int;
+
     auto is_metadata_attached_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> bool;
-    auto insert_metadata(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int;
+
+    auto insert_metadata(nanodbc::connection& _db_conn, std::string_view _db_instance_name, const fs::metadata& _metadata) -> int;
+
     auto attach_metadata_to_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void;
+
     auto detach_metadata_from_object(nanodbc::connection& _db_conn, int _object_id, int _meta_id) -> void;
-    auto execute_metadata_operation(nanodbc::connection& _db_conn, int _object_id, const json& _operation, int _op_index) -> std::tuple<int, bytesBuf_t*>;
+
+    auto execute_metadata_operation(nanodbc::connection& _db_conn,
+                                    std::string_view _db_instance_name,
+                                    int _object_id,
+                                    const json& _operation,
+                                    int _op_index) -> std::tuple<int, bytesBuf_t*>;
+
     auto rs_atomic_apply_metadata_operations(rsComm_t*, bytesBuf_t*, bytesBuf_t**) -> int;
 
     //
@@ -163,7 +185,7 @@ namespace
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name => {}]", _entity_name)};
     }
 
-    auto new_database_connection() -> nanodbc::connection
+    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>
     {
         const std::string dsn = [] {
             if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
@@ -191,11 +213,33 @@ namespace
 
         try {
             const auto& db_plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
-            const auto& db_instance = *std::begin(db_plugin_config);
+            const auto& db_instance = db_plugin_config.front();
             const auto db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
             const auto db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
 
-            return {dsn, db_username, db_password};
+            // Capture the database instance name.
+            std::string db_instance_name;
+            for (auto& [k, v] : db_plugin_config.items()) {
+                db_instance_name = k;
+            }
+
+            if (db_instance_name.empty()) {
+                throw std::runtime_error{"Database instance name cannot be empty"};
+            }
+
+            nanodbc::connection db_conn{dsn, db_username, db_password};
+
+            if (db_instance_name == "mysql") {
+                // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to be
+                // able to understand Postgres SQL. STRICT_TRANS_TABLES must be set too, otherwise
+                // inserting NULL into a "NOT NULL" column does not produce an error.
+                nanodbc::just_execute(db_conn, "set SESSION sql_mode = 'ANSI,STRICT_TRANS_TABLES'");
+                nanodbc::just_execute(db_conn, "set character_set_client = utf8");
+                nanodbc::just_execute(db_conn, "set character_set_results = utf8");
+                nanodbc::just_execute(db_conn, "set character_set_connection = utf8");
+            }
+
+            return {db_instance_name, db_conn};
         }
         catch (const std::exception& e) {
             log::api::error(e.what());
@@ -273,17 +317,25 @@ namespace
         return false;
     }
 
-    auto insert_metadata(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int
+    auto insert_metadata(nanodbc::connection& _db_conn, std::string_view _db_instance_name, const fs::metadata& _metadata) -> int
     {
         nanodbc::statement stmt{_db_conn};
 
-#ifdef ORA_ICAT
-        prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
-                      "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?)");
-#else
-        prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
-                      "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?)");
-#endif // ORA_ICAT
+        if (_db_instance_name == "oracle") {
+            prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
+                          "values (select R_OBJECTID.nextval from DUAL, ?, ?, ?, ?, ?)");
+        }
+        else if (_db_instance_name == "mysql") {
+            prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
+                          "values (R_OBJECTID_nextval(), ?, ?, ?, ?, ?)");
+        }
+        else if (_db_instance_name == "postgres") {
+            prepare(stmt, "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) "
+                          "values (nextval('R_OBJECTID'), ?, ?, ?, ?, ?)");
+        }
+        else {
+            throw std::runtime_error{"Invalid database plugin configuration"};
+        }
 
         using std::chrono::system_clock;
         using std::chrono::duration_cast;
@@ -336,6 +388,7 @@ namespace
     }
 
     auto execute_metadata_operation(nanodbc::connection& _db_conn,
+                                    std::string_view _db_instance_name,
                                     int _object_id,
                                     const json& _op,
                                     int _op_index) -> std::tuple<int, bytesBuf_t*>
@@ -357,7 +410,7 @@ namespace
                         attach_metadata_to_object(_db_conn, _object_id, meta_id);
                     }
                 }
-                else if (meta_id = insert_metadata(_db_conn, md); meta_id > -1) {
+                else if (meta_id = insert_metadata(_db_conn, _db_instance_name, md); meta_id > -1) {
                     attach_metadata_to_object(_db_conn, _object_id, meta_id);
                 }
                 else {
@@ -495,10 +548,11 @@ namespace
             return SYS_INVALID_INPUT_PARAM;
         }
 
+        std::string db_instance_name;;
         nanodbc::connection db_conn;
 
         try {
-            db_conn = new_database_connection();
+            std::tie(db_instance_name, db_conn) = new_database_connection();
         }
         catch (const std::exception& e) {
             *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
@@ -518,7 +572,13 @@ namespace
                 const auto& operations = input.at("operations");
 
                 for (json::size_type i = 0; i < operations.size(); ++i) {
-                    if (const auto [ec, bbuf] = execute_metadata_operation(_trans.connection(), object_id, operations[i], i); ec != 0) {
+                    const auto [ec, bbuf] = execute_metadata_operation(_trans.connection(),
+                                                                       db_instance_name,
+                                                                       object_id,
+                                                                       operations[i],
+                                                                       i);
+                    
+                    if (ec != 0) {
                         *_output = bbuf;
                         return ec;
                     }

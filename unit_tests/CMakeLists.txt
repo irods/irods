@@ -5,6 +5,7 @@ set(BUILD_UNIT_TESTS YES CACHE BOOL "Build unit tests")
 set(UNIT_TESTS_RUN_AFTER_BUILD NO CACHE BOOL "Run after building unit tests")
 set(UNIT_TESTS_REPORTING_STYLE "junit" CACHE STRING "The style of output used for unit test reporting [console, compact, junit, xml]")
 set(UNIT_TESTS_REPORT_FILENAME "report.xml" CACHE STRING "The filename of the unit test report")
+set(UNIT_TESTS_ENABLE_ALL NO CACHE BOOL "Enables all unit tests")
 
 if (NOT BUILD_UNIT_TESTS)
     return()
@@ -25,6 +26,10 @@ include(utils)
 if (UNIT_TESTS_RUN_AFTER_BUILD)
     set(TEST_RUNNER_ARGS -r ${UNIT_TESTS_REPORTING_STYLE}
                          -o ${UNIT_TESTS_REPORT_FILENAME})
+endif()
+
+if (UNIT_TESTS_ENABLE_ALL)
+    add_definitions(-DIRODS_ENABLE_ALL_UNIT_TESTS)
 endif()
 
 # List of cmake files defined under ./cmake/test_config.
