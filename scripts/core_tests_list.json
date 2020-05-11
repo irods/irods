@@ -29,6 +29,7 @@
     "test_irsync",
     "test_irule",
     "test_iscan",
+    "test_istream",
     "test_iticket",
     "test_itrim",
     "test_iunreg",
