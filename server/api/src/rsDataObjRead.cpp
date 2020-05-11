@@ -101,10 +101,7 @@ rsDataObjRead( rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp,
 int
 l3Read( rsComm_t *rsComm, int l1descInx, int len,
         bytesBuf_t *dataObjReadOutBBuf ) {
-    int bytesRead;
-
-    dataObjInfo_t *dataObjInfo;
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    dataObjInfo_t* dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     // =-=-=-=-=-=-=-
     // extract the host location from the resource hierarchy
@@ -115,7 +112,6 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
         return -1;
     }
 
-
     if ( getStructFileType( dataObjInfo->specColl ) >= 0 ) {
         subStructFileFdOprInp_t subStructFileReadInp;
         memset( &subStructFileReadInp, 0, sizeof( subStructFileReadInp ) );
@@ -124,27 +120,19 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
         subStructFileReadInp.len = len;
         rstrcpy( subStructFileReadInp.addr.hostAddr, location.c_str(), NAME_LEN );
         rstrcpy( subStructFileReadInp.resc_hier, dataObjInfo->rescHier, MAX_NAME_LEN );
-        bytesRead = rsSubStructFileRead( rsComm, &subStructFileReadInp, dataObjReadOutBBuf );
+        return rsSubStructFileRead( rsComm, &subStructFileReadInp, dataObjReadOutBBuf );
     }
-    else {
-        fileReadInp_t fileReadInp;
-        int category = FILE_CAT;  // do not support DB type
-        switch ( category ) {
-        case FILE_CAT:
-            memset( &fileReadInp, 0, sizeof( fileReadInp ) );
-            fileReadInp.fileInx = L1desc[l1descInx].l3descInx;
-            fileReadInp.len = len;
-            bytesRead = rsFileRead( rsComm, &fileReadInp, dataObjReadOutBBuf );
-            break;
 
-        default:
-            rodsLog( LOG_NOTICE,
-                     "l3Read: rescCat type %d is not recognized", category );
-            bytesRead = SYS_INVALID_RESC_TYPE;
-            break;
-        }
+    if (0 == dataObjInfo->dataSize) {
+        rodsLog(LOG_DEBUG, "[%s] - empty file - marking bytes buf len as 0", __FUNCTION__);
+        dataObjReadOutBBuf->len = 0;
+        return 0;
     }
-    return bytesRead;
+
+    fileReadInp_t fileReadInp{};
+    fileReadInp.fileInx = L1desc[l1descInx].l3descInx;
+    fileReadInp.len = len;
+    return rsFileRead( rsComm, &fileReadInp, dataObjReadOutBBuf );
 }
 
 int
