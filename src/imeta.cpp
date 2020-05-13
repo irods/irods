@@ -1215,11 +1215,10 @@ getInput( char *cmdToken[], int maxTokens ) {
 }
 
 std::tuple<po::parsed_options, po::variables_map>
-parse_program_options (
-    int                                     _argc,
-    const char**                            _argv,
-    rodsArguments_t&                        _rods_args ) {
-
+parse_program_options(int _argc,
+                      const char** _argv,
+                      rodsArguments_t& _rods_args)
+{
     po::options_description global("Global options");
     global.add_options()
         ("help,h",                                             "Show imeta help")
@@ -1258,6 +1257,7 @@ parse_program_options (
         if ( vm.count( "zone_name" ) ) {
             _rods_args.zone = 1;
             _rods_args.zoneName = (char*) vm["zone_name"].as<std::string>().c_str();
+            rstrcpy(zoneArgument, _rods_args.zoneName, sizeof(zoneArgument));
         }
 
         if ( vm.count( "help" ) ) {
@@ -1266,7 +1266,8 @@ parse_program_options (
         }
 
         return std::make_tuple(parsed, vm);
-    } catch ( const po::error& _e ) {
+    }
+    catch (const po::error& _e) {
         std::cout << std::endl
                   << "Error: "
                   << _e.what()
