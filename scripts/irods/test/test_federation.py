@@ -1050,6 +1050,26 @@ OUTPUT ruleExecOut
     def test_remote_writeLine_remotezone_3722(self):
         self.run_remote_writeLine_test(self.config.copy(), 'remote')
 
+    def test_imeta_qu_with_zone_name_option__issue_4426(self):
+        user = self.user_sessions[0]
+        parameters = self.config.copy()
+
+        # Create a file and put it into the remote zone.
+        parameters['filename'] = 'foo'
+        parameters['filepath'] = os.path.join(user.local_session_dir, parameters['filename'])
+        lib.make_file(parameters['filepath'], 1, 'arbitrary')
+
+        parameters['user_name'] = user.username
+        parameters['remote_home_collection'] = '/{remote_zone}/home/{user_name}#{local_zone}'.format(**parameters)
+        parameters['remote_data_object'] = '{remote_home_collection}/{filename}'.format(**parameters)
+        user.assert_icommand('iput {filepath} {remote_data_object}'.format(**parameters))
+
+        # Add metadata to the new data object.
+        user.assert_icommand('imeta add -d {remote_data_object} n1 v1 u1'.format(**parameters))
+        user.assert_icommand('imeta ls -d {remote_data_object}'.format(**parameters), 'STDOUT', ['attribute: n1', 'value: v1', 'units: u1'])
+
+        # Show that the remote data object can be found via "imeta -z qu".
+        user.assert_icommand('imeta -z {remote_zone} qu -d n1 = v1'.format(**parameters), 'STDOUT', [parameters['filename']])
 
 class Test_Admin_Commands(unittest.TestCase):
 
