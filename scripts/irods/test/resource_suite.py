@@ -519,6 +519,7 @@ class ResourceSuite(ResourceBase):
         if os.path.exists(datafilename):
             os.unlink(datafilename)
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Needs investigation refer issue 4932")
     def test_local_iput_physicalpath(self):
         # local setup
         datafilename = "newfile.txt"
