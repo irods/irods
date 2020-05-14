@@ -854,6 +854,8 @@ OUTPUT ruleExecOut'''
         self.admin.assert_icommand(['irule', '-r', rep_name, '-F', rule_file], 'STDERR', ['-358000 OBJ_PATH_DOES_NOT_EXIST'])
         self.admin.assert_icommand(['ils', '-l', dst], 'STDOUT', [dst])
 
+    #-_-_-_- TODO - for [irods/irods#4936] - Write rule test for running under PREP -_-_-_-
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_msiDataObjPhymv_to_resource_hierarchy__3234(self):
         source_resource = self.admin.default_resource
         destination_resource = 'phymv_pt'
