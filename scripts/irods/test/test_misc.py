@@ -134,6 +134,9 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
         rule = 'msiCollCreate("{0}", 0, *ignored)'.format(collection + '/')
         self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME'])
 
+    #-=-=-=- TODO - evaluate whether this test should be skipped in Topology like the similar tests just preceding it.  -=-=-=-
+    #              (SKIPPING it in Python REP for now because it targets Native REP)
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_trailing_slashes_generate_an_error_when_opening_data_objects__issue_3892(self):
         data_object = os.path.join(self.admin.session_collection, 'dobj_3892')
 
