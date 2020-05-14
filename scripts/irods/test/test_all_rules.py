@@ -451,6 +451,8 @@ class Test_AllRules(resource_suite.ResourceBase, unittest.TestCase):
         self.rods_session.run_icommand(['irm', '-rf', test_coll])
         os.remove(src_file)
 
+    #-_-_-_- TODO - for [irods/irods#4934] - Write rule test for running under PREP -_-_-_-
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_rulemsiPhyBundleColl(self):
         rulefile = 'rulemsiPhyBundleColl.r'
 
