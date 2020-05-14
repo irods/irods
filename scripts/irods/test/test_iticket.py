@@ -10,6 +10,7 @@ else:
 
 from .. import lib
 from . import session
+from .. import test
 
 
 SessionsMixin = session.make_sessions_mixin([('otherrods', 'apass')], [('alice', 'password'), ('anonymous', None)])
@@ -29,6 +30,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
     def test_iticket_bad_subcommand(self):
         self.admin.assert_icommand('iticket badsubcommand', 'STDOUT_SINGLELINE', 'unrecognized command')
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skipping for now - needs investigation - issue 4931")
     def test_iticket_get_small(self):
         # Single buffer transfer
         self.ticket_get_test(1)
@@ -55,10 +57,12 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
 
         os.unlink(filepath)
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skipping for now - needs investigation - issue 4931")
     def test_iticket_put_small(self):
         # Single buffer transfer
         self.ticket_put_test(1)
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skipping for now - needs investigation - issue 4931")
     def test_iticket_put_large(self):
         # Triggers parallel transfer
         self.ticket_put_test(40000001)
@@ -323,6 +327,7 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand('iput '+filename)
         self.user.assert_icommand('iticket create write '+filename+' '+ticketname, 'STDERR_SINGLELINE', 'CAT_TICKET_INVALID')
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skipping for now - needs investigation - issue 4931")
     def test_iticket_get__issue_4387(self):
         filename = 'TicketTestFile'
         filepath = os.path.join(self.admin.local_session_dir, filename)
