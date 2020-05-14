@@ -10,6 +10,7 @@ else:
     import unittest
 
 from . import session
+from .. import test
 from .. import lib
 
 class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
@@ -41,6 +42,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             os.unlink(self.local_data_path)
         super(Test_Iunreg, self).tearDown()
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_from_vault(self):
         # Put a file in rodsuser's home collection
         # The user should not be able to unregister from the vault
@@ -59,6 +61,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             os.path.exists(self.data_in_repl_vault_path),
             msg='Data missing from vault after unregister:[{}]'.format(self.data_in_repl_vault_path))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_non_vault(self):
         # Register a file in rodsuser's home collection and give only read/write access
         self.admin.assert_icommand(['ichmod', '-M', '-r', 'own', self.admin.username, self.user.session_collection])
@@ -74,6 +77,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             os.path.exists(self.local_data_path),
             msg='Data missing from local file after unregister:[{}]'.format(self.local_data_path))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_vault_and_non_vault(self):
         self.admin.assert_icommand(['ichmod', '-M', '-r', 'own', self.admin.username, self.user.session_collection])
         try:
@@ -116,6 +120,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             os.path.exists(self.data_in_repl_vault_path),
             msg='Data missing from vault after unregister:[{}]'.format(self.data_in_repl_vault_path))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_replica_number(self):
         logical_path_to_obj = str(os.path.join(self.admin.session_collection, self.registered_filename))
         # Register file and replicate to another resource
@@ -138,6 +143,7 @@ class Test_Iunreg(session.make_sessions_mixin([('otherrods', 'rods')], [('alice'
             os.path.exists(self.data_in_repl_vault_path),
             msg='Data missing from vault after unregister:[{}]'.format(self.data_in_repl_vault_path))
 
+    @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, "Skip for topology testing from resource server")
     def test_iunreg_target_resource(self):
         logical_path_to_obj = str(os.path.join(self.admin.session_collection, self.registered_filename))
         self.admin.assert_icommand(['ireg', self.local_data_path, logical_path_to_obj])
