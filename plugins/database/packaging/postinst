@@ -12,7 +12,7 @@ if [ "$UPGRADE_FLAG" = "false" ] ; then
     echo ""
     echo "======================================================================="
     echo ""
-    echo "iRODS Postgres Database Plugin installation was successful."
+    echo "iRODS Database Plugin installation was successful."
     echo ""
     echo "To configure this plugin, the following prerequisites need to be met:"
     echo " - an existing database user (to be used by the iRODS server)"
