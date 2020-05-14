@@ -36,8 +36,9 @@ class Test_Icp(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', '
                 del self.alice.environment_file_contents['irods_default_resource']
                 filepath = core_file.CoreFile(self.plugin_name).filepath
                 with lib.file_backed_up(filepath):
-                    os.unlink(filepath)
-                    with open(filepath, 'w') as f:
+                    if 'python' not in self.plugin_name:
+                        os.unlink(filepath)
+                    with open(filepath,'a') as f:
                         f.write(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
 
                     lib.make_large_local_tmp_dir(test_dir_path, 1024, 1024)
