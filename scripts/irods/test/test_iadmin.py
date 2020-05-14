@@ -1554,6 +1554,9 @@ class Test_Issue3862(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin modresc repl rebalance")
 
 class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
+
+    plugin_name = IrodsConfig().default_rule_engine_plugin
+
     def setUp(self):
         super(Test_Iadmin_modrepl, self).setUp()
 
@@ -1673,6 +1676,8 @@ class Test_Iadmin_modrepl(resource_suite.ResourceBase, unittest.TestCase):
             if os.path.exists(original_file_path):
                 os.unlink(original_file_path)
 
+    #-=-=-=-=- TODO - for [irods/irods#4933] - Remove the following skip directive when issue is addressed -=-=-=-
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     def test_modifying_restricted_columns(self):
         dumb_string = 'garbage'
         dumb_int = 16
