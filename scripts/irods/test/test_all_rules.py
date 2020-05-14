@@ -823,6 +823,8 @@ OUTPUT ruleExecOut
             if os.path.exists(tar_file_name):
                 os.unlink(tar_file_name)
 
+    #-_-_-_- TODO - for [irods/irods#4935] - Write rule test for running under PREP -_-_-_-
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only applicable for irods_rule_language REP')
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
     def test_msiRenameCollection_does_rename_collections__issue_4597(self):
         src = os.path.join(self.admin.session_collection, 'col.a')
