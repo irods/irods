@@ -66,6 +66,7 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             setStateForRestart( &rodsRestart, &rodsPathInp->srcPath[i],
                                 myRodsArgs );
             addKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW, "" );
+            addKeyVal( &dataObjInp.condInput, RECURSIVE_OPR__KW, "" );
             status = replCollUtil( conn, rodsPathInp->srcPath[i].outPath,
                                    myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart );
             if ( rodsRestart.fd > 0 && status < 0 ) {

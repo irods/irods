@@ -68,27 +68,6 @@ namespace {
 namespace ix = irods::experimental;
 
 using repl_input_tuple = std::tuple<dataObjInp_t, irods::file_object_ptr>;
-repl_input_tuple construct_input_tuple(
-    rsComm_t* rsComm,
-    dataObjInp_t& _inp,
-    const char* kw_hier,
-    const std::string& _operation) {
-    if (kw_hier) {
-        std::string hier = kw_hier;
-        addKeyVal( &_inp.condInput, RESC_HIER_STR_KW, hier.c_str() );
-        irods::file_object_ptr obj{new irods::file_object()};
-        irods::error err = irods::file_object_factory(rsComm, &_inp, obj);
-        if (!err.ok()) {
-            THROW(err.code(), err.result());
-        }
-        return {_inp, obj};
-    }
-
-    auto [obj, hier] = irods::resolve_resource_hierarchy(_operation, rsComm, _inp);
-    addKeyVal(&_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
-    return {_inp, obj};
-} // construct_input_tuple
-
 repl_input_tuple init_destination_replica_input(
     rsComm_t* rsComm,
     const dataObjInp_t& dataObjInp) {
@@ -99,33 +78,27 @@ repl_input_tuple init_destination_replica_input(
     rmKeyVal( &destination_data_obj_inp.condInput, RESC_NAME_KW );
     rmKeyVal( &destination_data_obj_inp.condInput, RESC_HIER_STR_KW );
 
-    std::string replica_number;
-    ix::key_value_proxy kvp{destination_data_obj_inp.condInput};
-
-    if (kvp.contains(REPL_NUM_KW)) {
-        replica_number = kvp[REPL_NUM_KW].value();
-
-        // This keyword must be removed temporarily so that the voting mechanism does
-        // not misinterpret it and change the operation from a CREATE to a WRITE.
-        // See server/core/src/irods_resource_redirect.cpp for details.
-        rmKeyVal(&destination_data_obj_inp.condInput, REPL_NUM_KW);
+    const char* kw_hier = getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW);
+    if (kw_hier) {
+        std::string hier = kw_hier;
+        addKeyVal( &destination_data_obj_inp.condInput, RESC_HIER_STR_KW, hier.c_str() );
+        irods::file_object_ptr obj{new irods::file_object()};
+        irods::error err = irods::file_object_factory(rsComm, &destination_data_obj_inp, obj);
+        if (!err.ok()) {
+            THROW(err.code(), err.result());
+        }
+        return {destination_data_obj_inp, obj};
     }
 
-    irods::at_scope_exit restore_replica_number_keyword{[&replica_number, &kvp] {
-        kvp[REPL_NUM_KW] = replica_number;
-    }};
-
-    // Get the destination resource that the client specified, or use the default resource
-    if (!getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW) &&
-        !getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_NAME_KW)) {
-        const char* dest_resc = getValByKey(&destination_data_obj_inp.condInput, DEF_RESC_NAME_KW);
-        addKeyVal(&destination_data_obj_inp.condInput, DEST_RESC_NAME_KW, dest_resc);
+    const char* target = getValByKey(&dataObjInp.condInput, DEST_RESC_NAME_KW);
+    if (target) {
+        addKeyVal(&destination_data_obj_inp.condInput, DEST_RESC_NAME_KW, irods::hierarchy_parser{target}.last_resc().c_str());
     }
-    return construct_input_tuple(
-        rsComm,
-        destination_data_obj_inp,
-        getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW),
-        irods::CREATE_OPERATION);
+
+    auto [obj, hier] = irods::resolve_resource_hierarchy(
+        irods::CREATE_OPERATION, rsComm, destination_data_obj_inp);
+    addKeyVal(&destination_data_obj_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
+    return {destination_data_obj_inp, obj};
 } // init_destination_replica_input
 
 repl_input_tuple init_source_replica_input(
@@ -138,11 +111,26 @@ repl_input_tuple init_source_replica_input(
     rmKeyVal(&source_data_obj_inp.condInput, DEST_RESC_NAME_KW);
     rmKeyVal(&source_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW);
 
-    return construct_input_tuple(
-        rsComm,
-        source_data_obj_inp,
-        getValByKey(&source_data_obj_inp.condInput, RESC_HIER_STR_KW),
-        irods::OPEN_OPERATION);
+    const char* kw_hier = getValByKey(&source_data_obj_inp.condInput, RESC_HIER_STR_KW);
+    if (kw_hier) {
+        irods::file_object_ptr obj{new irods::file_object()};
+        irods::error err = irods::file_object_factory(rsComm, &source_data_obj_inp, obj);
+        if (!err.ok()) {
+            THROW(err.code(), err.result());
+        }
+        return {source_data_obj_inp, obj};
+    }
+
+    // Use the original dataObjInp here as it is not being modified and will be replaced in the new struct
+    const char* target = getValByKey(&dataObjInp.condInput, RESC_NAME_KW);
+    if (target) {
+        addKeyVal(&source_data_obj_inp.condInput, RESC_NAME_KW, irods::hierarchy_parser{target}.last_resc().c_str());
+    }
+
+    auto [obj, hier] = irods::resolve_resource_hierarchy(
+        irods::OPEN_OPERATION, rsComm, source_data_obj_inp);
+    addKeyVal(&source_data_obj_inp.condInput, RESC_HIER_STR_KW, hier.c_str());
+    return {source_data_obj_inp, obj};
 } // init_source_replica_input
 
 int close_replica(
@@ -400,6 +388,12 @@ int rsDataObjRepl(
     // -S and -n are not compatible
     if (getValByKey(&dataObjInp->condInput, RESC_NAME_KW) &&
         getValByKey(&dataObjInp->condInput, REPL_NUM_KW)) {
+        return USER_INCOMPATIBLE_PARAMS;
+    }
+
+    // -S and -r are not compatible
+    if (getValByKey(&dataObjInp->condInput, RESC_NAME_KW) &&
+        getValByKey(&dataObjInp->condInput, RECURSIVE_OPR__KW)) {
         return USER_INCOMPATIBLE_PARAMS;
     }
 
