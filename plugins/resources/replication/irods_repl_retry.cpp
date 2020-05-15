@@ -14,6 +14,7 @@ int irods::data_obj_repl_with_retry(
         dataObjInp_t& dataObjInp ) {
 
     transferStat_t* trans_stat{ nullptr };
+    rmKeyVal(&dataObjInp.condInput, ALL_KW);
     auto status{ rsDataObjRepl( _ctx.comm(), &dataObjInp, &trans_stat ) };
     if ( 0 == status ) {
         irods::log(LOG_DEBUG, fmt::format("[{}:{}] - replication succeeded", __FUNCTION__, __LINE__));
