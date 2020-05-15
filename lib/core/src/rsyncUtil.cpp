@@ -525,6 +525,9 @@ rsyncDataToDataUtil( rcComm_t *conn, rodsPath_t *srcPath,
                  "rsyncDataToDataUtil: NULL srcPath or targPath input" );
         return USER__NULL_INPUT_ERR;
     }
+
+    addKeyVal( &dataObjCopyInp->destDataObjInp.condInput, DATA_SIZE_KW, std::to_string(srcPath->size).c_str() );
+
     /* check the age */
     if ( myRodsArgs->age == True ) {
         if ( srcPath->rodsObjStat != NULL ) {
