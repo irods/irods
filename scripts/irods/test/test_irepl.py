@@ -7,6 +7,7 @@ else:
     import unittest
 
 from . import session
+from . import command
 from .. import test
 from .. import lib
 from ..configuration import IrodsConfig
@@ -219,3 +220,446 @@ class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
             self.admin.assert_icommand(['iadmin', 'rmresc', resource_1])
             self.admin.assert_icommand(['iadmin', 'rmresc', resource_2])
 
+@unittest.skip('this is an aspirational test suite')
+class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
+    repl_statuses = ['X', '&', '?']
+    def setUp(self):
+        super(test_irepl_repl_status, self).setUp()
+
+        self.admin = self.admin_sessions[0]
+
+        self.leaf_rescs = {
+            'a' : {
+                'name': 'test_irepl_repl_status_a',
+                'vault': os.path.join(self.admin.local_session_dir, 'a'),
+                'host': test.settings.HOSTNAME_1
+            },
+            'b' : {
+                'name': 'test_irepl_repl_status_b',
+                'vault': os.path.join(self.admin.local_session_dir, 'b'),
+                'host': test.settings.HOSTNAME_2
+            },
+            'c' : {
+                'name': 'test_irepl_repl_status_c',
+                'vault': os.path.join(self.admin.local_session_dir, 'c'),
+                'host': test.settings.HOSTNAME_3
+            },
+            'f' : {
+                'name': 'test_irepl_repl_status_f',
+                'vault': os.path.join(self.admin.local_session_dir, 'f'),
+                'host': test.settings.HOSTNAME_1
+            }
+        }
+
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc['name'], 'unixfilesystem',
+                ':'.join([resc['host'], resc['vault']])],
+                'STDOUT', resc['name'])
+
+        self.parent_rescs = {
+            'd' : 'test_irepl_repl_status_d',
+            'e' : 'test_irepl_repl_status_e',
+        }
+
+        for resc in self.parent_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc, 'passthru'], 'STDOUT', resc)
+
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', self.parent_rescs['d'], self.parent_rescs['e']])
+        self.admin.assert_icommand(['iadmin', 'addchildtoresc', self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+
+        #self.env_backup = copy.deepcopy(self.admin.environment_file_contents)
+        self.admin.environment_file_contents.update({'irods_default_resource': self.leaf_rescs['a']['name']})
+
+        self.filename = 'foo'
+        self.local_path = os.path.join(self.admin.local_session_dir, self.filename)
+        self.logical_path = os.path.join(self.admin.session_collection, 'subdir', self.filename)
+
+    def tearDown(self):
+        #self.admin.environment_file_contents = self.env_backup
+
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['d'], self.parent_rescs['e']])
+        self.admin.assert_icommand(['iadmin', 'rmchildfromresc', self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+
+        for resc in self.parent_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc])
+
+        for resc in self.leaf_rescs.values():
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc['name']])
+
+        super(test_irepl_repl_status, self).tearDown()
+
+    def test_invalid_parameters(self):
+        # does not exist
+        self.admin.assert_icommand(['irepl', self.logical_path], 'STDERR', 'does not exist')
+
+        # put a file
+        if not os.path.exists(self.local_path):
+            lib.make_file(self.local_path, 1024)
+        self.admin.assert_icommand(['imkdir', os.path.dirname(self.logical_path)])
+        self.admin.assert_icommand(['iput', self.local_path, self.logical_path])
+
+        try:
+            # INCOMPATIBLE_PARAMETERS
+            # irepl -S a -n 0 foo
+            self.admin.assert_icommand(['irepl', '-S', self.leaf_rescs['a']['name'], '-n0', self.logical_path],
+                'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
+            # irepl -r -S a foo_dir
+            self.admin.assert_icommand(['irepl', '-r', '-S', self.leaf_rescs['a']['name'], os.path.dirname(self.logical_path)],
+                'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
+            # irepl -a -R
+            # TODO: This is valid/compatible
+            #self.admin.assert_icommand(['irepl', '-a', '-R', self.leaf_rescs['b']['name'], '-n0', self.logical_path],
+                #'STDERR', 'USER_INCOMPATIBLE_PARAMS')
+
+            # DIRECT_CHILD_ACCESS
+            # irepl -R f foo
+            self.admin.assert_icommand(['irepl', '-R', self.leaf_rescs['f']['name'], self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -R e foo
+            self.admin.assert_icommand(['irepl', '-R', self.parent_rescs['e'], self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -R 'd;e' foo
+            hier = ';'.join([self.parent_rescs['d'], self.parent_rescs['e']])
+            self.admin.assert_icommand(['irepl', '-R', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -R 'd;e;f' foo
+            hier = ';'.join([hier, self.leaf_rescs['f']['name']])
+            self.admin.assert_icommand(['irepl', '-R', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -R 'e;f' foo
+            hier = ';'.join(hier.split(';')[1:-1])
+            self.admin.assert_icommand(['irepl', '-R', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -S f foo
+            self.admin.assert_icommand(['irepl', '-S', self.leaf_rescs['f']['name'], self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -S e foo
+            self.admin.assert_icommand(['irepl', '-S', self.parent_rescs['e'], self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -S 'd;e' foo
+            hier = ';'.join([self.parent_rescs['d'], self.parent_rescs['e']])
+            self.admin.assert_icommand(['irepl', '-S', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -S 'd;e;f' foo
+            hier = ';'.join([hier, self.leaf_rescs['f']['name']])
+            self.admin.assert_icommand(['irepl', '-S', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # irepl -S 'e;f' foo
+            hier = ';'.join([self.parent_rescs['e'], self.leaf_rescs['f']['name']])
+            self.admin.assert_icommand(['irepl', '-S', hier, self.logical_path],
+                'STDERR', 'DIRECT_CHILD_ACCESS')
+
+            # ensure no replications took place
+            out, _, _ = self.admin.run_icommand(['ils', '-l', self.logical_path])
+            print(out)
+            for resc in self.leaf_rescs.values()[1:]:
+                self.assertNotIn(resc['name'], out, msg='found unwanted replica on [{}]'.format(resc['name']))
+            for resc in self.parent_rescs.values():
+                self.assertNotIn(resc, out, msg='found replica on coordinating resc [{}]'.format(resc))
+
+        finally:
+            self.admin.assert_icommand(['irm', '-rf', os.path.dirname(self.logical_path)])
+
+    def setup_replicas(self, scenario):
+        initial_replicas = scenario['start']
+        for repl in initial_replicas:
+            if initial_replicas[repl] != '-' and repl != 'a':
+                # stage replicas
+                self.admin.assert_icommand(['irepl', '-R', self.leaf_rescs[repl]['name'], self.logical_path])
+
+        for repl in initial_replicas:
+            if initial_replicas[repl] != '-':
+                # set replica status for scenario
+                self.admin.assert_icommand(
+                    ['iadmin', 'modrepl', 'logical_path', self.logical_path, 'resource_hierarchy', self.leaf_rescs[repl]['name'],
+                        'DATA_REPL_STATUS', str(self.repl_statuses.index(initial_replicas[repl]))])
+            elif repl == 'a':
+                # the replica status is to not have a replica - trim it
+                self.admin.assert_icommand(['itrim', '-N1', '-S', self.leaf_rescs[repl]['name'], self.logical_path], 'STDOUT', 'files trimmed')
+
+    def assert_result(self, scenario, out=None, err=None, rc=None):
+        result = scenario['output']
+        scenario_string = scenario['start']
+        try:
+            if result['out']: self.assertIn(result['out'], out)
+            elif out: self.fail('found stdout:[{0}], expected None for scenario [{1}]'.format(out, scenario_string))
+        except TypeError:
+            self.fail('found stdout:[None], expected [{0}] for scenario [{1}]'.format(result['stdout'], scenario_string))
+
+        try:
+            if result['err']: self.assertIn(result['err'], err)
+            elif err: self.fail('found stderr:[{0}], expected None for scenario [{1}]'.format(err, scenario_string))
+        except TypeError:
+            self.fail('found stderr:[None], expected [{0}] for scenario [{1}]'.format(result['err'], scenario_string))
+
+        try:
+            if result['rc']: self.assertEqual(result['rc'], rc)
+            elif rc: self.fail('found rc:[{0}], expected None for scenario [{1}]'.format(rc, scenario_string))
+        except TypeError:
+            self.fail('found rc:[None], expected [{0}] for scenario [{1}]'.format(result['rc'], scenario_string))
+
+        ils_out,ils_err,_ = self.admin.run_icommand(['ils', '-l', self.logical_path])
+        for repl in scenario['end']:
+            expected_status = scenario['end'][repl]
+
+            if expected_status not in self.repl_statuses:
+                self.assertNotIn(self.leaf_rescs[repl]['name'], ils_out)
+                continue
+
+            expected_results = [self.leaf_rescs[repl]['name'], expected_status]
+            result = command.check_command_output(
+                None, ils_out, ils_err, check_type='STDOUT_SINGLELINE', expected_results=expected_results)
+
+    def run_command_against_scenarios(self, command, scenarios, name, file_size=1024):
+        i = 0
+        for scenario in scenarios:
+            i = i + 1
+            print("============= (" + name + "): [" + str(i) + "] =============")
+            print(scenario)
+            try:
+                if not os.path.exists(self.local_path):
+                    lib.make_file(self.local_path, file_size)
+                self.admin.assert_icommand(['imkdir', os.path.dirname(self.logical_path)])
+                self.admin.assert_icommand(['iput', self.local_path, self.logical_path])
+
+                self.setup_replicas(scenario)
+                out,err,_ = self.admin.run_icommand(command)
+                print(out)
+                print(err)
+                self.assert_result(scenario, err=err)
+
+            finally:
+                self.admin.assert_icommand(['irm', '-rf', os.path.dirname(self.logical_path)])
+
+    def test_irepl_Ra_foo(self):
+        # irepl foo (irepl -R a foo) (default resource case)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(['irepl', self.logical_path], scenarios, 'irepl foo')
+
+    def test_irepl_Rb_foo(self):
+        # irepl -R b foo (source unspecified, destination b)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(
+            ['irepl', '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'irepl -R b foo')
+
+    def test_irepl_Sa_Rb_foo(self):
+        # irepl -S a -R b foo (source default resource, destination non-default resource)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(
+            ['irepl', '-S', self.leaf_rescs['a']['name'], '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'irepl -S a -R b foo')
+
+    def test_irepl_Sc_Rb_foo(self):
+        # irepl -S c -R b foo (source non-default resource, destination non-default resource)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'-', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'-', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'X', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'X', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(
+            ['irepl', '-S', self.leaf_rescs['c']['name'], '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'irepl -S c -R b foo')
+
+        # TODO: replica numbers seme to change... might need to detect in special case?
+        #self.run_command_against_scenarios(
+            #['irepl', '-n', '2', '-R', self.leaf_rescs['b']['name'], self.logical_path],
+            #scenarios, 'irepl -n 2 -R b foo')
+
+    def test_irepl_Sb_foo(self):
+        # irepl -S b foo (irepl -S b -R a foo) (source non-default resource, destination unspecified)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'-', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'-', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: warning?
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'X', 'b':'-', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'-'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'X'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'X', 'b':'X', 'c':'&'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(
+            ['irepl', '-S', self.leaf_rescs['b']['name'], self.logical_path],
+            scenarios, 'irepl -S b foo')
+
+        # TODO: replica numbers seme to change... might need to detect in special case?
+        #self.run_command_against_scenarios(
+            #['irepl', '-n', '1', self.logical_path],
+            #scenarios, 'irepl -n 1 foo')
+
+    def test_irepl_a_foo(self):
+        # irepl -a foo (source unspecified, destination ALL)
+        scenarios = [
+            #{'start':{'a':'-', 'b':'-', 'c':'-'}, 'end':{'a':'-', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'-', 'c':'X'}, 'end':{'a':'-', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'-'}, 'end':{'a':'-', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'-', 'b':'X', 'c':'X'}, 'end':{'a':'-', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'-', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}}, # TODO: timestamp?
+            {'start':{'a':'&', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'&', 'b':'X', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'-'}, 'end':{'a':'X', 'b':'-', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'-', 'c':'X'}, 'end':{'a':'X', 'b':'-', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'-'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'&', 'c':'X'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'-'}, 'end':{'a':'X', 'b':'X', 'c':'-'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'&'}, 'end':{'a':'&', 'b':'&', 'c':'&'}, 'output':{'out':None, 'err':None, 'rc':None}},
+            {'start':{'a':'X', 'b':'X', 'c':'X'}, 'end':{'a':'X', 'b':'X', 'c':'X'}, 'output':{'out':None, 'err':'SYS_NO_GOOD_REPLICA', 'rc':None}}
+        ]
+
+        self.run_command_against_scenarios(['irepl', '-a', self.logical_path], scenarios, 'irepl -a foo')
