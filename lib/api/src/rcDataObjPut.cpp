@@ -95,6 +95,7 @@
 
 int
 rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
+
     int status;
     portalOprOut_t *portalOprOut = NULL;
     bytesBuf_t dataObjInpBBuf;
@@ -105,6 +106,8 @@ rcDataObjPut( rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath ) {
             return USER_FILE_DOES_NOT_EXIST;
         }
     }
+
+    addKeyVal( &dataObjInp->condInput, DATA_SIZE_KW, std::to_string(dataObjInp->dataSize).c_str() );
 
     memset( &conn->transStat, 0, sizeof( transStat_t ) );
     memset( &dataObjInpBBuf, 0, sizeof( dataObjInpBBuf ) );
