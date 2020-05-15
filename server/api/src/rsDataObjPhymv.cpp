@@ -41,16 +41,20 @@ dataObjInp_t init_destination_replica_input(
     rmKeyVal( &destination_data_obj_inp.condInput, RESC_HIER_STR_KW );
     rmKeyVal( &destination_data_obj_inp.condInput, REPL_NUM_KW);
 
-    // Get the destination resource that the client specified, or use the default resource
     const char* hier_kw = getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_HIER_STR_KW);
     if (hier_kw) {
         addKeyVal(&destination_data_obj_inp.condInput, RESC_HIER_STR_KW, hier_kw);
         return destination_data_obj_inp;
     }
+
     const char* target = getValByKey(&destination_data_obj_inp.condInput, DEST_RESC_NAME_KW);
     if (!target) {
-        THROW(USER__NULL_INPUT_ERR, "Destination hierarchy or leaf resource required - none provided.");
+        const auto status = USER__NULL_INPUT_ERR;
+        const std::string msg{"Destination hierarchy or leaf resource required - none provided."};
+        addRErrorMsg(&rsComm->rError, status, msg.c_str());
+        THROW(status, msg);
     }
+
     irods::hierarchy_parser parser{target};
     if (parser.first_resc() == target && resc_mgr.is_coordinating_resource(target)) {
         const auto status = USER_INVALID_RESC_INPUT;
@@ -58,6 +62,7 @@ dataObjInp_t init_destination_replica_input(
         addRErrorMsg(&rsComm->rError, status, msg.c_str());
         THROW(status, msg);
     }
+
     std::string hier{};
     irods::error ret = resc_mgr.get_hier_to_root_for_resc(parser.last_resc(), hier);
     if (!ret.ok()) {
