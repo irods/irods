@@ -120,9 +120,6 @@ chkLogfileName( const char *logDir, const char *logFileName ) {
 
     CurLogfileName = logFile;
 
-    close( 0 );
-    close( 1 );
-    close( 2 );
     ( void ) dup2( i, 0 );
     ( void ) dup2( i, 1 );
     ( void ) dup2( i, 2 );
