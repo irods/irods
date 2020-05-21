@@ -10,6 +10,7 @@ import os
 import time
 
 from . import resource_suite
+from . import session
 from .. import test
 from .. import paths
 from .. import lib
@@ -17,15 +18,29 @@ from ..configuration import IrodsConfig
 from ..controller import IrodsController
 from .rule_texts_for_tests import rule_texts
 
-@unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads server log')
-class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
+class Test_Delay_Queue(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
     class_name = 'Test_Delay_Queue'
 
     def setUp(self):
         super(Test_Delay_Queue, self).setUp()
 
+        self.admin = self.admin_sessions[0]
+
+        self.filename = 'test_delay_queue'
+        self.local_path = os.path.join(self.admin.local_session_dir, self.filename)
+        self.logical_path = os.path.join(self.admin.session_collection, self.filename)
+        if not os.path.exists(self.local_path):
+            lib.make_file(self.local_path, 1024)
+        self.admin.assert_icommand(['iput', self.local_path, self.logical_path])
+        out, err, rc = self.admin.run_icommand(['iquest', '%s', '"select DATA_ID where DATA_NAME = \'{}\'"'.format(self.filename)])
+        self.assertEqual(rc, 0, msg='error occurred getting data_id:[{}],stderr:[{}]'.format(rc, err))
+        self.data_id = out.strip()
+
     def tearDown(self):
+        self.admin.assert_icommand(['irm', '-f', self.logical_path])
+        self.admin.assert_icommand(['iadmin', 'rum'])
+
         super(Test_Delay_Queue, self).tearDown()
 
     def no_delayed_rules(self):
@@ -48,7 +63,10 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         # Simple delay rule with a writeLine
         rule_text_key = 'test_failed_delay_job'
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key]
+        parameters = {}
+        parameters['logical_path'] = self.logical_path
+        parameters['metadata_attr'] = rule_text_key
+        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -70,14 +88,18 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 # Bounce server to apply setting
                 irodsctl.restart()
 
-                # Fire off rule and wait for message to get written out to serverLog
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
+
                 lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='We are about to fail...',
-                        count=2,
-                        start_index=initial_size_of_server_log))
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'],
+                        'We are about to fail...')
+                )
+                self.assertFalse(lib.metadata_attr_with_value_exists(
+                    self.admin,
+                    parameters['metadata_attr'],
+                    'You should never see this line.'))
 
         finally:
             os.remove(rule_file)
@@ -90,16 +112,19 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         delay_job_batch_size = 5
         re_server_sleep_time = 3
-        sooner_delay = 1
-        later_delay = re_server_sleep_time * 2
+        sooner_delay = 0.1
+        later_delay = re_server_sleep_time * 5
         long_job_run_time = re_server_sleep_time * 10
 
+        rule_text_key = 'test_delay_queue_with_long_job'
         parameters = {}
         parameters['delay_job_batch_size'] = delay_job_batch_size
         parameters['sooner_delay'] = sooner_delay
         parameters['later_delay'] = later_delay
         parameters['long_job_run_time'] = long_job_run_time
-        rule_text_key = 'test_delay_queue_with_long_job'
+        parameters['logical_path'] = self.logical_path
+        parameters['metadata_attr'] = rule_text_key
+        parameters['metadata_value'] = rule_text_key
         rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
@@ -123,41 +148,48 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 irodsctl.restart()
 
                 # Fire off rule and ensure the delay queue is correctly populated
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file])
-                actual_count = self.count_strings_in_queue('writeLine')
-                expected_count = delay_job_batch_size * 2 + 2
+                self.assertEqual(
+                    delay_job_batch_size * 2 + 2,
+                    self.count_strings_in_queue('msiAssociateKeyValuePairsToObj'))
 
                 # "Sooner" rules should execute
                 expected_count = delay_job_batch_size
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='sooner:',
-                        count=expected_count,
-                        start_index=initial_size_of_server_log))
-                self.assertTrue(0 == self.count_strings_in_queue('sooner:'))
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='later:',
-                        count=0,
-                        start_index=initial_size_of_server_log))
-                self.assertTrue(delay_job_batch_size == self.count_strings_in_queue('later:'))
-                self.assertTrue(1 == self.count_strings_in_queue('Sleeping...'))
+                for i in range(parameters['delay_job_batch_size']):
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(
+                            self.admin,
+                            '_'.join([parameters['metadata_attr'], 'sooner']),
+                            'sooner: ' + str(i))
+                    )
+                self.assertEqual(0, self.count_strings_in_queue('sooner:'))
+                self.assertEqual(delay_job_batch_size, self.count_strings_in_queue('later:'))
+                self.assertEqual(1, self.count_strings_in_queue('Sleeping...'))
+
+                for i in range(parameters['delay_job_batch_size']):
+                    self.assertFalse(lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        '_'.join([parameters['metadata_attr'], 'later']),
+                        'later: ' + str(i))
+                    )
 
                 # "Later" rules should execute... but long-running job should still be in queue
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='later:',
-                        count=expected_count,
-                        start_index=initial_size_of_server_log))
-                self.assertTrue(0 == self.count_strings_in_queue('later:'))
-                self.assertTrue(1 == self.count_strings_in_queue('Sleeping...'))
+                for i in range(parameters['delay_job_batch_size']):
+                    lib.delayAssert(
+                        lambda: lib.metadata_attr_with_value_exists(
+                            self.admin,
+                            '_'.join([parameters['metadata_attr'], 'later']),
+                            'later: ' + str(i))
+                    )
+                self.assertEqual(0, self.count_strings_in_queue('later:'))
+                self.assertEqual(1, self.count_strings_in_queue('Sleeping...'))
 
                 # Wait for long-running job to finish and make sure it has
                 lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='Waking!',
-                        start_index=initial_size_of_server_log))
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'], 'Waking!')
+                )
                 lib.delayAssert(self.no_delayed_rules)
 
         finally:
@@ -170,9 +202,12 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         server_config_filename = paths.server_config_path()
 
         expected_count = 10
+        rule_text_key = 'test_batch_delay_processing__3941'
         parameters = {}
         parameters['expected_count'] = expected_count
-        rule_text_key = 'test_batch_delay_processing__3941'
+        parameters['logical_path'] = self.logical_path
+        parameters['metadata_attr'] = rule_text_key
+        parameters['metadata_value'] = rule_text_key
         rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
@@ -196,16 +231,16 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
             irodsctl.restart()
 
             # Fire off rule and ensure the delay queue is correctly populated
-            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file])
-            actual_count = self.count_strings_in_queue('writeLine')
 
             # Wait for messages to get written out and ensure that all the messages were written to serverLog
-            lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg='writeLine: inString = delay ',
-                    count=expected_count,
-                    start_index=initial_size_of_server_log))
+            for i in range(parameters['expected_count']):
+                lib.delayAssert(
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'],
+                        '_'.join([parameters['metadata_value'], str(i)]))
+                )
             lib.delayAssert(self.no_delayed_rules)
 
         os.remove(rule_file)
@@ -219,7 +254,11 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         server_config_filename = paths.server_config_path()
 
         rule_text_key = 'test_delay_block_with_output_param__3906'
-        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key]
+        parameters = {}
+        parameters['metadata_attr'] = rule_text_key
+        parameters['metadata_value'] = 'wedidit'
+        parameters['logical_path'] = self.logical_path
+        rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
             f.write(rule_text)
@@ -241,12 +280,12 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
             irodsctl.restart()
 
             # Fire off rule and wait for message to get written out to serverLog
-            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
             self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
             lib.delayAssert(
-                lambda: lib.log_message_occurrences_equals_count(
-                    msg='writeLine: inString = delayed rule executed',
-                    start_index=initial_size_of_server_log))
+                lambda: lib.metadata_attr_with_value_exists(
+                    self.admin,
+                    parameters['metadata_attr'], parameters['metadata_value'])
+            )
 
         os.remove(rule_file)
 
@@ -259,9 +298,11 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         config = IrodsConfig()
 
         rule_sleep_time = 4
+        rule_text_key = 'test_delay_queue_connection_refresh'
         parameters = {}
         parameters['sleep_time'] = rule_sleep_time
-        rule_text_key = 'test_delay_queue_connection_refresh'
+        parameters['metadata_attr'] = rule_text_key
+        parameters['logical_path'] = self.logical_path
         rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
@@ -291,29 +332,29 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                     irodsctl.restart()
 
                     # Fire off rule and ensure the delay queue is correctly populated
-                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                     self.admin.assert_icommand(['irule', '-F', rule_file])
-                    time.sleep(rule_sleep_time * 2 + 2)
 
-                    sleeping_pids = []
-                    waking_pids = []
-                    with open(paths.server_log_path(), 'r') as f:
-                        f.seek(initial_size_of_server_log)
-                        for line in f:
-                            if 'sleep' in line:
-                                sleeping_pids.append(line.split()[3].split(':')[1])
-                            if 'wakeup' in line:
-                                waking_pids.append(line.split()[3].split(':')[1])
+                    iquest = '"select META_DATA_ATTR_VALUE where META_DATA_ATTR_NAME = \'{}\'"'
 
-                    expected_count = 2
-                    self.assertTrue(len(sleeping_pids) == expected_count)
-                    self.assertTrue(len(waking_pids) == expected_count)
-                    for i in range(expected_count):
-                        self.assertTrue(sleeping_pids[i] == waking_pids[i],
-                            msg='sleeping_pid:{0} != waking_pid:{1}'.format(sleeping_pids[i], waking_pids[i]))
-                        if i < expected_count - 1:
-                            self.assertTrue(sleeping_pids[i] != sleeping_pids[i + 1],
-                                msg='pids are equal:[{}]'.format(sleeping_pids[i]))
+                    job_names = ['job_1', 'job_2']
+                    pid_map = {}
+                    for job in job_names:
+                        attr = '::'.join([parameters['metadata_attr'], job])
+                        lib.delayAssert(lambda:
+                            2 == len(self.admin.run_icommand(['iquest', '%s', iquest.format(attr)])[0].splitlines()))
+                        pid_map[job] = {}
+                        out,_,rc = self.admin.run_icommand(['iquest', '%s', iquest.format(attr)])
+                        self.assertEqual(0, rc)
+                        for value in out.splitlines():
+                            s = value.split('::')
+                            job_id = str(s[0])
+                            pid = str(s[1])
+                            pid_map[job][job_id] = pid
+
+                    self.assertEqual(pid_map['job_1']['before'], pid_map['job_1']['after'])
+                    self.assertEqual(pid_map['job_2']['before'], pid_map['job_2']['after'])
+                    self.assertNotEqual(pid_map['job_1']['before'], pid_map['job_2']['before'])
+                    self.assertNotEqual(pid_map['job_1']['after'], pid_map['job_2']['after'])
 
         finally:
             os.remove(rule_file)
@@ -325,9 +366,11 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
         re_server_sleep_time = 2
         longer_delay_time = re_server_sleep_time * 2
+        rule_text_key = 'test_sigpipe_in_delay_server'
         parameters = {}
         parameters['longer_delay_time'] = str(longer_delay_time)
-        rule_text_key = 'test_sigpipe_in_delay_server'
+        parameters['logical_path'] = self.logical_path
+        parameters['metadata_attr'] = rule_text_key
         rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
@@ -351,20 +394,24 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
                 irodsctl.restart()
 
                 # Fire off rule and wait for message to get written out to serverLog
-                initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
                 self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT_SINGLELINE', "rule queued")
-                # Delayed rule writes to log and delay server writes rule that failed (agent should have died, so no rcExecRuleExpression)
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='We are about to segfault...',
-                        start_index=initial_size_of_server_log))
 
-                # See if the later rule is executed (i.e. delay server is still alive)
                 lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg='Follow-up rule executed later!',
-                        start_index=initial_size_of_server_log))
-
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'],
+                        'We are about to segfault...')
+                )
+                lib.delayAssert(
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin,
+                        parameters['metadata_attr'],
+                        'Follow-up rule executed later!')
+                )
+                self.assertFalse(lib.metadata_attr_with_value_exists(
+                    self.admin,
+                    parameters['metadata_attr'],
+                    'You should never see this line.'))
 
         finally:
             os.remove(rule_file)
@@ -378,10 +425,12 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
         server_config_filename = paths.server_config_path()
 
         delay_job_sleep_time = 5
+        rule_text_key = 'test_exception_in_delay_server'
         parameters = {}
         parameters['sleep_time'] = str(delay_job_sleep_time)
         parameters['longer_delay_time'] = str(delay_job_sleep_time)
-        rule_text_key = 'test_exception_in_delay_server'
+        parameters['logical_path'] = self.logical_path
+        parameters['metadata_attr'] = rule_text_key
         rule_text = rule_texts[self.plugin_name][self.class_name][rule_text_key].format(**parameters)
         rule_file = rule_text_key + '.r'
         with open(rule_file, 'w') as f:
@@ -409,28 +458,21 @@ class Test_Delay_Queue(resource_suite.ResourceBase, unittest.TestCase):
 
                     # Bounce server to apply setting
                     irodsctl.restart()
-                    initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
-                    initial_size_of_re_log = lib.get_file_size_by_path(paths.re_log_path())
                     with lib.file_backed_up(odbc_ini_file):
                         self.admin.assert_icommand(['irule', '-F', rule_file])
                         time.sleep(2)
+                        # remove connection to database while rule is executing (should be sleeping)
                         os.unlink(odbc_ini_file)
                         time.sleep(delay_job_sleep_time * 2)
 
                     # Restore .odbc.ini and wait for delay server to execute rule properly
                     # The delay server should not have zombified, so the later rule should have executed
                     lib.delayAssert(
-                        lambda: lib.log_message_occurrences_equals_count(
-                            msg='Follow-up rule executed later!',
-                            start_index=initial_size_of_server_log))
-
-                    # The delay server should have caught the exception from the connection error on trying to delete the rule the first time
-                    unexpected_string = 'terminating with uncaught exception of type std::runtime_error: connect error'
-                    lib.delayAssert(
-                        lambda: lib.log_message_occurrences_equals_count(
-                            msg=unexpected_string,
-                            count=0,
-                            start_index=initial_size_of_server_log))
+                        lambda: lib.metadata_attr_with_value_exists(
+                            self.admin,
+                            parameters['metadata_attr'],
+                            'Follow-up rule executed later!')
+                    )
 
         finally:
             os.remove(rule_file)
