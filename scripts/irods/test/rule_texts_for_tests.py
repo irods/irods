@@ -513,7 +513,8 @@ rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['
 test_batch_delay_processing {{
     for(*i = 0; *i < {expected_count}; *i = *i + 1) {{
         delay("<PLUSET>0.1s</PLUSET>") {{
-            writeLine("serverLog", "delay *i");
+            msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value}_*i");
+            msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
         }}
     }}
 }}
@@ -522,7 +523,8 @@ OUTPUT ruleExecOut
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_block_with_output_param__3906'] = '''
 test_delay_with_output_param {{
     delay("<PLUSET>0.1s</PLUSET>") {{
-        writeLine("serverLog", "delayed rule executed");
+        msiAddKeyVal(*key_val_pair,"{metadata_attr}","{metadata_value}");
+        msiAssociateKeyValuePairsToObj(*key_val_pair,"{logical_path}","-d");
     }}
     *status = "rule queued";
 }}
@@ -532,18 +534,22 @@ OUTPUT *status
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_with_long_job'] = '''
 test_delay_queue_with_long_job {{
     delay("<PLUSET>0.1s</PLUSET>") {{
-        writeLine("serverLog", "Sleeping...");
+        msiAddKeyVal(*sleep_kvp,"{metadata_attr}","Sleeping...");
+        msiAssociateKeyValuePairsToObj(*sleep_kvp,"{logical_path}","-d");
         msiSleep("{long_job_run_time}", "0");
-        writeLine("serverLog", "Waking!");
+        msiAddKeyVal(*wake_kvp,"{metadata_attr}","Waking!");
+        msiAssociateKeyValuePairsToObj(*wake_kvp,"{logical_path}","-d");
     }}
     for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
         delay("<PLUSET>{sooner_delay}s</PLUSET>") {{
-            writeLine("serverLog", "sooner: *i");
+            msiAddKeyVal(*sooner_kvp,"{metadata_attr}_sooner","sooner: *i");
+            msiAssociateKeyValuePairsToObj(*sooner_kvp,"{logical_path}","-d");
         }}
     }}
     for(*i = 0; *i < {delay_job_batch_size}; *i = *i + 1) {{
         delay("<PLUSET>{later_delay}s</PLUSET>") {{
-            writeLine("serverLog", "later: *i");
+            msiAddKeyVal(*later_kvp,"{metadata_attr}_later","later: *i");
+            msiAssociateKeyValuePairsToObj(*later_kvp,"{logical_path}","-d");
         }}
     }}
 }}
@@ -552,14 +558,22 @@ OUTPUT ruleExecOut
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_delay_queue_connection_refresh'] = '''
 test_delay_queue_connection_refresh {{
     delay("<PLUSET>0.1s</PLUSET>") {{
-        writeLine("serverLog", "sleep 1...");
+        msi_get_agent_pid(*first_pid)
+        msiAddKeyVal(*first_kvp,"{metadata_attr}::job_1","before::*first_pid");
+        msiAssociateKeyValuePairsToObj(*first_kvp,"{logical_path}","-d");
         msiSleep("{sleep_time}", "0");
-        writeLine("serverLog", "wakeup 1!");
+        msi_get_agent_pid(*second_pid)
+        msiAddKeyVal(*second_kvp,"{metadata_attr}::job_1","after::*second_pid");
+        msiAssociateKeyValuePairsToObj(*second_kvp,"{logical_path}","-d");
     }}
     delay("<PLUSET>0.1s</PLUSET>") {{
-        writeLine("serverLog", "sleep 2...");
+        msi_get_agent_pid(*first_pid)
+        msiAddKeyVal(*first_kvp,"{metadata_attr}::job_2","before::*first_pid");
+        msiAssociateKeyValuePairsToObj(*first_kvp,"{logical_path}","-d");
         msiSleep("{sleep_time}", "0");
-        writeLine("serverLog", "wakeup 2!");
+        msi_get_agent_pid(*second_pid)
+        msiAddKeyVal(*second_kvp,"{metadata_attr}::job_2","after::*second_pid");
+        msiAssociateKeyValuePairsToObj(*second_kvp,"{logical_path}","-d");
     }}
 }}
 OUTPUT ruleExecOut
@@ -567,9 +581,11 @@ OUTPUT ruleExecOut
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_failed_delay_job'] = '''
 test_delay_with_output_param {{
     delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
-        writeLine("serverLog", "We are about to fail...");
+        msiAddKeyVal(*kvp,"{metadata_attr}","We are about to fail...");
+        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
         msiGoodFailure();
-        writeLine("serverLog", "You should never see this line.");
+        msiAddKeyVal(*fail_kvp,"{metadata_attr}","You should never see this line.");
+        msiAssociateKeyValuePairsToObj(*fail_kvp,"{logical_path}","-d");
     }}
     writeLine("stdout", "rule queued");
 }}
@@ -578,12 +594,15 @@ OUTPUT ruleExecOut
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_sigpipe_in_delay_server'] = '''
 test_sigpipe_in_delay_server {{
     delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
-        writeLine("serverLog", "We are about to segfault...");
+        msiAddKeyVal(*kvp,"{metadata_attr}","We are about to segfault...");
+        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
         msiSegFault();
-        writeLine("serverLog", "You should never see this line.");
+        msiAddKeyVal(*fail_kvp,"{metadata_attr}","You should never see this line.");
+        msiAssociateKeyValuePairsToObj(*fail_kvp,"{logical_path}","-d");
     }}
     delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
-        writeLine("serverLog", "Follow-up rule executed later!");
+        msiAddKeyVal(*kvp,"{metadata_attr}","Follow-up rule executed later!");
+        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
     }}
     writeLine("stdout", "rule queued");
 }}
@@ -592,12 +611,14 @@ OUTPUT ruleExecOut
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Delay_Queue']['test_exception_in_delay_server'] = '''
 test_exception_in_delay_server {{
     delay("<PLUSET>0.1s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
-        writeLine("serverLog", "Sleeping now...");
-        msiSleep("{sleep_time}", "0");
+        msiAddKeyVal(*kvp,"{metadata_attr}","Sleeping now...");
+        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
+        msiSleep("{sleep_time}", "0"); # sleep to simulate a "long" job
         msiSegFault();
     }}
     delay("<PLUSET>{longer_delay_time}s</PLUSET><INST_NAME>irods_rule_engine_plugin-irods_rule_language-instance</INST_NAME>") {{
-        writeLine("serverLog", "Follow-up rule executed later!");
+        msiAddKeyVal(*kvp,"{metadata_attr}","Follow-up rule executed later!");
+        msiAssociateKeyValuePairsToObj(*kvp,"{logical_path}","-d");
     }}
 }}
 OUTPUT ruleExecOut
