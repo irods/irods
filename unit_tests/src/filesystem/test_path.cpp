@@ -21,6 +21,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <cstring>
 
 #ifdef __cpp_lib_filesystem
     #include <filesystem>
