@@ -20,6 +20,7 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <cstring>
 
 namespace fs = irods::experimental::filesystem;
 

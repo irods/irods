@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <utility>
+#include <cstring>
 
 namespace irods {
 namespace experimental {
