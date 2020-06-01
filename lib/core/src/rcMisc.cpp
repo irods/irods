@@ -4497,7 +4497,7 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len) {
     if (ret_getaddrinfo_with_retry ) {
         return ret_getaddrinfo_with_retry;
     }
-    snprintf(_buf, _len, "%s", p_addrinfo->ai_canonname);
+    strlcat(_buf, p_addrinfo->ai_canonname, _len);
     freeaddrinfo(p_addrinfo);
     return 0;
 }
