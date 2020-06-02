@@ -54,7 +54,6 @@ rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp, fileCreateOut_t*
         }
     }
 
-    //rodsLog( LOG_NOTICE, "[%s:%d] - fd:[%d]", __FUNCTION__, __LINE__, fd);
     if ( fd < 0 ) {
         return fd;
     }
