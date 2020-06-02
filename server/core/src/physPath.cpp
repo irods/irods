@@ -292,7 +292,8 @@ resolveDupFilePath( rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if ( chkAndHandleOrphanFile( rsComm, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath,
                                  dataObjInfo->rescName, dataObjInfo->replStatus ) >= 0 ) {
         /* this is an orphan file or has been renamed */
-        rodsLog(LOG_NOTICE, "[%s:%d] - ALERT! TERRELL WAS HERE BUT HE DOESN'T KNOW WHY. Also, this is an orphan file or has been renamed.", __FUNCTION__, __LINE__);
+        rodsLog(LOG_DEBUG, "[%s:%d] - [%s] is an orphan file or has been renamed.",
+            __FUNCTION__, __LINE__, dataObjInfo->filePath);
         return 0;
     }
 
@@ -462,7 +463,8 @@ _dataObjChksum(
             rstrcpy( fileChksumInp.orig_chksum, orig_chksum, CHKSUM_LEN );
         }
 
-        rodsLog( LOG_NOTICE, "[%s:%d] - performing checksum for [%s] on [%s] at location [%s]", __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath);
+        rodsLog( LOG_DEBUG, "[%s:%d] - performing checksum for [%s] on [%s] at location [%s]",
+            __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath);
         status = rsFileChksum( rsComm, &fileChksumInp, chksumStr );
 
         if ( status == DIRECT_ARCHIVE_ACCESS ) {

@@ -1559,7 +1559,7 @@ sameHostCopy( rsComm_t *rsComm, dataCopyInp_t *dataCopyInp ) {
                 mySize = size1;
             }
 
-            rodsLog(LOG_NOTICE, "[%s:%d] - opening dest file with l3descInx [%d]", __FUNCTION__, __LINE__, dataOprInp->destL3descInx);
+            rodsLog(LOG_DEBUG, "[%s:%d] - opening dest file with l3descInx [%d]", __FUNCTION__, __LINE__, dataOprInp->destL3descInx);
             out_fd = l3OpenByHost( rsComm, dataOprInp->destL3descInx, O_WRONLY );
             if ( out_fd < 0 ) {  /* error */
                 retVal = out_fd;

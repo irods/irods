@@ -1525,7 +1525,7 @@ irods::error open_for_prefer_archive_policy(
         &arch_check_parser, &arch_check_vote );
     if ( !ret.ok() || 0.0 == arch_check_vote ) {
         rodsLog(
-            LOG_NOTICE,
+            LOG_DEBUG,
             "replica not found in archive for [%s]",
             f_ptr->logical_path().c_str() );
         // =-=-=-=-=-=-=-
@@ -1635,7 +1635,7 @@ irods::error open_for_prefer_archive_policy(
     dst_hier += current_name +
                 irods::hierarchy_parser::delimiter() +
                 cache_name;
-    rodsLog(LOG_NOTICE, "[%s:%d] - inp_hier:[%s],dst_hier:[%s]",
+    rodsLog(LOG_DEBUG, "[%s:%d] - inp_hier:[%s],dst_hier:[%s]",
         __FUNCTION__, __LINE__,
         inp_hier.c_str(), dst_hier.c_str());
 
@@ -1885,7 +1885,7 @@ void replace_archive_for_replica(
 
     irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(ctx.fco());
     for (auto& r : file_obj->replicas()) {
-        rodsLog(LOG_NOTICE,
+        rodsLog(LOG_DEBUG,
             "[%s:%d] - vote:[%f],voted_hier:[%s],hier:[%s],arch:[%s]",
             __FUNCTION__, __LINE__,
             r.vote(),
