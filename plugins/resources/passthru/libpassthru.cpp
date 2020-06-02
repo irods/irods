@@ -76,7 +76,7 @@ auto apply_weight_to_object_votes(
 {
     irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(ctx.fco());
     for (auto& r : file_obj->replicas()) {
-        rodsLog(LOG_NOTICE,
+        rodsLog(LOG_DEBUG,
             "[%s:%d] - applying weight [%f] to vote [%f] for [%s]",
             __FUNCTION__, __LINE__,
             weight, r.vote(),

@@ -1251,9 +1251,6 @@ irods::error unix_file_sync_to_arch(
         // cast down the hierarchy to the desired object
         irods::file_object_ptr fco = boost::dynamic_pointer_cast< irods::file_object >( _ctx.fco() );
 
-        rodsLog(LOG_NOTICE, "[%s:%d] - performing file copy of [%s]",
-            __FUNCTION__, __LINE__,
-            _cache_file_name);
         ret = unix_file_copy( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
         result = ASSERT_PASS( ret, "Failed" );
     }
