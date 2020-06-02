@@ -158,7 +158,7 @@ namespace {
         irods::first_class_object_ptr ptr = boost::dynamic_pointer_cast<irods::first_class_object>(_file_obj);
         err = resc->call< const std::string*, const std::string*, irods::hierarchy_parser*, float* >(
                   _comm, irods::RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &_oper, &host_name, &parser, &vote );
-        rodsLog(LOG_NOTICE,
+        rodsLog(LOG_DEBUG,
             "[%s:%d] - resolved hier for obj [%s] with vote:[%f],hier:[%s],err.code:[%d]",
             __FUNCTION__,
             __LINE__,
@@ -209,7 +209,7 @@ namespace {
         for (const auto& root_resc : root_map) {
             float vote{};
             std::string voted_hier{};
-            rodsLog(LOG_NOTICE,
+            rodsLog(LOG_DEBUG,
                 "[%s:%d] - requesting vote from root [%s] for [%s]",
                 __FUNCTION__,
                 __LINE__,
@@ -217,7 +217,7 @@ namespace {
                 _file_obj->logical_path().c_str());
             irods::error ret = request_vote_for_file_object(
                     _comm, _oper, root_resc.first, _file_obj, voted_hier, vote );
-            rodsLog(LOG_NOTICE,
+            rodsLog(LOG_DEBUG,
                 "[%s:%d] - root:[%s],max_hier:[%s],max_vote:[%f],vote:[%f],hier:[%s]",
                 __FUNCTION__,
                 __LINE__,
@@ -232,7 +232,7 @@ namespace {
             }
 
             if (ret.ok() && irv::vote::zero != vote && !kw_match_found && !_key_word.empty() && root_resc.first == _key_word) {
-                rodsLog(LOG_NOTICE,
+                rodsLog(LOG_DEBUG,
                     "[%s:%d] - with keyword... kw:[%s],root:[%s],max_hier:[%s],max_vote:[%f],vote:[%f],hier:[%s]",
                     __FUNCTION__,
                     __LINE__,

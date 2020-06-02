@@ -1212,7 +1212,6 @@ parseMsKeyValStrForDataObjInp( msParam_t * inpParam, dataObjInp_t * dataObjInp,
             continue;
         }
         else if ( status == OPEN_FLAGS_FLAG ) {
-            rodsLog(LOG_NOTICE, "[%s:%d] - valPtr:[%s]", __FUNCTION__, __LINE__, parsedMsKeyValStr.valPtr);
             if ( strstr( parsedMsKeyValStr.valPtr, "O_RDWR" ) != NULL ) {
                 dataObjInp->openFlags |= O_RDWR;
             }

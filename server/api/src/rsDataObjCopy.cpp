@@ -161,7 +161,7 @@ void close_destination_data_obj(
     (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
     (*transStat)->numThreads = L1desc[_inx].dataObjInp->numThreads;
     dataObjCloseInp.bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
-    rodsLog(LOG_NOTICE, "[%s:%d] - closing [%s]", __FUNCTION__, __LINE__, L1desc[_inx].dataObjInp->objPath);
+    rodsLog(LOG_DEBUG, "[%s:%d] - closing [%s]", __FUNCTION__, __LINE__, L1desc[_inx].dataObjInp->objPath);
     const int close_status = rsDataObjClose(rsComm, &dataObjCloseInp);
     if (close_status < 0) {
         rodsLog(LOG_NOTICE, "%s - failed closing [%s] with status [%d]",

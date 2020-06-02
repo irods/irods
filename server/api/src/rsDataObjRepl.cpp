@@ -165,8 +165,7 @@ int open_destination_replica(
     addKeyVal(&destination_data_obj_inp.condInput, FORCE_FLAG_KW, "");
     destination_data_obj_inp.oprType = REPLICATE_DEST;
     destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
-    //rodsLog(LOG_DEBUG,
-    rodsLog(LOG_NOTICE,
+    rodsLog(LOG_DEBUG,
             "[%s:%d] - opening destination replica [%s] on [%s]",
             __FUNCTION__,
             __LINE__,
@@ -241,7 +240,7 @@ int repl_data_obj(
     int status{};
     if (getValByKey(&dataObjInp.condInput, ALL_KW)) {
         for (const auto& r : file_obj->replicas()) {
-            rodsLog(LOG_NOTICE, "[%s:%d] - hier:[%s],status:[%d],vote:[%f]",
+            rodsLog(LOG_DEBUG, "[%s:%d] - hier:[%s],status:[%d],vote:[%f]",
                 __FUNCTION__, __LINE__,
                 r.resc_hier().c_str(),
                 r.replica_status(),

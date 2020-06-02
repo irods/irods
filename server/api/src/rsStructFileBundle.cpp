@@ -79,7 +79,7 @@ rsStructFileBundle( rsComm_t *rsComm,
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
-        rodsLog(LOG_NOTICE, "[%s:%d] - Adding [%s] as kw", __FUNCTION__, __LINE__, hier.c_str());
+        rodsLog(LOG_DEBUG, "[%s:%d] - Adding [%s] as kw", __FUNCTION__, __LINE__, hier.c_str());
         addKeyVal( &structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
@@ -209,7 +209,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     rstrcpy( collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN );
     addKeyVal( &collInp.condInput, RESC_ID_KW, resc_id_str.c_str() );
     rodsLog(
-        LOG_NOTICE,//LOG_DEBUG,
+        LOG_DEBUG,
         "rsStructFileBundle: calling rsOpenCollection for [%s]",
         structFileBundleInp->collection );
 
@@ -268,7 +268,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             // filter out any possible replicas that are not on this resource
             if ( resc_hier != collEnt->resc_hier ) {
                 rodsLog(
-                    LOG_NOTICE,//LOG_DEBUG,
+                    LOG_DEBUG,
                     "%s - skipping [%s] on resc [%s]",
                     __FUNCTION__,
                     collEnt->phyPath,

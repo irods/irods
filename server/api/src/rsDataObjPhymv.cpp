@@ -103,7 +103,7 @@ dataObjInp_t init_source_replica_input(
     }
 
     if (repl_num) {
-        rodsLog(LOG_NOTICE, "[%s] - repl_num [%s] used", __FUNCTION__, repl_num);
+        rodsLog(LOG_DEBUG, "[%s] - repl_num [%s] used", __FUNCTION__, repl_num);
         return source_data_obj_inp;
     }
 
