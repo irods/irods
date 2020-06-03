@@ -59,6 +59,7 @@ def install_os_specific_dependencies():
         'Ubuntu': install_os_specific_dependencies_apt,
         'Centos': install_os_specific_dependencies_yum,
         'Centos linux': install_os_specific_dependencies_yum,
+        'Opensuse leap': install_os_specific_dependencies_zypper,
     }
     try:
         return dispatch_map[irods_python_ci_utilities.get_distribution()]()
@@ -86,6 +87,12 @@ def install_os_specific_dependencies_yum():
         packages_to_install.append('mysql++-devel')
     irods_python_ci_utilities.install_os_packages(packages_to_install)
 
+def install_os_specific_dependencies_zypper():
+    irods_python_ci_utilities.install_os_packages([
+        'fakeroot', 'help2man', 'libopenssl-devel', 'xz-devel', 'pam-devel',
+        'python-devel', 'krb5-devel', 'unixODBC', 'unixODBC-devel', 'zlib-devel', 'libbz2-devel' 
+    ])
+        
 def build_irods(debug_build):
     irods_source_dir = os.path.dirname(os.path.realpath(__file__))
     irods_build_dir = tempfile.mkdtemp(prefix='irods_build_dir')
