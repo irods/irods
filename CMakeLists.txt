@@ -677,7 +677,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecMod.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsRuleExecSubmit.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsServerReport.cpp
-  ${CMAKE_SOURCE_DIR}/server/api/src/rsSetRoundRobinContext.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSimpleQuery.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSpecificQuery.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsSslEnd.cpp

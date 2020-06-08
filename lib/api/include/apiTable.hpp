@@ -119,7 +119,6 @@
 #include "rsRuleExecMod.hpp"
 #include "rsRuleExecSubmit.hpp"
 #include "rsServerReport.hpp"
-#include "rsSetRoundRobinContext.hpp"
 #include "rsSimpleQuery.hpp"
 #include "rsSpecificQuery.hpp"
 #include "rsSslEnd.hpp"
@@ -264,7 +263,6 @@
 #define RS_RULE_EXEC_MOD NULLPTR_FOR_CLIENT_TABLE(rsRuleExecMod)
 #define RS_RULE_EXEC_SUBMIT NULLPTR_FOR_CLIENT_TABLE(rsRuleExecSubmit)
 #define RS_SERVER_REPORT NULLPTR_FOR_CLIENT_TABLE(rsServerReport)
-#define RS_SET_ROUNDROBIN_CONTEXT NULLPTR_FOR_CLIENT_TABLE(rsSetRoundRobinContext)
 #define RS_SIMPLE_QUERY NULLPTR_FOR_CLIENT_TABLE(rsSimpleQuery)
 #define RS_SPECIFIC_QUERY NULLPTR_FOR_CLIENT_TABLE(rsSpecificQuery)
 #define RS_SSL_END NULLPTR_FOR_CLIENT_TABLE(rsSslEnd)
@@ -1255,13 +1253,6 @@ static irods::apidef_t client_api_table_inp[] = {
         boost::any(std::function<int(rsComm_t*,get_hier_inp_t*,get_hier_out_t**)>(RS_GET_HIER_FROM_LEAF_ID)),
         "api_get_hier_from_leaf_id", irods::clearInStruct_noop,
         (funcPtr)CALL_GETHIERINP_GETHIEROUT
-    },
-    {
-        SET_RR_CTX_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
-        "SetRoundRobinContextInp_PI", 0,  NULL, 0,
-        boost::any(std::function<int(rsComm_t*,setRoundRobinContextInp_t*)>(RS_SET_ROUNDROBIN_CONTEXT)),
-        "api_set_round_robin_context", irods::clearInStruct_noop,
-        (funcPtr)CALL_SETROUNDROBINCONTEXTINP
     },
     {
         EXEC_RULE_EXPRESSION_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_USER_AUTH,
