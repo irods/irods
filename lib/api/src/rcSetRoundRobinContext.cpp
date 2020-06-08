@@ -3,6 +3,7 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 
+[[deprecated("rcSetRoundRobinContext is no longer supported. Round-Robin resource has been deprecated.")]]
 int rcSetRoundRobinContext(
     rcComm_t*                  _comm,
     setRoundRobinContextInp_t* _inp) {
