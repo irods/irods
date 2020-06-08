@@ -56,10 +56,43 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
 
     def setUp(self):
         super(Test_Native_Rule_Engine_Plugin, self).setUp()
+        self.resc_name = 'Test_Native_Rule_Engine_Plugin_Resource'
 
     def tearDown(self):
         super(Test_Native_Rule_Engine_Plugin, self).tearDown()
 
+    def reset_resource(self):
+        self.admin.run_icommand(['iadmin', 'rmresc', self.resc_name])
+        self.admin.assert_icommand(['iadmin', 'rum'])
+        self.admin.assert_icommand(['iadmin', 'mkresc', self.resc_name, 'passthru'], 'STDOUT', self.resc_name)
+
+    def helper_test_pep_with_metadata(self, rules_to_add, icommand, attr, values_to_check_for=None):
+        if not isinstance(values_to_check_for, dict):
+            raise TypeError('values_to_check_for must be a dict')
+
+        with temporary_core_file() as core:
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            core.add_rule(rules_to_add)
+            time.sleep(1)  # remove once file hash fix is committed #2279
+            self.admin.run_icommand(icommand)
+
+        def assert_presence_of_attr_value_avu(attr, value, assert_true=True):
+            try:
+                lib.delayAssert(
+                    lambda: lib.metadata_attr_with_value_exists(
+                        self.admin, attr, value),
+                    interval=1,
+                    maxrep=10
+                )
+                if not assert_true:
+                    raise AssertionError('attr {0} value {1} found when not expected'.format(attr, value))
+            except AssertionError:
+                print('failed to find attr {0} value {1}'.format(attr, value))
+                if assert_true:
+                    raise AssertionError('attr {0} value {1} not found when expected'.format(attr, value))
+
+        for value, assert_true in values_to_check_for.items():
+            assert_presence_of_attr_value_avu(attr, value, assert_true)
 
     def helper_test_pep(self, rules_to_add, icommand, strings_to_check_for=['THIS IS AN OUT VARIABLE'], number_of_strings_to_look_for=1):
         with temporary_core_file() as core:
@@ -82,7 +115,6 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         else:
             for s in strings_to_check_for:
                 check_string_count_in_log_section (s,number_of_strings_to_look_for)
-
 
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
@@ -110,8 +142,7 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
                 self.admin.assert_icommand(['irule','-F',rule_file.name], 'STDOUT_MULTILINE', ['SYS_INTERNAL_ERR = -154000',
                                                                                                'RULE_ENGINE_CONTINUE = 5000000'])
 
-
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     def test_peps_for_parallel_mode_transfers__4404(self):
 
         (fd, largefile) = tempfile.mkstemp()
@@ -122,51 +153,30 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
         extrafile = ""
 
         try:
-            get_peps = dedent("""\
-                pep_api_data_obj_get_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-get-pre")
-                }
-                pep_api_data_obj_get_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-get-post")
-                }
-                pep_api_data_obj_get_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-get-except")
-                }
-                """)
+            parameters = {}
+            parameters['resource'] = self.resc_name
+            get_peps = rule_texts[self.plugin_name][self.class_name]['test_peps_for_parallel_mode_transfers__4404_get'].format(**parameters)
+            put_peps = rule_texts[self.plugin_name][self.class_name]['test_peps_for_parallel_mode_transfers__4404_put'].format(**parameters)
 
-            put_peps = dedent("""\
-                pep_api_data_obj_put_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-put-pre")
-                }
-                pep_api_data_obj_put_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-put-post")
-                }
-                pep_api_data_obj_put_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
-                {
-                    writeLine("serverLog", "data-obj-put-except")
-                }
-                """)
+            self.reset_resource()
+            self.helper_test_pep_with_metadata( put_peps, "iput -f {}".format(largefile), 'test_peps_for_parallel_mode_transfers__4404_put',
+                { "data-obj-put-pre": True, "data-obj-put-post": True, "data-obj-put-except": False, "data-obj-put-finally": True } )
 
-            self.helper_test_pep( put_peps, "iput -f {}".format(largefile),
-                             { "data-obj-put-pre": 1, "data-obj-put-post": 1, "data-obj-put-except": 0 } )
+            self.reset_resource()
+            self.helper_test_pep_with_metadata( get_peps, "iget -f {} {}".format(temp_base,temp_dir), 'test_peps_for_parallel_mode_transfers__4404_get',
+                { "data-obj-get-pre": True, "data-obj-get-post": True, "data-obj-get-except": False, "data-obj-get-finally": True } )
 
-            self.helper_test_pep( get_peps, "iget -f {} {}".format(temp_base,temp_dir),
-                             { "data-obj-get-pre": 1, "data-obj-get-post": 1, "data-obj-get-except": 0 } )
-
-            self.helper_test_pep( put_peps, "iput {}".format(largefile),
-                             { "data-obj-put-pre": 1, "data-obj-put-post": 0, "data-obj-put-except": 1 } )
+            self.reset_resource()
+            self.helper_test_pep_with_metadata( put_peps, "iput {}".format(largefile), 'test_peps_for_parallel_mode_transfers__4404_put',
+                { "data-obj-put-pre": True, "data-obj-put-post": False, "data-obj-put-except": True, "data-obj-put-finally": True } )
 
             self.admin.run_icommand('ichmod null {} {}'.format(self.admin.username,temp_base))
 
             extrafile = os.path.join(temp_dir, temp_base + ".x")
 
-            self.helper_test_pep( get_peps, "iget {} {}".format(temp_base,extrafile),
-                             { "data-obj-get-pre": 1, "data-obj-get-post": 0, "data-obj-get-except": 1 } )
+            self.reset_resource()
+            self.helper_test_pep_with_metadata( get_peps, "iget {} {}".format(temp_base,extrafile), 'test_peps_for_parallel_mode_transfers__4404_get',
+                { "data-obj-get-pre": True, "data-obj-get-post": False, "data-obj-get-except": True, "data-obj-get-finally": True } )
 
         finally:
 
@@ -174,74 +184,79 @@ class Test_Native_Rule_Engine_Plugin(resource_suite.ResourceBase, unittest.TestC
             os.unlink(largefile)
             if extrafile and os.path.isfile(extrafile):
                 os.unlink(extrafile)
+            self.admin.assert_icommand(['iadmin', 'rmresc', self.resc_name])
+            self.admin.assert_icommand(['iadmin', 'rum'])
 
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     def test_dynamic_policy_enforcement_point_exception_for_plugins__4128(self):
-       path = self.admin.get_vault_session_path('demoResc')
+        try:
+            path = self.admin.get_vault_session_path('demoResc')
 
-       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
-       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
-       os.unlink(os.path.join(path, 'bad_file'))
-       pre_pep_fail = """
-           pep_resource_open_pre(*INST, *CTX, *OUT) {
-               failmsg(-1, "PRE PEP FAIL")
-           }
-           pep_resource_open_except(*INST, *CTX, *OUT) {
-               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
-           }
-       """
-       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+            self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+            self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+            os.unlink(os.path.join(path, 'bad_file'))
 
-       op_fail = """
-           pep_resource_open_except(*INST, *CTX, *OUT) {
-               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
-           }
-       """
-       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+            parameters = {}
+            parameters['resource'] = self.resc_name
+            pre_pep_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail'].format(**parameters)
+            op_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_op_fail'].format(**parameters)
+            post_pep_fail = rule_texts[self.plugin_name][self.class_name]['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail'].format(**parameters)
 
-       post_pep_fail = """
-           pep_resource_open_post(*INST, *CTX, *OUT) {
-               failmsg(-1, "POST PEP FAIL")
-           }
-           pep_resource_open_except(*INST, *CTX, *OUT) {
-               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
-           }
-       """
-       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(pre_pep_fail, 'iget -f '+self.testfile,
+                    inspect.currentframe().f_code.co_name + '_pre_pep_fail',
+                    { 'EXCEPT FOR PRE PEP FAIL': True })
 
-    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Native only test when not in a topology')
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(op_fail, 'iget -f bad_file',
+                    inspect.currentframe().f_code.co_name + '_op_fail',
+                    { 'EXCEPT FOR OPERATION FAIL': True })
+
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(post_pep_fail, 'iget -f '+self.testfile,
+                    inspect.currentframe().f_code.co_name + '_post_pep_fail',
+                    { 'EXCEPT FOR POST PEP FAIL': True })
+
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmresc', self.resc_name])
+            self.admin.assert_icommand(['iadmin', 'rum'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Native only test when not in a topology')
     def test_dynamic_policy_enforcement_point_exception_for_apis__4128(self):
-       path = self.admin.get_vault_session_path('demoResc')
+        try:
+            path = self.admin.get_vault_session_path('demoResc')
 
-       self.admin.run_icommand('iput -f '+self.testfile+' good_file')
-       self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
-       os.unlink(os.path.join(path, 'bad_file'))
-       pre_pep_fail = """
-           pep_api_data_obj_get_pre(*INST, *COMM, *INP, *PORT, *BUF) {
-               failmsg(-1, "PRE PEP FAIL")
-           }
-           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
-               writeLine("serverLog", "EXCEPT FOR PRE PEP FAIL")
-           }
-       """
-       self.helper_test_pep(pre_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR PRE PEP FAIL'])
+            self.admin.run_icommand('iput -f '+self.testfile+' good_file')
+            self.admin.run_icommand('iput -f '+self.testfile+' bad_file')
+            os.unlink(os.path.join(path, 'bad_file'))
 
-       op_fail = """
-           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
-               writeLine("serverLog", "EXCEPT FOR OPERATION FAIL")
-           }
-       """
-       self.helper_test_pep(op_fail, 'iget -f bad_file', ['EXCEPT FOR OPERATION FAIL'])
+            parameters = {}
+            parameters['resource'] = self.resc_name
 
-       post_pep_fail = """
-           pep_api_data_obj_get_post(*INST, *COMM, *INP, *PORT, *BUF) {
-               failmsg(-1, "POST PEP FAIL")
-           }
-           pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF) {
-               writeLine("serverLog", "EXCEPT FOR POST PEP FAIL")
-           }
-       """
-       self.helper_test_pep(post_pep_fail, 'iget -f '+self.testfile, ['EXCEPT FOR POST PEP FAIL'])
+            rule_text_dict = rule_texts[self.plugin_name][self.class_name]
+            pre_pep_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_pre_pep_fail'].format(**parameters)
+            op_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_op_fail'].format(**parameters)
+            post_pep_fail = rule_text_dict[inspect.currentframe().f_code.co_name + '_post_pep_fail'].format(**parameters)
+
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(pre_pep_fail, 'iget -f '+self.testfile,
+                    inspect.currentframe().f_code.co_name + '_pre_pep_fail',
+                    { 'EXCEPT FOR PRE PEP FAIL': True })
+
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(op_fail, 'iget -f bad_file',
+                    inspect.currentframe().f_code.co_name + '_op_fail',
+                    { 'EXCEPT FOR OPERATION FAIL': True })
+
+            self.reset_resource()
+            self.helper_test_pep_with_metadata(post_pep_fail, 'iget -f '+self.testfile,
+                    inspect.currentframe().f_code.co_name + '_post_pep_fail',
+                    { 'EXCEPT FOR POST PEP FAIL': True })
+
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmresc', self.resc_name])
+            self.admin.assert_icommand(['iadmin', 'rum'])
+
 
     @unittest.skipIf(plugin_name != 'irods_rule_engine_plugin-python' or not test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Python only test from resource server in a topology')
     def test_remote_rule_execution(self):

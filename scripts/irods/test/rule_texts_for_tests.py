@@ -204,6 +204,118 @@ test_msiSegFault {{
 }}
 OUTPUT ruleExecOut
 '''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_peps_for_parallel_mode_transfers__4404_get'] = '''
+pep_api_data_obj_get_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_get","data-obj-get-pre");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_get_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_get","data-obj-get-post");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_get_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_get","data-obj-get-except");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_get_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_get","data-obj-get-finally");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_peps_for_parallel_mode_transfers__4404_put'] = '''
+pep_api_data_obj_put_pre (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_put","data-obj-put-pre");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_put_post (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_put","data-obj-put-post");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_put_except (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_put","data-obj-put-except");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+pep_api_data_obj_put_finally (*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_peps_for_parallel_mode_transfers__4404_put","data-obj-put-finally");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail'] = '''
+pep_resource_open_pre(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail","PRE PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+    failmsg(-1, "POST PEP FAIL")
+}}
+pep_resource_open_except(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_pre_pep_fail","EXCEPT FOR PRE PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_op_fail'] = '''
+pep_resource_open_except(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_op_fail","EXCEPT FOR OPERATION FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail'] = '''
+pep_resource_open_post(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail","POST PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+    failmsg(-1, "POST PEP FAIL")
+}}
+pep_resource_open_except(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_plugins__4128_post_pep_fail","EXCEPT FOR POST PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_apis__4128_pre_pep_fail'] = '''
+pep_api_data_obj_get_pre(*INST, *COMM, *INP, *PORT, *BUF)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_pre_pep_fail","PRE PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+    failmsg(-1, "PRE PEP FAIL")
+}}
+pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_pre_pep_fail","EXCEPT FOR PRE PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_apis__4128_op_fail'] = '''
+pep_api_data_obj_get_except(*INST, *COMM, *INP, *PORT, *BUF)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_op_fail","EXCEPT FOR OPERATION FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail'] = '''
+pep_resource_open_post(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","POST PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+    failmsg(-1, "POST PEP FAIL")
+}}
+pep_resource_open_except(*INST, *CTX, *OUT)
+{{
+    msiAddKeyVal(*key_val_pair,"test_dynamic_policy_enforcement_point_exception_for_apis__4128_post_pep_fail","EXCEPT FOR POST PEP FAIL");
+    msiAssociateKeyValuePairsToObj(*key_val_pair,"{resource}","-R");
+}}
+'''
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_failing_on_code_5043'] = '''
 fail_on_code(*name) {
