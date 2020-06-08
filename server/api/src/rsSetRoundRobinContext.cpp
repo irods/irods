@@ -13,9 +13,13 @@ extern irods::resource_manager resc_mgr;
 
 // =-=-=-=-=-=-=-
 // actual implementation of the API plugin
+[[deprecated("rsSetRoundRobinContext is no longer supported. Round-Robin resource has been deprecated.")]]
 int rsSetRoundRobinContext(
     rsComm_t*                  _comm,
     setRoundRobinContextInp_t* _inp ) {
+
+    rodsLog(LOG_WARNING, "Using deprecated API [%s]", __FUNCTION__);
+
     rodsLog( LOG_DEBUG, "rsSetRoundRobinContex" );
     // =-=-=-=-=-=-=-
     // error check - incoming parameters
