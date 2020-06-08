@@ -459,7 +459,7 @@ OUTPUT ruleExecOut
             rc, _, stderr = self.admin.assert_icommand_fail(['irule', '-r', 'irods_rule_engine_plugin-irods_rule_language-instance', '-F', rule_file_path])
 
             self.admin.assert_icommand(['ilsresc', '-l', 'demoResc'], 'STDOUT_SINGLELINE', ['free space', free_space])
-            self.assertTrue(0 != rc)
+            self.assertNotEqual(0, rc)
             self.assertTrue('status = -32000 SYS_INVALID_RESC_INPUT' in stderr)
 
             lib.delayAssert(
