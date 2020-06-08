@@ -273,7 +273,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecMod.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ruleExecSubmit.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/server_report.h
-  ${CMAKE_SOURCE_DIR}/lib/api/include/set_round_robin_context.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/simpleQuery.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/specificQuery.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/sslEnd.h
@@ -421,7 +420,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecMod.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsRuleExecSubmit.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsServerReport.hpp
-  ${CMAKE_SOURCE_DIR}/server/api/include/rsSetRoundRobinContext.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSimpleQuery.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSpecificQuery.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsSslEnd.hpp

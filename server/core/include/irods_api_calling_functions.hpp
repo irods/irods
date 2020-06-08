@@ -1014,16 +1014,6 @@ int call_get_hier_inp_get_hier_out(
 #endif
 
 #ifdef CREATE_API_TABLE_FOR_SERVER
-int call_setRoundRobinContextInp(
-    irods::api_entry*,
-    rsComm_t*,
-    setRoundRobinContextInp_t*);
-#define CALL_SETROUNDROBINCONTEXTINP call_setRoundRobinContextInp
-#else
-#define CALL_SETROUNDROBINCONTEXTINP nullptr
-#endif
-
-#ifdef CREATE_API_TABLE_FOR_SERVER
 int call_execRuleExpressionInp(
     irods::api_entry*,
     rsComm_t*,

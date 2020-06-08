@@ -1105,16 +1105,6 @@ int call_get_hier_inp_get_hier_out(
                    _out);
 }
 
-int call_setRoundRobinContextInp(
-    irods::api_entry*          _api,
-    rsComm_t*                  _comm,
-    setRoundRobinContextInp_t*  _inp ) {
-    return _api->call_handler<
-               setRoundRobinContextInp_t*>(
-                   _comm,
-                   _inp);
-}
-
 int call_execRuleExpressionInp(
     irods::api_entry*       _api,
     rsComm_t*               _comm,
