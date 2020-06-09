@@ -74,7 +74,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
         subFile.mode = getFileMode( dataObjInp );
         subFile.flags = O_WRONLY | dataObjInp->openFlags;
 
-        if ( ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) != 0 ) {
+        if (OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType) {
             subFile.flags |= FORCE_FLAG;
         }
 
@@ -85,7 +85,7 @@ l3FilePutSingleBuf( rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf 
     memset( &filePutInp, 0, sizeof( filePutInp ) );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( filePutInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-    if ( ( L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) != 0 ) {
+    if (OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType) {
         filePutInp.otherFlags |= FORCE_FLAG;
     }
 

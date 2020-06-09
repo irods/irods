@@ -110,10 +110,6 @@ typedef struct SpecCollCache {
     struct SpecCollCache *next;
 } specCollCache_t;
 
-/* definition for replStatus (isDirty) */
-#define OPEN_EXISTING_COPY      0x10
-#define FILE_PATH_HAS_CHG       0x20
-
 typedef int repl_status_t;
 enum {
     STALE_REPLICA,
