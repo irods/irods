@@ -470,13 +470,12 @@ int open_with_obj_info(
         return l1descInx;
     }
 
-    const int repl_status = dataObjInfo->replStatus | OPEN_EXISTING_COPY;
     copyKeyVal(&dataObjInp.condInput, &dataObjInfo->condInput);
 
     /* the size was set to -1 because we don't know the target size.
      * For copy and replicate, the calling routine should modify this
      * dataSize */
-    fillL1desc(l1descInx, &dataObjInp, dataObjInfo, repl_status, -1);
+    fillL1desc(l1descInx, &dataObjInp, dataObjInfo, dataObjInfo->replStatus, -1);
 
     if (getValByKey(&dataObjInp.condInput, NO_OPEN_FLAG_KW)) {
         /* don't actually physically open the file */

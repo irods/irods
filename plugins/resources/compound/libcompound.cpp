@@ -746,9 +746,7 @@ irods::error repl_object(
 
         // Need to update the physical path with whatever the archive resource came up with
         if (status >= 0 && CREATE_PATH == dst_create_path) {
-            //rstrcpy(L1desc[destination_l1descInx].dataObjInfo->filePath, file_obj->physical_path().c_str(), MAX_NAME_LEN);
             rstrcpy( destDataObjInfo->filePath, sync_out->file_name, MAX_NAME_LEN );
-            L1desc[destination_l1descInx].replStatus |= FILE_PATH_HAS_CHG;
         }
     }
 
