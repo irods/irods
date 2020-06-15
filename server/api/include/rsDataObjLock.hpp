@@ -6,9 +6,6 @@
 #include "dataObjInpOut.h"
 
 int rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int _rsDataObjLock( dataObjInp_t *dataObjInp );
-int getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type );
 int rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp );
-int _rsDataObjUnlock( dataObjInp_t *dataObjInp );
 
 #endif

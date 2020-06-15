@@ -31,6 +31,7 @@
 #include "rsFileReaddir.hpp"
 #include "rsDataObjClose.hpp"
 #include "rsRmColl.hpp"
+#include "rsObjStat.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_hierarchy_parser.hpp"

@@ -15,6 +15,7 @@
 #include "rsGenQuery.hpp"
 #include "rsModColl.hpp"
 #include "rsDataObjClose.hpp"
+#include "rsObjStat.hpp"
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"

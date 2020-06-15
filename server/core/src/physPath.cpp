@@ -30,6 +30,7 @@
 #include "rsFileRename.hpp"
 #include "rsGenQuery.hpp"
 #include "rsCollCreate.hpp"
+#include "rsObjStat.hpp"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>

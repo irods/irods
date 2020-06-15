@@ -7,5 +7,6 @@ int rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsO
 int _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsObjStatOut );
 int _rsObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsObjStatOut );
 int dataObjStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rodsObjStat_t **rodsObjStatOut );
+int l3Stat(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat);
 
 #endif

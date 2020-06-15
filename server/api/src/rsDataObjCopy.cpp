@@ -91,16 +91,16 @@ int connect_to_remote_zone(
 
 int open_source_data_obj(
     rsComm_t *rsComm,
-    dataObjInp_t& _inp) {
-    _inp.oprType = COPY_SRC;
-    _inp.openFlags = O_RDONLY;
-    const int srcL1descInx = rsDataObjOpen(rsComm, &_inp);
+    dataObjInp_t& inp) {
+    inp.oprType = COPY_SRC;
+    inp.openFlags = O_RDONLY;
+    const int srcL1descInx = rsDataObjOpen(rsComm, &inp);
     if (srcL1descInx < 0) {
         char* sys_error{};
         const char* rods_error = rodsErrorName(srcL1descInx, &sys_error);
         const std::string error_msg = (boost::format(
             "%s -  - Failed to open source object: \"%s\" - %s %s") %
-            __FUNCTION__ % _inp.objPath % rods_error % sys_error).str();
+            __FUNCTION__ % inp.objPath % rods_error % sys_error).str();
         free(sys_error);
         THROW(srcL1descInx, error_msg);
     }
@@ -127,25 +127,56 @@ void close_source_data_obj(
 
 int open_destination_data_obj(
     rsComm_t *rsComm,
-    dataObjInp_t& _inp) {
-    _inp.oprType = COPY_DEST;
-    _inp.openFlags = O_CREAT | O_RDWR;
-    int destL1descInx = rsDataObjOpen(rsComm, &_inp);
+    dataObjInp_t& inp)
+{
+    inp.oprType = COPY_DEST;
+    inp.openFlags = O_CREAT | O_RDWR;
+
+    irods::file_object_ptr file_obj(new irods::file_object());
+    std::string hier{};
+    const char* h{getValByKey(&inp.condInput, RESC_HIER_STR_KW)};
+    if (!h) {
+        std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, inp);
+        addKeyVal(&inp.condInput, RESC_HIER_STR_KW, hier.c_str());
+    }
+    else {
+        hier = h;
+        irods::file_object_ptr obj(new irods::file_object());
+        dataObjInfo_t* dataObjInfoHead{};
+        irods::error fac_err = irods::file_object_factory(rsComm, &inp, obj, &dataObjInfoHead);
+        if (!fac_err.ok()) {
+            irods::log(fac_err);
+        }
+        file_obj.swap(obj);
+    }
+
+    const auto hier_has_replica{[&hier, &replicas = file_obj->replicas()]() {
+        return std::any_of(replicas.begin(), replicas.end(),
+            [&](const irods::physical_object& replica) {
+                return replica.resc_hier() == hier;
+            });
+        }()};
+
+    if (hier_has_replica && !getValByKey(&inp.condInput, FORCE_FLAG_KW)) {
+        THROW(OVERWRITE_WITHOUT_FORCE_FLAG, "force flag required to overwrite data object for copy");
+    }
+
+    int destL1descInx = rsDataObjOpen(rsComm, &inp);
     if ( destL1descInx == CAT_UNKNOWN_COLLECTION ) {
         /* collection does not exist. make one */
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-        splitPathByKey(_inp.objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
+        splitPathByKey(inp.objPath, parColl, MAX_NAME_LEN, child, MAX_NAME_LEN, '/');
         rsMkCollR( rsComm, "/", parColl );
-        destL1descInx = rsDataObjOpen(rsComm, &_inp);
+        destL1descInx = rsDataObjOpen(rsComm, &inp);
     }
 
     if (destL1descInx < 0) {
-        clearKeyVal( &_inp.condInput );
+        clearKeyVal( &inp.condInput );
         char* sys_error = NULL;
         const char* rods_error = rodsErrorName( destL1descInx, &sys_error );
         const std::string error_msg = (boost::format(
             "%s -  - Failed to create destination object: \"%s\" - %s %s") %
-            __FUNCTION__ % _inp.objPath % rods_error % sys_error).str();
+            __FUNCTION__ % inp.objPath % rods_error % sys_error).str();
         free(sys_error);
         THROW(destL1descInx, error_msg);
     }

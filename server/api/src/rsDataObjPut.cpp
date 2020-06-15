@@ -221,6 +221,36 @@ int single_buffer_put(
     return status;
 } // single_buffer_put
 
+void throw_if_force_put_to_new_resource(
+    rsComm_t* comm,
+    dataObjInp_t& data_obj_inp,
+    irods::file_object_ptr file_obj)
+{
+    char* dst_resc_kw   = getValByKey( &data_obj_inp.condInput, DEST_RESC_NAME_KW );
+    char* force_flag_kw = getValByKey( &data_obj_inp.condInput, FORCE_FLAG_KW );
+    if (file_obj->replicas().empty()  ||
+        !dst_resc_kw   ||
+        !force_flag_kw ||
+        strlen( dst_resc_kw ) == 0) {
+        return;
+    }
+
+    const auto hier_match{
+        [&dst_resc_kw, &replicas = file_obj->replicas()]()
+        {
+            return std::any_of(replicas.cbegin(), replicas.cend(),
+            [&dst_resc_kw](const auto& r) {
+                return irods::hierarchy_parser{r.resc_hier()}.first_resc() == dst_resc_kw;
+            });
+        }()
+    };
+    if (!hier_match) {
+        THROW(HIERARCHY_ERROR,
+              (boost::format("cannot force put [%s] to a different resource [%s]") %
+               data_obj_inp.objPath % dst_resc_kw).str());
+    }
+} // throw_if_force_put_to_new_resource
+
 int rsDataObjPut_impl(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
@@ -268,11 +298,7 @@ int rsDataObjPut_impl(
         return remoteFlag;
     }
     else if (LOCAL_HOST != remoteFlag) {
-        int status = _rcDataObjPut(
-            rodsServerHost->conn,
-            dataObjInp,
-            dataObjInpBBuf,
-            portalOprOut );
+        int status = _rcDataObjPut( rodsServerHost->conn, dataObjInp, dataObjInpBBuf, portalOprOut );
         if (status < 0 ||
             getValByKey(&dataObjInp->condInput, DATA_INCLUDED_KW)) {
             return status;
@@ -291,21 +317,46 @@ int rsDataObjPut_impl(
         return status;
     }
 
-    if (!getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW)) {
-        try {
-            std::string hier{};
-            std::tie(std::ignore, hier) = irods::resolve_resource_hierarchy(irods::CREATE_OPERATION, rsComm, *dataObjInp);
+    try {
+        dataObjInfo_t* dataObjInfoHead{};
+        irods::file_object_ptr file_obj(new irods::file_object());
+        file_obj->logical_path(dataObjInp->objPath);
+        irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, file_obj, &dataObjInfoHead);
+
+        throw_if_force_put_to_new_resource(rsComm, *dataObjInp, file_obj);
+
+        std::string hier{};
+        const char* h{getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW)};
+        if (!h) {
+            auto fobj_tuple = std::make_tuple(file_obj, fac_err);
+            std::tie(file_obj, hier) = irods::resolve_resource_hierarchy(
+                rsComm,
+                irods::CREATE_OPERATION,
+                *dataObjInp,
+                fobj_tuple);
             addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str());
         }
-        catch (const irods::exception& e) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in irods::irods::resolve_resource_hierarchy for [";
-            msg << dataObjInp->objPath << "]";
-            irods::log(LOG_ERROR, msg.str());
-            irods::log(LOG_ERROR, e.what());
-            return e.code();
+        else {
+            if (!fac_err.ok()) {
+                irods::log(fac_err);
+            }
+            hier = h;
         }
+
+        const auto hier_has_replica{[&hier, &replicas = file_obj->replicas()]() {
+            return std::any_of(replicas.begin(), replicas.end(),
+                [&](const irods::physical_object& replica) {
+                    return replica.resc_hier() == hier;
+                });
+            }()};
+
+        if (hier_has_replica && !getValByKey(&dataObjInp->condInput, FORCE_FLAG_KW)) {
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
+    }
+    catch (const irods::exception& e) {
+        irods::log(LOG_ERROR, e.what());
+        return e.code();
     }
 
     int status2 = applyRuleForPostProcForWrite( rsComm, dataObjInpBBuf, dataObjInp->objPath );
