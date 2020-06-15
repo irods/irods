@@ -25,6 +25,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"
+#include "irods_logger.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_resource_redirect.hpp"
 
@@ -35,9 +36,12 @@
 
 namespace fs = irods::experimental::filesystem;
 
-int
-rsStructFileBundle( rsComm_t *rsComm,
-                    structFileExtAndRegInp_t *structFileBundleInp ) {
+using logger = irods::experimental::log;
+
+int rsStructFileBundle(
+    rsComm_t *rsComm,
+    structFileExtAndRegInp_t *structFileBundleInp)
+{
     int status;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -67,13 +71,16 @@ rsStructFileBundle( rsComm_t *rsComm,
     std::string       hier;
     int               local = LOCAL_HOST;
     rodsServerHost_t* host  =  0;
-    dataObjInp_t      data_inp;
-    bzero( &data_inp, sizeof( data_inp ) );
-    rstrcpy( data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
+
+    dataObjInp_t      data_inp{};
+    rstrcpy(data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN);
     copyKeyVal( &structFileBundleInp->condInput, &data_inp.condInput );
-    if ( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        irods::error ret = irods::resource_redirect( irods::CREATE_OPERATION, rsComm,
-                           &data_inp, hier, host, local );
+
+    dataObjInfo_t info{};
+    dataObjInfo_t* ip{&info};
+    const char* h{getValByKey(&structFileBundleInp->condInput, RESC_HIER_STR_KW)};
+    if (!h) {
+        irods::error ret = irods::resource_redirect(irods::CREATE_OPERATION, rsComm, &data_inp, hier, host, local, &ip);
         if ( !ret.ok() ) {
             std::stringstream msg;
             msg << "rsStructFileBundle :: failed in irods::resource_redirect for [";
@@ -85,10 +92,31 @@ rsStructFileBundle( rsComm_t *rsComm,
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
-        rodsLog(LOG_DEBUG, "[%s:%d] - Adding [%s] as kw", __FUNCTION__, __LINE__, hier.c_str());
-        addKeyVal( &structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+        logger::api::debug("[{}:{}] - Adding [{}] as kw", __FUNCTION__, __LINE__, hier);
+        addKeyVal(&structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str());
+    }
+    else {
+        irods::file_object_ptr file_obj(new irods::file_object());
+        file_obj->logical_path(structFileBundleInp->objPath);
+        irods::error fac_err = irods::file_object_factory(rsComm, &data_inp, file_obj, &ip);
+        if (!fac_err.ok()) {
+            irods::log(fac_err);
+        }
+        hier = h;
+        logger::api::debug("[{}:{}] - hier provided:[{}]", __FUNCTION__, __LINE__, hier);
+    }
 
-    } // if keyword
+    const auto hier_has_replica{[&hier, ip]() {
+        for (dataObjInfo_t* tmp = ip; tmp; tmp = tmp->next) {
+            logger::api::debug("[{}:{}] - hier:[{}],rescHier:[{}]", __FUNCTION__, __LINE__, hier, tmp->rescHier);
+            if (hier == tmp->rescHier) return true;
+        }
+        return false;
+    }()};
+
+    if (hier_has_replica && !getValByKey(&structFileBundleInp->condInput, FORCE_FLAG_KW)) {
+        return OVERWRITE_WITHOUT_FORCE_FLAG;
+    }
 
     if ( LOCAL_HOST == local ) {
         status = _rsStructFileBundle( rsComm, structFileBundleInp );

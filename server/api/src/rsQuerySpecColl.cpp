@@ -26,6 +26,7 @@
 #include "rsFileClosedir.hpp"
 #include "rsSubStructFileOpendir.hpp"
 #include "rsFileOpendir.hpp"
+#include "rsObjStat.hpp"
 
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
