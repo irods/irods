@@ -65,7 +65,7 @@ int actionTableLookUp( irods::ms_table_entry& _entry, char* _action ) {
 } // actionTableLookUp
 
 int
-applyRule( char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
+applyRule(const char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag ) {
     // special case for libmso to work
     //if(strchr(inAction, '(') != NULL) {
     //    return applyRule331(inAction, inMsParamArray, rei, reiSaveFlag);

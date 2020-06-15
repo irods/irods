@@ -33,6 +33,7 @@
 #include "rsGenQuery.hpp"
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
+#include "rsFileClose.hpp"
 
 #include <string>
 #include <vector>
@@ -72,16 +73,24 @@ using leaf_bundle_t = irods::resource_manager::leaf_bundle_t;
 #include <boost/filesystem.hpp>
 
 namespace {
-    int l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags ) {
-        fileOpenInp_t fileOpenInp{};
-        rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
-        rstrcpy( fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN );
-        rstrcpy( fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN );
-        fileOpenInp.mode = FileDesc[l3descInx].mode;
-        fileOpenInp.flags = flags;
 
-        return rsFileOpenByHost(rsComm, &fileOpenInp, FileDesc[l3descInx].rodsServerHost);
-    }
+int l3OpenByHost( rsComm_t *rsComm, int l3descInx, int flags ) {
+    fileOpenInp_t fileOpenInp{};
+    rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
+    rstrcpy( fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN );
+    rstrcpy( fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN );
+    fileOpenInp.mode = FileDesc[l3descInx].mode;
+    fileOpenInp.flags = flags;
+
+    return rsFileOpenByHost(rsComm, &fileOpenInp, FileDesc[l3descInx].rodsServerHost);
+} // l3OpenByHost
+
+int _l3Close( rsComm_t *rsComm, int l3descInx ) {
+    fileCloseInp_t fileCloseInp{};
+    fileCloseInp.fileInx = l3descInx;
+    return rsFileClose( rsComm, &fileCloseInp );
+} // _l3Close
+
 }
 
 int
