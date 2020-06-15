@@ -49,7 +49,7 @@ typedef struct RuleExecInfoAndArg {
 } ruleExecInfoAndArg_t;
 
 int applyRule(
-    char *inAction,
+    const char *inAction,
     msParamArray_t *inMsParamArray,
     ruleExecInfo_t *rei,
     int reiSaveFlag );
@@ -61,8 +61,6 @@ int applyRuleWithInOutVars(
 
 void freeCmdExecOut( execCmdOut_t *ruleExecOut );
 
-int applyRule( char *inAction, msParamArray_t *inMsParamArray,
-               ruleExecInfo_t *rei, int reiSaveFlag );
 int applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath );
 int applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteOutBBuf, char *objPath );
 int applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,

@@ -17,6 +17,60 @@
 #include "irods_configuration_keywords.hpp"
 #include "rsDataObjLock.hpp"
 
+namespace {
+
+int
+getLockCmdAndType(const keyValPair_t& condInput, int *cmd, int *type ) {
+    if (!cmd || !type) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    char* lockType = getValByKey(&condInput, LOCK_TYPE_KW );
+    if (!lockType) {
+        rodsLog(LOG_ERROR, "%s: lockType cannot be null", __FUNCTION__);
+        return SYS_LOCK_TYPE_INP_ERR;
+    }
+
+    if ( strcmp( lockType, READ_LOCK_TYPE ) == 0 ) {
+        *type = F_RDLCK;
+    }
+    else if ( strcmp( lockType, WRITE_LOCK_TYPE ) == 0 ) {
+        *type = F_WRLCK;
+    }
+    else {
+        constexpr int status = SYS_LOCK_TYPE_INP_ERR;
+        rodsLogError( LOG_ERROR, status,
+                      "%s: illegal lock type %s", __FUNCTION__, lockType );
+        return status;
+    }
+
+    char* lockCmd = getValByKey(&condInput, LOCK_CMD_KW );
+    if ( lockCmd  == NULL ) {
+        /* default to F_SETLKW */
+        *cmd = F_SETLKW;
+        return 0;
+    }
+
+    if ( strcmp( lockCmd, SET_LOCK_CMD ) == 0 ) {
+        *cmd = F_SETLK;
+    }
+    else if ( strcmp( lockCmd, SET_LOCK_WAIT_CMD ) == 0 ) {
+        *cmd = F_SETLKW;
+    }
+    else if ( strcmp( lockCmd, GET_LOCK_CMD ) == 0 ) {
+        *cmd = F_GETLK;
+    }
+    else {
+        constexpr int status = SYS_LOCK_CMD_INP_ERR;
+        rodsLogError( LOG_ERROR, status,
+                      "%s: illegal lock cmd %s", __FUNCTION__, lockCmd );
+        return status;
+    }
+    return 0;
+} // getLockCmdAndType
+
+} // anonymous namespace
+
 int
 rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
 
@@ -49,10 +103,17 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        return _rsDataObjLock( dataObjInp );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        int cmd, type;
+        if (const int status = getLockCmdAndType(dataObjInp->condInput, &cmd, &type);
+            status < 0) {
+            return status;
+        }
+        return fsDataObjLock( dataObjInp->objPath, cmd, type );
+    }
+    else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
-    } else {
+    }
+    else {
         rodsLog(
             LOG_ERROR,
             "role not supported [%s]",
@@ -60,72 +121,8 @@ rsDataObjLock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
         return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
 
-}
+} // rsDataObjLock
 
-int
-_rsDataObjLock( dataObjInp_t *dataObjInp ) {
-
-    int cmd, type;
-    int status = getLockCmdAndType( &dataObjInp->condInput, &cmd, &type );
-    if ( status < 0 ) {
-        return status;
-    }
-
-    status = fsDataObjLock( dataObjInp->objPath, cmd, type );
-    return status;
-}
-
-int
-getLockCmdAndType( keyValPair_t *condInput, int *cmd, int *type ) {
-    char *lockType, *lockCmd;
-    int status;
-
-    if ( condInput == NULL || cmd == NULL || type == NULL ) {
-        return USER__NULL_INPUT_ERR;
-    }
-
-    lockType = getValByKey( condInput, LOCK_TYPE_KW );
-    if ( lockType == NULL ) {
-        return SYS_LOCK_TYPE_INP_ERR;
-    }
-
-    if ( strcmp( lockType, READ_LOCK_TYPE ) == 0 ) {
-        *type = F_RDLCK;
-    }
-    else if ( strcmp( lockType, WRITE_LOCK_TYPE ) == 0 ) {
-        *type = F_WRLCK;
-    }
-    else {
-        status = SYS_LOCK_TYPE_INP_ERR;
-        rodsLogError( LOG_ERROR, status,
-                      "getLockCmdAndType: illegal lock type %s", lockType );
-        return status;
-    }
-
-    lockCmd = getValByKey( condInput, LOCK_CMD_KW );
-    if ( lockCmd  == NULL ) {
-        /* default to F_SETLKW */
-        *cmd = F_SETLKW;
-        return 0;
-    }
-
-    if ( strcmp( lockCmd, SET_LOCK_CMD ) == 0 ) {
-        *cmd = F_SETLK;
-    }
-    else if ( strcmp( lockCmd, SET_LOCK_WAIT_CMD ) == 0 ) {
-        *cmd = F_SETLKW;
-    }
-    else if ( strcmp( lockCmd, GET_LOCK_CMD ) == 0 ) {
-        *cmd = F_GETLK;
-    }
-    else {
-        status = SYS_LOCK_CMD_INP_ERR;
-        rodsLogError( LOG_ERROR, status,
-                      "getLockCmdAndType: illegal lock cmd %s", lockCmd );
-        return status;
-    }
-    return 0;
-}
 
 // =-=-=-=-=-=-=-
 // JMC - backport 4604
@@ -161,29 +158,24 @@ rsDataObjUnlock( rsComm_t *rsComm, dataObjInp_t *dataObjInp ) {
     }
 
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-        return _rsDataObjUnlock( dataObjInp );
-    } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+        char * fd_string = getValByKey( &dataObjInp->condInput, LOCK_FD_KW );
+        if (!fd_string) {
+            int status = SYS_LOCK_TYPE_INP_ERR;
+            rodsLogError( LOG_ERROR, status,
+                          "%s: LOCK_FD_KW not defined for unlock operation", __FUNCTION__ );
+            return status;
+        }
+        return fsDataObjUnlock( F_SETLK, F_UNLCK, atoi( fd_string ) );
+    }
+    else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
         return SYS_NO_RCAT_SERVER_ERR;
-    } else {
+    }
+    else {
         rodsLog(
             LOG_ERROR,
             "role not supported [%s]",
             svc_role.c_str() );
         return SYS_SERVICE_ROLE_NOT_SUPPORTED;
     }
-}
+} // rsDataObjUnlock
 
-int
-_rsDataObjUnlock( dataObjInp_t *dataObjInp ) {
-
-    char * fd_string = getValByKey( &dataObjInp->condInput, LOCK_FD_KW );
-    if ( fd_string  == NULL ) {
-        int status = SYS_LOCK_TYPE_INP_ERR;
-        rodsLogError( LOG_ERROR, status,
-                      "getLockCmdAndType: LOCK_FD_KW not defined for unlock operation" );
-        return status;
-    }
-    return fsDataObjUnlock( F_SETLK, F_UNLCK, atoi( fd_string ) );
-
-}
-// =-=-=-=-=-=-=-

@@ -181,7 +181,6 @@ int open_destination_replica(
     dataObjInp_t& destination_data_obj_inp)
 {
     addKeyVal(&destination_data_obj_inp.condInput, REG_REPL_KW, "");
-    addKeyVal(&destination_data_obj_inp.condInput, FORCE_FLAG_KW, "");
     destination_data_obj_inp.oprType = REPLICATE_DEST;
     destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
     rodsLog(LOG_DEBUG,

@@ -291,56 +291,32 @@ namespace {
         return hier;
     } // resolve_hier_for_create
 
-    // determine if a forced write is to be done to a destination resource which
-    // does not have an existing replica of the data object
-    void determine_force_write_to_new_resource(
-        const std::string& _oper,
-        const irods::file_object_ptr _fobj,
-        const dataObjInp_t& _data_obj_inp)
-    {
-        char* dst_resc_kw   = getValByKey( &_data_obj_inp.condInput, DEST_RESC_NAME_KW );
-        char* force_flag_kw = getValByKey( &_data_obj_inp.condInput, FORCE_FLAG_KW );
-        if ( PUT_OPR != _data_obj_inp.oprType ||
-                _fobj->replicas().empty()  ||
-                !dst_resc_kw   ||
-                !force_flag_kw ||
-                strlen( dst_resc_kw ) == 0 ||
-                !( irods::OPEN_OPERATION  == _oper ||
-                   irods::WRITE_OPERATION == _oper ||
-                   irods::CREATE_OPERATION == _oper ) ) {
-            return;
-        }
-
-        bool hier_match_flg = false;
-        for (const auto& repl : _fobj->replicas()) {
-            const std::string root_resc = irods::hierarchy_parser{repl.resc_hier()}.first_resc();
-            if (root_resc == dst_resc_kw) {
-                hier_match_flg = true;
-                break;
-            }
-        }
-        if (!hier_match_flg) {
-            THROW(HIERARCHY_ERROR,
-                  (boost::format("cannot force put [%s] to a different resource [%s]") %
-                   _data_obj_inp.objPath % dst_resc_kw).str());
-        }
-        return;
-    } // determine_force_write_to_new_resource
-}
+} // anonymous namespace
 
 namespace irods {
     irods::resolve_hierarchy_result_type resolve_resource_hierarchy(
-        const std::string&   _oper,
+        const std::string&   oper,
+        rsComm_t*            comm,
+        dataObjInp_t&        data_obj_inp,
+        dataObjInfo_t**      data_obj_info)
+    {
+        // call factory for given dataObjInp, get a file_object
+        file_object_ptr file_obj(new file_object());
+        file_obj->logical_path(data_obj_inp.objPath);
+        error fac_err = file_object_factory(comm, &data_obj_inp, file_obj, data_obj_info);
+        auto fobj_tuple = std::make_tuple(file_obj, fac_err);
+        return resolve_resource_hierarchy(comm, oper, data_obj_inp, fobj_tuple);
+    } // resolve_resource_hierarchy
+
+    irods::resolve_hierarchy_result_type resolve_resource_hierarchy(
         rsComm_t*            _comm,
+        const std::string&   _oper_in,
         dataObjInp_t&        _data_obj_inp,
-        dataObjInfo_t**      _data_obj_info ) {
+        irods::file_object_factory_result& _file_obj_result)
+    {
         if (!_comm) {
             THROW(SYS_INVALID_INPUT_PARAM, "null comm pointer");
         }
-
-        // =-=-=-=-=-=-=-
-        // cache the operation, as we may need to modify it
-        std::string oper = _oper;
 
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
@@ -355,23 +331,21 @@ namespace irods {
         }
         freeRodsObjStat(rodsObjStatOut);
 
-        // call factory for given dataObjInp, get a file_object
-        file_object_ptr file_obj(new file_object());
-        file_obj->logical_path(_data_obj_inp.objPath);
-        error fac_err = file_object_factory( _comm, &_data_obj_inp, file_obj, _data_obj_info);
+        irods::file_object_ptr file_obj = std::get<irods::file_object_ptr>(_file_obj_result);
+        irods::error fac_err = std::get<irods::error>(_file_obj_result);
 
-        determine_force_write_to_new_resource(oper, file_obj, _data_obj_inp);
+        auto key_word = get_keyword_from_inp(_data_obj_inp);
 
         // Providing a replica number means the client is attempting to target an existing replica.
         // Therefore, usage of the replica number cannot be used during a create operation. The
         // operation must be changed so that the system does not attempt to create the replica.
+        auto oper = _oper_in;
         if (irods::CREATE_OPERATION == oper && getValByKey(&_data_obj_inp.condInput, REPL_NUM_KW)) {
             oper = irods::WRITE_OPERATION;
         }
 
-        auto key_word = get_keyword_from_inp(_data_obj_inp);
-
         char* default_resc_name  = getValByKey(&_data_obj_inp.condInput, DEF_RESC_NAME_KW);
+
         if (irods::CREATE_OPERATION == oper) {
             std::string create_resc_name{};
             if (!key_word.empty()) {
@@ -426,7 +400,7 @@ namespace irods {
         }
         // should not get here
         THROW(SYS_NOT_SUPPORTED, (boost::format("operation not supported [%s]") % oper).str());
-    }
+    } // resolve_resource_hierarchy
 
 // =-=-=-=-=-=-=-
 // @brief function to query resource for chosen server to which to redirect
