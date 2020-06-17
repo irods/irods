@@ -22,6 +22,7 @@
 #include "rsDataObjRepl.hpp"
 #include "rsRegDataObj.hpp"
 #include "rsDataObjClose.hpp"
+#include "server_utilities.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -192,9 +193,14 @@ int rsDataObjCopy(
             fs::path{destDataObjInp->objPath}.is_relative()) {
             return USER_INPUT_PATH_ERR;
         }
+
+        if (irods::is_force_flag_required(*rsComm, *destDataObjInp)) {
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
     }
-    catch (const fs::filesystem_error& err) {
-        return err.code().value();
+    catch (const fs::filesystem_error& e) {
+        rodsLog(LOG_ERROR, e.what());
+        return e.code().value();
     }
 
     specCollCache_t *specCollCache{};

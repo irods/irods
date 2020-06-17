@@ -755,6 +755,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/rsApiHandler.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsIcatOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rsLog.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/server_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/specColl.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/xmsgLib.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/voting.cpp
