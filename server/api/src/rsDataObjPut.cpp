@@ -44,6 +44,9 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
+#include "irods_logger.hpp"
+#include "server_utilities.hpp"
+#include "filesystem/filesystem_error.hpp"
 
 namespace {
 
@@ -220,6 +223,16 @@ int rsDataObjPut(
     bytesBuf_t *dataObjInpBBuf,
     portalOprOut_t **portalOprOut)
 {
+    try {
+        if (irods::is_force_flag_required(*rsComm, *dataObjInp)) {
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
+    }
+    catch (const irods::experimental::filesystem::filesystem_error& e) {
+        irods::experimental::log::api::error(e.what());
+        return e.code().value();
+    }
+
     rodsServerHost_t *rodsServerHost{};
     specCollCache_t *specCollCache{};
 
