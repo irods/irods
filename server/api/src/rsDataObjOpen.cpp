@@ -576,11 +576,6 @@ int _rsDataObjOpen(
             return l1descInx;
         }
 
-        if (!getValByKey(&dataObjInp.condInput, FORCE_FLAG_KW)) {
-            unlock_data_obj();
-            return OVERWRITE_WITHOUT_FORCE_FLAG;
-        }
-
         dataObjInp.openFlags |= O_TRUNC | O_RDWR;
         const std::string hier{getValByKey(&dataObjInp.condInput, RESC_HIER_STR_KW)};
         const std::string root_resc = irods::hierarchy_parser{hier}.first_resc();
