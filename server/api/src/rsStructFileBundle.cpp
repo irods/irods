@@ -28,7 +28,13 @@
 #include "irods_stacktrace.hpp"
 #include "irods_resource_redirect.hpp"
 
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
 #include "boost/lexical_cast.hpp"
+
+namespace fs = irods::experimental::filesystem;
+
 int
 rsStructFileBundle( rsComm_t *rsComm,
                     structFileExtAndRegInp_t *structFileBundleInp ) {
@@ -136,6 +142,10 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
     }
     else {
+        if (fs::server::exists(*rsComm, structFileBundleInp->objPath)) {
+            return OVERWRITE_WITHOUT_FORCE_FLAG;
+        }
+
         l1descInx = rsDataObjCreate( rsComm, &dataObjInp );
     }
 
