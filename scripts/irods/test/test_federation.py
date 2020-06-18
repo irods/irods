@@ -38,6 +38,8 @@ class Test_ICommands(SessionsMixin, unittest.TestCase):
             if not key.startswith('__'):
                 self.config[key.lower()] = val
         self.config['local_zone'] = self.user_sessions[0].zone_name
+        if test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 0, 0):
+            test.settings.FEDERATION.REMOTE_VAULT = '/home/irods/irods-legacy/iRODS/Vault'
 
     def tearDown(self):
         shutil.rmtree(self.local_test_dir_path, ignore_errors=True)
@@ -1044,9 +1046,11 @@ OUTPUT ruleExecOut
                     start_index=initial_log_size))
         os.remove(rule_file)
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 3) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 2, 3), 'Fixed in 4.2.3')
     def test_remote_writeLine_localzone_3722(self):
         self.run_remote_writeLine_test(self.config.copy(), 'local')
 
+    @unittest.skipIf(IrodsConfig().version_tuple < (4, 2, 3) or test.settings.FEDERATION.REMOTE_IRODS_VERSION < (4, 2, 3), 'Fixed in 4.2.3')
     def test_remote_writeLine_remotezone_3722(self):
         self.run_remote_writeLine_test(self.config.copy(), 'remote')
 
