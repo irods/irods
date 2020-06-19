@@ -88,10 +88,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return ec;
         }
 
-        const auto rsRmColl = [](rsComm_t* _comm, collInp_t* _rmCollInp, int) -> int
+        const auto rsRmColl = [](rsComm_t* _comm, collInp_t* _rmCollInp, int p) -> int
         {
             collOprStat_t* stat{};
-            return ::rsRmColl(_comm, _rmCollInp, &stat);
+            return ::rsRmColl(_comm, _rmCollInp, p ? &stat : nullptr);
         };
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
@@ -237,13 +237,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return collection_iterator{} == collection_iterator{_comm, _p};
         }
 
-        struct remove_impl_options
-        {
-            bool no_trash  = false;
-            bool recursive = false;
-        };
-
-        auto remove_impl(rxComm& _comm, const path& _p, remove_impl_options _opts) -> bool
+        auto remove_impl(rxComm& _comm, const path& _p, extended_remove_options _opts) -> bool
         {
             detail::throw_if_path_length_exceeds_limit(_p);
 
@@ -255,6 +249,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
             if (is_data_object(s)) {
                 dataObjInp_t input{};
+
+                input.oprType = _opts.unregister ? UNREG_OPR : 0;
 
                 std::strncpy(input.objPath, _p.c_str(), std::strlen(_p.c_str()));
 
@@ -282,8 +278,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                     addKeyVal(&input.condInput, RECURSIVE_OPR__KW, "");
                 }
 
-                constexpr int verbose = 0;
-                return rxRmColl(&_comm, &input, verbose) >= 0;
+                return rxRmColl(&_comm, &input, _opts.progress) >= 0;
             }
 
             throw filesystem_error{"cannot remove: unknown object type", _p, make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
@@ -685,6 +680,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return remove_impl(_comm, _p, {no_trash, recursive});
     }
 
+    auto remove(rxComm& _comm, const path& _p, extended_remove_options _opts) -> bool
+    {
+        return remove_impl(_comm, _p, _opts);
+    }
+
     auto remove_all(rxComm& _comm, const path& _p, remove_options _opts) -> std::uintmax_t
     {
         std::string data_obj_sql = "select count(DATA_ID) where COLL_NAME like '";
@@ -717,6 +717,43 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         constexpr auto recursive = true;
 
         if (remove_impl(_comm, _p, {no_trash, recursive})) {
+            return count;
+        }
+
+        return 0;
+    }
+
+    auto remove_all(rxComm& _comm, const path& _p, extended_remove_options _opts) -> std::uintmax_t
+    {
+        std::string data_obj_sql = "select count(DATA_ID) where COLL_NAME like '";
+        data_obj_sql += _p;
+        data_obj_sql += "%'";
+
+        std::string colls_sql = "select count(COLL_ID) where COLL_NAME like '";
+        colls_sql += _p;
+        colls_sql += "%'";
+
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = get_zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        std::uintmax_t count = 0;
+
+        for (const auto& sql : {data_obj_sql, colls_sql}) {
+            for (const auto& row : qb.build(_comm, sql)) {
+                count += std::stoull(row[0]);
+            }
+        }
+
+        if (0 == count) {
+            return 0;
+        }
+
+        _opts.recursive = true;
+
+        if (remove_impl(_comm, _p, _opts)) {
             return count;
         }
 

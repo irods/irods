@@ -37,6 +37,8 @@
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
 
+#include "plugin_lifetime_manager.hpp"
+
 #include "sys/socket.h"
 #include "sys/un.h"
 #include "sys/wait.h"
@@ -658,6 +660,8 @@ int agentMain( rsComm_t *rsComm )
             }
         }
     }
+
+    irods::experimental::api::plugin_lifetime_manager::destroy();
 
     if ( !result.ok() ) {
         irods::log( result );
