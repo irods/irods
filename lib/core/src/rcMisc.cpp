@@ -789,6 +789,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     if ( condInput == NULL ) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
+
     if ( condInput->keyWord == NULL || condInput->value == NULL ) {
         condInput->len = 0;
     }
@@ -800,12 +801,12 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
             free( condInput->value[i] );
             condInput->keyWord[i] = strdup( keyWord );
             condInput->value[i] = value ? strdup( value ) : NULL;
-            return 0;
+            return i;
         }
         else if ( strcmp( keyWord, condInput->keyWord[i] ) == 0 ) {
             free( condInput->value[i] );
             condInput->value[i] = value ? strdup( value ) : NULL;
-            return 0;
+            return i;
         }
     }
 
@@ -822,7 +823,7 @@ addKeyVal( keyValPair_t *condInput, const char *keyWord, const char *value ) {
     condInput->value[condInput->len] = value ? strdup( value ) : NULL;
     condInput->len++;
 
-    return 0;
+    return condInput->len - 1;
 }
 
 

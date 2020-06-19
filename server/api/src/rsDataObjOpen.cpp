@@ -516,7 +516,7 @@ int change_replica_status_to_intermediate(
 
     modDataObjMeta_t inp{};
     inp.dataObjInfo = dataObjInfo;
-    inp.regParam = &proxy.get();
+    inp.regParam = proxy.get();
     const int status = rsModDataObjMeta(rsComm, &inp);
     if (status < 0) {
         rodsLog(LOG_ERROR,
