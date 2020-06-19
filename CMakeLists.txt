@@ -749,6 +749,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/objDesc.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objMetaOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/physPath.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/plugin_lifetime_manager.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/procLog.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsAgent.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/rodsConnect.cpp
@@ -1398,6 +1399,43 @@ target_compile_definitions(irodsReServer PRIVATE ${IRODS_COMPILE_DEFINITIONS} IR
 target_compile_options(irodsReServer PRIVATE -Wno-write-strings)
 
 add_executable(
+  irods_api_test_harness
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_test_harness.cpp
+  )
+target_link_libraries(
+  irods_api_test_harness
+  PRIVATE
+  irods_server
+  irods_client
+  irods_plugin_dependencies
+  irods_common
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+  rt
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${CMAKE_DL_LIBS}
+  m
+  )
+target_include_directories(
+  irods_api_test_harness
+  PRIVATE
+  ${CMAKE_SOURCE_DIR}/server/re/include
+  ${CMAKE_SOURCE_DIR}/server/core/include
+  ${CMAKE_SOURCE_DIR}/server/drivers/include
+  ${CMAKE_SOURCE_DIR}/server/icat/include
+  ${CMAKE_BINARY_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/core/include
+  ${CMAKE_SOURCE_DIR}/lib/api/include
+  ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+  )
+set_property(TARGET irods_api_test_harness PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
+target_compile_definitions(irods_api_test_harness PRIVATE ${IRODS_COMPILE_DEFINITIONS} IRODS_ENABLE_SYSLOG)
+target_compile_options(irods_api_test_harness PRIVATE -Wno-write-strings)
+
+add_executable(
   irodsPamAuthCheck
   ${CMAKE_SOURCE_DIR}/server/auth/src/irodsPamAuthCheck.cpp
   )
@@ -1447,6 +1485,7 @@ add_subdirectory(plugins/microservices)
 add_subdirectory(plugins/network)
 add_subdirectory(plugins/resources)
 add_subdirectory(plugins/rule_engines)
+add_subdirectory(plugins/experimental)
 add_subdirectory(test/c_api_test)
 add_subdirectory(test/post_install_test)
 add_subdirectory(unit_tests)
@@ -1646,7 +1685,7 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
     COMMAND
     python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
     DEPENDS
-    irodsServer irodsReServer hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
+    irodsServer irodsReServer irods_api_test_harness hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
     )
 endforeach()

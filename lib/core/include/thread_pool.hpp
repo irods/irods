@@ -5,6 +5,8 @@
 
 #include <boost/asio.hpp>
 
+#include "irods_exception.hpp"
+
 namespace irods
 {
     class thread_pool

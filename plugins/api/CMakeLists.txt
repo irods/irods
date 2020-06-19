@@ -129,6 +129,40 @@ set(
   irods_client
   )
 
+# experimental_api_plugin_adaptor API
+set(
+  IRODS_API_PLUGIN_SOURCES_experimental_api_plugin_adaptor_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/experimental_api_plugin_adaptor.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_experimental_api_plugin_adaptor_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/experimental_api_plugin_adaptor.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_experimental_api_plugin_adaptor_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_experimental_api_plugin_adaptor_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_experimental_api_plugin_adaptor_server
+  irods_server
+  dl
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_experimental_api_plugin_adaptor_client
+  irods_client
+  dl
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
@@ -139,6 +173,8 @@ set(
   irods_data_object_modify_info_client
   irods_atomic_apply_metadata_operations_server
   irods_atomic_apply_metadata_operations_client
+  experimental_api_plugin_adaptor_server
+  experimental_api_plugin_adaptor_client
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})

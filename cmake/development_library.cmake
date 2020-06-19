@@ -24,8 +24,11 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/chksumUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/dispatch_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/experimental_plugin_framework.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/future.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/group.hpp

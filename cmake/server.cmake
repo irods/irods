@@ -4,6 +4,7 @@ install(
   TARGETS
   irodsServer
   irodsReServer
+  irods_api_test_harness
   hostname_resolves_to_local_address
   RUNTIME
   DESTINATION usr/sbin
