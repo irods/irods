@@ -39,7 +39,6 @@
 #include "irods_at_scope_exit.hpp"
 #include "irods_exception.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_logger.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_serialization.hpp"
