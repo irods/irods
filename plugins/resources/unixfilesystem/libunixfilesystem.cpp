@@ -1285,9 +1285,9 @@ irods::error unix_file_resolve_hierarchy(
 
     irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
     if (getValByKey(&file_obj->cond_input(), RECURSIVE_OPR__KW)) {
-        irods::experimental::log::resource::debug(
-            (boost::format("%s: %s found in cond_input for file_obj") %
-            __FUNCTION__ % RECURSIVE_OPR__KW).str());
+        rodsLog(LOG_DEBUG,
+            "%s: %s found in cond_input for file_obj",
+            __FUNCTION__, RECURSIVE_OPR__KW);
     }
 
     _out_parser->add_child(irods::get_resource_name(_ctx));

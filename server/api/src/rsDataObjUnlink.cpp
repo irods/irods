@@ -51,8 +51,6 @@
 #include <string>
 #include <string_view>
 
-using logger = irods::experimental::log;
-
 namespace {
 
 auto is_data_object_in_vault(rsComm_t& comm,
@@ -353,7 +351,6 @@ int rsDataObjUnlink(
     else {
         initReiWithDataObjInp( &rei, rsComm, dataObjUnlinkInp );
         status = applyRule( "acTrashPolicy", NULL, &rei, NO_SAVE_REI );
-        trashPolicy = rei.status;
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
 

@@ -12,7 +12,6 @@
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_logger.hpp"
 #include "voting.hpp"
 
 #include "miscServerFunct.hpp"

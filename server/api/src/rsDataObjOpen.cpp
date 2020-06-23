@@ -61,10 +61,6 @@
 
 #include "boost/format.hpp"
 
-#include "irods_logger.hpp"
-
-using logger = irods::experimental::log;
-
 namespace {
 
 int register_intermediate_replica(
@@ -445,7 +441,7 @@ int open_with_obj_info(
 
             if (const auto ec = rsModDataObjMeta(rsComm, &input); ec != 0) {
                 rodsLog(LOG_ERROR, "dataOpen: Could not update size of data object [status = %d, path = %s]",
-                        ec, path_input.objPath);
+                        ec, info.objPath);
                 return ec;
             }
 
