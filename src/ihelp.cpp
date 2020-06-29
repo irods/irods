@@ -17,7 +17,7 @@ const char * const icmds[] = {
     "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
-    "iscan", "isysmeta", "iticket", "itrim", "iuserinfo", "izonereport"
+    "iscan", "istream", "isysmeta", "iticket", "itrim", "iuserinfo", "izonereport"
 };
 
 void usage();
@@ -67,6 +67,7 @@ printMainHelp() {
         "irsync       - synchronize Collections between a local/iRODS or iRODS/iRODS.",
         "irule        - submit a rule to be executed by the iRODS server.",
         "iscan        - check if local file or directory is registered in iRODS.",
+        "istream      - streams bytes to/from iRODS via stdin/stdout.",
         "isysmeta     - show or modify system metadata.",
         "iticket      - create, delete, modify & list tickets (alternative access strings).",
         "itrim        - trim down the number of replicas of Data Objects.",
