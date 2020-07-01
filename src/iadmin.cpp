@@ -213,7 +213,7 @@ auto modify_replica(
         kvp[ADMIN_KW] = "";
 
         modDataObjMeta_t inp{};
-        inp.regParam = &kvp.get();
+        inp.regParam = kvp.get();
         inp.dataObjInfo = &info;
         if(const int status = rcModDataObjMeta(Conn, &inp); status) {
             char* sub_error_name{};
