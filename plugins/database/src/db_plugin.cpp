@@ -7410,8 +7410,8 @@ irods::error db_update_pam_password_op(
     char myTime[50];
     char rBuf[200];
     size_t i, j;
-    char randomPw[50];
-    char randomPwEncoded[50];
+    char randomPw[MAX_PASSWORD_LEN];
+    char randomPwEncoded[MAX_PASSWORD_LEN];
     int status;
     char passwordInIcat[MAX_PASSWORD_LEN + 2];
     char passwordModifyTime[50];
@@ -7533,7 +7533,7 @@ irods::error db_update_pam_password_op(
     while ( !pw_good ) {
         j = 0;
         get64RandomBytes( rBuf );
-        for ( i = 0; i < 50 && j < irods_pam_password_len - 1; i++ ) {
+        for ( i = 0; i < MAX_PASSWORD_LEN && j < irods_pam_password_len - 1; i++ ) {
             char c;
             c = rBuf[i] & 0x7f;
             if ( c < '0' ) {

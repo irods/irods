@@ -6,7 +6,8 @@
 #define AUTH_SUBOP_REQ_AUTH "request challenge"
 #define AUTH_SUBOP_RESP "challenge response"
 
-#define MAX_PASSWORD_LEN 50
+// Increased password max size for OpenID token 
+#define MAX_PASSWORD_LEN 65536
 #define CHALLENGE_LEN 64    // 64 bytes of data and terminating null
 #define RESPONSE_LEN 16     // 16 bytes of data and terminating null
 
