@@ -513,7 +513,7 @@ auto plugin_factory(const std::string& _instance_name,
                         "BytesBuf_PI", 0,                           // In PI / bs flag
                         "BytesBuf_PI", 0,                           // Out PI / bs flag
                         op,                                         // Operation
-                        "atomic_apply_metadata_operations",         // Operation name
+                        "api_atomic_apply_metadata_operations",     // Operation name
                         nullptr,                                    // Null clear function
                         (funcPtr) CALL_ATOMIC_APPLY_METADATA_OPERATIONS};
     // clang-format on

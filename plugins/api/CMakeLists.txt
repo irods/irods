@@ -93,6 +93,39 @@ set(
   irods_client
   )
 
+# atomic_apply_acl_operations API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_acl_operations_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_acl_operations.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_acl_operations_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/atomic_apply_acl_operations.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_atomic_apply_acl_operations_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_atomic_apply_acl_operations_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_acl_operations_server
+  irods_server
+  ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_atomic_apply_acl_operations_client
+  irods_client
+  )
+
 # atomic_apply_metadata_operations API
 set(
   IRODS_API_PLUGIN_SOURCES_irods_atomic_apply_metadata_operations_server
@@ -192,14 +225,16 @@ set(
 
 set(
   IRODS_API_PLUGINS
-  helloworld_server
   helloworld_client
-  irods_get_file_descriptor_info_server
-  irods_get_file_descriptor_info_client
-  irods_data_object_modify_info_server
-  irods_data_object_modify_info_client
-  irods_atomic_apply_metadata_operations_server
+  helloworld_server
+  irods_atomic_apply_acl_operations_client
+  irods_atomic_apply_acl_operations_server
   irods_atomic_apply_metadata_operations_client
+  irods_atomic_apply_metadata_operations_server
+  irods_data_object_modify_info_client
+  irods_data_object_modify_info_server
+  irods_get_file_descriptor_info_client
+  irods_get_file_descriptor_info_server
   irods_replica_close_client
   irods_replica_close_server
   irods_replica_open_client

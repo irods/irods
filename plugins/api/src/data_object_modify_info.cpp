@@ -141,7 +141,7 @@ auto plugin_factory(const std::string& _instance_name,
                         "ModDataObjMeta_PI", 0,          // In PI / bs flag
                         nullptr, 0,                      // Out PI / bs flag
                         op,                              // Operation
-                        "data_object_modify_info",       // Operation name
+                        "api_data_object_modify_info",   // Operation name
                         clearModDataObjMetaInp,          // Null clear function
                         (funcPtr) CALL_DATA_OBJECT_MODIFY_INFO};
     // clang-format on
