@@ -1,4 +1,5 @@
 [
+    "irods_atomic_apply_acl_operations",
     "irods_atomic_apply_metadata_operations",
     "irods_connection_pool",
     "irods_data_object_modify_info",
