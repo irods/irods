@@ -175,6 +175,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/authPluginRequest.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authRequest.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authResponse.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/atomic_apply_acl_operations.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/atomic_apply_metadata_operations.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/authenticate.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/bulkDataObjPut.h
@@ -322,6 +323,7 @@ set(
 
 set(
   IRODS_SERVER_API_INCLUDE_HEADERS
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_acl_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_atomic_apply_metadata_operations.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_open.hpp
