@@ -7,3 +7,6 @@ tags
 *.un~
 *.swp~
 packaging/unattended_setup.json
+.clangd/
+.ycm_extra_conf.py
+compile_commands.json
