@@ -194,6 +194,7 @@ namespace irods
                                                                         _operation_name,
                                                                         "finally",
                                                                         forward<types_t>(_t)...);
+
                     if (!finally_err.ok()) {
                         irods::log(PASS(finally_err));
                     }
@@ -248,37 +249,35 @@ namespace irods
 
                         return to_return_op_err;
                     }
+                } // error_code != RULE_ENGINE_SKIP_OPERATION
 
-                    // invoke the post-pep for this operation
-                    error post_err = invoke_policy_enforcement_point(
-                                         re_ctx_mgr,
-                                         ctx,
-                                         &out_param,
-                                         _operation_name,
-                                         "post",
-                                         forward<types_t>(_t)...);
+                // invoke the post-pep for this operation
+                error post_err = invoke_policy_enforcement_point(
+                                     re_ctx_mgr,
+                                     ctx,
+                                     &out_param,
+                                     _operation_name,
+                                     "post",
+                                     forward<types_t>(_t)...);
 
-                    if(!post_err.ok()) {
-                        out_param = "error="+std::to_string(post_err.code()) + ";message="+post_err.result();
+                if(!post_err.ok()) {
+                    out_param = "error="+std::to_string(post_err.code()) + ";message="+post_err.result();
 
-                        // if the post-pep fails, invoke the exception pep
-                        error except_err = invoke_policy_enforcement_point(
-                                               re_ctx_mgr,
-                                               ctx,
-                                               &out_param,
-                                               _operation_name,
-                                               "except",
-                                               forward<types_t>(_t)...);
+                    // if the post-pep fails, invoke the exception pep
+                    error except_err = invoke_policy_enforcement_point(
+                                           re_ctx_mgr,
+                                           ctx,
+                                           &out_param,
+                                           _operation_name,
+                                           "except",
+                                           forward<types_t>(_t)...);
 
-                        if(!except_err.ok()) {
-                            irods::log(PASS(except_err));
-                        }
-
-                        return post_err;
+                    if(!except_err.ok()) {
+                        irods::log(PASS(except_err));
                     }
 
-                    return to_return_op_err;
-                } // skip operation
+                    return post_err;
+                }
 
                 return to_return_op_err;
 #else // ENABLE_RE
