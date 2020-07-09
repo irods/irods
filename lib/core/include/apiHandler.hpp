@@ -253,31 +253,30 @@ namespace irods
 
                         return op_err.code();
                     }
+                } // error_code != RULE_ENGINE_SKIP_OPERATION
 
-                    // invoke the post-pep for this operation
-                    error post_err = invoke_policy_enforcement_point(
-                                         re_ctx_mgr,
-                                         ctx,
-                                         operation_name,
-                                         "post",
-                                         forward<types_t>(_t)...);
-                    if (!post_err.ok()) {
-                        // if the post-pep fails, invoke the exception pep
-                        error except_err = invoke_policy_enforcement_point(
-                                               re_ctx_mgr,
-                                               ctx,
-                                               operation_name,
-                                               "except",
-                                               forward<types_t>(_t)...);
+                // invoke the post-pep for this operation
+                error post_err = invoke_policy_enforcement_point(
+                                     re_ctx_mgr,
+                                     ctx,
+                                     operation_name,
+                                     "post",
+                                     forward<types_t>(_t)...);
 
-                        if (!except_err.ok()) {
-                            irods::log(PASS(except_err));
-                        }
+                if (!post_err.ok()) {
+                    // if the post-pep fails, invoke the exception pep
+                    error except_err = invoke_policy_enforcement_point(
+                                           re_ctx_mgr,
+                                           ctx,
+                                           operation_name,
+                                           "except",
+                                           forward<types_t>(_t)...);
 
-                        return post_err.code();
+                    if (!except_err.ok()) {
+                        irods::log(PASS(except_err));
                     }
 
-                    return op_err.code();
+                    return post_err.code();
                 }
 
                 return op_err.code();

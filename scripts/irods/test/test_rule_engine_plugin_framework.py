@@ -272,14 +272,18 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
         core_re_path = os.path.join(config.core_re_directory, 'core.re')
 
         with lib.file_backed_up(core_re_path):
-            # Disable puts by returning RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
+            # Disable put operation by returning RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
             with open(core_re_path, 'a') as core_re:
                 core_re.write('pep_api_data_obj_put_pre(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) { 5001000 }')
+                core_re.write('pep_api_data_obj_put_post(*INSTANCE_NAME, *COMM, *DATAOBJINP, *BUFFER, *PORTAL_OPR_OUT) { -165000 }')
 
             filename = os.path.join(self.admin.local_session_dir, 'skip_operation.txt')
             lib.make_file(filename, 1, 'arbitrary')
 
-            self.admin.assert_icommand(['iput', filename])
+            # This proves that the Post-PEP fired.
+            self.admin.assert_icommand(['iput', filename], 'STDERR', ['SYS_UNKNOWN_ERROR'])
+
+            # This proves that the operation was skipped.
             self.admin.assert_icommand(['ils', os.path.basename(filename)], 'STDERR_SINGLELINE', '{} does not exist'.format(os.path.basename(filename)))
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
@@ -398,12 +402,16 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
         with lib.file_backed_up(core_re_path):
             # Disable puts by returning RULE_ENGINE_SKIP_OPERATION (a.k.a. 5001000) to the REPF.
             with open(core_re_path, 'a') as core_re:
-                core_re.write("def pep_api_data_obj_put_pre(rule_args, callback, rei):\n\treturn 5001000\n")
+                core_re.write('def pep_api_data_obj_put_pre(rule_args, callback, rei):\n\treturn 5001000\n')
+                core_re.write('def pep_api_data_obj_put_post(rule_args, callback, rei):\n\treturn -165000\n')
 
             filename = os.path.join(self.admin.local_session_dir, 'skip_operation.txt')
             lib.make_file(filename, 1, 'arbitrary')
 
-            self.admin.assert_icommand(['iput', filename])
+            # This proves that the Post-PEP fired.
+            self.admin.assert_icommand(['iput', filename], 'STDERR', ['SYS_UNKNOWN_ERROR'])
+
+            # This proves that the operation was skipped.
             self.admin.assert_icommand(['ils', os.path.basename(filename)], 'STDERR_SINGLELINE', '{} does not exist'.format(os.path.basename(filename)))
 
 class Test_Plugin_Instance_Delay(ResourceBase, unittest.TestCase):
