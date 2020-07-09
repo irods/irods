@@ -959,16 +959,80 @@ OUTPUT ruleExecOut
             # Add PEPs to the core.re file.
             with open(core_re_path, 'a') as core_re:
                 core_re.write('''
-                    pep_atomic_apply_metadata_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                    pep_api_atomic_apply_metadata_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
                         *kvp.'atomic_pre_fired' = 'YES';
                         msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
                     }}
 
-                    pep_atomic_apply_metadata_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                    pep_api_atomic_apply_metadata_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
                         *kvp.'atomic_post_fired' = 'YES';
                         msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
                     }}
                 '''.format(data_object))
 
             do_test(data_object, 'data_object', 'add', ['atomic_pre_fired', 'atomic_post_fired'])
+
+    @unittest.skip(("Fails against databases with transaction isolation level set to REPEATABLE-READ (e.g. MySQL). "
+                    "For more details, see https://github.com/irods/irods/issues/4917"))
+    def test_msi_atomic_apply_acl_operations__issue_5001(self):
+        def do_test(logical_path, acl):
+            json_input = json.dumps({
+                'logical_path': logical_path,
+                'operations': [
+                    {
+                        'entity_name': self.user0.username,
+                        'acl': acl
+                    }
+                ]
+            })
+
+            # Convert ACL string to the format expected by "ils".
+            if   'read'  == acl: ils_acl = 'read object'
+            elif 'write' == acl: ils_acl = 'modify object'
+            elif 'own'   == acl: ils_acl = 'own'
+
+            # Atomically set the ACL for "user0".
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            rule = "msi_atomic_apply_acl_operations('{0}', *ignored)".format(json_input)
+            self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'null'])
+
+            # Verify that the new ACL is set for "user0".
+            expected_output = ' {0}#{1}:{2}'.format(self.user0.username, self.user0.zone_name, ils_acl)
+            self.admin.assert_icommand(['ils', '-A', logical_path], 'STDOUT', [expected_output])
+
+        sandbox = os.path.join(self.admin.session_collection, 'sandbox_5001')
+        self.admin.assert_icommand(['imkdir', sandbox])
+
+        # Test support for collections.
+        do_test(sandbox, 'read')
+        do_test(sandbox, 'write')
+        do_test(sandbox, 'own')
+
+        # Test support for data objects.
+        data_object = os.path.join(sandbox, 'issue_5001')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='Hello, iRODS!')
+        do_test(data_object, 'read')
+        do_test(data_object, 'write')
+
+        # Verify that the PEPs for the API plugin are firing.
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            # Add PEPs to the core.re file.
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    pep_api_atomic_apply_acl_operations_pre(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                        *kvp.'atomic_pre_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+
+                    pep_api_atomic_apply_acl_operations_post(*INSTANCE, *COMM, *JSON_INPUT, *JSON_OUTPUT) {{ 
+                        *kvp.'atomic_post_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+                '''.format(data_object))
+
+            do_test(data_object, 'own')
+            self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
