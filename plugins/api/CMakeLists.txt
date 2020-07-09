@@ -158,6 +158,38 @@ set(
   irods_client
   )
 
+# replica_open API
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_replica_open_server
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_open.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_SOURCES_irods_replica_open_client
+  ${CMAKE_SOURCE_DIR}/plugins/api/src/replica_open.cpp
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_replica_open_server
+  RODS_SERVER
+  ENABLE_RE
+  IRODS_ENABLE_SYSLOG
+  )
+
+set(
+  IRODS_API_PLUGIN_COMPILE_DEFINITIONS_irods_replica_open_client
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_replica_open_server
+  irods_server
+  )
+
+set(
+  IRODS_API_PLUGIN_LINK_LIBRARIES_irods_replica_open_client
+  irods_client
+  )
+
 set(
   IRODS_API_PLUGINS
   helloworld_server
@@ -170,6 +202,8 @@ set(
   irods_atomic_apply_metadata_operations_client
   irods_replica_close_client
   irods_replica_close_server
+  irods_replica_open_client
+  irods_replica_open_server
   )
 
 foreach(PLUGIN ${IRODS_API_PLUGINS})
