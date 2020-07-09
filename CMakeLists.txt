@@ -712,6 +712,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rsUserAdmin.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsZoneReport.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/client_api_whitelist.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/catalog.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/catalog_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/collection.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/dataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp
@@ -804,6 +806,7 @@ target_link_libraries(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
   ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
+  ${IRODS_EXTERNALS_FULLPATH_NANODBC}/lib/libnanodbc.so
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
@@ -830,6 +833,7 @@ target_include_directories(
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
   ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
   ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+  ${IRODS_EXTERNALS_FULLPATH_NANODBC}/include
   ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
   ${OPENSSL_INCLUDE_DIR}
   )
@@ -837,7 +841,8 @@ set_property(TARGET irods_server PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 set_property(TARGET irods_server PROPERTY VERSION ${IRODS_VERSION})
 set_property(TARGET irods_server PROPERTY SOVERSION ${IRODS_VERSION})
 target_compile_definitions(irods_server PRIVATE ENABLE_RE RODS_CLERVER ${IRODS_COMPILE_DEFINITIONS})
-target_compile_options(irods_server PRIVATE -Wno-write-strings)
+# TODO: remove -Wno-ignored-qualifiers on resolution of https://github.com/nanodbc/nanodbc/pull/234
+target_compile_options(irods_server PRIVATE -Wno-write-strings -Wno-ignored-qualifiers)
 
 
 set(
