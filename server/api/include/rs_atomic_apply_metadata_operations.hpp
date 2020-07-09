@@ -3,7 +3,7 @@
 
 /// \file
 
-#include "rcConnect.h"
+struct RsComm;
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,14 +65,14 @@ extern "C" {
 ///
 /// \since 4.2.8
 ///
-/// \param[in]  comm        A pointer to a rsComm_t.
-/// \param[in]  json_input  A JSON string containing the batch of metadata operations.
-/// \param[out] json_output A JSON string containing the error information on failure.
+/// \param[in]  _comm        A pointer to a RsComm.
+/// \param[in]  _json_input  A JSON string containing the batch of metadata operations.
+/// \param[out] _json_output A JSON string containing the error information on failure.
 ///
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-int rs_atomic_apply_metadata_operations(rsComm_t* comm, const char* json_input, char** json_output);
+int rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input, char** _json_output);
 
 #ifdef __cplusplus
 } // extern "C"

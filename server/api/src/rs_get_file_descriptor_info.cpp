@@ -7,8 +7,7 @@
 
 #include <cstring>
 
-extern "C"
-auto rs_get_file_descriptor_info(rsComm_t* _comm, const char* _json_input, char** _json_output) -> int
+auto rs_get_file_descriptor_info(RsComm* _comm, const char* _json_input, char** _json_output) -> int
 {
     if (!_json_input || !_json_output) {
         return SYS_INVALID_INPUT_PARAM;
