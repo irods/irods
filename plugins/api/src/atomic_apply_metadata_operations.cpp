@@ -30,6 +30,8 @@
 #include "irods_query.hpp"
 #include "irods_logger.hpp"
 #include "miscServerFunct.hpp"
+#include "catalog.hpp"
+#include "catalog_utilities.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -49,6 +51,7 @@ namespace
 {
     // clang-format off
     namespace fs    = irods::experimental::filesystem;
+    namespace ic    = irods::experimental::catalog;
 
     using log       = irods::experimental::log;
     using json      = nlohmann::json;
@@ -69,16 +72,7 @@ namespace
 
     auto make_error_object(const json& _op, int _op_index, const std::string& _error_msg) -> json;
 
-    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const std::string& _entity_type) -> int;
-
-    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>;
-
-    auto user_has_permission_to_modify_metadata(rsComm_t& _comm,
-                                                nanodbc::connection& _db_conn,
-                                                int _object_id,
-                                                const std::string& _entity_type) -> bool;
-
-    auto execute_transaction(nanodbc::connection& _db_conn, std::function<int(nanodbc::transaction&)> _func) -> int;
+    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const ic::entity_type _entity_type) -> int;
 
     auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int;
 
@@ -155,27 +149,33 @@ namespace
         };
     }
 
-    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const std::string& _entity_type) -> int
+    auto get_object_id(rsComm_t& _comm, const std::string& _entity_name, const ic::entity_type _entity_type) -> int
     {
         std::string gql;
+        switch (_entity_type) {
+            case ic::entity_type::collection:
+                gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _entity_name);
+                break;
 
-        if (_entity_type == "collection") {
-            gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _entity_name);
-        }
-        else if (_entity_type == "data_object") {
-            fs::path p = _entity_name;
-            gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
-                              p.parent_path().c_str(),
-                              p.object_name().c_str());
-        }
-        else if (_entity_type == "user") {
-            gql = fmt::format("select USER_ID where USER_NAME = '{}'", _entity_name);
-        }
-        else if (_entity_type == "resource") {
-            gql = fmt::format("select RESC_ID where RESC_NAME = '{}'", _entity_name);
-        }
-        else {
-            throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type => {}]", _entity_type)};
+            case ic::entity_type::data_object:
+            {
+                fs::path p = _entity_name;
+                gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
+                                  p.parent_path().c_str(),
+                                  p.object_name().c_str());
+                break;
+            }
+
+            case ic::entity_type::user:
+                gql = fmt::format("select USER_ID where USER_NAME = '{}'", _entity_name);
+                break;
+
+            case ic::entity_type::resource:
+                gql = fmt::format("select RESC_ID where RESC_NAME = '{}'", _entity_name);
+                break;
+
+            default:
+                throw std::runtime_error{fmt::format("Invalid entity type specified [entity_type => {}]", _entity_type)};
         }
 
         for (auto&& row : irods::query{&_comm, gql}) {
@@ -183,101 +183,6 @@ namespace
         }
 
         throw std::runtime_error{fmt::format("Entity does not exist [entity_name => {}]", _entity_name)};
-    }
-
-    auto new_database_connection() -> std::tuple<std::string, nanodbc::connection>
-    {
-        const std::string dsn = [] {
-            if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
-                return dsn;
-            }
-
-            return "iRODS Catalog";
-        }();
-
-        std::string config_path;
-
-        if (const auto error = irods::get_full_path_for_config_file("server_config.json", config_path); !error.ok()) {
-            log::api::error("Server configuration not found");
-            throw std::runtime_error{"Failed to connect to catalog"};
-        }
-
-        log::api::trace("Reading server configuration ...");
-
-        json config;
-
-        {
-            std::ifstream config_file{config_path};
-            config_file >> config;
-        }
-
-        try {
-            const auto& db_plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
-            const auto& db_instance = db_plugin_config.front();
-            const auto db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
-            const auto db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
-
-            // Capture the database instance name.
-            std::string db_instance_name;
-            for (auto& [k, v] : db_plugin_config.items()) {
-                db_instance_name = k;
-            }
-
-            if (db_instance_name.empty()) {
-                throw std::runtime_error{"Database instance name cannot be empty"};
-            }
-
-            nanodbc::connection db_conn{dsn, db_username, db_password};
-
-            if (db_instance_name == "mysql") {
-                // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to be
-                // able to understand Postgres SQL. STRICT_TRANS_TABLES must be set too, otherwise
-                // inserting NULL into a "NOT NULL" column does not produce an error.
-                nanodbc::just_execute(db_conn, "set SESSION sql_mode = 'ANSI,STRICT_TRANS_TABLES'");
-                nanodbc::just_execute(db_conn, "set character_set_client = utf8");
-                nanodbc::just_execute(db_conn, "set character_set_results = utf8");
-                nanodbc::just_execute(db_conn, "set character_set_connection = utf8");
-            }
-
-            return {db_instance_name, db_conn};
-        }
-        catch (const std::exception& e) {
-            log::api::error(e.what());
-            throw std::runtime_error{"Failed to connect to catalog"};
-        }
-    }
-
-    auto user_has_permission_to_modify_metadata(rsComm_t& _comm,
-                                                nanodbc::connection& _db_conn,
-                                                int _object_id,
-                                                const std::string& _entity_type) -> bool
-    {
-        if (_entity_type == "data_object" || _entity_type == "collection") {
-            const auto query = fmt::format("select t.token_id from R_TOKN_MAIN t"
-                                           " inner join R_OBJT_ACCESS a on t.token_id = a.access_type_id "
-                                           "where"
-                                           " a.user_id = (select user_id from R_USER_MAIN where user_name = '{}') and"
-                                           " a.object_id = '{}'", _comm.clientUser.userName, _object_id);
-
-            if (auto row = execute(_db_conn, query); row.next()) {
-                constexpr int access_modify_object = 1120;
-                return row.get<int>(0) >= access_modify_object;
-            }
-        }
-        else if (_entity_type == "user" || _entity_type == "resource") {
-            return irods::is_privileged_client(_comm);
-        }
-        else {
-            log::api::error("Invalid entity type [entity_type => {}]", _entity_type);
-        }
-
-        return false;
-    }
-
-    auto execute_transaction(nanodbc::connection& _db_conn, std::function<int(nanodbc::transaction&)> _func) -> int
-    {
-        nanodbc::transaction trans{_db_conn};
-        return _func(trans);
     }
 
     auto get_meta_id(nanodbc::connection& _db_conn, const fs::metadata& _metadata) -> int
@@ -535,12 +440,12 @@ namespace
         }
 
         std::string entity_name;
-        std::string entity_type;
+        ic::entity_type entity_type;
         int object_id = -1;
 
         try {
             entity_name = input.at("entity_name").get<std::string>();
-            entity_type = input.at("entity_type").get<std::string>();
+            entity_type = ic::entity_type_map.at(input.at("entity_type").get<std::string>());
             object_id = get_object_id(*_comm, entity_name, entity_type);
         }
         catch (const std::exception& e) {
@@ -552,21 +457,21 @@ namespace
         nanodbc::connection db_conn;
 
         try {
-            std::tie(db_instance_name, db_conn) = new_database_connection();
+            std::tie(db_instance_name, db_conn) = ic::new_database_connection();
         }
         catch (const std::exception& e) {
             *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
             return SYS_CONFIG_FILE_ERR;
         }
 
-        if (!user_has_permission_to_modify_metadata(*_comm, db_conn, object_id, entity_type)) {
+        if (!ic::user_has_permission_to_modify_metadata(*_comm, db_conn, object_id, entity_type)) {
             log::api::error("User not allowed to modify metadata [entity_name => {}, entity_type => {}, object_id => {}]",
                             entity_name, entity_type, object_id);
             *_output = to_bytes_buffer(make_error_object(json{}, 0, "User not allowed to modify metadata").dump());
             return CAT_NO_ACCESS_PERMISSION;
         }
 
-        return execute_transaction(db_conn, [&](auto& _trans) -> int
+        return ic::execute_transaction(db_conn, [&](auto& _trans) -> int
         {
             try {
                 const auto& operations = input.at("operations");
