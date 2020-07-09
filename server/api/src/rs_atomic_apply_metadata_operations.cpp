@@ -1,15 +1,13 @@
 #include "rs_atomic_apply_metadata_operations.hpp"
 
 #include "api_plugin_number.h"
-#include "rodsDef.h"
 #include "rodsErrorTable.h"
 
 #include "irods_server_api_call.hpp"
 
 #include <cstring>
 
-extern "C"
-auto rs_atomic_apply_metadata_operations(rsComm_t* _comm, const char* _json_input, char** _json_output) -> int
+auto rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input, char** _json_output) -> int
 {
     if (!_json_input || !_json_output) {
         return SYS_INVALID_INPUT_PARAM;
