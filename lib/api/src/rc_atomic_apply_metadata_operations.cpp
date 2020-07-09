@@ -1,15 +1,12 @@
 #include "atomic_apply_metadata_operations.h"
 
 #include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
 #include "procApiRequest.h"
 #include "rodsErrorTable.h"
 
 #include <cstring>
 
-extern "C"
-auto rc_atomic_apply_metadata_operations(rcComm_t* _comm, const char* _json_input, char** _json_output) -> int
+auto rc_atomic_apply_metadata_operations(RcComm* _comm, const char* _json_input, char** _json_output) -> int
 {
     if (!_json_input || !_json_output) {
         return SYS_INVALID_INPUT_PARAM;

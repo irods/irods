@@ -1,15 +1,12 @@
 #include "get_file_descriptor_info.h"
 
 #include "api_plugin_number.h"
-#include "rodsDef.h"
-#include "rcConnect.h"
 #include "procApiRequest.h"
 #include "rodsErrorTable.h"
 
 #include <cstring>
 
-extern "C"
-auto rc_get_file_descriptor_info(rcComm_t* _comm, const char* _json_input, char** _json_output) -> int
+auto rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** _json_output) -> int
 {
     if (!_json_input || !_json_output) {
         return SYS_INVALID_INPUT_PARAM;
