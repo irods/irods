@@ -4,8 +4,6 @@
 /* rcConnect.h - common header file for client connect
  */
 
-
-
 #ifndef RC_CONNECT_H__
 #define RC_CONNECT_H__
 
@@ -38,13 +36,12 @@ struct thread_context;
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
 
-typedef enum {
+typedef enum ProcState {
     PROCESSING_STATE,	 /* the process is not sending nor receiving */
     RECEIVING_STATE,
     SENDING_STATE,
     CONN_WAIT_STATE
-}
-procState_t;
+} procState_t;
 
 typedef struct reconnMsg {
     int status;
@@ -59,17 +56,17 @@ typedef struct dataSeg {
     rodsLong_t offset;
 } dataSeg_t;
 
-typedef enum {
+typedef enum FileRestartFlag {
     FILE_RESTART_OFF,
     FILE_RESTART_ON
 } fileRestartFlag_t;
 
-typedef enum {
+typedef enum FileRestartStatus {
     FILE_NOT_RESTART,
     FILE_RESTARTED
 } fileRestartStatus_t;
 
-typedef struct {
+typedef struct FileRestartInfo {
     char fileName[MAX_NAME_LEN];        /* the local file name to restart */
     char objPath[MAX_NAME_LEN];         /* the irodsPath */
     int numSeg;         /* number of segments. should equal to num threads */
@@ -78,21 +75,21 @@ typedef struct {
     dataSeg_t dataSeg[MAX_NUM_CONFIG_TRAN_THR];
 } fileRestartInfo_t;
 
-typedef struct {
+typedef struct FileRestart {
     fileRestartFlag_t flags;
     rodsLong_t writtenSinceUpdated;	/* bytes trans since last update */
     char infoFile[MAX_NAME_LEN];        /* file containing restart info */
     fileRestartInfo_t info;     /* must be the last item because of PI */
 } fileRestart_t;
 
-typedef enum {
+typedef enum ProcLogFlag {
     PROC_LOG_NOT_DONE,  /* the proc logging in log/proc not done yet */
     PROC_LOG_DONE       /* the proc logging in log/proc is done */
 } procLogFlag_t;
 
 /* The client connection handle */
 
-typedef struct {
+typedef struct RcComm {
     irodsProt_t                irodsProt;
     char                       host[NAME_LEN];
     int                        sock;
@@ -133,16 +130,15 @@ typedef struct {
     // this struct needs to stay at the bottom of
     // rcComm_t
     fileRestart_t              fileRestart;
-
 } rcComm_t;
 
-typedef struct {
+typedef struct PerfStat {
     int orphanCnt;
     int nonOrphanCnt;
 } perfStat_t;
 
 /* the server connection handle. probably should go somewhere else */
-typedef struct {
+typedef struct RsComm {
     irodsProt_t irodsProt;
     int sock;
     int connectCnt;
@@ -189,7 +185,6 @@ typedef struct {
     int  salt_size;
     int  num_hash_rounds;
     char encryption_algorithm[ NAME_LEN ];
-
 } rsComm_t;
 
 #ifdef __cplusplus
@@ -262,3 +257,4 @@ isLoopbackAddress( const char* ip_address );
 }
 #endif
 #endif	// RC_CONNECT_H__
+
