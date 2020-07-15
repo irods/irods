@@ -373,7 +373,7 @@ msiExtractTemplateMDFromBuf( msParam_t* bufParam, msParam_t* tagParam,
             /***      rodsLog(LOG_NOTICE,"msiExtractTemplateMDFromBuf:KVAL:%s::%s::\n",tagValues->keyWord[i], t2); ***/
             j = addKeyVal( metaDataPairs, tagValues->keyWord[i], t2 );
             *t4 = c;
-            if ( j != 0 ) {
+            if ( j < 0 ) {
                 free( t );
                 return j;
             }
