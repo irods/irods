@@ -129,7 +129,7 @@ int single_buffer_put(
     bytesBuf_t* dataObjInpBBuf)
 {
 
-    dataObjInp->openFlags |= O_CREAT | O_RDWR;
+    dataObjInp->openFlags |= (O_CREAT | O_RDWR | O_TRUNC);
     int l1descInx = rsDataObjOpen(rsComm, dataObjInp);
     if (l1descInx <= 2) {
         if ( l1descInx >= 0 ) {
