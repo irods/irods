@@ -1,6 +1,4 @@
 #include "rodsClient.h"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
@@ -35,20 +33,18 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
 
 int main(int argc, char* argv[])
 {
-    if (argc == 1) {
-        std::cerr << "Error: Invalid number of arguments.\n";
-        return 1;
-    }
-
-    po::options_description desc{"Options are"};
+    po::options_description desc{""};
     desc.add_options()
-        ("help,h", "Produce this message.")
-        ("offset,o", po::value<int_type>()->default_value(0), "The position of the read/write pointer.")
-        ("count,c", po::value<int_type>()->default_value(all_bytes), "The number of bytes to read/write.")
-        ("no-trunc", po::bool_switch(), "Do not truncate the data object on write.")
-        ("append,a", po::bool_switch(), "Append to the data object on write.")
-        ("stream_operation", po::value<std::string>(), "The stream operation (e.g. read or write).")
-        ("logical_path", po::value<std::string>(), "The logical path of a data object.");
+        ("help,h", "")
+        ("resource,R", po::value<std::string>(), "")
+        ("replica,n", po::value<int>(), "")
+        ("offset,o", po::value<int_type>()->default_value(0), "")
+        ("count,c", po::value<int_type>()->default_value(all_bytes), "")
+        ("no-trunc", po::bool_switch(), "")
+        ("append,a", po::bool_switch(), "")
+        ("checksum,k", po::bool_switch(), "")
+        ("stream_operation", po::value<std::string>(), "")
+        ("logical_path", po::value<std::string>(), "");
 
     po::positional_options_description pod;
     pod.add("stream_operation", 1);
@@ -63,9 +59,7 @@ int main(int argc, char* argv[])
             return ec;
         }
 
-        auto& pack_table = irods::get_pack_table();
-        auto& api_table = irods::get_client_api_table();
-        init_api_table(api_table, pack_table);
+        load_client_api_plugins();
 
         rodsEnv env;
         if (getRodsEnv(&env) < 0) {
@@ -104,8 +98,9 @@ int main(int argc, char* argv[])
 
 auto usage() -> void
 {
-    std::cout << "Usage: istream read [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
-                 "Usage: istream write [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
+    std::cout << "Usage: istream read [-R RESC_NAME] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
+                 "Usage: istream read [-n REPLICA_NUMBER] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
+                 "Usage: istream write [-R RESC_NAME] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
                  "\n"
                  "Streams bytes to/from iRODS via stdin/stdout.\n"
                  "Reads bytes from the target data object and prints them to stdout.\n"
@@ -125,13 +120,16 @@ auto usage() -> void
                  "will not attempt to redirect to the server hosting the replica.  Traffic will\n"
                  "always flow through the connected server.\n"
                  "\n"
-                 "Options are:\n"
+                 "Options:\n"
+                 "-R, --resource  The root resource to read from or write to.\n"
+                 "-n, --replica   The replica number of the replica to read from.\n"
                  "-o, --offset    The number of bytes to skip within the data object before\n"
                  "                reading/writing.  Defaults to zero.\n"
                  "-c, --count     The number of bytes to read/write.  Defaults to all bytes.\n"
                  "-a, --append    Appends bytes read from stdin to the data object.\n"
                  "    --no-trunc  Does not truncate the data object.  Disables creation of data\n"
                  "                objects.\n"
+                 "-k, --checksum  Compute checksum.\n"
                  "-h, --help      Prints this message\n";
 
     printReleaseInfo("istream");
@@ -249,7 +247,17 @@ auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::def
         return 1;
     }
 
-    io::idstream in{tp, path};
+    io::idstream in;
+
+    if (vm.count("resource")) {
+        in.open(tp, path, io::root_resource_name{vm["resource"].as<std::string>()});
+    }
+    else if (vm.count("replica")) {
+        in.open(tp, path, io::replica_number{vm["replica"].as<int>()});
+    }
+    else {
+        in.open(tp, path);
+    }
 
     if (!in) {
         std::cerr << "Error: Cannot open data object.\n";
@@ -287,7 +295,14 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
         return 1;
     }
 
-    io::odstream out{tp, path, mode};
+    io::odstream out;
+    
+    if (vm.count("resource")) {
+        out.open(tp, path, io::root_resource_name{vm["resource"].as<std::string>()}, mode);
+    }
+    else {
+        out.open(tp, path, mode);
+    }
 
     if (!out) {
         std::cerr << "Error: Cannot open data object.\n";
@@ -300,6 +315,12 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     }
 
     stream_bytes(std::cin, out, vm["count"].as<int_type>());
+
+    if (vm["checksum"].as<bool>() && out) {
+        io::on_close_success input;
+        input.compute_checksum = true;
+        out.close(&input);
+    }
 
     return 0;
 }
