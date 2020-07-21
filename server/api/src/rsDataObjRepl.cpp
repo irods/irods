@@ -302,6 +302,7 @@ int singleL1Copy(
     int destL1descInx = dataCopyInp.portalOprOut.l1descInx;
     int srcL1descInx = L1desc[destL1descInx].srcL1descInx;
 
+
     openedDataObjInp_t dataObjReadInp{};
     dataObjReadInp.l1descInx = srcL1descInx;
     dataObjReadInp.len = trans_buff_size;
@@ -424,6 +425,10 @@ int dataObjCopy(
     int srcRemoteFlag{};
     int source_l1descInx = L1desc[_destination_l1descInx].srcL1descInx;
     int srcL3descInx = L1desc[source_l1descInx].l3descInx;
+
+    // copy data size from src catalog to destination
+    L1desc[_destination_l1descInx].dataSize = L1desc[source_l1descInx].dataObjInfo->dataSize;
+
     if (L1desc[source_l1descInx].remoteZoneHost) {
         srcRemoteFlag = REMOTE_ZONE_HOST;
     }
