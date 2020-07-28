@@ -12,8 +12,6 @@ namespace irods
     ///
     /// Instances of this class are not copyable or moveable.
     ///
-    /// \user Server
-    ///
     /// \since 4.2.8
     class client_api_whitelist
     {
