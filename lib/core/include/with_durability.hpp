@@ -1,6 +1,8 @@
 #ifndef IRODS_WITH_DURABILITY_HPP
 #define IRODS_WITH_DURABILITY_HPP
 
+/// \file
+
 #include <chrono>
 #include <stdexcept>
 #include <thread>
@@ -194,20 +196,17 @@ namespace irods::experimental
     /// at least once. It will be invoked once more for each failure until the specified retry
     /// conditions are met or it succeeds or it is stopped manually.
     ///
-    /// \user Client
-    /// \user Server
-    ///
     /// \since 4.2.8
     ///
     /// \param[in] opts The options that control how \p func is handled.
     /// \param[in] func The function or function-like object to invoke.
     ///
-    /// return execution_result            An indicator of what happened.
-    /// retval execution_result::ready     Indicates that \p func was never invoked.
-    /// retval execution_result::success   Indicates that \p func was successful.
-    /// retval execution_result::failure   Indicates that \p func failed.
-    /// retval execution_result::exception Indicates that \p func failed due to an exception.
-    /// retval execution_result::stop      Indicates that \p func was stopped manually.
+    /// \return An \p execution_result.
+    /// \retval execution_result::ready     Indicates that \p func was never invoked.
+    /// \retval execution_result::success   Indicates that \p func was successful.
+    /// \retval execution_result::failure   Indicates that \p func failed.
+    /// \retval execution_result::exception Indicates that \p func failed due to an exception.
+    /// \retval execution_result::stop      Indicates that \p func was stopped manually.
     template <typename Function>
     auto with_durability(const durability_options& opts, Function func) noexcept -> execution_result
     {
@@ -238,21 +237,18 @@ namespace irods::experimental
 
     /// A convenient retry mechanism for functions and function-like objects.
     ///
-    /// \user Client
-    /// \user Server
-    ///
     /// \since 4.2.8
     ///
     /// \param[in] args A parameter pack optionally containing \p objects used to construct an
     ///                 instance of \p durability_options followed by a function or function-like
     ///                 object to invoke. The last argument must be a function-like object.
     ///
-    /// return execution_result            An indicator of what happened.
-    /// retval execution_result::ready     Indicates that the function-like object was never invoked.
-    /// retval execution_result::success   Indicates that the function-like object was successful.
-    /// retval execution_result::failure   Indicates that the function-like object failed.
-    /// retval execution_result::exception Indicates that the function-like object failed due to an exception.
-    /// retval execution_result::stop      Indicates that the function-like object was stopped manually.
+    /// \return An \p execution_result.
+    /// \retval execution_result::ready     Indicates that the function-like object was never invoked.
+    /// \retval execution_result::success   Indicates that the function-like object was successful.
+    /// \retval execution_result::failure   Indicates that the function-like object failed.
+    /// \retval execution_result::exception Indicates that the function-like object failed due to an exception.
+    /// \retval execution_result::stop      Indicates that the function-like object was stopped manually.
     template <typename ...Args>
     auto with_durability(Args&& ...args) noexcept -> execution_result
     {
@@ -267,14 +263,11 @@ namespace irods::experimental
     {
         /// Returns an \p execution_result based on whether \p error_code is equal to zero.
         ///
-        /// \user Client
-        /// \user Server
-        ///
         /// \since 4.2.8
         ///
         /// \param[in] error_code The integer value to check.
         ///
-        /// return execution_result           An indicator of what happened.
+        /// \return An \p execution_result.
         /// \retval execution_result::success If \p error_code is equal to zero.
         /// \retval execution_result::failure If \p error_code is not equal to zero.
         inline constexpr auto equals_zero(int error_code) noexcept -> execution_result
@@ -285,14 +278,11 @@ namespace irods::experimental
         /// Returns an \p execution_result based on whether \p error_code is greater than
         /// or equal to zero.
         ///
-        /// \user Client
-        /// \user Server
-        ///
         /// \since 4.2.8
         ///
         /// \param[in] error_code The integer value to check.
         ///
-        /// return execution_result           An indicator of what happened.
+        /// \return An \p execution_result.
         /// \retval execution_result::success If \p error_code is greater than or equal to zero.
         /// \retval execution_result::failure If \p error_code is less than zero.
         inline constexpr auto greater_than_or_equal_to_zero(int error_code) noexcept -> execution_result
