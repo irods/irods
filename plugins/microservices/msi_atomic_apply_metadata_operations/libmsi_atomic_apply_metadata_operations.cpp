@@ -1,3 +1,5 @@
+/// \file
+
 #include "irods_ms_plugin.hpp"
 #include "irods_re_structs.hpp"
 #include "msParam.h"
@@ -79,4 +81,70 @@ auto plugin_factory() -> irods::ms_table_entry*
 {
     return make_msi<msParam_t*, msParam_t*>("msi_atomic_apply_metadata_operations", msi_impl);
 }
+
+#ifdef IRODS_FOR_DOXYGEN
+/// \brief Executes a list of metadata operations on a single object atomically.
+///
+/// Sequentially executes all \p operations on \p entity_name as a single transaction. If an
+/// error occurs, all updates are rolled back and an error is returned. \p _json_output will
+/// contain specific information about the error.
+///
+/// \p _json_input must have the following JSON structure:
+/// \code{.js}
+/// {
+///   "entity_name": string,
+///   "entity_type": string,
+///   "operations": [
+///     {
+///       "operation": string,
+///       "attribute": string,
+///       "value": string,
+///       "units": string
+///     }
+///   ]
+/// }
+/// \endcode
+///
+/// \p entity_name must be one of the following:
+/// - A logical path pointing to a data object.
+/// - A logical path pointing to a collection.
+/// - A user name.
+/// - A resource name.
+///
+/// \p entity_type must be one of the following:
+/// - collection
+/// - data_object
+/// - resource
+/// - user
+///
+/// \p operations is the list of metadata operations to execute atomically. They will be
+/// executed in order.
+///
+/// \p operation must be one of the following:
+/// - add
+/// - remove
+///
+/// \p units are optional.
+///
+/// On error, \p _json_output will have the following JSON structure:
+/// \code{.js}
+/// {
+///   "operation": string,
+///   "operation_index": integer,
+///   "error_message": string
+/// }
+/// \endcode
+///
+/// \since 4.2.8
+///
+/// \param[in]     _json_input  A JSON string containing the batch of metadata operations.
+/// \param[in,out] _json_output A JSON string containing the error information on failure.
+/// \param[in,out] _rei         A ::RuleExecInfo object that is automatically handled by the
+///                             rule engine plugin framework. Users must ignore this parameter.
+///
+/// \return An integer.
+/// \retval 0        On success.
+/// \retval non-zero On failure.
+auto msi_atomic_apply_metadata_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int
+#endif // IRODS_FOR_DOXYGEN
 

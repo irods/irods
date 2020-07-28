@@ -56,12 +56,10 @@ extern "C" {
 /// \code{.js}
 /// {
 ///   "operation": string,
-///   "operation_index": number,
+///   "operation_index": integer,
 ///   "error_message": string
 /// }
 /// \endcode
-///
-/// \user Client
 ///
 /// \since 4.2.8
 ///
