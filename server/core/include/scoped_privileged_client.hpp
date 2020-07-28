@@ -10,8 +10,6 @@ namespace irods::experimental
     ///
     /// Instances of this class are not copyable or moveable.
     ///
-    /// \user Server
-    ///
     /// \since 4.2.8
     class scoped_privileged_client
     {
