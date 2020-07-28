@@ -39,7 +39,7 @@ scanObj( rcComm_t *conn,
             return 0;
         }
 
-        char inpPath[ LONG_NAME_LEN ];
+        char inpPath[ MAX_NAME_LEN ];
         snprintf( inpPath, sizeof( inpPath ), "%s", inpPathO );
         // if it is part of a mounted collection, abort
         if ( is_directory( p ) ) {
@@ -65,7 +65,7 @@ scanObj( rcComm_t *conn,
 int
 scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, const char *hostname ) {
     int status = 0;
-    char fullPath[LONG_NAME_LEN] = "\0";
+    char fullPath[MAX_NAME_LEN] = "\0";
 
     /* check if it is a directory */
     path srcDirPath( inpPath );
@@ -85,7 +85,7 @@ scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, co
     directory_iterator end_itr; // default construction yields past-the-end
     for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
         path cp = itr->path();
-        snprintf( fullPath, LONG_NAME_LEN, "%s",
+        snprintf( fullPath, MAX_NAME_LEN, "%s",
                   cp.c_str() );
         if ( is_symlink( cp ) ) {
             /* don't do anything if it is symlink */

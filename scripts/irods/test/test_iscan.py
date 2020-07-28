@@ -34,6 +34,23 @@ class Test_iScan(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['iadmin', 'rmresc', 'pt'])
         super(Test_iScan, self).tearDown()
 
+    def test_iscan_filename_longer_than_256__5022(self):
+        scandir   = 'please_scan_me'
+        subdir    = '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
+        subsubdir = '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
+        okay_filename = 'short.txt'
+        long_filename = 'long_enough_to_trigger_256_bug__issue_5022.txt'
+        okayfile = scandir+'/'+subdir+'/'+subsubdir+'/'+okay_filename
+        longfile = scandir+'/'+subdir+'/'+subsubdir+'/'+long_filename
+        try:
+            os.makedirs(os.path.dirname(okayfile))
+            lib.touch(okayfile)
+            lib.touch(longfile)
+            self.admin.assert_icommand('iscan {0}'.format(okayfile),'STDOUT_SINGLELINE','{0} is not registered in iRODS'.format(okay_filename))
+            self.admin.assert_icommand('iscan {0}'.format(longfile),'STDOUT_SINGLELINE','{0} is not registered in iRODS'.format(long_filename))
+        finally:
+            shutil.rmtree(scandir)
+
     @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: Registers a collection')
     def test_iscan_4029(self):
         identity_func = lambda x:x
