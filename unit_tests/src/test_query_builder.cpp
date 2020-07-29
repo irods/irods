@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+namespace ix = irods::experimental;
 namespace fs = irods::experimental::filesystem;
 
 TEST_CASE("query builder")
@@ -32,7 +33,7 @@ TEST_CASE("query builder")
     {
         auto conn = conn_pool.get_connection();
 
-        auto query = irods::experimental::query_builder{}
+        auto query = ix::query_builder{}
             .zone_hint(env.rodsZone)
             .build<rcComm_t>(conn, "select count(COLL_NAME) where COLL_NAME = '" + user_home.string() + "'");
 
@@ -49,20 +50,31 @@ TEST_CASE("query builder")
             user_home.string()
         };
 
-        auto query = irods::experimental::query_builder{}
-            .type(irods::experimental::query_type::specific)
-            .zone_hint(env.rodsZone)
-            .bind_arguments(args)
-            .build<rcComm_t>(conn, "ShowCollAcls");
+        ix::query_builder qb;
+        const std::string specific_query = "ShowCollAcls";
+
+        auto query = qb.type(ix::query_type::specific)
+                       .zone_hint(env.rodsZone)
+                       .bind_arguments(args)
+                       .build<rcComm_t>(conn, specific_query);
 
         REQUIRE(query.size() > 0);
+
+        // Show that the specific query arguments can be cleared.
+        REQUIRE_THROWS([&conn, &qb, &specific_query] {
+            qb.clear_bound_arguments();
+
+            // This should throw an exception because the specific query arguments
+            // vector is not set.
+            qb.build<rcComm_t>(conn, specific_query);
+        }());
     }
 
     SECTION("throw exception on empty query string")
     {
         REQUIRE_THROWS([&conn_pool] {
             auto conn = conn_pool.get_connection();
-            irods::experimental::query_builder{}.build<rcComm_t>(conn, "");
+            ix::query_builder{}.build<rcComm_t>(conn, "");
         }(), "query string is empty");
     }
 }
