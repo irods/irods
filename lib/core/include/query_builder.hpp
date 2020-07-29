@@ -47,6 +47,12 @@ namespace irods::experimental
             return *this;
         }
 
+        auto clear_bound_arguments() noexcept -> query_builder&
+        {
+            args_ = nullptr;
+            return *this;
+        }
+
         auto clear() -> query_builder&
         {
             args_ = nullptr;
