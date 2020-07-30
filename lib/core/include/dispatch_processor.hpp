@@ -5,6 +5,7 @@
 #include "connection_pool.hpp"
 #include "irods_exception.hpp"
 #include "future.hpp"
+#include "rodsErrorTable.h"
 
 #include <string>
 #include <functional>
