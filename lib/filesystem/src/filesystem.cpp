@@ -88,10 +88,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return ec;
         }
 
-        const auto rsRmColl = [](rsComm_t* _comm, collInp_t* _rmCollInp, int p) -> int
+        const auto rsRmColl = [](rsComm_t* _comm, collInp_t* _rmCollInp, bool _track_progress) -> int
         {
             collOprStat_t* stat{};
-            return ::rsRmColl(_comm, _rmCollInp, p ? &stat : nullptr);
+            return ::rsRmColl(_comm, _rmCollInp, _track_progress ? &stat : nullptr);
         };
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
@@ -675,9 +675,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto remove(rxComm& _comm, const path& _p, remove_options _opts) -> bool
     {
-        const auto no_trash = (remove_options::no_trash == _opts);
-        constexpr auto recursive = false;
-        return remove_impl(_comm, _p, {no_trash, recursive});
+        extended_remove_options opts{};
+        opts.no_trash = (remove_options::no_trash == _opts);
+        opts.recursive = false;
+        return remove_impl(_comm, _p, opts);
     }
 
     auto remove(rxComm& _comm, const path& _p, extended_remove_options _opts) -> bool
@@ -713,10 +714,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return 0;
         }
 
-        const auto no_trash = (remove_options::no_trash == _opts);
-        constexpr auto recursive = true;
+        extended_remove_options opts{};
+        opts.no_trash = (remove_options::no_trash == _opts);
+        opts.recursive = true;
 
-        if (remove_impl(_comm, _p, {no_trash, recursive})) {
+        if (remove_impl(_comm, _p, opts)) {
             return count;
         }
 

@@ -107,7 +107,7 @@ namespace irods::experimental::filesystem
         auto last_write_time(rxComm& _comm, const path& _p, object_time_type _new_time) -> void;
 
         auto remove(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> bool;
-        auto remove(rxComm& _comm, const path& _p, extended_remove_options) -> bool;
+        auto remove(rxComm& _comm, const path& _p, extended_remove_options _opts) -> bool;
         auto remove_all(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> std::uintmax_t;
         auto remove_all(rxComm& _comm, const path& _p, extended_remove_options _opts) -> std::uintmax_t;
 
