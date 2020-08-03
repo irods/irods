@@ -100,6 +100,7 @@ namespace irods {
     const std::string RESOURCE_CHECK_PATH_PERM( "resource_property_check_path_perm" );
     const std::string RESOURCE_CREATE_PATH( "resource_property_create_path" );
     const std::string RESOURCE_QUOTA_OVERRUN( "resource_property_quota_overrun" );
+    const std::string RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK( "resource_skip_vault_path_check_on_unlink" );
 
 }; // namespace irods
 
