@@ -6,7 +6,6 @@
 
 #include "connection_pool.hpp"
 #include "thread_pool.hpp"
-#include "transport/transport.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -72,18 +71,27 @@ namespace irods::experimental::io
 
     /// A template class that enables parallel transfer of objects across multiple streams.
     ///
+    /// Instances of this class are not copyable or moveable.
+    ///
     /// \since 4.2.9
+    ///
+    /// \tparam SourceStreamFactory, SinkStreamFactory \parblock
+    /// The factory types used by the parallel transfer engine can have any interface they like.
+    /// The only requirement is that they produce stream objects that implement the C++ std::iostream
+    /// interface.
+    /// \endparblock
     template <typename SourceStreamFactory,
               typename SinkStreamFactory>
     class parallel_transfer_engine
     {
     public:
         // clang-format off
-        using source_stream_type             = typename SourceStreamFactory::stream_type;
-        using sink_stream_type               = typename SinkStreamFactory::stream_type;
-        using error_type                     = std::vector<std::tuple<parallel_transfer_error, std::string>>;
-        using restart_handle_type            = std::string;
+        using source_stream_type             = typename SourceStreamFactory::stream_type;                       ///< An alias for the source stream type.
+        using sink_stream_type               = typename SinkStreamFactory::stream_type;                         ///< An alias for the sink stream type.
+        using error_type                     = std::vector<std::tuple<parallel_transfer_error, std::string>>;   ///< An alias for a single error object.
+        using restart_handle_type            = std::string;                                                     ///< An alias for the restart handle type.
 
+        /// 
         using source_stream_create_func_type = std::function<source_stream_type(boost::type_identity_t<SourceStreamFactory>&,
                                                                                 std::ios_base::openmode,
                                                                                 source_stream_type*)>;
@@ -95,18 +103,21 @@ namespace irods::experimental::io
         using sink_stream_close_func_type    = std::function<void(sink_stream_type&, bool)>;
         // clang-format on
 
-        /// 
+        /// Constructs an instance of the parallel_transfer_engine and starts transferring data.
         ///
-        /// \param[in] _source_stream_factory
-        /// \param[in] _sink_stream_factory
-        /// \param[in] _source_stream_creator
-        /// \param[in] _sink_stream_creator
-        /// \param[in] _sink_stream_closer
-        /// \param[in] _total_bytes_to_transfer
-        /// \param[in] _number_of_streams
-        /// \param[in] _offset
-        /// \param[in] _transfer_buffer_size
-        /// \param[in] _restart_file_directory
+        /// \throws parallel_transfer_engine_error The generic exception.
+        /// \throws stream_create_error            Thrown during the creation or setup of a stream.
+        ///
+        /// \param[in] _source_stream_factory   The stream factory that creates streams for reading.
+        /// \param[in] _sink_stream_factory     The stream factory that creates streams for writing.
+        /// \param[in] _source_stream_creator   The handler responsible for creating new source streams.
+        /// \param[in] _sink_stream_creator     The handler responsible for creating new sink streams.
+        /// \param[in] _sink_stream_closer      The handler responsible for closing sink streams.
+        /// \param[in] _total_bytes_to_transfer The total number of bytes to transfer.
+        /// \param[in] _number_of_streams       The total number of streams to use for the transfer.
+        /// \param[in] _offset                  The offset within the source and sink streams.
+        /// \param[in] _transfer_buffer_size    The buffer size used by each stream to move bytes.
+        /// \param[in] _restart_file_directory  The directory that will be used to store restart information.
         parallel_transfer_engine(SourceStreamFactory& _source_stream_factory,
                                  SinkStreamFactory& _sink_stream_factory,
                                  source_stream_create_func_type _source_stream_creator,
@@ -143,14 +154,20 @@ namespace irods::experimental::io
             start_transfer();
         }
 
-        /// 
+        /// Constructs an instance of the parallel_transfer_engine and continues transferring data from the
+        /// the previous position based on the information referenced by the restart handle.
         ///
-        /// \param[in] _restart_handle
-        /// \param[in] _source_stream_factory
-        /// \param[in] _sink_stream_factory
-        /// \param[in] _source_stream_creator
-        /// \param[in] _sink_stream_creator
-        /// \param[in] _sink_stream_closer
+        /// \throws parallel_transfer_engine_error The generic exception.
+        /// \throws stream_create_error            Thrown during the creation or setup of a stream.
+        ///
+        /// \param[in] _restart_handle          A handle to parallel transfer progress information. The pending
+        ///                                     instance must be the only instance handling this restart
+        ///                                     information.
+        /// \param[in] _source_stream_factory   The stream factory that creates streams for reading.
+        /// \param[in] _sink_stream_factory     The stream factory that creates streams for writing.
+        /// \param[in] _source_stream_creator   The handler responsible for creating new source streams.
+        /// \param[in] _sink_stream_creator     The handler responsible for closing sink streams.
+        /// \param[in] _sink_stream_closer      The handler responsible for closing sink streams.
         parallel_transfer_engine(const restart_handle_type& _restart_handle,
                                  SourceStreamFactory& _source_stream_factory,
                                  SinkStreamFactory& _sink_stream_factory,
@@ -190,6 +207,8 @@ namespace irods::experimental::io
         parallel_transfer_engine(const parallel_transfer_engine&) = delete;
         auto operator=(const parallel_transfer_engine&) -> parallel_transfer_engine& = delete;
 
+        /// Waits for the transfer to complete and if successful, removes the restart handle information
+        /// from the local filesystem.
         ~parallel_transfer_engine()
         {
             try {
@@ -204,23 +223,32 @@ namespace irods::experimental::io
             catch (...) {}
         }
 
+        /// Waits for the transfer to complete or fail.
         auto wait() -> void
         {
             thread_pool_->join();
         }
 
+        /// Requests the transfer to stop in a graceful manner.
         auto stop() -> void
         {
             stop_.store(true);
             thread_pool_->stop();
         }
 
+        /// Requests the transfer to stop in a graceful manner and waits until all tasks have
+        /// completely stopped.
         auto stop_and_wait() -> void
         {
             stop();
             wait();
         }
 
+        /// Checks the completion status of the transfer.
+        ///
+        /// \return A boolean.
+        /// \retval true  If the transfer has completed.
+        /// \retval false Otherwise.
         auto success() -> bool
         {
             return errors_.empty() && std::all_of(std::cbegin(progress_), std::cend(progress_), [](auto& _p) {
@@ -231,11 +259,16 @@ namespace irods::experimental::io
             });
         }
 
+        /// Returns information about errors encountered during the transfer.
+        ///
+        /// This function should only be called when the transfer has completely stopped. Consider
+        /// calling stop_and_wait() before invoking this function.
         auto errors() const noexcept -> const error_type&
         {
             return errors_;
         }
 
+        /// Returns the restart handle.
         auto restart_handle() const noexcept -> const restart_handle_type&
         {
             return restart_handle_;

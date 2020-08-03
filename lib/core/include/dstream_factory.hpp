@@ -214,17 +214,6 @@ namespace irods::experimental::io
             return data_object_name_;
         }
 
-        /// Signals to the parallel_transfer_engine whether the stream objects created
-        /// by the factory support dstream::close.
-        ///
-        /// \return A boolean.
-        /// \retval true  Tells the parallel_transfer_engine that the streams support dstream::close.
-        /// \retval false Otherwise.
-        static constexpr auto sync_with_physical_object() noexcept -> bool
-        {
-            return true;
-        }
-
     private:
         transport_factory_type& transport_factory_;
         std::string data_object_name_;

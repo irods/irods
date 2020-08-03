@@ -43,12 +43,6 @@ namespace irods::experimental::io
             return path_;
         }
 
-        /// Signals to the parallel_transfer_engine whether this factory supports dstream::close.
-        static constexpr auto sync_with_physical_object() noexcept -> bool
-        {
-            return false;
-        }
-
     private:
         std::string path_;
     }; // class fstream_factory
