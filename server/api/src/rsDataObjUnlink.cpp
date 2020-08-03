@@ -404,7 +404,19 @@ int dataObjUnlinkS(rsComm_t* rsComm,
             return SYS_INTERNAL_ERR;
         }
 
-        if (!has_prefix(dataObjInfo->filePath, vault_path.data())) {
+        bool skip_vault_path_check = false;
+        irods::error err = irods::get_resource_property< bool >(
+        					   dataObjInfo->rescId,
+        					   irods::RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK, skip_vault_path_check );
+        if ( !err.ok() ) {
+            if (err.code() != KEY_NOT_FOUND) {
+                rodsLog(LOG_NOTICE, "lookup RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK returned error status=%d msg=%s",
+                        err.code(), err.result().c_str());
+            }
+            skip_vault_path_check = false;
+        }
+
+        if (!skip_vault_path_check && !has_prefix(dataObjInfo->filePath, vault_path.data())) {
             dataObjUnlinkInp->oprType = UNREG_OPR;
 
             rodsLog(LOG_NOTICE,
