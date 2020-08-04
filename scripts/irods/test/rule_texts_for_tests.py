@@ -610,6 +610,12 @@ def pep_resource_create_post(rule_args,callback,rei):
     callback.writeLine("serverLog","proxy_user_name=" + d["proxy_user_name"] + " ")
 '''
 
+rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_re_serialization__prep_55'] = '''
+def pep_api_data_obj_put_post(rule_args,callback,rei):
+    d = rule_args[1].map()
+    callback.writeLine("serverLog","user_rods_zone="   + d["user_rods_zone"]   + " ")    # write out a variable from pluginContext
+'''
+
 rule_texts['irods_rule_engine_plugin-python']['Test_ICommands_File_Operations'] ['test_delay_in_dynamic_pep__3342'] = ''' 
 def pep_resource_write_post(rule_args, callback, rei):
     callback.delayExec('<PLUSET>1s</PLUSET>', 'callback.writeLine("serverLog", "dynamic pep in delay")', '')
