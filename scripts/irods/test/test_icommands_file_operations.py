@@ -61,6 +61,25 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         finally:
             IrodsController().restart()
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-python', 'only applicable for python REP')
+    def test_re_serialization__prep_55(self):
+        try:
+            IrodsController().stop()
+            initial_size_of_server_log = lib.get_file_size_by_path(paths.server_log_path())
+            with temporary_core_file() as core:
+                core.add_rule(rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name])
+                IrodsController().start()
+                with tempfile.NamedTemporaryFile(prefix='test_re_serialization__prep_55') as f:
+                    lib.make_file(f.name, 80, contents='arbitrary')
+                    self.admin.assert_icommand(['iput', f.name])
+            occur = lib.count_occurrences_of_regexp_in_log( paths.server_log_path(),
+                                                            (r'^.*writeLine: inString =\s*(\S+)=(\S*).*$',re.M),
+                                                            start_index=initial_size_of_server_log)
+            self.assertTrue(1 == len(occur))
+            self.assertTrue(occur[0].group(1) == 'user_rods_zone' and occur[0].group(2) == self.admin.zone_name)
+        finally:
+            IrodsController().restart()
+
     def iput_r_large_collection(self, user_session, base_name, file_count, file_size):
         local_dir = os.path.join(self.testing_tmp_dir, base_name)
         local_files = lib.make_large_local_tmp_dir(local_dir, file_count, file_size)
