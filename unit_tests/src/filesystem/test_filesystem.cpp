@@ -79,7 +79,7 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::create_collections(conn, sandbox / "dir/subdir"));
 
         {
-            default_transport tp{conn};        
+            default_transport tp{conn};
             odstream{tp, sandbox / "file1.txt"};
         }
 
@@ -107,7 +107,7 @@ TEST_CASE("filesystem")
         const auto d1 = from / "d1.txt";
 
         {
-            default_transport tp{conn};        
+            default_transport tp{conn};
             odstream{tp, d1};
         }
 
@@ -128,6 +128,17 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::remove(conn, col1));
         REQUIRE(fs::client::remove_all(conn, sandbox / "col2/col3/col4"));
         REQUIRE(fs::client::remove_all(conn, sandbox / "col2", fs::remove_options::no_trash));
+    }
+
+    SECTION("create and remove collections with extended options")
+    {
+        const fs::path col1 = sandbox / "col1";
+        REQUIRE(fs::client::create_collection(conn, col1));
+        REQUIRE(fs::client::create_collection(conn, sandbox / "col2", col1));
+        REQUIRE(fs::client::create_collections(conn, sandbox / "col2/col3/col4/col5"));
+        REQUIRE(fs::client::remove(conn, col1, {true, false, false, true, false}));
+        REQUIRE(fs::client::remove_all(conn, sandbox / "col2/col3/col4", {true, false, false, true, false}));
+        REQUIRE(fs::client::remove_all(conn, sandbox / "col2", {true, false, false, true, false}));
     }
 
     SECTION("existence checking")
