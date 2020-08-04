@@ -200,55 +200,31 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         local_dirs = lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
 
         try:
-            # load server_config.json to inject new settings
-            server_config_filename = paths.server_config_path()
-            with open(server_config_filename) as f:
-                svr_cfg = json.load(f)
-            svr_cfg['log_level']['resource'] = 'debug'
+            # restart server with LOG_DEBUG
+            env = os.environ.copy()
+            env['spLogLevel'] = '7'
+            IrodsController(IrodsConfig(injected_environment=env)).restart()
 
-            # dump to a string to repave the existing server_config.json
-            new_server_config = json.dumps(svr_cfg, sort_keys=True, indent=4, separators=(',', ': '))
-            with lib.file_backed_up(server_config_filename):
-                # repave the existing server_config.json
-                with open(server_config_filename, 'w') as f:
-                    f.write(new_server_config)
+            # get log offset
+            initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
 
-                IrodsController().restart()
+            # iput dir
+            self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
+            self.user0.assert_icommand('iquest "SELECT COUNT(DATA_ID) WHERE COLL_NAME LIKE \'%/{coll_name}%\'"'.format(**locals()), 'STDOUT', str(files_per_level * depth))
 
-                # get log offset
-                initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
+            # look for occurences of debug sequences in the log
+            rec_op_kw_string = 'recursiveOpr found in cond_input for file_obj'
+            lib.delayAssert(
+                lambda: lib.log_message_occurrences_equals_count(
+                    msg=rec_op_kw_string,
+                    count=files_per_level * depth,
+                    server_log_path=IrodsConfig().server_log_path,
+                    start_index=initial_size_of_server_log))
 
-                # iput dir
-                self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-                self.user0.assert_icommand('iquest "SELECT COUNT(DATA_ID) WHERE COLL_NAME LIKE \'%/{coll_name}%\'"'.format(**locals()), 'STDOUT', str(files_per_level * depth))
-
-                # look for occurences of debug sequences in the log
-                rec_op_kw_string = 'recursiveOpr found in cond_input for file_obj'
-                lib.delayAssert(
-                    lambda: lib.log_message_occurrences_equals_count(
-                        msg=rec_op_kw_string,
-                        count=files_per_level * depth,
-                        server_log_path=IrodsConfig().server_log_path,
-                        start_index=initial_size_of_server_log))
-
-        # get log offset
-        initial_size_of_server_log = lib.get_file_size_by_path(IrodsConfig().server_log_path)
-
-        # iput dir
-        self.user0.assert_icommand("iput -r {local_dir}".format(**locals()), "STDOUT_SINGLELINE", ustrings.recurse_ok_string())
-
-        # look for occurences of debug sequences in the log
-        rec_op_kw_string = 'DEBUG: unix_file_resolve_hierarchy: recursiveOpr = [1]'
-        lib.delayAssert(
-            lambda: lib.log_message_occurrences_equals_count(
-                msg=rec_op_kw_string,
-                count=files_per_level * depth,
-                server_log_path=IrodsConfig().server_log_path,
-                start_index=initial_size_of_server_log))
-
-        # restart server with original environment
-        del(env['spLogLevel'])
-        IrodsController(IrodsConfig(injected_environment=env)).restart()
+        finally:
+            # restart server with original environment
+            del(env['spLogLevel'])
+            IrodsController(IrodsConfig(injected_environment=env)).restart()
 
     def test_imv_r(self):
         base_name_source = "test_imv_r_dir_source"
