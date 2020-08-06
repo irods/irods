@@ -43,7 +43,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, file_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}"}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])
 
@@ -66,7 +66,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, file_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}",
                                "no_trash"     : true}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])
@@ -88,7 +88,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, file_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}",
                                "unregister"     : true}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])
@@ -113,7 +113,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, dir_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}"}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])
 
@@ -137,7 +137,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 pwd = pwd.rstrip()
                 logical_path = os.path.join(pwd, dir_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}",
                                 "no_trash"     : true}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])
@@ -167,7 +167,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
 
                 admin.assert_icommand(['ils', '-l', dir_name], 'STDOUT_SINGLELINE', dir_name)
 
-                endpoint = 'recursive_remove'
+                endpoint = 'remove'
                 options  = """{{"logical_path" : "{lp}",
                                "unregister"   : true}}""".format(lp = logical_path)
                 out,_ = lib.execute_command(['irods_api_test_harness', options, endpoint])

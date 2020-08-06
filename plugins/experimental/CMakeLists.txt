@@ -1,14 +1,19 @@
 find_package(OpenSSL REQUIRED)
 
 set(
-  IRODS_EXPERIMENTAL_API_PLUGIN_RECURSIVE_REMOVE_SOURCES
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/recursive_remove.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/parallel_remove_collection.cpp
+  IRODS_EXPERIMENTAL_API_PLUGIN_REMOVE_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/experimental/remove.cpp
+  )
+
+set(
+  IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/experimental/replicate.cpp
   )
 
 set(
   IRODS_EXPERIMENTAL_API_PLUGINS
-  recursive_remove
+  remove
+  replicate
   )
 
 foreach(PLUGIN ${IRODS_EXPERIMENTAL_API_PLUGINS})
