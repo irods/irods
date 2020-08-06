@@ -40,6 +40,7 @@
 #include <string_view>
 #include <tuple>
 #include <chrono>
+#include <optional>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -210,11 +211,15 @@ namespace
 
         keyValPair_t reg_params{};
         addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // If the size of the replica has changed since opening it, then update the size.
         if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
             addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        // If the contents of the replica has changed, then update the last modified timestamp.
+        else if (_l1desc.bytesWritten > 0) {
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
         }
 
         // Possibly triggers file modified notification.
@@ -243,11 +248,21 @@ namespace
         std::strncpy(info.rescHier, _l1desc.dataObjInfo->rescHier, MAX_NAME_LEN);
 
         keyValPair_t reg_params{};
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // If the size of the replica has changed since opening it, then update the size.
         if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
             addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        // If the contents of the replica has changed, then update the last modified timestamp.
+        else if (_l1desc.bytesWritten > 0) {
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        else {
+            // Return immediately if nothing needs to be updated. Allowing the function
+            // to continue pass this point results in an SQL update error due to invalid
+            // SQL (i.e. no columns were specified for the update).
+            return 0;
         }
 
         // Possibly triggers file modified notification.
@@ -273,7 +288,6 @@ namespace
 
         keyValPair_t reg_params{};
         addKeyVal(&reg_params, REPL_STATUS_KW, _new_status.data());
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // Possibly triggers file modified notification.
         if (_send_notifications) {
@@ -351,41 +365,49 @@ namespace
                 return free_l1_descriptor(l1desc_index);
             }
 
-            const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
-            const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
+            const auto is_write_operation = (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE));
 
-            // Update the replica's information in the catalog if requested.
-            if (update_size && update_status) {
-                if (const auto ec = update_replica_size_and_status(*_comm, l1desc, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica size and status in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
-            else if (update_size) {
-                if (const auto ec = update_replica_size(*_comm, l1desc, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica size in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
-            else if (update_status) {
-                if (const auto ec = update_replica_status(*_comm, l1desc, REPLICA_STATUS_GOOD, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica status in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
+            // Allow updates to the replica's catalog information if the stream supports
+            // write operations (i.e. the stream is opened in write-only or read-write mode).
+            if (is_write_operation) {
+                const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
+                const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
 
-            // [Re]compute a checksum for the replica if requested.
-            if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
-                const auto& info = *l1desc.dataObjInfo;
-                constexpr const auto calculation = fs::verification_calculation::always;
-                fs::server::data_object_checksum(*_comm, info.objPath, info.replNum, calculation);
+                // Update the replica's information in the catalog if requested.
+                if (update_size && update_status) {
+                    if (const auto ec = update_replica_size_and_status(*_comm, l1desc, send_notifications); ec != 0) {
+                        log::api::error("Failed to update the replica size and status in the catalog [error_code={}].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+                else if (update_size) {
+                    if (const auto ec = update_replica_size(*_comm, l1desc, send_notifications); ec != 0) {
+                        log::api::error("Failed to update the replica size in the catalog [error_code={}].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+                else if (update_status) {
+                    if (const auto ec = update_replica_status(*_comm, l1desc, REPLICA_STATUS_GOOD, send_notifications); ec != 0) {
+                        log::api::error("Failed to update the replica status in the catalog [error_code={}].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+
+                // [Re]compute a checksum for the replica if requested.
+                if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
+                    const auto& info = *l1desc.dataObjInfo;
+                    constexpr const auto calculation = fs::verification_calculation::always;
+                    fs::server::data_object_checksum(*_comm, info.objPath, info.replNum, calculation);
+                }
             }
 
             // Remove the agent's PID from the replica access table.
-            auto entry = ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid());
+            auto entry = is_write_operation
+                ? ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid())
+                : std::nullopt;
 
             // Close the underlying file object.
             if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
