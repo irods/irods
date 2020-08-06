@@ -249,6 +249,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
             if (is_data_object(s)) {
                 dataObjInp_t input{};
+                memset(&input, 0, sizeof(input));
 
                 input.oprType = _opts.unregister ? UNREG_OPR : 0;
 

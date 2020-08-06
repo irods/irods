@@ -267,23 +267,16 @@ namespace irods::experimental::api {
     public:
         progress_handler(
             rcComm_t&          comm
-          , const std::string& query
+          , uint64_t           total
           , locking_json&      b_board
           , thread_pool&       t_pool
           , flag_type&         e_flag) :
             exit_flag_{e_flag}
           , count_{}
-          , total_{}
+          , total_{total}
           , blackboard_{b_board}
         {
             try {
-                // query for the total length of the progress
-                auto q = query_builder{}.build<rcComm_t>(comm, query);
-                total_ = std::strtoull(q.front()[0].c_str(), nullptr, 10);
-                if(0 == total_) {
-                    THROW(SYS_INVALID_INPUT_PARAM, "Query total is zero");
-                }
-
                 // launch the tracking thread
                 thread_pool::post(t_pool, [&]() {
                     while(!exit_flag_ && !complete()) {
@@ -302,7 +295,7 @@ namespace irods::experimental::api {
 
         void operator++(int) { count_++; }
 
-        bool complete() const { return count_ == total_; }
+        bool complete() const { return count_ >= total_; }
 
     private:
         flag_type&           exit_flag_;
@@ -350,8 +343,7 @@ namespace irods::experimental::api {
 
     class base : public irods::plugin_base
     {
-    private:
-
+    protected:
         thread_pool async_pool{1};
 
         #define WRAPPER(C, F) \
@@ -396,8 +388,9 @@ namespace irods::experimental::api {
 
         } // call
 
-    public:
         locking_json blackboard{{constants::status, states::unknown}};
+
+    public:
 
         base(const std::string& n) : plugin_base(n, "empty_context_string")
         {

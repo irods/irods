@@ -13,7 +13,11 @@ set(
 set(
   IRODS_EXPERIMENTAL_API_PLUGIN_COPY_SOURCES
   ${CMAKE_SOURCE_DIR}/plugins/experimental/copy.cpp
-  ${CMAKE_SOURCE_DIR}/plugins/experimental/parallel_copy_collection.cpp
+  )
+
+set(
+  IRODS_EXPERIMENTAL_API_PLUGIN_REPLICATE_SOURCES
+  ${CMAKE_SOURCE_DIR}/plugins/experimental/replicate.cpp
   )
 
 set(
