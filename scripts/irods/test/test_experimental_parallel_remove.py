@@ -36,7 +36,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 file_name = 'test_remove_object'
                 lib.make_file(file_name, 1024)
 
-                admin.assert_icommand(['iput', '-f', file_name])
+                admin.assert_icommand(['iput', file_name])
                 admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', file_name)
 
                 pwd, _ = lib.execute_command(['ipwd'])
@@ -59,7 +59,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
                 file_name = 'test_remove_object'
                 lib.make_file(file_name, 1024)
 
-                admin.assert_icommand(['iput', '-f', file_name])
+                admin.assert_icommand(['iput', file_name])
                 admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', file_name)
 
                 pwd, _ = lib.execute_command(['ipwd'])
@@ -106,7 +106,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
 
                 lib.make_large_local_tmp_dir(dir_name, 10, 1024)
 
-                admin.assert_icommand(['iput', '-f', '-r', dir_name], 'STDOUT_SINGLELINE', 'Running')
+                admin.assert_icommand(['iput', '-r', dir_name], 'STDOUT_SINGLELINE', 'Running')
                 admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', dir_name)
 
                 pwd, _ = lib.execute_command(['ipwd'])
@@ -130,7 +130,7 @@ class TestParallelRecursiveRemove(session.make_sessions_mixin([], []), unittest.
 
                 lib.make_large_local_tmp_dir(dir_name, 10, 1024)
 
-                admin.assert_icommand(['iput', '-f', '-r', dir_name], 'STDOUT_SINGLELINE', 'Running')
+                admin.assert_icommand(['iput', '-r', dir_name], 'STDOUT_SINGLELINE', 'Running')
                 admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', dir_name)
 
                 pwd, _ = lib.execute_command(['ipwd'])

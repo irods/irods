@@ -45,10 +45,11 @@ class TestParallelCopy(session.make_sessions_mixin([], []), unittest.TestCase):
                 destination  = logical_path+"_COPY"
 
                 endpoint = 'copy'
-                options  = """{{"logical_path" : "{lp}", "destination" : "{d}"}}""".format(lp = logical_path, d=destination)
+                options  = """{{"logical_path" : "{lp}", "destination_logical_path" : "{d}"}}""".format(lp = logical_path, d=destination)
                 lib.execute_command(['irods_api_test_harness', options, endpoint])
 
                 admin.assert_icommand(['ils', '-l', destination], 'STDOUT_SINGLELINE', 'demoResc')
+                admin.assert_icommand(['ips'], 'STDOUT_SINGLELINE', 'ips')
             finally:
                 os.remove(file_name)
                 admin.assert_icommand(['irm', destination])
@@ -70,11 +71,44 @@ class TestParallelCopy(session.make_sessions_mixin([], []), unittest.TestCase):
                 destination  = logical_path+"_COPY"
 
                 endpoint = 'copy'
-                options  = """{{"logical_path" : "{lp}", "destination" : "{d}"}}""".format(lp = logical_path, d = destination)
+                options  = """{{"logical_path" : "{lp}", "destination_logical_path" : "{d}"}}""".format(lp = logical_path, d = destination)
                 lib.execute_command(['irods_api_test_harness', options, endpoint])
 
                 admin.assert_icommand(['ils', '-l', destination], 'STDOUT_SINGLELINE', destination)
+                admin.assert_icommand(['ips'], 'STDOUT_SINGLELINE', 'ips')
             finally:
                 shutil.rmtree(dir_name)
                 admin.assert_icommand(['irm', '-r', destination])
                 admin.assert_icommand(['irm', '-r', logical_path])
+
+    def test_copy_nested_collection(self):
+        with session.make_session_for_existing_admin() as admin:
+            try:
+                dir_name = 'test_copy_nested_collection_directory'
+
+                # test settings
+                depth = 4
+                files_per_level = 4
+                file_size = 1024*1024*40
+
+                lib.make_deep_local_tmp_dir(dir_name, depth, files_per_level, file_size)
+
+                admin.assert_icommand(['iput', '-f', '-r', dir_name], 'STDOUT_SINGLELINE', 'Running')
+                admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', dir_name)
+
+                pwd, _ = lib.execute_command(['ipwd'])
+                pwd = pwd.rstrip()
+                logical_path = os.path.join(pwd, dir_name)
+                destination  = logical_path+"_COPY"
+
+                endpoint = 'copy'
+                options  = """{{"logical_path" : "{lp}", "destination_logical_path" : "{d}"}}""".format(lp = logical_path, d = destination)
+                lib.execute_command(['irods_api_test_harness', options, endpoint])
+
+                admin.assert_icommand(['ils', '-l', destination], 'STDOUT_SINGLELINE', destination)
+                admin.assert_icommand(['ips'], 'STDOUT_SINGLELINE', 'ips')
+            finally:
+                shutil.rmtree(dir_name)
+                admin.assert_icommand(['irm', '-r', destination])
+                admin.assert_icommand(['irm', '-r', logical_path])
+

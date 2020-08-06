@@ -30,7 +30,7 @@ namespace irods {
 
                 auto&& e = p->get_future().get();
                 if(std::get<0>(e) < 0) {
-                    x.push_back(std::move(e));
+                    x.emplace_back(std::move(e));
                 }
             }
 

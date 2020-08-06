@@ -1,54 +1,63 @@
-
-#include "experimental_plugin_framework.hpp"
-#include "parallel_copy_collection.hpp"
-
-#include "thread_pool.hpp"
-#include "connection_pool.hpp"
-
-#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem.hpp"
+#include "parallel_filesystem_operation.hpp"
 
 namespace irods::experimental::api {
-    namespace fs   = irods::experimental::filesystem;
-    namespace fsvr = irods::experimental::filesystem::server;
-
-    class copy : public base {
-
-        bool enable_asynchronous_operation() { return true; }
-
-        auto operation(rsComm_t* comm, const json req) -> json
+    class copy : public parallel_filesystem_operation {
+        protected:
+        bool replace(std::string& str, const std::string& from, const std::string& to)
         {
-            try {
-                blackboard.set({{constants::status, states::running}});
+            size_t start_pos = str.find(from);
+            if(start_pos == std::string::npos)
+                return false;
+            str.replace(start_pos, from.length(), to);
+            return true;
+        }
 
-                fs::path source = get<std::string>("logical_path", req);
-                fs::path destination = get<std::string>("destination", req);
-                int thread_count = get<int>("thread_count", req, 4);
+        void process_object(rcComm_t& comm, const fs::path& path, const json& req) override
+        {
+            fs::path slp = get<std::string>("logical_path", req);
+            fs::path dlp = get<std::string>("destination_logical_path", req);
 
-                if(fsvr::is_collection(*comm, source)) {
-                    parallel_copy_collection(blackboard, {thread_count, source, destination});
+            if(req.contains("recursive")) {
+                auto replaced = path.string();
+                if(replace(replaced, slp, dlp)) {
+                    fscl::copy(comm, path, {replaced});
                 }
-                else {
-                    fsvr::copy(*comm, source, destination);
-                }
-
-                blackboard.update({{constants::status, states::complete}});
             }
-            catch(const irods::exception& e) {
-                rodsLog(LOG_ERROR, "%s", e.what());
-                blackboard.set({{constants::status,  states::failed},
-                                {constants::errors, {
-                                {constants::code,    e.code()},
-                                {constants::message, e.what()}}}});
+            else {
+                fscl::copy(comm, slp, dlp);
+            }
+        } // process_object
+
+        void collection_precondition(rcComm_t& comm, const json& req) override
+        {
+            fs::path slp = get<std::string>("logical_path", req);
+            fs::path dlp = get<std::string>("destination_logical_path", req);
+
+            if(!req.contains("recursive")) {
+                return;
             }
 
-            return blackboard.get();
+            for(auto e : fscl::recursive_collection_iterator(comm, slp)) {
+                if(e.is_collection()) {
+                    auto replaced = e.path().string();
 
-        } // operation
+                    if(replace(replaced, slp, dlp)) {
+                        auto dst = fs::path{replaced};
+                        try {
+                            fscl::create_collections(comm, dst);
+                        }
+                        catch(...) {
+                            log::server::error("copy - failed to create collection(s) [{}]", dst.parent_path().c_str());
+                            return;
+                        }
+                    } // if replaced
+                } // is_collection
+            } // for e
+        } // collection_precondition
 
         public:
 
-            copy() : base("copy") {}
+            copy() : parallel_filesystem_operation("copy") {}
 
     }; // copy
 
