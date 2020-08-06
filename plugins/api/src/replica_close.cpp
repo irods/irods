@@ -40,6 +40,7 @@
 #include <string_view>
 #include <tuple>
 #include <chrono>
+#include <optional>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -52,7 +53,6 @@ namespace
     // clang-format off
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*)>;
-    using log       = ix::log;
     // clang-format on
 
     //
@@ -129,7 +129,7 @@ namespace
     {
         try {
             std::string_view json_string(static_cast<const char*>(_bbuf.buf), _bbuf.len);
-            log::api::trace("Parsing string into JSON ... [string={}]", json_string);
+            rodsLog(LOG_DEBUG, "Parsing string into JSON ... [string=%s]", json_string.data());
             return {0, json::parse(json_string)};
         }
         catch (const json::parse_error& e) {
@@ -160,7 +160,7 @@ namespace
 
         std::string location;
         if (const auto err = irods::get_loc_for_hier_string(info.rescHier, location); !err.ok()) {
-            log::api::error("Failed to resolve resource hierarchy to hostname [error_code={}]", err.code());
+            rodsLog(LOG_ERROR, "Failed to resolve resource hierarchy to hostname [error_code=%d]", err.code());
             return err.code();
         }
 
@@ -172,7 +172,7 @@ namespace
 
         rodsStat_t* stat_output{};
         if (const auto ec = rsFileStat(&_comm, &stat_input, &stat_output); ec != 0) {
-            log::api::error("Could not stat file [error_code={}, logical_path={}, physical_path={}]",
+            rodsLog(LOG_ERROR, "Could not stat file [error_code=%d, logical_path=%s, physical_path=%s]",
                             ec, info.objPath, info.filePath);
             return ec;
         }
@@ -200,7 +200,7 @@ namespace
         const auto size_on_disk = get_file_size(_comm, _l1desc);
 
         if (size_on_disk < 0) {
-            log::api::error("Failed to retrieve the replica's size on disk [error_code={}].", size_on_disk);
+            rodsLog(LOG_ERROR, "Failed to retrieve the replica's size on disk [error_code=%d].", size_on_disk);
             return size_on_disk;
         }
 
@@ -210,11 +210,15 @@ namespace
 
         keyValPair_t reg_params{};
         addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // If the size of the replica has changed since opening it, then update the size.
         if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
             addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        // If the contents of the replica has changed, then update the last modified timestamp.
+        else if (_l1desc.bytesWritten > 0) {
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
         }
 
         // Possibly triggers file modified notification.
@@ -234,7 +238,7 @@ namespace
         const auto size_on_disk = get_file_size(_comm, _l1desc);
 
         if (size_on_disk < 0) {
-            log::api::error("Failed to retrieve the replica's size on disk [error_code={}].", size_on_disk);
+            rodsLog(LOG_ERROR, "Failed to retrieve the replica's size on disk [error_code=%d].", size_on_disk);
             return size_on_disk;
         }
 
@@ -243,11 +247,21 @@ namespace
         std::strncpy(info.rescHier, _l1desc.dataObjInfo->rescHier, MAX_NAME_LEN);
 
         keyValPair_t reg_params{};
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // If the size of the replica has changed since opening it, then update the size.
         if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
             addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        // If the contents of the replica has changed, then update the last modified timestamp.
+        else if (_l1desc.bytesWritten > 0) {
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+        }
+        else {
+            // Return immediately if nothing needs to be updated. Allowing the function
+            // to continue pass this point results in an SQL update error due to invalid
+            // SQL (i.e. no columns were specified for the update).
+            return 0;
         }
 
         // Possibly triggers file modified notification.
@@ -273,7 +287,6 @@ namespace
 
         keyValPair_t reg_params{};
         addKeyVal(&reg_params, REPL_STATUS_KW, _new_status.data());
-        addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
 
         // Possibly triggers file modified notification.
         if (_send_notifications) {
@@ -290,7 +303,7 @@ namespace
     auto free_l1_descriptor(int _l1desc_index) -> int
     {
         if (const auto ec = freeL1desc(_l1desc_index); ec != 0) {
-            log::api::error("Failed to release L1 descriptor [error_code={}].", ec);
+            rodsLog(LOG_ERROR, "Failed to release L1 descriptor [error_code=%d].", ec);
             return ec;
         }
 
@@ -300,7 +313,7 @@ namespace
     auto rs_replica_close(rsComm_t* _comm, bytesBuf_t* _input) -> int
     {
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
-            log::api::error(msg);
+            rodsLog(LOG_ERROR, msg.data());
             return SYS_INVALID_INPUT_PARAM;
         }
 
@@ -309,7 +322,7 @@ namespace
         std::tie(ec, json_input) = parse_json(*_input);
 
         if (ec != 0) {
-            log::api::error("Failed to parse JSON string [error_code={}]", ec);
+            rodsLog(LOG_ERROR, "Failed to parse JSON string [error_code=%d]", ec);
             return ec;
         }
 
@@ -317,12 +330,12 @@ namespace
         std::tie(ec, l1desc_index) = get_file_descriptor_index(json_input);
 
         if (ec != 0) {
-            log::api::error("Failed to extract the L1 descriptor index from the JSON object [error_code={}]", ec);
+            rodsLog(LOG_ERROR, "Failed to extract the L1 descriptor index from the JSON object [error_code=%d]", ec);
             return ec;
         }
 
         if (l1desc_index < 3 || l1desc_index >= NUM_L1_DESC) {
-            log::api::error("L1 descriptor index is out of range [error_code={}, fd={}].", BAD_INPUT_DESC_INDEX, l1desc_index);
+            rodsLog(LOG_ERROR, "L1 descriptor index is out of range [error_code=%d, fd=%d].", BAD_INPUT_DESC_INDEX, l1desc_index);
             return BAD_INPUT_DESC_INDEX;
         }
 
@@ -331,7 +344,7 @@ namespace
 
         try {
             if (l1desc.inuseFlag != FD_INUSE) {
-                log::api::error("File descriptor is not open [error_code={}, fd={}].", BAD_INPUT_DESC_INDEX, l1desc_index);
+                rodsLog(LOG_ERROR, "File descriptor is not open [error_code=%d, fd=%d].", BAD_INPUT_DESC_INDEX, l1desc_index);
                 return BAD_INPUT_DESC_INDEX;
             }
 
@@ -343,7 +356,7 @@ namespace
                 j_in["fd"] = l1desc.remoteL1descInx;
 
                 if (const auto ec = rc_replica_close(conn, j_in.dump().data()); ec != 0) {
-                    log::api::error("Failed to close remote replica [error_code={}, remote_l1_descriptor={}",
+                    rodsLog(LOG_ERROR, "Failed to close remote replica [error_code=%d, remote_l1_descriptor=%d",
                                     ec, l1desc.remoteL1descInx);
                     return ec;
                 }
@@ -351,41 +364,49 @@ namespace
                 return free_l1_descriptor(l1desc_index);
             }
 
-            const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
-            const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
+            const auto is_write_operation = (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE));
 
-            // Update the replica's information in the catalog if requested.
-            if (update_size && update_status) {
-                if (const auto ec = update_replica_size_and_status(*_comm, l1desc, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica size and status in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
-            else if (update_size) {
-                if (const auto ec = update_replica_size(*_comm, l1desc, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica size in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
-            else if (update_status) {
-                if (const auto ec = update_replica_status(*_comm, l1desc, REPLICA_STATUS_GOOD, send_notifications); ec != 0) {
-                    log::api::error("Failed to update the replica status in the catalog [error_code={}].", ec);
-                    update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-                    return ec;
-                }
-            }
+            // Allow updates to the replica's catalog information if the stream supports
+            // write operations (i.e. the stream is opened in write-only or read-write mode).
+            if (is_write_operation) {
+                const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
+                const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
 
-            // [Re]compute a checksum for the replica if requested.
-            if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
-                const auto& info = *l1desc.dataObjInfo;
-                constexpr const auto calculation = fs::verification_calculation::always;
-                fs::server::data_object_checksum(*_comm, info.objPath, info.replNum, calculation);
+                // Update the replica's information in the catalog if requested.
+                if (update_size && update_status) {
+                    if (const auto ec = update_replica_size_and_status(*_comm, l1desc, send_notifications); ec != 0) {
+                        rodsLog(LOG_ERROR, "Failed to update the replica size and status in the catalog [error_code=%d].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+                else if (update_size) {
+                    if (const auto ec = update_replica_size(*_comm, l1desc, send_notifications); ec != 0) {
+                        rodsLog(LOG_ERROR, "Failed to update the replica size in the catalog [error_code=%d].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+                else if (update_status) {
+                    if (const auto ec = update_replica_status(*_comm, l1desc, REPLICA_STATUS_GOOD, send_notifications); ec != 0) {
+                        rodsLog(LOG_ERROR, "Failed to update the replica status in the catalog [error_code=%d].", ec);
+                        update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+                        return ec;
+                    }
+                }
+
+                // [Re]compute a checksum for the replica if requested.
+                if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
+                    const auto& info = *l1desc.dataObjInfo;
+                    constexpr const auto calculation = fs::verification_calculation::always;
+                    fs::server::data_object_checksum(*_comm, info.objPath, info.replNum, calculation);
+                }
             }
 
             // Remove the agent's PID from the replica access table.
-            auto entry = ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid());
+            auto entry = is_write_operation
+                ? ix::replica_access_table::instance().erase_pid(l1desc.replica_token, getpid())
+                : std::nullopt;
 
             // Close the underlying file object.
             if (const auto ec = close_physical_object(*_comm, l1desc.l3descInx); ec != 0) {
@@ -393,7 +414,7 @@ namespace
                     ix::replica_access_table::instance().restore(*entry);
                 }
 
-                log::api::error("Failed to close file object [error_code={}].", ec);
+                rodsLog(LOG_ERROR, "Failed to close file object [error_code=%d].", ec);
                 update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
                 return ec;
             }
@@ -407,22 +428,22 @@ namespace
             return ec;
         }
         catch (const json::type_error& e) {
-            log::api::error("Failed to extract property from JSON object [error_code={}]", SYS_INTERNAL_ERR);
+            rodsLog(LOG_ERROR, "Failed to extract property from JSON object [error_code=%d]", SYS_INTERNAL_ERR);
             update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
             return SYS_INTERNAL_ERR;
         }
         catch (const irods::exception& e) {
-            log::api::error("{} [error_code={}]", e.what(), e.code());
+            rodsLog(LOG_ERROR, "%s [error_code=%d]", e.what(), e.code());
             update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
             return e.code();
         }
         catch (const fs::filesystem_error& e) {
-            log::api::error("{} [error_code={}]", e.what(), e.code().value());
+            rodsLog(LOG_ERROR, "%s [error_code=%d]", e.what(), e.code().value());
             update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
             return e.code().value();
         }
         catch (const std::exception& e) {
-            log::api::error("An unexpected error occurred while closing the replica. {} [error_code={}]",
+            rodsLog(LOG_ERROR, "An unexpected error occurred while closing the replica. %s [error_code=%d]",
                             e.what(), SYS_INTERNAL_ERR);
             update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
             return SYS_INTERNAL_ERR;
