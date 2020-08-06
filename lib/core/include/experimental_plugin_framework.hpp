@@ -354,7 +354,6 @@ namespace irods::experimental::api {
 
         thread_pool async_pool{1};
 
-
         #define WRAPPER(C, F) \
         std::function<json(C*, const json&)>([&](C* c, const json& j) -> json { \
                 return F(c, j);})
@@ -400,7 +399,7 @@ namespace irods::experimental::api {
     public:
         locking_json blackboard{{constants::status, states::unknown}};
 
-        base() : plugin_base("api_framework_plugin", "empty_context_string")
+        base(const std::string& n) : plugin_base(n, "empty_context_string")
         {
             operations_[endpoints::operation] = WRAPPER(rsComm_t, operation);
             operations_[endpoints::command]   = WRAPPER(rsComm_t, command);
