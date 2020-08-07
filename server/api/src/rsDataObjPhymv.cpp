@@ -1,6 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #include "dataObjPhymv.h"
 #include "dataObjRepl.h"
 #include "dataObjOpr.hpp"
@@ -27,8 +24,11 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
+#include "key_value_proxy.hpp"
 
 namespace {
+
+namespace ix = irods::experimental;
 
 dataObjInp_t init_destination_replica_input(
     rsComm_t* rsComm,
@@ -156,8 +156,15 @@ int open_source_replica(
 
 int open_destination_replica(
     rsComm_t* rsComm,
-    dataObjInp_t& destination_data_obj_inp) {
-    addKeyVal(&destination_data_obj_inp.condInput, REG_REPL_KW, "");
+    dataObjInp_t& destination_data_obj_inp,
+    const int source_l1desc_inx)
+{
+    auto kvp = ix::make_key_value_proxy(destination_data_obj_inp.condInput);
+    kvp[REG_REPL_KW] = "";
+    kvp[DATA_ID_KW] = std::to_string(L1desc[source_l1desc_inx].dataObjInfo->dataId);
+    kvp[SOURCE_L1_DESC_KW] = std::to_string(source_l1desc_inx);
+    kvp.erase(PURGE_CACHE_KW);
+
     destination_data_obj_inp.oprType = PHYMV_DEST;
     destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
     int destination_l1descInx = rsDataObjOpen(rsComm, &destination_data_obj_inp);
@@ -179,7 +186,7 @@ int replicate_data(
     }
 
     // Open destination replica
-    int destination_l1descInx = open_destination_replica(rsComm, destination_inp);
+    int destination_l1descInx = open_destination_replica(rsComm, destination_inp, source_l1descInx);
     if (destination_l1descInx < 0) {
         close_replica(rsComm, source_l1descInx, source_l1descInx);
         THROW(destination_l1descInx, "Failed opening destination replica");
