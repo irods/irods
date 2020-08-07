@@ -297,7 +297,6 @@
 
 #define INSTANCE_NAME_KW "instance_name"
 
-
-
+// clang-format on
 
 #endif	// RODS_KEYWD_DEF_H__
