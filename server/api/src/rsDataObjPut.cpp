@@ -245,9 +245,9 @@ void throw_if_force_put_to_new_resource(
         }()
     };
     if (!hier_match) {
-        THROW(HIERARCHY_ERROR,
-              (boost::format("cannot force put [%s] to a different resource [%s]") %
-               data_obj_inp.objPath % dst_resc_kw).str());
+        THROW(HIERARCHY_ERROR, fmt::format(
+            "cannot force put [{}] to a different resource [{}]",
+            data_obj_inp.objPath, dst_resc_kw));
     }
 } // throw_if_force_put_to_new_resource
 

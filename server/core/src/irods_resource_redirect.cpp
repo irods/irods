@@ -61,10 +61,10 @@ namespace {
         return false;
     } // hier_has_replica
 
-    int apply_policy_for_create_operation(
+    auto apply_policy_for_create_operation(
         rsComm_t*     _comm,
         dataObjInp_t& _obj_inp,
-        std::string&  _resc_name )
+        std::string&  _resc_name) -> void
     {
         /* query rcat for resource info and sort it */
         ruleExecInfo_t rei{};
@@ -84,38 +84,26 @@ namespace {
                 status = rei.status;
             }
 
-            rodsLog( LOG_NOTICE,
-                    "%s:acSetRescSchemeForCreate error for %s,status=%d",
-                    __FUNCTION__, _obj_inp.objPath, status );
-
-            return status;
+            THROW(status, fmt::format(
+                "[{}]:acSetRescSchemeForCreate error for {},status={}",
+                __FUNCTION__, _obj_inp.objPath, status));
         }
 
         // get resource name
         if ( !strlen( rei.rescName ) ) {
-            irods::error set_err = irods::set_default_resource(
-                    _comm,
-                    "", "",
-                    &_obj_inp.condInput,
-                    _resc_name );
+            irods::error set_err = irods::set_default_resource(_comm, "", "", &_obj_inp.condInput, _resc_name);
             if ( !set_err.ok() ) {
-                irods::log( PASS( set_err ) );
-                return SYS_INVALID_RESC_INPUT;
+                THROW(SYS_INVALID_RESC_INPUT, set_err.result());
             }
         }
         else {
             _resc_name = rei.rescName;
         }
 
-        status = setRescQuota(
-                _comm,
-                _obj_inp.objPath,
-                _resc_name.c_str(),
-                _obj_inp.dataSize );
+        status = setRescQuota(_comm, _obj_inp.objPath, _resc_name.c_str(), _obj_inp.dataSize);
         if( status == SYS_RESC_QUOTA_EXCEEDED ) {
-            return SYS_RESC_QUOTA_EXCEEDED;
+            THROW(SYS_RESC_QUOTA_EXCEEDED, "resource quota exceeded");
         }
-        return 0;
     } // apply_policy_for_create_operation
 
     // function to handle collecting a vote from a resource for a given operation and fco
@@ -262,8 +250,7 @@ namespace {
     std::string resolve_hier_for_create(
         rsComm_t*              _comm,
         irods::file_object_ptr _file_obj,
-        const std::string&     _key_word,
-        dataObjInp_t&          _data_obj_inp)
+        const std::string&     _key_word)
     {
         namespace irv = irods::experimental::resource::voting;
 
@@ -273,13 +260,7 @@ namespace {
         // get a vote and hier for the create
         float vote{};
         std::string hier{};
-        irods::error ret = request_vote_for_file_object(
-                        _comm,
-                        irods::CREATE_OPERATION,
-                        _key_word,
-                        _file_obj,
-                        hier,
-                        vote );
+        irods::error ret = request_vote_for_file_object(_comm, irods::CREATE_OPERATION, _key_word, _file_obj, hier, vote);
         if ( irv::vote::zero == vote ) {
             if (0 == ret.code()) {
                 ret.code( HIERARCHY_ERROR );
@@ -354,24 +335,15 @@ namespace irods {
             else if (default_resc_name) {
                 create_resc_name = default_resc_name;
             }
-            int status = apply_policy_for_create_operation(
-                    _comm,
-                    _data_obj_inp,
-                    create_resc_name );
-            if( status < 0 ) {
-                THROW(status, "apply_policy_for_create_operation failed");
-            }
+
+            apply_policy_for_create_operation(_comm, _data_obj_inp, create_resc_name);
 
             // If the replica exists on the target resource, use open/write
             if (fac_err.ok() && hier_has_replica(create_resc_name, file_obj)) {
                 oper = irods::WRITE_OPERATION;
             }
             else {
-                const auto hier = resolve_hier_for_create(
-                        _comm,
-                        file_obj,
-                        create_resc_name,
-                        _data_obj_inp);
+                const auto hier = resolve_hier_for_create( _comm, file_obj, create_resc_name);
                 return {file_obj, hier};
             }
         }

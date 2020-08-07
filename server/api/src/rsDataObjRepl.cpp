@@ -42,11 +42,13 @@
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_log.hpp"
+#include "irods_logger.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_random.hpp"
 #include "irods_string_tokenize.hpp"
+#include "key_value_proxy.hpp"
 #include "voting.hpp"
 #include "key_value_proxy.hpp"
 
@@ -59,6 +61,9 @@
 namespace ix = irods::experimental;
 
 namespace {
+
+namespace ix = irods::experimental;
+using log = irods::experimental::log;
 
 using repl_input_tuple = std::tuple<dataObjInp_t, irods::file_object_ptr>;
 repl_input_tuple construct_input_tuple(
@@ -167,6 +172,8 @@ int open_source_replica(
     if (source_l1descInx < 0) {
         return source_l1descInx;
     }
+    const auto* info = L1desc[source_l1descInx].dataObjInfo;
+    log::server::debug("[{}:{}] - opened source replica [{}] on [{}] (repl [{}])", __FUNCTION__, __LINE__, info->objPath, info->rescHier, info->replNum);
     // TODO: Consider using force flag and making this part of the voting process
     if (GOOD_REPLICA != L1desc[source_l1descInx].dataObjInfo->replStatus) {
         const int status = SYS_NO_GOOD_REPLICA;
@@ -178,17 +185,23 @@ int open_source_replica(
 
 int open_destination_replica(
     rsComm_t* rsComm,
-    dataObjInp_t& destination_data_obj_inp)
+    dataObjInp_t& destination_data_obj_inp,
+    const int source_l1desc_inx)
 {
-    addKeyVal(&destination_data_obj_inp.condInput, REG_REPL_KW, "");
+    auto kvp = ix::make_key_value_proxy(destination_data_obj_inp.condInput);
+    kvp[REG_REPL_KW] = "";
+    kvp[DATA_ID_KW] = std::to_string(L1desc[source_l1desc_inx].dataObjInfo->dataId);
+    kvp[SOURCE_L1_DESC_KW] = std::to_string(source_l1desc_inx);
+    kvp.erase(PURGE_CACHE_KW);
     destination_data_obj_inp.oprType = REPLICATE_DEST;
     destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
-    rodsLog(LOG_DEBUG,
-            "[%s:%d] - opening destination replica [%s] on [%s]",
+    log::server::debug(
+            "[{}:{}] - opening destination replica for [{}] (id:[{}]) on [{}]",
             __FUNCTION__,
             __LINE__,
             destination_data_obj_inp.objPath,
-            getValByKey(&destination_data_obj_inp.condInput, RESC_HIER_STR_KW));
+            kvp.at(DATA_ID_KW).value(),
+            kvp.at(RESC_HIER_STR_KW).value());
     return rsDataObjOpen(rsComm, &destination_data_obj_inp);
 } // open_destination_replica
 
@@ -204,7 +217,7 @@ int replicate_data(
     }
 
     // Open destination replica
-    int destination_l1descInx = open_destination_replica(rsComm, destination_inp);
+    int destination_l1descInx = open_destination_replica(rsComm, destination_inp, source_l1descInx);
     if (destination_l1descInx < 0) {
         close_replica(rsComm, source_l1descInx, source_l1descInx);
         THROW(destination_l1descInx, "Failed opening destination replica");
@@ -258,9 +271,10 @@ int repl_data_obj(
     int status{};
     if (getValByKey(&dataObjInp.condInput, ALL_KW)) {
         for (const auto& r : file_obj->replicas()) {
-            rodsLog(LOG_DEBUG, "[%s:%d] - hier:[%s],status:[%d],vote:[%f]",
+            log::server::debug(
+                "[{}:{}] - hier:[{}],status:[{}],vote:[{}]",
                 __FUNCTION__, __LINE__,
-                r.resc_hier().c_str(),
+                r.resc_hier(),
                 r.replica_status(),
                 r.vote());
             if (GOOD_REPLICA == (r.replica_status() & 0x0F)) {
