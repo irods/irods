@@ -3,6 +3,7 @@
     "irods_atomic_apply_metadata_operations",
     "irods_client_connection",
     "irods_connection_pool",
+    "irods_data_object_finalize",
     "irods_data_object_modify_info",
     "irods_data_object_proxy",
     "irods_dstream",
