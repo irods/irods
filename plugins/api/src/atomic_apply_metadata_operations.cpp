@@ -356,44 +356,30 @@ namespace
 
     auto rs_atomic_apply_metadata_operations(rsComm_t* _comm, bytesBuf_t* _input, bytesBuf_t** _output) -> int
     {
-        rodsServerHost_t *rodsServerHost;
+        namespace ic = irods::experimental::catalog;
 
-        if (const auto ec = getAndConnRcatHost(_comm, MASTER_RCAT, nullptr, &rodsServerHost); ec < 0) {
-            return ec;
+        try {
+            if (!ic::connected_to_catalog_provider(*_comm)) {
+                irods::log(LOG_DEBUG8, "Redirecting request to catalog service provider ...");
+
+                auto host_info = ic::redirect_to_catalog_provider(*_comm);
+
+                std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
+                char* json_output = nullptr;
+
+                const auto ec = rc_atomic_apply_metadata_operations(host_info.conn, json_input.data(), &json_output);
+                *_output = to_bytes_buffer(json_output);
+
+                return ec;
+            }
+
+            ic::throw_if_catalog_provider_service_role_is_invalid();
         }
-
-        if (LOCAL_HOST == rodsServerHost->localFlag) {
-            std::string svc_role;
-
-            if (const auto err = get_catalog_service_role(svc_role); !err.ok()) {
-                const auto* msg = "Failed to retrieve service role";
-                rodsLog(LOG_ERROR, msg);
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return err.code();
-            }
-
-            if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
-                const auto* msg = "Remote catalog provider not found";
-                rodsLog(LOG_ERROR, msg);
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return SYS_NO_ICAT_SERVER_ERR;
-            }
-
-            if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
-                const auto msg = fmt::format("Role not supported [role => {}]", svc_role);
-                rodsLog(LOG_ERROR, msg.c_str());
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return SYS_SERVICE_ROLE_NOT_SUPPORTED;
-            }
-        }
-        else {
-            std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
-            char* json_output = nullptr;
-
-            const auto ec = rc_atomic_apply_metadata_operations(rodsServerHost->conn, json_input.data(), &json_output);
-            *_output = to_bytes_buffer(json_output);
-
-            return ec;
+        catch (const irods::exception& e) {
+            std::string_view msg = e.what();
+            irods::log(LOG_ERROR, msg.data());
+            *_output = to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
+            return e.code();
         }
 
         if (const auto [valid, msg] = is_input_valid(_input); !valid) {
@@ -459,7 +445,7 @@ namespace
                                                                        object_id,
                                                                        operations[i],
                                                                        i);
-                    
+
                     if (ec != 0) {
                         *_output = bbuf;
                         return ec;
