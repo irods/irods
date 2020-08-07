@@ -244,6 +244,7 @@ NEW_ERROR(SYS_OPERATION_IN_PROGRESS,                   -163000)
 NEW_ERROR(SYS_REPLICA_DOES_NOT_EXIST,                  -164000)
 NEW_ERROR(SYS_UNKNOWN_ERROR,                           -165000)
 NEW_ERROR(SYS_NO_GOOD_REPLICA,                         -166000)
+NEW_ERROR(SYS_LIBRARY_ERROR,                           -167000)
 /** @} */
 
 /* 300,000 - 499,000 - user input type error */

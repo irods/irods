@@ -19,6 +19,8 @@
 
 #include "atomic_apply_acl_operations.h"
 
+#include "catalog.hpp"
+#include "catalog_utilities.hpp"
 #include "rodsConnect.h"
 #include "objDesc.hpp"
 #include "irods_stacktrace.hpp"
@@ -81,10 +83,6 @@ namespace
     auto throw_if_invalid_entity_id(int _entity_id) -> void;
 
     auto to_access_type_id(std::string_view _acl) -> int;
-
-    auto new_database_connection() -> nanodbc::connection;
-
-    auto execute_transaction(nanodbc::connection& _db_conn, std::function<int(nanodbc::transaction&)> _func) -> int;
 
     auto get_entity_id(nanodbc::connection& _db_conn, std::string_view _entity_name) -> int;
 
@@ -171,7 +169,7 @@ namespace
             log::api::error("Object does not exist at the provided logical path [path={}]", _logical_path);
             return OBJ_PATH_DOES_NOT_EXIST;
         }
-        
+
         if (fs::server::is_collection(s)) {
             gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _logical_path);
         }
@@ -223,68 +221,6 @@ namespace
         THROW(SYS_INVALID_INPUT_PARAM, fmt::format("Invalid ACL [acl={}]", _acl));
     }
 
-    auto new_database_connection() -> nanodbc::connection
-    {
-        const std::string dsn = [] {
-            if (const char* dsn = std::getenv("irodsOdbcDSN"); dsn) {
-                return dsn;
-            }
-
-            return "iRODS Catalog";
-        }();
-
-        std::string config_path;
-
-        if (const auto error = irods::get_full_path_for_config_file("server_config.json", config_path); !error.ok()) {
-            log::api::error("Server configuration not found");
-            THROW(CAT_CONNECT_ERR, "Failed to connect to catalog");
-        }
-
-        log::api::trace("Reading server configuration ...");
-
-        json config;
-
-        {
-            std::ifstream config_file{config_path};
-            config_file >> config;
-        }
-
-        try {
-            const auto& db_plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW).at(irods::PLUGIN_TYPE_DATABASE);
-            const auto& db_instance = db_plugin_config.front();
-            const auto db_username = db_instance.at(irods::CFG_DB_USERNAME_KW).get<std::string>();
-            const auto db_password = db_instance.at(irods::CFG_DB_PASSWORD_KW).get<std::string>();
-
-            // Capture the database instance name.
-            std::string db_instance_name;
-            for (auto& [k, v] : db_plugin_config.items()) {
-                db_instance_name = k;
-            }
-
-            if (db_instance_name.empty()) {
-                THROW(SYS_CONFIG_FILE_ERR, "Database instance name cannot be empty");
-            }
-
-            nanodbc::connection db_conn{dsn, db_username, db_password};
-
-            if (db_instance_name == "mysql") {
-                // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to be
-                // able to understand Postgres SQL. STRICT_TRANS_TABLES must be set too, otherwise
-                // inserting NULL into a "NOT NULL" column does not produce an error.
-                nanodbc::just_execute(db_conn, "set SESSION sql_mode = 'ANSI,STRICT_TRANS_TABLES'");
-                nanodbc::just_execute(db_conn, "set character_set_client = utf8");
-                nanodbc::just_execute(db_conn, "set character_set_results = utf8");
-                nanodbc::just_execute(db_conn, "set character_set_connection = utf8");
-            }
-
-            return db_conn;
-        }
-        catch (const std::exception& e) {
-            log::api::error(e.what());
-            THROW(CAT_CONNECT_ERR, "Failed to connect to catalog");
-        }
-    }
-
     auto user_has_permission_to_modify_acls(rsComm_t& _comm,
                                             nanodbc::connection& _db_conn,
                                             int _object_id) -> bool
@@ -301,12 +237,6 @@ namespace
         }
 
         return false;
-    }
-
-    auto execute_transaction(nanodbc::connection& _db_conn, std::function<int(nanodbc::transaction&)> _func) -> int
-    {
-        nanodbc::transaction trans{_db_conn};
-        return _func(trans);
     }
 
     auto entity_has_acls_set_on_object(nanodbc::connection& _db_conn, int _object_id, int _entity_id) -> bool
@@ -449,46 +379,30 @@ namespace
 
     auto rs_atomic_apply_acl_operations(rsComm_t* _comm, bytesBuf_t* _input, bytesBuf_t** _output) -> int
     {
-        rodsServerHost_t *rodsServerHost;
+        namespace ic = irods::experimental::catalog;
 
-        if (const auto ec = getAndConnRcatHost(_comm, MASTER_RCAT, nullptr, &rodsServerHost); ec < 0) {
-            return ec;
+        try {
+            if (!ic::connected_to_catalog_provider(*_comm)) {
+                log::api::trace("Redirecting request to catalog service provider ...");
+
+                auto host_info = ic::redirect_to_catalog_provider(*_comm);
+
+                std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
+                char* json_output = nullptr;
+
+                const auto ec = rc_atomic_apply_acl_operations(host_info.conn, json_input.data(), &json_output);
+                *_output = to_bytes_buffer(json_output);
+
+                return ec;
+            }
+
+            ic::throw_if_catalog_provider_service_role_is_invalid();
         }
-
-        if (LOCAL_HOST == rodsServerHost->localFlag) {
-            std::string svc_role;
-
-            if (const auto err = get_catalog_service_role(svc_role); !err.ok()) {
-                const auto* msg = "Failed to retrieve service role";
-                log::api::error(msg);
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return err.code();
-            }
-
-            if (irods::CFG_SERVICE_ROLE_CONSUMER == svc_role) {
-                const auto* msg = "Remote catalog provider not found";
-                log::api::error(msg);
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return SYS_NO_ICAT_SERVER_ERR;
-            }
-
-            if (irods::CFG_SERVICE_ROLE_PROVIDER != svc_role) {
-                const auto msg = fmt::format("Role not supported [role={}]", svc_role);
-                log::api::error(msg);
-                *_output = to_bytes_buffer(make_error_object(json{}, 0, msg).dump());
-                return SYS_SERVICE_ROLE_NOT_SUPPORTED;
-            }
-        }
-        else {
-            log::api::trace("Redirecting request to remote server ...");
-
-            std::string_view json_input(static_cast<const char*>(_input->buf), _input->len);
-            char* json_output = nullptr;
-
-            const auto ec = rc_atomic_apply_acl_operations(rodsServerHost->conn, json_input.data(), &json_output);
-            *_output = to_bytes_buffer(json_output);
-
-            return ec;
+        catch (const irods::exception& e) {
+            std::string_view msg = e.what();
+            log::api::error(msg.data());
+            *_output = to_bytes_buffer(make_error_object(json{}, 0, msg.data()).dump());
+            return e.code();
         }
 
         log::api::trace("Performing basic input validation ...");
@@ -539,7 +453,7 @@ namespace
 
         try {
             log::api::trace("Connecting to database ...");
-            db_conn = new_database_connection();
+            std::tie(std::ignore, db_conn) = ic::new_database_connection();
         }
         catch (const irods::exception& e) {
             *_output = to_bytes_buffer(make_error_object(json{}, 0, e.what()).dump());
@@ -560,7 +474,7 @@ namespace
 
         log::api::trace("Executing ACL operations ...");
 
-        return execute_transaction(db_conn, [&](auto& _trans) -> int
+        return ic::execute_transaction(db_conn, [&](auto& _trans) -> int
         {
             try {
                 const auto& operations = input.at("operations");
@@ -570,7 +484,7 @@ namespace
                                                                   object_id,
                                                                   operations[i],
                                                                   i);
-                    
+
                     if (ec != 0) {
                         *_output = bbuf;
                         return ec;

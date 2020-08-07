@@ -1,7 +1,4 @@
-#include <fstream>
-#include <functional>
-#include <stdexcept>
-
+#include "catalog.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_logger.hpp"
@@ -9,11 +6,13 @@
 #include "objDesc.hpp"
 #include "rodsConnect.h"
 
-#include "catalog.hpp"
-
 #include "json.hpp"
 #include "fmt/format.h"
 #include "nanodbc/nanodbc.h"
+
+#include <fstream>
+#include <functional>
+#include <stdexcept>
 
 namespace irods::experimental::catalog {
 
