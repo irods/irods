@@ -353,9 +353,7 @@ int l3Stat(
     }
     else {
         memset( &fileStatInp, 0, sizeof( fileStatInp ) );
-        rstrcpy( fileStatInp.fileName, dataObjInfo->filePath,
-                 MAX_NAME_LEN );
-        //rstrcpy( fileStatInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+        rstrcpy( fileStatInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN );
         rstrcpy( fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN );
         rstrcpy( fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN );
         status = rsFileStat( rsComm, &fileStatInp, myStat );
