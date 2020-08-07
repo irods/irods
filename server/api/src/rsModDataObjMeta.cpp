@@ -56,7 +56,6 @@ rsModDataObjMeta( rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp ) {
         }
     }
     else {
-        // TODO: hey future Alan, logical locking is going to be in some replacement for this!
         // Add IN_REPL_KW to prevent replication on the redirected server (the provider)
         addKeyVal( modDataObjMetaInp->regParam, IN_REPL_KW, "" );
         status = rcModDataObjMeta( rodsServerHost->conn, modDataObjMetaInp );

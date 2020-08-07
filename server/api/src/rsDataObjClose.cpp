@@ -122,7 +122,8 @@ void apply_static_peps(
 
 int trimDataObjInfo(
     rsComm_t*      rsComm,
-    dataObjInfo_t* dataObjInfo ) {
+    dataObjInfo_t* dataObjInfo)
+{
     // =-=-=-=-=-=-=-
     // add the hier to a parser to get the leaf
     //std::string cache_resc = irods::hierarchy_parser{dataObjInfo->rescHier}.last_resc();
@@ -138,6 +139,9 @@ int trimDataObjInfo(
     addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, std::to_string(dataObjInfo->replNum).c_str() );
     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
+    ix::log::api::debug("[{}:{}] - trimming [{}] repl num:[{}],hier:[{}]",
+        __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->replNum, dataObjInfo->rescHier);
+
     int status = rsDataObjTrim( rsComm, &dataObjInp );
     clearKeyVal( &dataObjInp.condInput );
     if ( status < 0 ) {
@@ -147,13 +151,14 @@ int trimDataObjInfo(
     return status;
 } // trimDataObjInfo
 
-int purge_cache(
-    rsComm_t* rsComm,
-    const int l1descInx)
+auto purge_cache(rsComm_t* rsComm, const int l1descInx) -> int
 {
     if (L1desc[l1descInx].purgeCacheFlag <= 0) {
         return 0;
     }
+
+    ix::log::api::debug("[{}:{}] - purging cache file; info ptr:[{}]",
+        __FUNCTION__, __LINE__, (void*)L1desc[l1descInx].dataObjInfo);
 
     const int trim_status = trimDataObjInfo(rsComm, L1desc[l1descInx].dataObjInfo);
     if (trim_status < 0) {
@@ -509,7 +514,7 @@ int finalize_destination_data_object_for_put_or_copy(
 
     // TODO: Here is where we need to update the replica statuses
     if (OPEN_FOR_WRITE_TYPE == L1desc[l1descInx].openType) {
-        regParam[ALL_REPL_STATUS_KW] = "TRUE";
+        regParam[ALL_REPL_STATUS_KW] = "";
         regParam[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
     }
     else {
@@ -571,19 +576,16 @@ int finalize_replica_after_failed_operation(
         return vault_size;
     }
 
-    //if ( L1desc[l1descInx].dataObjInfo->dataSize != vault_size ) {
-        auto p = ix::make_key_value_proxy(l1desc.dataObjInp->condInput);
-        p[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
-        p[STALE_ALL_INTERMEDIATE_REPLICAS_KW] = "";
-        l1desc.dataObjInfo->dataSize = vault_size;
-        const int status = _modDataObjSize( rsComm, l1descInx, l1desc.dataObjInfo );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "%s - _modDataObjSize failed [%d]",
-                     __FUNCTION__, status );
-            return status;
-        }
-    //}
+    auto p = ix::make_key_value_proxy(l1desc.dataObjInp->condInput);
+    p[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
+    p[STALE_ALL_INTERMEDIATE_REPLICAS_KW] = "";
+    l1desc.dataObjInfo->dataSize = vault_size;
+    if (const int status = _modDataObjSize( rsComm, l1descInx, l1desc.dataObjInfo ); status < 0) {
+        rodsLog( LOG_ERROR,
+                 "%s - _modDataObjSize failed [%d]",
+                 __FUNCTION__, status );
+        return status;
+    }
 
     /* an error has occurred */
     return L1desc[l1descInx].oprStatus;
@@ -593,7 +595,6 @@ int finalize_replica_with_no_bytes_written(
     rsComm_t* comm,
     const int l1descInx)
 {
-    purge_cache(comm, l1descInx);
     l1desc_t& l1desc = L1desc[l1descInx];
 
     ix::log::api::trace("[{}:{}] - path:[{}], hier:[{}]",
@@ -667,8 +668,8 @@ rodsLong_t get_size_in_vault(
         return l1desc.dataSize;
     }
 
-    if (size_in_vault < 0) {
-        THROW((int)size_in_vault, 
+    if (size_in_vault < 0 && UNKNOWN_FILE_SZ != size_in_vault) {
+        THROW((int)size_in_vault,
             fmt::format("{}: getSizeInVault error for {}, status = {}",
             __FUNCTION__, l1desc.dataObjInfo->objPath, size_in_vault));
     }
@@ -690,7 +691,6 @@ void close_physical_file(
 {
     const int l3descInx = L1desc[l1descInx].l3descInx;
     if (l3descInx < 3) {
-        //THROW(l3descInx, fmt::format("invalid l3 descriptor index [{}]", l3descInx));
         ix::log::api::info("invalid l3 descriptor index [{}]", l3descInx);
         return;
     }
@@ -734,7 +734,7 @@ int finalize_replica(
     try {
         auto& l1desc = L1desc[inx];
 
-        ix::log::api::trace("[{}:{}] - finalizing replica [{}] on [{}]",
+        ix::log::api::debug("[{}:{}] - finalizing replica [{}] on [{}]",
             __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
 
         if (l1desc.oprStatus < 0) {
@@ -746,6 +746,7 @@ int finalize_replica(
         }
 
         if (!bytes_written_in_operation(l1desc)) {
+            purge_cache(comm, inx);
             return finalize_replica_with_no_bytes_written(comm, inx);
         }
 
@@ -765,6 +766,8 @@ int finalize_replica(
 
         l1desc.bytesWritten = size_in_vault;
         l1desc.dataObjInfo->dataSize = size_in_vault;
+
+        purge_cache(comm, inx);
 
         return status;
     }
@@ -899,8 +902,6 @@ int rsDataObjClose(
         close_physical_file(rsComm, l1descInx);
 
         ec = finalize_replica(rsComm, l1descInx, *dataObjCloseInp);
-
-        purge_cache(rsComm, l1descInx);
 
         if (l1desc.lockFd > 0) {
             unlock_file_descriptor(rsComm, l1descInx);
