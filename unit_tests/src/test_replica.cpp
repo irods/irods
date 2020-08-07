@@ -1,7 +1,6 @@
 #include "catch.hpp"
 
 #include "client_connection.hpp"
-#include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "replica.hpp"

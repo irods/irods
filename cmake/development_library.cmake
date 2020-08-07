@@ -193,6 +193,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/closeCollection.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/collCreate.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/collRepl.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/data_object_finalize.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/data_object_modify_info.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/dataCopy.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/dataGet.h
