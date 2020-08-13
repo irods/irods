@@ -20,6 +20,7 @@
 #include "apiNumber.h"
 #include "api_plugin_number.h"
 #include "client_api_whitelist.hpp"
+#include "key_value_proxy.hpp"
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -44,11 +45,13 @@ jmp_buf Jenv;
 #include <iterator>
 #include <algorithm>
 
+namespace ix = irods::experimental;
+
 namespace
 {
     void attach_api_request_info_to_logger(rsComm_t* _comm, int _api_number)
     {
-        using log = irods::experimental::log;
+        using log = ix::log;
 
         log::set_request_client_version(&_comm->cliVersion);
         log::set_request_client_host(_comm->clientAddr);
@@ -63,7 +66,7 @@ int rsApiHandler(rsComm_t*   rsComm,
                  bytesBuf_t* inputStructBBuf,
                  bytesBuf_t* bsBBuf)
 {
-    using log = irods::experimental::log;
+    using log = ix::log;
 
     attach_api_request_info_to_logger(rsComm, apiNumber);
 
@@ -97,6 +100,11 @@ int rsApiHandler(rsComm_t*   rsComm,
     }
 
     rsComm->apiInx = apiInx;
+
+    // Clear the session properties stored in the connection object.
+    // This is required to avoid incorrect behavior when multiple API calls are
+    // invoked via the same connection object.
+    ix::key_value_proxy{rsComm->session_props}.clear();
 
     void *myOutStruct = NULL;
     bytesBuf_t myOutBsBBuf;
