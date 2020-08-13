@@ -1,8 +1,13 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 
+#define MAKE_IRODS_STATE_MAP
 #define MAKE_IRODS_ERROR_MAP
 #include "rodsErrorTable.h"
+#include "irods_state_table.h"
+#undef  MAKE_IRODS_STATE_MAP
+#undef  MAKE_IRODS_ERROR_MAP
+
 #include "index.hpp"
 #include "functions.hpp"
 #include "arithmetics.hpp"
@@ -61,7 +66,6 @@ int rsReadCollection( rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt )
 int msiExecGenQuery( msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t* rei );
 int msiCloseGenQuery( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t* rei );
 int msiGetMoreRows( msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t* rei );
-
 
 Res *smsi_getGlobalSessionId( Node**, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     return newStringRes( r, globalSessionId );
@@ -2052,16 +2056,23 @@ Res *smsi_substr( Node** paramsr, int, Node* node, ruleExecInfo_t*, int, Env*, r
 }
 
 Res *smsi_error( Node** paramsr, int, Node* node, ruleExecInfo_t*, int, Env*, rError_t* errmsg, Region* r ) {
-	Res * errName = paramsr[0];
-	const auto& name_map = irods_error_map_construction::irods_error_name_map;
-	int i {};
-	try { i = name_map.at( errName->text ); } catch(...) { }
-	if ( i == int{} )
-	{
+        Res * errName = paramsr[0];
+        //const auto& name_map = irods_error_map_construction::irods_error_name_map;
+        int i {0};
+        for (auto & the_map : {
+                                  irods_error_map_construction::irods_error_name_map,
+                                  irods_state_map_construction::irods_state_name_map
+                              }) 
+        {
+            try { i = the_map.at( errName->text ); } catch(...) { }
+            if (i != 0) break;
+        }
+        if (0 == i)
+        {
             generateAndAddErrMsg( "invalid error name", node, RE_RUNTIME_ERROR, errmsg );
-	    return newErrorRes(r, RE_RUNTIME_ERROR);
-	}
-	return newIntRes(r, -abs(i));
+            return newErrorRes(r, RE_RUNTIME_ERROR);
+        }
+        return newIntRes(r, i);
 }
 
 Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
@@ -2689,6 +2700,7 @@ void getSystemFunctions( Hashtable *ft, Region* r ) {
     insertIntoHashTable( ft, "substr", newFunctionFD( "string * integer * integer->string", smsi_substr, r ) );
     insertIntoHashTable( ft, "split", newFunctionFD( "string * string -> list string", smsi_split, r ) );
     insertIntoHashTable( ft, "error", newFunctionFD( "string -> integer", smsi_error, r ) );
+    insertIntoHashTable( ft, "state", newFunctionFD( "string -> integer", smsi_error, r ) );
     insertIntoHashTable( ft, "execCmdArg", newFunctionFD( "f string->string", smsi_execCmdArg, r ) );
     insertIntoHashTable( ft, "query", newFunctionFD( "expression ? -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r ) );
     insertIntoHashTable( ft, "unspeced", newFunctionFD( "-> ?", smsi_undefined, r ) );
