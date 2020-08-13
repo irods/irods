@@ -46,6 +46,10 @@ namespace irods::experimental::api {
 
         } // operation
 
+        public:
+
+            copy() : base("copy") {}
+
     }; // copy
 
 } // namespace irods::experimental::api
