@@ -67,7 +67,7 @@ namespace irods
     rcComm_t* connection_pool::connection_proxy::release()
     {
         pool_->release_connection(index_);
-        auto conn = conn_;
+        auto* conn = conn_;
         conn_ = nullptr;
         return conn;
     }
@@ -225,6 +225,7 @@ namespace irods
     void connection_pool::release_connection(int _index)
     {
         conn_ctxs_[_index].refresh = true;
+        conn_ctxs_[_index].conn.release();
     }
 
     std::shared_ptr<connection_pool> make_connection_pool(int size)
