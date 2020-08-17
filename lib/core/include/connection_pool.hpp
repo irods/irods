@@ -23,6 +23,8 @@ namespace irods
         public:
             friend class connection_pool;
 
+            connection_proxy();
+
             connection_proxy(connection_proxy&&);
             connection_proxy& operator=(connection_proxy&&);
 
