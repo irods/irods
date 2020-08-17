@@ -57,5 +57,29 @@ TEST_CASE("connection pool")
         // created by the connection pool are indeed different connections.
         REQUIRE(released_conn_ptr != static_cast<rcComm_t*>(conn));
     }
+
+    SECTION("connection_proxies are default constructible")
+    {
+        // This will not compile if the connection proxy class is not
+        // default constructible. This allows connection proxies to be
+        // placed inside of classes.
+        irods::connection_pool::connection_proxy conn;
+
+        // The connection proxy does not reference an actual connection.
+        // Therefore, it should evaluate to false in a boolean context.
+        REQUIRE_FALSE(conn);
+
+        // Default constructed connection proxies can be moved to.
+        auto conn_pool = irods::make_connection_pool();
+        conn = conn_pool->get_connection();
+        REQUIRE(conn);
+
+        // The following structure will not compile if the connection_proxy
+        // is not default constructible.
+        struct conn_wrapper
+        {
+            irods::connection_pool::connection_proxy conn;
+        };
+    }
 }
 
