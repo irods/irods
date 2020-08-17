@@ -8,7 +8,7 @@
 TEST_CASE("connection pool")
 {
     rodsEnv env;
-    REQUIRE(getRodsEnv(&env) == 0);
+    _getRodsEnv(env);
 
     SECTION("connections are detachable")
     {
@@ -80,6 +80,29 @@ TEST_CASE("connection pool")
         {
             irods::connection_pool::connection_proxy conn;
         };
+    }
+
+    SECTION("releasing a connection does not cause an error when the pool destructs")
+    {
+        rcComm_t* released_conn_ptr = nullptr;
+
+        irods::at_scope_exit disconnect{[released_conn_ptr] {
+            REQUIRE(rcDisconnect(released_conn_ptr) == 0);
+        }};
+
+        {
+            auto conn_pool = irods::make_connection_pool();
+
+            // After this call, the pool will not have any more connections.
+            // The released connections will be replaced on the next call to
+            // get_connection().
+            released_conn_ptr = conn_pool->get_connection().release();
+
+            // When the connection pool goes out of scope, the empty connection
+            // slot should not cause an error or the program to crash.
+        }
+
+        REQUIRE(released_conn_ptr);
     }
 }
 
