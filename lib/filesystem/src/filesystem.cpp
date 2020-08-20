@@ -15,9 +15,6 @@
     #include "rsDataObjRename.hpp"
     #include "rsDataObjUnlink.hpp"
     #include "rsDataObjChksum.hpp"
-    #include "rsOpenCollection.hpp"
-    #include "rsCloseCollection.hpp"
-    #include "rsReadCollection.hpp"
     #include "rsModAccessControl.hpp"
     #include "rsCollCreate.hpp"
     #include "rsModColl.hpp"
@@ -32,9 +29,6 @@
     #include "dataObjRename.h"
     #include "dataObjUnlink.h"
     #include "dataObjChksum.h"
-    #include "openCollection.h"
-    #include "closeCollection.h"
-    #include "readCollection.h"
     #include "modAccessControl.h"
     #include "collCreate.h"
     #include "modColl.h"
@@ -75,9 +69,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
         int rsDataObjCopy(rsComm_t* _comm, dataObjCopyInp_t* _dataObjCopyInp)
         {
-            //_dataObjCopyInp->srcDataObjInp.oprType = COPY_SRC;
-            //_dataObjCopyInp->destDataObjInp.oprType = COPY_DEST;
-
             transferStat_t* ts_ptr{};
 
             const auto ec = rsDataObjCopy(_comm, _dataObjCopyInp, &ts_ptr);
@@ -797,12 +788,10 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             // Case 3: "_new_p" is a non-existing collection w/ the following requirements:
             //  1. Does not end with a collection separator.
             //  2. The parent collection must exist.
-            else if (detail::is_separator(_new_p.string().back()))
-            {
+            else if (detail::is_separator(_new_p.string().back())) {
                 throw filesystem_error{"path cannot end with a separator", _new_p, make_error_code(SYS_INVALID_INPUT_PARAM)};
             }
-            else if (!is_collection(_comm, _new_p.parent_path()))
-            {
+            else if (!is_collection(_comm, _new_p.parent_path())) {
                 throw filesystem_error{"path does not exist", _new_p.parent_path(), make_error_code(OBJ_PATH_DOES_NOT_EXIST)};
             }
         }

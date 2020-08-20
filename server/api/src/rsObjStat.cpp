@@ -10,6 +10,7 @@
 #include "querySpecColl.h"
 #include "objMetaOpr.hpp"
 #include "collection.hpp"
+#include "rodsPath.h"
 #include "specColl.hpp"
 #include "resource.hpp"
 #include "rcGlobalExtern.h"
@@ -19,11 +20,12 @@
 #include "irods_configuration_keywords.hpp"
 #include "rsGenQuery.hpp"
 
-int
-rsObjStat(
-    rsComm_t *rsComm,
-    dataObjInp_t *dataObjInp,
-    rodsObjStat_t **rodsObjStatOut ) {
+int rsObjStat(rsComm_t *rsComm,
+              dataObjInp_t *dataObjInp,
+              rodsObjStat_t **rodsObjStatOut )
+{
+    remove_trailing_path_separators(dataObjInp->objPath);
+
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
