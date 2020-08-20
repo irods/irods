@@ -7,6 +7,7 @@
 #include "filesystem/path.hpp"
 
 #include "rcConnect.h"
+#include "miscUtil.h"
 
 #include <iterator>
 #include <memory>
@@ -71,7 +72,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         {
             rxComm* comm{};
             path path{};
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
             int handle{};
+#else
+            collHandle_t handle{};
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
             value_type entry{};
         };
 

@@ -46,9 +46,9 @@
     #define rxComm                                  rcComm_t
 
     #define rxSpecificQuery                         rcSpecificQuery
-    #define rxOpenCollection                        rcOpenCollection
-    #define rxReadCollection                        rcReadCollection
-    #define rxCloseCollection                       rcCloseCollection
+    #define rxOpenCollection                        rclOpenCollection
+    #define rxReadCollection                        rclReadCollection
+    #define rxCloseCollection                       rclCloseCollection
     #define rxObjStat                               rcObjStat
     #define rxModColl                               rcModColl
     #define rxCollCreate                            rcCollCreate
