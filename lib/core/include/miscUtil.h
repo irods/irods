@@ -10,6 +10,7 @@
 #include "guiProgressCallback.h"
 
 #define	INIT_UMASK_VAL	99999999
+
 typedef struct CollSqlResult {
     int rowCnt;
     int attriCnt;
@@ -65,14 +66,14 @@ typedef struct DataObjMetaInfo {
 } dataObjMetaInfo_t;
 
 // definition for state in collHandle_t
-typedef enum {
+typedef enum CollState {
     COLL_CLOSED,
     COLL_OPENED,
     COLL_DATA_OBJ_QUERIED,
     COLL_COLL_OBJ_QUERIED
 } collState_t;
 
-typedef enum {
+typedef enum ConnType {
     RC_COMM,
     RS_COMM
 } connType_t;
@@ -94,7 +95,7 @@ typedef struct QueryHandle {
 #define NO_TRIM_REPL_FG            0x10 // don't trim the replica
 #define INCLUDE_CONDINPUT_IN_QUERY 0x20 // include the cond in condInput in the query
 
-typedef struct {
+typedef struct CollHandle {
     collState_t state;
     int inuseFlag;
     int flags;
@@ -131,12 +132,11 @@ typedef struct CollEnt {
 } collEnt_t;
 
 // used to store regex patterns used to match pathnames
-typedef struct {
+typedef struct PathnamePatterns {
     char *pattern_buf;
     char **patterns;
     int num_patterns;
 } pathnamePatterns_t;
-
 
 #ifdef __cplusplus
 extern "C" {
