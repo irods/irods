@@ -64,6 +64,15 @@ namespace {
         }
     }
 }
+
+namespace irods {
+	inline void fill_error_constants ( std::map<std::string,int> & dest )
+	{
+		for (const auto &[k,v]: irods_error_map_construction::irods_error_name_map) {
+			dest[k] = v;
+		}
+	}
+}
 #define NEW_ERROR(err_name, err_code) const int err_name = irods_error_map_construction::create_error( #err_name, err_code, err_name );
 #else
 #define NEW_ERROR(err_name, err_code) err_name = err_code,
