@@ -1,5 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
+
+#define MAKE_IRODS_ERROR_MAP
+#include "rodsErrorTable.h"
+
+#define MAKE_IRODS_STATE_MAP
+#include "irods_state_table.h"
+
 #include "index.hpp"
 #include "functions.hpp"
 #include "arithmetics.hpp"
@@ -2048,6 +2055,33 @@ Res *smsi_substr( Node** paramsr, int, Node* node, ruleExecInfo_t*, int, Env*, r
     return retres;
 }
 
+Res *smsi_error_Impl(bool abs_value, Node** paramsr, int, Node* node, ruleExecInfo_t* rei, int, Env*, rError_t* errmsg, Region* r)
+{
+        Res * errName = paramsr[0];
+        int i {0};
+        for (auto & the_map : {
+                                  irods_error_map_construction::irods_error_name_map,
+                                  irods_state_map_construction::irods_state_name_map
+                              })
+        {
+            try {
+                i = the_map.at( errName->text );
+            }
+            catch(...) {
+            }
+            if (0 != i) break;
+        }
+        if (0 == i)
+        {
+            generateAndAddErrMsg( "invalid error name", node, RE_RUNTIME_ERROR, errmsg );
+            return newErrorRes(r, RE_RUNTIME_ERROR);
+        }
+        return newIntRes(r, abs_value ? abs(i) : i);
+}
+
+template <typename...T> Res* smsi_error(T... t)  { return smsi_error_Impl( false, t... ); }
+template <typename...T> Res* smsi_state(T... t)  { return smsi_error_Impl( true , t... ); }
+
 Res *smsi_split( Node** paramsr, int, Node*, ruleExecInfo_t*, int, Env*, rError_t*, Region* r ) {
     Res *strres = ( Res * )paramsr[0];
     Res *delimres = ( Res * )paramsr[1];
@@ -2672,6 +2706,10 @@ void getSystemFunctions( Hashtable *ft, Region* r ) {
     insertIntoHashTable( ft, "strlen", newFunctionFD( "string->integer", smsi_strlen, r ) );
     insertIntoHashTable( ft, "substr", newFunctionFD( "string * integer * integer->string", smsi_substr, r ) );
     insertIntoHashTable( ft, "split", newFunctionFD( "string * string -> list string", smsi_split, r ) );
+    insertIntoHashTable( ft, "error", newFunctionFD( "string -> integer",
+                         smsi_error<Node**,int,Node*,ruleExecInfo_t*,int,Env*,rError_t*,Region*>, r ) );
+    insertIntoHashTable( ft, "state", newFunctionFD( "string -> integer",
+                         smsi_state<Node**,int,Node*,ruleExecInfo_t*,int,Env*,rError_t*,Region*>, r ) );
     insertIntoHashTable( ft, "execCmdArg", newFunctionFD( "f string->string", smsi_execCmdArg, r ) );
     insertIntoHashTable( ft, "query", newFunctionFD( "expression ? -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r ) );
     insertIntoHashTable( ft, "unspeced", newFunctionFD( "-> ?", smsi_undefined, r ) );
