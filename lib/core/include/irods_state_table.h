@@ -7,11 +7,13 @@
 namespace {
     namespace irods_state_map_construction {
         std::map<const int, const std::string> irods_state_map;
+        std::map<const std::string, const int> irods_state_name_map;
 
         // We pass the variable as a const reference here to silence
         // unused variable warnings in a controlled manner.
         int create_state(const std::string& state_name, const int state_code, const int&) {
             irods_state_map.insert(std::pair<const int, const std::string>(state_code, state_name));
+            irods_state_name_map.insert(std::pair<const std::string, const int>(state_name, state_code));
             return state_code;
         }
     }

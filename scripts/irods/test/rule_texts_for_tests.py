@@ -85,6 +85,42 @@ acSetRescSchemeForCreate {
 #===== Test_Native_Rule_Engine_Plugin  =====
 
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin'] = {}
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_error_smsi_5043'] = '''
+validate_error_and_state_smsi(*name,*error_int) {
+    *msg = "[general_failure]"
+    *error_int = 0
+    *status = errorcode( *error_i = error(*name) )
+    if (*status != 0) {
+        *msg = "BAD error() call"
+    }
+    else {
+        *status = errorcode( *state_i = state(*name) )
+        if (*status != 0) {
+            *msg = "BAD state() call"
+        }
+        else {
+            if ((*error_i < 0 && *error_i == -*state_i) ||
+                (*error_i > 0 && *error_i ==  *state_i))
+            {
+              *msg = ""
+              *error_int = *error_i
+            }
+        }
+    }
+    if (*msg != "") { writeLine('stderr', *msg) }
+}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_error_smsi_5043__rule_file'] = '''
+test() {
+    *symbols = list("SYS_INTERNAL_ERR",
+                    "RULE_ENGINE_CONTINUE")
+    foreach (*sym in *symbols) {
+      validate_error_and_state_smsi (*sym, *error_int)
+      writeLine("stdout", "*sym = *error_int")
+    }
+}
+OUTPUT ruleExecOut
+'''
 rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_network_pep'] = '''
 pep_network_agent_start_pre(*INST,*CTX,*OUT) {
     *OUT = "THIS IS AN OUT VARIABLE"
@@ -168,6 +204,20 @@ test_msiSegFault {{
 }}
 OUTPUT ruleExecOut
 '''
+
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_failing_on_code_5043'] = '''
+fail_on_code(*name) {
+    fail( error(*name) )
+}
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Native_Rule_Engine_Plugin']['test_failing_on_code_5043__rule_file'] = '''
+main {
+  *Name = "SYS_NOT_SUPPORTED"
+  writeLine("stdout", errorcode( fail_on_code(*Name) ) == error( *Name  ))
+}
+OUTPUT ruleExecOut
+'''
+
 
 #===== Test_Quotas =====
 
