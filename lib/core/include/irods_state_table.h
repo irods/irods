@@ -18,6 +18,15 @@ namespace {
         }
     }
 }
+
+namespace irods {
+	inline void fill_state_constants ( std::map<std::string,int> & dest )
+	{
+		for (const auto &[k,v]: irods_state_map_construction::irods_state_name_map) {
+			dest[k] = v;
+		}
+	}
+}
 #define NEW_STATE(state_name, state_code) const int state_name = irods_state_map_construction::create_state(#state_name, state_code, state_name);
 #else
 #define NEW_STATE(state_name, state_code) state_name = state_code,
