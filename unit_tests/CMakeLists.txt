@@ -53,6 +53,7 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_query_builder
                       test_config/irods_replica_access_table
                       test_config/irods_replica_open_and_close
+                      test_config/irods_resource_administration
                       test_config/irods_scoped_client_identity
                       test_config/irods_scoped_privileged_client
                       test_config/irods_shared_memory_object
