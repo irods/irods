@@ -215,7 +215,7 @@ endif()
 
 add_custom_command(
   OUTPUT ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp
-  COMMAND ${IRODS_EXTERNALS_FULLPATH_AVRO}/bin/avrogencpp -n irods -o ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp -i ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
+  COMMAND LD_LIBRARY_PATH=${IRODS_EXTERNALS_FULLPATH_BOOST}/lib ${IRODS_EXTERNALS_FULLPATH_AVRO}/bin/avrogencpp -n irods -o ${CMAKE_BINARY_DIR}/lib/core/include/server_control_plane_command.hpp -i ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/irods_schema_messaging/v1/server_control_plane_command.json
   )
 
