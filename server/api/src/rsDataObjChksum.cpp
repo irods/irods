@@ -12,9 +12,9 @@
 #include "rsFileStat.hpp"
 #include "boost/lexical_cast.hpp"
 #include "rsGenQuery.hpp"
-#define RODS_SERVER
+
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
-#undef RODS_SERVER
 
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
