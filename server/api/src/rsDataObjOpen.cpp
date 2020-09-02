@@ -66,9 +66,8 @@
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
 
-#define RODS_SERVER
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
-#undef RODS_SERVER
 
 #include "boost/format.hpp"
 

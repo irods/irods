@@ -11,16 +11,7 @@
 #include "thread_pool.hpp"
 #include "connection_pool.hpp"
 #include "dispatch_processor.hpp"
-
-#ifdef RODS_SERVER
-#undef RODS_SERVER
-#define REDEF_RODS_SERVER
-#endif
 #include "query_builder.hpp"
-
-#ifdef REDEF_RODS_SERVER
-#define RODS_SERVER
-#endif
 
 // =-=-=-=-=-=-=-
 // stl includes
