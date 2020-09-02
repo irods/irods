@@ -1,14 +1,14 @@
 #ifndef IRODS_QUERY_HPP
 #define IRODS_QUERY_HPP
 
-#ifdef RODS_SERVER
+#include "specificQuery.h"
+
+#ifdef IRODS_QUERY_ENABLE_SERVER_SIDE_API
     #include "rsGenQuery.hpp"
-    #include "specificQuery.h"
     #include "rsSpecificQuery.hpp"
 #else
     #include "genQuery.h"
-    #include "specificQuery.h"
-#endif
+#endif // IRODS_QUERY_ENABLE_SERVER_SIDE_API
 
 #include "irods_log.hpp"
 #include "rcMisc.h"
@@ -206,7 +206,7 @@ namespace irods {
 
         private:
             genQueryInp_t gen_input_;
-#ifdef RODS_SERVER
+#ifdef IRODS_QUERY_ENABLE_SERVER_SIDE_API
             const std::function<
                 int(connection_type*,
                     genQueryInp_t*,
@@ -218,7 +218,7 @@ namespace irods {
                     genQueryInp_t*,
                     genQueryOut_t**)>
                         gen_query_fcn{rcGenQuery};
-#endif
+#endif // IRODS_QUERY_ENABLE_SERVER_SIDE_API
 
         }; // class gen_query_impl
 
@@ -293,7 +293,7 @@ namespace irods {
 
             private:
             specificQueryInp_t spec_input_;
-#ifdef RODS_SERVER
+#ifdef IRODS_QUERY_ENABLE_SERVER_SIDE_API
             const std::function<
                 int(connection_type*,
                     specificQueryInp_t*,
@@ -305,7 +305,7 @@ namespace irods {
                     specificQueryInp_t*,
                     genQueryOut_t**)>
                         spec_query_fcn{rcSpecificQuery};
-#endif
+#endif // IRODS_QUERY_ENABLE_SERVER_SIDE_API
         }; // class spec_query_impl
 
         class iterator {

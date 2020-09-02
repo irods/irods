@@ -4,20 +4,15 @@
 
 #ifdef IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
     #include "rsGeneralAdmin.hpp"
-
-    #define RODS_SERVER
-    #include "query_builder.hpp"
-    #undef RODS_SERVER
-
     #define rxGeneralAdmin  rsGeneralAdmin
+    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #else
     #include "generalAdmin.h"
-    #include "query_builder.hpp"
-
     #define rxGeneralAdmin  rcGeneralAdmin
 #endif // IRODS_RESOURCE_ADMINISTRATION_ENABLE_SERVER_SIDE_API
 
 #include "rodsErrorTable.h"
+#include "query_builder.hpp"
 
 #include "fmt/format.h"
 

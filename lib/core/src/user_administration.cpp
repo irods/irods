@@ -5,7 +5,7 @@
 #ifdef IRODS_USER_ADMINISTRATION_ENABLE_SERVER_SIDE_API
     #include "rsGeneralAdmin.hpp"
     #define rxGeneralAdmin rsGeneralAdmin
-    #define RODS_SERVER 1 // For irods::query<rsComm_t>
+    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API // For irods::query<rsComm_t>
 #else
     #include "generalAdmin.h"
     #define rxGeneralAdmin rcGeneralAdmin
