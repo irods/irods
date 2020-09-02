@@ -1,4 +1,5 @@
 #include "apiHandler.hpp"
+#include "api_plugin_number.h"
 #include "experimental_plugin_framework.hpp"
 #include "client_api_whitelist.hpp"
 #include "json.hpp"
@@ -285,8 +286,6 @@ namespace {
 #else
     #define CALL_ADAPTOR NULL
 #endif
-
-    static const uint32_t ADAPTER_APN{120000};
 
 } // namespace
 
