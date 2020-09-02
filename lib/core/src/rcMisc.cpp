@@ -4,11 +4,12 @@
 /* rcMisc.c - misc client routines
  */
 #ifndef windows_platform
-#include <sys/time.h>
-#include <sys/wait.h>
+    #include <sys/time.h>
+    #include <sys/wait.h>
 #else
-#include "Unix2Nt.hpp"
+    #include "Unix2Nt.hpp"
 #endif
+
 #include "rcMisc.h"
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
@@ -16,6 +17,7 @@
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
 #include "dataObjPut.h"
+#include "rodsErrorTable.h"
 
 #include "bulkDataObjPut.h"
 #include "putUtil.h"
@@ -28,6 +30,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <map>
 #include <random>
 #include <openssl/md5.h>
@@ -4501,6 +4504,11 @@ auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> s
 
 int
 getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res) {
+    // "_node" is the hostname to resolve.
+    if (!_node || std::strlen(_node) == 0) {
+        rodsLog(LOG_ERROR, "getaddrinfo_with_retry: hostname is null or empty");
+        return USER_RODS_HOSTNAME_ERR;
+    }
 
     const auto hostname = resolve_hostname_from_hosts_config(_node);
 
