@@ -27,10 +27,12 @@
 #include "irods_get_l1desc.hpp"
 #include "irods_rs_comm_query.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
-#include "irods_query.hpp"
 #include "miscServerFunct.hpp"
 #include "catalog.hpp"
 #include "catalog_utilities.hpp"
+
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+#include "irods_query.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"

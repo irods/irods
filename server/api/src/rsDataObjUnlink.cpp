@@ -41,9 +41,8 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
 
-#define RODS_SERVER
+#define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
-#undef RODS_SERVER
 
 #include "boost/filesystem/path.hpp"
 #include "fmt/format.h"

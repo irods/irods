@@ -5,7 +5,7 @@
 
 // clang-format off
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-    #define RODS_SERVER
+    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 
     #include "rods.h"
     #include "apiHeaderAll.h"
