@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime, timedelta
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -146,4 +147,15 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
 
         rule = 'msiDataObjCreate("{0}", "", *out)'.format(data_object + '/')
         self.admin.assert_icommand(['irule', '-r', rep, rule, 'null', 'ruleExecOut'], 'STDERR', ['-317000 USER_INPUT_PATH_ERR'])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_return_error_on_resolution_of_empty_hostname__issue_5085(self):
+        resource = 'issue_5085_resc'
+
+        try:
+            start = datetime.now()
+            self.admin.assert_icommand(['iadmin', 'mkresc', resource, 'replication', ':'], 'STDOUT', ["'' is not a valid DNS entry"])
+            self.assertLess(datetime.now() - start, timedelta(seconds=5))
+        finally:
+            self.admin.assert_icommand(['iadmin', 'rmresc', resource])
 
