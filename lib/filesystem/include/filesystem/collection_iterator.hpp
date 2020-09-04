@@ -6,8 +6,9 @@
 #include "filesystem/collection_entry.hpp"
 #include "filesystem/path.hpp"
 
-#include "rcConnect.h"
-#include "miscUtil.h"
+#ifndef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #include "miscUtil.h"
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 
 #include <iterator>
 #include <memory>

@@ -22,7 +22,7 @@
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #define NAMESPACE_IMPL                          server
 
-    #define rxComm                                  rsComm_t
+    #define rxComm                                  RsComm
 
     #define rxSpecificQuery                         rsSpecificQuery
     #define rxOpenCollection                        rsOpenCollection
@@ -40,10 +40,12 @@
     #define rxModAVUMetadata                        rsModAVUMetadata
     #define rxModDataObjMeta                        rsModDataObjMeta
     #define rx_atomic_apply_metadata_operations     rs_atomic_apply_metadata_operations
+
+    struct RsComm;
 #else
     #define NAMESPACE_IMPL                          client
 
-    #define rxComm                                  rcComm_t
+    #define rxComm                                  RcComm
 
     #define rxSpecificQuery                         rcSpecificQuery
     #define rxOpenCollection                        rclOpenCollection
@@ -61,6 +63,8 @@
     #define rxModAVUMetadata                        rcModAVUMetadata
     #define rxModDataObjMeta                        rc_data_object_modify_info
     #define rx_atomic_apply_metadata_operations     rc_atomic_apply_metadata_operations
+
+    struct RcComm;
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 // clang-format on
 
