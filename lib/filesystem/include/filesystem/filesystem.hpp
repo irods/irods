@@ -8,8 +8,6 @@
 #include "filesystem/filesystem_error.hpp"
 #include "filesystem/detail.hpp"
 
-#include "rcConnect.h"
-
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #include "rs_atomic_apply_metadata_operations.hpp"
 #else

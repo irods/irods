@@ -3,15 +3,11 @@
 #include "filesystem/detail.hpp"
 #include "filesystem/filesystem_error.hpp"
 
-// clang-format off
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #include "rsOpenCollection.hpp"
     #include "rsReadCollection.hpp"
     #include "rsCloseCollection.hpp"
-#else
-    #include "miscUtil.h"
 #endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-// clang-format on
 
 #include "irods_at_scope_exit.hpp"
 
