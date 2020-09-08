@@ -79,8 +79,16 @@ namespace irods::experimental::filesystem
         auto is_data_object(object_status _s) noexcept -> bool;
         auto is_data_object(rxComm& _comm, const path& _p) -> bool;
 
+        /// \brief Returns the mtime of the latest good replica or a collection.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a data object or collection.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a data object or collection.
+        ///
+        /// \return An object_time_type representing the mtime.
         auto last_write_time(rxComm& _comm, const path& _p) -> object_time_type;
-        auto last_write_time(rxComm& _comm, const path& _p, object_time_type _new_time) -> void;
 
         auto remove(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> bool;
         auto remove(rxComm& _comm, const path& _p, extended_remove_options _opts) -> bool;
