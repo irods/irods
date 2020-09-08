@@ -96,6 +96,12 @@ namespace irods {
             virtual const std::string&             in_pdmo()         const {
                 return in_pdmo_;
             }
+            virtual long                           data_id()         const {
+                return data_id_;
+            }
+            virtual long                           coll_id()         const {
+                return coll_id_;
+            }
 
             // =-=-=-=-=-=-=-
             // Mutators
@@ -123,6 +129,12 @@ namespace irods {
             virtual std::vector<physical_object>& replicas() {
                 return replicas_;
             }
+            virtual void data_id(const long _data_id) {
+                data_id_ = _data_id;
+            }
+            virtual void coll_id(const long _coll_id) {
+                coll_id_ = _coll_id;
+            }
 
         protected:
             // =-=-=-=-=-=-=-
@@ -141,6 +153,8 @@ namespace irods {
             // occurring from within a pdmo
             // call made from within the hierarchy
             std::vector< physical_object > replicas_;        // structures holding replica info initialized
+            long                           data_id_;
+            long                           coll_id_;
             // by factory fcn from
             // dataObjInfoHead
 
@@ -157,6 +171,10 @@ namespace irods {
                               file_object_ptr  _file_obj,
                               dataObjInfo_t**  _data_obj_info = nullptr);
 
+    irods::file_object_ptr make_file_object(
+        rsComm_t&       _comm,
+        dataObjInp_t&   _data_obj_inp,
+        dataObjInfo_t** _data_obj_info = nullptr);
 }; // namespace irods
 
 #endif // __IRODS_FILE_OBJECT_HPP__
