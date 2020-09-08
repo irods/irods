@@ -580,13 +580,36 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto last_write_time(rxComm& _comm, const path& _p) -> object_time_type
     {
-        const auto s = stat(_comm, _p);
+        std::string gql;
 
-        if (s.error < 0 || UNKNOWN_OBJ_T == s.type || DATA_OBJ_T == s.type) {
-            throw filesystem_error{"cannot get mtime", _p, make_error_code(s.error)};
+        if (const auto s = status(_comm, _p); is_data_object(s)) {
+            // Fetch information for good replicas only (i.e. DATA_REPL_STATUS = '1').
+            gql = fmt::format("select max(DATA_MODIFY_TIME) "
+                              "where"
+                              " COLL_NAME = '{}' and"
+                              " DATA_NAME = '{}' and"
+                              " DATA_REPL_STATUS = '1'",
+                              _p.parent_path().c_str(),
+                              _p.object_name().c_str());
+        }
+        else if (is_collection(s)) {
+            gql = fmt::format("select COLL_MODIFY_TIME where COLL_NAME = '{}'", _p.c_str());
+        }
+        else {
+            throw filesystem_error{"cannot get mtime", _p, make_error_code(INVALID_OBJECT_TYPE)};
         }
 
-        return object_time_type{std::chrono::seconds{s.mtime}};
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        for (auto&& row : qb.build(_comm, gql)) {
+            return object_time_type{std::chrono::seconds{std::stoull(row[0])}};
+        }
+
+        throw filesystem_error{"cannot get mtime", _p, make_error_code(CAT_NO_ROWS_FOUND)};
     }
 
     auto last_write_time(rxComm& _comm, const path& _p, object_time_type _new_time) -> void
