@@ -47,26 +47,6 @@ namespace irods::experimental::filesystem
         bool unregister = false;
     };
 
-    struct checksum
-    {
-        int replica_number;
-        std::string value;
-        std::uintmax_t size;
-        bool is_up_to_date;
-    };
-
-    enum class replica_number
-    {
-        all
-    };
-
-    enum class verification_calculation
-    {
-        none,
-        if_empty,
-        always
-    };
-
     struct metadata
     {
         std::string attribute;
@@ -89,8 +69,6 @@ namespace irods::experimental::filesystem
         auto exists(rxComm& _comm, const path& _p) -> bool;
 
         auto equivalent(rxComm& _comm, const path& _p1, const path& _p2) -> bool;
-
-        auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t;
 
         auto is_collection(object_status _s) noexcept -> bool;
         auto is_collection(rxComm& _comm, const path& _p) -> bool;
@@ -118,11 +96,6 @@ namespace irods::experimental::filesystem
         auto status(rxComm& _comm, const path& _p) -> object_status;
 
         auto status_known(object_status _s) noexcept -> bool;
-
-        auto data_object_checksum(rxComm& _comm,
-                                  const path& _path,
-                                  const std::variant<int, replica_number>& _replica_number,
-                                  verification_calculation _calculation = verification_calculation::none) -> std::vector<checksum>;
 
         auto get_metadata(rxComm& _comm, const path& _path) -> std::vector<metadata>;
 

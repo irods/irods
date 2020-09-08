@@ -1,12 +1,13 @@
 #include "catch.hpp"
 
-#include "rodsClient.h"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
-#include "transport/default_transport.hpp"
 #include "filesystem.hpp"
-#include "irods_query.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "irods_query.hpp"
+#include "replica.hpp"
+#include "rodsClient.h"
+#include "transport/default_transport.hpp"
 
 #include <boost/filesystem.hpp>
 #include <fmt/format.h>
@@ -91,7 +92,7 @@ TEST_CASE("dstream", "[iostreams]")
         }
 
         REQUIRE(fs::client::exists(conn, path));
-        REQUIRE(fs::client::data_object_size(conn, path) == message.size());
+        REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, path, 0) == message.size());
 
         // Verify that the data object contains the expected message.
         {
@@ -110,7 +111,7 @@ TEST_CASE("dstream", "[iostreams]")
             io::odstream out{xport, path, std::ios_base::out | std::ios_base::in | std::ios_base::app};
             out.close();
 
-            REQUIRE(fs::client::data_object_size(conn, path) > 0);
+            REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, path, 0) > 0);
 
             out.open(xport, path, std::ios_base::in | std::ios_base::out | std::ios_base::app);
             out << message;
@@ -122,7 +123,7 @@ TEST_CASE("dstream", "[iostreams]")
             io::odstream out{xport, path, std::ios_base::out | std::ios_base::in | std::ios_base::app};
             out.close();
 
-            REQUIRE(fs::client::data_object_size(conn, path) > 0);
+            REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, path, 0) > 0);
 
             out.open(xport, path, std::ios_base::in | std::ios_base::out | std::ios_base::app);
             out << message;
