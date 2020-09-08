@@ -36,16 +36,6 @@ namespace irods::experimental::administration::NAMESPACE_IMPL
                 throw user_management_error{"undefined user type"};
             }
 
-            auto to_zone_type(std::string_view zone_type_string) -> zone_type
-            {
-                // clang-format off
-                if      (zone_type_string == "local")  { return zone_type::local; }
-                else if (zone_type_string == "remote") { return zone_type::remote; }
-                // clang-format on
-
-                throw user_management_error{"undefined zone type"};
-            }
-
             auto to_c_str(user_type user_type) -> const char*
             {
                 // clang-format off
