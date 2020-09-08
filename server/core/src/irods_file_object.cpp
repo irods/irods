@@ -37,6 +37,8 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // explicit initialization
         comm_           = _rhs.comm_;
+        data_id_        = _rhs.data_id_;
+        coll_id_        = _rhs.coll_id_;
         logical_path_   = _rhs.logical_path_;
         data_type_      = _rhs.data_type_;
         file_descriptor_ = _rhs.file_descriptor_;
@@ -109,6 +111,8 @@ namespace irods {
 
         data_type_      = _dataObjInfo->dataType;
         comm_           = _rsComm;
+        data_id_        = _dataObjInfo->dataId;
+        coll_id_        = _dataObjInfo->collId;
         logical_path_   = _dataObjInfo->objPath;
         physical_path_  = _dataObjInfo->filePath;
         resc_hier_      = _dataObjInfo->rescHier;
@@ -143,6 +147,8 @@ namespace irods {
         data_object::operator=( _rhs );
 
         comm_           = _rhs.comm_;
+        data_id_        = _rhs.data_id_;
+        coll_id_        = _rhs.coll_id_;
         logical_path_   = _rhs.logical_path_;
         data_type_      = _rhs.data_type_;
         file_descriptor_ = _rhs.file_descriptor_;
@@ -331,6 +337,8 @@ namespace irods {
         }
 
         _file_obj->resc_hier( head_ptr->rescHier );
+        _file_obj->data_id(head_ptr->dataId);
+        _file_obj->coll_id(head_ptr->collId);
 
         // =-=-=-=-=-=-=-
         // iterate over the linked list and populate
@@ -385,5 +393,21 @@ namespace irods {
         return SUCCESS();
 
     } // file_object_factory
+
+    irods::file_object_ptr make_file_object(
+        rsComm_t&       _comm,
+        dataObjInp_t&   _data_obj_inp,
+        dataObjInfo_t** _data_obj_info)
+    {
+        irods::file_object_ptr obj(new irods::file_object());
+
+        irods::error err = irods::file_object_factory(&_comm, &_data_obj_inp, obj, _data_obj_info);
+        if (!err.ok()) {
+            irods::log(err);
+            THROW(err.code(), err.result());
+        }
+
+        return obj;
+    } // make_file_object
 
 } // namespace irods
