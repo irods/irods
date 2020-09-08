@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <istream>
 #include <ostream>
+#include <optional>
 
 namespace irods::experimental::filesystem
 {
@@ -383,6 +384,8 @@ namespace irods::experimental::filesystem
     inline auto swap(path& _lhs, path& _rhs) noexcept -> void { _lhs.swap(_rhs); }
 
     auto hash_value(const path& _p) noexcept -> std::size_t;
+
+    auto zone_name(const path& _p) -> std::optional<std::string>;
 } // namespace irods::experimental::filesystem
 
 #endif // IRODS_FILESYSTEM_PATH_HPP

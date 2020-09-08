@@ -608,6 +608,7 @@ target_include_directories(
   ${CMAKE_SOURCE_DIR}/server/re/include
   ${CMAKE_SOURCE_DIR}/server/drivers/include
   ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
+  ${IRODS_EXTERNALS_FULLPATH_FMT}/include
   ${OPENSSL_INCLUDE_DIR}
   )
 set_property(TARGET irods_client PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
