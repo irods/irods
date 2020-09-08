@@ -101,6 +101,7 @@ auto usage() -> void
     std::cout << "Usage: istream read [-R RESC_NAME] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
                  "Usage: istream read [-n REPLICA_NUMBER] [-o INTEGER] [-c INTEGER] LOGICAL_PATH\n"
                  "Usage: istream write [-R RESC_NAME] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
+                 "Usage: istream write [-n REPLICA_NUMBER] [-k] [-o INTEGER] [-c INTEGER] [--no-trunc] [-a] LOGICAL_PATH\n"
                  "\n"
                  "Streams bytes to/from iRODS via stdin/stdout.\n"
                  "Reads bytes from the target data object and prints them to stdout.\n"
@@ -122,7 +123,8 @@ auto usage() -> void
                  "\n"
                  "Options:\n"
                  "-R, --resource  The root resource to read from or write to.\n"
-                 "-n, --replica   The replica number of the replica to read from.\n"
+                 "-n, --replica   The replica number of the replica to read from or write to.\n"
+                 "                Replica numbers cannot be used to create new data objects.\n"
                  "-o, --offset    The number of bytes to skip within the data object before\n"
                  "                reading/writing.  Defaults to zero.\n"
                  "-c, --count     The number of bytes to read/write.  Defaults to all bytes.\n"
@@ -299,6 +301,9 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     
     if (vm.count("resource")) {
         out.open(tp, path, io::root_resource_name{vm["resource"].as<std::string>()}, mode);
+    }
+    else if (vm.count("replica")) {
+        out.open(tp, path, io::replica_number{vm["replica"].as<int>()});
     }
     else {
         out.open(tp, path, mode);
