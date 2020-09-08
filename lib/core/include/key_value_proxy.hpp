@@ -537,7 +537,7 @@ namespace irods::experimental {
     using key_value_pair = std::pair<std::string, std::string>;
 
     template<typename kvp_type>
-    using proxy_struct_pair = std::pair<key_value_proxy<kvp_type>, lifetime_manager<kvp_type>>;
+    using key_value_proxy_pair = std::pair<key_value_proxy<kvp_type>, lifetime_manager<kvp_type>>;
 
     /// \brief Creates an empty keyValPair_t and wraps it with a proxy and lifetime_manager
     ///
@@ -552,7 +552,7 @@ namespace irods::experimental {
     /// \return std::pair<key_value_proxy, lifetime_manager<keyValPair_t>>
     ///
     /// \since 4.2.8
-    static auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> proxy_struct_pair<keyValPair_t>
+    static auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> key_value_proxy_pair<keyValPair_t>
     {
         keyValPair_t* cond_input = (keyValPair_t*)malloc(sizeof(keyValPair_t));
         std::memset(cond_input, 0, sizeof(keyValPair_t));
@@ -563,13 +563,13 @@ namespace irods::experimental {
             proxy[key] = val;
         }
         return {std::move(proxy), lifetime_manager{*cond_input}};
-    }
+    } // make_key_value_proxy
 
     template<typename kvp_type>
     static auto make_key_value_proxy(kvp_type& kvp) -> key_value_proxy<kvp_type>
     {
         return std::move(key_value_proxy{kvp});
-    }
+    } // make_key_value_proxy
 
 } // namespace irods::experimental
 

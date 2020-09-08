@@ -33,6 +33,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/group.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/guiProgressCallback.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_assert.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/irods_at_scope_exit.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_constants.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_factory.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_auth_manager.hpp
@@ -118,6 +119,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/regUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/region.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/replUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/replica_proxy.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/resource_administration.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/rmdirUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rmUtil.h
@@ -483,7 +485,6 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsReServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsXmsgServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_api_calling_functions.hpp
-  ${CMAKE_SOURCE_DIR}/server/core/include/irods_at_scope_exit.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_collection_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_data_object.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_database_constants.hpp
