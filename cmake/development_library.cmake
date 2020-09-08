@@ -119,6 +119,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/regUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/region.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/replUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/replica.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/replica_proxy.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/resource_administration.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/rmdirUtil.h

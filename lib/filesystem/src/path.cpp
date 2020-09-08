@@ -462,5 +462,18 @@ namespace irods::experimental::filesystem
         const auto pstr = _p.string();
         return boost::hash_range(std::begin(pstr), std::end(pstr));
     }
+
+    auto zone_name(const path& _p) -> std::optional<std::string>
+    {
+        using difference_type = path::iterator::difference_type;
+
+        auto iter = std::begin(_p);
+
+        if (constexpr difference_type hops = 2; std::distance(iter, std::end(_p)) >= hops) {
+            return *++iter;
+        }
+        
+        return std::nullopt;
+    }
 } // namespace irods::experimental::filesystem
 

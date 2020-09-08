@@ -31,6 +31,8 @@
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica.hpp"
 
 #include "fmt/format.h"
 #include "json.hpp"
@@ -398,8 +400,8 @@ namespace
                 // [Re]compute a checksum for the replica if requested.
                 if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
                     const auto& info = *l1desc.dataObjInfo;
-                    constexpr const auto calculation = fs::verification_calculation::always;
-                    fs::server::data_object_checksum(*_comm, info.objPath, info.replNum, calculation);
+                    constexpr const auto calculation = irods::experimental::replica::verification_calculation::always;
+                    irods::experimental::replica::replica_checksum(*_comm, info.objPath, info.replNum, calculation);
                 }
             }
 

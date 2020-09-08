@@ -17,6 +17,11 @@ namespace irods::experimental::filesystem::detail
         return {_ec, std::system_category()};
     }
 
+    inline auto is_separator(path::value_type _c) noexcept -> bool
+    {
+        return path::preferred_separator == _c;
+    }
+
     inline auto throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p) -> void
     {
         if (std::strlen(_p.c_str()) > MAX_NAME_LEN) {
@@ -25,9 +30,11 @@ namespace irods::experimental::filesystem::detail
         }
     }
 
-    inline auto is_separator(path::value_type _c) noexcept -> bool
+    inline auto throw_if_path_is_empty(const irods::experimental::filesystem::path& _p) -> void
     {
-        return path::preferred_separator == _c;
+        if (_p.empty()) {
+            throw irods::experimental::filesystem::filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
+        }
     }
 } // namespace irods::experimental::filesystem::detail
 

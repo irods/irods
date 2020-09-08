@@ -28,7 +28,6 @@ namespace irods::experimental::filesystem
         auto is_data_object() const noexcept -> bool              { return filesystem::NAMESPACE_IMPL::is_data_object(status_); }
         auto is_collection() const noexcept -> bool               { return filesystem::NAMESPACE_IMPL::is_collection(status_); }
         auto is_other() const noexcept -> bool                    { return filesystem::NAMESPACE_IMPL::is_other(status_); }
-        auto data_object_size() const noexcept -> std::uintmax_t  { return data_size_; }
         auto creation_time() const noexcept -> object_time_type   { return ctime_; }
         auto last_write_time() const noexcept -> object_time_type { return mtime_; }
         auto status() const noexcept -> const object_status&      { return status_; }

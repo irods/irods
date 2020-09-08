@@ -24,7 +24,7 @@ namespace irods {
     template <typename connection_type>
     class query {
     public:
-        typedef std::vector<std::string> value_type;
+        using value_type = std::vector<std::string>;
 
         enum query_type {
             GENERAL = 0,
@@ -484,24 +484,19 @@ namespace irods {
         query(query&&) = default;
         query& operator=(query&&) = default;
 
-        ~query() {
-        }
+        ~query() {}
 
-        iterator   begin() {
-            return *iter_;
-        }
+        iterator   begin() { return *iter_; }
 
-        iterator   end()   {
-            return iterator();
-        }
+        iterator   end()   { return iterator(); }
 
-        value_type front() {
-            return (*(*iter_));
-        }
+        value_type front() { return (*(*iter_)); }
 
-        size_t size()  {
-            return query_impl_->size();
-        }
+        value_type front() const { return (*(*iter_)); }
+
+        size_t size()  { return query_impl_->size(); }
+
+        size_t size() const { return query_impl_->size(); }
 
     private:
         std::unique_ptr<iterator>        iter_;
