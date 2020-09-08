@@ -123,20 +123,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             return perms::null;
         }
 
-        auto get_zone_name(const path& _p) -> boost::optional<std::string>
-        {
-            using difference_type = path::iterator::difference_type;
-
-            constexpr difference_type hops = 2;
-            auto iter = std::begin(_p);
-
-            if (std::distance(iter, std::end(_p)) >= hops) {
-                return (++iter)->string();
-            }
-            
-            return boost::none;
-        }
-
         auto set_permissions(rxComm& _comm, const path& _p, stat& _s) -> void
         {
             if (DATA_OBJ_T == _s.type) {
@@ -149,9 +135,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
                 irods::experimental::query_builder qb;
 
-                const auto zone = get_zone_name(_p);
-
-                if (zone) {
+                if (const auto zone = zone_name(_p); zone) {
                     qb.zone_hint(*zone);
                 }
 
@@ -162,9 +146,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             else if (COLL_OBJ_T == _s.type) {
                 irods::experimental::query_builder qb;
 
-                const auto zone = get_zone_name(_p);
-
-                if (zone) {
+                if (const auto zone = zone_name(_p); zone) {
                     qb.zone_hint(*zone);
                 }
 
@@ -578,25 +560,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return p1_info.id == p2_info.id;
     }
 
-    auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t
-    {
-        const auto s = stat(_comm, _p);
-
-        if (s.error < 0) {
-            throw filesystem_error{"cannot get size", _p, make_error_code(s.error)};
-        }
-
-        if (s.type == UNKNOWN_OBJ_T) {
-            throw filesystem_error{"path does not exist", _p, make_error_code(OBJ_PATH_DOES_NOT_EXIST)};
-        }
-
-        if (s.type == DATA_OBJ_T) {
-            return static_cast<std::uintmax_t>(s.size);
-        }
-
-        return 0;
-    }
-
     auto is_collection(object_status _s) noexcept -> bool
     {
         return _s.type() == object_type::collection;
@@ -610,10 +573,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     auto is_empty(rxComm& _comm, const path& _p) -> bool
     {
         const auto s = status(_comm, _p);
-
-        if (is_data_object(s)) {
-            return data_object_size(_comm, _p) == 0;
-        }
 
         if (is_collection(s)) {
             return is_collection_empty(_comm, _p);
@@ -646,7 +605,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     {
         const auto s = stat(_comm, _p);
 
-        if (s.error < 0 || s.type == UNKNOWN_OBJ_T) {
+        if (s.error < 0 || UNKNOWN_OBJ_T == s.type || DATA_OBJ_T == s.type) {
             throw filesystem_error{"cannot get mtime", _p, make_error_code(s.error)};
         }
 
@@ -675,21 +634,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             }
         }
         else if (is_data_object(object_status)) {
-            dataObjInfo_t info{};
-            std::strncpy(info.objPath, _p.c_str(), std::strlen(_p.c_str()));
-
-            keyValPair_t reg_params{};
-            addKeyVal(&reg_params, DATA_MODIFY_KW, new_time.str().c_str());
-
-            modDataObjMeta_t input{};
-            input.dataObjInfo = &info;
-            input.regParam = &reg_params;
-
-            const auto ec = rxModDataObjMeta(&_comm, &input);
-
-            if (ec != 0) {
-                throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
-            }
+            throw filesystem_error{"cannot set mtime of data object at the logical level", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
         }
         else {
             throw filesystem_error{"cannot set mtime of unknown object type", _p, make_error_code(SYS_INTERNAL_ERR)};
@@ -715,9 +660,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         irods::experimental::query_builder qb;
 
-        const auto zone = get_zone_name(_p);
-
-        if (zone) {
+        if (const auto zone = zone_name(_p); zone) {
             qb.zone_hint(*zone);
         }
 
@@ -883,83 +826,6 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         rename(_comm, _old_p, _new_p);
     }
 
-    auto data_object_checksum(rxComm& _comm,
-                              const path& _p,
-                              const boost::variant<int, replica_number>& _replica_number,
-                              verification_calculation _calculation)
-        -> std::vector<checksum>
-    {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
-        detail::throw_if_path_length_exceeds_limit(_p);
-
-        if (!is_data_object(_comm, _p)) {
-            throw filesystem_error{"path does not point to a data object", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
-        if (verification_calculation::if_empty == _calculation ||
-            verification_calculation::always == _calculation)
-        {
-            dataObjInp_t input{};
-            std::string replica_number_string;
-
-            const auto* v = boost::get<replica_number>(&_replica_number);
-
-            if (v) {
-                addKeyVal(&input.condInput, CHKSUM_ALL_KW, "");
-            }
-            else {
-                const auto *i = boost::get<int>(&_replica_number);
-
-                if (i && *i >= 0) {
-                    replica_number_string = std::to_string(*i);
-                    addKeyVal(&input.condInput, REPL_NUM_KW, replica_number_string.c_str());
-                }
-                else {
-                    throw filesystem_error{"cannot get checksum: invalid replica number", make_error_code(SYS_INVALID_INPUT_PARAM)};
-                }
-            }
-
-            std::strncpy(input.objPath, _p.c_str(), std::strlen(_p.c_str()));
-
-            if (verification_calculation::always == _calculation) {
-                addKeyVal(&input.condInput, FORCE_CHKSUM_KW, "");
-            }
-
-            char* checksum{};
-
-            const auto ec = rxDataObjChksum(&_comm, &input, &checksum);
-
-            if (ec < 0) {
-                throw filesystem_error{"cannot get checksum", _p, make_error_code(ec)};
-            }
-        }
-
-        std::string sql = "select DATA_REPL_NUM, DATA_CHECKSUM, DATA_SIZE, DATA_REPL_STATUS where DATA_NAME = '";
-        sql += _p.object_name();
-        sql += "' and COLL_NAME = '";
-        sql += _p.parent_path();
-        sql += "'";
-
-        irods::experimental::query_builder qb;
-
-        const auto zone = get_zone_name(_p);
-
-        if (zone) {
-            qb.zone_hint(*zone);
-        }
-
-        std::vector<checksum> checksums;
-
-        for (const auto& row : qb.build(_comm, sql)) {
-            checksums.push_back({std::stoi(row[0]), row[1], std::stoull(row[2]), row[3] == "1"});
-        }
-
-        return checksums;
-    }
-
     auto status(rxComm& _comm, const path& _p) -> object_status
     {
         const auto s = stat(_comm, _p);
@@ -1039,9 +905,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         irods::experimental::query_builder qb;
 
-        const auto zone = get_zone_name(_p);
-
-        if (zone) {
+        if (const auto zone = zone_name(_p); zone) {
             qb.zone_hint(*zone);
         }
 

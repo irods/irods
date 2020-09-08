@@ -1,13 +1,14 @@
 #include "catch.hpp"
 
-#include "rodsClient.h"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
-#include "transport/default_transport.hpp"
-#include "stream_factory_utility.hpp"
-#include "parallel_transfer_engine.hpp"
 #include "filesystem.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "parallel_transfer_engine.hpp"
+#include "replica.hpp"
+#include "rodsClient.h"
+#include "stream_factory_utility.hpp"
+#include "transport/default_transport.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -143,26 +144,23 @@ TEST_CASE("parallel transfer engine")
 
         // Push file from the local filesystem into iRODS.
         {
-            namespace fs = boost::filesystem;
-
             const auto total_bytes_to_transfer = static_cast<std::int64_t>(local_file_size);
 
             parallel_transfer<std::fstream, io::managed_dstream>(fstream_fac, dstream_fac, total_bytes_to_transfer, stream_count, offset);
 
             // Verify the size of the sink file.
             auto conn = conn_pool->get_connection();
-            REQUIRE(ix::filesystem::client::data_object_size(conn, data_object.c_str()) == local_file_size);
+            REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, data_object.c_str(), 0) == local_file_size);
         }
 
         // Pull file from iRODS to the local filesystem.
         {
-            namespace fs = ix::filesystem;
-
             std::int64_t data_object_size = 0;
 
             {
+                namespace replica = irods::experimental::replica;
                 auto conn = conn_pool->get_connection();
-                data_object_size = static_cast<std::int64_t>(fs::client::data_object_size(conn, data_object.c_str()));
+                data_object_size = static_cast<std::int64_t>(replica::replica_size<rcComm_t>(conn, data_object.c_str(), 0));
             }
 
             parallel_transfer<io::managed_dstream, std::fstream>(dstream_fac, fstream_fac, data_object_size, stream_count, offset);
@@ -183,7 +181,7 @@ TEST_CASE("parallel transfer engine")
 
         // Verify the size of the sink file.
         auto conn = conn_pool->get_connection();
-        REQUIRE(ix::filesystem::client::data_object_size(conn, data_object.c_str()) == local_file_size);
+        REQUIRE(irods::experimental::replica::replica_size<rcComm_t>(conn, data_object.c_str(), 0) == local_file_size);
     }
 }
 

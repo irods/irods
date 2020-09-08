@@ -18,10 +18,10 @@
 #include "rodsClient.h"
 
 #include "connection_pool.hpp"
-#include "irods_client_api_table.hpp"
-#include "irods_pack_table.hpp"
 #include "filesystem.hpp"
 #include "irods_at_scope_exit.hpp"
+#include "irods_client_api_table.hpp"
+#include "irods_pack_table.hpp"
 
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
@@ -145,21 +145,6 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::equivalent(conn, sandbox, p.lexically_normal()));
     }
 
-    SECTION("data object size and checksum")
-    {
-        const fs::path p = sandbox / "data_object";
-
-        {
-            default_transport tp{conn};
-            odstream{tp, p} << "hello world!";
-        }
-
-        REQUIRE(fs::client::exists(conn, p));
-        REQUIRE(fs::client::data_object_size(conn, p) == 12);
-        REQUIRE(fs::client::data_object_checksum(conn, p, fs::replica_number::all).size() == 1);
-        REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
-    }
-
     SECTION("collection modification times")
     {
         using namespace std::chrono_literals;
@@ -181,33 +166,6 @@ TEST_CASE("filesystem")
         REQUIRE(updated == now);
 
         REQUIRE(fs::client::remove(conn, col, fs::remove_options::no_trash));
-    }
-
-    SECTION("data object modification times")
-    {
-        using namespace std::chrono_literals;
-
-        const fs::path p = sandbox / "data_object";
-
-        {
-            default_transport tp{conn};
-            odstream{tp, p} << "hello world!";
-        }
-
-        const auto old_mtime = fs::client::last_write_time(conn, p);
-        std::this_thread::sleep_for(2s);
-
-        using clock_type = fs::object_time_type::clock;
-        using duration_type = fs::object_time_type::duration;
-
-        const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
-        REQUIRE(old_mtime != now);
-
-        fs::client::last_write_time(conn, p, now);
-        const auto updated = fs::client::last_write_time(conn, p);
-        REQUIRE(updated == now);
-
-        REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
     }
 
     SECTION("read/modify permissions on a data object")
