@@ -60,6 +60,17 @@ namespace irods::experimental::filesystem
 
         auto equivalent(rxComm& _comm, const path& _p1, const path& _p2) -> bool;
 
+        /// \brief Returns the size of the latest good replica.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a data object.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a data object.
+        ///
+        /// \return An integer representing the size of the data object.
+        auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t;
+
         auto is_collection(object_status _s) noexcept -> bool;
         auto is_collection(rxComm& _comm, const path& _p) -> bool;
 
