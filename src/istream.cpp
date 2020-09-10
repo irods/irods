@@ -9,6 +9,7 @@
 #include "boost/program_options.hpp"
 
 #include <iostream>
+#include <limits>
 #include <string>
 #include <array>
 #include <tuple>
@@ -21,13 +22,13 @@ using int_type = std::int64_t;
 
 // clang-format off
 constexpr auto buffer_size = 4 * 1024 * 1024;
-constexpr auto all_bytes   = -1;
+constexpr auto all_bytes   = std::numeric_limits<int_type>::max();
 // clang-format on
 
 auto usage() -> void;
 auto check_input_arguments(const po::variables_map& vm) -> std::tuple<bool, int>;
 auto canonical(const std::string& _path, rodsEnv& _env) -> std::optional<std::string>;
-auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> void;
+auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int;
 auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
 auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
 
@@ -126,8 +127,9 @@ auto usage() -> void
                  "-n, --replica   The replica number of the replica to read from or write to.\n"
                  "                Replica numbers cannot be used to create new data objects.\n"
                  "-o, --offset    The number of bytes to skip within the data object before\n"
-                 "                reading/writing.  Defaults to zero.\n"
-                 "-c, --count     The number of bytes to read/write.  Defaults to all bytes.\n"
+                 "                reading/writing.  Value must be positive.  Defaults to zero.\n"
+                 "-c, --count     The number of bytes to read/write.  Value must be positive.\n"
+                 "                Defaults to all bytes.\n"
                  "-a, --append    Appends bytes read from stdin to the data object.\n"
                  "    --no-trunc  Does not truncate the data object.  Disables creation of data\n"
                  "                objects.\n"
@@ -181,8 +183,13 @@ auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::stri
     return p;
 }
 
-auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> void
+auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
 {
+    if (count < 0) {
+        std::cerr << "Error: Invalid byte count.\n";
+        return 1;
+    }
+
     std::array<char, buffer_size> buf;
 
     if (all_bytes == count) {
@@ -192,14 +199,16 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> void
         }
 
         if (!in.eof()) {
-            throw std::ios::failure{"Failed to read all bytes"};
+            std::cerr << "Error: Failed to read all bytes.\n";
+            return 1;
         }
 
         if (!out) {
-            throw std::ios::failure{"Failed to write all bytes to data object"};
+            std::cerr << "Error: Failed to write all bytes to data object.\n";
+            return 1;
         }
 
-        return;
+        return 0;
     }
 
     int_type bytes_read = 0;
@@ -219,12 +228,16 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> void
     }
 
     if (bytes_read != count) {
-        throw std::ios::failure{"Failed to read requested number of bytes"};
+        std::cerr << "Error: Failed to read requested number of bytes.\n";
+        return 1;
     }
 
     if (!out) {
-        throw std::ios::failure{"Failed to write requested number of bytes to data object"};
+        std::cerr << "Error: Failed to write requested number of bytes to data object.\n";
+        return 1;
     }
+
+    return 0;
 }
 
 auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int
@@ -266,12 +279,20 @@ auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::def
         return 1;
     }
 
-    if (!in.seekg(vm["offset"].as<int_type>())) {
-        std::cerr << "Error: Could not seek to offset.\n";
+    if (const auto offset = vm["offset"].as<int_type>(); offset >= 0) {
+        if (!in.seekg(offset)) {
+            std::cerr << "Error: Could not seek to offset.\n";
+            return 1;
+        }
+    }
+    else {
+        std::cerr << "Error: Invalid byte offset.\n";
         return 1;
     }
 
-    stream_bytes(in, std::cout, vm["count"].as<int_type>());
+    if (const auto ec = stream_bytes(in, std::cout, vm["count"].as<int_type>()); ec) {
+        return ec;
+    }
 
     return 0;
 }
@@ -314,12 +335,20 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
         return 1;
     }
 
-    if (!out.seekp(vm["offset"].as<int_type>())) {
-        std::cerr << "Error: Could not seek to offset.\n";
+    if (const auto offset = vm["offset"].as<int_type>(); offset >= 0) {
+        if (!out.seekp(offset)) {
+            std::cerr << "Error: Could not seek to offset.\n";
+            return 1;
+        }
+    }
+    else {
+        std::cerr << "Error: Invalid byte offset.\n";
         return 1;
     }
 
-    stream_bytes(std::cin, out, vm["count"].as<int_type>());
+    if (const auto ec = stream_bytes(std::cin, out, vm["count"].as<int_type>()); ec) {
+        return ec;
+    }
 
     if (vm["checksum"].as<bool>() && out) {
         io::on_close_success input;
