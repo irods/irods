@@ -93,29 +93,40 @@ namespace irods::experimental::filesystem
 
         auto status_known(object_status _s) noexcept -> bool;
 
-        auto get_metadata(rxComm& _comm, const path& _path) -> std::vector<metadata>;
+        /// \brief Returns the checksum of the latest good replica.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a data object.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a data object.
+        ///
+        /// \return A string representing the checksum.
+        auto data_object_checksum(rxComm& _comm, const path& _p) -> std::string;
 
-        auto set_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
+        auto get_metadata(rxComm& _comm, const path& _p) -> std::vector<metadata>;
 
-        auto add_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
+        auto set_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
+
+        auto add_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
         template <typename Iterator>
-        auto add_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
+        auto add_metadata(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
 
         template <typename Container,
                   typename = decltype(std::begin(std::declval<Container>())),
                   typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto add_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void;
+        auto add_metadata(rxComm& _comm, const path& _p, const Container& _container) -> void;
 
-        auto remove_metadata(rxComm& _comm, const path& _path, const metadata& _metadata) -> void;
+        auto remove_metadata(rxComm& _comm, const path& _p, const metadata& _metadata) -> void;
 
         template <typename Iterator>
-        auto remove_metadata(rxComm& _comm, const path& _path, Iterator _first, Iterator _last) -> void;
+        auto remove_metadata(rxComm& _comm, const path& _p, Iterator _first, Iterator _last) -> void;
 
         template <typename Container,
                   typename = decltype(std::begin(std::declval<Container>())),
                   typename = std::enable_if_t<std::is_same_v<std::decay_t<typename Container::value_type>, metadata>>>
-        auto remove_metadata(rxComm& _comm, const path& _path, const Container& _container) -> void;
+        auto remove_metadata(rxComm& _comm, const path& _p, const Container& _container) -> void;
 
         #include "filesystem/filesystem.tpp"
     } // namespace NAMESPACE_IMPL
