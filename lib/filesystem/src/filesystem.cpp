@@ -57,7 +57,6 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#include <optional>
 
 namespace irods::experimental::filesystem::NAMESPACE_IMPL
 {
@@ -858,6 +857,52 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     auto move(rxComm& _comm, const path& _old_p, const path& _new_p) -> void
     {
         rename(_comm, _old_p, _new_p);
+    }
+
+    auto data_object_checksum(rxComm& _comm, const path& _p) -> std::string
+    {
+        if (_p.empty()) {
+            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
+        }
+
+        detail::throw_if_path_length_exceeds_limit(_p);
+
+        if (!is_data_object(_comm, _p)) {
+            throw filesystem_error{"path does not point to a data object", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
+        }
+
+        // Fetch information for good replicas only (i.e. DATA_REPL_STATUS = '1').
+        const auto gql = fmt::format("select DATA_CHECKSUM, DATA_MODIFY_TIME "
+                                     "where"
+                                     " COLL_NAME = '{}' and"
+                                     " DATA_NAME = '{}' and"
+                                     " DATA_REPL_STATUS = '1'",
+                                     _p.parent_path().c_str(),
+                                     _p.object_name().c_str());
+
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        std::uintmax_t latest_mtime = 0;
+        std::string checksum;
+
+        // This implementation assumes that any good replica will always satisfy
+        // the requirement within the loop, therefore the first iteration always causes
+        // the checksum to be captured. The checksum object should be empty if and only if there
+        // are no good replicas.
+        for (const auto& row : qb.build(_comm, gql)) {
+            // As we iterate over the replicas, compare the mtimes and capture the checksum
+            // of the latest good replica.
+            if (const auto current_mtime = std::stoull(row[1]); current_mtime > latest_mtime) {
+                latest_mtime = current_mtime;
+                checksum = row[0];
+            }
+        }
+
+        return checksum;
     }
 
     auto status(rxComm& _comm, const path& _p) -> object_status
