@@ -314,6 +314,10 @@ printSimpleQuery( char *buf ) {
         if ( std::string::npos != token.find( "resc_class" ) ) {
             continue;
         }
+        // explicitly filter out the resource object count
+        if ( std::string::npos != token.find( "resc_objcount" ) ) {
+            continue;
+        }
 
         // determine if the token is of a time that needs
         // converted from unix time to a human readable form.
