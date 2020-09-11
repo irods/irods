@@ -93,6 +93,18 @@ namespace irods::experimental::filesystem
         /// \return An object_time_type representing the mtime.
         auto last_write_time(rxComm& _comm, const path& _p) -> object_time_type;
 
+        /// \brief Updates the mtime of a collection.
+        ///
+        /// \throws filesystem_error If the path is empty, exceeds the path limit, or does not
+        ///                          reference a collection.
+        ///
+        /// \param[in] _comm     The communication object.
+        /// \param[in] _p        The path to a collection.
+        /// \param[in] _new_time The new mtime.
+        ///
+        /// \return An object_time_type representing the mtime.
+        auto last_write_time(rxComm& _comm, const path& _p, object_time_type _new_time) -> void;
+
         auto remove(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> bool;
         auto remove_all(rxComm& _comm, const path& _p, remove_options _opts = remove_options::none) -> std::uintmax_t;
 
