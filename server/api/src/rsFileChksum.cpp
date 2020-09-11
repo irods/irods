@@ -224,7 +224,7 @@ int fileChksum(
         return result.code();
     }
     int bytes_read = read_err.code();
-
+    
     // RTS - Issue #3275
     if ( bytes_read == 0 ) {
         std::string buffer_read;
