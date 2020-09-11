@@ -14,27 +14,47 @@
 
 #include "catch.hpp"
 
-#include "filesystem/filesystem.hpp"
 #include "rodsClient.h"
+#include "dataObjRepl.h"
 
+#include "client_connection.hpp"
 #include "connection_pool.hpp"
 #include "filesystem.hpp"
+#include "resource_administration.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_client_api_table.hpp"
 #include "irods_pack_table.hpp"
+#include "irods_query.hpp"
+#include "replica.hpp"
 
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
 
+#include "boost/filesystem.hpp"
+#include "fmt/format.h"
+
+#include <unistd.h>
+
+#include <cstring>
+#include <cstdlib>
 #include <functional>
 #include <vector>
 #include <iostream>
-#include <variant>
 #include <iterator>
 #include <algorithm>
 #include <thread>
 #include <chrono>
 #include <array>
+#include <string>
+#include <string_view>
+
+auto get_hostname() noexcept -> std::string;
+
+auto create_resource_vault(const std::string_view _vault_name) -> boost::filesystem::path;
+
+auto add_ufs_resource(const std::string_view _resc_name, const std::string_view _vault_name) -> void;
+
+auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void;
 
 TEST_CASE("filesystem")
 {
@@ -157,7 +177,77 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::equivalent(conn, sandbox, p.lexically_normal()));
     }
 
-    SECTION("collection modification times")
+    SECTION("data object size and checksum")
+    {
+        const fs::path p = sandbox / "data_object";
+
+        {
+            default_transport tp{conn};
+            odstream{tp, p} << "hello world!";
+        }
+
+        REQUIRE(fs::client::exists(conn, p));
+        REQUIRE(fs::client::data_object_size(conn, p) == 12);
+        REQUIRE(fs::client::data_object_checksum(conn, p) == "");
+
+        const std::string_view ufs_resc = "unit_test_ufs";
+
+        add_ufs_resource(ufs_resc, "irods_unit_testing_vault");
+
+        namespace adm = irods::experimental::administration;
+
+        irods::at_scope_exit remove_resources{[&ufs_resc] {
+            irods::experimental::client_connection conn;
+            adm::client::remove_resource(conn, ufs_resc);
+        }};
+
+        replicate_data_object(p.c_str(), ufs_resc);
+
+        // Sleep for a few seconds so that the mtime is guaranteed to be different
+        // for each replica.
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(2s);
+
+        {
+            // Append some new data to the second replica (this also causes the mtime
+            // to be updated for the replica).
+            namespace io = irods::experimental::io;
+            irods::experimental::client_connection conn;
+            default_transport tp{conn};
+            odstream{tp, p, io::replica_number{1}, std::ios_base::app} << "  This was appended.";
+        }
+
+        irods::experimental::client_connection conn;
+        REQUIRE(fs::client::data_object_size(conn, p) == 32);
+
+        const auto replica_number = 1;
+        const auto checksum = irods::experimental::replica::replica_checksum<rcComm_t>(conn, p, replica_number);
+        REQUIRE(fs::client::data_object_checksum(conn, p) == checksum);
+
+        REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
+    }
+
+    SECTION("updating the mtime of a data object is not supported")
+    {
+        const fs::path p = sandbox / "data_object";
+
+        {
+            default_transport tp{conn};
+            odstream{tp, p} << "hello world!";
+        }
+
+        REQUIRE_THROWS([&] {
+            // clang-format off
+            using clock_type    = fs::object_time_type::clock;
+            using duration_type = fs::object_time_type::duration;
+            // clang-format on
+
+            const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
+            fs::client::last_write_time(conn, p, now);
+        }(), "path does not point to a collection");
+    }
+
+    SECTION("collection mtime")
     {
         using namespace std::chrono_literals;
 
@@ -167,8 +257,10 @@ TEST_CASE("filesystem")
         const auto old_mtime = fs::client::last_write_time(conn, col);
         std::this_thread::sleep_for(2s);
 
-        using clock_type = fs::object_time_type::clock;
+        // clang-format off
+        using clock_type    = fs::object_time_type::clock;
         using duration_type = fs::object_time_type::duration;
+        // clang-format on
 
         const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
         REQUIRE(old_mtime != now);
@@ -178,6 +270,58 @@ TEST_CASE("filesystem")
         REQUIRE(updated == now);
 
         REQUIRE(fs::client::remove(conn, col, fs::remove_options::no_trash));
+    }
+
+    SECTION("fetch data object mtime")
+    {
+        using namespace std::chrono_literals;
+
+        const fs::path p = sandbox / "data_object";
+
+        {
+            irods::experimental::client_connection conn;
+            default_transport tp{conn};
+            odstream{tp, p} << "hello world!";
+        }
+
+        const auto first_replica_mtime = fs::client::last_write_time(conn, p);
+        std::this_thread::sleep_for(2s);
+
+        const std::string_view ufs_resc = "unit_test_ufs";
+
+        add_ufs_resource(ufs_resc, "irods_unit_testing_vault");
+
+        namespace adm = irods::experimental::administration;
+
+        irods::at_scope_exit remove_resources{[&ufs_resc] {
+            irods::experimental::client_connection conn;
+            adm::client::remove_resource(conn, ufs_resc);
+        }};
+
+        replicate_data_object(p.c_str(), ufs_resc);
+
+        using duration_type = fs::object_time_type::duration;
+
+        // Get the mtime of the second replica.
+        const auto second_replica_mtime = [&p] {
+            const auto gql = fmt::format("select DATA_MODIFY_TIME "
+                                         "where"
+                                         " COLL_NAME = '{}' and"
+                                         " DATA_NAME = '{}' and"
+                                         " DATA_REPL_NUM = '1'",
+                                         p.parent_path().c_str(),
+                                         p.object_name().c_str());
+
+            irods::experimental::client_connection conn;
+            irods::query query{static_cast<rcComm_t*>(conn), gql};
+
+            return fs::object_time_type{duration_type{std::stoull(query.front()[0])}};
+        }();
+
+        REQUIRE(first_replica_mtime < second_replica_mtime);
+
+        irods::experimental::client_connection conn;
+        REQUIRE(fs::client::remove(conn, p, fs::remove_options::no_trash));
     }
 
     SECTION("read/modify permissions on a data object")
@@ -551,5 +695,59 @@ TEST_CASE("filesystem")
         }
 #endif // IRODS_ENABLE_ALL_UNIT_TESTS
     }
+}
+
+auto get_hostname() noexcept -> std::string
+{
+    char hostname[250];
+    gethostname(hostname, sizeof(hostname));
+    return hostname;
+}
+
+auto create_resource_vault(const std::string_view _vault_name) -> boost::filesystem::path
+{
+    namespace fs = boost::filesystem;
+
+    const auto suffix = "_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+    const auto vault = boost::filesystem::temp_directory_path() / (_vault_name.data() + suffix).data();
+
+    // Create the vault for the resource and allow the iRODS server to
+    // read and write to the vault.
+
+    if (!exists(vault)) {
+        REQUIRE(fs::create_directory(vault));
+    }
+
+    fs::permissions(vault, fs::perms::add_perms | fs::perms::others_read | fs::perms::others_write);
+
+    return vault;
+}
+
+auto add_ufs_resource(const std::string_view _resc_name, const std::string_view _vault_name) -> void
+{
+    namespace adm = irods::experimental::administration;
+
+    const auto host_name = get_hostname();
+    const auto vault_path = create_resource_vault(_vault_name);
+
+    // The new resource's information.
+    adm::resource_registration_info ufs_info;
+    ufs_info.resource_name = _resc_name.data();
+    ufs_info.resource_type = adm::resource_type::unixfilesystem.data();
+    ufs_info.host_name = host_name;
+    ufs_info.vault_path = vault_path.c_str();
+
+    irods::experimental::client_connection conn;
+    REQUIRE(adm::client::add_resource(conn, ufs_info).value() == 0);
+}
+
+auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void
+{
+    dataObjInp_t repl_input{};
+    std::strncpy(repl_input.objPath, _path.data(), _path.size());
+    addKeyVal(&repl_input.condInput, DEST_RESC_NAME_KW, _resc_name.data());
+
+    irods::experimental::client_connection conn;
+    REQUIRE(rcDataObjRepl(static_cast<rcComm_t*>(conn), &repl_input) == 0);
 }
 
