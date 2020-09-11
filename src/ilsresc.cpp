@@ -91,7 +91,7 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
     int i, status;
     int printCount;
     char *columnNames[] = {
-        "resource name", "id", "zone", "type", "class",
+        "resource name", "id", "zone", "type",
         "location",  "vault", "free space", "free space time", "status",
         "info", "comment", "create time", "modify time",
         "context", "parent", "parent context"
@@ -106,7 +106,6 @@ showResc( char *name, int longOption, const char* zoneArgument, rcComm_t *Conn )
         i1a[i++] = COL_R_RESC_ID;
         i1a[i++] = COL_R_ZONE_NAME;
         i1a[i++] = COL_R_TYPE_NAME;
-        i1a[i++] = COL_R_CLASS_NAME;
         i1a[i++] = COL_R_LOC;
         i1a[i++] = COL_R_VAULT_PATH;
         i1a[i++] = COL_R_FREE_SPACE;
