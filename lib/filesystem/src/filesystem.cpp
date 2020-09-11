@@ -682,28 +682,18 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     {
         detail::throw_if_path_length_exceeds_limit(_p);
 
-        const auto seconds = _new_time.time_since_epoch();
-        std::stringstream new_time;
-        new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
-
-        const auto object_status = status(_comm, _p);
-
-        if (is_collection(object_status)) {
-            collInp_t input{};
-            std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
-            addKeyVal(&input.condInput, COLLECTION_MTIME_KW, new_time.str().c_str());
-
-            const auto ec = rxModColl(&_comm, &input);
-
-            if (ec != 0) {
-                throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
-            }
+        if (!is_collection(_comm, _p)) {
+            throw filesystem_error{"path does not point to a collection", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
         }
-        else if (is_data_object(object_status)) {
-            throw filesystem_error{"cannot set mtime of data object at the logical level", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-        else {
-            throw filesystem_error{"cannot set mtime of unknown object type", _p, make_error_code(SYS_INTERNAL_ERR)};
+
+        const auto timestamp = fmt::format("{:011}", _new_time.time_since_epoch().count());
+
+        collInp_t input{};
+        std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
+        addKeyVal(&input.condInput, COLLECTION_MTIME_KW, timestamp.c_str());
+
+        if (const auto ec = rxModColl(&_comm, &input); ec != 0) {
+            throw filesystem_error{"cannot set mtime", _p, make_error_code(ec)};
         }
     }
 
