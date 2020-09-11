@@ -91,3 +91,20 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         # Attempt to write to a non-existent replica.
         self.admin.assert_icommand(['istream', 'write', '-n1', data_object], 'STDERR', ['Error: Cannot open data object'], input='nope')
 
+    def test_invalid_integer_arguments_are_handled_appropriately__issue_5112(self):
+        data_object = 'data_object.test'
+
+        # Write a data object into iRODS.
+        contents = 'totally worked!'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', [contents])
+
+        # The following error messages prove that the invalid integer arguments are being handled by
+        # the correct code.
+
+        self.admin.assert_icommand(['istream', 'read', '-o', '-1', data_object], 'STDERR', ['Error: Invalid byte offset.'])
+        self.admin.assert_icommand(['istream', 'read', '-c', '-1', data_object], 'STDERR', ['Error: Invalid byte count.'])
+
+        self.admin.assert_icommand(['istream', 'write', '-o', '-1', data_object], 'STDERR', ['Error: Invalid byte offset.'], input='data')
+        self.admin.assert_icommand(['istream', 'write', '-c', '-1', data_object], 'STDERR', ['Error: Invalid byte count.'], input='data')
+
