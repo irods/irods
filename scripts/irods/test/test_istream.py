@@ -108,3 +108,22 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         self.admin.assert_icommand(['istream', 'write', '-o', '-1', data_object], 'STDERR', ['Error: Invalid byte offset.'], input='data')
         self.admin.assert_icommand(['istream', 'write', '-c', '-1', data_object], 'STDERR', ['Error: Invalid byte count.'], input='data')
 
+    def test_provides_ipc_functionality__issue_4698(self):
+        data_object = 'data_object.test'
+
+        # Write a data object into iRODS.
+        contents = 'The fox jumped over the box.'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', [contents])
+
+        # Show that partial reads are supported.
+        self.admin.assert_icommand(['istream', 'read', '-o4', '-c3', data_object], 'STDOUT', ['fox'])
+
+        # Show that partial writes are supported.
+        self.admin.assert_icommand(['istream', 'write', '-o4', '--no-trunc', data_object], input='cat')
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box'])
+
+        # Show that append is supported.
+        self.admin.assert_icommand(['istream', 'write', '--append', data_object], input='  This was appended!')
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box.  This was appended'])
+
