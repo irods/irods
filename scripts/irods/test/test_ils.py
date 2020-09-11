@@ -20,6 +20,9 @@ class Test_Ils(resource_suite.ResourceBase, unittest.TestCase):
     def tearDown(self):
         super(Test_Ils, self).tearDown()
 
+    def test_ilsresc_long_confirm_class_not_printed__issue_5115(self):
+        self.admin.assert_icommand_fail(['ilsresc', '-l', 'demoResc'], 'STDOUT_SINGLELINE', 'class: ')
+
     def test_ils_of_multiple_data_objects__issue_3520(self):
         filename_1 = 'test_ils_of_multiple_data_objects__issue_3520_1'
         filename_2 = 'test_ils_of_multiple_data_objects__issue_3520_2'
