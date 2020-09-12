@@ -178,6 +178,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/test_%s" %
                                    (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
 
+    def test_no_longer_show_resc_objcount__issue_5099(self):
+        self.admin.assert_icommand_fail(['iadmin','lr','demoResc'],'STDOUT_SINGLELINE','resc_objcount: ')
+
     @unittest.skip("deprecated due to resc id")
     def test_modify_resource_name(self):
         h = lib.get_hostname()
