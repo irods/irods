@@ -63,7 +63,7 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_ibun__issue_3571(self):
         test_file = "ibun_test_file"
         lib.make_file(test_file, 1000)
-        
+
         tar_path = self.admin.session_collection + '/somefile.tar'
         dir_path = self.admin.session_collection + '/somedir'
 
@@ -177,6 +177,9 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
                                    ("replication{", h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # invalid char
         self.admin.assert_icommand("iadmin mkresc %s unixfilesystem %s:/tmp/irods/test_%s" %
                                    (oversize_name, h, "junk"), 'STDERR_SINGLELINE', "SYS_INVALID_INPUT_PARAM")  # too long
+
+    def test_no_longer_show_resc_objcount__issue_5099(self):
+        self.admin.assert_icommand_fail(['iadmin','lr','demoResc'],'STDOUT_SINGLELINE','resc_objcount: ')
 
     @unittest.skip("deprecated due to resc id")
     def test_modify_resource_name(self):
