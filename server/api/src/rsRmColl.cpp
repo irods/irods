@@ -30,84 +30,126 @@
 
 #include "irods_resource_backport.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "scoped_privileged_client.hpp"
+#include "irods_logger.hpp"
 
-int
-rsRmColl( rsComm_t *rsComm, collInp_t *rmCollInp,
-          collOprStat_t **collOprStat ) {
-    auto* recurse = getValByKey(&rmCollInp->condInput, RECURSIVE_OPR__KW);
-    auto* replica_number = getValByKey(&rmCollInp->condInput, REPL_NUM_KW);
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
 
-    if (recurse && replica_number) {
-        return USER_INCOMPATIBLE_PARAMS;
-    }
+#include <chrono>
 
-    int status;
-    ruleExecInfo_t rei;
-    collInfo_t collInfo;
-    rodsServerHost_t *rodsServerHost = NULL;
-    specCollCache_t *specCollCache = NULL;
+namespace ix = irods::experimental;
 
-    resolveLinkedPath( rsComm, rmCollInp->collName, &specCollCache,
-                       &rmCollInp->condInput );
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )rmCollInp->collName,
-                 &rodsServerHost );
+namespace
+{
+    int rsRmColl_impl(rsComm_t* rsComm,
+                      collInp_t* rmCollInp,
+                      collOprStat_t** collOprStat)
+    {
+        auto* recurse = getValByKey(&rmCollInp->condInput, RECURSIVE_OPR__KW);
+        auto* replica_number = getValByKey(&rmCollInp->condInput, REPL_NUM_KW);
 
-    if ( status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
-        return status;
-    }
-    else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
-        status = rcRmColl( rodsServerHost->conn, rmCollInp, 0 );
-        return status;
-    }
-
-    initReiWithCollInp( &rei, rsComm, rmCollInp, &collInfo );
-
-    status = applyRule( "acPreprocForRmColl", NULL, &rei, NO_SAVE_REI );
-
-    if ( status < 0 ) {
-        if ( rei.status < 0 ) {
-            status = rei.status;
+        if (recurse && replica_number) {
+            return USER_INCOMPATIBLE_PARAMS;
         }
-        rodsLog( LOG_ERROR,
-                 "rsRmColl:acPreprocForRmColl error for %s,stat=%d",
-                 rmCollInp->collName, status );
+
+        int status;
+        ruleExecInfo_t rei;
+        collInfo_t collInfo;
+        rodsServerHost_t *rodsServerHost = NULL;
+        specCollCache_t *specCollCache = NULL;
+
+        resolveLinkedPath( rsComm, rmCollInp->collName, &specCollCache,
+                           &rmCollInp->condInput );
+        status = getAndConnRcatHost(
+                     rsComm,
+                     MASTER_RCAT,
+                     ( const char* )rmCollInp->collName,
+                     &rodsServerHost );
+
+        if ( status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
+            return status;
+        }
+        else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
+            status = rcRmColl( rodsServerHost->conn, rmCollInp, 0 );
+            return status;
+        }
+
+        initReiWithCollInp( &rei, rsComm, rmCollInp, &collInfo );
+
+        status = applyRule( "acPreprocForRmColl", NULL, &rei, NO_SAVE_REI );
+
+        if ( status < 0 ) {
+            if ( rei.status < 0 ) {
+                status = rei.status;
+            }
+            rodsLog( LOG_ERROR,
+                     "rsRmColl:acPreprocForRmColl error for %s,stat=%d",
+                     rmCollInp->collName, status );
+            clearKeyVal(rei.condInputData);
+            free(rei.condInputData);
+            return status;
+        }
+
+        if ( collOprStat != NULL ) {
+            *collOprStat = NULL;
+        }
+        if ( getValByKey( &rmCollInp->condInput, RECURSIVE_OPR__KW ) == NULL ) {
+            status = _rsRmColl( rsComm, rmCollInp, collOprStat );
+        }
+        else {
+            if ( isTrashPath( rmCollInp->collName ) == False &&
+                    getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) != NULL ) {
+                rodsLog( LOG_NOTICE,
+                         "rsRmColl: Recursively removing %s.",
+                         rmCollInp->collName );
+            }
+            status = _rsRmCollRecur( rsComm, rmCollInp, collOprStat );
+        }
+        rei.status = status;
+        rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
+                                NO_SAVE_REI );
+
         clearKeyVal(rei.condInputData);
         free(rei.condInputData);
+
+        if ( rei.status < 0 ) {
+            rodsLog( LOG_ERROR,
+                     "rsRmColl:acPostProcForRmColl error for %s,stat=%d",
+                     rmCollInp->collName, status );
+        }
+
         return status;
     }
+} // anonymous namespace
 
-    if ( collOprStat != NULL ) {
-        *collOprStat = NULL;
-    }
-    if ( getValByKey( &rmCollInp->condInput, RECURSIVE_OPR__KW ) == NULL ) {
-        status = _rsRmColl( rsComm, rmCollInp, collOprStat );
-    }
-    else {
-        if ( isTrashPath( rmCollInp->collName ) == False &&
-                getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) != NULL ) {
-            rodsLog( LOG_NOTICE,
-                     "rsRmColl: Recursively removing %s.",
-                     rmCollInp->collName );
+int rsRmColl(rsComm_t* rsComm,
+             collInp_t* rmCollInp,
+             collOprStat_t** collOprStat)
+{
+    namespace fs = ix::filesystem;
+
+    const auto ec = rsRmColl_impl(rsComm, rmCollInp, collOprStat);
+    const auto parent_path = fs::path{rmCollInp->collName}.parent_path();
+
+    // Update the parent collection's mtime.
+    if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
+        using std::chrono::system_clock;
+        using std::chrono::time_point_cast;
+
+        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
+
+        try {
+            ix::scoped_privileged_client spc{*rsComm};
+            fs::server::last_write_time(*rsComm, parent_path, mtime);
         }
-        status = _rsRmCollRecur( rsComm, rmCollInp, collOprStat );
-    }
-    rei.status = status;
-    rei.status = applyRule( "acPostProcForRmColl", NULL, &rei,
-                            NO_SAVE_REI );
-
-    clearKeyVal(rei.condInputData);
-    free(rei.condInputData);
-
-    if ( rei.status < 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsRmColl:acPostProcForRmColl error for %s,stat=%d",
-                 rmCollInp->collName, status );
+        catch (const fs::filesystem_error& e) {
+            ix::log::api::error(e.what());
+            return e.code().value();
+        }
     }
 
-    return status;
+    return ec;
 }
 
 int

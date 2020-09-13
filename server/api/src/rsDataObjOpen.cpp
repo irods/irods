@@ -65,6 +65,7 @@
 #include "irods_at_scope_exit.hpp"
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
+#include "scoped_privileged_client.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
@@ -72,7 +73,6 @@
 #include "boost/format.hpp"
 
 #include "irods_logger.hpp"
-#include <stdexcept>
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -81,6 +81,9 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <chrono>
+#include <stdexcept>
 
 namespace ix = irods::experimental;
 
@@ -876,9 +879,7 @@ int _rsDataObjOpen(
     return status;
 } // _rsDataObjOpen
 
-} // anonymous namespace
-
-int rsDataObjOpen(
+int rsDataObjOpen_impl(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp)
 {
@@ -970,5 +971,40 @@ int rsDataObjOpen(
         }
         return _rsDataObjOpen(rsComm, *dataObjInp, dataObjInfoHead, file_obj);
     }
+} // rsDataObjOpen_impl
+
+} // anonymous namespace
+
+int rsDataObjOpen(rsComm_t *rsComm, dataObjInp_t *dataObjInp)
+{
+    namespace fs = ix::filesystem;
+
+    const auto data_object_exists = fs::server::exists(*rsComm, dataObjInp->objPath);
+    const auto fd = rsDataObjOpen_impl(rsComm, dataObjInp);
+
+    constexpr auto minimum_valid_file_descriptor = 3;
+
+    // Update the parent collection's mtime.
+    if (fd >= minimum_valid_file_descriptor && !data_object_exists) {
+        const auto parent_path = fs::path{dataObjInp->objPath}.parent_path();
+
+        if (fs::server::is_collection_registered(*rsComm, parent_path)) {
+            using std::chrono::system_clock;
+            using std::chrono::time_point_cast;
+
+            const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
+
+            try {
+                ix::scoped_privileged_client spc{*rsComm};
+                fs::server::last_write_time(*rsComm, parent_path, mtime);
+            }
+            catch (const fs::filesystem_error& e) {
+                logger::api::error(e.what());
+                return e.code().value();
+            }
+        }
+    }
+
+    return fd;
 }
 

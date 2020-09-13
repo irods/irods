@@ -46,7 +46,14 @@
 #include "irods_server_properties.hpp"
 #include "irods_logger.hpp"
 #include "server_utilities.hpp"
-#include "filesystem/filesystem_error.hpp"
+#include "scoped_privileged_client.hpp"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#include <chrono>
+
+namespace ix = irods::experimental;
 
 namespace {
 
@@ -72,7 +79,6 @@ int parallel_transfer_put(
         ( *portalOprOut )->l1descInx = l1descInx;
         return l1descInx;
     }
-
 
     int status = preProcParaPut( rsComm, l1descInx, portalOprOut );
 
@@ -215,9 +221,7 @@ int single_buffer_put(
     return status;
 } // single_buffer_put
 
-} // anonymous namespace
-
-int rsDataObjPut(
+int rsDataObjPut_impl(
     rsComm_t *rsComm,
     dataObjInp_t *dataObjInp,
     bytesBuf_t *dataObjInpBBuf,
@@ -318,6 +322,8 @@ int rsDataObjPut(
     return parallel_transfer_put( rsComm, dataObjInp, portalOprOut );
 } // rsDataObjPut
 
+} // anonymous namespace
+
 int preProcParaPut(
     rsComm_t *rsComm,
     int l1descInx,
@@ -347,4 +353,34 @@ int preProcParaPut(
     clearKeyVal( &dataOprInp.condInput );
     return status;
 } // preProcParaPut
+
+int rsDataObjPut(rsComm_t* rsComm,
+                 dataObjInp_t* dataObjInp,
+                 bytesBuf_t* dataObjInpBBuf,
+                 portalOprOut_t** portalOprOut)
+{
+    namespace fs = ix::filesystem;
+
+    const auto ec = rsDataObjPut_impl(rsComm, dataObjInp, dataObjInpBBuf, portalOprOut);
+    const auto parent_path = fs::path{dataObjInp->objPath}.parent_path();
+
+    // Update the parent collection's mtime.
+    if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
+        using std::chrono::system_clock;
+        using std::chrono::time_point_cast;
+
+        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
+
+        try {
+            ix::scoped_privileged_client spc{*rsComm};
+            fs::server::last_write_time(*rsComm, parent_path, mtime);
+        }
+        catch (const fs::filesystem_error& e) {
+            ix::log::api::error(e.what());
+            return e.code().value();
+        }
+    }
+
+    return ec;
+} // rsDataObjPut
 
