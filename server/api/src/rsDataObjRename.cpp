@@ -37,8 +37,15 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "irods_re_structs.hpp"
+#include "scoped_privileged_client.hpp"
 
-namespace {
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#include <chrono>
+
+namespace
+{
     int _rsDataObjRename(
             rsComm_t *rsComm,
             dataObjCopyInp_t *dataObjRenameInp) {
@@ -255,142 +262,180 @@ namespace {
         }
         return status;
     }
-}
 
-int
-rsDataObjRename( rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp ) {
-    int status;
-    dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    rodsServerHost_t *rodsServerHost = NULL;
-    dataObjInfo_t *srcDataObjInfo = NULL;
-    dataObjInfo_t *destDataObjInfo = NULL;
-    specCollCache_t *specCollCache = NULL;
-    int srcType, destType;
+    int rsDataObjRename_impl(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
+    {
+        int status;
+        dataObjInp_t *srcDataObjInp, *destDataObjInp;
+        rodsServerHost_t *rodsServerHost = NULL;
+        dataObjInfo_t *srcDataObjInfo = NULL;
+        dataObjInfo_t *destDataObjInfo = NULL;
+        specCollCache_t *specCollCache = NULL;
+        int srcType, destType;
 
-    srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
-    destDataObjInp = &dataObjRenameInp->destDataObjInp;
+        srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
+        destDataObjInp = &dataObjRenameInp->destDataObjInp;
 
-    /* don't translate the link pt. treat it as a normal collection */
-    addKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW, "" );
-    resolveLinkedPath( rsComm, srcDataObjInp->objPath, &specCollCache,
-                       &srcDataObjInp->condInput );
-    rmKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW );
+        /* don't translate the link pt. treat it as a normal collection */
+        addKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW, "" );
+        resolveLinkedPath( rsComm, srcDataObjInp->objPath, &specCollCache,
+                           &srcDataObjInp->condInput );
+        rmKeyVal( &srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW );
 
-    resolveLinkedPath( rsComm, destDataObjInp->objPath, &specCollCache,
-                       &destDataObjInp->condInput );
+        resolveLinkedPath( rsComm, destDataObjInp->objPath, &specCollCache,
+                           &destDataObjInp->condInput );
 
-    if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
-        return SAME_SRC_DEST_PATHS_ERR;
-    }
-
-    /* connect to rcat for cross zone */
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )srcDataObjInp->objPath,
-                 &rodsServerHost );
-    if ( status < 0 || NULL == rodsServerHost ) {
-        return status;
-    }
-    else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
-        status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
-        return status;
-    }
-
-    srcType = resolvePathInSpecColl( rsComm, srcDataObjInp->objPath,
-                                     WRITE_COLL_PERM, 0, &srcDataObjInfo );
-
-    destType = resolvePathInSpecColl( rsComm, destDataObjInp->objPath,
-                                      WRITE_COLL_PERM, 0, &destDataObjInfo );
-
-    if ( srcDataObjInfo           != NULL &&
-            srcDataObjInfo->specColl != NULL &&
-            strcmp( srcDataObjInfo->specColl->collection,
-                    srcDataObjInp->objPath ) == 0 ) {
-        /* this must be the link pt or mount pt. treat it as normal coll */
-        freeDataObjInfo( srcDataObjInfo );
-        srcDataObjInfo = NULL;
-        srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
-    }
-
-    if ( !isSameZone( srcDataObjInp->objPath, destDataObjInp->objPath ) ) {
-        return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
-    }
-
-    if ( destType >= 0 ) {
-        rodsLog( LOG_ERROR,
-                 "rsDataObjRename: dest specColl objPath %s exists",
-                 destDataObjInp->objPath );
-        freeDataObjInfo( srcDataObjInfo );
-        freeDataObjInfo( destDataObjInfo );
-        return SYS_DEST_SPEC_COLL_SUB_EXIST;
-    }
-
-    if ( srcType >= 0 ) {
-        /* src is a specColl of some sort. dest must also be a specColl in
-         * order to rename, except in the special case where src is in a
-         * mounted collection. Otherwise, bail out with specColl conflict error. */
-        if ( NULL != srcDataObjInfo && SYS_SPEC_COLL_OBJ_NOT_EXIST == destType ) {
-            status = specCollObjRename( rsComm, srcDataObjInfo, destDataObjInfo );
+        if ( strcmp( srcDataObjInp->objPath, destDataObjInp->objPath ) == 0 ) {
+            return SAME_SRC_DEST_PATHS_ERR;
         }
-        else if ( NULL != srcDataObjInfo && NULL != srcDataObjInfo->specColl &&
-                  MOUNTED_COLL == srcDataObjInfo->specColl->collClass ) {
-            status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType, destDataObjInp );
+
+        /* connect to rcat for cross zone */
+        status = getAndConnRcatHost(
+                     rsComm,
+                     MASTER_RCAT,
+                     ( const char* )srcDataObjInp->objPath,
+                     &rodsServerHost );
+        if ( status < 0 || NULL == rodsServerHost ) {
+            return status;
+        }
+        else if ( rodsServerHost->rcatEnabled == REMOTE_ICAT ) {
+            status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
+            return status;
+        }
+
+        srcType = resolvePathInSpecColl( rsComm, srcDataObjInp->objPath,
+                                         WRITE_COLL_PERM, 0, &srcDataObjInfo );
+
+        destType = resolvePathInSpecColl( rsComm, destDataObjInp->objPath,
+                                          WRITE_COLL_PERM, 0, &destDataObjInfo );
+
+        if ( srcDataObjInfo           != NULL &&
+                srcDataObjInfo->specColl != NULL &&
+                strcmp( srcDataObjInfo->specColl->collection,
+                        srcDataObjInp->objPath ) == 0 ) {
+            /* this must be the link pt or mount pt. treat it as normal coll */
+            freeDataObjInfo( srcDataObjInfo );
+            srcDataObjInfo = NULL;
+            srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
+        }
+
+        if ( !isSameZone( srcDataObjInp->objPath, destDataObjInp->objPath ) ) {
+            return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
+        }
+
+        if ( destType >= 0 ) {
+            rodsLog( LOG_ERROR,
+                     "rsDataObjRename: dest specColl objPath %s exists",
+                     destDataObjInp->objPath );
+            freeDataObjInfo( srcDataObjInfo );
+            freeDataObjInfo( destDataObjInfo );
+            return SYS_DEST_SPEC_COLL_SUB_EXIST;
+        }
+
+        if ( srcType >= 0 ) {
+            /* src is a specColl of some sort. dest must also be a specColl in
+             * order to rename, except in the special case where src is in a
+             * mounted collection. Otherwise, bail out with specColl conflict error. */
+            if ( NULL != srcDataObjInfo && SYS_SPEC_COLL_OBJ_NOT_EXIST == destType ) {
+                status = specCollObjRename( rsComm, srcDataObjInfo, destDataObjInfo );
+            }
+            else if ( NULL != srcDataObjInfo && NULL != srcDataObjInfo->specColl &&
+                      MOUNTED_COLL == srcDataObjInfo->specColl->collClass ) {
+                status = moveMountedCollObj( rsComm, srcDataObjInfo, srcType, destDataObjInp );
+            }
+            else {
+                rodsLog( LOG_ERROR,
+                         "rsDataObjRename: src %s is in spec coll but dest %s is not",
+                         srcDataObjInp->objPath, destDataObjInp->objPath );
+                status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
+            }
+            freeDataObjInfo( srcDataObjInfo );
+            freeDataObjInfo( destDataObjInfo );
+            return status;
+        }
+        else if ( srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+            return SYS_SPEC_COLL_OBJ_NOT_EXIST;
+        }
+        else if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+            /* source is normal object but dest is not */
+            rodsLog( LOG_ERROR,
+                     "rsDataObjRename: src %s is not in spec coll but dest %s is",
+                     srcDataObjInp->objPath, destDataObjInp->objPath );
+            return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
+        }
+
+        status = getAndConnRcatHost(
+                     rsComm,
+                     MASTER_RCAT,
+                     ( const char* )dataObjRenameInp->srcDataObjInp.objPath,
+                     &rodsServerHost );
+        if ( status < 0 ) {
+            return status;
+        }
+        if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+            std::string svc_role;
+            irods::error ret = get_catalog_service_role(svc_role);
+            if(!ret.ok()) {
+                irods::log(PASS(ret));
+                return ret.code();
+            }
+
+            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+                status = _rsDataObjRename( rsComm, dataObjRenameInp );
+            } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+                status = SYS_NO_RCAT_SERVER_ERR;
+            } else {
+                rodsLog(
+                    LOG_ERROR,
+                    "role not supported [%s]",
+                    svc_role.c_str() );
+                status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+            }
         }
         else {
-            rodsLog( LOG_ERROR,
-                     "rsDataObjRename: src %s is in spec coll but dest %s is not",
-                     srcDataObjInp->objPath, destDataObjInp->objPath );
-            status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
+            status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
         }
-        freeDataObjInfo( srcDataObjInfo );
-        freeDataObjInfo( destDataObjInfo );
+
         return status;
     }
-    else if ( srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        return SYS_SPEC_COLL_OBJ_NOT_EXIST;
-    }
-    else if ( destType == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-        /* source is normal object but dest is not */
-        rodsLog( LOG_ERROR,
-                 "rsDataObjRename: src %s is not in spec coll but dest %s is",
-                 srcDataObjInp->objPath, destDataObjInp->objPath );
-        return SYS_SRC_DEST_SPEC_COLL_CONFLICT;
-    }
+} // anonymous namespace
 
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )dataObjRenameInp->srcDataObjInp.objPath,
-                 &rodsServerHost );
-    if ( status < 0 ) {
-        return status;
-    }
-    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
+int rsDataObjRename(rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
+{
+    const auto ec = rsDataObjRename_impl(rsComm, dataObjRenameInp);
+
+    // Update the mtime of the parent collections.
+    if (ec == 0) {
+        namespace fs = irods::experimental::filesystem;
+
+        const auto src_parent_path = fs::path{dataObjRenameInp->srcDataObjInp.objPath}.parent_path();
+        const auto dst_parent_path = fs::path{dataObjRenameInp->destDataObjInp.objPath}.parent_path();
+
+        using std::chrono::system_clock;
+        using std::chrono::time_point_cast;
+
+        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
+
+        try {
+            irods::experimental::scoped_privileged_client spc{*rsComm};
+
+            if (fs::server::is_collection_registered(*rsComm, src_parent_path)) {
+                fs::server::last_write_time(*rsComm, src_parent_path, mtime);
+            }
+
+            if (src_parent_path != dst_parent_path) {
+                if (fs::server::is_collection_registered(*rsComm, dst_parent_path)) {
+                    fs::server::last_write_time(*rsComm, dst_parent_path, mtime);
+                }
+            }
         }
-
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            status = _rsDataObjRename( rsComm, dataObjRenameInp );
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            status = SYS_NO_RCAT_SERVER_ERR;
-        } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        catch (const fs::filesystem_error& e) {
+            rodsLog(LOG_ERROR, e.what());
+            return e.code().value();
         }
     }
-    else {
-        status = rcDataObjRename( rodsServerHost->conn, dataObjRenameInp );
-    }
 
-    return status;
+    return ec;
 }
 
 int
