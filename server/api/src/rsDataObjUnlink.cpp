@@ -41,15 +41,20 @@
 #include "irods_hierarchy_parser.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_logger.hpp"
+#include "scoped_privileged_client.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
 
 #include "boost/filesystem/path.hpp"
 #include "fmt/format.h"
 
 #include <string>
 #include <string_view>
+#include <chrono>
 
 using logger = irods::experimental::log;
 
@@ -246,12 +251,8 @@ int _rsDataObjUnlink(
     return retVal;
 }
 
-} // anonymous namespace
-
-int rsDataObjUnlink(
-    rsComm_t* rsComm,
-    dataObjInp_t* dataObjUnlinkInp) {
-
+int rsDataObjUnlink_impl(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
+{
     if (!dataObjUnlinkInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
@@ -393,6 +394,35 @@ int rsDataObjUnlink(
     free(rei.condInputData);
     freeAllDataObjInfo(dataObjInfoHead);
     return status;
+}
+
+} // anonymous namespace
+
+int rsDataObjUnlink(rsComm_t* rsComm, dataObjInp_t* dataObjUnlinkInp)
+{
+    namespace fs = irods::experimental::filesystem;
+
+    const auto ec = rsDataObjUnlink_impl(rsComm, dataObjUnlinkInp);
+    const auto parent_path = fs::path{dataObjUnlinkInp->objPath}.parent_path();
+
+    // Update the parent collection's mtime.
+    if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
+        using std::chrono::system_clock;
+        using std::chrono::time_point_cast;
+
+        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
+
+        try {
+            irods::experimental::scoped_privileged_client spc{*rsComm};
+            fs::server::last_write_time(*rsComm, parent_path, mtime);
+        }
+        catch (const fs::filesystem_error& e) {
+            logger::api::error(e.what());
+            return e.code().value();
+        }
+    }
+
+    return ec;
 }
 
 int dataObjUnlinkS(rsComm_t* rsComm,

@@ -1,6 +1,7 @@
 [
     "test_all_rules",
     "test_catalog",
+    "test_collection_mtime",
     "test_control_plane",
     "test_delay_queue",
     "test_dynamic_peps",

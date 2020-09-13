@@ -28,13 +28,17 @@
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "scoped_privileged_client.hpp"
+#include "irods_logger.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-#include "filesystem/path.hpp"
+#include "filesystem.hpp"
 
 #include <algorithm>
 #include <string_view>
+#include <chrono>
 
+namespace ix = irods::experimental;
 namespace fs = irods::experimental::filesystem;
 
 namespace
@@ -47,139 +51,164 @@ namespace
                            std::end(special_paths),
                            [p = p.object_name()](const auto& sp) { return sp == p; });
     }
+
+    int rsCollCreate_impl(rsComm_t* rsComm, collInp_t* collCreateInp)
+    {
+        if (is_special_path(collCreateInp->collName)) {
+            return USER_INPUT_PATH_ERR;
+        }
+
+        remove_trailing_path_separators(collCreateInp->collName);
+
+        int status;
+        rodsServerHost_t *rodsServerHost = NULL;
+        ruleExecInfo_t rei;
+        collInfo_t collInfo;
+        specCollCache_t *specCollCache = NULL;
+        dataObjInfo_t *dataObjInfo = NULL;
+
+        irods::error ret = validate_logical_path( collCreateInp->collName );
+        if ( !ret.ok() ) {
+            if ( rsComm->rError.len < MAX_ERROR_MESSAGES ) {
+                char error_msg[ERR_MSG_LEN];
+                snprintf(error_msg, ERR_MSG_LEN, "%s", ret.user_result().c_str());
+                addRErrorMsg( &rsComm->rError, ret.code(), error_msg );
+            }
+            irods::log( ret );
+            return SYS_INVALID_INPUT_PARAM;
+        }
+
+        // Issue 3913: retain status in case string too long
+        status = resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
+                           &collCreateInp->condInput );
+
+        // Issue 3913: retain status in case string too long
+        if (status == USER_STRLEN_TOOLONG) {
+            return USER_STRLEN_TOOLONG;
+        }
+        status = getAndConnRcatHost(
+                     rsComm,
+                     MASTER_RCAT,
+                     ( const char* )collCreateInp->collName,
+                     &rodsServerHost );
+
+        if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
+            return status;
+        }
+
+        if ( rodsServerHost->localFlag == LOCAL_HOST ) {
+            initReiWithCollInp( &rei, rsComm, collCreateInp, &collInfo );
+
+            status = applyRule( "acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI );
+
+            if ( status < 0 ) {
+                if ( rei.status < 0 ) {
+                    status = rei.status;
+                }
+                rodsLog( LOG_ERROR,
+                         "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
+                         collCreateInp->collName, status );
+                return status;
+            }
+
+            if ( getValByKey( &collCreateInp->condInput, RECURSIVE_OPR__KW ) !=
+                    NULL ) {
+                status = rsMkCollR( rsComm, "/", collCreateInp->collName );
+                return status;
+            }
+            std::string svc_role;
+            irods::error ret = get_catalog_service_role(svc_role);
+            if(!ret.ok()) {
+                irods::log(PASS(ret));
+                return ret.code();
+            }
+
+            if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
+                /* for STRUCT_FILE_COLL to make a directory in the structFile, the
+                 * COLLECTION_TYPE_KW must be set */
+
+                status = resolvePathInSpecColl( rsComm, collCreateInp->collName,
+                                                WRITE_COLL_PERM, 0, &dataObjInfo );
+                if ( status >= 0 ) {
+                    freeDataObjInfo( dataObjInfo );
+                    if ( status == COLL_OBJ_T ) {
+                        return 0;
+                    }
+                    else if ( status == DATA_OBJ_T ) {
+                        return USER_INPUT_PATH_ERR;
+                    }
+                }
+                else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
+                    /* for STRUCT_FILE_COLL to make a directory in the structFile, the
+                     * COLLECTION_TYPE_KW must be set */
+                    if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+                            dataObjInfo->specColl->collClass == LINKED_COLL ) {
+                        /*  should not be here because if has been translated */
+                        return SYS_COLL_LINK_PATH_ERR;
+                    }
+                    else {
+                        status = l3Mkdir( rsComm, dataObjInfo );
+                    }
+                    freeDataObjInfo( dataObjInfo );
+                    return status;
+                }
+                else {
+                    if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
+                        return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+                    }
+                    status = _rsRegColl( rsComm, collCreateInp );
+                }
+                rei.status = status;
+                if ( status >= 0 ) {
+                    rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
+                                            NO_SAVE_REI );
+
+                    if ( rei.status < 0 ) {
+                        rodsLog( LOG_ERROR,
+                                 "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
+                                 collCreateInp->collName, status );
+                    }
+                }
+            } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
+                status = SYS_NO_RCAT_SERVER_ERR;
+            } else {
+                rodsLog(
+                    LOG_ERROR,
+                    "role not supported [%s]",
+                    svc_role.c_str() );
+                status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+            }
+        }
+        else {
+            status = rcCollCreate( rodsServerHost->conn, collCreateInp );
+        }
+        return status;
+    }
 } // anonymous namespace
 
 int rsCollCreate(rsComm_t* rsComm, collInp_t* collCreateInp)
 {
-    if (is_special_path(collCreateInp->collName)) {
-        return USER_INPUT_PATH_ERR;
-    }
+    const auto ec = rsCollCreate_impl(rsComm, collCreateInp);
+    const auto parent_path = fs::path{collCreateInp->collName}.parent_path();
 
-    remove_trailing_path_separators(collCreateInp->collName);
+    // Update the parent collection's mtime.
+    if (ec == 0 && fs::server::is_collection_registered(*rsComm, parent_path)) {
+        using std::chrono::system_clock;
+        using std::chrono::time_point_cast;
 
-    int status;
-    rodsServerHost_t *rodsServerHost = NULL;
-    ruleExecInfo_t rei;
-    collInfo_t collInfo;
-    specCollCache_t *specCollCache = NULL;
-    dataObjInfo_t *dataObjInfo = NULL;
+        const auto mtime = time_point_cast<fs::object_time_type::duration>(system_clock::now());
 
-    irods::error ret = validate_logical_path( collCreateInp->collName );
-    if ( !ret.ok() ) {
-        if ( rsComm->rError.len < MAX_ERROR_MESSAGES ) {
-            char error_msg[ERR_MSG_LEN];
-            snprintf(error_msg, ERR_MSG_LEN, "%s", ret.user_result().c_str());
-            addRErrorMsg( &rsComm->rError, ret.code(), error_msg );
+        try {
+            ix::scoped_privileged_client spc{*rsComm};
+            fs::server::last_write_time(*rsComm, parent_path, mtime);
         }
-        irods::log( ret );
-        return SYS_INVALID_INPUT_PARAM;
-    }
-
-    // Issue 3913: retain status in case string too long
-    status = resolveLinkedPath( rsComm, collCreateInp->collName, &specCollCache,
-                       &collCreateInp->condInput );
-
-    // Issue 3913: retain status in case string too long
-    if (status == USER_STRLEN_TOOLONG) {
-        return USER_STRLEN_TOOLONG;
-    }
-    status = getAndConnRcatHost(
-                 rsComm,
-                 MASTER_RCAT,
-                 ( const char* )collCreateInp->collName,
-                 &rodsServerHost );
-
-    if ( status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-        return status;
-    }
-
-    if ( rodsServerHost->localFlag == LOCAL_HOST ) {
-        initReiWithCollInp( &rei, rsComm, collCreateInp, &collInfo );
-
-        status = applyRule( "acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI );
-
-        if ( status < 0 ) {
-            if ( rei.status < 0 ) {
-                status = rei.status;
-            }
-            rodsLog( LOG_ERROR,
-                     "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
-                     collCreateInp->collName, status );
-            return status;
-        }
-
-        if ( getValByKey( &collCreateInp->condInput, RECURSIVE_OPR__KW ) !=
-                NULL ) {
-            status = rsMkCollR( rsComm, "/", collCreateInp->collName );
-            return status;
-        }
-        std::string svc_role;
-        irods::error ret = get_catalog_service_role(svc_role);
-        if(!ret.ok()) {
-            irods::log(PASS(ret));
-            return ret.code();
-        }
-
-        if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
-            /* for STRUCT_FILE_COLL to make a directory in the structFile, the
-             * COLLECTION_TYPE_KW must be set */
-
-            status = resolvePathInSpecColl( rsComm, collCreateInp->collName,
-                                            WRITE_COLL_PERM, 0, &dataObjInfo );
-            if ( status >= 0 ) {
-                freeDataObjInfo( dataObjInfo );
-                if ( status == COLL_OBJ_T ) {
-                    return 0;
-                }
-                else if ( status == DATA_OBJ_T ) {
-                    return USER_INPUT_PATH_ERR;
-                }
-            }
-            else if ( status == SYS_SPEC_COLL_OBJ_NOT_EXIST ) {
-                /* for STRUCT_FILE_COLL to make a directory in the structFile, the
-                 * COLLECTION_TYPE_KW must be set */
-                if ( dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
-                        dataObjInfo->specColl->collClass == LINKED_COLL ) {
-                    /*  should not be here because if has been translated */
-                    return SYS_COLL_LINK_PATH_ERR;
-                }
-                else {
-                    status = l3Mkdir( rsComm, dataObjInfo );
-                }
-                freeDataObjInfo( dataObjInfo );
-                return status;
-            }
-            else {
-                if ( isColl( rsComm, collCreateInp->collName, NULL ) >= 0 ) {
-                    return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
-                }
-                status = _rsRegColl( rsComm, collCreateInp );
-            }
-            rei.status = status;
-            if ( status >= 0 ) {
-                rei.status = applyRule( "acPostProcForCollCreate", NULL, &rei,
-                                        NO_SAVE_REI );
-
-                if ( rei.status < 0 ) {
-                    rodsLog( LOG_ERROR,
-                             "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
-                             collCreateInp->collName, status );
-                }
-            }
-        } else if( irods::CFG_SERVICE_ROLE_CONSUMER == svc_role ) {
-            status = SYS_NO_RCAT_SERVER_ERR;
-        } else {
-            rodsLog(
-                LOG_ERROR,
-                "role not supported [%s]",
-                svc_role.c_str() );
-            status = SYS_SERVICE_ROLE_NOT_SUPPORTED;
+        catch (const fs::filesystem_error& e) {
+            ix::log::api::error(e.what());
+            return e.code().value();
         }
     }
-    else {
-        status = rcCollCreate( rodsServerHost->conn, collCreateInp );
-    }
-    return status;
+
+    return ec;
 }
 
 int
