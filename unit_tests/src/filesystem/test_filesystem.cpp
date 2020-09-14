@@ -714,6 +714,26 @@ TEST_CASE("filesystem")
         REQUIRE(fs::client::is_data_object_registered(conn, p));
         REQUIRE_FALSE(fs::client::is_data_object_registered(conn, sandbox / "not_registered_in_catalog"));
     }
+
+    SECTION("special collections")
+    {
+        // Create a special collection.
+        const auto link_name = fs::path{env.rodsHome} / "col_alias.d";
+        const auto cmd = fmt::format("imcoll -m link {} {}", sandbox.c_str(), link_name.c_str());
+        REQUIRE(std::system(cmd.data()) == 0);
+
+        irods::at_scope_exit remove_special_collection{[&conn, &link_name] {
+            const auto cmd = fmt::format("imcoll -U {}", link_name.c_str());
+            REQUIRE(std::system(cmd.data()) == 0);
+            REQUIRE(fs::client::remove_all(conn, link_name));
+        }};
+
+        // Show that special collections are detected.
+        REQUIRE(fs::client::is_special_collection(conn, link_name));
+
+        // Show that normal collections are not considered to be special collections.
+        REQUIRE_FALSE(fs::client::is_special_collection(conn, sandbox));
+    }
 }
 
 auto get_hostname() noexcept -> std::string
