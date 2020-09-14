@@ -25,7 +25,7 @@ namespace irods::experimental::filesystem::detail
     inline auto throw_if_path_length_exceeds_limit(const irods::experimental::filesystem::path& _p) -> void
     {
         if (std::strlen(_p.c_str()) > MAX_NAME_LEN) {
-            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size",
+            throw irods::experimental::filesystem::filesystem_error{"path length cannot exceed max path size", _p,
                                                                     make_error_code(USER_PATH_EXCEEDS_MAX)};
         }
     }
@@ -33,7 +33,7 @@ namespace irods::experimental::filesystem::detail
     inline auto throw_if_path_is_empty(const irods::experimental::filesystem::path& _p) -> void
     {
         if (_p.empty()) {
-            throw irods::experimental::filesystem::filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
+            throw irods::experimental::filesystem::filesystem_error{"empty path", _p, make_error_code(SYS_INVALID_INPUT_PARAM)};
         }
     }
 } // namespace irods::experimental::filesystem::detail

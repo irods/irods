@@ -94,6 +94,18 @@ namespace irods::experimental::filesystem
         auto is_collection(object_status _s) noexcept -> bool;
         auto is_collection(rxComm& _comm, const path& _p) -> bool;
 
+        /// \brief Checks if the path points to a special collection.
+        ///
+        /// This function always inspects the collection entry in the catalog.
+        ///
+        /// \throws filesystem_error If the path is empty or exceeds the path limit.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a collection.
+        ///
+        /// \return A boolean indicating whether the collection is special.
+        auto is_special_collection(rxComm& _comm, const path& _p) -> bool;
+
         auto is_empty(rxComm& _comm, const path& _p) -> bool;
 
         auto is_other(object_status _s) noexcept -> bool;

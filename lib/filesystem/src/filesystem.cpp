@@ -288,10 +288,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         auto do_metadata_op(rxComm& _comm, const path& _p, const metadata& _metadata, std::string_view op) -> void
         {
-            if (_p.empty()) {
-                throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-            }
-
+            detail::throw_if_path_is_empty(_p);
             detail::throw_if_path_length_exceeds_limit(_p);
 
             modAVUMetadataInp_t input{};
@@ -475,10 +472,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto create_collection(rxComm& _comm, const path& _p, const path& _existing_p) -> bool
     {
-        if (_p.empty() || _existing_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
+        detail::throw_if_path_is_empty(_p);
+        detail::throw_if_path_is_empty(_existing_p);
         detail::throw_if_path_length_exceeds_limit(_p);
         detail::throw_if_path_length_exceeds_limit(_existing_p);
 
@@ -586,10 +581,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t
     {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
+        detail::throw_if_path_is_empty(_p);
         detail::throw_if_path_length_exceeds_limit(_p);
 
         if (!is_data_object(_comm, _p)) {
@@ -644,6 +636,27 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
     auto is_collection(rxComm& _comm, const path& _p) -> bool
     {
         return is_collection(status(_comm, _p));
+    }
+
+    auto is_special_collection(rxComm& _comm, const path& _p) -> bool
+    {
+        detail::throw_if_path_is_empty(_p);
+        detail::throw_if_path_length_exceeds_limit(_p);
+
+        const auto gql = fmt::format("select COLL_TYPE, COLL_INFO_1, COLL_INFO_2 "
+                                     "where COLL_NAME = '{}'", _p.c_str());
+
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        for (auto&& row : qb.build(_comm, gql)) {
+            return !row[0].empty() && (!row[1].empty() || !row[2].empty());
+        }
+
+        return false;
     }
 
     auto is_empty(rxComm& _comm, const path& _p) -> bool
@@ -836,10 +849,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto rename(rxComm& _comm, const path& _old_p, const path& _new_p) -> void
     {
-        if (_old_p.empty() || _new_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
+        detail::throw_if_path_is_empty(_old_p);
+        detail::throw_if_path_is_empty(_new_p);
         detail::throw_if_path_length_exceeds_limit(_old_p);
         detail::throw_if_path_length_exceeds_limit(_new_p);
 
@@ -915,10 +926,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto data_object_checksum(rxComm& _comm, const path& _p) -> std::string
     {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
+        detail::throw_if_path_is_empty(_p);
         detail::throw_if_path_length_exceeds_limit(_p);
 
         if (!is_data_object(_comm, _p)) {
@@ -1010,10 +1018,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     auto get_metadata(rxComm& _comm, const path& _p) -> std::vector<metadata>
     {
-        if (_p.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
-
+        detail::throw_if_path_is_empty(_p);
         detail::throw_if_path_length_exceeds_limit(_p);
 
         std::string sql;
