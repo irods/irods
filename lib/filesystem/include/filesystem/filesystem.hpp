@@ -66,6 +66,26 @@ namespace irods::experimental::filesystem
         auto exists(object_status _s) noexcept -> bool;
         auto exists(rxComm& _comm, const path& _p) -> bool;
 
+        /// \brief Checks if the path is registered in the catalog as a collection.
+        ///
+        /// \throws filesystem_error If the path is empty or exceeds the path limit.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a collection.
+        ///
+        /// \return A boolean indicating whether the collection is registered.
+        auto is_collection_registered(rxComm& _comm, const path& _p) -> bool;
+
+        /// \brief Checks if the path is registered in the catalog as a data object.
+        ///
+        /// \throws filesystem_error If the path is empty or exceeds the path limit.
+        ///
+        /// \param[in] _comm The communication object.
+        /// \param[in] _p    The path to a data object.
+        ///
+        /// \return A boolean indicating whether the data object is registered.
+        auto is_data_object_registered(rxComm& _comm, const path& _p) -> bool;
+
         auto equivalent(rxComm& _comm, const path& _p1, const path& _p2) -> bool;
 
         /// \brief Returns the size of the latest good replica.

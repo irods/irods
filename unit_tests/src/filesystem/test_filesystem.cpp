@@ -695,6 +695,25 @@ TEST_CASE("filesystem")
         }
 #endif // IRODS_ENABLE_ALL_UNIT_TESTS
     }
+
+    SECTION("collection registration")
+    {
+        REQUIRE(fs::client::is_collection_registered(conn, sandbox));
+        REQUIRE_FALSE(fs::client::is_collection_registered(conn, sandbox / "not_registered_in_catalog"));
+    }
+
+    SECTION("data object registration")
+    {
+        const fs::path p = sandbox / "data_object";
+
+        {
+            default_transport tp{conn};
+            odstream{tp, p};
+        }
+
+        REQUIRE(fs::client::is_data_object_registered(conn, p));
+        REQUIRE_FALSE(fs::client::is_data_object_registered(conn, sandbox / "not_registered_in_catalog"));
+    }
 }
 
 auto get_hostname() noexcept -> std::string
