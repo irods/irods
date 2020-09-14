@@ -507,11 +507,44 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return exists(status(_comm, _p));
     }
 
+    auto is_collection_registered(rxComm& _comm, const path& _p) -> bool
+    {
+        detail::throw_if_path_is_empty(_p);
+        detail::throw_if_path_length_exceeds_limit(_p);
+
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        const auto gql = fmt::format("select COLL_ID where COLL_NAME = '{}'", _p.c_str());
+
+        return qb.build(_comm, gql).size() > 0;
+    }
+
+    auto is_data_object_registered(rxComm& _comm, const path& _p) -> bool
+    {
+        detail::throw_if_path_is_empty(_p);
+        detail::throw_if_path_length_exceeds_limit(_p);
+
+        irods::experimental::query_builder qb;
+
+        if (const auto zone = zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        const auto gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
+                                     _p.parent_path().c_str(),
+                                     _p.object_name().c_str());
+
+        return qb.build(_comm, gql).size() > 0;
+    }
+
     auto equivalent(rxComm& _comm, const path& _p1, const path& _p2) -> bool
     {
-        if (_p1.empty() || _p2.empty()) {
-            throw filesystem_error{"empty path", make_error_code(SYS_INVALID_INPUT_PARAM)};
-        }
+        detail::throw_if_path_is_empty(_p1);
+        detail::throw_if_path_is_empty(_p2);
 
         const auto p1_info = stat(_comm, _p1);
 
