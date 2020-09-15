@@ -83,6 +83,7 @@ set(
   istream
   isysmeta
   iticket
+  itouch
   itrim
   iunreg
   iuserinfo
@@ -104,6 +105,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_program_options.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     )
   target_include_directories(
@@ -116,6 +118,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
     ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
     )
   target_compile_definitions(${EXECUTABLE} PRIVATE ${IRODS_COMPILE_DEFINITIONS} BOOST_SYSTEM_NO_DEPRECATED)
   target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
