@@ -63,7 +63,7 @@ namespace irods::experimental::filesystem
         auto create_collection(rxComm& _comm, const path& _p, const path& _existing_p) -> bool;
         auto create_collections(rxComm& _comm, const path& _p) -> bool;
 
-        auto exists(object_status _s) noexcept -> bool;
+        auto exists(const object_status& _s) noexcept -> bool;
         auto exists(rxComm& _comm, const path& _p) -> bool;
 
         /// \brief Checks if the path is registered in the catalog as a collection.
@@ -99,7 +99,7 @@ namespace irods::experimental::filesystem
         /// \return An integer representing the size of the data object.
         auto data_object_size(rxComm& _comm, const path& _p) -> std::uintmax_t;
 
-        auto is_collection(object_status _s) noexcept -> bool;
+        auto is_collection(const object_status& _s) noexcept -> bool;
         auto is_collection(rxComm& _comm, const path& _p) -> bool;
 
         /// \brief Checks if the path points to a special collection.
@@ -116,10 +116,10 @@ namespace irods::experimental::filesystem
 
         auto is_empty(rxComm& _comm, const path& _p) -> bool;
 
-        auto is_other(object_status _s) noexcept -> bool;
+        auto is_other(const object_status& _s) noexcept -> bool;
         auto is_other(rxComm& _comm, const path& _p) -> bool;
 
-        auto is_data_object(object_status _s) noexcept -> bool;
+        auto is_data_object(const object_status& _s) noexcept -> bool;
         auto is_data_object(rxComm& _comm, const path& _p) -> bool;
 
         /// \brief Returns the mtime of the latest good replica or a collection.
@@ -156,7 +156,7 @@ namespace irods::experimental::filesystem
 
         auto status(rxComm& _comm, const path& _p) -> object_status;
 
-        auto status_known(object_status _s) noexcept -> bool;
+        auto status_known(const object_status& _s) noexcept -> bool;
 
         /// \brief Returns the checksum of the latest good replica.
         ///

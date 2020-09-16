@@ -493,7 +493,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return rxCollCreate(&_comm, &input) == 0;
     }
 
-    auto exists(object_status _s) noexcept -> bool
+    auto exists(const object_status& _s) noexcept -> bool
     {
         return status_known(_s) && _s.type() != object_type::not_found;
     }
@@ -614,7 +614,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return size;
     }
 
-    auto is_collection(object_status _s) noexcept -> bool
+    auto is_collection(const object_status& _s) noexcept -> bool
     {
         return _s.type() == object_type::collection;
     }
@@ -656,7 +656,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         throw filesystem_error{"cannot check emptiness: unknown object type", _p, make_error_code(CAT_NOT_A_DATAOBJ_AND_NOT_A_COLLECTION)};
     }
 
-    auto is_other(object_status _s) noexcept -> bool
+    auto is_other(const object_status& _s) noexcept -> bool
     {
         return _s.type() == object_type::unknown;
     }
@@ -666,7 +666,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return is_other(status(_comm, _p));
     }
 
-    auto is_data_object(object_status _s) noexcept -> bool
+    auto is_data_object(const object_status& _s) noexcept -> bool
     {
         return _s.type() == object_type::data_object;
     }
@@ -1035,7 +1035,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         return status;
     }
 
-    auto status_known(object_status _s) noexcept -> bool
+    auto status_known(const object_status& _s) noexcept -> bool
     {
         return _s.type() != object_type::none;
     }
