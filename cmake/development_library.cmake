@@ -316,6 +316,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/include/replica_open.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/replica_close.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/ticketAdmin.h
+  ${CMAKE_SOURCE_DIR}/lib/api/include/touch.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/unbunAndRegPhyBunfile.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/unregDataObj.h
   ${CMAKE_SOURCE_DIR}/lib/api/include/userAdmin.h
@@ -336,6 +337,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_get_file_descriptor_info.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_open.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rs_replica_close.hpp
+  ${CMAKE_SOURCE_DIR}/server/api/include/rs_touch.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthCheck.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthPluginRequest.hpp
   ${CMAKE_SOURCE_DIR}/server/api/include/rsAuthRequest.hpp

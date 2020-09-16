@@ -402,6 +402,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_data_object_modify_info.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_open.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rc_replica_close.cpp
+  ${CMAKE_SOURCE_DIR}/lib/api/src/rc_touch.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthPluginRequest.cpp
   ${CMAKE_SOURCE_DIR}/lib/api/src/rcAuthRequest.cpp
@@ -625,6 +626,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_get_file_descriptor_info.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_replica_open.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rs_replica_close.cpp
+  ${CMAKE_SOURCE_DIR}/server/api/src/rs_touch.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthCheck.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthPluginRequest.cpp
   ${CMAKE_SOURCE_DIR}/server/api/src/rsAuthRequest.cpp
