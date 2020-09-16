@@ -325,8 +325,16 @@ namespace irods::experimental::replica
         std::stringstream new_time;
         new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
 
+        std::string resc_hier;
+
+        {
+            const auto replica_info = get_replica_info(_comm, _p, _rn);
+            resc_hier = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+        }
+
         dataObjInfo_t info{};
         std::snprintf(info.objPath, sizeof(info.objPath), "%s", _p.c_str());
+        std::snprintf(info.rescHier, sizeof(info.rescHier), "%s", resc_hier.c_str());
 
         keyValPair_t kvp{};
         auto reg_params = make_key_value_proxy(kvp);

@@ -1,11 +1,14 @@
 #include "catch.hpp"
 
+#include "client_connection.hpp"
 #include "connection_pool.hpp"
 #include "dstream.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "replica.hpp"
+#include "resource_administration.hpp"
 #include "rodsClient.h"
 #include "transport/default_transport.hpp"
+#include "unit_test_utils.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -15,6 +18,13 @@
 namespace fs = irods::experimental::filesystem;
 namespace io = irods::experimental::io;
 namespace replica = irods::experimental::replica;
+
+// IMPORTANT NOTE REGARDING THE CLIENT_CONNECTION OBJECTS
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Connection Pools do not work well with the resource administration library
+// because the resource manager within the agents do not see any changes to the
+// resource hierarchies. The only way around this is to spawn a new agent by
+// creating a new connection to the iRODS server.
 
 TEST_CASE("replica", "[replica]")
 {
@@ -33,7 +43,8 @@ TEST_CASE("replica", "[replica]")
         REQUIRE(fs::client::create_collection(conn, sandbox));
     }
 
-    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+    irods::at_scope_exit remove_sandbox{[&sandbox] {
+        irods::experimental::client_connection conn;
         REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
     }};
 
@@ -60,16 +71,38 @@ TEST_CASE("replica", "[replica]")
         const auto old_mtime = replica::last_write_time(conn, target_object, 0);
         std::this_thread::sleep_for(2s);
 
+        const std::string_view resc_name = "unit_test_ufs";
+
+        {
+            // create resource.
+            irods::experimental::client_connection conn;
+            REQUIRE(unit_test_utils::add_ufs_resource(conn, resc_name, "unit_test_vault"));
+        }
+
+        {
+            // replicate replica.
+            irods::experimental::client_connection conn;
+            REQUIRE(unit_test_utils::replicate_data_object(conn, target_object.c_str(), resc_name));
+        }
+
+        irods::at_scope_exit clean_up{[&target_object, &resc_name] {
+            namespace ix = irods::experimental;
+            ix::client_connection conn;
+            fs::client::remove(conn, target_object, fs::remove_options::no_trash);
+            ix::administration::client::remove_resource(conn, resc_name);
+        }};
+
+        irods::experimental::client_connection conn;
+
+        // the replica number of the second replica.
+        const auto second_replica = 1;
+
+        // show that the mtime of each replica is different.
+        REQUIRE(old_mtime != replica::last_write_time<RcComm>(conn, target_object, second_replica));
+
         // mtime (modification)
-        using clock_type = fs::object_time_type::clock;
-        using duration_type = fs::object_time_type::duration;
-
-        const auto now = std::chrono::time_point_cast<duration_type>(clock_type::now());
-        REQUIRE(old_mtime != now);
-
-        replica::last_write_time(conn, target_object, 0, now);
-        const auto updated = replica::last_write_time(conn, target_object, 0);
-        REQUIRE(updated == now);
+        replica::last_write_time<RcComm>(conn, target_object, second_replica, old_mtime);
+        REQUIRE(old_mtime == replica::last_write_time<RcComm>(conn, target_object, second_replica));
     }
 
     SECTION("replica size")
