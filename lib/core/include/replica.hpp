@@ -136,7 +136,10 @@ namespace irods::experimental::replica
         const replica_number_type _rn) -> std::vector<std::string>
     {
         query_builder qb;
-        qb.zone_hint(*irods::experimental::filesystem::zone_name(_p));
+
+        if (const auto zone = irods::experimental::filesystem::zone_name(_p); zone) {
+            qb.zone_hint(*zone);
+        }
 
         const std::string qstr = fmt::format(
             "SELECT "
