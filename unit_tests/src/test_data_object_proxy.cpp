@@ -13,10 +13,10 @@ namespace
     std::string_view LOGICAL_PATH_2 = "/tempZone/home/rods/goo";
     std::string_view RESC_1         = "demoResc";
     std::string_view RESC_2         = "otherResc";
-    constexpr rodsLong_t DATA_ID_1  = 10101; 
+    constexpr rodsLong_t DATA_ID_1  = 10101;
     constexpr rodsLong_t DATA_ID_2  = 10102;
-    constexpr rodsLong_t COLL_ID_1  = 20202; 
-    constexpr rodsLong_t COLL_ID_2  = 20203; 
+    constexpr rodsLong_t COLL_ID_1  = 20202;
+    constexpr rodsLong_t COLL_ID_2  = 20203;
 
     namespace data_object = irods::experimental::data_object;
     namespace replica     = irods::experimental::replica;
