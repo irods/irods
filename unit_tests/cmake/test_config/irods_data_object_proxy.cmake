@@ -12,7 +12,7 @@ set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
                             ${IRODS_EXTERNALS_FULLPATH_CATCH2}/include
                             ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
                             ${IRODS_EXTERNALS_FULLPATH_FMT}/include)
- 
+
 set(IRODS_TEST_LINK_LIBRARIES irods_common
                               irods_client
                               ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
