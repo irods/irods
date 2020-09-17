@@ -472,7 +472,7 @@ namespace irods::experimental::filesystem
         if (constexpr difference_type hops = 2; std::distance(iter, std::end(_p)) >= hops) {
             return *++iter;
         }
-        
+
         return std::nullopt;
     }
 } // namespace irods::experimental::filesystem

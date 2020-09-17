@@ -68,7 +68,7 @@ namespace irods::experimental::data_object
         /// \returns std::string_view
         /// \retval Owner zone name of the data object
         /// \since 4.2.9
-        auto owner_user_zone() const noexcept -> std::string_view { return data_obj_info_->dataOwnerZone; }
+        auto owner_zone_name() const noexcept -> std::string_view { return data_obj_info_->dataOwnerZone; }
 
         /// \returns size_type
         /// \retval Number of replicas for this data object
@@ -195,6 +195,36 @@ namespace irods::experimental::data_object
         return data_object_proxy{_doi};
     } // make_data_object_proxy
 
+    template<typename rxComm>
+    static auto make_data_object_proxy(rxComm& _comm, const irods::experimental::filesystem::path& _p)
+        -> std::pair<data_object_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
+    {
+        namespace replica = irods::experimental::replica;
+
+        const auto data_obj_info = replica::get_data_object_info(_comm, _p);
+
+        dataObjInfo_t* head{};
+
+        for (auto&& row : data_obj_info) {
+            // Create a new dataObjInfo_t to represent this replica
+            dataObjInfo_t* next = (dataObjInfo_t*)std::malloc(sizeof(dataObjInfo_t));
+            std::memset(next, 0, sizeof(dataObjInfo_t));
+
+            // Populate the new struct
+            replica::detail::populate_struct_from_results(*next, row);
+
+            // Make sure the structure used for the head is populated
+            if (!head) {
+                head = next;
+            }
+            else {
+                // TODO: Add interface for replicas() which allows for this
+                head->next = next;
+            }
+        }
+
+        return {data_object_proxy{*head}, lifetime_manager{*head}};
+    } // make_data_object_proxy
 } // namespace irods::experimental::data_object
 
 #endif // #ifndef IRODS_DATA_OBJECT_PROXY_HPP
