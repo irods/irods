@@ -1,17 +1,18 @@
-#include "dataObjChksum.h"
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "specColl.hpp"
-#include "dataObjOpr.hpp"
-#include "physPath.hpp"
-#include "rsApiHandler.hpp"
-#include "modDataObjMeta.h"
-#include "getRemoteZoneResc.h"
-#include "rsDataObjChksum.hpp"
-#include "rsModDataObjMeta.hpp"
-#include "rsFileStat.hpp"
 #include "boost/lexical_cast.hpp"
+#include "dataObjChksum.h"
+#include "dataObjOpr.hpp"
+#include "getRemoteZoneResc.h"
+#include "irods_logger.hpp"
+#include "modDataObjMeta.h"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "resource.hpp"
+#include "rsApiHandler.hpp"
+#include "rsDataObjChksum.hpp"
+#include "rsFileStat.hpp"
 #include "rsGenQuery.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "specColl.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
@@ -19,6 +20,7 @@
 // =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
+#include "key_value_proxy.hpp"
 
 #include <optional>
 
@@ -81,22 +83,50 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
                                   outChksum );
         return status;
     }
-    else {
-        // =-=-=-=-=-=-=-
-        // determine the resource hierarchy if one is not provided
-        if ( getValByKey( &dataObjChksumInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            try {
-                auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjChksumInp);
-                const auto hier = std::get<std::string>(result);
-                addKeyVal( &dataObjChksumInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-            }   
-            catch (const irods::exception& e ) { 
-                irods::log(e);
-                return e.code();
-            }
-        } // if keyword
-        status = _rsDataObjChksum(rsComm, dataObjChksumInp, outChksum, &dataObjInfoHead);
+
+    // If the client specified a leaf resource, then discover the hierarchy and
+    // store it in the keyValPair_t. This instructs the iRODS server to create
+    // the replica at the specified resource if it does not exist.
+    auto kvp = irods::experimental::make_key_value_proxy(dataObjChksumInp->condInput);
+    if (kvp.contains(LEAF_RESOURCE_NAME_KW)) {
+        std::string hier;
+        auto leaf = kvp[LEAF_RESOURCE_NAME_KW].value();
+        bool is_coord_resc = false;
+
+        if (const auto err = resc_mgr.is_coordinating_resource(leaf.data(), is_coord_resc); !err.ok()) {
+            logger::api::error(err.result());
+            return err.code();
+        }
+
+        // Leaf resources cannot be coordinating resources. This essentially checks
+        // if the resource has any child resources which is exactly what we're interested in.
+        if (is_coord_resc) {
+            logger::api::error("[{}] is not a leaf resource.", leaf);
+            return USER_INVALID_RESC_INPUT;
+        }
+
+        if (const auto err = resc_mgr.get_hier_to_root_for_resc(leaf.data(), hier); !err.ok()) {
+            logger::api::error(err.result());
+            return err.code();
+        }
+
+        kvp[RESC_HIER_STR_KW] = hier;
     }
+
+    // =-=-=-=-=-=-=-
+    // determine the resource hierarchy if one is not provided
+    if (!kvp.contains(RESC_HIER_STR_KW)) {
+        try {
+            auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, *dataObjChksumInp);
+            kvp[RESC_HIER_STR_KW] = std::get<std::string>(result);
+        }
+        catch (const irods::exception& e ) {
+            irods::log(e);
+            return e.code();
+        }
+    } // if keyword
+    status = _rsDataObjChksum(rsComm, dataObjChksumInp, outChksum, &dataObjInfoHead);
+
     freeAllDataObjInfo( dataObjInfoHead );
     rodsLog( LOG_DEBUG, "rsDataObjChksum - returning status %d", status );
     return status;
