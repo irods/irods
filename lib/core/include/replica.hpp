@@ -21,20 +21,17 @@
 
 #include <chrono>
 #include <iomanip>
+#include <optional>
 #include <string_view>
 #include <variant>
 
 namespace irods::experimental::replica
 {
-    enum class replica_select_type
-    {
-        all
-    };
-
     using replica_number_type = int;
+
     using leaf_resource_name_type = std::string_view;
 
-    using replica_input_type = std::variant<replica_select_type, replica_number_type, leaf_resource_name_type>;
+    using query_value_type = std::vector<std::vector<std::string>>;
 
     /// \brief Describes whether the catalog should be updated when calculating a replica's checksum
     ///
@@ -92,6 +89,8 @@ namespace irods::experimental::replica
             }
         } // throw_if_path_is_not_a_data_object
 
+        /// \brief Enforce valid replica number for replica operation
+        ///
         /// \param[in] _replica_number
         ///
         /// \throws irods::exception if the path does not refer to a data object
@@ -104,7 +103,7 @@ namespace irods::experimental::replica
             }
         } // throw_if_replica_number_is_invalid
 
-        /// \brief Enforce valid path and replica number for replica operation
+        /// \brief Enforce valid path for replica operation
         ///
         /// \param[in] _comm connection object
         /// \param[in] _logical_path
@@ -123,6 +122,190 @@ namespace irods::experimental::replica
 
             throw_if_path_is_not_a_data_object(_comm, _logical_path);
         } // throw_if_replica_logical_path_is_invalid
+
+        /// \brief Enforce valid resource name for replica operation
+        ///
+        /// \param[in] _resource_name
+        ///
+        /// \throws irods::exception If the provided resource name is invalid
+        ///
+        /// \since 4.2.9
+        inline auto throw_if_replica_resource_name_is_invalid(const leaf_resource_name_type& _resource_name) -> void
+        {
+            if (_resource_name.size() <= 0) {
+                THROW(SYS_INVALID_INPUT_PARAM, "resource name cannot be empty");
+            }
+        } // throw_if_replica_resource_name_is_invalid
+
+        /// \brief Gets a row from r_data_main using irods::query
+        ///
+        /// Passing an empty string for the _query_condition_string input will result in all replicas
+        /// being returned.
+        ///
+        /// \param[in] _comm connection object
+        /// \param[in] _logical_path
+        /// \param[in] _query_condition_string Additional constraints for selection of replica information
+        ///
+        /// \throws irods::exception If no replica information is found or query fails
+        ///
+        /// \retval Set of results from the query
+        ///
+        /// \since 4.2.9
+        template<typename rxComm>
+        auto get_data_object_info_impl(
+            rxComm& _comm,
+            const irods::experimental::filesystem::path& _logical_path,
+            std::string_view _query_condition_string = "") -> query_value_type
+        {
+            detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
+
+            query_builder qb;
+
+            if (const auto zone = irods::experimental::filesystem::zone_name(_logical_path); zone) {
+                qb.zone_hint(*zone);
+            }
+
+            std::string qstr = fmt::format(
+                "SELECT "
+                "DATA_ID, "
+                "DATA_COLL_ID, "
+                "DATA_NAME, "
+                "DATA_REPL_NUM, "
+                "DATA_VERSION,"
+                "DATA_TYPE_NAME, "
+                "DATA_SIZE, "
+                "DATA_RESC_NAME, "
+                "DATA_PATH, "
+                "DATA_OWNER_NAME, "
+                "DATA_OWNER_ZONE, "
+                "DATA_REPL_STATUS, "
+                "DATA_STATUS, "
+                "DATA_CHECKSUM, "
+                "DATA_EXPIRY, "
+                "DATA_MAP_ID, "
+                "DATA_COMMENTS, "
+                "DATA_CREATE_TIME, "
+                "DATA_MODIFY_TIME, "
+                "DATA_MODE, "
+                "DATA_RESC_HIER, "
+                "DATA_RESC_ID, "
+                "COLL_NAME"
+                " WHERE DATA_NAME = '{}' AND COLL_NAME = '{}'",
+                _logical_path.object_name().c_str(), _logical_path.parent_path().c_str());
+
+            if (!_query_condition_string.empty()) {
+                qstr += fmt::format(" AND {}", _query_condition_string.data());
+            }
+
+            auto q = qb.build<rxComm>(_comm, qstr);
+            if (q.size() <= 0) {
+                THROW(CAT_NO_ROWS_FOUND, "no replica information found");
+            }
+
+            query_value_type output;
+            for (auto&& result : q) {
+                output.push_back(result);
+            }
+
+            return output;
+        } // get_data_object_info_impl
+
+        /// \brief Calculate checksum for a replica
+        ///
+        /// The verification_calculation helps determine whether the calculated checksum will be registered in the catalog
+        ///
+        /// \param[in] _comm connection object
+        /// \param[in] _data_object_input
+        /// \param[in] _logical_path
+        /// \param[in] _calculation mode for catalog update
+        ///
+        /// \throws filesystem_error if the path is empty or too long
+        /// \throws irods::exception if the path does not refer to a data object or replica input is invalid
+        ///
+        /// \returns std::string
+        /// \retval value of calculated checksum
+        ///
+        /// \since 4.2.9
+        template<typename rxComm>
+        auto replica_checksum_impl(
+            rxComm& _comm,
+            dataObjInp_t& _data_object_input,
+            const irods::experimental::filesystem::path& _logical_path,
+            const verification_calculation _calculation = verification_calculation::if_empty) -> std::string
+        {
+            detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
+
+            std::snprintf(_data_object_input.objPath, sizeof(_data_object_input.objPath), "%s", _logical_path.c_str());
+
+            if (verification_calculation::always == _calculation) {
+                auto cond_input = irods::experimental::make_key_value_proxy(_data_object_input.condInput);
+                cond_input[FORCE_CHKSUM_KW] = "";
+            }
+
+            char* checksum{};
+
+            if constexpr (std::is_same_v<rxComm, rsComm_t>) {
+                if (const auto ec = rsDataObjChksum(&_comm, &_data_object_input, &checksum); ec < 0) {
+                    THROW(ec, fmt::format("cannot calculate checksum for [{}]", _logical_path.c_str()));
+                }
+            }
+            else {
+                if (const auto ec = rcDataObjChksum(&_comm, &_data_object_input, &checksum); ec < 0) {
+                    THROW(ec, fmt::format("cannot calculate checksum for [{}]", _logical_path.c_str()));
+                }
+            }
+
+            return checksum ? checksum : std::string{};
+        } // replica_checksum_impl
+
+        /// \brief Sets value of the timestamp of last time this replica was written to
+        ///
+        /// \param[in] _comm connection object
+        /// \param[in] _logical_path
+        /// \param[in] _resource_hierarchy
+        /// \param[in] _new_time timestamp to use as last_write_time
+        ///
+        /// \throws irods::filesystem::filesystem_error if the path is empty or too long
+        /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+        ///
+        /// \since 4.2.9
+        template<typename rxComm>
+        auto last_write_time_impl(
+            rxComm& _comm,
+            const irods::experimental::filesystem::path& _logical_path,
+            std::string_view _resource_hierarchy,
+            const irods::experimental::filesystem::object_time_type _new_time) -> void
+        {
+            const auto seconds = _new_time.time_since_epoch();
+            std::stringstream new_time;
+            new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
+
+            dataObjInfo_t info{};
+            std::snprintf(info.objPath, sizeof(info.objPath), "%s", _logical_path.c_str());
+            std::snprintf(info.rescHier, sizeof(info.rescHier), "%s", _resource_hierarchy.data());
+
+            keyValPair_t kvp{};
+            auto reg_params = make_key_value_proxy(kvp);
+            reg_params[DATA_MODIFY_KW] = new_time.str();
+
+            modDataObjMeta_t input{};
+            input.dataObjInfo = &info;
+            input.regParam = reg_params.get();
+
+            const auto mod_obj_info_fcn = [](rxComm& _comm, modDataObjMeta_t& _inp)
+            {
+                if constexpr (std::is_same_v<rxComm, rsComm_t>) {
+                    return rsModDataObjMeta(&_comm, &_inp);
+                }
+                else {
+                    return rcModDataObjMeta(&_comm, &_inp);
+                }
+            };
+
+            if (const auto ec = mod_obj_info_fcn(_comm, input); ec != 0) {
+                THROW(ec, fmt::format("cannot set mtime for [{}]", _logical_path.c_str()));
+            }
+        } // last_write_time_impl
     } // namespace detail
 
     /// \brief Gets a row from r_data_main using irods::query
@@ -133,7 +316,6 @@ namespace irods::experimental::replica
     ///
     /// \throws irods::exception If no replica information is found or query fails
     ///
-    /// \returns std::vector<std::string>
     /// \retval Set of results from the query
     ///
     /// \since 4.2.9
@@ -141,65 +323,55 @@ namespace irods::experimental::replica
     auto get_data_object_info(
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
-        const replica_input_type& _replica_input = replica_select_type::all) -> std::vector<std::vector<std::string>>
+        const replica_number_type _replica_number) -> query_value_type
     {
-        detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
+        detail::throw_if_replica_number_is_invalid(_replica_number);
 
-        query_builder qb;
+        const std::string qstr = fmt::format("DATA_REPL_NUM = '{}'", _replica_number);
 
-        if (const auto zone = irods::experimental::filesystem::zone_name(_logical_path); zone) {
-            qb.zone_hint(*zone);
-        }
+        return detail::get_data_object_info_impl(_comm, _logical_path, qstr);
+    } // get_data_object_info
 
-        std::string qstr = fmt::format(
-            "SELECT "
-            "DATA_ID, "
-            "DATA_COLL_ID, "
-            "DATA_NAME, "
-            "DATA_REPL_NUM, "
-            "DATA_VERSION,"
-            "DATA_TYPE_NAME, "
-            "DATA_SIZE, "
-            "DATA_RESC_NAME, "
-            "DATA_PATH, "
-            "DATA_OWNER_NAME, "
-            "DATA_OWNER_ZONE, "
-            "DATA_REPL_STATUS, "
-            "DATA_STATUS, "
-            "DATA_CHECKSUM, "
-            "DATA_EXPIRY, "
-            "DATA_MAP_ID, "
-            "DATA_COMMENTS, "
-            "DATA_CREATE_TIME, "
-            "DATA_MODIFY_TIME, "
-            "DATA_MODE, "
-            "DATA_RESC_HIER, "
-            "DATA_RESC_ID, "
-            "COLL_NAME"
-            " WHERE DATA_NAME = '{}' AND COLL_NAME = '{}'",
-            _logical_path.object_name().c_str(), _logical_path.parent_path().c_str());
+    /// \brief Gets a row from r_data_main using irods::query
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws irods::exception If no replica information is found or query fails
+    ///
+    /// \retval Set of results from the query
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_data_object_info(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> query_value_type
+    {
+        detail::throw_if_replica_resource_name_is_invalid(_leaf_resource_name);
 
-        if (const auto& n = std::get_if<replica_number_type>(&_replica_input); n) {
-            detail::throw_if_replica_number_is_invalid(*n);
+        const std::string qstr = fmt::format("DATA_RESC_NAME = '{}'", _leaf_resource_name);
 
-            qstr += fmt::format(" AND DATA_REPL_NUM = '{}'", *n);
-        }
-        // TODO: add leaf_resource_name_type case
-        else if (const auto& e = std::get_if<replica_select_type>(&_replica_input); !e) {
-            THROW(SYS_INVALID_INPUT_PARAM, "invalid replica number input");
-        }
+        return detail::get_data_object_info_impl(_comm, _logical_path, qstr);
+    } // get_data_object_info
 
-        auto q = qb.build<rxComm>(_comm, qstr);
-        if (q.size() <= 0) {
-            THROW(CAT_NO_ROWS_FOUND, "no replica information found");
-        }
-
-        std::vector<std::vector<std::string>> output;
-        for (auto&& result : q) {
-            output.push_back(result);
-        }
-
-        return output;
+    /// \brief Gets a row from r_data_main using irods::query
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    ///
+    /// \throws irods::exception If no replica information is found or query fails
+    ///
+    /// \retval Set of results from the query
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_data_object_info(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path) -> query_value_type
+    {
+        return detail::get_data_object_info_impl(_comm, _logical_path);
     } // get_data_object_info
 
     /// \param[in] _comm connection object
@@ -219,12 +391,35 @@ namespace irods::experimental::replica
         const irods::experimental::filesystem::path& _logical_path,
         const replica_number_type _replica_number) -> std::uintmax_t
     {
-        detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
-        detail::throw_if_replica_number_is_invalid(_replica_number);
-
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
-        return static_cast<std::uintmax_t>(std::stoull(result[detail::genquery_column_index::DATA_SIZE]));
+        std::string_view size = result[detail::genquery_column_index::DATA_SIZE];
+
+        return static_cast<std::uintmax_t>(std::stoull(size.data()));
+    } // replica_size
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \returns std::uintmax_t
+    /// \retval size of specified replica in bytes
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto replica_size(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> std::uintmax_t
+    {
+        const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+        std::string_view size = result[detail::genquery_column_index::DATA_SIZE];
+
+        return static_cast<std::uintmax_t>(std::stoull(size.data()));
     } // replica_size
 
     /// \param[in] _comm connection object
@@ -247,58 +442,56 @@ namespace irods::experimental::replica
         return replica_size(_comm, _logical_path, _replica_number) == 0;
     } // is_replica_empty
 
-    /// \brief Calculate checksum for a replica
-    ///
-    /// The verification_calculation helps determine whether the calculated checksum will be registered in the catalog
-    ///
     /// \param[in] _comm connection object
     /// \param[in] _logical_path
-    /// \param[in] _replica_number
-    /// \param[in] _calculation mode for catalog update
+    /// \param[in] _leaf_resource_name
     ///
     /// \throws filesystem_error if the path is empty or too long
     /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
     ///
-    /// \returns std::string
-    /// \retval value of calculated checksum
+    /// \returns bool
+    /// \retval true if replica size is 0; otherwise, false
     ///
     /// \since 4.2.9
+    template<typename rxComm>
+    auto is_replica_empty(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> bool
+    {
+        return replica_size(_comm, _logical_path, _leaf_resource_name) == 0;
+    } // is_replica_empty
+
     template<typename rxComm>
     auto replica_checksum(
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
         const replica_number_type _replica_number,
-        verification_calculation _calculation = verification_calculation::if_empty) -> std::string
+        const verification_calculation _calculation = verification_calculation::if_empty) -> std::string
     {
-        detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
         detail::throw_if_replica_number_is_invalid(_replica_number);
 
         dataObjInp_t input{};
-        std::string replica_number_string;
         auto cond_input = make_key_value_proxy(input.condInput);
-
         cond_input[REPL_NUM_KW] = std::to_string(_replica_number);
 
-        std::snprintf(input.objPath, sizeof(input.objPath), "%s", _logical_path.c_str());
+        return detail::replica_checksum_impl(_comm, input, _logical_path, _calculation);
+    } // replica_checksum
 
-        if (verification_calculation::always == _calculation) {
-            cond_input[FORCE_CHKSUM_KW] = "";
-        }
+    template<typename rxComm>
+    auto replica_checksum(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name,
+        const verification_calculation _calculation = verification_calculation::if_empty) -> std::string
+    {
+        detail::throw_if_replica_resource_name_is_invalid(_leaf_resource_name);
 
-        char* checksum{};
+        dataObjInp_t input{};
+        auto cond_input = make_key_value_proxy(input.condInput);
+        cond_input[LEAF_RESOURCE_NAME_KW] = _leaf_resource_name;
 
-        if constexpr (std::is_same_v<rxComm, rsComm_t>) {
-            if (const auto ec = rsDataObjChksum(&_comm, &input, &checksum); ec < 0) {
-                THROW(ec, fmt::format("cannot calculate checksum for [{}] (replica [{}])", _logical_path.string(), _replica_number));
-            }
-        }
-        else {
-            if (const auto ec = rcDataObjChksum(&_comm, &input, &checksum); ec < 0) {
-                THROW(ec, fmt::format("cannot calculate checksum for [{}] (replica [{}])", _logical_path.string(), _replica_number));
-            }
-        }
-
-        return checksum ? checksum : std::string{};
+        return detail::replica_checksum_impl(_comm, input, _logical_path, _calculation);
     } // replica_checksum
 
     /// \brief Returns timestamp of last time this replica was written to
@@ -322,13 +515,39 @@ namespace irods::experimental::replica
     {
         using object_time_type = irods::experimental::filesystem::object_time_type;
 
-        detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
-        detail::throw_if_replica_number_is_invalid(_replica_number);
-
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
-        const auto& mtime = result[detail::genquery_column_index::DATA_MODIFY_TIME];
 
-        return object_time_type{std::chrono::seconds{std::stoull(mtime)}};
+        std::string_view mtime = result[detail::genquery_column_index::DATA_MODIFY_TIME];
+
+        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
+    } // last_write_time
+
+    /// \brief Returns timestamp of last time this replica was written to
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \returns irods::filesystem::object_time_type
+    /// \retval Timestamp of the last time the replica was written to
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto last_write_time(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> irods::experimental::filesystem::object_time_type
+    {
+        using object_time_type = irods::experimental::filesystem::object_time_type;
+
+        const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+        std::string_view mtime = result[detail::genquery_column_index::DATA_MODIFY_TIME];
+
+        return object_time_type{std::chrono::seconds{std::stoull(mtime.data())}};
     } // last_write_time
 
     /// \brief Sets value of the timestamp of last time this replica was written to
@@ -349,46 +568,163 @@ namespace irods::experimental::replica
         const replica_number_type _replica_number,
         const irods::experimental::filesystem::object_time_type _new_time) -> void
     {
+        const auto replica_info = get_data_object_info(_comm, _logical_path, _replica_number).front();
+
+        std::string_view resource_hierarchy = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+
+        return detail::last_write_time_impl(_comm, _logical_path, resource_hierarchy, _new_time);
+    } // last_write_time
+
+    /// \brief Sets value of the timestamp of last time this replica was written to
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    /// \param[in] _new_time timestamp to use as last_write_time
+    ///
+    /// \throws irods::filesystem::filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto last_write_time(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name,
+        const irods::experimental::filesystem::object_time_type _new_time) -> void
+    {
+        const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+        std::string_view resource_hierarchy = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+
+        return detail::last_write_time_impl(_comm, _logical_path, resource_hierarchy, _new_time);
+    } // last_write_time
+
+    /// \brief Get the leaf resource name for a replica based on the provided replica number.
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _replica_number
+    ///
+    /// \throws irods::exception If query fails
+    ///
+    /// \retval std::string containing the resource name which hosts the specified replica
+    /// \retval std::nullopt if no replica by the specified replica number is found
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto to_leaf_resource(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const replica_number_type _replica_number) -> std::optional<std::string>
+    {
+        try {
+            const auto replica_info = get_data_object_info(_comm, _logical_path, _replica_number).front();
+
+            return replica_info[detail::genquery_column_index::DATA_RESC_NAME];
+        }
+        catch (const irods::exception& e) {
+            if (CAT_NO_ROWS_FOUND == e.code()) {
+                return std::nullopt;
+            }
+            throw;
+        }
+    } // to_leaf_resource
+
+    /// \brief Get the replica number for a replica based on the provided leaf resource name.
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws irods::exception If query fails
+    ///
+    /// \retval std::string containing the resource name which hosts the specified replica
+    /// \retval std::nullopt if no replica by the specified leaf resource name is found
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto to_replica_number(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> std::optional<replica_number_type>
+    {
+        try {
+            const auto replica_info = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+            return std::stoi(replica_info[detail::genquery_column_index::DATA_REPL_NUM]);
+        }
+        catch (const irods::exception& e) {
+            if (CAT_NO_ROWS_FOUND == e.code()) {
+                return std::nullopt;
+            }
+            throw;
+        }
+    } // to_replica_number
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws irods::exception If query fails
+    ///
+    /// \retval true if qb.build returns results
+    /// \retval false if qb.build returns no results
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto replica_exists(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> bool
+    {
+        detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
+        detail::throw_if_replica_resource_name_is_invalid(_leaf_resource_name);
+
+        query_builder qb;
+
+        if (const auto zone = irods::experimental::filesystem::zone_name(_logical_path); zone) {
+            qb.zone_hint(*zone);
+        }
+
+        const std::string qstr = fmt::format(
+            "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_RESC_NAME = '{}'",
+            _logical_path.object_name().c_str(), _logical_path.parent_path().c_str(), _leaf_resource_name.data());
+
+        return 0 != qb.build<rxComm>(_comm, qstr).size();
+    } // replica_exists
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _replica_number
+    ///
+    /// \throws irods::exception If query fails
+    ///
+    /// \retval true if qb.build returns results
+    /// \retval false if qb.build returns no results
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto replica_exists(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const replica_number_type& _replica_number) -> bool
+    {
         detail::throw_if_replica_logical_path_is_invalid(_comm, _logical_path);
         detail::throw_if_replica_number_is_invalid(_replica_number);
 
-        const auto seconds = _new_time.time_since_epoch();
-        std::stringstream new_time;
-        new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
+        query_builder qb;
 
-        std::string resc_hier;
-
-        {
-            const auto replica_info = get_data_object_info(_comm, _logical_path, _replica_number).front();
-            resc_hier = replica_info[detail::genquery_column_index::DATA_RESC_HIER];
+        if (const auto zone = irods::experimental::filesystem::zone_name(_logical_path); zone) {
+            qb.zone_hint(*zone);
         }
 
-        dataObjInfo_t info{};
-        std::snprintf(info.objPath, sizeof(info.objPath), "%s", _logical_path.c_str());
-        std::snprintf(info.rescHier, sizeof(info.rescHier), "%s", resc_hier.c_str());
+        const std::string qstr = fmt::format(
+            "SELECT DATA_ID WHERE DATA_NAME = '{}' AND COLL_NAME = '{}' AND DATA_REPL_NUM = '{}'",
+            _logical_path.object_name().c_str(), _logical_path.parent_path().c_str(), _replica_number);
 
-        keyValPair_t kvp{};
-        auto reg_params = make_key_value_proxy(kvp);
-        reg_params[DATA_MODIFY_KW] = new_time.str();
-
-        modDataObjMeta_t input{};
-        input.dataObjInfo = &info;
-        input.regParam = reg_params.get();
-
-        const auto mod_obj_info_fcn = [](rxComm& _comm, modDataObjMeta_t& _inp)
-        {
-            if constexpr (std::is_same_v<rxComm, rsComm_t>) {
-                return rsModDataObjMeta(&_comm, &_inp);
-            }
-            else {
-                return rcModDataObjMeta(&_comm, &_inp);
-            }
-        };
-
-        if (const auto ec = mod_obj_info_fcn(_comm, input); ec != 0) {
-            THROW(ec, fmt::format("cannot set mtime for [{}] (replica [{}])", _logical_path.c_str(), _replica_number));
-        }
-    } // last_write_time
+        return 0 != qb.build<rxComm>(_comm, qstr).size();
+    } // replica_exists
 } // namespace irods::experimental::replica
 
 #endif // #ifndef IRODS_REPLICA_HPP
