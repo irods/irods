@@ -3,16 +3,19 @@
 
 #ifdef IRODS_REPLICA_ENABLE_SERVER_SIDE_API
     #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
     #include "rsDataObjChksum.hpp"
+    #include "rsModDataObjMeta.hpp"
 #else
     #undef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #undef IRODS_QUERY_ENABLE_SERVER_SIDE_API
     #include "dataObjChksum.h"
+    #include "modDataObjMeta.h"
 #endif
 
 #include "filesystem.hpp"
 #include "irods_exception.hpp"
 #include "key_value_proxy.hpp"
-#include "modDataObjMeta.h"
 #include "objInfo.h"
 #include "query_builder.hpp"
 #include "rcConnect.h"
