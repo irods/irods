@@ -24,7 +24,7 @@
 #include "irods_exception.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "irods_get_l1desc.hpp"
-#include "irods_logger.hpp"
+#include "irods_log.hpp"
 #include "irods_query.hpp"
 #include "irods_re_serialization.hpp"
 #include "irods_rs_comm_query.hpp"
@@ -53,7 +53,6 @@ namespace {
     namespace fs    = irods::experimental::filesystem;
     namespace ic    = irods::experimental::catalog;
 
-    using log       = irods::experimental::log;
     using json      = nlohmann::json;
     using operation = std::function<int(rsComm_t*, bytesBuf_t*, bytesBuf_t**)>;
     // clang-format on
@@ -75,8 +74,7 @@ namespace {
         const auto buf_size = _s.length() + 1;
 
         auto* buf = static_cast<char*>(allocate(sizeof(char) * buf_size));
-        std::memset(buf, 0, buf_size);
-        std::snprintf(buf, _s.length(), "%s", _s.c_str());
+        std::strncpy(buf, _s.c_str(), _s.length());
 
         auto* bbp = static_cast<bytesBuf_t*>(allocate(sizeof(bytesBuf_t)));
         bbp->len = buf_size;

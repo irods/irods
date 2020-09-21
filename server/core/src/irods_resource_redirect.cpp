@@ -16,6 +16,8 @@
 #include "irods_resource_backport.hpp"
 #include "voting.hpp"
 
+#include "fmt/format.h"
+
 namespace {
 
     std::string get_keyword_from_inp(

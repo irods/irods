@@ -19,7 +19,7 @@
 #include "irods_collection_object.hpp"
 #include "irods_string_tokenize.hpp"
 #include "irods_hierarchy_parser.hpp"
-#include "irods_logger.hpp"
+#include "irods_log.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_kvp_string_parser.hpp"
@@ -394,8 +394,6 @@ irods::error compound_start_operation(
 
 namespace {
 
-    using log = irods::experimental::log;
-
     int open_source_replica(
         irods::plugin_context& _ctx,
         irods::file_object_ptr obj,
@@ -617,7 +615,6 @@ irods::error repl_object(
         }
     };
     if (STAGE_OBJ_KW == keyword) {
-        log::resource::debug("staging replica [{}] to archive [{}] from [{}]");
         try {
             source_l1descInx = open_source_replica(_ctx, obj, src_hier);
             destination_l1descInx = open_destination_replica(_ctx, obj, source_l1descInx, dst_hier);

@@ -42,7 +42,6 @@
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_log.hpp"
-#include "irods_logger.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
@@ -58,12 +57,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 
-namespace ix = irods::experimental;
+#include "fmt/format.h"
 
 namespace {
 
 namespace ix = irods::experimental;
-using log = irods::experimental::log;
 
 using repl_input_tuple = std::tuple<dataObjInp_t, irods::file_object_ptr>;
 repl_input_tuple construct_input_tuple(
@@ -173,7 +171,8 @@ int open_source_replica(
         return source_l1descInx;
     }
     const auto* info = L1desc[source_l1descInx].dataObjInfo;
-    log::server::debug("[{}:{}] - opened source replica [{}] on [{}] (repl [{}])", __FUNCTION__, __LINE__, info->objPath, info->rescHier, info->replNum);
+    irods::log(LOG_DEBUG, fmt::format("[{}:{}] - opened source replica [{}] on [{}] (repl [{}])",
+        __FUNCTION__, __LINE__, info->objPath, info->rescHier, info->replNum));
     // TODO: Consider using force flag and making this part of the voting process
     if (GOOD_REPLICA != L1desc[source_l1descInx].dataObjInfo->replStatus) {
         const int status = SYS_NO_GOOD_REPLICA;
@@ -195,13 +194,13 @@ int open_destination_replica(
     kvp.erase(PURGE_CACHE_KW);
     destination_data_obj_inp.oprType = REPLICATE_DEST;
     destination_data_obj_inp.openFlags = O_CREAT | O_RDWR;
-    log::server::debug(
+    irods::log(LOG_DEBUG, fmt::format(
             "[{}:{}] - opening destination replica for [{}] (id:[{}]) on [{}]",
             __FUNCTION__,
             __LINE__,
             destination_data_obj_inp.objPath,
             kvp.at(DATA_ID_KW).value(),
-            kvp.at(RESC_HIER_STR_KW).value());
+            kvp.at(RESC_HIER_STR_KW).value()));
     return rsDataObjOpen(rsComm, &destination_data_obj_inp);
 } // open_destination_replica
 
@@ -271,12 +270,12 @@ int repl_data_obj(
     int status{};
     if (getValByKey(&dataObjInp.condInput, ALL_KW)) {
         for (const auto& r : file_obj->replicas()) {
-            log::server::debug(
+            irods::log(LOG_DEBUG, fmt::format(
                 "[{}:{}] - hier:[{}],status:[{}],vote:[{}]",
                 __FUNCTION__, __LINE__,
                 r.resc_hier(),
                 r.replica_status(),
-                r.vote());
+                r.vote()));
             if (GOOD_REPLICA == (r.replica_status() & 0x0F)) {
                 continue;
             }
