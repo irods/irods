@@ -1,7 +1,9 @@
 #include "catalog_utilities.hpp"
 #include "miscServerFunct.hpp"
-#include "irods_logger.hpp"
+#include "irods_log.hpp"
 #include "irods_rs_comm_query.hpp"
+
+#include "fmt/format.h"
 
 namespace
 {
@@ -19,8 +21,8 @@ namespace irods::experimental::catalog
         _bp.bind_values.push_back(v);
 
         const std::string& value = std::get<std::string>(_bp.bind_values.back());
-        irods::log(LOG_DEBUG8, "[{}:{}] - binding [{}] to [{}] at [{}]",
-            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
+            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
 
         _bp.statement.bind(_bp.index, value.c_str());
     } // bind_string_to_statement
@@ -31,8 +33,8 @@ namespace irods::experimental::catalog
         _bp.bind_values.push_back(v);
 
         const std::uint64_t& value = std::get<std::uint64_t>(_bp.bind_values.back());
-        irods::log(LOG_DEBUG8, "[{}:{}] - binding [{}] to [{}] at [{}]",
-            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
+            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
 
         _bp.statement.bind(_bp.index, &value);
     } // bind_bigint_to_statement
@@ -43,8 +45,8 @@ namespace irods::experimental::catalog
         _bp.bind_values.push_back(v);
 
         const int& value = std::get<int>(_bp.bind_values.back());
-        irods::log(LOG_DEBUG8, "[{}:{}] - binding [{}] to [{}] at [{}]",
-            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index);
+        irods::log(LOG_DEBUG8, fmt::format("[{}:{}] - binding [{}] to [{}] at [{}]",
+            __FUNCTION__, __LINE__, _bp.column_name, value, _bp.index));
 
         _bp.statement.bind(_bp.index, &value);
     } // bind_integer_to_statement
@@ -77,7 +79,7 @@ namespace irods::experimental::catalog
                 return irods::is_privileged_client(_comm);
 
             default:
-                irods::log(LOG_ERROR, fmt::format("Invalid entity type [entity_type => {}]", _entity_type).c_str());
+                irods::log(LOG_ERROR, fmt::format("Invalid entity type [entity_type => {}]", _entity_type));
                 break;
         }
         return false;

@@ -25,18 +25,18 @@
 // =-=-=-=-=-=-=-
 #include "irods_log.hpp"
 #include "irods_file_object.hpp"
-#include "irods_logger.hpp"
+#include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_resource_redirect.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
+#include "fmt/format.h"
+
 #include "boost/lexical_cast.hpp"
 
 namespace fs = irods::experimental::filesystem;
-
-using logger = irods::experimental::log;
 
 int rsStructFileBundle(
     rsComm_t *rsComm,
@@ -92,7 +92,7 @@ int rsStructFileBundle(
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
-        logger::api::debug("[{}:{}] - Adding [{}] as kw", __FUNCTION__, __LINE__, hier);
+        irods::log(LOG_DEBUG, fmt::format("[{}:{}] - Adding [{}] as kw", __FUNCTION__, __LINE__, hier));
         addKeyVal(&structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str());
     }
     else {
@@ -103,12 +103,12 @@ int rsStructFileBundle(
             irods::log(fac_err);
         }
         hier = h;
-        logger::api::debug("[{}:{}] - hier provided:[{}]", __FUNCTION__, __LINE__, hier);
+        irods::log(LOG_DEBUG, fmt::format("[{}:{}] - hier provided:[{}]", __FUNCTION__, __LINE__, hier));
     }
 
     const auto hier_has_replica{[&hier, ip]() {
         for (dataObjInfo_t* tmp = ip; tmp; tmp = tmp->next) {
-            logger::api::debug("[{}:{}] - hier:[{}],rescHier:[{}]", __FUNCTION__, __LINE__, hier, tmp->rescHier);
+            irods::log(LOG_DEBUG, fmt::format("[{}:{}] - hier:[{}],rescHier:[{}]", __FUNCTION__, __LINE__, hier, tmp->rescHier));
             if (hier == tmp->rescHier) return true;
         }
         return false;

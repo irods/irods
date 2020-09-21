@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjPut.h for a description of this API call.*/
-
 #include "dataObjPut.h"
 #include "rodsLog.h"
 #include "dataPut.h"
@@ -43,11 +38,14 @@
 #include "irods_resource_redirect.hpp"
 #include "irods_serialization.hpp"
 #include "irods_server_properties.hpp"
+#include "key_value_proxy.hpp"
 #include "server_utilities.hpp"
 #include "scoped_privileged_client.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
+
+#include "fmt/format.h"
 
 #include <chrono>
 
@@ -225,28 +223,29 @@ void throw_if_force_put_to_new_resource(
     dataObjInp_t& data_obj_inp,
     irods::file_object_ptr file_obj)
 {
-    char* dst_resc_kw   = getValByKey( &data_obj_inp.condInput, DEST_RESC_NAME_KW );
-    char* force_flag_kw = getValByKey( &data_obj_inp.condInput, FORCE_FLAG_KW );
-    if (file_obj->replicas().empty()  ||
-        !dst_resc_kw   ||
-        !force_flag_kw ||
-        strlen( dst_resc_kw ) == 0) {
+    const auto kvp = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
+    if (file_obj->replicas().empty() ||
+        !kvp.contains(DEST_RESC_NAME_KW) ||
+        !kvp.contains(FORCE_FLAG_KW) ||
+        kvp.at(DEST_RESC_NAME_KW).value().empty()) {
         return;
     }
 
+    std::string_view destination_resource_name = kvp.at(DEST_RESC_NAME_KW).value();
+
     const auto hier_match{
-        [&dst_resc_kw, &replicas = file_obj->replicas()]()
+        [&destination_resource_name, &replicas = file_obj->replicas()]()
         {
             return std::any_of(replicas.cbegin(), replicas.cend(),
-            [&dst_resc_kw](const auto& r) {
-                return irods::hierarchy_parser{r.resc_hier()}.first_resc() == dst_resc_kw;
+            [&destination_resource_name](const auto& r) {
+                return irods::hierarchy_parser{r.resc_hier()}.first_resc() == destination_resource_name;
             });
         }()
     };
     if (!hier_match) {
         THROW(HIERARCHY_ERROR, fmt::format(
             "cannot force put [{}] to a different resource [{}]",
-            data_obj_inp.objPath, dst_resc_kw));
+            data_obj_inp.objPath, destination_resource_name));
     }
 } // throw_if_force_put_to_new_resource
 

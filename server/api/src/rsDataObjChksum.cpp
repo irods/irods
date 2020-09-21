@@ -2,7 +2,7 @@
 #include "dataObjChksum.h"
 #include "dataObjOpr.hpp"
 #include "getRemoteZoneResc.h"
-#include "irods_logger.hpp"
+#include "irods_log.hpp"
 #include "modDataObjMeta.h"
 #include "objMetaOpr.hpp"
 #include "physPath.hpp"
@@ -21,6 +21,8 @@
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "key_value_proxy.hpp"
+
+#include "fmt/format.h"
 
 #include <optional>
 
@@ -94,19 +96,19 @@ rsDataObjChksum( rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
         bool is_coord_resc = false;
 
         if (const auto err = resc_mgr.is_coordinating_resource(leaf.data(), is_coord_resc); !err.ok()) {
-            logger::api::error(err.result());
+            irods::log(LOG_ERROR, err.result());
             return err.code();
         }
 
         // Leaf resources cannot be coordinating resources. This essentially checks
         // if the resource has any child resources which is exactly what we're interested in.
         if (is_coord_resc) {
-            logger::api::error("[{}] is not a leaf resource.", leaf);
+            irods::log(LOG_ERROR, fmt::format("[{}] is not a leaf resource.", leaf));
             return USER_INVALID_RESC_INPUT;
         }
 
         if (const auto err = resc_mgr.get_hier_to_root_for_resc(leaf.data(), hier); !err.ok()) {
-            logger::api::error(err.result());
+            irods::log(LOG_ERROR, err.result());
             return err.code();
         }
 

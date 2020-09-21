@@ -50,9 +50,10 @@
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
 
+#include "fmt/format.h"
+
 #include <memory>
 #include <functional>
-
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -139,8 +140,8 @@ int trimDataObjInfo(
     addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, std::to_string(dataObjInfo->replNum).c_str() );
     addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
-    ix::log::api::debug("[{}:{}] - trimming [{}] repl num:[{}],hier:[{}]",
-        __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->replNum, dataObjInfo->rescHier);
+    irods::log(LOG_DEBUG, fmt::format("[{}:{}] - trimming [{}] repl num:[{}],hier:[{}]",
+        __FUNCTION__, __LINE__, dataObjInfo->objPath, dataObjInfo->replNum, dataObjInfo->rescHier));
 
     int status = rsDataObjTrim( rsComm, &dataObjInp );
     clearKeyVal( &dataObjInp.condInput );
@@ -157,8 +158,8 @@ auto purge_cache(rsComm_t* rsComm, const int l1descInx) -> int
         return 0;
     }
 
-    ix::log::api::debug("[{}:{}] - purging cache file; info ptr:[{}]",
-        __FUNCTION__, __LINE__, (void*)L1desc[l1descInx].dataObjInfo);
+    irods::log(LOG_DEBUG, fmt::format("[{}:{}] - purging cache file; info ptr:[{}]",
+        __FUNCTION__, __LINE__, (void*)L1desc[l1descInx].dataObjInfo));
 
     const int trim_status = trimDataObjInfo(rsComm, L1desc[l1descInx].dataObjInfo);
     if (trim_status < 0) {
@@ -458,8 +459,8 @@ int finalize_destination_replica_for_replication(
         regParam[REPL_NUM_KW] = std::to_string(srcDataObjInfo->replNum);
     }
 
-    ix::log::api::trace("[{}:{}] - modifying [{}] on [{}]",
-        __FUNCTION__, __LINE__, L1desc[l1descInx].dataObjInfo->objPath, L1desc[l1descInx].dataObjInfo->rescHier);
+    irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - modifying [{}] on [{}]",
+        __FUNCTION__, __LINE__, L1desc[l1descInx].dataObjInfo->objPath, L1desc[l1descInx].dataObjInfo->rescHier));
 
     modDataObjMeta_t modDataObjMetaInp{};
     modDataObjMetaInp.dataObjInfo = destDataObjInfo;
@@ -556,8 +557,8 @@ int finalize_replica_after_failed_operation(
 {
     auto& l1desc = L1desc[l1descInx];
 
-    ix::log::api::trace("[{}:{}] - path:[{}], hier:[{}]",
-        __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
+    irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - path:[{}], hier:[{}]",
+        __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
 
     // #3674 - elide any additional errors for catalog update if this is an intermediate replica
     // TODO: Why?
@@ -597,8 +598,8 @@ int finalize_replica_with_no_bytes_written(
 {
     l1desc_t& l1desc = L1desc[l1descInx];
 
-    ix::log::api::trace("[{}:{}] - path:[{}], hier:[{}]",
-        __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
+    irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - path:[{}], hier:[{}]",
+        __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
 
     try {
         applyMetadataFromKVP(comm, l1desc.dataObjInp);
@@ -691,7 +692,7 @@ void close_physical_file(
 {
     const int l3descInx = L1desc[l1descInx].l3descInx;
     if (l3descInx < 3) {
-        ix::log::api::info("invalid l3 descriptor index [{}]", l3descInx);
+        irods::log(LOG_NOTICE, fmt::format("invalid l3 descriptor index [{}]", l3descInx));
         return;
     }
 
@@ -734,8 +735,8 @@ int finalize_replica(
     try {
         auto& l1desc = L1desc[inx];
 
-        ix::log::api::debug("[{}:{}] - finalizing replica [{}] on [{}]",
-            __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
+        irods::log(LOG_DEBUG9, fmt::format("[{}:{}] - finalizing replica [{}] on [{}]",
+            __FUNCTION__, __LINE__, l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
 
         if (l1desc.oprStatus < 0) {
             return finalize_replica_after_failed_operation(comm, inx);
@@ -866,9 +867,9 @@ int rsDataObjClose(
             }
         }
         else {
-            ix::log::api::warn("No replica access token in L1 descriptor. Ignoring replica access table. "
+            irods::log(LOG_WARNING, fmt::format("No replica access token in L1 descriptor. Ignoring replica access table. "
                                "[path={}, resource_hierarchy={}]",
-                               l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier);
+                               l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->rescHier));
         }
     }
 
