@@ -12,7 +12,6 @@ int _rsPhyBundleColl( rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollI
 int createPhyBundleDataObj( rsComm_t *rsComm, char *collection, const std::string& _resc_name, const char* rescHier, dataObjInp_t *dataObjInp, char *dataType );
 int createPhyBundleDir( rsComm_t *rsComm, char *bunFilePath, char *outPhyBundleDir, char* hier );
 int rsMkBundlePath( rsComm_t *rsComm, char *collection, char *outPath, int myRanNum );
-int replDataObjForBundle( rsComm_t *rsComm, char *collName, char *dataName, const char *rescName, char* rescHier, char* destRescHier, int adminFlag, irods::physical_object& _obj);
 int isDataObjBundled( collEnt_t *collEnt );
 int setSubPhyPath( char *phyBunDir, rodsLong_t dataId, char *subBunPhyPath );
 int addSubFileToDir( curSubFileCond_t *curSubFileCond, bunReplCacheHeader_t *bunReplCacheHeader );

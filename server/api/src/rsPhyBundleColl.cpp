@@ -1,48 +1,47 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsPhyBundleColl.c. See phyBundleColl.h for a description of
- * this API call.*/
-
-#include "phyBundleColl.h"
-#include "objMetaOpr.hpp"
-#include "resource.hpp"
-#include "collection.hpp"
-#include "specColl.hpp"
-#include "physPath.hpp"
-#include "dataObjOpr.hpp"
-#include "miscServerFunct.hpp"
-#include "openCollection.h"
-#include "readCollection.h"
 #include "closeCollection.h"
+#include "collection.hpp"
+#include "dataObjClose.h"
+#include "dataObjCreate.h"
+#include "dataObjOpr.hpp"
 #include "dataObjRepl.h"
 #include "dataObjUnlink.h"
-#include "dataObjCreate.h"
-#include "dataObjClose.h"
-#include "syncMountedColl.h"
-#include "regReplica.h"
-#include "unbunAndRegPhyBunfile.h"
 #include "fileChksum.h"
-#include "modDataObjMeta.h"
 #include "irods_stacktrace.hpp"
-#include "rsPhyBundleColl.hpp"
-#include "rsOpenCollection.hpp"
+#include "miscServerFunct.hpp"
+#include "modDataObjMeta.h"
+#include "objMetaOpr.hpp"
+#include "openCollection.h"
+#include "phyBundleColl.h"
+#include "physPath.hpp"
+#include "readCollection.h"
+#include "regReplica.h"
+#include "resource.hpp"
 #include "rsCloseCollection.hpp"
 #include "rsDataObjClose.hpp"
-#include "rsDataObjUnlink.hpp"
-#include "rsReadCollection.hpp"
-#include "rsUnbunAndRegPhyBunfile.hpp"
-#include "rsRegReplica.hpp"
-#include "rsModDataObjMeta.hpp"
-#include "rsStructFileSync.hpp"
-#include "rsDataObjRepl.hpp"
 #include "rsDataObjCreate.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjUnlink.hpp"
 #include "rsFileChksum.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsOpenCollection.hpp"
+#include "rsPhyBundleColl.hpp"
+#include "rsReadCollection.hpp"
+#include "rsRegReplica.hpp"
+#include "rsStructFileSync.hpp"
+#include "rsUnbunAndRegPhyBunfile.hpp"
+#include "specColl.hpp"
+#include "syncMountedColl.h"
+#include "unbunAndRegPhyBunfile.h"
 
 // =-=-=-=-=-=-=-
+#include "irods_at_scope_exit.hpp"
+#include "irods_random.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_stacktrace.hpp"
-#include "irods_random.hpp"
+#include "key_value_proxy.hpp"
+
+#include "fmt/format.h"
 
 static rodsLong_t OneGig = ( 1024 * 1024 * 1024 );
 
@@ -344,21 +343,42 @@ replAndAddSubFileToDir( rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 
     /* next dataObj. See if we need to replicate */
     if ( curSubFileCond->subPhyPath[0] == '\0' ) {
-        /* don't have a good cache copy yet. make one */
-        irods::physical_object obj;
-        int status = replDataObjForBundle( rsComm, curSubFileCond->collName,
-                                       curSubFileCond->dataName, myRescName,
-                                       0, 0, 1, obj);
-        if ( status >= 0 ) {
-            setSubPhyPath( phyBunDir, curSubFileCond->dataId,
-                           curSubFileCond->subPhyPath );
-            rstrcpy( curSubFileCond->cachePhyPath, obj.path().c_str(),
-                     MAX_NAME_LEN );
-            curSubFileCond->cacheReplNum = obj.repl_num();
-            curSubFileCond->subFileSize = obj.size();
+        try {
+            /* don't have a good cache copy yet. make one */
+            dataObjInp_t data_obj_inp{};
+            auto cond_input = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
+            irods::at_scope_exit free_kvp{ [&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); } };
+
+            cond_input[BACKUP_RESC_NAME_KW] = myRescName;
+            cond_input[ADMIN_KW] = "";
+
+            std::snprintf(data_obj_inp.objPath, MAX_NAME_LEN, "%s/%s", curSubFileCond->collName, curSubFileCond->dataName);
+
+            transferStat_t* trans_stat{};
+            if (const int ec = rsDataObjRepl(rsComm, &data_obj_inp, &trans_stat); ec < 0) {
+                THROW(ec, fmt::format("failed to replicate data object [{}], status:[{}]", data_obj_inp.objPath, ec));
+            }
+
+            // Find the replica and copy information into the phybun struct
+            const auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, data_obj_inp);
+            const auto& out_hier = std::get<std::string>(result);
+            const auto& file_obj = std::get<irods::file_object_ptr>(result);
+            for (const auto& r : file_obj->replicas()) {
+                if (out_hier == r.resc_hier()) {
+                    setSubPhyPath( phyBunDir, curSubFileCond->dataId, curSubFileCond->subPhyPath );
+                    rstrcpy(curSubFileCond->cachePhyPath, r.path().c_str(), MAX_NAME_LEN);
+                    curSubFileCond->cacheReplNum = r.repl_num();
+                    curSubFileCond->subFileSize = r.size();
+                    break;
+                }
+            }
+        }
+        catch (const irods::exception& e) {
+            irods::log(LOG_ERROR, e.what());
         }
     }
-    int status = addSubFileToDir( curSubFileCond, bunReplCacheHeader );
+
+    const int status = addSubFileToDir( curSubFileCond, bunReplCacheHeader );
     if ( status < 0 ) {
         rodsLog( LOG_ERROR,
                  "%s:addSubFileToDir error for %s,stst=%d",
@@ -626,57 +646,6 @@ isDataObjBundled( collEnt_t *collEnt ) {
     else {
         return 0;
     }
-}
-
-int
-replDataObjForBundle(
-    rsComm_t *rsComm,
-    char *collName,
-    char *dataName,
-    const char *rescName,
-    char* rescHier,
-    char* dstRescHier,
-    int adminFlag,
-    irods::physical_object& _obj) {
-    transferStat_t* transStat{};
-    dataObjInp_t dataObjInp{};
-
-    snprintf( dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collName, dataName );
-    addKeyVal( &dataObjInp.condInput, BACKUP_RESC_NAME_KW,   rescName );
-    if ( rescHier ) {
-        addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, rescHier );
-    }
-    if ( dstRescHier ) {
-        addKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW, dstRescHier );
-    }
-    if ( adminFlag > 0 ) {
-        addKeyVal( &dataObjInp.condInput, ADMIN_KW, "" );
-    }
-
-    int status = rsDataObjRepl(rsComm, &dataObjInp, &transStat);
-    if (status < 0) {
-        clearKeyVal( &dataObjInp.condInput );
-        return status;
-    }
-
-    try {
-        auto result = irods::resolve_resource_hierarchy(irods::OPEN_OPERATION, rsComm, dataObjInp);
-        auto out_hier = std::get<std::string>(result);
-        auto file_obj = std::get<irods::file_object_ptr>(result);
-        for (const auto& r : file_obj->replicas()) {
-            if (out_hier == r.resc_hier()) {
-                _obj = std::move(r);
-                break;
-            }
-        }
-    }
-    catch (const irods::exception& e) {
-        irods::log(LOG_ERROR, e.what());
-        status = e.code();
-    }
-
-    clearKeyVal( &dataObjInp.condInput );
-    return status;
 }
 
 int

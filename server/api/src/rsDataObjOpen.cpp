@@ -156,71 +156,20 @@ void enable_creation_of_additional_replicas(rsComm_t& _comm)
     ix::key_value_proxy{_comm.session_props}[REG_REPL_KW] = "";
 } // enable_creation_of_additional_replicas
 
-auto register_intermediate_replica_for_new_data_object(
-    rsComm_t& _comm,
-    const int _dest_l1_desc_inx) -> int
-{
-    auto dest_replica = ix::replica::make_replica_proxy(*L1desc[_dest_l1_desc_inx].dataObjInfo);
+    auto register_intermediate_replica(
+        rsComm_t& _comm,
+        dataObjInp_t& _inp,
+        std::string_view _physical_path,
+        const int _dest_l1_desc_inx) -> int
+    {
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
 
-    dest_replica.replica_status(INTERMEDIATE_REPLICA);
+        cond_input[REGISTER_AS_INTERMEDIATE_KW] = "";
+        cond_input[FILE_PATH_KW] = _physical_path;
+        cond_input[DATA_SIZE_KW] = std::to_string(0);
 
-    dataObjInfo_t* out{};
-
-    irods::log(LOG_DEBUG, fmt::format("[{}:{}]: registering new data object [{}]",
-        __FUNCTION__, __LINE__, dest_replica.logical_path()));
-
-    return rsRegDataObj(&_comm, dest_replica.get(), &out);
-} // register_intermediate_replica_for_new_data_object
-
-auto register_intermediate_replica_for_existing_data_object(
-    rsComm_t& _comm,
-    const int _dest_l1_desc_inx,
-    const ix::key_value_proxy<keyValPair_t>& _cond_input) -> int
-{
-    // get and validate source replica information
-    if (!_cond_input.contains(SOURCE_L1_DESC_KW)) {
-        irods::log(LOG_ERROR, fmt::format("[{}] - missing source l1 descriptor for replication", __FUNCTION__));
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    const int source_l1_desc_inx = std::atoi(_cond_input.at(SOURCE_L1_DESC_KW).value().data());
-    if (source_l1_desc_inx < 3 || source_l1_desc_inx >= NUM_L1_DESC) {
-        irods::log(LOG_ERROR, fmt::format("[{}] - source l1 descriptor is invalid", __FUNCTION__));
-        return SYS_FILE_DESC_OUT_OF_RANGE;
-    }
-
-    if (!L1desc[source_l1_desc_inx].dataObjInfo) {
-        irods::log(LOG_ERROR, fmt::format("[{}] - source l1 descriptor has null dataObjInfo", __FUNCTION__));
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    auto source_replica = ix::replica::make_replica_proxy(*L1desc[source_l1_desc_inx].dataObjInfo);
-    auto dest_replica   = ix::replica::make_replica_proxy(*L1desc[_dest_l1_desc_inx].dataObjInfo);
-
-    dest_replica.replica_status(INTERMEDIATE_REPLICA);
-    resc_mgr.hier_to_leaf_id(dest_replica.hierarchy().data(), dest_replica.get()->rescId);
-
-    irods::log(LOG_DEBUG, fmt::format("[{}:{}]: registering new replica for existing data object [{}]",
-        __FUNCTION__, __LINE__, source_replica.logical_path()));
-
-    // prepare input for replica registration
-    regReplica_t in{};
-    ix::key_value_proxy in_kvp{in.condInput};
-
-    in_kvp[REGISTER_AS_INTERMEDIATE_KW] = "";
-    if (_cond_input.contains(SU_CLIENT_USER_KW)) {
-        in_kvp[SU_CLIENT_USER_KW] = "";
-        in_kvp[ADMIN_KW] = "";
-    }
-    else if (_cond_input.contains(ADMIN_KW)) {
-        in_kvp[ADMIN_KW] = "";
-    }
-
-    in.srcDataObjInfo = source_replica.get();
-    in.destDataObjInfo = dest_replica.get();
-
-    return rsRegReplica(&_comm, &in);
-} // register_intermediate_replica_for_existing_data_object
+        return rsPhyPathReg(&_comm, &_inp);
+    } // register_intermediate_replica
 
 int l3CreateByObjInfo(
     rsComm_t* rsComm,
@@ -415,22 +364,14 @@ auto create_new_replica(
         return status;
     }
 
-    // register replica in the intermediate state
-    if (_obj->replicas().empty()) {
-        status = register_intermediate_replica_for_new_data_object(_comm, l1descInx);
-        if (status < 0) {
-            freeL1desc(l1descInx);
-            return status;
-        }
+    status = register_intermediate_replica(_comm, *L1desc[l1descInx].dataObjInp, dataObjInfo->filePath, l1descInx);
+    if (status < 0) {
+        freeL1desc(l1descInx);
+        return status;
     }
-    else {
-        status = register_intermediate_replica_for_existing_data_object(_comm, l1descInx, cond_input);
-        if (status < 0) {
-            freeL1desc(l1descInx);
-            return status;
-        }
 
-        L1desc[l1descInx].dataObjInfo->replNum = status;
+    if (cond_input.contains(KEY_VALUE_PASSTHROUGH_KW)) {
+        addKeyVal(&L1desc[l1descInx].dataObjInfo->condInput, KEY_VALUE_PASSTHROUGH_KW, cond_input.at(KEY_VALUE_PASSTHROUGH_KW).value().data());
     }
 
     if (cond_input.contains(NO_OPEN_FLAG_KW)) {
