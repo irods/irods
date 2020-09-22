@@ -320,7 +320,7 @@ namespace irods::experimental::replica
 
     namespace detail
     {
-        auto populate_struct_from_results(
+        static auto populate_struct_from_results(
             dataObjInfo_t& _doi,
             const std::vector<std::string>& _info) -> void
         {
