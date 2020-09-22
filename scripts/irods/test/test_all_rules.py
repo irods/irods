@@ -1036,3 +1036,47 @@ OUTPUT ruleExecOut
             do_test(data_object, 'own')
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['atomic_pre_fired', 'atomic_post_fired'])
 
+    def test_msi_touch__issue_4669(self):
+        def assert_msi(json_input):
+            rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+            rule = "msi_touch('{0}')".format(json_input)
+            self.admin.assert_icommand(['irule', '-r', rep_name, rule, 'null', 'ruleExecOut'])
+
+        data_object = os.path.join(self.admin.session_collection, 'issue_4669')
+
+        # Show that the JSON object is being forwarded to the API plugin.
+        json_input = {
+            'logical_path': data_object
+        }
+
+        # Show that the data object was just created.
+        assert_msi(json.dumps(json_input))
+        self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', [os.path.basename(data_object)])
+
+        # Verify that the PEPs for the API plugin are firing.
+        config = IrodsConfig()
+        core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+        with lib.file_backed_up(core_re_path):
+            # Add PEPs to the core.re file.
+            with open(core_re_path, 'a') as core_re:
+                core_re.write('''
+                    pep_api_touch_pre(*INSTANCE, *COMM, *JSON_INPUT) {{ 
+                        *kvp.'touch_pre_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+
+                    pep_api_touch_post(*INSTANCE, *COMM, *JSON_INPUT) {{ 
+                        *kvp.'touch_post_fired' = 'YES';
+                        msiSetKeyValuePairsToObj(*kvp, '{0}', '-d');
+                    }}
+                '''.format(data_object))
+
+            # Show that the options are being forwarded and honored by the API plugin.
+            json_input['logical_path'] = os.path.join(self.admin.session_collection, 'bar')
+            json_input['options'] = {'no_create': True}
+            assert_msi(json.dumps(json_input))
+
+            # Show that even though no data object was created, the PEPs fired correctly.
+            self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['touch_pre_fired', 'touch_post_fired'])
+
