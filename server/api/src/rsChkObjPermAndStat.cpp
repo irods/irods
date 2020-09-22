@@ -1,18 +1,18 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsChkObjPermAndStat.c
- */
-
-#include "chkObjPermAndStat.h"
 #include "apiHeaderAll.h"
+#include "chkObjPermAndStat.h"
 #include "icatHighLevelRoutines.hpp"
-#include "miscServerFunct.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "miscServerFunct.hpp"
 #include "rsChkObjPermAndStat.hpp"
-#include "rsOpenCollection.hpp"
-#include "rsReadCollection.hpp"
 #include "rsCloseCollection.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsOpenCollection.hpp"
 #include "rsPhyBundleColl.hpp"
+#include "rsReadCollection.hpp"
+
+#include "irods_at_scope_exit.hpp"
+#include "irods_exception.hpp"
+#include "key_value_proxy.hpp"
 
 int
 saveCollEntForChkColl( collEnt_t *collEnt );
@@ -202,22 +202,24 @@ chkCollForBundleOpr( rsComm_t *rsComm,
                                   curCollEnt->collName, curCollEnt->dataName );
 
                         if ( curCopyGood == False ) {
-                            irods::physical_object obj;
-                            status = replDataObjForBundle( rsComm,
-                                                           curCollEnt->collName, curCollEnt->dataName,
-                                                           resource, curCollEnt->resc_hier, resc_hier, 0, obj);
+                            dataObjInp_t data_obj_inp{};
+                            auto cond_input = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
+                            irods::at_scope_exit free_kvp{ [&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); } };
 
-                            if ( status < 0 ) {
-                                rodsLog( LOG_ERROR,
-                                         "chkCollForBundleOpr: %s no good copy in %s [%d]",
-                                         myPath, resource, status );
+                            cond_input[BACKUP_RESC_NAME_KW] = resource;
+                            cond_input[RESC_HIER_STR_KW] = curCollEnt->resc_hier;
+                            cond_input[DEST_RESC_HIER_STR_KW] = resc_hier;
+
+                            std::snprintf(data_obj_inp.objPath, MAX_NAME_LEN, "%s/%s", curCollEnt->collName, curCollEnt->dataName);
+
+                            transferStat_t* trans_stat{};
+                            if (const int ec = rsDataObjRepl(rsComm, &data_obj_inp, &trans_stat); ec < 0) {
+                                rodsLog(LOG_ERROR, "%s: %s no good copy in %s [%d]",
+                                    __FUNCTION__, myPath, resource, ec);
                                 rsCloseCollection( rsComm, &handleInx );
                                 freeCollEntForChkColl( curCollEnt );
                                 return SYS_COPY_NOT_EXIST_IN_RESC;
                             }
-                        }
-                        else {
-
                         }
                         freeCollEntForChkColl( curCollEnt );
                         curCopyGood = False;
@@ -259,26 +261,24 @@ chkCollForBundleOpr( rsComm_t *rsComm,
         /* handle what's left */
         if (NULL != curCollEnt) {
             if (False == curCopyGood) {
-                irods::physical_object obj;
-                status = replDataObjForBundle(rsComm,
-                                              curCollEnt->collName,
-                                              curCollEnt->dataName,
-                                              resource,
-                                              curCollEnt->resc_hier,
-                                              resc_hier,
-                                              0,
-                                              obj);
-                freeCollEntForChkColl(curCollEnt);
-                if (status < 0) {
-                    const auto err{ERROR(status,
-                                         (boost::format("[%s] does not have a good copy in [%s]") %
-                                          chkObjPermAndStatInp->objPath % resource).str().c_str())};
-                    irods::log(err);
+                dataObjInp_t data_obj_inp{};
+                auto cond_input = irods::experimental::make_key_value_proxy(data_obj_inp.condInput);
+                irods::at_scope_exit free_kvp{ [&data_obj_inp] { clearKeyVal(&data_obj_inp.condInput); } };
+
+                cond_input[BACKUP_RESC_NAME_KW] = resource;
+                cond_input[RESC_HIER_STR_KW] = curCollEnt->resc_hier;
+                cond_input[DEST_RESC_HIER_STR_KW] = resc_hier;
+
+                std::snprintf(data_obj_inp.objPath, MAX_NAME_LEN, "%s/%s", curCollEnt->collName, curCollEnt->dataName);
+
+                transferStat_t* trans_stat{};
+                if (const int ec = rsDataObjRepl(rsComm, &data_obj_inp, &trans_stat); ec < 0) {
+                    irods::log(ERROR(ec,
+                        fmt::format("[%s] does not have a good copy in [%s]",
+                        chkObjPermAndStatInp->objPath, resource)));
                 }
             }
-            else {
-                freeCollEntForChkColl(curCollEnt);
-            }
+            freeCollEntForChkColl(curCollEnt);
         }
         rsCloseCollection(rsComm, &handleInx);
         return 0;

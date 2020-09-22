@@ -62,7 +62,7 @@ TEST_CASE("test_dataObjInfo_t", "[lib]")
 
 TEST_CASE("test_keyValPair_t", "[lib]")
 {
-    keyValPair_t* kvp = get_pointer_to_struct<keyValPair_t>(); 
+    keyValPair_t* kvp = get_pointer_to_struct<keyValPair_t>();
     const std::string k = "key1";
     const std::string v = "val1";
     irods::experimental::lifetime_manager lm{*kvp};
@@ -80,7 +80,7 @@ TEST_CASE("test_genQueryInp_genQueryOut", "[lib]")
 
 TEST_CASE("test_rodsObjStat_t", "[lib]")
 {
-    rodsObjStat_t* stat = get_pointer_to_struct<rodsObjStat_t>(); 
+    rodsObjStat_t* stat = get_pointer_to_struct<rodsObjStat_t>();
     const std::string hier = "pt;ufs0";
     irods::experimental::lifetime_manager lm{*stat};
     std::strncpy(stat->rescHier, hier.c_str(), hier.size());
@@ -124,6 +124,17 @@ TEST_CASE("test_delete", "[lib]")
     irods::experimental::lifetime_manager lm{*t};
     t->str(str.c_str());
     REQUIRE(str == t->str());
+}
+
+TEST_CASE("test_release", "[lib]")
+{
+    test_class* t = new test_class;
+    auto lm = irods::experimental::lifetime_manager{*t};
+    REQUIRE(lm.get());
+    REQUIRE(t == lm.release());
+    REQUIRE(!lm.get());
+    REQUIRE(!lm.release());
+    delete t;
 }
 
 TEST_CASE("test_array_delete", "[lib]")
