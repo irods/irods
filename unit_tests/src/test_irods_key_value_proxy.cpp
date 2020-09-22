@@ -507,7 +507,7 @@ TEST_CASE("test_proxy_lifetime_manager_getters", "[lifetime_manager]")
     SECTION("lifetime_manager")
     {
         auto [p, m] = irods::experimental::make_key_value_proxy();
-        auto kvp = m.get(); 
+        auto kvp = *m.get();
         REQUIRE(0 == kvp.len);
         REQUIRE(nullptr == getValByKey(&kvp, KEY1.c_str()));
         addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());

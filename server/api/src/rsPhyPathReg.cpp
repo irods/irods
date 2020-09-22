@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See phyPathReg.h for a description of this API call.*/
-
 #include "fileStat.h"
 #include "key_value_proxy.hpp"
 #include "phyPathReg.h"
@@ -41,9 +36,12 @@
 #include "rsFileClose.hpp"
 
 // =-=-=-=-=-=-=-
+#include "irods_at_scope_exit.hpp"
+#include "irods_get_l1desc.hpp"
+#include "irods_hierarchy_parser.hpp"
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
-#include "irods_hierarchy_parser.hpp"
+#include "key_value_proxy.hpp"
 
 #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #include "irods_query.hpp"
@@ -51,14 +49,15 @@
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica_proxy.hpp"
+
 #include "boost/lexical_cast.hpp"
 #include "fmt/format.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
-
-namespace ix = irods::experimental;
 
 /* holds a struct that describes pathname match patterns
    to exclude from registration. Needs to be global due
@@ -186,67 +185,87 @@ namespace {
         char *filePath,
         const char *_resc_name)
     {
-        dataObjInfo_t destDataObjInfo, *dataObjInfoHead = NULL;
-        int status;
+        namespace fs = irods::experimental::filesystem;
 
-        char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
-        if ( !resc_hier ) {
+        auto phy_path_reg_cond_input = irods::experimental::make_key_value_proxy(phyPathRegInp->condInput);
+
+        // The resource hierarchy for this replica must be provided
+        if (!phy_path_reg_cond_input.contains(RESC_HIER_STR_KW)) {
             rodsLog( LOG_NOTICE, "%s - RESC_HIER_STR_KW is NULL", __FUNCTION__ );
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        status = getDataObjInfo( rsComm, phyPathRegInp, &dataObjInfoHead,
-                                 ACCESS_READ_OBJECT, 0 );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR, "%s: getDataObjInfo for [%s] failed",
-                     __FUNCTION__, phyPathRegInp->objPath );
-            return status;
+        dataObjInfo_t* data_obj_info_head{};
+        if (const int ec = getDataObjInfo(rsComm, phyPathRegInp, &data_obj_info_head, ACCESS_READ_OBJECT, 0); ec < 0) {
+            rodsLog(LOG_ERROR, "%s: getDataObjInfo for [%s] failed", __FUNCTION__, phyPathRegInp->objPath);
+            return ec;
         }
 
-        status = sortObjInfoForOpen( &dataObjInfoHead, &phyPathRegInp->condInput, 0 );
-        if ( status < 0 ) {
-            // =-=-=-=-=-=-=-
-            // we perhaps did not match the hier string but
-            // we can still continue as we have a good copy
-            // for a read
-            if ( NULL == dataObjInfoHead ) {
-                return status; // JMC cppcheck - nullptr
+        // Put a desired replica at the head of the list
+        if (const int ec = sortObjInfoForOpen(&data_obj_info_head, phy_path_reg_cond_input.get(), 0 ); ec < 0) {
+            // we did not match the hier string but we can still continue as we have a good copy for a read
+            if (!data_obj_info_head) {
+                return ec;
             }
         }
 
-        destDataObjInfo = *dataObjInfoHead;
-        rstrcpy( destDataObjInfo.filePath, filePath, MAX_NAME_LEN );
-        rstrcpy( destDataObjInfo.rescName, _resc_name, NAME_LEN );
-        rstrcpy( destDataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
-        irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,destDataObjInfo.rescId);
-        if( !ret.ok() ) {
+        // Free the structure before exiting the function
+        irods::at_scope_exit free_data_obj_info_head{ [data_obj_info_head] { freeAllDataObjInfo(data_obj_info_head); } };
+
+        // Populate information for the replica being registered
+        auto [destination_replica, destination_replica_lm] = irods::experimental::replica::make_replica_proxy();
+        std::memcpy(destination_replica.get(), data_obj_info_head, sizeof(dataObjInfo_t));
+        destination_replica.physical_path(filePath);
+        destination_replica.resource(_resc_name);
+        destination_replica.hierarchy(phy_path_reg_cond_input.at(RESC_HIER_STR_KW).value());
+
+        rodsLong_t resc_id{};
+        if (const auto ret = resc_mgr.hier_to_leaf_id(destination_replica.hierarchy().data(), resc_id); !ret.ok()) {
             irods::log(PASS(ret));
         }
+        destination_replica.resource_id(resc_id);
 
-        regReplica_t regReplicaInp{};
-        regReplicaInp.srcDataObjInfo = dataObjInfoHead;
-        regReplicaInp.destDataObjInfo = &destDataObjInfo;
-        if ( getValByKey( &phyPathRegInp->condInput, SU_CLIENT_USER_KW ) != NULL ) {
-            addKeyVal( &regReplicaInp.condInput, SU_CLIENT_USER_KW, "" );
-            addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
+        // Prepare input for rsRegReplica
+        regReplica_t reg_replica_input{};
+        reg_replica_input.srcDataObjInfo = data_obj_info_head;
+        reg_replica_input.destDataObjInfo = destination_replica.get();
+
+        auto reg_replica_cond_input = irods::experimental::make_key_value_proxy(reg_replica_input.condInput);
+
+        // Carry privileged access keywords forward
+        if (phy_path_reg_cond_input.contains(SU_CLIENT_USER_KW )) {
+            reg_replica_cond_input[SU_CLIENT_USER_KW] = "";
+            reg_replica_cond_input[ADMIN_KW] = "";
         }
-        else if ( getValByKey( &phyPathRegInp->condInput,
-                               ADMIN_KW ) != NULL ) {
-            addKeyVal( &regReplicaInp.condInput, ADMIN_KW, "" );
+        else if (phy_path_reg_cond_input.contains(ADMIN_KW)) {
+            reg_replica_cond_input[ADMIN_KW] = "";
         }
+
         // Data size can be passed via DATA_SIZE_KW to save a stat later
-        const auto data_size_str = getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW);
-        if (nullptr != data_size_str) {
-            addKeyVal(&regReplicaInp.condInput, DATA_SIZE_KW, data_size_str);
+        if (phy_path_reg_cond_input.contains(DATA_SIZE_KW)) {
+            reg_replica_cond_input[DATA_SIZE_KW] = phy_path_reg_cond_input.at(DATA_SIZE_KW);
         }
-        if (getValByKey(&phyPathRegInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
-            addKeyVal(&regReplicaInp.condInput, REGISTER_AS_INTERMEDIATE_KW, "");
-        }
-        status = rsRegReplica( rsComm, &regReplicaInp );
-        clearKeyVal( &regReplicaInp.condInput );
-        freeAllDataObjInfo( dataObjInfoHead );
 
-        return status;
+        // Indicates whether data movement is expected
+        if (phy_path_reg_cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
+            reg_replica_cond_input[REGISTER_AS_INTERMEDIATE_KW] = "";
+        }
+
+        // Registers the replica; bails on failure
+        if (const int ec = rsRegReplica(rsComm, &reg_replica_input); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}] - failed to register replica for [{}], status:[{}]",
+                __FUNCTION__, destination_replica.logical_path(), ec));
+            return ec;
+        }
+
+        // Free the existing opened data object info and replace with the newly created replica using opened L1 descriptor info
+        if (auto* l1desc = irods::find_l1desc(fs::path{destination_replica.logical_path().data()}, destination_replica.hierarchy()); l1desc) {
+            freeAllDataObjInfo(l1desc->dataObjInfo);
+            l1desc->dataObjInfo = destination_replica_lm.release();
+        }
+
+        return 0;
     } // filePathRegRepl
 
     int filePathReg(
@@ -254,99 +273,107 @@ namespace {
         dataObjInp_t *phyPathRegInp,
         const char *_resc_name)
     {
-        dataObjInfo_t dataObjInfo{};
+        namespace fs = irods::experimental::filesystem;
 
-        int status;
-        char *chksum = NULL;
-        initDataObjInfoWithInp( &dataObjInfo, phyPathRegInp );
+        auto phy_path_reg_cond_input = irods::experimental::make_key_value_proxy(phyPathRegInp->condInput);
 
-        dataObjInfo.replStatus = GOOD_REPLICA;
-        rstrcpy( dataObjInfo.rescName, _resc_name, NAME_LEN );
-
-        char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
-        if ( !resc_hier ) {
-            rodsLog( LOG_NOTICE, "%s - RESC_HIER_STR_KW is NULL", __FUNCTION__ );
+        // The resource hierarchy for this replica must be provided
+        if (!phy_path_reg_cond_input.contains(RESC_HIER_STR_KW)) {
+            irods::log(LOG_NOTICE, fmt::format("[{}] - RESC_HIER_STR_KW is NULL", __FUNCTION__));
             return SYS_INVALID_INPUT_PARAM;
         }
 
-        rstrcpy( dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
-        irods::error ret = resc_mgr.hier_to_leaf_id(resc_hier,dataObjInfo.rescId);
-        if( !ret.ok() ) {
+        // Populate information for the replica being registered
+        auto [destination_replica, destination_replica_lm] = irods::experimental::replica::make_replica_proxy();
+        initDataObjInfoWithInp(destination_replica.get(), phyPathRegInp );
+        destination_replica.replica_status(GOOD_REPLICA);
+        destination_replica.resource(_resc_name);
+        destination_replica.hierarchy(phy_path_reg_cond_input.at(RESC_HIER_STR_KW).value());
+
+        rodsLong_t resc_id{};
+        if (const auto ret = resc_mgr.hier_to_leaf_id(destination_replica.hierarchy().data(), resc_id); !ret.ok()) {
             irods::log(PASS(ret));
         }
+        destination_replica.resource_id(resc_id);
 
-        auto data_size_str{getValByKey(&phyPathRegInp->condInput, DATA_SIZE_KW)};
-        try {
-            if (data_size_str) {
-                dataObjInfo.dataSize = boost::lexical_cast<decltype(dataObjInfo.dataSize)>(data_size_str);
+        if (!phy_path_reg_cond_input.contains(DATA_SIZE_KW) && destination_replica.size() <= 0) {
+            const auto file_size = getFileMetadataFromVault(rsComm, destination_replica.get());
+
+            if (file_size < 0 && UNKNOWN_FILE_SZ != file_size) {
+                irods::log(LOG_ERROR, fmt::format(
+                     "[{}]: getFileMetadataFromVault for {} failed, status = {}",
+                     __FUNCTION__, destination_replica.logical_path(), file_size));
+                return file_size;
             }
-        }
-        catch (boost::bad_lexical_cast&) {
-            rodsLog(LOG_ERROR, "[%s] - bad_lexical_cast for dataSize [%s]; setting to 0", __FUNCTION__, data_size_str);
-            dataObjInfo.dataSize = 0;
-            data_size_str = nullptr;
-        }
 
-        if ( nullptr == data_size_str &&
-             dataObjInfo.dataSize <= 0 &&
-                ( dataObjInfo.dataSize = getFileMetadataFromVault( rsComm, &dataObjInfo ) ) < 0 &&
-                dataObjInfo.dataSize != UNKNOWN_FILE_SZ ) {
-            status = ( int ) dataObjInfo.dataSize;
-            rodsLog( LOG_ERROR,
-                     "%s: getFileMetadataFromVault for %s failed, status = %d",
-                     __FUNCTION__, dataObjInfo.objPath, status );
-            clearKeyVal( &dataObjInfo.condInput );
-            return status;
-        }
-
-        const auto data_modify_str{getValByKey(&phyPathRegInp->condInput, DATA_MODIFY_KW)};
-        if (NULL != data_modify_str) {
-            strcpy(dataObjInfo.dataModify, data_modify_str);
-        }
-
-        // If intermediate replica, set replica status and do not attempt to verify checksum (file does not exist)
-        if (getValByKey(&phyPathRegInp->condInput, REGISTER_AS_INTERMEDIATE_KW)) {
-            dataObjInfo.replStatus = INTERMEDIATE_REPLICA;
-        }
-        else if (( getValByKey( &phyPathRegInp->condInput, REG_CHKSUM_KW ) != NULL ) ||
-                 ( getValByKey( &phyPathRegInp->condInput, VERIFY_CHKSUM_KW ) != NULL ) ) {
-            chksum = 0;
-            status = _dataObjChksum( rsComm, &dataObjInfo, &chksum );
-            if ( status < 0 ) {
-                rodsLog( LOG_ERROR,
-                         "%s: _dataObjChksum for %s failed, status = %d",
-                         __FUNCTION__, dataObjInfo.objPath, status );
-                clearKeyVal( &dataObjInfo.condInput );
-                return status;
-            }
-            rstrcpy( dataObjInfo.chksum, chksum, NAME_LEN );
-        }
-
-        status = svrRegDataObj( rsComm, &dataObjInfo );
-        if ( status < 0 ) {
-            rodsLog( LOG_ERROR,
-                     "%s: svrRegDataObj for %s failed, status = %d",
-                     __FUNCTION__, dataObjInfo.objPath, status );
+            destination_replica.size(file_size);
         }
         else {
+            std::string_view data_size_str = phy_path_reg_cond_input.at(DATA_SIZE_KW).value();
+
+            try {
+                destination_replica.size(boost::lexical_cast<rodsLong_t>(data_size_str));
+            }
+            catch (boost::bad_lexical_cast&) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}] - bad_lexical_cast for dataSize [{}]; setting to 0",
+                    __FUNCTION__, data_size_str));
+                destination_replica.size(0);
+            }
+        }
+
+        if (phy_path_reg_cond_input.contains(DATA_MODIFY_KW)) {
+            destination_replica.mtime(phy_path_reg_cond_input.at(DATA_MODIFY_KW).value());
+        }
+
+        // If intermediate, do not attempt to verify checksum as the file does not yet exist
+        if (phy_path_reg_cond_input.contains(REGISTER_AS_INTERMEDIATE_KW)) {
+            destination_replica.replica_status(INTERMEDIATE_REPLICA);
+        }
+        else if (phy_path_reg_cond_input.contains(REG_CHKSUM_KW) ||
+                 phy_path_reg_cond_input.contains(VERIFY_CHKSUM_KW)) {
+            char* chksum{};
+            if (const int ec = _dataObjChksum(rsComm, destination_replica.get(), &chksum); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}]: _dataObjChksum for {} failed, status = {}",
+                    __FUNCTION__, destination_replica.logical_path(), ec));
+                return ec;
+            }
+            destination_replica.checksum(chksum);
+        }
+
+        // Register the data object
+        const int ec = svrRegDataObj(rsComm, destination_replica.get());
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                 "{}: svrRegDataObj for {} failed, status = {}",
+                 __FUNCTION__, destination_replica.logical_path(), ec));
+            return ec;
+        }
+
+        // static PEP for filePathReg
+        {
             ruleExecInfo_t rei;
-            initReiWithDataObjInp( &rei, rsComm, phyPathRegInp );
-            rei.doi = &dataObjInfo;
-            rei.status = status;
+            initReiWithDataObjInp(&rei, rsComm, phyPathRegInp);
+            rei.doi = destination_replica.get();
+            rei.status = ec;
 
             // make resource properties available as rule session variables
             irods::get_resc_properties_as_kvp(rei.doi->rescHier, rei.condInputData);
 
-            rei.status = applyRule( "acPostProcForFilePathReg", NULL, &rei,
-                                    NO_SAVE_REI );
+            rei.status = applyRule("acPostProcForFilePathReg", NULL, &rei, NO_SAVE_REI);
+
             clearKeyVal(rei.condInputData);
             free(rei.condInputData);
+        } // static PEP for filePathReg
 
+        // Free the existing opened data object info and replace with the newly created replica using opened L1 descriptor info
+        if (auto* l1desc = irods::find_l1desc(fs::path{destination_replica.logical_path().data()}, destination_replica.hierarchy()); l1desc) {
+            freeAllDataObjInfo(l1desc->dataObjInfo);
+            l1desc->dataObjInfo = destination_replica_lm.release();
         }
 
-        clearKeyVal( &dataObjInfo.condInput );
-
-        return status;
+        return ec;
     } // filePathReg
 
     int dirPathReg(
@@ -482,7 +509,7 @@ namespace {
             fileStatInp_t fileStatInp;
             memset( &fileStatInp, 0, sizeof( fileStatInp ) );
 
-            // Issue #3658 - This section removes trailing slashes from the 
+            // Issue #3658 - This section removes trailing slashes from the
             // directory path in the server when the path is already in the catalog.
             //
             // TODO:  This is a localized fix that addresses any trailing slashes
@@ -1164,7 +1191,24 @@ namespace {
 
         }
         else {
-            if ( getValByKey( &phyPathRegInp->condInput, REG_REPL_KW ) != NULL ) {
+            bool register_replica = false;
+
+            // This flag is set by rsDataObjOpen to allow creation of replicas via the streaming
+            // interface (e.g. dstream).
+            if (irods::experimental::key_value_proxy{rsComm->session_props}.contains(REG_REPL_KW)) {
+                // At this point, we know that the target resource does not contain a replica.
+                // If at least one replica exists, then the file needs to be registered instead of
+                // creating a new data object.
+                const irods::experimental::filesystem::path p = phyPathRegInp->objPath;
+
+                const auto gql = fmt::format("select DATA_ID where COLL_NAME = '{}' and DATA_NAME = '{}'",
+                    p.parent_path().c_str(),
+                    p.object_name().c_str());
+
+                register_replica = irods::query{rsComm, gql}.size() > 0;
+            }
+
+            if (register_replica || getValByKey(&phyPathRegInp->condInput, REG_REPL_KW)) {
                 status = filePathRegRepl( rsComm, phyPathRegInp, filePath, _resc_name );
             }
             else {
