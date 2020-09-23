@@ -728,7 +728,7 @@ int rsDataObjOpen_impl(
         else {
             irods::file_object_ptr obj(new irods::file_object());
             irods::error fac_err = irods::file_object_factory(rsComm, dataObjInp, obj, &dataObjInfoHead);
-            if (!fac_err.ok()) {
+            if (!fac_err.ok() && CAT_NO_ROWS_FOUND != fac_err.code()) {
                 irods::log(fac_err);
             }
             file_obj.swap(obj);

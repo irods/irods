@@ -336,7 +336,7 @@ int rsDataObjPut_impl(
             addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str());
         }
         else {
-            if (!fac_err.ok()) {
+            if (!fac_err.ok() && CAT_NO_ROWS_FOUND != fac_err.code()) {
                 irods::log(fac_err);
             }
             hier = h;
