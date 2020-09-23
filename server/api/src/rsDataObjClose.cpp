@@ -685,13 +685,12 @@ rodsLong_t get_size_in_vault(
     return size_in_vault;
 } // get_size_in_vault
 
-void close_physical_file(
-    rsComm_t* comm,
-    const int l1descInx)
+void close_physical_file(rsComm_t* comm, const int l1descInx)
 {
     const int l3descInx = L1desc[l1descInx].l3descInx;
     if (l3descInx < 3) {
-        ix::log::api::info("invalid l3 descriptor index [{}]", l3descInx);
+        // This message will appear a lot for single buffer gets -- it is not necessarily an error
+        ix::log::api::debug("invalid l3 descriptor index [{}]", l3descInx);
         return;
     }
 
