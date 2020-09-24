@@ -1,20 +1,21 @@
 #ifndef RULE_EXEC_MOD_H__
 #define RULE_EXEC_MOD_H__
 
-#include "rcConnect.h"
 #include "rodsDef.h"
 #include "objInfo.h"
 
-typedef struct {
+struct RcComm;
+
+typedef struct RuleExecModifyInput {
     char ruleId[NAME_LEN];
     keyValPair_t condInput;
 } ruleExecModInp_t;
-#define RULE_EXEC_MOD_INP_PI "str ruleId[NAME_LEN];struct KeyValPair_PI;"
 
+#define RULE_EXEC_MOD_INP_PI "str ruleId[NAME_LEN];struct KeyValPair_PI;"
 
 #ifdef __cplusplus
 extern "C"
 #endif
-int rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp );
+int rcRuleExecMod(struct RcComm* _comm, struct RuleExecModifyInput* _ruleExecModInp);
 
-#endif
+#endif // RULE_EXEC_MOD_H__

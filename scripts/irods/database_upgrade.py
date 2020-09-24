@@ -88,6 +88,19 @@ def run_update(irods_config, cursor):
                         "'1580297960');")
         database_connect.execute_sql_statement(cursor, sql)
 
+    elif new_schema_version == 8:
+        # Add a new column that will be responsible for holding the Rule Execution Info (context)
+        # as JSON for delay rules.
+        if irods_config.catalog_database_type == 'oracle':
+            # CLOB has a maximum size of 128 TB.
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context clob;")
+        elif irods_config.catalog_database_type == 'mysql':
+            # LONGTEXT has a maximum size of 2^32.
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context longtext;")
+        else:
+            # TEXT has no upper limit on the number of bytes it can hold.
+            database_connect.execute_sql_statement(cursor, "alter table R_RULE_EXEC add column exe_context text;")
+
     else:
         raise IrodsError('Upgrade to schema version %d is unsupported.' % (new_schema_version))
 

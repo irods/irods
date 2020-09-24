@@ -32,6 +32,7 @@
 #include "irods_rs_comm_query.hpp"
 #include "modAccessControl.h"
 #include "checksum.hpp"
+#include "key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -3294,11 +3295,8 @@ irods::error db_reg_rule_exec_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_re_sub_inp ) {
-        return ERROR(
-                   CAT_INVALID_ARGUMENT,
-                   "null parameter" );
+    if ( !_re_sub_inp ) {
+        return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
     }
 
     // =-=-=-=-=-=-=-
@@ -3323,6 +3321,7 @@ irods::error db_reg_rule_exec_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegRuleExec" );
     }
+
     if ( !icss.status ) {
         return ERROR( CATALOG_NOT_CONNECTED, "catalog not connected" );
     }
@@ -3330,10 +3329,10 @@ irods::error db_reg_rule_exec_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegRuleExec SQL 1 " );
     }
+
     seqNum = cmlGetNextSeqVal( &icss );
     if ( seqNum < 0 ) {
-        rodsLog( LOG_NOTICE, "chlRegRuleExec cmlGetNextSeqVal failure %d",
-                 seqNum );
+        rodsLog( LOG_NOTICE, "chlRegRuleExec cmlGetNextSeqVal failure %d", seqNum );
         _rollback( "chlRegRuleExec" );
         return ERROR( seqNum, "cmlGetNextSeqVal failure" );
     }
@@ -3344,52 +3343,52 @@ irods::error db_reg_rule_exec_op(
 
     getNowStr( myTime );
 
-    cllBindVars[0] = ruleExecIdNum;
-    cllBindVars[1] = _re_sub_inp->ruleName;
-    cllBindVars[2] = _re_sub_inp->reiFilePath;
-    cllBindVars[3] = _re_sub_inp->userName;
-    cllBindVars[4] = _re_sub_inp->exeAddress;
-    cllBindVars[5] = _re_sub_inp->exeTime;
-    cllBindVars[6] = _re_sub_inp->exeFrequency;
-    cllBindVars[7] = _re_sub_inp->priority;
-    cllBindVars[8] = _re_sub_inp->estimateExeTime;
-    cllBindVars[9] = _re_sub_inp->notificationAddr;
-    cllBindVars[10] = myTime;
-    cllBindVars[11] = myTime;
+    cllBindVars[cllBindVarCount++] = ruleExecIdNum;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->ruleName;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->reiFilePath;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->userName;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->exeAddress;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->exeTime;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->exeFrequency;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->priority;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->estimateExeTime;
+    cllBindVars[cllBindVarCount++] = _re_sub_inp->notificationAddr;
+    cllBindVars[cllBindVarCount++] = myTime;
+    cllBindVars[cllBindVarCount++] = myTime;
 
-    cllBindVarCount = 12;
+    // To maintain backwards compatibility, the jsonified rule execution context
+    // is passed via the conditional input.
+    const irods::experimental::key_value_proxy kvp{_re_sub_inp->condInput};
+    cllBindVars[cllBindVarCount++] = kvp[RULE_EXECUTION_CONTEXT_KW].value().data();
+
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlRegRuleExec SQL 2" );
     }
-    status =  cmlExecuteNoAnswerSql(
-                  "insert into R_RULE_EXEC (rule_exec_id, rule_name, rei_file_path, user_name, exe_address, exe_time, exe_frequency, priority, estimated_exe_time, notification_addr, create_ts, modify_ts) values (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  &icss );
+    status = cmlExecuteNoAnswerSql("insert into R_RULE_EXEC (rule_exec_id, rule_name, rei_file_path, user_name, exe_address, exe_time, exe_frequency, priority, estimated_exe_time, notification_addr, create_ts, modify_ts, exe_context) "
+                                   "values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                                   &icss);
     if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegRuleExec cmlExecuteNoAnswerSql(insert) failure %d", status );
+        rodsLog( LOG_NOTICE, "chlRegRuleExec cmlExecuteNoAnswerSql(insert) failure %d", status );
         _rollback( "chlRegRuleExec" );
         return ERROR( status, "cmlExecuteNoAnswerSql(insert) failure" );
-
     }
 
     status =  cmlExecuteNoAnswerSql( "commit", &icss );
     if ( status != 0 ) {
-        rodsLog( LOG_NOTICE,
-                 "chlRegRuleExec cmlExecuteNoAnswerSql commit failure %d",
-                 status );
+        rodsLog( LOG_NOTICE, "chlRegRuleExec cmlExecuteNoAnswerSql commit failure %d", status );
         return ERROR( status, "cmlExecuteNoAnswerSql commit failure" );
     }
 
     return SUCCESS();
-
 } // db_reg_rule_exec_op
 
 // =-=-=-=-=-=-=-
-// unregister a data object
+// Modify an existing rule in the catalog.
 irods::error db_mod_rule_exec_op(
     irods::plugin_context& _ctx,
     const char*            _re_id,
-    keyValPair_t*          _reg_param ) {
+    keyValPair_t*          _reg_param )
+{
     // =-=-=-=-=-=-=-
     // check the context
     irods::error ret = _ctx.valid();
@@ -3399,12 +3398,8 @@ irods::error db_mod_rule_exec_op(
 
     // =-=-=-=-=-=-=-
     // check the params
-    if (
-        !_re_id  ||
-        !_reg_param ) {
-        return ERROR(
-                   CAT_INVALID_ARGUMENT,
-                   "null parameter" );
+    if (!_re_id  || !_reg_param ) {
+        return ERROR( CAT_INVALID_ARGUMENT, "null parameter" );
     }
 
     // =-=-=-=-=-=-=-
@@ -3433,19 +3428,39 @@ irods::error db_mod_rule_exec_op(
        routine understands and colNames has the corresponding column
        names; one for one. */
     char *regParamNames[] = {
-        RULE_NAME_KW, RULE_REI_FILE_PATH_KW, RULE_USER_NAME_KW,
-        RULE_EXE_ADDRESS_KW, RULE_EXE_TIME_KW,
-        RULE_EXE_FREQUENCY_KW, RULE_PRIORITY_KW, RULE_ESTIMATE_EXE_TIME_KW,
-        RULE_NOTIFICATION_ADDR_KW, RULE_LAST_EXE_TIME_KW,
+        RULE_NAME_KW,
+        RULE_REI_FILE_PATH_KW,
+        RULE_USER_NAME_KW,
+        RULE_EXE_ADDRESS_KW,
+        RULE_EXE_TIME_KW,
+        RULE_EXE_FREQUENCY_KW,
+        RULE_PRIORITY_KW,
+        RULE_ESTIMATE_EXE_TIME_KW,
+        RULE_NOTIFICATION_ADDR_KW,
+        RULE_LAST_EXE_TIME_KW,
         RULE_EXE_STATUS_KW,
+        RULE_EXECUTION_CONTEXT_KW,
         "END"
     };
+
     char *colNames[] = {
-        "rule_name", "rei_file_path", "user_name",
-        "exe_address", "exe_time", "exe_frequency", "priority",
-        "estimated_exe_time", "notification_addr",
-        "last_exe_time", "exe_status",
-        "create_ts", "modify_ts",
+        "rule_name",
+        "rei_file_path",
+        "user_name",
+        "exe_address",
+        "exe_time",
+        "exe_frequency",
+        "priority",
+        "estimated_exe_time",
+        "notification_addr",
+        "last_exe_time",
+        "exe_status",
+        "exe_context",
+
+        // The following columns are handled automatically.
+        // ** New columns MUST be added before these lines! **
+        "create_ts",
+        "modify_ts"
     };
 
     if ( logSQL != 0 ) {
@@ -3477,7 +3492,7 @@ irods::error db_mod_rule_exec_op(
     if ( logSQL != 0 ) {
         rodsLog( LOG_SQL, "chlModRuleExec SQL 1 " );
     }
-    status =  cmlExecuteNoAnswerSql( tSQL, &icss );
+    status = cmlExecuteNoAnswerSql( tSQL, &icss );
 
     if ( status != 0 ) {
         _rollback( "chlModRuleExec" );
@@ -3496,7 +3511,6 @@ irods::error db_mod_rule_exec_op(
     }
 
     return CODE( status );
-
 } // db_mod_rule_exec_op
 
 // =-=-=-=-=-=-=-

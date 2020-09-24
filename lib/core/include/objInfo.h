@@ -1,7 +1,8 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* objInfo.h - header file for general Obj Info
- */
+#ifndef OBJ_INFO_H__
+#define OBJ_INFO_H__
+
+#include "rodsType.h"
+#include "rodsUser.h"
 
 /* dataObjInfo_t is for info about a data object.
    intKeyStrVal_t is a generic (integer keyword)/(string value) pair.
@@ -14,22 +15,17 @@
    value string based on a keyword.
 */
 
-#ifndef OBJ_INFO_H__
-#define OBJ_INFO_H__
-
-#include "rodsType.h"
-#include "rodsUser.h"
-
 /* this defines the "copies" condition */
-#define ALL_COPIES      -1      /* "all" */
+#define ALL_COPIES              -1      /* "all" */
 
 /* defines some commonly used dataTypes */
-#define GENERIC_DT_STR    "generic"
-#define TAR_DT_STR        "tar file"
-#define GZIP_TAR_DT_STR   "gzipTar"  // JMC - backport 4632
-#define BZIP2_TAR_DT_STR  "bzip2Tar" // JMC - backport 4632
-#define ZIP_DT_STR        "zipFile"  // JMC - backport 4633
-#define MSSO_DT_STR       "msso file"
+#define GENERIC_DT_STR          "generic"
+#define TAR_DT_STR              "tar file"
+#define GZIP_TAR_DT_STR         "gzipTar"  // JMC - backport 4632
+#define BZIP2_TAR_DT_STR        "bzip2Tar" // JMC - backport 4632
+#define ZIP_DT_STR              "zipFile"  // JMC - backport 4633
+#define MSSO_DT_STR             "msso file"
+
 /* bundle are types for internal phybun use */ // JMC - backport 4658
 #define TAR_BUNDLE_DT_STR       "tar bundle"       // JMC - backport 4658
 #define GZIP_TAR_BUNDLE_DT_STR  "gzipTar bundle"   // JMC - backport 4658
@@ -37,26 +33,25 @@
 #define ZIP_BUNDLE_DT_STR       "zipFile bundle"   // JMC - backport 4658
 
 #define HAAW_DT_STR             "haaw file"
-#define MAX_LINK_CNT    20      /* max number soft link in a path */
-
+#define MAX_LINK_CNT            20      /* max number soft link in a path */
 
 /* special collection */
 
-typedef enum {         /* class of SpecColl */
+typedef enum SpecialCollClass {         /* class of SpecColl */
     NO_SPEC_COLL,
     STRUCT_FILE_COLL,
     MOUNTED_COLL,
     LINKED_COLL
 } specCollClass_t;
 
-typedef enum {                /* structFile type */
+typedef enum StructFileType {                /* structFile type */
     NONE_STRUCT_FILE_T = 0,   /* no known type */
     HAAW_STRUCT_FILE_T = 1,   /* the UK eScience structFile */
     TAR_STRUCT_FILE_T  = 2,   /* The tar structFile */
     MSSO_STRUCT_FILE_T = 3,   /* The workflow structFile */
 } structFileType_t;
 
-typedef enum {          /* specColl operation type */
+typedef enum StructFileOprType {          /* specColl operation type */
     NOT_SPEC_COLL_OPR,
     NON_STRUCT_FILE_SPEC_COLL_OPR,
     STRUCT_FILE_SPEC_COLL_OPR,
@@ -93,7 +88,7 @@ typedef struct SpecColl {
     int replNum;
 } specColl_t;
 
-typedef enum {
+typedef enum SpecialCollPerm {
     UNKNOWN_COLL_PERM,
     READ_COLL_PERM,
     WRITE_COLL_PERM
@@ -230,10 +225,9 @@ typedef struct IntArray {
     int *value;        /* int aray of [len] */
 } intArray_t;
 
-
 /* definition for RescTypeDef */
 
-typedef enum {  /* resource category */
+typedef enum ResourceCategory {  /* resource category */
     FILE_CAT,
     DB_CAT
 } rescCat_t;
@@ -243,10 +237,10 @@ typedef enum {  /* resource category */
 
 /* definition for chkPathPerm */
 
-#define DISALLOW_PATH_REG       0       /* disallow path registration */ // JMC - backport 4774
-#define NO_CHK_PATH_PERM            1 // JMC - backport 4758
+#define DISALLOW_PATH_REG       0 // disallow path registration // JMC - backport 4774
+#define NO_CHK_PATH_PERM        1 // JMC - backport 4758
 #define DO_CHK_PATH_PERM        2 // JMC - backport 4774
-#define CHK_NON_VAULT_PATH_PERM 3    /* allow reg of user's vault path */// JMC - backport 4774
+#define CHK_NON_VAULT_PATH_PERM 3 // allow reg of user's vault path // JMC - backport 4774
 
 #define DISALLOW_PATH_REG_STR       "disallowPathReg"     // JMC - backport 4774
 #define NO_CHK_PATH_PERM_STR        "noChkPathPerm"       // JMC - backport 4774
@@ -260,10 +254,10 @@ typedef enum {  /* resource category */
 
 /* definition for trash policy */
 
-#define DO_TRASH_CAN    0
-#define NO_TRASH_CAN    1
+#define DO_TRASH_CAN      0
+#define NO_TRASH_CAN      1
 
-typedef enum {
+typedef enum CreatePath {
     NO_CREATE_PATH,
     CREATE_PATH
 } createPath_t;
@@ -276,7 +270,7 @@ typedef enum {
 #define COMPOUND_CL     3
 #define DATABASE_CL     4
 
-#define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
+#define PRIMARY_FLAG    0x8000          /* primary class when this bit is set */
 // JMC - legacy resource - typedef struct RescClass {
 //    char *className;
 //    int classType;
@@ -284,20 +278,19 @@ typedef enum {
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
  * padding */
-typedef struct {
+typedef struct TransStat {
     int numThreads;
     rodsLong_t bytesWritten;
 } transStat_t;
 
-typedef struct {
+typedef struct TransferStat {
     int numThreads;
     int flags;          /* padding to 64 bits */
     rodsLong_t bytesWritten;
 } transferStat_t;
 
-#define FILE_CNT_PER_STAT_OUT   10      /* the default file count per 
-    * collOprStat output */
-typedef struct {
+#define FILE_CNT_PER_STAT_OUT   10      /* the default file count per collOprStat output */
+typedef struct CollectionOperationStat {
     int filesCnt;
     int totalFileCnt;
     rodsLong_t bytesWritten;

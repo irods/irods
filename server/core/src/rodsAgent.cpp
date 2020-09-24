@@ -1,16 +1,9 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rodsAgent.cpp - The main code for rodsAgent
- */
-
 #include "rodsAgent.hpp"
 #include "reconstants.hpp"
 #include "rsApiHandler.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "miscServerFunct.hpp"
 #include "irods_socket_information.hpp"
-// =-=-=-=-=-=-=-
 #include "irods_dynamic_cast.hpp"
 #include "irods_signal.hpp"
 #include "irods_client_server_negotiation.hpp"
@@ -213,13 +206,11 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     log::set_server_type("agent_factory");
     log::set_error_object(&rsComm.rError);
 
-    log::agent_factory::info("Initializing ...");
-
     irods::at_scope_exit release_error_stack{[] {
         log::set_error_object(nullptr);
     }};
 
-    log::agent_factory::trace("Configuring signals ...");
+    log::agent_factory::info("Initializing agent factory ...");
 
     signal( SIGINT, irodsAgentSignalExit );
     signal( SIGHUP, irodsAgentSignalExit );

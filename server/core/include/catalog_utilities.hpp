@@ -2,16 +2,18 @@
 #define IRODS_CATALOG_UTILITIES_HPP
 
 #include "irods_exception.hpp"
-#include "rcConnect.h"
-#include "rodsConnect.h"
 
 #include "json.hpp"
 #include "nanodbc/nanodbc.h"
+#include "rodsConnect.h"
 
 #include <functional>
 #include <map>
 #include <string>
 #include <variant>
+
+struct RsComm;
+struct rodsServerHost;
 
 namespace irods::experimental::catalog
 {
@@ -125,7 +127,7 @@ namespace irods::experimental::catalog
     /// \retval false if user does not have permission to modify metadata
     ///
     /// \since 4.2.9
-    auto user_has_permission_to_modify_metadata(rsComm_t& _comm,
+    auto user_has_permission_to_modify_metadata(RsComm& _comm,
                                                 nanodbc::connection& _db_conn,
                                                 int _object_id,
                                                 const entity_type _entity) -> bool;
@@ -141,7 +143,7 @@ namespace irods::experimental::catalog
     /// \throws irods::exception If an error occurs while retrieving the host information
     ///
     /// \since 4.2.9
-    auto get_catalog_provider_host() -> rodsServerHost_t;
+    auto get_catalog_provider_host() -> rodsServerHost;
 
     /// \brief Determine if connected to the catalog provider host
     ///
@@ -153,7 +155,7 @@ namespace irods::experimental::catalog
     /// \retval false if the catalog provider is on a remote host
     ///
     /// \since 4.2.9
-    auto connected_to_catalog_provider(rsComm_t& _comm) -> bool;
+    auto connected_to_catalog_provider(RsComm& _comm) -> bool;
 
     /// \brief Establishes a connection with the catalog provider host, if remote.
     ///
@@ -167,8 +169,7 @@ namespace irods::experimental::catalog
     /// \retval false if catalog provider is local
     ///
     /// \since 4.2.9
-    auto redirect_to_catalog_provider(rsComm_t& _comm) -> rodsServerHost_t;
-
+    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost;
 } // namespace irods::experimental::catalog
 
 #endif // #ifndef IRODS_CATALOG_UTILITIES_HPP

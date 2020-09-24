@@ -516,6 +516,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_control_plane.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_server_state.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_structured_object.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/json_deserialization.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/json_serialization.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/miscServerFunct.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/objDesc.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/objMetaOpr.hpp

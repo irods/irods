@@ -1,10 +1,3 @@
-/**
- * @file  nre.systemMS.cpp
- *
- */
-
-#include <string.h>
-#include <time.h>
 #include "rsRuleExecSubmit.hpp"
 #include "icatHighLevelRoutines.hpp"
 #include "rcMisc.h"
@@ -22,20 +15,20 @@
 #include "irods_re_structs.hpp"
 #include "irods_ms_plugin.hpp"
 
+#include <cstring>
+#include <ctime>
 #include <string>
 #include <vector>
 
 static std::vector<std::string> GlobalDelayExecStack;
 
-int checkFilePerms( char *fileName );
+int checkFilePerms(char *fileName);
 
-int
-fillSubmitConditions( const char *action, const char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf,
-                      ruleExecSubmitInp_t *ruleSubmitInfo,  ruleExecInfo_t *rei );
-
-
-//#define evaluateExpression(expr, eaVal, rei) \
-//    computeExpression(expr, NULL,rei, 0, eaVal)
+int fillSubmitConditions(const char* action,
+                         const char* inDelayCondition,
+                         bytesBuf_t* packedReiAndArgBBuf,
+                         ruleExecSubmitInp_t* ruleSubmitInfo,
+                         ruleExecInfo_t* rei);
 
 /**
  * \cond oldruleengine
@@ -133,11 +126,11 @@ int delayExec( msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *r
     return i;
 }
 
-std::map<std::string, std::vector<std::string>>
-getTaggedValues(const char *str);
+std::map<std::string, std::vector<std::string>> getTaggedValues(const char *str);
 void set_plugin_instance_name(
     const char* _xml,
-    char*       _plugin_name) {
+    char*       _plugin_name)
+{
     boost::optional<std::map<std::string, std::vector<std::string>>> taggedValues;
     try {
         taggedValues = getTaggedValues(_xml);
@@ -155,47 +148,44 @@ void set_plugin_instance_name(
     }
 } // set_plugin_instance_name
 
-int _delayExec( const char *inActionCall, const char *recoveryActionCall,
-                const char *delayCondition,  ruleExecInfo_t *rei ) {
-
-    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i;
-    /* char action[MAX_ACTION_SIZE]; */
-    bytesBuf_t *packedReiAndArgBBuf = NULL;
-
+int _delayExec(const char* inActionCall,
+               const char* recoveryActionCall,
+               const char* delayCondition,
+               ruleExecInfo_t* rei)
+{
     RE_TEST_MACRO( "    Calling _delayExec" );
 
-    set_plugin_instance_name(
-        delayCondition,
-        rei->pluginInstanceName);
+    set_plugin_instance_name(delayCondition, rei->pluginInstanceName);
 
-    args[0] = NULL;
-    args[1] = NULL;
+    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    args[0] = nullptr;
+    args[1] = nullptr;
+
     /* Pack Rei and Args */
-    i = packReiAndArg( rei, args, 0, &packedReiAndArgBBuf );
-    if ( i < 0 ) {
-        return i;
+    bytesBuf_t* packedReiAndArgBBuf = nullptr;
+    if (const auto ec = packReiAndArg(rei, args, 0, &packedReiAndArgBBuf); ec < 0) {
+        return ec;
     }
-    /* fill Conditions into Submit Struct */
-    ruleExecSubmitInp_t * ruleSubmitInfo = ( ruleExecSubmitInp_t * ) malloc( sizeof( ruleExecSubmitInp_t ) );
+
+    /* Fill Conditions into Submit Struct */
+    ruleExecSubmitInp_t* ruleSubmitInfo = (ruleExecSubmitInp_t*) malloc(sizeof(ruleExecSubmitInp_t));
     memset(ruleSubmitInfo, 0, sizeof(ruleExecSubmitInp_t));
-    i  = fillSubmitConditions( inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei );
-    if ( i < 0 ) {
-        free( ruleSubmitInfo );
-        return i;
+    if (const auto ec = fillSubmitConditions(inActionCall, delayCondition, packedReiAndArgBBuf, ruleSubmitInfo, rei); ec < 0) {
+        free(ruleSubmitInfo);
+        return ec;
     }
 
     /* Store ReiArgs Struct in a File */
     char *ruleExecId = nullptr;
-    i = rsRuleExecSubmit( rei->rsComm, ruleSubmitInfo, &ruleExecId );
-    if ( packedReiAndArgBBuf ) {
-        clearBBuf( packedReiAndArgBBuf );
-        free( packedReiAndArgBBuf );
+    const int i = rsRuleExecSubmit(rei->rsComm, ruleSubmitInfo, &ruleExecId);
+    if (packedReiAndArgBBuf) {
+        clearBBuf(packedReiAndArgBBuf);
+        free(packedReiAndArgBBuf);
     }
-    free( ruleSubmitInfo );
-    free( ruleExecId );
+    free(ruleSubmitInfo);
+    free(ruleExecId);
 
-    if ( i >= 0 ) {
+    if (i >= 0) {
         GlobalDelayExecStack.push_back(std::to_string(i));
     }
 
@@ -227,7 +217,6 @@ int recover_delayExec( msParam_t*, msParam_t*,  ruleExecInfo_t *rei ) {
     return i;
 
 }
-
 
 static int carryOverMsParam(
     msParamArray_t *sourceMsParamArray,
@@ -358,7 +347,6 @@ int recover_remoteExec( msParam_t*, msParam_t*, char*, ruleExecInfo_t *rei ) {
     return 0;
 
 }
-
 
 int
 doForkExec( char *prog, char *arg1 ) {
