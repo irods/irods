@@ -27,3 +27,10 @@ def add_options(parser):
                       dest='server_reconnect_flag', action='store_true', default=False,
                       help='Causes the server to attempt a reconnect after '
                       'timeout (ten minutes)')
+
+    # Accepts true or false.
+    # Enforced by the setup script.
+    parser.add_option('--run_delay_server',
+                      dest='run_delay_server', metavar='BOOLEAN',
+                      help='Controls whether a rule execution server is launched on startup.')
+

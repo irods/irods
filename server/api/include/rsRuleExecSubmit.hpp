@@ -3,7 +3,9 @@
 
 #include "ruleExecSubmit.h"
 
-int rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp, char **ruleExecId );
-int _rsRuleExecSubmit( rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp );
+struct RsComm;
 
-#endif
+int rsRuleExecSubmit(RsComm* rsComm, ruleExecSubmitInp_t* ruleExecSubmitInp, char** ruleExecId);
+
+#endif // RS_RULE_EXEC_SUBMIT_HPP
+

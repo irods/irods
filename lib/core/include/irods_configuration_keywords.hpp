@@ -54,7 +54,6 @@ namespace irods
     extern const std::string CFG_RE_CACHE_SALT_KW;
     extern const std::string CFG_RE_SERVER_SLEEP_TIME;
     extern const std::string CFG_RE_SERVER_EXEC_TIME;
-    extern const std::string CFG_RUN_DELAY_SERVER_KW;
 
     // service_account_environment.json keywords
     extern const std::string CFG_IRODS_USER_NAME_KW;

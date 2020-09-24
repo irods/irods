@@ -51,7 +51,6 @@ namespace irods
     const std::string CFG_RE_CACHE_SALT_KW("reCacheSalt");
     const std::string CFG_RE_SERVER_SLEEP_TIME( "rule_engine_server_sleep_time_in_seconds");
     const std::string CFG_RE_SERVER_EXEC_TIME( "rule_engine_server_execution_time_in_seconds");
-    const std::string CFG_RUN_DELAY_SERVER_KW("run_delay_server");
 
     // service_account_environment.json keywords
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
@@ -80,7 +79,6 @@ namespace irods
     const std::string CFG_IRODS_ENVIRONMENT_FILE_KW( "irods_environment_file" );
     const std::string CFG_IRODS_SESSION_ENVIRONMENT_FILE_KW( "irods_session_environment_file" );
     const std::string CFG_IRODS_SERVER_CONTROL_PLANE_PORT( "irods_server_control_plane_port" );
-
 
     const std::string CFG_IRODS_SERVER_CONTROL_PLANE_KEY( "irods_server_control_plane_key" );
     const std::string CFG_IRODS_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW( "irods_server_control_plane_encryption_num_hash_rounds" );
@@ -113,7 +111,6 @@ namespace irods
     const std::string CFG_RULE_ENGINE_CONTROL_PLANE_PORT( "rule_engine_control_plane_port" );
     const std::string CFG_SERVER_CONTROL_PLANE_TIMEOUT( "server_control_plane_timeout_milliseconds" );
 
-
     const std::string CFG_SERVER_CONTROL_PLANE_KEY( "server_control_plane_key" );
     const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_NUM_HASH_ROUNDS_KW( "server_control_plane_encryption_num_hash_rounds" );
     const std::string CFG_SERVER_CONTROL_PLANE_ENCRYPTION_ALGORITHM_KW( "server_control_plane_encryption_algorithm" );
@@ -136,7 +133,6 @@ namespace irods
     const std::string PLUGIN_TYPE_DATABASE( "database" );
     const std::string PLUGIN_TYPE_RESOURCE( "resources" );
     const std::string PLUGIN_TYPE_MICROSERVICE( "microservices" );
-
 
     const std::string CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW("plugin_specific_configuration");
     const std::string CFG_INSTANCE_NAME_KW("instance_name");

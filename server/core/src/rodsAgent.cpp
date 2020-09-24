@@ -194,6 +194,8 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     int status{};
     rsComm_t rsComm;
 
+    rodsLog(LOG_NOTICE, "Initializing agent factory ...");
+
     signal( SIGINT, irodsAgentSignalExit );
     signal( SIGHUP, irodsAgentSignalExit );
     signal( SIGTERM, irodsAgentSignalExit );
