@@ -15,11 +15,13 @@
 #define FREE_MS_PARAM	0x1
 #define FREE_DOINP	0x2
 
+struct RcComm;
+
 typedef struct RuleExecInfo {
     int status;
     char statusStr[MAX_NAME_LEN];
     char ruleName[NAME_LEN];	/* name of rule */
-    rsComm_t *rsComm;
+    RsComm *rsComm;
     char pluginInstanceName[MAX_NAME_LEN];
     msParamArray_t *msParamArray;
     msParamArray_t inOutMsParamArray;
@@ -27,6 +29,7 @@ typedef struct RuleExecInfo {
     dataObjInp_t *doinp;	/* data object type input */
     dataObjInfo_t *doi;
     char rescName[NAME_LEN]; // replaces rgi above
+    // uoi => user object info
     userInfo_t *uoic;  /* client XXXX should get this from rsComm->clientUser */
     userInfo_t *uoip;  /* proxy XXXX should get this from rsComm->proxyUser */
     collInfo_t *coi;
@@ -61,14 +64,14 @@ int applyRuleWithInOutVars(
 
 void freeCmdExecOut( execCmdOut_t *ruleExecOut );
 
-int applyRuleForPostProcForRead( rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath );
-int applyRuleForPostProcForWrite( rsComm_t *rsComm, bytesBuf_t *dataObjWriteOutBBuf, char *objPath );
+int applyRuleForPostProcForRead( RsComm *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath );
+int applyRuleForPostProcForWrite( RsComm *rsComm, bytesBuf_t *dataObjWriteOutBBuf, char *objPath );
 int applyRuleArg( const char *action, const char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
                   ruleExecInfo_t *rei, int reiSaveFlag );
 
-int initReiWithDataObjInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
+int initReiWithDataObjInp( ruleExecInfo_t *rei, RsComm *rsComm,
                            dataObjInp_t *dataObjIn );
-int initReiWithCollInp( ruleExecInfo_t *rei, rsComm_t *rsComm,
+int initReiWithCollInp( ruleExecInfo_t *rei, RsComm *rsComm,
                         collInp_t *collCreateInp, collInfo_t *collInfo );
 
 
@@ -76,13 +79,13 @@ int _writeString( char *writeId, char *writeStr, ruleExecInfo_t *rei );
 int writeString( msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei );
 
 int
-unpackRei( rsComm_t *rsComm, ruleExecInfo_t **rei,
+unpackRei( RsComm *rsComm, ruleExecInfo_t **rei,
            bytesBuf_t *packedReiBBuf );
 int
 packReiAndArg( ruleExecInfo_t *rei, char *myArgv[],
                int myArgc, bytesBuf_t **packedReiAndArgBBuf );
 int
-unpackReiAndArg( rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
+unpackReiAndArg( RsComm *rsComm, ruleExecInfoAndArg_t **reiAndArg,
                  bytesBuf_t *packedReiAndArgBBuf );
 
 int copyRuleExecInfo( ruleExecInfo_t *from, ruleExecInfo_t *to );

@@ -1,12 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rodsGenQuery.h - common header file for the generalized query input
- * and results
- */
-
-
-
 #ifndef RODS_GEN_QUERY_H__
 #define RODS_GEN_QUERY_H__
 
@@ -57,7 +48,6 @@ typedef struct GenQueryInp {
                                 2nd array has strings for the conditions. */
 } genQueryInp_t;
 
-
 typedef struct SqlResult {
     int attriInx;        /* attribute index */
     int len;             /* strlen of each attribute */
@@ -81,14 +71,11 @@ primary ordering column.
 #define ORDER_BY 0x400
 #define ORDER_BY_DESC 0x800
 
-/*
- */
 #define RETURN_TOTAL_ROW_COUNT 0x20
 #define NO_DISTINCT 0x40
 #define QUOTA_QUERY 0x80
 #define AUTO_CLOSE  0x100
 #define UPPER_CASE_WHERE  0x200
-
 
 /*
   These are some operations (functions) that can be applied to columns
@@ -105,13 +92,11 @@ primary ordering column.
 #define SELECT_AVG 5
 #define SELECT_COUNT 6
 
-
 /*
   For the integer values below (the COL_* defines), up to 10,000 is reserved
   the core tables The type can be determined by comparing with this value.
  */
 #define MAX_CORE_TABLE_VALUE 10000
-
 
 /*
   These are the Table Column names used with the GenQuery.  Also see
@@ -214,7 +199,6 @@ primary ordering column.
 #define COL_META_COLL_CREATE_TIME 614
 #define COL_META_COLL_MODIFY_TIME 615
 
-
 #define COL_META_NAMESPACE_COLL 620
 #define COL_META_NAMESPACE_DATA 621
 #define COL_META_NAMESPACE_RESC 622
@@ -223,7 +207,6 @@ primary ordering column.
 #define COL_META_NAMESPACE_RULE 625
 #define COL_META_NAMESPACE_MSRVC 626
 #define COL_META_NAMESPACE_MET2 627
-
 
 #define COL_META_RESC_ATTR_NAME 630
 #define COL_META_RESC_ATTR_VALUE 631
@@ -267,7 +250,6 @@ primary ordering column.
 #define COL_META_MET2_CREATE_TIME 684
 #define COL_META_MET2_MODIFY_TIME 685
 
-
 /* R_OBJT_ACCESS */
 #define COL_DATA_ACCESS_TYPE 700
 #define COL_DATA_ACCESS_NAME 701
@@ -280,7 +262,6 @@ primary ordering column.
 #define COL_COLL_TOKEN_NAMESPACE 712
 #define COL_COLL_ACCESS_USER_ID 713
 #define COL_COLL_ACCESS_COLL_ID 714
-
 
 #define COL_RESC_ACCESS_TYPE 720
 #define COL_RESC_ACCESS_NAME 721
@@ -306,8 +287,6 @@ primary ordering column.
 #define COL_MSRVC_ACCESS_USER_ID 753
 #define COL_MSRVC_ACCESS_MSRVC_ID 754
 
-
-
 /* R_RESC_GROUP */
 //#define COL_RESC_GROUP_RESC_ID 800	// gone in 4.1 #1472
 //#define COL_RESC_GROUP_NAME 801
@@ -330,6 +309,7 @@ primary ordering column.
 #define COL_RULE_EXEC_NOTIFICATION_ADDR 1009
 #define COL_RULE_EXEC_LAST_EXE_TIME 1010
 #define COL_RULE_EXEC_STATUS 1011
+#define COL_RULE_EXEC_CONTEXT 1012
 
 /* R_TOKN_MAIN */
 #define COL_TOKEN_NAMESPACE 1100

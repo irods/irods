@@ -1,16 +1,13 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* stringOpr - a number of string operations designed for secure string
- * copying.
- */
-
 #include "stringOpr.h"
+
 #include "rodsErrorTable.h"
+#include "irods_stacktrace.hpp"
 #include "rodsLog.h"
-#include <string>
+
 #include "boost/regex.hpp"
 
-#include "irods_stacktrace.hpp"
+#include <cstring>
+#include <string>
 
 char *rmemmove( void *dest, const void *src, int strLen, int maxLen ) {
 
@@ -70,6 +67,17 @@ char *rstrcpy( char *dest, const char *src, int maxLen ) {
         rodsLog( LOG_ERROR, "rstrcpy encountered an encoding error." );
         return NULL;
     }
+}
+
+int is_empty_string(const char* _s, size_t _max_size)
+{
+    return strnlen(_s, _max_size) == 0;
+}
+
+int is_non_empty_string(const char* _s, size_t _max_size)
+{
+    const auto len = strnlen(_s, _max_size);
+    return len > 0 && len < _max_size;
 }
 
 char *rstrcat( char *dest, const char *src, int maxLen ) {
