@@ -840,6 +840,8 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_server_state.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_signal.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_structured_object.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/json_deserialization.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/json_serialization.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/miscServerFunct.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objDesc.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/objMetaOpr.cpp
@@ -1258,12 +1260,13 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     irods_common
     irods_plugin_dependencies
     irods_server
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
+    ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_regex.so
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_thread.so
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_chrono.so
-    ${IRODS_EXTERNALS_FULLPATH_AVRO}/lib/libavrocpp.so
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
     ${IRODS_EXTERNALS_FULLPATH_ZMQ}/lib/libzmq.so
     ${OPENSSL_CRYPTO_LIBRARY}
     ${OPENSSL_SSL_LIBRARY}
@@ -1284,10 +1287,11 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     ${CMAKE_SOURCE_DIR}/lib/hasher/include
     ${CMAKE_SOURCE_DIR}/lib/api/include
     ${CMAKE_SOURCE_DIR}/lib/rbudp/include
-    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_AVRO}/include
-    ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
+    ${IRODS_EXTERNALS_FULLPATH_BOOST}/include
     ${IRODS_EXTERNALS_FULLPATH_CPPZMQ}/include
+    ${IRODS_EXTERNALS_FULLPATH_FMT}/include
+    ${IRODS_EXTERNALS_FULLPATH_ZMQ}/include
     ${OPENSSL_INCLUDE_DIR}
     )
   set_property(TARGET ${EXECUTABLE} PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
@@ -1296,6 +1300,7 @@ foreach(EXECUTABLE ${IRODS_MAIN_EXECUTABLES})
     PRIVATE
     ENABLE_RE
     ${IRODS_COMPILE_DEFINITIONS}
+    IRODS_ENABLE_SYSLOG
     )
   target_compile_options(${EXECUTABLE} PRIVATE -Wno-write-strings)
 endforeach()

@@ -369,6 +369,7 @@ icatGeneralQuerySetup() {
     sColumn( COL_RULE_EXEC_NOTIFICATION_ADDR, "R_RULE_EXEC", "notification_addr" );
     sColumn( COL_RULE_EXEC_LAST_EXE_TIME, "R_RULE_EXEC", "last_exe_time" );
     sColumn( COL_RULE_EXEC_STATUS, "R_RULE_EXEC", "exe_status" );
+    sColumn( COL_RULE_EXEC_CONTEXT, "R_RULE_EXEC", "exe_context" );
 
     sColumn( COL_TOKEN_NAMESPACE, "R_TOKN_MAIN", "token_namespace" );
     sColumn( COL_TOKEN_ID, "R_TOKN_MAIN", "token_id" );

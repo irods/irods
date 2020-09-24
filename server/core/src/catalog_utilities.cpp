@@ -1,4 +1,7 @@
 #include "catalog_utilities.hpp"
+
+#include "rcConnect.h"
+#include "rodsConnect.h"
 #include "miscServerFunct.hpp"
 #include "irods_logger.hpp"
 #include "irods_rs_comm_query.hpp"
@@ -7,7 +10,7 @@ namespace
 {
     using log = irods::experimental::log;
 
-    auto connected_to_catalog_provider(rsComm_t& _comm, const rodsServerHost_t& _host) -> bool
+    auto connected_to_catalog_provider(RsComm& _comm, const rodsServerHost& _host) -> bool
     {
         return LOCAL_HOST == _host.localFlag;
     } // connected_to_catalog_provider
@@ -48,7 +51,7 @@ namespace irods::experimental::catalog
         _bp.statement.bind(_bp.index, &value);
     } // bind_integer_to_statement
 
-    auto user_has_permission_to_modify_metadata(rsComm_t& _comm,
+    auto user_has_permission_to_modify_metadata(RsComm& _comm,
                                                 nanodbc::connection& _db_conn,
                                                 int _object_id,
                                                 const entity_type _entity_type) -> bool
@@ -102,9 +105,9 @@ namespace irods::experimental::catalog
         }
     } // throw_if_service_role_is_invalid
 
-    auto get_catalog_provider_host() -> rodsServerHost_t
+    auto get_catalog_provider_host() -> rodsServerHost
     {
-        rodsServerHost_t* host{};
+        rodsServerHost* host{};
 
         if (const int status = getRcatHost(MASTER_RCAT, nullptr, &host); status < 0 || !host) {
             THROW(status, "failed getting catalog provider host");
@@ -113,14 +116,14 @@ namespace irods::experimental::catalog
         return *host;
     } // get_catalog_provider_host
 
-    auto connected_to_catalog_provider(rsComm_t& _comm) -> bool
+    auto connected_to_catalog_provider(RsComm& _comm) -> bool
     {
         return ::connected_to_catalog_provider(_comm, get_catalog_provider_host());
     } // connected_to_catalog_provider
 
-    auto redirect_to_catalog_provider(rsComm_t& _comm) -> rodsServerHost_t
+    auto redirect_to_catalog_provider(RsComm& _comm) -> rodsServerHost
     {
-        rodsServerHost_t host = get_catalog_provider_host();
+        rodsServerHost host = get_catalog_provider_host();
 
         if (::connected_to_catalog_provider(_comm, host)) {
             return host;

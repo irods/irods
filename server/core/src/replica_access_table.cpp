@@ -92,7 +92,7 @@ namespace irods::experimental
 
             return uuid;
         }
-    } // anonymouse namespace
+    } // anonymous namespace
 
     auto replica_access_table::init() noexcept -> void
     {
@@ -271,7 +271,6 @@ namespace irods::experimental
 
             g_fd_info_map->insert(value_type{key, value});
         }
-
     }
 } // namespace irods::experimental
 

@@ -2,18 +2,26 @@
 #define EXEC_RULE_EXPRESSION_H
 
 #include "rodsDef.h"
-#include "rodsType.h"
-#include "rcConnect.h"
-#include "msParam.h"
 
-typedef struct {
-    bytesBuf_t      rule_text_;
-    bytesBuf_t      packed_rei_;
-    msParamArray_t* params_;
+struct RcComm;
+struct MsParamArray;
+
+typedef struct ExecRuleExpression {
+    bytesBuf_t           rule_text_;
+    bytesBuf_t           packed_rei_;
+    struct MsParamArray* params_;
 } exec_rule_expression_t;
 
 #define ExecRuleExpression_PI "struct BytesBuf_PI; struct BytesBuf_PI; struct *MsParamArray_PI;"
 
-int rcExecRuleExpression(rcComm_t*,exec_rule_expression_t*);
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
-#endif
+int rcExecRuleExpression(struct RcComm* _comm, struct ExecRuleExpression* _input);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif // __cplusplus
+
+#endif // EXEC_RULE_EXPRESSION_H

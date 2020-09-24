@@ -35,3 +35,10 @@ def add_options(parser):
     parser.add_option('--test',
                       dest='test_mode', action='store_true',
                       help='Additionally write log messages to IRODS_HOME/log/test_mode_output.log')
+
+    # Accepts true or false.
+    # Enforced by the setup script.
+    parser.add_option('--run_delay_server',
+                      dest='run_delay_server', metavar='BOOLEAN',
+                      help='Controls whether a rule execution server is launched on startup.')
+

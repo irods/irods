@@ -1,6 +1,7 @@
 #include "ruleExecMod.h"
-#include "procApiRequest.h"
+
 #include "apiNumber.h"
+#include "procApiRequest.h"
 
 /**
  * \fn rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp )
@@ -28,11 +29,7 @@
  * \post none
  * \sa none
 **/
-int
-rcRuleExecMod( rcComm_t *conn, ruleExecModInp_t *ruleExecModInp ) {
-    int status;
-    status = procApiRequest( conn, RULE_EXEC_MOD_AN, ruleExecModInp, NULL,
-                             ( void ** ) NULL, NULL );
-
-    return status;
+int rcRuleExecMod( RcComm* _comm, RuleExecModifyInput* _ruleExecModInp )
+{
+    return procApiRequest(_comm, RULE_EXEC_MOD_AN, _ruleExecModInp, nullptr, nullptr, nullptr);
 }

@@ -3,7 +3,8 @@
 
 #include "exec_rule_expression.h"
 
-int rsExecRuleExpression(rsComm_t*,exec_rule_expression_t*);
+struct RsComm;
 
+int rsExecRuleExpression(RsComm* _comm, ExecRuleExpression* _input);
 
-#endif
+#endif // RS_EXEC_RULE_EXPRESSION_HPP

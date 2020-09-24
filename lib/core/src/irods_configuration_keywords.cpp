@@ -65,7 +65,6 @@ namespace irods
     const std::string CFG_RE_CACHE_SALT_KW("reCacheSalt");
     const std::string CFG_RE_SERVER_SLEEP_TIME( "rule_engine_server_sleep_time_in_seconds");
     const std::string CFG_RE_SERVER_EXEC_TIME( "rule_engine_server_execution_time_in_seconds");
-    const std::string CFG_RUN_DELAY_SERVER_KW("run_delay_server");
 
     // service_account_environment.json keywords
     const std::string CFG_IRODS_USER_NAME_KW( "irods_user_name" );
@@ -148,7 +147,6 @@ namespace irods
     const std::string PLUGIN_TYPE_DATABASE( "database" );
     const std::string PLUGIN_TYPE_RESOURCE( "resources" );
     const std::string PLUGIN_TYPE_MICROSERVICE( "microservices" );
-
 
     const std::string CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW("plugin_specific_configuration");
     const std::string CFG_INSTANCE_NAME_KW("instance_name");
