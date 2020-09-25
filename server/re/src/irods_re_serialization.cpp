@@ -370,6 +370,53 @@ namespace irods {
             return SUCCESS();
         } // serialize_dataObjInp_ptr
 
+        static error serialize_bulkOprInp_ptr(
+                boost::any               _p,
+                serialized_parameter_t& _out) {
+
+            try {
+                auto* blk = boost::any_cast<bulkOprInp_t*>(_p);
+
+                if(!blk) {
+                    _out["bulkOprInp_ptr"] = "nullptr";
+                    return SUCCESS();
+                }
+
+                serialize_keyValPair(blk->condInput, _out);
+
+                auto obj_path = getSqlResultByInx(&blk->attriArray, COL_DATA_NAME);
+                if(!obj_path) {
+                    THROW(UNMATCHED_KEY_OR_INDEX, "missing object path");
+                }
+
+                auto offset = getSqlResultByInx(&blk->attriArray, OFFSET_INX);
+                if(!offset) {
+                    THROW(UNMATCHED_KEY_OR_INDEX, "missing offset");
+                }
+
+                std::vector<int> offset_int{};
+                for (int i = 0; i < blk->attriArray.rowCnt; ++i) {
+                    offset_int.push_back(atoi(&offset->value[offset->len * i]));
+                }
+
+                for(auto i = 0; i < blk->attriArray.rowCnt; ++i) {
+                    auto lp = std::string{"logical_path_"}+std::to_string(i);
+                    auto ds = std::string{"data_size_"}+std::to_string(i);
+
+                    _out[lp] = &obj_path->value[obj_path->len * i];
+                    _out[ds] = std::to_string(i==0 ? offset_int[0] : offset_int[i]-offset_int[i-1]);
+                } // for i
+            }
+            catch ( std::exception& ) {
+                return ERROR(
+                         INVALID_ANY_CAST,
+                         "failed to cast dataObjInp ptr" );
+            }
+
+            return SUCCESS();
+
+        } // serialize_bulkOprInp_ptr
+
         static error serialize_authResponseInp_ptr(
                 boost::any               _p,
                 serialized_parameter_t& _out) { 
@@ -956,6 +1003,7 @@ namespace irods {
                 { std::type_index(typeid(rsComm_t*)), serialize_rsComm_ptr },
                 { std::type_index(typeid(plugin_context)), serialize_plugin_context },
                 { std::type_index(typeid(dataObjInp_t*)), serialize_dataObjInp_ptr },
+                { std::type_index(typeid(bulkOprInp_t*)), serialize_bulkOprInp_ptr },
                 { std::type_index(typeid(authResponseInp_t*)), serialize_authResponseInp_ptr },
                 { std::type_index(typeid(dataObjInfo_t*)), serialize_dataObjInfo_ptr },
                 { std::type_index(typeid(keyValPair_t*)), serialize_keyValPair_ptr },
@@ -980,7 +1028,7 @@ namespace irods {
         error add_operation(
             const index_t& _index,
             operation_t    _operation ) {
-            
+
             serialization_map_t& the_map = get_serialization_map();
             if(the_map.find(_index) != the_map.end() ) {
                 return ERROR(
@@ -1015,7 +1063,7 @@ namespace irods {
                 _out_param["ERROR"] = err;
                 return SUCCESS();
             }
-            
+
             return the_map[idx](_in_param, _out_param);
 
         } // serialize_parameter

@@ -13,6 +13,7 @@ import tempfile
 import time  # remove once file hash fix is commited #2279
 import subprocess
 import mmap
+import shutil
 
 from .. import lib
 from .. import paths
@@ -36,6 +37,48 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
 
     def tearDown(self):
         super(Test_Rule_Engine_Plugin_Framework, self).tearDown()
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_bulk_put_operation__5146(self):
+        depth = 2
+        files_per_level = 1
+        file_size = 100
+
+        # make a local test dir under /tmp/
+        local_dir = 'test_bulk_put_operation__5146'
+        if(os.path.exists(local_dir)):
+            shutil.rmtree(local_dir)
+
+        try:
+            lib.make_deep_local_tmp_dir(local_dir, depth, files_per_level, file_size)
+
+            logical_path = os.path.join(self.admin.session_collection, local_dir)
+
+            config = IrodsConfig()
+            core_re_path = os.path.join(config.core_re_directory, 'core.re')
+
+            with lib.file_backed_up(core_re_path):
+                # Add PEPs to the core.re file.
+                with open(core_re_path, 'a') as core_re:
+                    core_re.write("""
+
+    pep_api_bulk_data_obj_put_post(*INST, *COMM, *INP, *BUFF) {{
+        *lp = "{}"
+        *kvp.'attribute' = '*INP'
+        *err = errormsg(msiSetKeyValuePairsToObj(*kvp, *lp, "-C"), *msg)
+        if(*err < 0) {{
+            writeLine("serverLog", "XXXX - *err [*msg]")
+        }}
+    }}
+
+                    """.format(logical_path))
+
+                self.admin.assert_icommand(['iput', '-b', '-r', local_dir], 'STDOUT_SINGLELINE', 'Running')
+                self.admin.assert_icommand(['ils', '-l'], 'STDOUT_SINGLELINE', 'rods')
+                self.admin.assert_icommand(['imeta', 'ls', '-C', logical_path], 'STDOUT_SINGLELINE', 'logical_path')
+        finally:
+            self.admin.assert_icommand(['irm', '-r', '-f', logical_path])
+            shutil.rmtree(local_dir)
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
     def test_continuation_does_not_cause_NO_MICROSERVICE_FOUND_ERR__issue_4383(self):
