@@ -39,13 +39,13 @@ class Test_Rule_Engine_Plugin_Framework(session.make_sessions_mixin([('otherrods
         super(Test_Rule_Engine_Plugin_Framework, self).tearDown()
 
     @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
-    def test_bulk_put_operation__5146(self):
+    def test_bulk_put_operation__5164(self):
         depth = 2
         files_per_level = 1
         file_size = 100
 
         # make a local test dir under /tmp/
-        local_dir = 'test_bulk_put_operation__5146'
+        local_dir = 'test_bulk_put_operation__5164'
         if(os.path.exists(local_dir)):
             shutil.rmtree(local_dir)
 
