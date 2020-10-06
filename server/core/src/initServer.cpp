@@ -1,37 +1,31 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* initServer.cpp - Server initialization routines
- */
-
-#include "rcMisc.h"
-#include "initServer.hpp"
-#include "rodsConnect.h"
-#include "rodsConnect.h"
-#include "procLog.h"
-#include "resource.hpp"
-#include "rsGlobalExtern.hpp"
-#include "rcGlobalExtern.h"
 #include "genQuery.h"
-#include "rsIcatOpr.hpp"
-#include "miscServerFunct.hpp"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
+#include "initServer.hpp"
+#include "irods_stacktrace.hpp"
+#include "miscServerFunct.hpp"
 #include "physPath.hpp"
+#include "procLog.h"
+#include "rcGlobalExtern.h"
+#include "rcMisc.h"
+#include "resource.hpp"
+#include "rodsConnect.h"
+#include "rsExecCmd.hpp"
+#include "rsGenQuery.hpp"
+#include "rsGlobalExtern.hpp"
+#include "rsIcatOpr.hpp"
 #include "rsLog.hpp"
 #include "sockComm.h"
-#include "irods_stacktrace.hpp"
-#include "rsGenQuery.hpp"
-#include "rsExecCmd.hpp"
 
-#include "irods_get_full_path_for_config_file.hpp"
 #include "irods_configuration_parser.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_log.hpp"
 #include "irods_exception.hpp"
-#include "irods_threads.hpp"
-#include "irods_server_properties.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
+#include "irods_log.hpp"
 #include "irods_random.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_threads.hpp"
+#include "replica_state_table.hpp"
 
 #include <vector>
 #include <set>
@@ -457,6 +451,7 @@ initAgent( int processType, rsComm_t *rsComm ) {
         return status;
     }
 
+    irods::replica_state_table::init();
     initL1desc();
     initSpecCollDesc();
     status = initFileDesc();
@@ -546,6 +541,9 @@ cleanup() {
     if ( InitialState == INITIAL_DONE ) {
         /* close all opened descriptors */
         closeAllL1desc( ThisComm );
+
+        irods::replica_state_table::deinit();
+
         /* close any opened server to server connection */
         disconnectAllSvrToSvrConn();
     }
