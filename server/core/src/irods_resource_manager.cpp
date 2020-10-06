@@ -447,6 +447,37 @@ namespace irods
                    _name );
     } // get_parent_name
 
+    std::string resource_manager::get_hier_to_root_for_resc(std::string_view _resource_name)
+    {
+        if (_resource_name.empty()) {
+            return {};
+        }
+
+        irods::hierarchy_parser hierarchy{_resource_name.data()};
+
+        for (std::string parent_name = _resource_name.data(); !parent_name.empty();) {
+            resource_ptr resc;
+
+            if (const auto ret = resolve(parent_name, resc); !ret.ok()) {
+                THROW(ret.code(), ret.result());
+            }
+
+            if (const auto ret = get_parent_name(resc, parent_name); !ret.ok()) {
+                if(HIERARCHY_ERROR == ret.code()) {
+                    break;
+                }
+
+                THROW(ret.code(), ret.result());
+            }
+
+            if(!parent_name.empty()) {
+                hierarchy.add_parent(parent_name);
+            }
+        }
+
+        return hierarchy.str();
+    } // get_hier_to_root_for_resc
+
     error resource_manager::get_hier_to_root_for_resc(
         const std::string& _resc_name,
         std::string&       _hierarchy ) {

@@ -55,7 +55,7 @@ namespace irods::experimental
         using value_allocator_type = bi::allocator<value_type, segment_manager_type>;
         using map_type             = bi::map<key_type, mapped_type, std::less<key_type>, value_allocator_type>;
         // clang-format on
-        
+
         //
         // Global Variables
         //
@@ -159,13 +159,13 @@ namespace irods::experimental
 
         const key_type key{_token.data(), *g_allocator};
         auto iter = g_fd_info_map->find(key);
-        
+
         if (iter == g_fd_info_map->end()) {
             throw replica_access_table_error{"replica_access_table: Invalid token"};
         }
 
         auto& [k, v] = *iter;
-        
+
         if (v.data_id != _data_id || v.replica_number != _replica_number) {
             throw replica_access_table_error{"replica_access_table: Invalid data id or replica number"};
         }

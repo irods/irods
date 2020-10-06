@@ -70,9 +70,20 @@ namespace irods
             /// @brief create a list of resources who do not have parents ( roots )
             error get_root_resources( std::vector< std::string >& );
 
-            // =-=-=-=-=-=-=-
-            /// @brief create a partial hier string for a given resource to the root
+            /// \brief create a partial hier string for a given resource to the root
             error get_hier_to_root_for_resc( const std::string&, std::string& );
+
+            /// \brief create a partial hier string for a given resource to the root
+            ///
+            /// \param[in] _resource_name
+            ///
+            /// \returns std::string
+            /// \retval resource hierarchy from provided resource name to root resource
+            ///
+            /// \throws irods::exception
+            ///
+            /// \since 4.2.9
+            std::string get_hier_to_root_for_resc(std::string_view _resource_name);
 
             // =-=-=-=-=-=-=-
             /// @brief groups decedent leafs by child
