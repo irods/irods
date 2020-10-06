@@ -306,7 +306,7 @@ TEST_CASE("open,read,write,close")
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
 
-        SECTION("open for read x 2,close x2")
+        SECTION("open for read x2,close x2")
         {
             create_empty_replica(target_object);
 
