@@ -97,6 +97,12 @@ namespace irods {
             return PASS(ret);
         }
 
+        rodsLong_t id;
+        ret = _resc->get_property< rodsLong_t >( irods::RESOURCE_ID, id );
+        if ( !ret.ok() ) {
+            return PASS(ret);
+        }
+
         std::string name;
         ret = _resc->get_property< std::string >( irods::RESOURCE_NAME, name );
         if ( !ret.ok() ) {
@@ -146,6 +152,7 @@ namespace irods {
         }
 
         _entry["name"] = name;
+        _entry["id"] =  std::to_string( id );
         _entry["type"] = type;
         _entry["host_name"] = host_name;
         _entry["vault_path"] = vault;
