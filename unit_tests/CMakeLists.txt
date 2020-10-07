@@ -61,7 +61,8 @@ set(TEST_INCLUDE_LIST test_config/irods_atomic_apply_acl_operations
                       test_config/irods_scoped_privileged_client
                       test_config/irods_shared_memory_object
                       test_config/irods_user_administration
-                      test_config/irods_with_durability)
+                      test_config/irods_with_durability
+                      test_config/irods_zone_report)
 
 foreach(IRODS_TEST_CONFIG ${TEST_INCLUDE_LIST})
     unset_irods_test_variables()
