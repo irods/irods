@@ -1280,10 +1280,6 @@ class Test_Iadmin(resource_suite.ResourceBase, unittest.TestCase):
     def test_rodscurators_role(self):
         self.admin.assert_icommand("iadmin mkuser nopes rodscurators", 'STDERR_SINGLELINE', "CAT_INVALID_USER_TYPE")
 
-    def test_izonereport_key_sanitization(self):
-        self.admin.assert_icommand("izonereport | grep key | grep -v XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                                   'STDOUT_SINGLELINE', '"irods_encryption_key_size": 32,', use_unsafe_shell=True)
-
     def test_impostor_resource_debug_logging(self):
         irods_config = IrodsConfig()
         server_config_filename = irods_config.server_config_path
