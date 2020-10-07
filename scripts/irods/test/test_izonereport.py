@@ -16,6 +16,8 @@ class Test_Izonereport(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.admin = session.mkuser_and_return_session('rodsadmin', 'otherrods', 'rods', lib.get_hostname())
+        cls.admin.assert_icommand(['iadmin', 'mkresc', 'fs_resc_1', 'unixfilesystem', lib.get_hostname() + '/tmp/irods/fs_resc_1'], 'STDOUT_SINGLELINE', 'unixfilesystem')
+        cls.admin.assert_icommand(['iadmin', 'mkresc', 'fs_resc_2', 'unixfilesystem', lib.get_hostname() + '/tmp/irods/fs_resc_2'], 'STDOUT_SINGLELINE', 'unixfilesystem')
         cls.admin.assert_icommand(['iadmin', 'mkresc', 'rand_resc', 'random'], 'STDOUT_SINGLELINE', 'rand_resc')
         cls.admin.assert_icommand(['iadmin', 'mkresc', 'repl_resc', 'replication'], 'STDOUT_SINGLELINE', 'repl_resc')
         cls.admin.assert_icommand(['iadmin', 'mkresc', 'comp_resc', 'compound'], 'STDOUT_SINGLELINE', 'comp_resc')
@@ -24,6 +26,8 @@ class Test_Izonereport(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.admin.assert_icommand(['iadmin', 'rmresc', 'fs_resc_1'])
+        cls.admin.assert_icommand(['iadmin', 'rmresc', 'fs_resc_2'])
         cls.admin.assert_icommand(['iadmin', 'rmresc', 'rand_resc'])
         cls.admin.assert_icommand(['iadmin', 'rmresc', 'repl_resc'])
         cls.admin.assert_icommand(['iadmin', 'rmresc', 'comp_resc'])
@@ -77,3 +81,19 @@ class Test_Izonereport(unittest.TestCase):
             assert_command(command, 'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
         else:
             assert_command(command, 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
+
+    # see issue #5170
+    def test_resource_json_has_id(self):
+        with session.make_session_for_existing_admin() as admin:
+            _, stdout, _ = admin.assert_icommand(['izonereport'], 'STDOUT')
+            icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
+
+            self.assertIn('resources', icat_server_object.keys())
+            self.assertGreaterEqual(len(icat_server_object['resources']), 1)
+            for resource in icat_server_object['resources']:
+                self.assertIn('id', resource.keys())
+
+            self.assertIn('coordinating_resources', icat_server_object.keys())
+            self.assertGreaterEqual(len(icat_server_object['coordinating_resources']), 1)
+            for resource in icat_server_object['coordinating_resources']:
+                self.assertIn('id', resource.keys())
