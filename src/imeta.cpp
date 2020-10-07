@@ -284,7 +284,8 @@ showColl( char *name, char *attrName, int wild ) {
     char *condVal[10];
 
     char fullName[MAX_NAME_LEN];
-    char *columnNames[] = {"attribute", "value", "units"};
+    /* Fourth 'time set' column is only used in longMode */
+    char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -300,9 +301,17 @@ showColl( char *name, char *attrName, int wild ) {
     i1b[1] = 0;
     i1a[2] = COL_META_COLL_ATTR_UNITS;
     i1b[2] = 0;
+    if ( longMode ) {
+        i1a[3] = COL_META_COLL_MODIFY_TIME;
+        i1b[3] = 0;
+    }
     genQueryInp.selectInp.inx = i1a;
     genQueryInp.selectInp.value = i1b;
     genQueryInp.selectInp.len = 3;
+    if ( longMode ) {
+        genQueryInp.selectInp.len = 4;
+    }
+
 
     strncpy( fullName, cwd, MAX_NAME_LEN );
     if ( strlen( name ) > 0 ) {
@@ -404,7 +413,8 @@ showResc( char *name, char *attrName, int wild ) {
     int i2a[10];
     char *condVal[10];
 
-    char *columnNames[] = {"attribute", "value", "units"};
+    /* Fourth 'time set' column is only used in longMode */
+    char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     genQueryInp_t genQueryInp;
     memset( &genQueryInp, 0, sizeof( genQueryInp ) );
@@ -420,9 +430,16 @@ showResc( char *name, char *attrName, int wild ) {
     i1b[1] = 0;
     i1a[2] = COL_META_RESC_ATTR_UNITS;
     i1b[2] = 0;
+    if ( longMode ) {
+        i1a[3] = COL_META_RESC_MODIFY_TIME;
+        i1b[3] = 0;
+    }
     genQueryInp.selectInp.inx = i1a;
     genQueryInp.selectInp.value = i1b;
     genQueryInp.selectInp.len = 3;
+    if ( longMode ) {
+        genQueryInp.selectInp.len = 4;
+    }
 
     i2a[0] = COL_R_RESC_NAME;
     std::string v1;
@@ -502,7 +519,8 @@ showUser( char *name, char *attrName, int wild ) {
     int i1b[10];
     int i2a[10];
     char *condVal[10];
-    char *columnNames[] = {"attribute", "value", "units"};
+    /* Fourth 'time set' column is only used in longMode */
+    char *columnNames[] = { "attribute", "value", "units", "time set" };
 
     char userName[NAME_LEN];
     char userZone[NAME_LEN];
@@ -529,9 +547,16 @@ showUser( char *name, char *attrName, int wild ) {
     i1b[1] = 0;
     i1a[2] = COL_META_USER_ATTR_UNITS;
     i1b[2] = 0;
+    if ( longMode ) {
+        i1a[3] = COL_META_USER_MODIFY_TIME;
+        i1b[3] = 0;
+    }
     genQueryInp.selectInp.inx = i1a;
     genQueryInp.selectInp.value = i1b;
     genQueryInp.selectInp.len = 3;
+    if ( longMode ) {
+        genQueryInp.selectInp.len = 4;
+    }
 
     i2a[0] = COL_USER_NAME;
     std::string v1;
@@ -1814,8 +1839,11 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
         if ( !sub_vm.count( "object_type" ) ||
             ( sub_vm["object_type"].as<std::string>() != "-ld" &&
              sub_vm["object_type"].as<std::string>() != "-d" &&
+             sub_vm["object_type"].as<std::string>() != "-lC" &&
              sub_vm["object_type"].as<std::string>() != "-C" &&
+             sub_vm["object_type"].as<std::string>() != "-lR" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
+             sub_vm["object_type"].as<std::string>() != "-lu" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
             std::cout << std::endl
                       << "Error: "
@@ -1854,11 +1882,23 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
         else if ( obj_type == "-d" ) {
             showDataObj(name.data(), (char*) attribute.c_str(), wild);
         }
+        else if ( obj_type == "-lC" ) {
+            longMode = 1;
+            showColl(name.data(), (char*) attribute.c_str(), wild);
+        }
         else if ( obj_type == "-C" ) {
             showColl(name.data(), (char*) attribute.c_str(), wild);
         }
+        else if ( obj_type == "-lR" ) {
+            longMode = 1;
+            showResc(name.data(), (char*) attribute.c_str(), wild);
+        }
         else if ( obj_type == "-R" ) {
             showResc(name.data(), (char*) attribute.c_str(), wild);
+        }
+        else if ( obj_type == "-lu" ) {
+            longMode = 1;
+            showUser(name.data(), (char*) attribute.c_str(), wild);
         }
         else {
             showUser(name.data(), (char*) attribute.c_str(), wild);
