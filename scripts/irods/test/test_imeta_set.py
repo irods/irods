@@ -12,6 +12,7 @@ from .resource_suite import ResourceBase
 from ..configuration import IrodsConfig
 from .rule_texts_for_tests import rule_texts
 from .. import lib
+from . import session
 
 class Test_ImetaSet(ResourceBase, unittest.TestCase):
 
@@ -473,4 +474,34 @@ class Test_ImetaQu(ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['imeta', 'qu', '-C', 'target', '=', '1', 'and', 'study_id', '=', '4616', 'and', 'type', '=', 'fastq'],
                 'STDOUT_MULTILINE', ['collection: .*%s$' % object_name],
                 use_regex=True)
+
+# See issue #5111
+class Test_ImetaLsLongmode(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+
+    def setUp(self):
+        super(Test_ImetaLsLongmode, self).setUp()
+        self.admin = self.admin_sessions[0]
+        self.test_data_path = self.admin.session_collection + '/imeta_test_data'
+        self.admin.assert_icommand(['itouch', self.test_data_path])
+        self.admin.assert_icommand(['iadmin', 'mkresc', 'imeta_test_resc', 'random'], 'STDOUT_SINGLELINE', 'random')
+        self.admin.assert_icommand(['imeta', 'add', '-d', self.test_data_path, 'imeta_test_attr', 'imeta_test_value'])
+        self.admin.assert_icommand(['imeta', 'add', '-C', self.admin.session_collection, 'imeta_test_attr', 'imeta_test_value'])
+        self.admin.assert_icommand(['imeta', 'add', '-R', 'imeta_test_resc', 'imeta_test_attr', 'imeta_test_value'])
+        self.admin.assert_icommand(['imeta', 'add', '-u', self.admin.username, 'imeta_test_attr', 'imeta_test_value'])
+
+    def tearDown(self):
+        self.admin.assert_icommand(['iadmin', 'rmresc', 'imeta_test_resc'])
+        super(Test_ImetaLsLongmode, self).tearDown()
+
+    def test_imeta_ls_ld_mtime_present(self):
+        self.admin.assert_icommand(['imeta', 'ls', '-ld', self.test_data_path], 'STDOUT_SINGLELINE', 'time set:')
+
+    def test_imeta_ls_lC_mtime_present(self):
+        self.admin.assert_icommand(['imeta', 'ls', '-lC', self.admin.session_collection], 'STDOUT_SINGLELINE', 'time set:')
+
+    def test_imeta_ls_lR_mtime_present(self):
+        self.admin.assert_icommand(['imeta', 'ls', '-lR', 'imeta_test_resc'], 'STDOUT_SINGLELINE', 'time set:')
+
+    def test_imeta_ls_lu_mtime_present(self):
+        self.admin.assert_icommand(['imeta', 'ls', '-lu', self.admin.username], 'STDOUT_SINGLELINE', 'time set:')
 
