@@ -1,55 +1,59 @@
-#include "dataObjRepl.h"
-#include "dataObjOpr.hpp"
-#include "dataObjCreate.h"
-#include "dataObjOpen.h"
+#include "apiNumber.h"
 #include "dataObjClose.h"
-#include "dataObjPut.h"
+#include "dataObjCreate.h"
 #include "dataObjGet.h"
-#include "rodsLog.h"
-#include "objMetaOpr.hpp"
-#include "physPath.hpp"
-#include "specColl.hpp"
-#include "resource.hpp"
-#include "icatDefines.h"
+#include "dataObjLock.h"
+#include "dataObjOpen.h"
+#include "dataObjOpr.hpp"
+#include "dataObjPut.h"
+#include "dataObjRepl.h"
+#include "dataObjTrim.h"
+#include "fileStageToCache.h"
+#include "fileSyncToArch.h"
 #include "getRemoteZoneResc.h"
+#include "icatDefines.h"
 #include "l3FileGetSingleBuf.h"
 #include "l3FilePutSingleBuf.h"
-#include "fileSyncToArch.h"
-#include "fileStageToCache.h"
-#include "unbunAndRegPhyBunfile.h"
-#include "dataObjTrim.h"
-#include "dataObjLock.h"
 #include "miscServerFunct.hpp"
-#include "rsDataObjRepl.hpp"
-#include "apiNumber.h"
+#include "objMetaOpr.hpp"
+#include "physPath.hpp"
+#include "resource.hpp"
+#include "rodsLog.h"
 #include "rsDataCopy.hpp"
-#include "rsDataObjCreate.hpp"
-#include "rsDataObjOpen.hpp"
-#include "rsDataObjRead.hpp"
-#include "rsDataObjWrite.hpp"
 #include "rsDataObjClose.hpp"
-#include "rsDataObjUnlink.hpp"
-#include "rsUnregDataObj.hpp"
-#include "rsL3FileGetSingleBuf.hpp"
+#include "rsDataObjCreate.hpp"
 #include "rsDataObjGet.hpp"
+#include "rsDataObjOpen.hpp"
 #include "rsDataObjPut.hpp"
-#include "rsL3FilePutSingleBuf.hpp"
+#include "rsDataObjRead.hpp"
+#include "rsDataObjRepl.hpp"
+#include "rsDataObjUnlink.hpp"
+#include "rsDataObjWrite.hpp"
 #include "rsFileStageToCache.hpp"
 #include "rsFileSyncToArch.hpp"
+#include "rsL3FileGetSingleBuf.hpp"
+#include "rsL3FilePutSingleBuf.hpp"
 #include "rsUnbunAndRegPhyBunfile.hpp"
+#include "rsUnregDataObj.hpp"
+#include "specColl.hpp"
+#include "unbunAndRegPhyBunfile.h"
 
 #include "irods_at_scope_exit.hpp"
-#include "irods_resource_backport.hpp"
-#include "irods_resource_redirect.hpp"
 #include "irods_log.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_server_api_call.hpp"
 #include "irods_random.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_redirect.hpp"
+#include "irods_server_api_call.hpp"
+#include "irods_server_properties.hpp"
+#include "irods_stacktrace.hpp"
 #include "irods_string_tokenize.hpp"
 #include "key_value_proxy.hpp"
-#include "voting.hpp"
 #include "key_value_proxy.hpp"
+#include "replica_access_table.hpp"
+#include "voting.hpp"
 
 #include <string_view>
 #include <vector>
@@ -224,26 +228,44 @@ int replicate_data(
     L1desc[destination_l1descInx].srcL1descInx = source_l1descInx;
 
     // Copy data from source to destination
-    const int status = dataObjCopy(rsComm, destination_l1descInx);
+    int status = dataObjCopy(rsComm, destination_l1descInx);
     if (status < 0) {
         rodsLog(LOG_ERROR, "[%s] - dataObjCopy failed for [%s]", __FUNCTION__, destination_inp.objPath);
     }
     L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
 
+    // Save the token for the replica access table so that it can be removed
+    // in the event of a failure in close. On failure, the entry is restored,
+    // but this will prevent retries of the operation as the token information
+    // is lost by the time we have returned to the caller.
+    const auto token = L1desc[destination_l1descInx].replica_token;
+
     // Close destination replica
     int close_status = close_replica(rsComm, destination_l1descInx, status);
     if (close_status < 0) {
-        rodsLog(LOG_ERROR,
-                "[%s] - closing destination replica [%s] failed with [%d]",
-                __FUNCTION__, destination_inp.objPath, close_status);
+        irods::log(LOG_ERROR, fmt::format(
+            "[{}] - closing destination replica [{}] failed with [{}]",
+            __FUNCTION__, destination_inp.objPath, close_status));
+
+        if (status >= 0) {
+            status = close_status;
+        }
+
+        auto& rat = irods::experimental::replica_access_table::instance();
+        rat.erase_pid(token, getpid());
     }
     // Close source replica
-    close_status = close_replica(rsComm, source_l1descInx, status);
+    close_status = close_replica(rsComm, source_l1descInx, 0);
     if (close_status < 0) {
-        rodsLog(LOG_ERROR,
-                "[%s] - closing source replica [%s] failed with [%d]",
-                __FUNCTION__, source_inp.objPath, close_status);
+        irods::log(LOG_ERROR, fmt::format(
+            "[{}] - closing source replica [{}] failed with [{}]",
+            __FUNCTION__, source_inp.objPath, close_status));
+
+        if (status >= 0) {
+            status = close_status;
+        }
     }
+
     return status;
 } // replicate_data
 
@@ -289,8 +311,15 @@ int repl_data_obj(
         const char* dest_hier = getValByKey(&destination_inp.condInput, RESC_HIER_STR_KW);
         for (const auto& r : file_obj->replicas()) {
             // TODO: #4010 - This short-circuits resource logic for handling good replicas
-            if (r.resc_hier() == dest_hier && (r.replica_status() & 0x0F) == GOOD_REPLICA) {
-                return 0;
+            if (r.resc_hier() == dest_hier) {
+                if (GOOD_REPLICA == r.replica_status()) {
+                    const char* source_hier = getValByKey(&source_inp.condInput, RESC_HIER_STR_KW);
+                    irods::log(LOG_DEBUG, fmt::format(
+                        "[{}:{}] - hierarchy contains good replica already, source:[{}],dest:[{}]",
+                        __FUNCTION__, __LINE__, dest_hier, source_hier));
+                    return 0;
+                }
+                break;
             }
         }
         status = replicate_data(rsComm, source_inp, destination_inp);

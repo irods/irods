@@ -4412,8 +4412,10 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         irods_config = IrodsConfig()
 
         with session.make_session_for_existing_admin() as admin_session:
-            self.munge_mount=tempfile.mkdtemp(prefix='munge_mount_')
-            self.munge_target=tempfile.mkdtemp(prefix='munge_target_')
+            self.munge_mount = os.path.abspath('munge_mount')
+            self.munge_target = os.path.abspath('munge_target')
+            lib.make_dir_p(self.munge_mount)
+            lib.make_dir_p(self.munge_target)
             assert_command('mungefs ' + self.munge_mount + ' -omodules=subdir,subdir=' + self.munge_target)
 
             self.munge_resc = 'ufs1munge'
@@ -4851,7 +4853,7 @@ class Test_Resource_Replication_With_Retry(ChunkyDevTest, ResourceSuite, unittes
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 3 ", " & " + filename])
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 4 ", " & " + filename])
 
-        self.admin.assert_icommand("irepl -a " + filename)
+        self.admin.assert_icommand(['irepl', '-R', 'fourthresc', filename])
 
         # should have dirty copies
         self.admin.assert_icommand_fail("ils -L " + filename, 'STDOUT_SINGLELINE', [" 0 ", " & " + filename])
