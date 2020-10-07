@@ -25,5 +25,6 @@
     "irods_scoped_privileged_client",
     "irods_shared_memory_object",
     "irods_user_administration",
-    "irods_with_durability"
+    "irods_with_durability",
+    "irods_zone_report"
 ]
