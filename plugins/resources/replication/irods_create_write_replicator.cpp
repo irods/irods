@@ -54,7 +54,7 @@ namespace irods {
                     addKeyVal( &dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str() );
                     addKeyVal( &dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str() );
 
-                    try { 
+                    try {
                         const auto status = data_obj_repl_with_retry( _ctx, dataObjInp );
                         char* sys_error = NULL;
                         auto rods_error = rodsErrorName( status, &sys_error );

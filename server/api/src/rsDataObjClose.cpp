@@ -216,59 +216,58 @@ int procChksumForClose(
     int status = 0;
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
     int oprType = L1desc[l1descInx].oprType;
-    int srcL1descInx = 0;
-    dataObjInfo_t *srcDataObjInfo;
 
-    *chksumStr = NULL;
+    *chksumStr = nullptr;
     if ( oprType == REPLICATE_DEST || oprType == PHYMV_DEST ) {
-        srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        const int srcL1descInx = L1desc[l1descInx].srcL1descInx;
         if ( srcL1descInx <= 2 ) {
-            rodsLog( LOG_NOTICE,
-                     "procChksumForClose: srcL1descInx %d out of range",
-                     srcL1descInx );
+            irods::log(LOG_NOTICE, fmt::format(
+                "{}: srcL1descInx {} out of range",
+                __FUNCTION__, srcL1descInx));
             return SYS_FILE_DESC_OUT_OF_RANGE;
         }
 
-        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-        if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
-            addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, srcDataObjInfo->chksum );
-        }
+        dataObjInfo_t *srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        std::string_view source_checksum = srcDataObjInfo->chksum;
+        if (source_checksum.length() > 0) {
+            addKeyVal(&dataObjInfo->condInput, ORIG_CHKSUM_KW, source_checksum.data());
 
-        if ( strlen( srcDataObjInfo->chksum ) > 0 &&
-                srcDataObjInfo->replStatus > 0 ) {
-            /* the source has chksum. Must verify chksum */
-            status = _dataObjChksum( rsComm, dataObjInfo, chksumStr );
-            if ( status < 0 ) {
-                dataObjInfo->chksum[0] = '\0';
-                if ( status == DIRECT_ARCHIVE_ACCESS ) {
-                    *chksumStr = strdup( srcDataObjInfo->chksum );
-                    rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
-                    return 0;
+            if (STALE_REPLICA != srcDataObjInfo->replStatus) {
+                irods::log(LOG_DEBUG, fmt::format(
+                        "[{}:{}] - verifying checksum for [{}],source:[{}]",
+                        __FUNCTION__, __LINE__, dataObjInfo->objPath, source_checksum));
+
+                if (const int ec = _dataObjChksum( rsComm, dataObjInfo, chksumStr ); ec < 0) {
+                    dataObjInfo->chksum[0] = '\0';
+                    if (DIRECT_ARCHIVE_ACCESS == ec) {
+                        *chksumStr = strdup(source_checksum.data());
+                        rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
+                        return 0;
+                    }
+
+                    irods::log(LOG_NOTICE, fmt::format(
+                             "{}: _dataObjChksum error for {}, status = {}",
+                             __FUNCTION__, dataObjInfo->objPath, ec));
+
+                    return ec;
                 }
-                else {
-                    rodsLog( LOG_NOTICE,
-                             "procChksumForClose: _dataObjChksum error for %s, status = %d",
-                             dataObjInfo->objPath, status );
-                    return status;
+
+                if (!*chksumStr) {
+                    rodsLog(LOG_ERROR, "chksumStr is NULL");
+                    return SYS_INTERNAL_NULL_INPUT_ERR;
                 }
-            }
-            else if ( *chksumStr == NULL ) {
-                rodsLog( LOG_ERROR, "chksumStr is NULL" );
-                return SYS_INTERNAL_NULL_INPUT_ERR;
-            }
-            else {
+
                 rstrcpy( dataObjInfo->chksum, *chksumStr, NAME_LEN );
-                if ( strcmp( srcDataObjInfo->chksum, *chksumStr ) != 0 ) {
-                    rodsLog( LOG_NOTICE,
-                             "procChksumForClose: chksum mismatch for %s src [%s] new [%s]",
-                             dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr );
-                    free( *chksumStr );
-                    *chksumStr = NULL;
+                if (source_checksum != *chksumStr) {
+                    irods::log(LOG_NOTICE, fmt::format(
+                         "{}: chksum mismatch for {} src [{}] new [{}]",
+                         __FUNCTION__, dataObjInfo->objPath, source_checksum, *chksumStr));
+                    free(*chksumStr);
+                    *chksumStr = nullptr;
                     return USER_CHKSUM_MISMATCH;
                 }
-                else {
-                    return 0;
-                }
+
+                return 0;
             }
         }
     }
@@ -346,7 +345,7 @@ int procChksumForClose(
         }
         else if ( oprType == COPY_DEST ) {
             /* created through copy */
-            srcL1descInx = L1desc[l1descInx].srcL1descInx;
+            const int srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if ( srcL1descInx <= 2 ) {
                 /* not a valid srcL1descInx */
                 rodsLog( LOG_DEBUG,
@@ -355,7 +354,7 @@ int procChksumForClose(
                 /* just register it for now */
                 return 0;
             }
-            srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+            dataObjInfo_t *srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
             if ( strlen( srcDataObjInfo->chksum ) > 0 ) {
                 addKeyVal( &dataObjInfo->condInput, ORIG_CHKSUM_KW, srcDataObjInfo->chksum );
 
@@ -406,7 +405,7 @@ int procChksumForClose(
         }
         else if ( oprType == COPY_DEST ) {
             /* created through copy */
-            srcL1descInx = L1desc[l1descInx].srcL1descInx;
+            const int srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if ( srcL1descInx <= 2 ) {
                 /* not a valid srcL1descInx */
                 rodsLog( LOG_DEBUG,
@@ -414,7 +413,7 @@ int procChksumForClose(
                          srcL1descInx );
                 return 0;
             }
-            srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+            dataObjInfo_t* srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
             if ( strlen( srcDataObjInfo->chksum ) == 0 ) {
                 free( *chksumStr );
                 *chksumStr = NULL;
@@ -701,7 +700,7 @@ void close_physical_file(rsComm_t* comm, const int l1descInx)
 } // close_physical_file
 
 void update_checksum_if_needed(
-    rsComm_t* comm,
+    rsComm_t* _comm,
     const int l1descInx,
     ix::key_value_proxy<keyValPair_t>& p)
 {
@@ -716,7 +715,29 @@ void update_checksum_if_needed(
 
     if (update_checksum) {
         char *chksumStr{};
-        if (const int status = procChksumForClose(comm, l1descInx, &chksumStr); status < 0) {
+        if (const int status = procChksumForClose(_comm, l1descInx, &chksumStr); status < 0) {
+            free(chksumStr);
+
+            l1desc.dataObjInfo->replStatus = STALE_REPLICA;
+
+            keyValPair_t regParam{};
+            auto kvp = irods::experimental::make_key_value_proxy(regParam);
+            kvp[IN_PDMO_KW] = l1desc.dataObjInfo->rescHier;
+            kvp[REPL_STATUS_KW] = std::to_string(l1desc.dataObjInfo->replStatus);
+            if (getValByKey(&L1desc[l1descInx].dataObjInp->condInput, ADMIN_KW)) {
+                kvp[ADMIN_KW] = "";
+            }
+
+            modDataObjMeta_t inp{};
+            inp.dataObjInfo = l1desc.dataObjInfo;
+            inp.regParam = kvp.get();
+
+            if (const int ec = rsModDataObjMeta(_comm, &inp); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "{} - rsModDataObjMeta failed [{}]",
+                    __FUNCTION__, ec));
+            }
+
             THROW(status, "procChksumForClose returned an error");
         }
         if (chksumStr) {
@@ -832,7 +853,7 @@ int rsDataObjClose(
     rsComm_t *rsComm,
     openedDataObjInp_t *dataObjCloseInp)
 {
-    const auto l1descInx = dataObjCloseInp->l1descInx; 
+    const auto l1descInx = dataObjCloseInp->l1descInx;
     if (l1descInx < 3 || l1descInx >= NUM_L1_DESC) {
         rodsLog(LOG_NOTICE,
             "rsDataObjClose: l1descInx %d out of range", l1descInx);
