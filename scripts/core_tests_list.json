@@ -37,6 +37,7 @@
     "test_itrim",
     "test_iunreg",
     "test_iuserinfo",
+    "test_izonereport",
     "test_load_balanced_suite",
     "test_misc",
     "test_native_rule_engine_plugin",

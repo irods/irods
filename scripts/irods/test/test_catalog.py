@@ -34,65 +34,6 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
     def test_no_distinct(self):
         self.admin.assert_icommand(['iquest', 'no-distinct', 'select RESC_ID'], 'STDOUT_SINGLELINE', 'RESC_ID = ');
 
-
-
-    ###################
-    # izonereport
-    ###################
-    def test_izonereport_with_coordinating_resources__ticket_3303(self):
-        try:
-            assert_command('iadmin mkresc repl_resc replication', 'STDOUT_SINGLELINE', 'repl_resc')
-            assert_command('iadmin mkresc comp_resc compound', 'STDOUT_SINGLELINE', 'comp_resc')
-            assert_command('iadmin modresc comp_resc context comp_resc_context')
-            assert_command('iadmin modresc repl_resc context repl_resc_context')
-
-            _, stdout, _ = assert_command('izonereport', 'STDOUT_SINGLELINE', 'comp_resc')
-
-            expected_names = [
-                'repl_resc',
-                'comp_resc'
-            ]
-
-            icat_server_object = json.loads(stdout)['zones'][0]['icat_server']
-            if "coordinating_resources" in icat_server_object.keys():
-                coord_array = icat_server_object['coordinating_resources']
-
-                for d in coord_array:
-                    assert d['name'] in expected_names
-            else:
-                assert false
-
-        finally:
-            assert_command('iadmin rmresc repl_resc')
-            assert_command('iadmin rmresc comp_resc')
-
-    @unittest.skip('FIXME: Remove this line once we figure out why the test fails in ci')
-    def test_izonereport_and_validate(self):
-        jsonschema_installed = True
-        if lib.get_os_distribution() == 'Ubuntu' and lib.get_os_distribution_version_major() == '12':
-            jsonschema_installed = False
-
-        validate_json_path = os.path.join(IrodsConfig().scripts_directory, 'validate_json.py')
-        zone_report = os.path.join(self.admin.local_session_dir, 'out.txt')
-        # bad URL
-        self.admin.assert_icommand("izonereport > %s" % (zone_report), use_unsafe_shell=True)
-        if jsonschema_installed:
-            assert_command('python %s %s https://irods.org/badurl' % (validate_json_path, zone_report), 'STDERR_MULTILINE',
-                               ['WARNING: Validation Failed'], desired_rc=2)
-        else:
-            assert_command('python %s %s https://irods.org/badurl' % (validate_json_path, zone_report),
-                               'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
-
-        # good URL
-        self.admin.assert_icommand("izonereport > out.txt", use_unsafe_shell=True)
-        irods_config = IrodsConfig()
-        command = [sys.executable, validate_json_path, zone_report, '{0}/{1}/zone_bundle.json'.format(irods_config.server_config['schema_validation_base_uri'], irods_config.server_config['schema_version'])]
-        if jsonschema_installed:
-            assert_command(command, 'STDOUT_MULTILINE', ['Validating', '... Success'], desired_rc=0)
-        else:
-            assert_command(command, 'STDERR_SINGLELINE', 'jsonschema not installed', desired_rc=2)
-
-
     ###################
     # icd
     ###################
