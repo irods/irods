@@ -13,20 +13,20 @@
 
 namespace irods::experimental::replica
 {
-    /// \brief Presents a replica-level interface to a dataObjInfo_t legacy iRODS struct.
+    /// \brief Presents a replica-level interface to a DataObjInfo legacy iRODS struct.
     ///
-    /// Holds a pointer to a dataObjInfo_t whose lifetime is managed outside of the proxy object.
+    /// Holds a pointer to a DataObjInfo whose lifetime is managed outside of the proxy object.
     ///
-    /// The replica_proxy is essentially a wrapper around a node of the linked list of a dataObjInfo_t struct.
+    /// The replica_proxy is essentially a wrapper around a node of the linked list of a DataObjInfo struct.
     /// This is meant to be used as an interface to the physical representation of a data object, also known
-    /// as a replica. All members of the dataObjInfo_t struct are accessible through this interface except for
+    /// as a replica. All members of the DataObjInfo struct are accessible through this interface except for
     /// the next pointer because the object has no concept of a "next" replica.
     ///
     /// \since 4.2.9
     template<
         typename I,
         typename = std::enable_if_t<
-            std::is_same_v<dataObjInfo_t, typename std::remove_const_t<I>>
+            std::is_same_v<DataObjInfo, typename std::remove_const_t<I>>
         >
     >
     class replica_proxy
@@ -71,7 +71,7 @@ namespace irods::experimental::replica
 
         /// \returns key_value_proxy
         ///
-        /// \retval condInput for the dataObjInfo_t node as a key_value_proxy
+        /// \retval condInput for the DataObjInfo node as a key_value_proxy
         ///
         /// \since 4.2.9
         auto cond_input()       const -> key_value_proxy<const keyValPair_t>
@@ -81,7 +81,7 @@ namespace irods::experimental::replica
 
         /// \returns const specColl_t*
         ///
-        /// \retval specColl pointer for the dataObjInfo_t node
+        /// \retval specColl pointer for the DataObjInfo node
         ///
         /// \since 4.2.9
         auto special_collection_info() const noexcept -> const specColl_t*
@@ -263,7 +263,7 @@ namespace irods::experimental::replica
 
         /// \returns key_value_proxy
         ///
-        /// \retval condInput for the dataObjInfo_t node as a key_value_proxy
+        /// \retval condInput for the DataObjInfo node as a key_value_proxy
         ///
         /// \since 4.2.9
         template<
@@ -276,7 +276,7 @@ namespace irods::experimental::replica
 
         /// \returns specColl_t*
         ///
-        /// \retval specColl pointer for the dataObjInfo_t node
+        /// \retval specColl pointer for the DataObjInfo node
         ///
         /// \since 4.2.9
         template<
@@ -321,7 +321,7 @@ namespace irods::experimental::replica
     namespace detail
     {
         static auto populate_struct_from_results(
-            dataObjInfo_t& _doi,
+            DataObjInfo& _doi,
             const std::vector<std::string>& _info) -> void
         {
             namespace fs = irods::experimental::filesystem;
@@ -363,7 +363,7 @@ namespace irods::experimental::replica
         } // populate_struct_from_results
     } // namespace detail
 
-    /// \brief Factory method for making a replica proxy object for a dataObjInfo_t
+    /// \brief Factory method for making a replica proxy object for a DataObjInfo
     ///
     /// \param[in] _doi - Pre-existing doi_type which will be wrapped by the returned proxy.
     ///
@@ -376,31 +376,31 @@ namespace irods::experimental::replica
         return replica_proxy{_doi};
     } // make_replica_proxy
 
-    /// \brief Factory method for making a replica proxy object for a dataObjInfo_t
+    /// \brief Factory method for making a replica proxy object for a DataObjInfo
     ///
-    /// Allocates a new dataObjInfo_t and wraps the struct in a proxy and lifetime_manager
+    /// Allocates a new DataObjInfo and wraps the struct in a proxy and lifetime_manager
     ///
-    /// \return std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
-    /// \retval replica_proxy and lifetime_manager for managing a new dataObjInfo_t
+    /// \return std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    /// \retval replica_proxy and lifetime_manager for managing a new DataObjInfo
     ///
     /// \since 4.2.9
-    static auto make_replica_proxy() -> std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
+    static auto make_replica_proxy() -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
     {
-        dataObjInfo_t* doi = (dataObjInfo_t*)std::malloc(sizeof(dataObjInfo_t));
-        std::memset(doi, 0, sizeof(dataObjInfo_t));
+        DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+        std::memset(doi, 0, sizeof(DataObjInfo));
         return {replica_proxy{*doi}, lifetime_manager{*doi}};
     } // make_replica_proxy
 
     /// \brief Fetch information from the catalog and create a new replica proxy with it
     ///
-    /// Allocates a new dataObjInfo_t and wraps the struct in a proxy and lifetime_manager
+    /// Allocates a new DataObjInfo and wraps the struct in a proxy and lifetime_manager
     ///
     /// \param[in] _comm connection object
     /// \param[in] _logical_path
     /// \param[in] _replica_number
     ///
-    /// \return std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
-    /// \retval replica_proxy and lifetime_manager for managing a new dataObjInfo_t
+    /// \return std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    /// \retval replica_proxy and lifetime_manager for managing a new DataObjInfo
     ///
     /// \since 4.2.9
     template<typename rxComm>
@@ -408,10 +408,10 @@ namespace irods::experimental::replica
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
         const replica_number_type _replica_number)
-        -> std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
+        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
     {
-        dataObjInfo_t* doi = (dataObjInfo_t*)std::malloc(sizeof(dataObjInfo_t));
-        std::memset(doi, 0, sizeof(dataObjInfo_t));
+        DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+        std::memset(doi, 0, sizeof(DataObjInfo));
 
         const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
 
@@ -422,14 +422,14 @@ namespace irods::experimental::replica
 
     /// \brief Fetch information from the catalog and create a new replica proxy with it
     ///
-    /// Allocates a new dataObjInfo_t and wraps the struct in a proxy and lifetime_manager
+    /// Allocates a new DataObjInfo and wraps the struct in a proxy and lifetime_manager
     ///
     /// \param[in] _comm connection object
     /// \param[in] _logical_path
     /// \param[in] _leaf_resource_name
     ///
-    /// \return std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
-    /// \retval replica_proxy and lifetime_manager for managing a new dataObjInfo_t
+    /// \return std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    /// \retval replica_proxy and lifetime_manager for managing a new DataObjInfo
     ///
     /// \since 4.2.9
     template<typename rxComm>
@@ -437,10 +437,10 @@ namespace irods::experimental::replica
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
         const leaf_resource_name_type _leaf_resource_name)
-        -> std::pair<replica_proxy<dataObjInfo_t>, lifetime_manager<dataObjInfo_t>>
+        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
     {
-        dataObjInfo_t* doi = (dataObjInfo_t*)std::malloc(sizeof(dataObjInfo_t));
-        std::memset(doi, 0, sizeof(dataObjInfo_t));
+        DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+        std::memset(doi, 0, sizeof(DataObjInfo));
 
         const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
 
