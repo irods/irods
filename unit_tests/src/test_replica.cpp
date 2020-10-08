@@ -102,26 +102,33 @@ TEST_CASE("replica", "[replica]")
         REQUIRE_THROWS(replica::is_replica_empty(comm, std::string{}, second_replica));
         REQUIRE_THROWS(replica::replica_checksum(comm, std::string{}, second_replica));
         REQUIRE_THROWS(replica::last_write_time(comm, std::string{}, second_replica));
+        REQUIRE_THROWS(replica::replica_status(comm, std::string{}, second_replica));
 
         REQUIRE_THROWS(replica::replica_exists(comm, very_long_string, second_replica));
         REQUIRE_THROWS(replica::is_replica_empty(comm, very_long_string, second_replica));
         REQUIRE_THROWS(replica::replica_checksum(comm, very_long_string, second_replica));
         REQUIRE_THROWS(replica::last_write_time(comm, very_long_string, second_replica));
+        REQUIRE_THROWS(replica::replica_status(comm, very_long_string, second_replica));
 
         REQUIRE_THROWS(replica::replica_exists(comm, sandbox, second_replica));
         REQUIRE_THROWS(replica::is_replica_empty(comm, sandbox, second_replica));
         REQUIRE_THROWS(replica::replica_checksum(comm, sandbox, second_replica));
         REQUIRE_THROWS(replica::last_write_time(comm, sandbox, second_replica));
+        REQUIRE_THROWS(replica::replica_status(comm, sandbox, second_replica));
 
         REQUIRE_THROWS(replica::replica_exists(comm, target_object, invalid_replica_number));
         REQUIRE_THROWS(replica::is_replica_empty(comm, target_object, invalid_replica_number));
         REQUIRE_THROWS(replica::replica_checksum(comm, target_object, invalid_replica_number));
         REQUIRE_THROWS(replica::last_write_time(comm, target_object, invalid_replica_number));
+        REQUIRE_THROWS(replica::replica_status(comm, target_object, invalid_replica_number));
 
         REQUIRE(std::nullopt == replica::to_leaf_resource(comm, target_object, 42));
 
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, second_replica));
+
+        // status
+        REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, second_replica));
 
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, second_replica));
@@ -179,26 +186,33 @@ TEST_CASE("replica", "[replica]")
         REQUIRE_THROWS(replica::is_replica_empty(comm, std::string{}, resc_name));
         REQUIRE_THROWS(replica::replica_checksum(comm, std::string{}, resc_name));
         REQUIRE_THROWS(replica::last_write_time(comm, std::string{}, resc_name));
+        REQUIRE_THROWS(replica::replica_status(comm, std::string{}, resc_name));
 
         REQUIRE_THROWS(replica::replica_exists(comm, very_long_string, resc_name));
         REQUIRE_THROWS(replica::is_replica_empty(comm, very_long_string, resc_name));
         REQUIRE_THROWS(replica::replica_checksum(comm, very_long_string, resc_name));
         REQUIRE_THROWS(replica::last_write_time(comm, very_long_string, resc_name));
+        REQUIRE_THROWS(replica::replica_status(comm, very_long_string, resc_name));
 
         REQUIRE_THROWS(replica::replica_exists(comm, sandbox, resc_name));
         REQUIRE_THROWS(replica::is_replica_empty(comm, sandbox, resc_name));
         REQUIRE_THROWS(replica::replica_checksum(comm, sandbox, resc_name));
         REQUIRE_THROWS(replica::last_write_time(comm, sandbox, resc_name));
+        REQUIRE_THROWS(replica::replica_status(comm, sandbox, resc_name));
 
         REQUIRE_THROWS(replica::replica_exists(comm, target_object, std::string{}));
         REQUIRE_THROWS(replica::is_replica_empty(comm, target_object, std::string{}));
         REQUIRE_THROWS(replica::replica_checksum(comm, target_object, std::string{}));
         REQUIRE_THROWS(replica::last_write_time(comm, target_object, std::string{}));
+        REQUIRE_THROWS(replica::replica_status(comm, target_object, std::string{}));
 
         REQUIRE(std::nullopt == replica::to_replica_number(comm, target_object, "nope"));
 
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, resc_name));
+
+        // existence
+        REQUIRE(GOOD_REPLICA == replica::replica_status(comm, target_object, resc_name));
 
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, resc_name));
