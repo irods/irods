@@ -28,6 +28,8 @@
 #include <string_view>
 #include <variant>
 
+struct DataObjInfo;
+
 namespace irods::experimental::replica
 {
     using replica_number_type = int;
@@ -283,7 +285,7 @@ namespace irods::experimental::replica
             std::stringstream new_time;
             new_time << std::setfill('0') << std::setw(11) << std::to_string(seconds.count());
 
-            dataObjInfo_t info{};
+            DataObjInfo info{};
             std::snprintf(info.objPath, sizeof(info.objPath), "%s", _logical_path.c_str());
             std::snprintf(info.rescHier, sizeof(info.rescHier), "%s", _resource_hierarchy.data());
 
@@ -406,7 +408,7 @@ namespace irods::experimental::replica
     /// \param[in] _leaf_resource_name
     ///
     /// \throws filesystem_error if the path is empty or too long
-    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
     ///
     /// \returns std::uintmax_t
     /// \retval size of specified replica in bytes
@@ -450,7 +452,7 @@ namespace irods::experimental::replica
     /// \param[in] _leaf_resource_name
     ///
     /// \throws filesystem_error if the path is empty or too long
-    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
     ///
     /// \returns bool
     /// \retval true if replica size is 0; otherwise, false
@@ -465,6 +467,17 @@ namespace irods::experimental::replica
         return replica_size(_comm, _logical_path, _leaf_resource_name) == 0;
     } // is_replica_empty
 
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _replica_number
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \returns std::string
+    /// \retval value of calculated checksum
+    ///
+    /// \since 4.2.9
     template<typename rxComm>
     auto replica_checksum(
         rxComm& _comm,
@@ -532,7 +545,7 @@ namespace irods::experimental::replica
     /// \param[in] _leaf_resource_name
     ///
     /// \throws filesystem_error if the path is empty or too long
-    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
     ///
     /// \returns irods::filesystem::object_time_type
     /// \retval Timestamp of the last time the replica was written to
@@ -586,7 +599,7 @@ namespace irods::experimental::replica
     /// \param[in] _new_time timestamp to use as last_write_time
     ///
     /// \throws irods::filesystem::filesystem_error if the path is empty or too long
-    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
     ///
     /// \since 4.2.9
     template<typename rxComm>
@@ -728,6 +741,54 @@ namespace irods::experimental::replica
 
         return 0 != qb.build<rxComm>(_comm, qstr).size();
     } // replica_exists
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _replica_number
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \returns int
+    /// \retval replica status
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto replica_status(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const replica_number_type _replica_number) -> int
+    {
+        const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
+
+        std::string_view status = result[detail::genquery_column_index::DATA_REPL_STATUS];
+
+        return static_cast<int>(std::stoi(status.data()));
+    } // replica_status
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
+    ///
+    /// \returns int
+    /// \retval replica status
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto replica_status(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> int
+    {
+        const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+        std::string_view status = result[detail::genquery_column_index::DATA_REPL_STATUS];
+
+        return static_cast<int>(std::stoi(status.data()));
+    } // replica_status
 } // namespace irods::experimental::replica
 
 #endif // #ifndef IRODS_REPLICA_HPP
