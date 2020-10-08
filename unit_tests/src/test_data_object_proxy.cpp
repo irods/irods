@@ -23,7 +23,7 @@ namespace
     // clang-format on
 } // anonymous namespace
 
-TEST_CASE("test_lib", "[lib]")
+TEST_CASE("test_replica_proxy", "[lib]")
 {
     dataObjInfo_t r0{};
     r0.dataId = DATA_ID_1;
@@ -31,49 +31,57 @@ TEST_CASE("test_lib", "[lib]")
     std::snprintf(r0.objPath, sizeof(r0.objPath), "%s", LOGICAL_PATH_1.data());
     std::snprintf(r0.rescName, sizeof(r0.rescName), "%s", RESC_1.data());
 
-    SECTION("replica_proxy")
+    auto rp = replica::make_replica_proxy(r0);
+
+    // access
+    CHECK(&r0            == rp.get());
+    CHECK(DATA_ID_1      == rp.data_id());
+    CHECK(COLL_ID_1      == rp.collection_id());
+    CHECK(LOGICAL_PATH_1 == rp.logical_path());
+    CHECK(RESC_1         == rp.resource());
+
+    // modification
+    rp.data_id(DATA_ID_2);
+    CHECK(DATA_ID_2 == rp.data_id());
+    CHECK(DATA_ID_2 == r0.dataId);
+
+    rp.collection_id(COLL_ID_2);
+    CHECK(COLL_ID_2 == rp.collection_id());
+    CHECK(COLL_ID_2 == r0.collId);
+
+    rp.logical_path(LOGICAL_PATH_2);
+    CHECK(LOGICAL_PATH_2 == rp.logical_path());
+    CHECK(LOGICAL_PATH_2 == r0.objPath);
+
+    rp.resource(RESC_2);
+    CHECK(RESC_2 == rp.resource());
+    CHECK(RESC_2 == r0.rescName);
+}
+
+TEST_CASE("test_data_object_proxy", "[lib]")
+{
+    dataObjInfo_t r0{};
+    r0.dataId = DATA_ID_1;
+    r0.collId = COLL_ID_1;
+    std::snprintf(r0.objPath, sizeof(r0.objPath), "%s", LOGICAL_PATH_1.data());
+    std::snprintf(r0.rescName, sizeof(r0.rescName), "%s", RESC_1.data());
+    std::snprintf(r0.rescHier, sizeof(r0.rescHier), "%s", RESC_1.data());
+
+    dataObjInfo_t r1{};
+    r1.dataId = DATA_ID_1;
+    r1.collId = COLL_ID_1;
+    std::snprintf(r1.objPath, sizeof(r1.objPath), "%s", LOGICAL_PATH_1.data());
+    std::snprintf(r1.rescName, sizeof(r1.rescName), "%s", RESC_2.data());
+    std::snprintf(r1.rescHier, sizeof(r1.rescHier), "%s", RESC_2.data());
+
+    r0.next = &r1;
+
+    data_object::data_object_proxy o{r0};
+
+    constexpr int REPLICA_COUNT = 2;
+
+    SECTION("test lib")
     {
-        auto rp = replica::make_replica_proxy(r0);
-
-        // access
-        CHECK(&r0            == rp.get());
-        CHECK(DATA_ID_1      == rp.data_id());
-        CHECK(COLL_ID_1      == rp.collection_id());
-        CHECK(LOGICAL_PATH_1 == rp.logical_path());
-        CHECK(RESC_1         == rp.resource());
-
-        // modification
-        rp.data_id(DATA_ID_2);
-        CHECK(DATA_ID_2 == rp.data_id());
-        CHECK(DATA_ID_2 == r0.dataId);
-
-        rp.collection_id(COLL_ID_2);
-        CHECK(COLL_ID_2 == rp.collection_id());
-        CHECK(COLL_ID_2 == r0.collId);
-
-        rp.logical_path(LOGICAL_PATH_2);
-        CHECK(LOGICAL_PATH_2 == rp.logical_path());
-        CHECK(LOGICAL_PATH_2 == r0.objPath);
-
-        rp.resource(RESC_2);
-        CHECK(RESC_2 == rp.resource());
-        CHECK(RESC_2 == r0.rescName);
-    }
-
-    SECTION("data_object_proxy")
-    {
-        dataObjInfo_t r1{};
-        r1.dataId = DATA_ID_1;
-        r1.collId = COLL_ID_1;
-        std::snprintf(r1.objPath, sizeof(r1.objPath), "%s", LOGICAL_PATH_1.data());
-        std::snprintf(r1.rescName, sizeof(r1.rescName), "%s", RESC_2.data());
-
-        r0.next = &r1;
-
-        data_object::data_object_proxy o{r0};
-
-        constexpr int REPLICA_COUNT = 2;
-
         // object-level access
         CHECK(REPLICA_COUNT   == o.replica_count());
         CHECK(DATA_ID_1       == o.data_id());
@@ -114,6 +122,93 @@ TEST_CASE("test_lib", "[lib]")
         CHECK(LOGICAL_PATH_2 == o_r1.logical_path());
         CHECK(LOGICAL_PATH_2 == r0.objPath);
         CHECK(LOGICAL_PATH_2 == r1.objPath);
+    }
+
+    SECTION("test duplication")
+    {
+        auto [dup, lm] = data_object::duplicate_data_object(o);
+
+        // object-level access
+        CHECK(REPLICA_COUNT   == dup.replica_count());
+        CHECK(DATA_ID_1       == dup.data_id());
+        CHECK(COLL_ID_1       == dup.collection_id());
+        CHECK(LOGICAL_PATH_1  == dup.logical_path());
+
+        // replica-level access
+        const auto& o_r0 = dup.replicas()[0];
+        CHECK(DATA_ID_1       == o_r0.data_id());
+        CHECK(COLL_ID_1       == o_r0.collection_id());
+        CHECK(LOGICAL_PATH_1  == o_r0.logical_path());
+        CHECK(RESC_1          == o_r0.resource());
+
+        const auto& o_r1 = dup.replicas()[1];
+        CHECK(DATA_ID_1       == o_r1.data_id());
+        CHECK(COLL_ID_1       == o_r1.collection_id());
+        CHECK(LOGICAL_PATH_1  == o_r1.logical_path());
+        CHECK(RESC_2          == o_r1.resource());
+
+        // ensure that these are new structs
+        CHECK(&r0             != o_r0.get());
+        CHECK(&r1             != o_r1.get());
+
+        // modification
+        dup.data_id(DATA_ID_2);
+        CHECK(DATA_ID_2 == dup.data_id());
+        CHECK(DATA_ID_2 == o_r0.data_id());
+        CHECK(DATA_ID_2 == o_r1.data_id());
+
+        dup.rename(COLL_ID_2, LOGICAL_PATH_2);
+        CHECK(COLL_ID_2 == dup.collection_id());
+        CHECK(COLL_ID_2 == o_r0.collection_id());
+        CHECK(COLL_ID_2 == o_r1.collection_id());
+        CHECK(LOGICAL_PATH_2 == dup.logical_path());
+        CHECK(LOGICAL_PATH_2 == o_r0.logical_path());
+        CHECK(LOGICAL_PATH_2 == o_r1.logical_path());
+
+        // ensure that original structs did not change
+        CHECK(DATA_ID_1 == r1.dataId);
+        CHECK(DATA_ID_1 == r0.dataId);
+        CHECK(COLL_ID_1 == r1.collId);
+        CHECK(COLL_ID_1 == r0.collId);
+        CHECK(LOGICAL_PATH_1 == r1.objPath);
+        CHECK(LOGICAL_PATH_1 == r0.objPath);
+    }
+
+    SECTION("test adding a new replica")
+    {
+        std::string_view RESC_3 = "anotherResc";
+
+        dataObjInfo_t r2{};
+        r2.dataId = DATA_ID_1;
+        r2.collId = COLL_ID_1;
+        std::snprintf(r2.objPath, sizeof(r2.objPath), "%s", LOGICAL_PATH_1.data());
+        std::snprintf(r2.rescName, sizeof(r2.rescName), "%s", RESC_3.data());
+
+        o.add_replica(r2);
+
+        REQUIRE(REPLICA_COUNT + 1 == o.replica_count());
+
+        const auto& o_r2 = o.replicas().back();
+        CHECK(&r2             == r1.next);
+        CHECK(&r2             == o_r2.get());
+        CHECK(DATA_ID_1       == o_r2.data_id());
+        CHECK(COLL_ID_1       == o_r2.collection_id());
+        CHECK(LOGICAL_PATH_1  == o_r2.logical_path());
+        CHECK(RESC_3          == o_r2.resource());
+    }
+
+    SECTION("test find_replica")
+    {
+        auto replica = irods::experimental::data_object::find_replica(o, RESC_2);
+        REQUIRE(replica);
+        CHECK(replica->get() == &r1);
+        CHECK(replica->resource() == r1.rescName);
+    }
+
+    SECTION("test find_replica for non-existent replica")
+    {
+        auto replica = irods::experimental::data_object::find_replica(o, "nope");
+        REQUIRE(!replica);
     }
 }
 
@@ -171,7 +266,7 @@ TEST_CASE("const_tests", "[replica][const][struct]")
 
     SECTION("get data_object_proxy")
     {
-        data_object::data_object_proxy p{*doip}; 
+        data_object::data_object_proxy p{*doip};
 
         using struct_type = decltype(p)::doi_type;
         using pointer_type = decltype(p)::doi_pointer_type;
