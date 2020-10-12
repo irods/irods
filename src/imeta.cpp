@@ -251,7 +251,7 @@ showDataObj( char *name, char *attrName, int wild ) {
             lastCommandStatus = status;
             printf( "Dataobject %s does not exist\n", fullName );
             printf( "or, if 'strict' access control is enabled, you may not have access.\n" );
-            return 0;
+            return status;
         }
         printGenQueryResults( Conn, status, genQueryOut, columnNames );
     }
@@ -383,7 +383,7 @@ showColl( char *name, char *attrName, int wild ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "Collection %s does not exist.\n", fullName );
-            return 0;
+            return status;
         }
     }
 
@@ -490,7 +490,7 @@ showResc( char *name, char *attrName, int wild ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "Resource %s does not exist.\n", name );
-            return 0;
+            return status;
         }
     }
 
@@ -527,7 +527,7 @@ showUser( char *name, char *attrName, int wild ) {
 
     if ( parseUserName( name, userName, userZone ) ) {
         printf( "Invalid username format\n" );
-        return 0;
+        return -4;
     }
     if ( userZone[0] == '\0' ) {
         snprintf( userZone, sizeof( userZone ), "%s", myEnv.rodsZone );
@@ -615,7 +615,7 @@ showUser( char *name, char *attrName, int wild ) {
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
             printf( "User %s does not exist.\n", name );
-            return 0;
+            return status;
         }
     }
 
@@ -742,7 +742,7 @@ int queryDataObj( const char *cmdToken[] ) {
                               columnNames );
     }
 
-    return 0;
+    return status == CAT_NO_ROWS_FOUND ? 0 : status;
 }
 
 /*
@@ -850,7 +850,7 @@ int queryCollection( const char *cmdToken[] ) {
                               columnNames );
     }
 
-    return 0;
+    return status == CAT_NO_ROWS_FOUND ? 0 : status;
 }
 
 
@@ -921,7 +921,7 @@ int queryResc( char *attribute, char *op, char *value ) {
                               columnNames );
     }
 
-    return 0;
+    return status == CAT_NO_ROWS_FOUND ? 0 : status;
 }
 
 /*
@@ -992,7 +992,7 @@ int queryUser( char *attribute, char *op, char *value ) {
                               columnNames );
     }
 
-    return 0;
+    return status == CAT_NO_ROWS_FOUND ? 0 : status;
 }
 
 
@@ -1418,7 +1418,9 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                                 "",
                                 "" );
 
-        if ( _cmd == "addw" ) {
+        if ( status < 0 ) {
+            return status;
+        } else if ( _cmd == "addw" ) {
             std::cout << "AVU added to " << status << " data-objects\n";
         }
 
@@ -1877,31 +1879,31 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
 
         if ( obj_type == "-ld") {
             longMode = 1;
-            showDataObj(name.data(), (char*) attribute.c_str(), wild);
+            return showDataObj(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-d" ) {
-            showDataObj(name.data(), (char*) attribute.c_str(), wild);
+            return showDataObj(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-lC" ) {
             longMode = 1;
-            showColl(name.data(), (char*) attribute.c_str(), wild);
+            return showColl(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-C" ) {
-            showColl(name.data(), (char*) attribute.c_str(), wild);
+            return showColl(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-lR" ) {
             longMode = 1;
-            showResc(name.data(), (char*) attribute.c_str(), wild);
+            return showResc(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-R" ) {
-            showResc(name.data(), (char*) attribute.c_str(), wild);
+            return showResc(name.data(), (char*) attribute.c_str(), wild);
         }
         else if ( obj_type == "-lu" ) {
             longMode = 1;
-            showUser(name.data(), (char*) attribute.c_str(), wild);
+            return showUser(name.data(), (char*) attribute.c_str(), wild);
         }
         else {
-            showUser(name.data(), (char*) attribute.c_str(), wild);
+            return showUser(name.data(), (char*) attribute.c_str(), wild);
         }
 
         return 0;
@@ -2199,7 +2201,7 @@ int main( int argc, const char **argv )
         // No command entered; run in interactive mode
         do_interactive();
     } else {
-        do_command( command_to_be_parsed[0], { ++command_to_be_parsed.begin(), command_to_be_parsed.end() });
+        lastCommandStatus = do_command( command_to_be_parsed[0], { ++command_to_be_parsed.begin(), command_to_be_parsed.end() });
     }
 
     printErrorStack( Conn->rError );
