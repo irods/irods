@@ -249,8 +249,11 @@ showDataObj( char *name, char *attrName, int wild ) {
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
-            printf( "Dataobject %s does not exist\n", fullName );
-            printf( "or, if 'strict' access control is enabled, you may not have access.\n" );
+            std::cerr << "Error: "
+                      << "Dataobject " << name << " does not exist,"
+                      << std::endl
+                      << "or, if 'strict' access control is enabled, you may not have access."
+                      << std::endl;
             return status;
         }
         printGenQueryResults( Conn, status, genQueryOut, columnNames );
@@ -382,7 +385,9 @@ showColl( char *name, char *attrName, int wild ) {
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
-            printf( "Collection %s does not exist.\n", fullName );
+            std::cerr << "Error: "
+                      << "Collection " << name << " does not exist."
+                      << std::endl;
             return status;
         }
     }
@@ -489,7 +494,9 @@ showResc( char *name, char *attrName, int wild ) {
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
-            printf( "Resource %s does not exist.\n", name );
+            std::cerr << "Error: "
+                      << "Resource " << name << " does not exist."
+                      << std::endl;
             return status;
         }
     }
@@ -526,7 +533,9 @@ showUser( char *name, char *attrName, int wild ) {
     char userZone[NAME_LEN];
 
     if ( parseUserName( name, userName, userZone ) ) {
-        printf( "Invalid username format\n" );
+        std::cerr << "Error: "
+                  << "Invalid username format"
+                  << std::endl;
         return -4;
     }
     if ( userZone[0] == '\0' ) {
@@ -614,7 +623,9 @@ showUser( char *name, char *attrName, int wild ) {
         }
         if ( status == CAT_NO_ROWS_FOUND ) {
             lastCommandStatus = status;
-            printf( "User %s does not exist.\n", name );
+            std::cerr << "Error: "
+                      << "User " << name << " does not exist."
+                      << std::endl;
             return status;
         }
     }
@@ -716,7 +727,9 @@ int queryDataObj( const char *cmdToken[] ) {
     }
 
     if ( *cmdToken[cmdIx] != '\0' ) {
-        printf( "Unrecognized input\n" );
+        std::cerr << "Error: "
+                  << "Unrecognized input"
+                  << std::endl;
         return -2;
     }
 
@@ -824,7 +837,9 @@ int queryCollection( const char *cmdToken[] ) {
     }
 
     if ( *cmdToken[cmdIx] != '\0' ) {
-        printf( "Unrecognized input\n" );
+        std::cerr << "Error: "
+                  << "Unrecognized input"
+                  << std::endl;
         return -2;
     }
 
@@ -1078,17 +1093,24 @@ modCopyAVUMetadata( char *arg0, char *arg1, char *arg2, char *arg3,
         strncat( tempName, myEnv.rodsZone, MAX_NAME_LEN - strlen( tempName ) );
         len = strlen( tempName );
         if ( strncmp( tempName, fullName1, len ) != 0 ) {
-            printf( "Cannot copy metadata from a remote zone.\n" );
+            std::cerr << "Error: "
+                      << "Cannot copy metadata from a remote zone."
+                      << std::endl;
             isRemote = 1;
         }
         if ( strncmp( tempName, fullName2, len ) != 0 ) {
-            printf( "Cannot copy metadata to a remote zone.\n" );
+            std::cerr << "Error: "
+                      << "Cannot copy metadata to a remote zone."
+                      << std::endl;
             isRemote = 1;
         }
         if ( isRemote ) {
-            printf( "Copying of metadata is done via SQL within each ICAT\n" );
-            printf( "for efficiency.  Copying metadata between zones is\n" );
-            printf( "not implemented.\n" );
+            std::cerr << "Copying of metadata is done via SQL within each ICAT"
+                      << std::endl
+                      << "for efficiency.  Copying metadata between zones is"
+                      << std::endl
+                      << "not implemented."
+                      << std::endl;
         }
     }
     return status;
@@ -1232,7 +1254,9 @@ getInput( char *cmdToken[], int maxTokens ) {
             }
         }
         if ( nTokens >= maxTokens ) {
-            printf( "Limit reached (too many tokens, unrecognized input\n" );
+            std::cerr << "Error: "
+                      << "Limit reached (too many tokens, unrecognized input)"
+                      << std::endl;
             return -1;
         }
     }
@@ -1293,10 +1317,8 @@ parse_program_options(int _argc,
         return std::make_tuple(parsed, vm);
     }
     catch (const po::error& _e) {
-        std::cout << std::endl
-                  << "Error: "
+        std::cerr << "Error: "
                   << _e.what()
-                  << std::endl
                   << std::endl;
         THROW( SYS_INVALID_INPUT_PARAM, _e.what() );
     }
@@ -1343,7 +1365,9 @@ std::vector<std::string> reorder_arguments(
 int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_args) {
 
     if ( _sub_args.size() >= MAX_CMD_TOKENS ) {
-        std::cout << "Unrecognized input, too many input tokens\n";
+        std::cerr << "Error: "
+                  << "Unrecognized input, too many input tokens"
+                  << std::endl;
         exit( 4 );
     }
 
@@ -1380,19 +1404,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "value" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1457,19 +1478,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "value" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1521,19 +1539,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "metadata_id" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1596,19 +1611,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "opt_1" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         } else {
@@ -1627,10 +1639,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                     std::string label = temp.substr(0,2);
                     if("n:" == label) {
                         if (new_attribute_set) {
-                            std::cout << std::endl
-                                << "Error: "
+                            std::cerr << "Error: "
                                 << "New attribute specified more than once"
-                                << std::endl
                                 << std::endl;
                             return SYS_INVALID_INPUT_PARAM;
 
@@ -1639,10 +1649,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                         }
                     } else if("v:" == label) {
                         if (new_value_set) {
-                            std::cout << std::endl
-                                << "Error: "
+                            std::cerr << "Error: "
                                 << "New value specified more than once"
-                                << std::endl
                                 << std::endl;
                             return SYS_INVALID_INPUT_PARAM;
                         } else {
@@ -1650,10 +1658,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
                         }
                     } else if("u:" == label) {
                         if (new_unit_set) {
-                            std::cout << std::endl
-                                << "Error: "
+                            std::cerr << "Error: "
                                 << "New unit specified more than once"
-                                << std::endl
                                 << std::endl;
                             return SYS_INVALID_INPUT_PARAM;
                         } else {
@@ -1775,19 +1781,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "new_value" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1847,19 +1850,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-lu" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "name" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1937,19 +1937,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type"].as<std::string>() != "-C" &&
              sub_vm["object_type"].as<std::string>() != "-R" &&
              sub_vm["object_type"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "value" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -1989,10 +1986,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
         } else if ( obj_type == "-R" ) {
 
             if (_sub_args.size() > 4) {
-                std::cout << std::endl
-                          << "Error: "
-                          << "Too many arguments provided to imeta qu for the -R option.  Only one KVP pair allowed in search."
-                          << std::endl
+                std::cerr << "Error: "
+                          << "Too many arguments provided to imeta qu for the -R option. Only one KVP allowed in search."
                           << std::endl;
                 return SYS_INVALID_INPUT_PARAM;
             }
@@ -2003,10 +1998,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
         } else {
 
             if (_sub_args.size() > 4) {
-                std::cout << std::endl
-                          << "Error: "
-                          << "Too many arguments provided to imeta qu for the -u option.  Only one KVP pair allowed in search."
-                          << std::endl
+                std::cerr << "Error: "
+                          << "Too many arguments provided to imeta qu for the -u option. Only one KVP allowed in search."
                           << std::endl;
                 return SYS_INVALID_INPUT_PARAM;
             }
@@ -2043,10 +2036,8 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type_1"].as<std::string>() != "-C" &&
              sub_vm["object_type_1"].as<std::string>() != "-R" &&
              sub_vm["object_type_1"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No first object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -2056,19 +2047,16 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
              sub_vm["object_type_2"].as<std::string>() != "-C" &&
              sub_vm["object_type_2"].as<std::string>() != "-R" &&
              sub_vm["object_type_2"].as<std::string>() != "-u" ) ) {
-            std::cout << std::endl
-                      << "Error: "
+            std::cerr << "Error: "
                       << "No second object type descriptor (-d/C/R/u) specified"
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
 
         if ( !sub_vm.count( "name_2" ) ) {
-            std::cout << std::endl
-                      << "Error: Not enough arguments provided to "
+            std::cerr << "Error: "
+                      << "Not enough arguments provided to "
                       << _cmd
-                      << std::endl
                       << std::endl;
             return SYS_INVALID_INPUT_PARAM;
         }
@@ -2103,7 +2091,7 @@ int do_command(const std::string& _cmd, const std::vector<std::string>& _sub_arg
     } else if ( _cmd.empty() ) {
         return -3;
     } else {
-        std::cout << "unrecognized subcommand '"
+        std::cerr << "Unrecognized subcommand '"
                   << _cmd
                   << "', try 'imeta help'"
                   << std::endl;
@@ -2595,11 +2583,9 @@ po::variables_map parse_sub_args(const std::vector<std::string>& _sub_args,
         return sub_vm;
     }
     catch (po::error& _e) {
-        std::cout << std::endl
-            << "Error: "
-            << _e.what()
-            << std::endl
-            << std::endl;
+        std::cerr << "Error: "
+                  << _e.what()
+                  << std::endl;
         THROW( SYS_INVALID_INPUT_PARAM, _e.what() );
     }
 }
