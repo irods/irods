@@ -423,7 +423,7 @@ int main(
 
 
         zmq::message_t rep;
-        // wait for the server reponse
+        // wait for the server response
         try {
             if (!zmq_skt.recv( &rep )) {
                 std::cerr << "ZeroMQ encountered an error receiving a message.\n";
