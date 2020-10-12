@@ -7,7 +7,7 @@ from .. import six
 
 def check_command_output(command_arg, stdout, stderr, check_type='EMPTY', expected_results='', use_regex=False):
     assert check_type in ['EMPTY', 'STDOUT', 'STDERR', 'STDOUT_SINGLELINE',
-                          'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE'], check_type
+                          'STDERR_SINGLELINE', 'STDOUT_MULTILINE', 'STDERR_MULTILINE', 'EMPTY_STDOUT'], check_type
 
     if isinstance(expected_results, six.string_types):
         expected_results = [expected_results]
@@ -21,7 +21,7 @@ def check_command_output(command_arg, stdout, stderr, check_type='EMPTY', expect
     print('  stderr:')
     print('    | ' + '\n    | '.join(stderr.splitlines()))
 
-    if check_type not in ['STDERR', 'STDERR_SINGLELINE', 'STDERR_MULTILINE'] and stderr != '':
+    if check_type not in ['STDERR', 'STDERR_SINGLELINE', 'STDERR_MULTILINE', 'EMPTY_STDOUT'] and stderr != '':
         print('Unexpected output on stderr\n')
         return False
 
@@ -65,7 +65,7 @@ def check_command_output(command_arg, stdout, stderr, check_type='EMPTY', expect
                     return True
             print('Output not found\n')
             return False
-    elif check_type == 'EMPTY':
+    elif check_type in ['EMPTY', 'EMPTY_STDOUT']:
         if stdout == '':
             print('Output found\n')
             return True
