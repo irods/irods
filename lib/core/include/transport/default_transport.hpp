@@ -3,7 +3,6 @@
 
 #undef NAMESPACE_IMPL
 #undef rxComm
-#undef rxDataObjOpen
 #undef rxDataObjRead
 #undef rxDataObjWrite
 #undef rxDataObjLseek
@@ -15,7 +14,6 @@
     #include "rs_replica_open.hpp"
     #include "rs_replica_close.hpp"
 
-    #include "rsDataObjOpen.hpp"
     #include "rsDataObjRead.hpp"
     #include "rsDataObjWrite.hpp"
     #include "rsDataObjLseek.hpp"
@@ -24,7 +22,6 @@
 
     #define rxComm                          rsComm_t
 
-    #define rxDataObjOpen                   rsDataObjOpen
     #define rxDataObjRead                   rsDataObjRead
     #define rxDataObjWrite                  rsDataObjWrite
     #define rxDataObjLseek                  rsDataObjLseek
@@ -34,7 +31,6 @@
     #include "replica_open.h"
     #include "replica_close.h"
 
-    #include "dataObjOpen.h"
     #include "dataObjRead.h"
     #include "dataObjWrite.h"
     #include "dataObjLseek.h"
@@ -43,7 +39,6 @@
 
     #define rxComm                          rcComm_t
 
-    #define rxDataObjOpen                   rcDataObjOpen
     #define rxDataObjRead                   rcDataObjRead
     #define rxDataObjWrite                  rcDataObjWrite
     #define rxDataObjLseek                  rcDataObjLseek
