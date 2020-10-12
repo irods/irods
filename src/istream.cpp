@@ -123,16 +123,19 @@ auto usage() -> void
                  "always flow through the connected server.\n"
                  "\n"
                  "Options:\n"
-                 "-R, --resource  The root resource to read from or write to.\n"
+                 "-R, --resource  The root resource to read from or write to.  Cannot be used\n"
+                 "                with --replica.\n"
                  "-n, --replica   The replica number of the replica to read from or write to.\n"
                  "                Replica numbers cannot be used to create new data objects.\n"
+                 "                Cannot be used with --resource.\n"
                  "-o, --offset    The number of bytes to skip within the data object before\n"
                  "                reading/writing.  Value must be positive.  Defaults to zero.\n"
                  "-c, --count     The number of bytes to read/write.  Value must be positive.\n"
                  "                Defaults to all bytes.\n"
-                 "-a, --append    Appends bytes read from stdin to the data object.\n"
+                 "-a, --append    Appends bytes read from stdin to the data object.  Implies\n"
+                 "                --no-trunc.\n"
                  "    --no-trunc  Does not truncate the data object.  Disables creation of data\n"
-                 "                objects.\n"
+                 "                objects.  Ignored by write operations when --append is set.\n"
                  "-k, --checksum  Compute checksum.\n"
                  "-h, --help      Prints this message\n";
 
@@ -243,12 +246,12 @@ auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int
 auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int
 {
     if (vm["append"].as<bool>()) {
-        std::cerr << "Error: Invalid argument on read [append].\n";
+        std::cerr << "Error: Invalid option on read: --append\n";
         return 1;
     }
 
     if (vm["no-trunc"].as<bool>()) {
-        std::cerr << "Error: Invalid argument on read [no-trunc].\n";
+        std::cerr << "Error: Invalid option on read: --no-trunc.\n";
         return 1;
     }
 
@@ -265,6 +268,11 @@ auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::def
     io::idstream in;
 
     if (vm.count("resource")) {
+        if (vm.count("replica")) {
+            std::cerr << "Error: --resource and --replica cannot be used together.\n";
+            return 1;
+        }
+
         in.open(tp, path, io::root_resource_name{vm["resource"].as<std::string>()});
     }
     else if (vm.count("replica")) {
@@ -302,7 +310,7 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     auto mode = std::ios_base::out;
 
     if (vm["append"].as<bool>()) {
-        mode = std::ios_base::app;
+        mode |= std::ios_base::app;
     }
     else if (vm["no-trunc"].as<bool>()) {
         mode |= std::ios_base::in;
@@ -321,6 +329,11 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     io::odstream out;
     
     if (vm.count("resource")) {
+        if (vm.count("replica")) {
+            std::cerr << "Error: --resource and --replica cannot be used together.\n";
+            return 1;
+        }
+
         out.open(tp, path, io::root_resource_name{vm["resource"].as<std::string>()}, mode);
     }
     else if (vm.count("replica")) {
