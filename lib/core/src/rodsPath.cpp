@@ -31,6 +31,15 @@ parseRodsPathStr( const char *inPath, rodsEnv *myRodsEnv, char *outPath ) {
     int status;
     rodsPath_t rodsPath;
 
+    if ( inPath == NULL) {
+        rodsLog( LOG_ERROR,
+                 "parseRodsPathStr: NULL inPath input" );
+        return USER__NULL_INPUT_ERR;
+    } else if ( strnlen(inPath, MAX_NAME_LEN) >= MAX_NAME_LEN - 1) {
+        rodsLog( LOG_ERROR,
+                 "parseRodsPath: parsing error - path too long" );
+        return USER_PATH_EXCEEDS_MAX;
+    }
     rstrcpy( rodsPath.inPath, inPath, MAX_NAME_LEN );
 
     status = parseRodsPath( &rodsPath, myRodsEnv );
@@ -173,7 +182,9 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
             *tmpPtr2 = '\0';
         }
         rodsPath->objType = COLL_OBJ_T;
-        if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
+        if ( strnlen(rodsPath->outPath, MAX_PATH_ALLOWED) >= MAX_PATH_ALLOWED - 1) {
+            rodsLog( LOG_ERROR,
+                     "parseRodsPath: parsing error - path too long" );
             return USER_PATH_EXCEEDS_MAX;
         }
         return 0;
@@ -184,7 +195,9 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
     if ( ( tmpPtr2 = strstr( tmpPtr1 - 2, "/." ) ) != NULL ) {
         *tmpPtr2 = '\0';
         rodsPath->objType = COLL_OBJ_T;
-        if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
+        if ( strnlen(rodsPath->outPath, MAX_PATH_ALLOWED) >= MAX_PATH_ALLOWED - 1) {
+            rodsLog( LOG_ERROR,
+                     "parseRodsPath: parsing error - path too long" );
             return USER_PATH_EXCEEDS_MAX;
         }
         return 0;
@@ -193,12 +206,16 @@ parseRodsPath( rodsPath_t *rodsPath, rodsEnv *myRodsEnv ) {
     if ( *( tmpPtr1 - 1 ) == '/' && len > 1 ) {
         *( tmpPtr1 - 1 ) = '\0';
         rodsPath->objType = COLL_OBJ_T;
-        if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
+        if ( strnlen(rodsPath->outPath, MAX_PATH_ALLOWED) >= MAX_PATH_ALLOWED - 1) {
+            rodsLog( LOG_ERROR,
+                     "parseRodsPath: parsing error - path too long" );
             return USER_PATH_EXCEEDS_MAX;
         }
         return 0;
     }
-    if ( strlen( rodsPath->outPath ) >= MAX_PATH_ALLOWED - 1 ) {
+    if ( strnlen(rodsPath->outPath, MAX_PATH_ALLOWED) >= MAX_PATH_ALLOWED - 1) {
+        rodsLog( LOG_ERROR,
+                 "parseRodsPath: parsing error - path too long" );
         return USER_PATH_EXCEEDS_MAX;
     }
     return 0;
