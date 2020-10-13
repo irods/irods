@@ -61,7 +61,7 @@ std::tuple<int, std::string> prepare_name(std::string_view object_type, std::str
     const auto is_path_type = [object_type]() noexcept
     {
         using namespace std::string_view_literals;
-        const auto types = {"-d"sv, "-C"sv, "-ld"sv};
+        const auto types = {"-d"sv, "-C"sv, "-ld"sv, "-lC"sv};
         return std::any_of(std::begin(types), std::end(types), [object_type](auto type) {
             return type == object_type;
         });
