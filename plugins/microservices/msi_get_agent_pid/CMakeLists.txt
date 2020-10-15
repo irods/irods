@@ -21,6 +21,8 @@ target_include_directories(${IRODS_PLUGIN_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/li
 
 target_link_libraries(${IRODS_PLUGIN_TARGET} PRIVATE irods_server
                                                      irods_common
+                                                     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_filesystem.so
+                                                     ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
                                                      ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so)
 
 install(TARGETS ${IRODS_PLUGIN_TARGET}
