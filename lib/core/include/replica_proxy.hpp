@@ -74,17 +74,17 @@ namespace irods::experimental::replica
         /// \retval condInput for the DataObjInfo node as a key_value_proxy
         ///
         /// \since 4.2.9
-        auto cond_input()       const -> key_value_proxy<const keyValPair_t>
+        auto cond_input()       const -> key_value_proxy<const KeyValPair>
         {
-            return make_key_value_proxy(doi_->condInput);
+            return make_key_value_proxy<const KeyValPair>(doi_->condInput);
         }
 
-        /// \returns const specColl_t*
+        /// \returns const SpecColl*
         ///
         /// \retval specColl pointer for the DataObjInfo node
         ///
         /// \since 4.2.9
-        auto special_collection_info() const noexcept -> const specColl_t*
+        auto special_collection_info() const noexcept -> const SpecColl*
         {
             return doi_->specColl;
         }
@@ -269,12 +269,12 @@ namespace irods::experimental::replica
         template<
             typename P = doi_type,
             typename = std::enable_if_t<!std::is_const_v<P>>>
-        auto cond_input() -> key_value_proxy<keyValPair_t>
+        auto cond_input() -> key_value_proxy<KeyValPair>
         {
             return make_key_value_proxy(doi_->condInput);
         }
 
-        /// \returns specColl_t*
+        /// \returns SpecColl*
         ///
         /// \retval specColl pointer for the DataObjInfo node
         ///
@@ -282,7 +282,7 @@ namespace irods::experimental::replica
         template<
             typename P = doi_type,
             typename = std::enable_if_t<!std::is_const_v<P>>>
-        auto special_collection_info() -> specColl_t*
+        auto special_collection_info() -> SpecColl*
         {
             return doi_->specColl;
         }
@@ -448,6 +448,52 @@ namespace irods::experimental::replica
 
         return {replica_proxy{*doi}, lifetime_manager{*doi}};
     } // make_replica_proxy
+
+    /// \brief Takes an existing replica_proxy and duplicates the underlying struct.
+    ///
+    /// \param[in] _replica replica to duplicate
+    ///
+    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    ///
+    /// \since 4.2.9
+    static auto duplicate_replica(const DataObjInfo& _replica)
+        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    {
+        DataObjInfo* curr = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
+        std::memset(curr, 0, sizeof(DataObjInfo));
+        std::memcpy(curr, &_replica, sizeof(DataObjInfo));
+
+        // Do not maintain the linked list - muy peligroso
+        curr->next = nullptr;
+
+        replKeyVal(&_replica.condInput, &curr->condInput);
+
+        if (_replica.specColl) {
+            SpecColl* tmp_sc = static_cast<SpecColl*>(std::malloc(sizeof(SpecColl)));
+            std::memset(tmp_sc, 0, sizeof(SpecColl));
+            std::memcpy(tmp_sc, _replica.specColl, sizeof(SpecColl));
+            curr->specColl = tmp_sc;
+        }
+
+        if (!curr) {
+            THROW(SYS_INTERNAL_ERR, "list remains unpopulated");
+        }
+
+        return {replica_proxy{*curr}, lifetime_manager{*curr}};
+    } // duplicate_replica
+
+    /// \brief Takes an existing replica_proxy and duplicates the underlying struct.
+    ///
+    /// \param[in] _replica replica to duplicate
+    ///
+    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    ///
+    /// \since 4.2.9
+    static auto duplicate_replica(const replica_proxy<DataObjInfo> _replica)
+        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    {
+        return duplicate_replica(*_replica.get());
+    } // duplicate_replica
 
     template<typename doi_type>
     static auto to_json(const replica_proxy<doi_type>& _proxy) -> nlohmann::json

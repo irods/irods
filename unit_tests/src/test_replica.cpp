@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "client_connection.hpp"
+#include "data_object_proxy.hpp"
 #include "dstream.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "replica.hpp"
@@ -15,11 +16,10 @@
 #include <string_view>
 #include <thread>
 
-#define very_long_string "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-
 namespace fs = irods::experimental::filesystem;
 namespace io = irods::experimental::io;
 namespace replica = irods::experimental::replica;
+namespace data_object = irods::experimental::data_object;
 
 // IMPORTANT NOTE REGARDING THE CLIENT_CONNECTION OBJECTS
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,37 +92,8 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("perform library operations using replica number")
     {
-        constexpr int invalid_replica_number = -1;
-
         irods::experimental::client_connection conn;
         RcComm& comm = static_cast<RcComm&>(conn);
-
-        // invalid inputs
-        REQUIRE_THROWS(replica::replica_exists(comm, std::string{}, second_replica));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, std::string{}, second_replica));
-        REQUIRE_THROWS(replica::replica_checksum(comm, std::string{}, second_replica));
-        REQUIRE_THROWS(replica::last_write_time(comm, std::string{}, second_replica));
-        REQUIRE_THROWS(replica::replica_status(comm, std::string{}, second_replica));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, very_long_string, second_replica));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, very_long_string, second_replica));
-        REQUIRE_THROWS(replica::replica_checksum(comm, very_long_string, second_replica));
-        REQUIRE_THROWS(replica::last_write_time(comm, very_long_string, second_replica));
-        REQUIRE_THROWS(replica::replica_status(comm, very_long_string, second_replica));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, sandbox, second_replica));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, sandbox, second_replica));
-        REQUIRE_THROWS(replica::replica_checksum(comm, sandbox, second_replica));
-        REQUIRE_THROWS(replica::last_write_time(comm, sandbox, second_replica));
-        REQUIRE_THROWS(replica::replica_status(comm, sandbox, second_replica));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, target_object, invalid_replica_number));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, target_object, invalid_replica_number));
-        REQUIRE_THROWS(replica::replica_checksum(comm, target_object, invalid_replica_number));
-        REQUIRE_THROWS(replica::last_write_time(comm, target_object, invalid_replica_number));
-        REQUIRE_THROWS(replica::replica_status(comm, target_object, invalid_replica_number));
-
-        REQUIRE(std::nullopt == replica::to_leaf_resource(comm, target_object, 42));
 
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, second_replica));
@@ -133,6 +104,7 @@ TEST_CASE("replica", "[replica]")
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, second_replica));
         REQUIRE(object_content.length() == replica::replica_size(comm, target_object, second_replica));
+        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, second_replica));
 
         // checksum a specific replica
         REQUIRE(replica::replica_checksum(comm, target_object, second_replica) == expected_checksum);
@@ -147,6 +119,7 @@ TEST_CASE("replica", "[replica]")
 
         // show that the replica was updated
         REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, second_replica));
+        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, second_replica));
 
         // show that the checksum has not updated in the catalog, yet
         REQUIRE(replica::replica_checksum(comm, target_object, second_replica) == expected_checksum);
@@ -177,36 +150,8 @@ TEST_CASE("replica", "[replica]")
 
     SECTION("perform library operations using resource name")
     {
-
         irods::experimental::client_connection conn;
         RcComm& comm = static_cast<RcComm&>(conn);
-
-        // invalid inputs
-        REQUIRE_THROWS(replica::replica_exists(comm, std::string{}, resc_name));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, std::string{}, resc_name));
-        REQUIRE_THROWS(replica::replica_checksum(comm, std::string{}, resc_name));
-        REQUIRE_THROWS(replica::last_write_time(comm, std::string{}, resc_name));
-        REQUIRE_THROWS(replica::replica_status(comm, std::string{}, resc_name));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, very_long_string, resc_name));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, very_long_string, resc_name));
-        REQUIRE_THROWS(replica::replica_checksum(comm, very_long_string, resc_name));
-        REQUIRE_THROWS(replica::last_write_time(comm, very_long_string, resc_name));
-        REQUIRE_THROWS(replica::replica_status(comm, very_long_string, resc_name));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, sandbox, resc_name));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, sandbox, resc_name));
-        REQUIRE_THROWS(replica::replica_checksum(comm, sandbox, resc_name));
-        REQUIRE_THROWS(replica::last_write_time(comm, sandbox, resc_name));
-        REQUIRE_THROWS(replica::replica_status(comm, sandbox, resc_name));
-
-        REQUIRE_THROWS(replica::replica_exists(comm, target_object, std::string{}));
-        REQUIRE_THROWS(replica::is_replica_empty(comm, target_object, std::string{}));
-        REQUIRE_THROWS(replica::replica_checksum(comm, target_object, std::string{}));
-        REQUIRE_THROWS(replica::last_write_time(comm, target_object, std::string{}));
-        REQUIRE_THROWS(replica::replica_status(comm, target_object, std::string{}));
-
-        REQUIRE(std::nullopt == replica::to_replica_number(comm, target_object, "nope"));
 
         // existence
         REQUIRE(replica::replica_exists(comm, target_object, resc_name));
@@ -217,6 +162,7 @@ TEST_CASE("replica", "[replica]")
         // size
         REQUIRE(!replica::is_replica_empty(comm, target_object, resc_name));
         REQUIRE(object_content.length() == replica::replica_size(comm, target_object, resc_name));
+        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name));
 
         // checksum a specific replica
         REQUIRE(replica::replica_checksum(comm, target_object, resc_name) == expected_checksum);
@@ -230,7 +176,8 @@ TEST_CASE("replica", "[replica]")
         }
 
         // show that the replica was updated
-        REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, second_replica));
+        REQUIRE(updated_object_content.length() == replica::replica_size(comm, target_object, resc_name));
+        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name));
 
         // show that the checksum has not updated in the catalog, yet
         REQUIRE(replica::replica_checksum(comm, target_object, resc_name) == expected_checksum);
@@ -257,6 +204,156 @@ TEST_CASE("replica", "[replica]")
 
         // get replica number from resource name
         REQUIRE(second_replica == replica::to_replica_number(comm, target_object, resc_name));
+    }
+
+    SECTION("size in storage")
+    {
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
+
+        // get info from the catalog once
+        auto result = replica::get_data_object_info(comm, target_object, resc_name).front();
+
+        std::string_view physical_path = result[replica::detail::genquery_column_index::DATA_PATH];
+
+        // size in storage
+        REQUIRE(object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
+
+        // overwrite second replica with new contents
+        {
+            std::ios_base::openmode mode = std::ios_base::out | std::ios_base::trunc;
+            io::client::default_transport tp{comm};
+            io::odstream{tp, target_object, io::leaf_resource_name{resc_name.data()}, mode} << updated_object_content;
+        }
+
+        // show that the replica was updated
+        REQUIRE(updated_object_content.length() == replica::get_replica_size_from_storage(comm, target_object, resc_name, physical_path));
+    }
+
+    SECTION("data objects")
+    {
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
+
+        rodsLong_t data_id;
+
+        {
+            auto [obj, obj_lm] = data_object::make_data_object_proxy(comm, target_object);
+            data_id = obj.data_id();
+            REQUIRE(obj.logical_path() == target_object.c_str());
+        }
+
+        {
+            auto [obj, obj_lm] = data_object::make_data_object_proxy(comm, data_id);
+            CHECK(obj.logical_path() == target_object.c_str());
+            CHECK(data_id == obj.data_id());
+        }
+    }
+
+    SECTION("invalid inputs")
+    {
+        irods::experimental::client_connection conn;
+        RcComm& comm = static_cast<RcComm&>(conn);
+
+        const char* very_long_string = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                                       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+        constexpr int invalid_replica_number = -1;
+
+        CHECK_THROWS(replica::replica_exists(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::is_replica_empty(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::replica_checksum(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::last_write_time(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::replica_status(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, std::string{}, second_replica));
+        CHECK_THROWS(replica::get_data_object_info(comm, std::string{}, second_replica));
+
+        CHECK_THROWS(replica::replica_exists(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::is_replica_empty(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::replica_checksum(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::last_write_time(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::replica_status(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, very_long_string, second_replica));
+        CHECK_THROWS(replica::get_data_object_info(comm, very_long_string, second_replica));
+
+        CHECK_THROWS(replica::replica_exists(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::is_replica_empty(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::replica_checksum(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::last_write_time(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::replica_status(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, sandbox, second_replica));
+        CHECK_THROWS(replica::get_data_object_info(comm, sandbox, second_replica));
+
+        CHECK_THROWS(replica::replica_exists(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::is_replica_empty(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::replica_checksum(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::last_write_time(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::replica_status(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, target_object, invalid_replica_number));
+        CHECK_THROWS(replica::get_data_object_info(comm, target_object, invalid_replica_number));
+
+        CHECK_THROWS(replica::replica_exists(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::is_replica_empty(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::replica_checksum(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::last_write_time(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::replica_status(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::get_data_object_info(comm, std::string{}, resc_name));
+
+        CHECK_THROWS(replica::replica_exists(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::is_replica_empty(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::replica_checksum(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::last_write_time(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::replica_status(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::get_data_object_info(comm, very_long_string, resc_name));
+
+        CHECK_THROWS(replica::replica_exists(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::is_replica_empty(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::replica_checksum(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::last_write_time(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::replica_status(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::get_data_object_info(comm, sandbox, resc_name));
+
+        CHECK_THROWS(replica::replica_exists(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::is_replica_empty(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::replica_checksum(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::last_write_time(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::replica_status(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, target_object, std::string{}));
+        CHECK_THROWS(replica::get_data_object_info(comm, target_object, std::string{}));
+
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, std::string{}, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, very_long_string, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, sandbox, resc_name));
+        CHECK_THROWS(replica::get_replica_size_from_storage(comm, target_object, std::string{}));
+
+        CHECK(std::nullopt == replica::to_leaf_resource(comm, target_object, 42));
+        CHECK(std::nullopt == replica::to_replica_number(comm, target_object, "nope"));
     }
 }
 
