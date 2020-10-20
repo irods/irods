@@ -1189,8 +1189,10 @@ getInput( char *cmdToken[], int maxTokens ) {
     char *cpTokenStart;
     char *stat;
 
+    std::cerr << std::flush;
     memset( ttybuf, 0, BIG_STR );
     fputs( "imeta>", stdout );
+    std::cout << std::flush;
     stat = fgets( ttybuf, BIG_STR, stdin );
     if ( stat == 0 ) {
         printf( "\n" );
