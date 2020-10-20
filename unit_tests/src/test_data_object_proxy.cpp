@@ -28,34 +28,66 @@ TEST_CASE("test_replica_proxy", "[lib]")
     dataObjInfo_t r0{};
     r0.dataId = DATA_ID_1;
     r0.collId = COLL_ID_1;
+    r0.replNum = 0;
     std::snprintf(r0.objPath, sizeof(r0.objPath), "%s", LOGICAL_PATH_1.data());
     std::snprintf(r0.rescName, sizeof(r0.rescName), "%s", RESC_1.data());
 
     auto rp = replica::make_replica_proxy(r0);
 
-    // access
-    CHECK(&r0            == rp.get());
-    CHECK(DATA_ID_1      == rp.data_id());
-    CHECK(COLL_ID_1      == rp.collection_id());
-    CHECK(LOGICAL_PATH_1 == rp.logical_path());
-    CHECK(RESC_1         == rp.resource());
+    SECTION("test lib")
+    {
+        // access
+        CHECK(&r0            == rp.get());
+        CHECK(DATA_ID_1      == rp.data_id());
+        CHECK(COLL_ID_1      == rp.collection_id());
+        CHECK(LOGICAL_PATH_1 == rp.logical_path());
+        CHECK(RESC_1         == rp.resource());
 
-    // modification
-    rp.data_id(DATA_ID_2);
-    CHECK(DATA_ID_2 == rp.data_id());
-    CHECK(DATA_ID_2 == r0.dataId);
+        // modification
+        rp.data_id(DATA_ID_2);
+        CHECK(DATA_ID_2 == rp.data_id());
+        CHECK(DATA_ID_2 == r0.dataId);
 
-    rp.collection_id(COLL_ID_2);
-    CHECK(COLL_ID_2 == rp.collection_id());
-    CHECK(COLL_ID_2 == r0.collId);
+        rp.collection_id(COLL_ID_2);
+        CHECK(COLL_ID_2 == rp.collection_id());
+        CHECK(COLL_ID_2 == r0.collId);
 
-    rp.logical_path(LOGICAL_PATH_2);
-    CHECK(LOGICAL_PATH_2 == rp.logical_path());
-    CHECK(LOGICAL_PATH_2 == r0.objPath);
+        rp.logical_path(LOGICAL_PATH_2);
+        CHECK(LOGICAL_PATH_2 == rp.logical_path());
+        CHECK(LOGICAL_PATH_2 == r0.objPath);
 
-    rp.resource(RESC_2);
-    CHECK(RESC_2 == rp.resource());
-    CHECK(RESC_2 == r0.rescName);
+        rp.resource(RESC_2);
+        CHECK(RESC_2 == rp.resource());
+        CHECK(RESC_2 == r0.rescName);
+    }
+
+    SECTION("test duplication")
+    {
+        auto [dup, lm] = replica::duplicate_replica(r0);
+
+        // replica-level access
+        CHECK(DATA_ID_1       == dup.data_id());
+        CHECK(COLL_ID_1       == dup.collection_id());
+        CHECK(LOGICAL_PATH_1  == dup.logical_path());
+        CHECK(RESC_1          == dup.resource());
+
+        // ensure that these are new structs
+        CHECK(&r0             != dup.get());
+
+        // modification
+        dup.data_id(DATA_ID_2);
+        dup.collection_id(COLL_ID_2);
+        dup.logical_path(LOGICAL_PATH_2);
+        CHECK(DATA_ID_2 == dup.data_id());
+        CHECK(COLL_ID_2 == dup.collection_id());
+        CHECK(LOGICAL_PATH_2 == dup.logical_path());
+
+        // ensure that original structs did not change
+        CHECK(DATA_ID_1 == r0.dataId);
+        CHECK(COLL_ID_1 == r0.collId);
+        CHECK(LOGICAL_PATH_1 == r0.objPath);
+    }
+
 }
 
 TEST_CASE("test_data_object_proxy", "[lib]")
@@ -63,6 +95,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
     dataObjInfo_t r0{};
     r0.dataId = DATA_ID_1;
     r0.collId = COLL_ID_1;
+    r0.replNum = 0;
     std::snprintf(r0.objPath, sizeof(r0.objPath), "%s", LOGICAL_PATH_1.data());
     std::snprintf(r0.rescName, sizeof(r0.rescName), "%s", RESC_1.data());
     std::snprintf(r0.rescHier, sizeof(r0.rescHier), "%s", RESC_1.data());
@@ -70,6 +103,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
     dataObjInfo_t r1{};
     r1.dataId = DATA_ID_1;
     r1.collId = COLL_ID_1;
+    r1.replNum = 1;
     std::snprintf(r1.objPath, sizeof(r1.objPath), "%s", LOGICAL_PATH_1.data());
     std::snprintf(r1.rescName, sizeof(r1.rescName), "%s", RESC_2.data());
     std::snprintf(r1.rescHier, sizeof(r1.rescHier), "%s", RESC_2.data());
@@ -95,6 +129,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         CHECK(COLL_ID_1       == o_r0.collection_id());
         CHECK(LOGICAL_PATH_1  == o_r0.logical_path());
         CHECK(RESC_1          == o_r0.resource());
+        CHECK(0               == o_r0.replica_number());
 
         const auto& o_r1 = o.replicas()[1];
         CHECK(&r1             == o_r1.get());
@@ -102,6 +137,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         CHECK(COLL_ID_1       == o_r1.collection_id());
         CHECK(LOGICAL_PATH_1  == o_r1.logical_path());
         CHECK(RESC_2          == o_r1.resource());
+        CHECK(1               == o_r1.replica_number());
 
         // modification
         o.data_id(DATA_ID_2);
@@ -174,6 +210,17 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         CHECK(LOGICAL_PATH_1 == r0.objPath);
     }
 
+    SECTION("test duplication memory allocation")
+    {
+        // lifetime_managers should not conflict
+        auto [dup1, lm1] = data_object::duplicate_data_object(o);
+        auto [dup2, lm2] = data_object::duplicate_data_object(o);
+
+        auto [dup_r, lm_r] = replica::duplicate_replica(o.replicas().back());
+        dup2.add_replica(*lm_r.release());
+        CHECK(REPLICA_COUNT + 1 == dup2.replica_count());
+    }
+
     SECTION("test adding a new replica")
     {
         std::string_view RESC_3 = "anotherResc";
@@ -181,6 +228,7 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         dataObjInfo_t r2{};
         r2.dataId = DATA_ID_1;
         r2.collId = COLL_ID_1;
+        r2.replNum = 2;
         std::snprintf(r2.objPath, sizeof(r2.objPath), "%s", LOGICAL_PATH_1.data());
         std::snprintf(r2.rescName, sizeof(r2.rescName), "%s", RESC_3.data());
 
@@ -195,9 +243,10 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         CHECK(COLL_ID_1       == o_r2.collection_id());
         CHECK(LOGICAL_PATH_1  == o_r2.logical_path());
         CHECK(RESC_3          == o_r2.resource());
+        CHECK(2               == o_r2.replica_number());
     }
 
-    SECTION("test find_replica")
+    SECTION("test find_replica with leaf resource name")
     {
         auto replica = irods::experimental::data_object::find_replica(o, RESC_2);
         REQUIRE(replica);
@@ -205,10 +254,27 @@ TEST_CASE("test_data_object_proxy", "[lib]")
         CHECK(replica->resource() == r1.rescName);
     }
 
+    SECTION("test find_replica with replica number")
+    {
+        auto replica = irods::experimental::data_object::find_replica(o, 1);
+        REQUIRE(replica);
+        CHECK(replica->get() == &r1);
+        CHECK(replica->resource() == r1.rescName);
+    }
+
     SECTION("test find_replica for non-existent replica")
     {
-        auto replica = irods::experimental::data_object::find_replica(o, "nope");
-        REQUIRE(!replica);
+        SECTION("leaf resource name")
+        {
+            auto replica = irods::experimental::data_object::find_replica(o, "nope");
+            REQUIRE(!replica);
+        }
+
+        SECTION("replica number")
+        {
+            auto replica = irods::experimental::data_object::find_replica(o, -1);
+            REQUIRE(!replica);
+        }
     }
 }
 
