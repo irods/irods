@@ -4,16 +4,25 @@
 #ifdef IRODS_REPLICA_ENABLE_SERVER_SIDE_API
     #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
+
     #include "rsDataObjChksum.hpp"
     #include "rsModDataObjMeta.hpp"
+    #include "rsFileStat.hpp"
+
+    #define rxFileStat rsFileStat
 #else
     #undef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
     #undef IRODS_QUERY_ENABLE_SERVER_SIDE_API
+
     #include "dataObjChksum.h"
     #include "modDataObjMeta.h"
+    #include "fileStat.h"
+
+    #define rxFileStat rcFileStat
 #endif
 
 #include "filesystem.hpp"
+#include "irods_at_scope_exit.hpp"
 #include "irods_exception.hpp"
 #include "key_value_proxy.hpp"
 #include "objInfo.h"
@@ -271,7 +280,7 @@ namespace irods::experimental::replica
         /// \param[in] _new_time timestamp to use as last_write_time
         ///
         /// \throws irods::filesystem::filesystem_error if the path is empty or too long
-        /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+        /// \throws irods::exception if the path does not refer to a data object or replica input is invalid
         ///
         /// \since 4.2.9
         template<typename rxComm>
@@ -311,6 +320,41 @@ namespace irods::experimental::replica
                 THROW(ec, fmt::format("cannot set mtime for [{}]", _logical_path.c_str()));
             }
         } // last_write_time_impl
+
+        /// \brief Gets size of the replica's physical representation from storage
+        ///
+        /// \param[in] _comm connection object
+        /// \param[in] _logical_path
+        /// \param[in] _resource_hierarchy
+        /// \param[in] _physical_path
+        ///
+        /// \throws irods::filesystem::filesystem_error if the path is empty or too long
+        /// \throws irods::exception if the path does not refer to a data object or replica input is invalid
+        ///
+        /// \since 4.2.9
+        template<typename rxComm>
+        auto get_replica_size_from_storage_impl(
+            rxComm& _comm,
+            const irods::experimental::filesystem::path& _logical_path,
+            std::string_view _resource_hierarchy,
+            std::string_view _physical_path) -> rodsLong_t
+        {
+            fileStatInp_t stat_inp{};
+            rstrcpy(stat_inp.objPath,  _logical_path.c_str(),      sizeof(stat_inp.objPath));
+            rstrcpy(stat_inp.rescHier, _resource_hierarchy.data(), sizeof(stat_inp.rescHier));
+            rstrcpy(stat_inp.fileName, _physical_path.data(),      sizeof(stat_inp.fileName));
+
+            rodsStat *stat_out{};
+            irods::at_scope_exit free_stat_out{[&stat_out] { free(stat_out); }};
+
+            if (const auto status_rxFileStat = rxFileStat(&_comm, &stat_inp, &stat_out); status_rxFileStat < 0) {
+                THROW(status_rxFileStat, fmt::format(
+                    "rxFileStat of objPath [{}] rescHier [{}] fileName [{}] failed with [{}]",
+                    stat_inp.objPath, stat_inp.rescHier, stat_inp.fileName, status_rxFileStat));
+            }
+
+            return stat_out->st_size;
+        } // get_replica_size_from_storage_impl
     } // namespace detail
 
     /// \brief Gets a row from r_data_main using irods::query
@@ -377,6 +421,40 @@ namespace irods::experimental::replica
         const irods::experimental::filesystem::path& _logical_path) -> query_value_type
     {
         return detail::get_data_object_info_impl(_comm, _logical_path);
+    } // get_data_object_info
+
+    /// \brief Gets a row from r_data_main using irods::query
+    ///
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    ///
+    /// \throws irods::exception If no replica information is found or query fails
+    ///
+    /// \retval Set of results from the query
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_data_object_info(
+        rxComm& _comm,
+        const rodsLong_t _data_id) -> query_value_type
+    {
+        namespace fs = irods::experimental::filesystem;
+
+        const std::string qstr = fmt::format("SELECT COLL_NAME, DATA_NAME where DATA_ID = '{}'", _data_id);
+
+        query_builder qb;
+
+        auto q = qb.build<rxComm>(_comm, qstr);
+        if (q.size() <= 0) {
+            THROW(CAT_NO_ROWS_FOUND, "no replica information found");
+        }
+
+        const auto& result = q.front();
+        const auto& coll_name = result[0];
+        const auto& data_name = result[1];
+        const auto logical_path = fs::path{coll_name} / data_name;
+
+        return detail::get_data_object_info_impl(_comm, logical_path);
     } // get_data_object_info
 
     /// \param[in] _comm connection object
@@ -789,6 +867,79 @@ namespace irods::experimental::replica
 
         return static_cast<int>(std::stoi(status.data()));
     } // replica_status
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _replica_number
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
+    ///
+    /// \returns std::uintmax_t
+    /// \retval size of the data in storage which specified replica represents
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_replica_size_from_storage(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const replica_number_type _replica_number) -> rodsLong_t
+    {
+        const auto result = get_data_object_info(_comm, _logical_path, _replica_number).front();
+
+        std::string_view hierarchy = result[detail::genquery_column_index::DATA_RESC_HIER];
+        std::string_view physical_path = result[detail::genquery_column_index::DATA_PATH];
+
+        return detail::get_replica_size_from_storage_impl(_comm, _logical_path, hierarchy, physical_path);
+    } // get_replica_size_from_storage
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _leaf_resource_name
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
+    ///
+    /// \returns std::uintmax_t
+    /// \retval size of the data in storage which specified replica represents
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_replica_size_from_storage(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        const leaf_resource_name_type& _leaf_resource_name) -> rodsLong_t
+    {
+        const auto result = get_data_object_info(_comm, _logical_path, _leaf_resource_name).front();
+
+        std::string_view hierarchy = result[detail::genquery_column_index::DATA_RESC_HIER];
+        std::string_view physical_path = result[detail::genquery_column_index::DATA_PATH];
+
+        return detail::get_replica_size_from_storage_impl(_comm, _logical_path, hierarchy, physical_path);
+    } // get_replica_size_from_storage
+
+    /// \param[in] _comm connection object
+    /// \param[in] _logical_path
+    /// \param[in] _resource_hierarchy
+    /// \param[in] _physical_path
+    ///
+    /// \throws filesystem_error if the path is empty or too long
+    /// \throws irods::exception if the path does not refer to a data object or leaf resource is invalid
+    ///
+    /// \returns std::uintmax_t
+    /// \retval size of the data in storage which specified replica represents
+    ///
+    /// \since 4.2.9
+    template<typename rxComm>
+    auto get_replica_size_from_storage(
+        rxComm& _comm,
+        const irods::experimental::filesystem::path& _logical_path,
+        std::string_view _resource_hierarchy,
+        std::string_view _physical_path) -> rodsLong_t
+    {
+        return detail::get_replica_size_from_storage_impl(_comm, _logical_path, _resource_hierarchy, _physical_path);
+    } // get_replica_size_from_storage
+
 } // namespace irods::experimental::replica
 
 #endif // #ifndef IRODS_REPLICA_HPP
