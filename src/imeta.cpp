@@ -1336,7 +1336,8 @@ int do_interactive() {
             return num_tokens;
         }
 
-        if ( do_command( cmdToken[0], {cmdToken + 1, cmdToken + num_tokens} ) < 0 ) {
+        int status = do_command( cmdToken[0], {cmdToken + 1, cmdToken + num_tokens} );
+        if (status == -1 ) {
             return 0;
         }
     }
