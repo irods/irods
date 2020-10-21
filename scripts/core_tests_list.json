@@ -15,6 +15,7 @@
     "test_ils",
     "test_imeta_error_handling",
     "test_imeta_help",
+    "test_imeta_interactive",
     "test_imeta_set",
     "test_imv",
     "test_ipasswd",
