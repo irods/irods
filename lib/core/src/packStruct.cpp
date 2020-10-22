@@ -347,8 +347,8 @@ packedOutput_t
 initPackedOutput( const int len ) {
     return {
         .bBuf={
-            .buf=malloc(len),
-            .len=0
+            .len=0,
+            .buf=malloc(len)
         },
         .bufSize=len,
         .nopackBufArray={}
@@ -359,8 +359,8 @@ packedOutput_t
 initPackedOutputWithBuf( void *buf, const int len ) {
     return {
         .bBuf={
-            .buf=buf,
-            .len=0
+            .len=0,
+            .buf=buf
         },
         .bufSize=len,
         .nopackBufArray={}
