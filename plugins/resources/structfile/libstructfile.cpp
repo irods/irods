@@ -1077,8 +1077,8 @@ irods::error tar_file_write(
     // =-=-=-=-=-=-=-
     // build a write structure and make the rs call
     const fileWriteInp_t fileWriteInp{
-        .len = _len,
-        .fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd
+        .fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd,
+        .len = _len
     };
     const bytesBuf_t fileWriteInpBBuf{
         .len = _len,
