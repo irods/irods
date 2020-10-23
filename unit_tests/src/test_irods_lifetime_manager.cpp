@@ -110,7 +110,7 @@ TEST_CASE("test_rError_t", "[lib]")
     for (const auto& err_ : errs) {
         addRErrorMsg(err, std::get<int>(err_), std::get<std::string>(err_).c_str());
     }
-    REQUIRE(errs.size() == err->len);
+    REQUIRE(static_cast<int>(errs.size()) == err->len);
     for (int i = 0; i < err->len; i++) {
         REQUIRE(std::get<int>(errs[i]) == err->errMsg[i]->status);
         REQUIRE(std::get<std::string>(errs[i]) == err->errMsg[i]->msg);
