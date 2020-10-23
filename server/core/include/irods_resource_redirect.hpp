@@ -9,15 +9,17 @@
 #include "irods_file_object.hpp"
 #include "irods_log.hpp"
 
-namespace irods {
-
-    using file_object_factory_result = std::tuple<irods::file_object_ptr, irods::error>;
+namespace irods
+{
+    // clang-format off
+    using file_object_factory_result    = std::tuple<irods::file_object_ptr, irods::error>;
     using resolve_hierarchy_result_type = std::tuple<irods::file_object_ptr, std::string>;
+    // clang-format on
 
-    const std::string CREATE_OPERATION( "CREATE" );
-    const std::string WRITE_OPERATION( "WRITE" );
-    const std::string OPEN_OPERATION( "OPEN" );
-    const std::string UNLINK_OPERATION( "UNLINK" );
+    extern const std::string CREATE_OPERATION;
+    extern const std::string WRITE_OPERATION;
+    extern const std::string OPEN_OPERATION;
+    extern const std::string UNLINK_OPERATION;
 
     error resource_redirect(
         const std::string&, // requested operation to consider
@@ -39,10 +41,6 @@ namespace irods {
         const std::string&   oper_in,
         dataObjInp_t&        data_obj_inp,
         irods::file_object_factory_result& file_obj_result);
-
-}; // namespace irods
+} // namespace irods
 
 #endif // __IRODS_RESOURCE_REDIRECT_HPP__
-
-
-

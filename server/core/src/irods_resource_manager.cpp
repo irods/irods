@@ -32,24 +32,38 @@
 // global singleton
 irods::resource_manager resc_mgr;
 
-namespace irods {
-// =-=-=-=-=-=-=-
-// public - Constructor
+namespace irods
+{
+    const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
+    const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
+
+    // =-=-=-=-=-=-=-
+    /// @brief definition of the resource interface
+    const std::string RESOURCE_INTERFACE( "irods_resource_interface" );
+
+    // =-=-=-=-=-=-=-
+    /// @brief special resource for local file system operations only
+    const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
+    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/irods/LOCAL_USE_ONLY_RESOURCE_VAULT" );
+    const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
+
+    // =-=-=-=-=-=-=-
+    // public - Constructor
     resource_manager::resource_manager() {
     } // ctor
 
-// =-=-=-=-=-=-=-
-// public - Copy Constructor
+    // =-=-=-=-=-=-=-
+    // public - Copy Constructor
     resource_manager::resource_manager( const resource_manager& ) {
     } // cctor
 
-// =-=-=-=-=-=-=-
-// public - Destructor
+    // =-=-=-=-=-=-=-
+    // public - Destructor
     resource_manager::~resource_manager( ) {
     } // cctor
 
-// =-=-=-=-=-=-=-
-// public - retrieve a resource given its key
+    // =-=-=-=-=-=-=-
+    // public - retrieve a resource given its key
     error resource_manager::resolve(
         std::string   _key,
         resource_ptr& _value ) {
@@ -1333,5 +1347,4 @@ namespace irods {
         resource_ptr resc = resource_name_map_[_resc_name];
         return resc->num_children() > 0;
     } // is_coordinating_resource
-
-}; // namespace irods
+} // namespace irods
