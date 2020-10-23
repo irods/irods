@@ -159,9 +159,9 @@ main( int argc, char **argv ) {
         status = showUser(argv[myRodsArgs.optind]);
     }
     else {
-        const auto user_name{(boost::format("%s#%s") %
-                              myEnv.rodsUserName % myEnv.rodsZone).str().c_str()};
-        status = showUser(user_name);
+        const std::string user_name = (boost::format("%s#%s") %
+                                       myEnv.rodsUserName % myEnv.rodsZone).str();
+        status = showUser(user_name.c_str());
     }
 
     printErrorStack( Conn->rError );
