@@ -338,7 +338,7 @@ TEST_CASE("path lexical operations", "[lexical operations]")
             DYNAMIC_SECTION("normal form of path [" << p << "]")
             {
                 namespace std_fs = std::filesystem;
-                REQUIRE(std_fs::path{p}.lexically_normal() == fs::path{p}.lexically_normal());
+                REQUIRE(std_fs::path{p}.lexically_normal().string() == fs::path{p}.lexically_normal().string());
             }
         }
 #else
