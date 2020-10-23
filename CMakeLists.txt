@@ -828,6 +828,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_postgres_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_generic_database_object.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_backport.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_constants.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_manager.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_resource_plugin_impostor.cpp
@@ -948,6 +949,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_keywords.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_default_paths.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_environment_properties.cpp
@@ -1110,6 +1112,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_keywords.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_default_paths.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_environment_properties.cpp

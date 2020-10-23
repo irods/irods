@@ -18,8 +18,8 @@
 
 #include "fmt/format.h"
 
-namespace {
-
+namespace
+{
     std::string get_keyword_from_inp(
         const dataObjInp_t& _data_obj_inp)
     {
@@ -273,10 +273,15 @@ namespace {
 
         return hier;
     } // resolve_hier_for_create
-
 } // anonymous namespace
 
-namespace irods {
+namespace irods
+{
+    const std::string CREATE_OPERATION( "CREATE" );
+    const std::string WRITE_OPERATION( "WRITE" );
+    const std::string OPEN_OPERATION( "OPEN" );
+    const std::string UNLINK_OPERATION( "UNLINK" );
+
     irods::resolve_hierarchy_result_type resolve_resource_hierarchy(
         const std::string&   oper,
         rsComm_t*            comm,
@@ -437,13 +442,11 @@ namespace irods {
             return PASSMSG( msg.str(), err );
         }
 
-
         // =-=-=-=-=-=-=-
         // get current hostname, which is also done by init local server host
         char host_name_char[ MAX_NAME_LEN ];
         if ( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
             return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
-
         }
 
         std::string host_name( host_name_char );
@@ -458,7 +461,6 @@ namespace irods {
             if ( name.find( host_name ) != std::string::npos ) {
                 match_flg = true;
                 break;
-
             }
 
             tmp_host = tmp_host->next;
@@ -481,7 +483,6 @@ namespace irods {
             return ERROR( conn_err, "failed in svrToSvrConnect" );
         }
 
-
         // =-=-=-=-=-=-=-
         // return with a hier string and new connection as remote host
         _out_hier = resc_hier;
@@ -489,7 +490,5 @@ namespace irods {
         _out_flag = REMOTE_HOST;
 
         return SUCCESS();
-
     } // resource_redirect
-
 } // namespace irods

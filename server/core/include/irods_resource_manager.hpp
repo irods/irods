@@ -8,24 +8,20 @@
 
 #include <functional>
 
-namespace irods {
+namespace irods
+{
+    extern const std::string EMPTY_RESC_HOST;
+    extern const std::string EMPTY_RESC_PATH;
 
-// =-=-=-=-=-=-=-
-//
-    const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
-    const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
+    // =-=-=-=-=-=-=-
+    /// @brief definition of the resource interface
+    extern const std::string RESOURCE_INTERFACE;
 
-
-
-// =-=-=-=-=-=-=-
-/// @brief definition of the resource interface
-    const std::string RESOURCE_INTERFACE( "irods_resource_interface" );
-
-// =-=-=-=-=-=-=-
-/// @brief special resource for local file system operations only
-    const std::string LOCAL_USE_ONLY_RESOURCE( "LOCAL_USE_ONLY_RESOURCE" );
-    const std::string LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/irods/LOCAL_USE_ONLY_RESOURCE_VAULT" );
-    const std::string LOCAL_USE_ONLY_RESOURCE_TYPE( "unixfilesystem" );
+    // =-=-=-=-=-=-=-
+    /// @brief special resource for local file system operations only
+    extern const std::string LOCAL_USE_ONLY_RESOURCE;
+    extern const std::string LOCAL_USE_ONLY_RESOURCE_VAULT;
+    extern const std::string LOCAL_USE_ONLY_RESOURCE_TYPE;
 
     class resource_manager {
         public:
@@ -288,8 +284,6 @@ namespace irods {
             std::vector< std::vector< pdmo_type > > maintenance_operations_;
 
     }; // class resource_manager
-
-}; // namespace irods
-
+} // namespace irods
 
 #endif // __IRODS_RESOURCE_MANAGER_HPP__
