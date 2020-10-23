@@ -71,6 +71,16 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--expor
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
 add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
+
+# Stop clang 6 from whining about unrecognized warning flags
+add_compile_options(-Wno-unknown-warning-option)
+# Do not error on definition of implicit copy constructor for classes with a user-declared copy assignment operator.
+# This is needed because the boost headers throw this warning.
+add_compile_options(-Wno-error=deprecated-copy)
+# Do not error when overlapping comparisons always evaluate to false.
+# This is needed because the boost headers throw this warning.
+add_compile_options(-Wno-error=tautological-overlap-compare)
+
 link_libraries(c++abi)
 include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
                     ${IRODS_EXTERNALS_FULLPATH_JSON}/include)
