@@ -424,16 +424,16 @@ namespace irods::experimental::io
     // stream types defined by the C++ standard (i.e. basic_istream, basic_ostream,
     // or basic_iostream).
     template <typename>
-    constexpr std::ios_base::openmode default_openmode{};
+    inline static constexpr std::ios_base::openmode default_openmode{};
 
     template <typename T>
-    constexpr std::ios_base::openmode default_openmode<std::basic_istream<T>> = std::ios_base::in;
+    inline static constexpr std::ios_base::openmode default_openmode<std::basic_istream<T>> = std::ios_base::in;
 
     template <typename T>
-    constexpr std::ios_base::openmode default_openmode<std::basic_ostream<T>> = std::ios_base::out;
+    inline static constexpr std::ios_base::openmode default_openmode<std::basic_ostream<T>> = std::ios_base::out;
 
     template <typename T>
-    constexpr std::ios_base::openmode default_openmode<std::basic_iostream<T>> = std::ios_base::in | std::ios_base::out;
+    inline static constexpr std::ios_base::openmode default_openmode<std::basic_iostream<T>> = std::ios_base::in | std::ios_base::out;
 
     // A concrete stream class template that wraps a basic_data_object_buf object.
     // The general stream used to instantiate this type must use "char" for the underlying
