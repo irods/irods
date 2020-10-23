@@ -12,15 +12,15 @@ namespace irods::experimental::filesystem
     namespace path_traits
     {
         template <typename>
-        constexpr bool is_pathable = false;
+        inline static constexpr bool is_pathable = false;
 
         // clang-format off
-        template <> constexpr bool is_pathable<char*>             = true;
-        template <> constexpr bool is_pathable<const char*>       = true;
-        template <> constexpr bool is_pathable<std::string>       = true;
-        template <> constexpr bool is_pathable<std::vector<char>> = true;
-        template <> constexpr bool is_pathable<std::list<char>>   = true;
-        template <> constexpr bool is_pathable<collection_entry>  = true;
+        template <> inline static constexpr bool is_pathable<char*>             = true;
+        template <> inline static constexpr bool is_pathable<const char*>       = true;
+        template <> inline static constexpr bool is_pathable<std::string>       = true;
+        template <> inline static constexpr bool is_pathable<std::vector<char>> = true;
+        template <> inline static constexpr bool is_pathable<std::list<char>>   = true;
+        template <> inline static constexpr bool is_pathable<collection_entry>  = true;
         // clang-format on
     } // namespace path_traits
 } // namespace irods::experimental::filesystem
