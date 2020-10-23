@@ -4471,7 +4471,7 @@ auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> s
             hosts_config = json::parse(std::ifstream{cfg_file});
         }
 
-        for(const auto entry : hosts_config.at("host_entries")) {
+        for(const auto& entry : hosts_config.at("host_entries")) {
             const auto addresses = entry.at("addresses");
             const std::string target_name{addresses.at(0).at("address")};
 

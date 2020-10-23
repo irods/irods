@@ -50,7 +50,7 @@ TEST_CASE("irods_linked_list_iterator", "[iterator]")
     {
         int count = 0;
 
-        for (const auto _ : list.get())
+        for (const auto& _ : list.get())
         {
             (void) _;
             ++count;
