@@ -1,6 +1,5 @@
-// =-=-=-=-=-=-=-
-#include <cstdlib>
 #include "irods_client_server_negotiation.hpp"
+
 #include "irods_stacktrace.hpp"
 #include "irods_exception.hpp"
 #include "irods_server_properties.hpp"
@@ -23,15 +22,18 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <cstdlib>
 #include <map>
 #include <vector>
 
 extern const packInstruct_t RodsPackTable[];
 
-namespace irods {
-/// =-=-=-=-=-=-=-
-/// @brief given a property map and the target host name decide between a federated key and a local key
-    const std::string& determine_negotiation_key( const std::string& _host_name ) {
+namespace irods
+{
+    /// =-=-=-=-=-=-=-
+    /// @brief given a property map and the target host name decide between a federated key and a local key
+    const std::string& determine_negotiation_key( const std::string& _host_name )
+    {
         // search the federation map for the host name
         try {
             for ( const auto& el : irods::get_server_property<const std::vector<boost::any>>(irods::CFG_FEDERATION_KW) ) {
@@ -61,22 +63,20 @@ namespace irods {
                         __PRETTY_FUNCTION__);
                     continue;
                 }
-
             } // for i
-
         } catch ( const irods::exception& ) {}
 
         // if not, it must be in our zone
         return irods::get_server_property<const std::string>(CFG_NEGOTIATION_KEY_KW);
-
     } // determine_negotiation_key
 
-/// =-=-=-=-=-=-=-
-/// @brief given a buffer encrypt and hash it for negotiation
+    /// =-=-=-=-=-=-=-
+    /// @brief given a buffer encrypt and hash it for negotiation
     error sign_server_sid(
         const std::string _svr_sid,
         const std::string _enc_key,
-        std::string&      _signed_sid ) {
+        std::string&      _signed_sid )
+    {
         // =-=-=-=-=-=-=-
         // create an encryption object
         // 32 byte key, 8 byte iv, 16 rounds encryption
@@ -108,82 +108,81 @@ namespace irods {
         hasher.digest( _signed_sid );
 
         return SUCCESS();
-
     } // sign_server_sid
 
-/// =-=-=-=-=-=-=-
-/// @brief convenience class to initialize the table and index map for negotiations
-    class client_server_negotiations_context {
-            typedef std::map < std::string, int > negotiation_map_t;
-            typedef std::pair< std::string, int > negotiation_pair_t;
-        public:
-            client_server_negotiations_context() {
-                // =-=-=-=-=-=-=-
-                // initialize the negotiation context
-                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REQUIRE,   0 ) );
-                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_DONT_CARE, 1 ) );
-                cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REFUSE,    2 ) );
+    /// =-=-=-=-=-=-=-
+    /// @brief convenience class to initialize the table and index map for negotiations
+    class client_server_negotiations_context
+    {
+        typedef std::map < std::string, int > negotiation_map_t;
+        typedef std::pair< std::string, int > negotiation_pair_t;
+    public:
+        client_server_negotiations_context() {
+            // =-=-=-=-=-=-=-
+            // initialize the negotiation context
+            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REQUIRE,   0 ) );
+            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_DONT_CARE, 1 ) );
+            cs_neg_param_map.insert( negotiation_pair_t( CS_NEG_REFUSE,    2 ) );
 
-                // =-=-=-=-=-=-=-
-                // table is indexed as[ CLIENT ][ SERVER ]
-                client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
-                client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
-                client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
-                client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
-                client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
-                client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
-                client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
-                client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
-                client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
+            // =-=-=-=-=-=-=-
+            // table is indexed as[ CLIENT ][ SERVER ]
+            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
+            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
+            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
+            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
+            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
+            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
+            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
+            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
+            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
 
-            } // ctor
+        } // ctor
 
-            error operator()(
-                const std::string& _cli_policy,
-                const std::string& _svr_policy,
-                std::string&       _result ) {
-                // =-=-=-=-=-=-=-
-                // convert client policy to an index
-                // in order to reference the negotiation table
-                int cli_idx = cs_neg_param_map[ _cli_policy ];
-                if ( cli_idx > 2 || cli_idx < 0 ) {
-                    return ERROR( SYS_INVALID_INPUT_PARAM,
-                                  "client policy index is out of bounds" );
+        error operator()(
+            const std::string& _cli_policy,
+            const std::string& _svr_policy,
+            std::string&       _result ) {
+            // =-=-=-=-=-=-=-
+            // convert client policy to an index
+            // in order to reference the negotiation table
+            int cli_idx = cs_neg_param_map[ _cli_policy ];
+            if ( cli_idx > 2 || cli_idx < 0 ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM,
+                              "client policy index is out of bounds" );
 
-                }
+            }
 
-                // =-=-=-=-=-=-=-
-                // convert server policy to an index
-                // in order to reference the negotiation table
-                int svr_idx = cs_neg_param_map[ _svr_policy ];
-                if ( svr_idx > 2 || svr_idx < 0 ) {
-                    return ERROR( SYS_INVALID_INPUT_PARAM,
-                                  "server policy index is out of bounds" );
+            // =-=-=-=-=-=-=-
+            // convert server policy to an index
+            // in order to reference the negotiation table
+            int svr_idx = cs_neg_param_map[ _svr_policy ];
+            if ( svr_idx > 2 || svr_idx < 0 ) {
+                return ERROR( SYS_INVALID_INPUT_PARAM,
+                              "server policy index is out of bounds" );
 
-                }
+            }
 
-                // =-=-=-=-=-=-=-
-                // politely ask for the SSL usage results
-                _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
+            // =-=-=-=-=-=-=-
+            // politely ask for the SSL usage results
+            _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
 
-                return SUCCESS();
+            return SUCCESS();
 
-            } // operator()
+        } // operator()
 
-        private:
-            /// =-=-=-=-=-=-=-
-            /// @brief table which describes the negotiation choices
-            std::string client_server_negotiations_table[3][3];
+    private:
+        /// =-=-=-=-=-=-=-
+        /// @brief table which describes the negotiation choices
+        std::string client_server_negotiations_table[3][3];
 
-            /// =-=-=-=-=-=-=-
-            /// @brief map from policy to a table index
-            negotiation_map_t cs_neg_param_map;
-
+        /// =-=-=-=-=-=-=-
+        /// @brief map from policy to a table index
+        negotiation_map_t cs_neg_param_map;
     }; // class client_server_negotiations_context
 
-/// =-=-=-=-=-=-=-
-/// @brief function which determines if a client/server negotiation is needed
-///        on the client side
+    /// =-=-=-=-=-=-=-
+    /// @brief function which determines if a client/server negotiation is needed
+    ///        on the client side
     bool do_client_server_negotiation_for_client( ) {
         // =-=-=-=-=-=-=-
         // get the irods environment so we can compare the
@@ -211,12 +210,11 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // otherwise, its a failure.
         return true;
-
     } // do_client_server_negotiation_for_client
 
-/// =-=-=-=-=-=-=-
-/// @brief function which determines if a client/server negotiation is needed
-///        on the server side
+    /// =-=-=-=-=-=-=-
+    /// @brief function which determines if a client/server negotiation is needed
+    ///        on the server side
     bool do_client_server_negotiation_for_server( ) {
         // =-=-=-=-=-=-=-
         // check the SP_OPTION for the string stating a negotiation is requested
@@ -239,16 +237,15 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // otherwise, its a go.
         return true;
-
     } // do_client_server_negotiation_for_server
 
-/// =-=-=-=-=-=-=-
-/// @brief function which manages the TLS and Auth negotiations with the client
+    /// =-=-=-=-=-=-=-
+    /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client(
         irods::network_object_ptr _ptr,
         const std::string&        _host_name,
-        std::string&              _result ) {
-
+        std::string&              _result )
+    {
         // =-=-=-=-=-=-=-
         // we requested a negotiation, wait for the response from CS_NEG_SVR_1_MSG
         boost::shared_ptr< cs_neg_t > cs_neg;
@@ -282,7 +279,6 @@ namespace irods {
         std::string cli_policy( rods_env.rodsClientServerPolicy );
         if ( cli_policy.empty() ) {
             cli_policy = CS_NEG_DONT_CARE;
-
         }
 
         // =-=-=-=-=-=-=-
@@ -403,14 +399,14 @@ namespace irods {
         _result = result;
 
         return SUCCESS();
-
     } // client_server_negotiation_for_client
 
-/// =-=-=-=-=-=-=-
-/// @brief function which sends the negotiation message
+    /// =-=-=-=-=-=-=-
+    /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message(
         irods::network_object_ptr _ptr,
-        cs_neg_t&                  _cs_neg_msg ) {
+        cs_neg_t&                  _cs_neg_msg )
+    {
         // =-=-=-=-=-=-=-
         // pack the negotiation message
         bytesBuf_t* cs_neg_buf = 0;
@@ -433,18 +429,17 @@ namespace irods {
         freeBBuf( cs_neg_buf );
         if ( !ret.ok() ) {
             return PASSMSG( "failed to send client-server negotiation message", ret );
-
         }
 
         return SUCCESS();
-
     } // send_client_server_negotiation_message
 
-/// =-=-=-=-=-=-=-
-/// @brief function which sends the negotiation message
+    /// =-=-=-=-=-=-=-
+    /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message(
         irods::network_object_ptr      _ptr,
-        boost::shared_ptr< cs_neg_t >&  _cs_neg_msg ) {
+        boost::shared_ptr< cs_neg_t >&  _cs_neg_msg )
+    {
         // =-=-=-=-=-=-=-
         // read the message header
         struct timeval tv;
@@ -470,7 +465,6 @@ namespace irods {
                   XML_PROT, 0 );
         if ( !ret.ok() ) {
             return PASS( ret );
-
         }
 
         // =-=-=-=-=-=-=-
@@ -504,13 +498,11 @@ namespace irods {
                 if ( status < 0 ) {
                     rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );
                     return ERROR( status, "unpackStruct failed" );
-
                 }
 
                 if ( version->status < 0 ) {
                     rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: received error message %d", version->status );
                     return ERROR( version->status, "negotiation failed" );
-
                 }
                 else {
                     // =-=-=-=-=-=-=-
@@ -525,7 +517,6 @@ namespace irods {
                     msg << "\t*** irods_environment.json file to disable.                     ***\n";
                     return ERROR( ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
                 }
-
             }
             else {
                 // =-=-=-=-=-=-=-
@@ -583,7 +574,6 @@ namespace irods {
         if ( status < 0 ) {
             rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );
             return ERROR( status, "unpackStruct failed" );
-
         }
 
         _cs_neg_msg.reset( tmp_cs_neg, free );
@@ -591,48 +581,6 @@ namespace irods {
         // =-=-=-=-=-=-=-
         // win!!!111one
         return SUCCESS();
-
     } // read_client_server_negotiation_message
-
-}; // namespace irods
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // namespace irods
 
