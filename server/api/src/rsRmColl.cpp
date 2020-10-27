@@ -100,7 +100,7 @@ namespace
         else {
             if ( isTrashPath( rmCollInp->collName ) == False &&
                     getValByKey( &rmCollInp->condInput, FORCE_FLAG_KW ) != NULL ) {
-                rodsLog( LOG_NOTICE,
+                rodsLog( LOG_DEBUG,
                          "rsRmColl: Recursively removing %s.",
                          rmCollInp->collName );
             }
