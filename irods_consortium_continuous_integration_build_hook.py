@@ -95,7 +95,7 @@ def build_irods(debug_build):
         cmake_build_type = 'Debug'
     else:
         cmake_build_type = 'Release'
-    irods_python_ci_utilities.subprocess_get_output('cmake {0} -DCMAKE_BUILD_TYPE={1} > cmake.output'.format(irods_source_dir, cmake_build_type), shell=True, cwd=irods_build_dir, check_rc=True)
+    irods_python_ci_utilities.subprocess_get_output('cmake -DCMAKE_BUILD_TYPE={0} -DIRODS_UNIT_TESTS_BUILD=YES {1} > cmake.output'.format(cmake_build_type, irods_source_dir), shell=True, cwd=irods_build_dir, check_rc=True)
     irods_python_ci_utilities.subprocess_get_output('make -j{0} > make.output'.format(str(multiprocessing.cpu_count())), shell=True, cwd=irods_build_dir, check_rc=True)
     irods_python_ci_utilities.subprocess_get_output('fakeroot make package >> make.output', shell=True, cwd=irods_build_dir, check_rc=True)
     return irods_build_dir
