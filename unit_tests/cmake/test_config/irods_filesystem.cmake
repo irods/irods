@@ -1,8 +1,11 @@
 set(IRODS_TEST_TARGET irods_filesystem)
 
-set(IRODS_TEST_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-                            ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/test_path.cpp
-                            ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/test_filesystem.cpp)
+set(IRODS_TEST_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/test_path.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/test_filesystem.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/src/filesystem/test_resolution.cpp)
+
+set(IRODS_TEST_COMPILE_DEFINITIONS CATCH_CONFIG_CPP17_UNCAUGHT_EXCEPTIONS
+                                   CATCH_CONFIG_CPP11_TO_STRING)
 
 set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
                             ${CMAKE_SOURCE_DIR}/lib/core/include
