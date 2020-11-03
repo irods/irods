@@ -13,8 +13,9 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
-#include <vector>
+#include <string_view>
 #include <tuple>
+#include <vector>
 
 namespace irods {
 
@@ -171,10 +172,16 @@ namespace irods {
                               file_object_ptr  _file_obj,
                               dataObjInfo_t**  _data_obj_info = nullptr);
 
-    irods::file_object_ptr make_file_object(
-        rsComm_t&       _comm,
-        dataObjInp_t&   _data_obj_inp,
-        dataObjInfo_t** _data_obj_info = nullptr);
+    /// \param[in] _obj File object to search
+    /// \param[in] _hierarchy
+    ///
+    /// \retval true if replica with given resource hierarchy is found in the list of replicas
+    /// \retval false if replica with given resource hierarchy is not found in the list of replicas
+    ///
+    /// \since 4.2.9
+    auto hierarchy_has_replica(
+        const irods::file_object_ptr _obj,
+        std::string_view _hierarchy) -> bool;
 }; // namespace irods
 
 #endif // __IRODS_FILE_OBJECT_HPP__
