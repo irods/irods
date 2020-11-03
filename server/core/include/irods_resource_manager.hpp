@@ -104,9 +104,31 @@ namespace irods {
             /// @brief get the resc id of the leaf resource in the hierarchy
             error hier_to_leaf_id( const std::string&, rodsLong_t& );
 
+            /// \brief get the resc id of the leaf resource in the hierarchy
+            ///
+            /// \param[in] _hierarchy
+            ///
+            /// \retval leaf resource ID for given resource hierarchy
+            ///
+            /// \throws irods::exception
+            ///
+            /// \since 4.2.9
+            rodsLong_t hier_to_leaf_id(std::string_view _hierarchy);
+
             // =-=-=-=-=-=-=-
             /// @brief get the resc hier of the resource given an id
             error leaf_id_to_hier( const rodsLong_t&, std::string& );
+
+            /// \brief get the resource hierarchy string from provided leaf resource ID
+            ///
+            /// \param[in] _leaf_resource_id
+            ///
+            /// \retval resource hierarchy for given leaf resource ID
+            ///
+            /// \throws irods::exception
+            ///
+            /// \since 4.2.9
+            std::string leaf_id_to_hier(const rodsLong_t _leaf_resource_id);
 
             // =-=-=-=-=-=-=-
             /// @brief get the resc name of the resource given an id
@@ -115,6 +137,28 @@ namespace irods {
             // =-=-=-=-=-=-=-
             /// @brief get the resc name of the resource given an id as a string
             error resc_id_to_name( const std::string&, std::string& );
+
+            /// \brief get the resc name of the resource given an id
+            ///
+            /// \param[in] _id
+            ///
+            /// \retval resource name for given resource id
+            ///
+            /// \throws irods::exception
+            ///
+            /// \since 4.2.9
+            std::string resc_id_to_name(const rodsLong_t& _id);
+
+            /// \brief get the resc name of the resource given an id as a string
+            ///
+            /// \param[in] _id
+            ///
+            /// \retval resource name for given resource id
+            ///
+            /// \throws irods::exception
+            ///
+            /// \since 4.2.9
+            std::string resc_id_to_name(std::string_view _id);
 
             // =-=-=-=-=-=-=-
             /// @brief check whether the specified resource name is a coordinating resource
