@@ -17,6 +17,8 @@
 // boost includes
 #include <boost/asio/ip/host_name.hpp>
 
+#include "fmt/format.h"
+
 namespace irods {
 // =-=-=-=-=-=-=-
 // public - ctor
@@ -106,9 +108,9 @@ namespace irods {
 
 // from dataObjInfo
     file_object::file_object(
-        rsComm_t*            _rsComm,
-        const dataObjInfo_t* _dataObjInfo ) {
-
+        RsComm*            _rsComm,
+        const DataObjInfo* _dataObjInfo)
+    {
         data_type_      = _dataObjInfo->dataType;
         comm_           = _rsComm;
         data_id_        = _dataObjInfo->dataId;
@@ -123,7 +125,7 @@ namespace irods {
         replKeyVal( &_dataObjInfo->condInput, &cond_input_ );
         l1_desc_idx_ = getL1descIndexByDataObjInfo( _dataObjInfo );
         size_ = _dataObjInfo->dataSize;
-        if ( l1_desc_idx_ != -1 ) {
+        if ( l1_desc_idx_ > 2 ) {
             int l3descInx = L1desc[ l1_desc_idx_ ].l3descInx;
             file_descriptor_ = FileDesc[ l3descInx ].fd;
         }
@@ -277,8 +279,12 @@ namespace irods {
     error file_object_factory( rsComm_t*        _comm,
                                dataObjInp_t*    _data_obj_inp,
                                file_object_ptr  _file_obj,
-                               dataObjInfo_t**  _data_obj_info ) {
-        // =-=-=-=-=-=-=-
+                               dataObjInfo_t**  _data_obj_info)
+    {
+        if (!_comm || !_data_obj_inp) {
+            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR, "some inputs were null");
+        }
+
         // start populating file_object
         _file_obj->comm( _comm );
         _file_obj->logical_path( _data_obj_inp->objPath );
@@ -299,10 +305,10 @@ namespace irods {
                 _file_obj->repl_requested(std::stoi(repl_num));
             }
             catch (const std::invalid_argument& e) {
-                return ERROR(USER_INVALID_REPLICA_INPUT, "invalid replica number argument");
+                return ERROR(USER_INVALID_REPLICA_INPUT, fmt::format("invalid replica number argument:[{}]", repl_num));
             }
             catch (const std::out_of_range& e) {
-                return ERROR(USER_INVALID_REPLICA_INPUT, "replica number is out of range");
+                return ERROR(USER_INVALID_REPLICA_INPUT, fmt::format("replica number is out of range:[{}]", repl_num));
             }
         }
 
@@ -346,40 +352,14 @@ namespace irods {
         dataObjInfo_t* info_ptr = head_ptr;
         std::vector< physical_object > objects;
         while ( info_ptr ) {
-            physical_object obj;
+            objects.push_back(irods::physical_object{*info_ptr});
 
-            obj.replica_status( info_ptr->replStatus );
-            obj.repl_num( info_ptr->replNum );
-            obj.map_id( info_ptr->dataMapId );
-            if(info_ptr->dataSize > 0) {
-                obj.size( info_ptr->dataSize );
+            if (info_ptr->dataSize <= 0) {
+                auto& obj = objects.back();
+                obj.size(_data_obj_inp->dataSize);
             }
-            else {
-                obj.size( _data_obj_inp->dataSize );
-            }
-            obj.id( info_ptr->dataId );
-            obj.coll_id( info_ptr->collId );
-            obj.name( info_ptr->objPath );
-            obj.version( info_ptr->version );
-            obj.type_name( info_ptr->dataType );
-            obj.resc_name( info_ptr->rescName );
-            obj.path( info_ptr->filePath );
-            obj.owner_name( info_ptr->dataOwnerName );
-            obj.owner_zone( info_ptr->dataOwnerZone );
-            obj.status( info_ptr->statusString );
-            obj.checksum( info_ptr->chksum );
-            obj.expiry_ts( info_ptr->dataExpiry );
-            obj.mode( info_ptr->dataMode );
-            obj.r_comment( info_ptr->dataComments );
-            obj.create_ts( info_ptr->dataCreate );
-            obj.modify_ts( info_ptr->dataModify );
 
-            obj.resc_hier( info_ptr->rescHier );
-            obj.resc_id( info_ptr->rescId );
-
-            objects.push_back( obj );
             info_ptr = info_ptr->next;
-
         } // while
 
         _file_obj->replicas( objects );
@@ -394,20 +374,11 @@ namespace irods {
 
     } // file_object_factory
 
-    irods::file_object_ptr make_file_object(
-        rsComm_t&       _comm,
-        dataObjInp_t&   _data_obj_inp,
-        dataObjInfo_t** _data_obj_info)
+    auto hierarchy_has_replica(const irods::file_object_ptr _obj, std::string_view _hierarchy) -> bool
     {
-        irods::file_object_ptr obj(new irods::file_object());
-
-        irods::error err = irods::file_object_factory(&_comm, &_data_obj_inp, obj, _data_obj_info);
-        if (!err.ok()) {
-            irods::log(err);
-            THROW(err.code(), err.result());
-        }
-
-        return obj;
-    } // make_file_object
-
+        return std::any_of(std::cbegin(_obj->replicas()), std::cend(_obj->replicas()),
+            [&_hierarchy](const irods::physical_object& _r) {
+                return _r.resc_hier() == _hierarchy;
+            });
+    } // hierarchy_has_replica
 } // namespace irods
