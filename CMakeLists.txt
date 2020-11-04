@@ -14,14 +14,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${IRODS_TARGETS_PATH})
 
+include(GNUInstallDirs)
+
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build {Debug, Release}." FORCE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'. This is the correct setting for normal builds.")
-endif()
-
-if (NOT CPACK_PACKAGING_INSTALL_PREFIX)
-  set(CPACK_PACKAGING_INSTALL_PREFIX "/" CACHE STRING "Package root path. \"/\" is correct for normal package builds.." FORCE)
-  message(STATUS "Setting unspecified CPACK_PACKAGING_INSTALL_PREFIX to '${CPACK_PACKAGING_INSTALL_PREFIX}'. This is the correct setting for normal builds.")
 endif()
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -127,7 +124,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     TARGETS
     ${EXECUTABLE}
     RUNTIME
-    DESTINATION usr/bin
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
   if (IRODS_LINUX_DISTRIBUTION_NAME STREQUAL "centos")
@@ -149,7 +146,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
   install(
     FILES
     ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz
-    DESTINATION usr/share/man/man1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
     )
 endforeach()
 
@@ -162,7 +159,7 @@ foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
   install(
     FILES
     ${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}
-    DESTINATION usr/bin
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
 
@@ -181,13 +178,13 @@ foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
   install(
     FILES
     ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz
-    DESTINATION usr/share/man/man1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
     )
 endforeach()
 
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/test
-  DESTINATION var/lib/irods/clients/icommands
+  DESTINATION ${IRODS_HOME_DIRECTORY}/clients/icommands
   )
 
 
