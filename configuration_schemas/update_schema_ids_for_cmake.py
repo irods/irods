@@ -20,4 +20,4 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print('Call as {0} <schema directory> <target directory>'.format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    main(os.path.normpath(sys.argv[1]), os.path.normpath(sys.argv[2]))
