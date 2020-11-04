@@ -5,7 +5,7 @@ install(
   TARGETS
     RodsAPIs
   ARCHIVE
-    DESTINATION usr/lib
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
@@ -582,7 +582,7 @@ install(
   ${IRODS_SERVER_ICAT_INCLUDE_HEADERS}
   ${IRODS_SERVER_RE_INCLUDE_HEADERS}
   ${IRODS_SERVER_DRIVERS_INCLUDE_HEADERS}
-  DESTINATION usr/include/irods
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
@@ -597,7 +597,7 @@ install(
 # NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/lib/filesystem/include/
-  DESTINATION usr/include/irods
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   FILES_MATCHING
     PATTERN */filesystem.hpp
@@ -625,7 +625,7 @@ install(
 # NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/api/include/
-  DESTINATION usr/include/irods/plugins/api
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods/plugins/api
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   FILES_MATCHING
     PATTERN */api_plugin_number.h
@@ -644,7 +644,7 @@ install(
 # NOTE: The trailing slash in the "DIRECTORY" argument is significant. DO NOT REMOVE IT!
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/lib/core/include/transport/
-  DESTINATION usr/include/irods/transport
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/irods/transport
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   FILES_MATCHING
     PATTERN */transport/transport.hpp
@@ -654,7 +654,7 @@ install(
 install(
   EXPORT
   IRODSTargets
-  DESTINATION usr/lib/irods/cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 

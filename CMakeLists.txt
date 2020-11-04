@@ -62,10 +62,7 @@ project(irods C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-if (NOT CPACK_PACKAGING_INSTALL_PREFIX)
-  set(CPACK_PACKAGING_INSTALL_PREFIX "/" CACHE STRING "Package root path. \"/\" is correct for normal package builds.." FORCE)
-  message(STATUS "Setting unspecified CPACK_PACKAGING_INSTALL_PREFIX to '${CPACK_PACKAGING_INSTALL_PREFIX}'. This is the correct setting for normal builds.")
-endif()
+include(${CMAKE_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
@@ -1418,9 +1415,6 @@ set_property(TARGET genOSAuth PROPERTY CXX_STANDARD ${IRODS_CXX_STANDARD})
 target_compile_definitions(genOSAuth PRIVATE ${IRODS_COMPILE_DEFINITIONS})
 target_compile_options(genOSAuth PRIVATE -Wno-write-strings)
 
-set(IRODS_HOME_DIRECTORY var/lib/irods)
-set(IRODS_PLUGINS_DIRECTORY usr/lib/irods/plugins)
-
 add_subdirectory(plugins/api)
 add_subdirectory(plugins/auth)
 add_subdirectory(plugins/database)
@@ -1574,25 +1568,28 @@ foreach(SCHEMA_FILE ${IRODS_CONFIGURATION_SCHEMA_FILES})
 endforeach()
 install(
   CODE
-  "execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY} ${CPACK_PACKAGING_INSTALL_PREFIX}${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION})"
+  "execute_process(
+    COMMAND
+    python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${IRODS_CONFIGURATION_SCHEMA_BUILD_DIRECTORY} ${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
+    COMMAND
+    \"\${CMAKE_COMMAND}\" -E cmake_echo_color --switch=\$ENV{COLOR} --progress-dir=${CMAKE_BINARY_DIR}/CMakeFiles --progress-num= \"Updated configuration schema ID\"
+  )"
   COMPONENT
   ${IRODS_PACKAGE_COMPONENT_SERVER_NAME}
   )
-
-set(IRODS_INCLUDE_DIRS usr/include/irods)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
   ${CMAKE_SOURCE_DIR}/cmake/IRODSConfig.cmake.not_yet_installed.in
   ${CMAKE_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed # suffix prevents cmake's find_package() from using this copy of the file
-  INSTALL_DESTINATION usr/lib/irods/cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake
   PATH_VARS IRODS_INCLUDE_DIRS
   )
 
 install(
   FILES
   ${CMAKE_BINARY_DIR}/IRODSConfig.cmake.not_yet_installed
-  DESTINATION usr/lib/irods/cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   RENAME IRODSConfig.cmake
   )
@@ -1606,7 +1603,7 @@ write_basic_package_version_file(
 install(
   FILES
   ${CMAKE_BINARY_DIR}/IRODSConfigVersion.cmake
-  DESTINATION usr/lib/irods/cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
@@ -1615,15 +1612,17 @@ foreach(DATABASE_PLUGIN postgres oracle mysql)
   add_custom_target(
     non-package-install-${DATABASE_PLUGIN}
     COMMAND
-    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_SERVER_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "$(CMAKE_COMMAND)" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_SERVER_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     COMMAND
-    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "$(CMAKE_COMMAND)" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     COMMAND
-    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "$(CMAKE_COMMAND)" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_RUNTIME_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     COMMAND
-    "${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+    "$(CMAKE_COMMAND)" -DCMAKE_INSTALL_COMPONENT=${IRODS_PACKAGE_COMPONENT_${DATABASE_PLUGIN_UPPER}_NAME} -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION} ${CMAKE_INSTALL_PREFIX}/${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}
+    python ${CMAKE_SOURCE_DIR}/configuration_schemas/update_schema_ids_for_cmake.py "${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}" "${IRODS_HOME_DIRECTORY}/configuration_schemas/v${IRODS_CONFIGURATION_SCHEMA_VERSION}"
+    COMMAND
+    "@$(CMAKE_COMMAND)" -E cmake_echo_color --switch="$(COLOR)" --progress-dir="${CMAKE_BINARY_DIR}/CMakeFiles" --progress-num= "Updated configuration schema ID"
     DEPENDS
     irodsServer irodsReServer irods_api_test_harness hostname_resolves_to_local_address irodsPamAuthCheck irods_client irods_server irods_common irods_plugin_dependencies RodsAPIs helloworld_server helloworld_client msisync_to_archive msi_update_unixfilesystem_resource_free_space compound deferred load_balanced mockarchive nonblocking passthru random replication structfile univmss unixfilesystem irods_rule_engine_plugin-irods_rule_language irods_rule_engine_plugin-cpp_default_policy irods_rule_engine_plugin-passthrough native_client native_server osauth_client osauth_server pam_client pam_server ssl_client ssl_server tcp_client tcp_server genOSAuth mytest
     ${DATABASE_PLUGIN} IRODS_PHONY_TARGET_icatSysTables_${DATABASE_PLUGIN}.sql
