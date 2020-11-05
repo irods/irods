@@ -34,10 +34,15 @@ namespace {
 
     void init_logger(
         const bool write_to_stdout,
-        const bool enable_test_mode) {
+        const bool enable_test_mode)
+    {
         logger::init(write_to_stdout, enable_test_mode);
+
         irods::server_properties::instance().capture();
-        logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
+        logger::server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_SERVER_KW));
+        logger::legacy::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
+        logger::delay_server::set_level(logger::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_DELAY_SERVER_KW));
+
         logger::set_server_type("delay_server");
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
