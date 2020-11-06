@@ -1,11 +1,8 @@
-/*** Copyright (c) 2010 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
- *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
-/* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
+#include "scanUtil.h"
 
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
-#include "scanUtil.h"
 #include "miscUtil.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
@@ -62,47 +59,58 @@ scanObj( rcComm_t *conn,
     }
 }
 
-int
-scanObjDir( rcComm_t *conn, rodsArguments_t *myRodsArgs, const char *inpPath, const char *hostname ) {
-    int status = 0;
-    char fullPath[MAX_NAME_LEN] = "\0";
+int scanObjDir(rcComm_t* conn,
+               rodsArguments_t* myRodsArgs,
+               const char* inpPath,
+               const char* hostname)
+{
+    const path srcDirPath(inpPath);
 
-    /* check if it is a directory */
-    path srcDirPath( inpPath );
-    if ( is_symlink( srcDirPath ) ) {
-        /* don't do anything if it is symlink */
+    // check if it is a directory.
+    if (is_symlink(srcDirPath)) {
         return 0;
     }
-    else if ( !is_directory( srcDirPath ) ) {
-        status = chkObjExist( conn, inpPath, hostname );
-        return status;
+
+    if (!is_directory(srcDirPath)) {
+        return chkObjExist(conn, inpPath, hostname);
     }
 
     // This variable will contain either the 0, or the last error
     // encountered as the loop below iterates through all of the
     // entries in the physical directory.
+
     int return_status = 0;
-    directory_iterator end_itr; // default construction yields past-the-end
-    for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
-        path cp = itr->path();
-        snprintf( fullPath, MAX_NAME_LEN, "%s",
-                  cp.c_str() );
-        if ( is_symlink( cp ) ) {
-            /* don't do anything if it is symlink */
-            continue;
-        }
-        else if ( is_directory( cp ) ) {
-            if ( myRodsArgs->recursive == True ) {
-                status = scanObjDir( conn, myRodsArgs, fullPath, hostname );
+
+    try {
+        int status = 0;
+        char fullPath[MAX_NAME_LEN] = "\0";
+
+        for (const auto& e : directory_iterator{srcDirPath}) {
+            snprintf(fullPath, MAX_NAME_LEN, "%s", e.path().c_str());
+
+            if (is_symlink(e)) {
+                continue;
+            }
+
+            if (is_directory(e)) {
+                if (True == myRodsArgs->recursive) {
+                    status = scanObjDir(conn, myRodsArgs, fullPath, hostname);
+                }
+            }
+            else {
+                status = chkObjExist(conn, fullPath, hostname);
+            }
+
+            if (status != 0) {
+                return_status = status;
             }
         }
-        else {
-            status = chkObjExist( conn, fullPath, hostname );
-        }
-        if (status != 0) {
-            return_status = status;
-        }
     }
+    catch (const filesystem_error& e) {
+        rodsLog(LOG_ERROR, "scanObjDir: %s", e.what());
+        return e.code().value();
+    }
+
     return return_status;
 }
 
