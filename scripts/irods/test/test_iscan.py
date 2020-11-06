@@ -9,7 +9,6 @@ else:
     import unittest
 
 from .. import test
-from . import settings
 from .resource_suite import ResourceBase
 from .. import lib
 
@@ -76,7 +75,7 @@ class Test_iScan(ResourceBase, unittest.TestCase):
             files_deleted += delete_count
             out, _, _ = self.admin.run_icommand(["iscan","-rd",test_coll_path])
             printed_lines = out.split('\n')
-            number_of_matching_messages = len(filter(identity_func, 
+            number_of_matching_messages = len(filter(identity_func,
               map(lambda line : missing_file_regex.match(line), printed_lines)))
             self.assertEqual(number_of_matching_messages, files_deleted)
         finally:
@@ -231,4 +230,9 @@ class Test_iScan(ResourceBase, unittest.TestCase):
 
         self._util_simple_icmd_fail_stdout_assert('iscan -d {0}/{1}/1'.format(self.admin.session_collection, self.dirname2),
                                                                       " is missing, corresponding to iRODS object /")
+
+    def test_iscan_does_not_core_dump_on_insufficient_permissions__issue_4613(self):
+        # This test assumes /root has the following permissions: drwx------ N root root
+        # "N" is just a placeholder in this example.
+        self.admin.assert_icommand(['iscan', '/root'], 'STDERR', ['Permission denied: "/root"'])
 
