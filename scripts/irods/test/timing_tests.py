@@ -12,6 +12,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+from ..test.command import assert_command
 from ..configuration import IrodsConfig
 from .. import test
 from .. import lib
@@ -20,8 +21,6 @@ from . import session
 
 
 class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):
-    plugin_name = IrodsConfig().default_rule_engine_plugin
-
     def setUp(self):
         with session.make_session_for_existing_admin() as admin_session:
             admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
@@ -135,3 +134,350 @@ class Test_Resource_Replication_Timing(ResourceBase, unittest.TestCase):
             self.admin.assert_icommand(['iput', '-R', replica_0_resc, '-f', '-n', str(repl_num), filename, data_obj_name])
         # restore to replication hierarchy
         self.admin.assert_icommand(['iadmin', 'addchildtoresc', 'demoResc', replica_0_resc])
+
+@unittest.skipIf(False == test.settings.USE_MUNGEFS, "These tests require mungefs")
+class Test_Resource_Replication_With_Retry(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
+    def setUp(self):
+        irods_config = IrodsConfig()
+
+        with session.make_session_for_existing_admin() as admin_session:
+            self.munge_mount = os.path.abspath('munge_mount')
+            self.munge_target = os.path.abspath('munge_target')
+            lib.make_dir_p(self.munge_mount)
+            lib.make_dir_p(self.munge_target)
+            assert_command('mungefs ' + self.munge_mount + ' -omodules=subdir,subdir=' + self.munge_target)
+
+            self.munge_resc = 'ufs1munge'
+            self.munge_passthru = 'pt1'
+            self.normal_vault = irods_config.irods_directory + '/vault2'
+
+            admin_session.assert_icommand("iadmin modresc demoResc name origResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
+            admin_session.assert_icommand('iadmin mkresc ' + self.munge_passthru + ' passthru', 'STDOUT_SINGLELINE', 'passthru')
+            admin_session.assert_icommand('iadmin mkresc pt2 passthru', 'STDOUT_SINGLELINE', 'passthru')
+            admin_session.assert_icommand('iadmin mkresc ' + self.munge_resc + ' unixfilesystem ' + test.settings.HOSTNAME_1 + ':' +
+                                          self.munge_mount, 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand('iadmin mkresc ufs2 unixfilesystem ' + test.settings.HOSTNAME_2 + ':' +
+                                          self.normal_vault, 'STDOUT_SINGLELINE', 'unixfilesystem')
+            admin_session.assert_icommand('iadmin addchildtoresc ' + self.munge_passthru + ' ' + self.munge_resc)
+            admin_session.assert_icommand('iadmin addchildtoresc pt2 ufs2')
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc ' + self.munge_passthru)
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc pt2')
+
+            # Increase write on pt2 because could vote evenly with the 0.5 of pt1 due to locality of reference
+            admin_session.assert_icommand('iadmin modresc ' + self.munge_passthru + ' context "write=0.5"')
+            admin_session.assert_icommand('iadmin modresc pt2 context "write=3.0"')
+
+        # Get count of existing failures in the log
+        self.failure_message = 'Failed to replicate data object'
+        self.log_message_starting_location = lib.get_file_size_by_path(irods_config.server_log_path)
+
+        self.valid_scenarios = [
+            self.retry_scenario(1, 1, 1, self.make_context()),
+            self.retry_scenario(3, 1, 1, self.make_context('3')),
+            self.retry_scenario(1, 3, 1, self.make_context(delay='3')),
+            self.retry_scenario(1, 3, 1, self.make_context(delay='3')),
+            self.retry_scenario(3, 2, 2, self.make_context('3', '2', '2')),
+            self.retry_scenario(3, 2, 1.5, self.make_context('3', '2', '1.5'))
+            ]
+
+        self.invalid_scenarios = [
+            self.retry_scenario(1, 1, 1, self.make_context('-2')),
+            self.retry_scenario(1, 1, 1, self.make_context('2.0')),
+            self.retry_scenario(1, 1, 1, self.make_context('one')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='0')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='-2')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='2.0')),
+            self.retry_scenario(1, 1, 1, self.make_context(delay='one')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '0')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '0.5')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', '-2')),
+            self.retry_scenario(3, 2, 1, self.make_context('3', '2', 'one'))
+            ]
+        super(Test_Resource_Replication_With_Retry, self).setUp()
+
+    def tearDown(self):
+        super(Test_Resource_Replication_With_Retry, self).tearDown()
+
+        # unmount mungefs and destroy directories
+        assert_command(['fusermount', '-u', self.munge_mount])
+        shutil.rmtree(self.munge_mount, ignore_errors=True)
+        shutil.rmtree(self.munge_target, ignore_errors=True)
+        shutil.rmtree(self.normal_vault, ignore_errors=True)
+
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc " + self.munge_passthru)
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc pt2")
+            admin_session.assert_icommand("iadmin rmchildfromresc " + self.munge_passthru + ' ' + self.munge_resc)
+            admin_session.assert_icommand("iadmin rmchildfromresc pt2 ufs2")
+            admin_session.assert_icommand("iadmin rmresc " + self.munge_resc)
+            admin_session.assert_icommand("iadmin rmresc ufs2")
+            admin_session.assert_icommand("iadmin rmresc " + self.munge_passthru)
+            admin_session.assert_icommand("iadmin rmresc pt2")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin modresc origResc name demoResc", 'STDOUT_SINGLELINE', 'rename', input='yes\n')
+
+    # Nested class for containing test case information
+    class retry_scenario(object):
+        """Stores context information about a test scenario.
+
+        See https://docs.irods.org/4.2.4/plugins/composable_resources
+        """
+
+        def __init__(self, retries, delay, multiplier, context_string=None):
+            """Initializes retry_scenario instance
+
+            Arguments:
+            retries -- integer representing the number of times the replication resource will retry a replication
+            delay -- integer representing the number of seconds to wait before attempting the first retry of the replication
+            multiplier --  floating point number >=1.0 which multiplies the value of delay after each retry
+            context_string -- the above values in the form of a context string used by the replication resource
+            """
+            self.retries = retries
+            self.delay = delay
+            self.multiplier = multiplier
+            self.context_string = context_string
+
+        def munge_delay(self):
+            # No retries means no delay
+            if 0 == self.retries:
+                return 0
+
+            # Get total time over all retries
+            if self.multiplier == 1.0 or self.retries == 1:
+                # Since there is no multiplier, delay increases linearly
+                time_to_failure = self.delay * self.retries
+            else:
+                # Delay represented by geometric sequence
+                # Example for 3 retries:
+                #   First retry -> delay * multiplier^0
+                #   Second retry -> delay * multiplier^1
+                #   Third retry -> delay * multiplier^2
+                time_to_failure = 0
+                for i in range(0, self.retries): # range is non-inclusive at the top end because python
+                    time_to_failure += int(self.delay * pow(self.multiplier, i))
+
+            # Shave some time to ensure mungefsctl can restore filesystem for successful replication
+            return time_to_failure - 0.25
+
+    # Ensure that expected number of new failure messages appear in the log
+    def verify_new_failure_messages_in_log(self, expected_count, expected_message=None):
+        if not expected_message:
+            expected_message = self.failure_message
+
+        irods_config = IrodsConfig()
+        lib.delayAssert(
+            lambda: lib.log_message_occurrences_equals_count(
+                msg=expected_message,
+                count=expected_count,
+                server_log_path=IrodsConfig().server_log_path,
+                start_index=self.log_message_starting_location))
+        self.log_message_starting_location = lib.get_file_size_by_path(irods_config.server_log_path)
+
+    # Generate a context string for replication resource
+    @staticmethod
+    def make_context(retries=None, delay=None, multiplier=None):
+        context_string = ""
+        # Only generate for populated parameters
+        if retries:
+            context_string += 'retry_attempts={0};'.format(retries)
+        if delay:
+            context_string += 'first_retry_delay_in_seconds={0};'.format(delay)
+        if multiplier:
+            context_string += 'backoff_multiplier={0}'.format(multiplier)
+
+        # Empty string causes an error, so put none if using all defaults
+        if not context_string:
+            context_string = 'none=none'
+
+        return context_string
+
+    @staticmethod
+    def run_mungefsctl(operation, modifier=None):
+        mungefsctl_call = 'mungefsctl --operations ' + str(operation)
+        if modifier:
+            mungefsctl_call += ' ' + str(modifier)
+        assert_command(mungefsctl_call)
+
+    def run_rebalance_test(self, scenario, filename):
+        # Setup test and context string
+        filepath = lib.create_local_testfile(filename)
+        with session.make_session_for_existing_admin() as admin_session:
+            if scenario.context_string:
+                admin_session.assert_icommand('iadmin modresc demoResc context "{0}"'.format(scenario.context_string))
+
+            # Get wait time for mungefs to reset
+            wait_time = scenario.munge_delay()
+            self.assertTrue( wait_time > 0, msg='wait time for mungefs [{0}] <= 0'.format(wait_time))
+
+            # For each test, iput will fail to replicate; then we can run a rebalance
+            # Perform corrupt read (checksum) test
+            self.run_mungefsctl('read', '--corrupt_data')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message )
+            self.verify_new_failure_messages_in_log(scenario.retries + 1)
+            munge_thread = Timer(wait_time, self.run_mungefsctl, ['read'])
+            munge_thread.start()
+            admin_session.assert_icommand('iadmin modresc demoResc rebalance')
+            munge_thread.join()
+            admin_session.assert_icommand(['irm', '-f', filename])
+            self.verify_new_failure_messages_in_log(scenario.retries)
+
+            # Perform corrupt size test
+            self.run_mungefsctl('getattr', '--corrupt_size')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(scenario.retries + 1)
+            munge_thread = Timer(wait_time, self.run_mungefsctl, ['getattr'])
+            munge_thread.start()
+            admin_session.assert_icommand('iadmin modresc demoResc rebalance')
+            munge_thread.join()
+            admin_session.assert_icommand(['irm', '-f', filename])
+            self.verify_new_failure_messages_in_log(scenario.retries)
+
+        # Cleanup
+        os.unlink(filepath)
+
+    def run_iput_test(self, scenario, filename):
+        filepath = lib.create_local_testfile(filename)
+        with session.make_session_for_existing_admin() as admin_session:
+            # Setup test and context string
+            if scenario.context_string:
+                admin_session.assert_icommand('iadmin modresc demoResc context "{0}"'.format(scenario.context_string))
+
+            # Get wait time for mungefs to reset
+            wait_time = scenario.munge_delay()
+            self.assertTrue( wait_time > 0, msg='wait time for mungefs [{0}] <= 0'.format(wait_time))
+
+            # Perform corrupt read (checksum) test
+            self.run_mungefsctl('read', '--corrupt_data')
+            munge_thread = Timer(wait_time, self.run_mungefsctl, ['read'])
+            munge_thread.start()
+            admin_session.assert_icommand(['iput', '-K', filepath])
+            munge_thread.join()
+            admin_session.assert_icommand(['irm', '-f', filename])
+            self.verify_new_failure_messages_in_log(scenario.retries)
+
+            # Perform corrupt size test
+            self.run_mungefsctl('getattr', '--corrupt_size')
+            munge_thread = Timer(wait_time, self.run_mungefsctl, ['getattr'])
+            munge_thread.start()
+            admin_session.assert_icommand(['iput', '-K', filepath])
+            munge_thread.join()
+            admin_session.assert_icommand(['irm', '-f', filename])
+            self.verify_new_failure_messages_in_log(scenario.retries)
+
+        # Cleanup
+        os.unlink(filepath)
+
+    # Helper function to recreate replication node to ensure empty context string
+    def reset_repl_resource(self):
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc " + self.munge_passthru)
+            admin_session.assert_icommand("iadmin rmchildfromresc demoResc pt2")
+            admin_session.assert_icommand("iadmin rmresc demoResc")
+            admin_session.assert_icommand("iadmin mkresc demoResc replication", 'STDOUT_SINGLELINE', 'replication')
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc ' + self.munge_passthru)
+            admin_session.assert_icommand('iadmin addchildtoresc demoResc pt2')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_iput_valid(self):
+        for scenario in self.valid_scenarios:
+            self.run_iput_test(scenario, 'test_repl_retry_iput_valid')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_iput_invalid(self):
+        for scenario in self.invalid_scenarios:
+            self.run_iput_test(scenario, 'test_repl_retry_iput_invalid')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_rebalance_valid(self):
+        for scenario in self.valid_scenarios:
+            self.run_rebalance_test(scenario, 'test_repl_retry_rebalance_valid')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_rebalance_invalid(self):
+        for scenario in self.invalid_scenarios:
+            self.run_rebalance_test(scenario, 'test_repl_retry_rebalance_invalid')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_iput_no_context(self):
+        self.reset_repl_resource()
+        self.run_iput_test(self.retry_scenario(1, 1, 1), 'test_repl_retry_iput_no_context')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_rebalance_no_context(self):
+        self.reset_repl_resource()
+        self.run_rebalance_test(self.retry_scenario(1, 1, 1), 'test_repl_retry_rebalance_no_context')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_iput_no_retries(self):
+        filename = "test_repl_retry_iput_no_retries"
+        filepath = lib.create_local_testfile(filename)
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand('iadmin modresc demoResc context "{0}"'.format(self.make_context('0')))
+
+            # Perform corrupt read (checksum) test
+            self.run_mungefsctl('read', '--corrupt_data')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            self.run_mungefsctl('read')
+            admin_session.assert_icommand(['irm', '-f', filename])
+
+            # Perform corrupt size test
+            self.run_mungefsctl('getattr', '--corrupt_size')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            self.run_mungefsctl('getattr')
+
+            admin_session.assert_icommand(['irm', '-f', filename])
+
+        os.unlink(filepath)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_rebalance_no_retries(self):
+        filename = "test_repl_retry_rebalance_no_retries"
+        filepath = lib.create_local_testfile(filename)
+        with session.make_session_for_existing_admin() as admin_session:
+            admin_session.assert_icommand('iadmin modresc demoResc context "{0}"'.format(self.make_context('0')))
+
+            # Perform corrupt read (checksum) test
+            self.run_mungefsctl('read', '--corrupt_data')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            admin_session.assert_icommand_fail('iadmin modresc demoResc rebalance', 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            self.run_mungefsctl('read')
+            admin_session.assert_icommand(['irm', '-f', filename])
+
+            # Perform corrupt size test
+            self.run_mungefsctl('getattr', '--corrupt_size')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            admin_session.assert_icommand_fail('iadmin modresc demoResc rebalance', 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1)
+            self.run_mungefsctl('getattr')
+
+            admin_session.assert_icommand(['irm', '-f', filename])
+
+        os.unlink(filepath)
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing: Reads server log")
+    def test_repl_retry_multiplier_overflow(self):
+        filename = "test_repl_retry_iput_large_multiplier"
+        filepath = lib.create_local_testfile(filename)
+        with session.make_session_for_existing_admin() as admin_session:
+            large_number = pow(2, 32)
+            scenario = self.retry_scenario(2, 1, large_number, self.make_context('2', '1', str(large_number)))
+            failure_message = 'bad numeric conversion'
+            admin_session.assert_icommand('iadmin modresc demoResc context "{0}"'.format(scenario.context_string))
+
+            self.run_mungefsctl('read', '--corrupt_data')
+            admin_session.assert_icommand_fail(['iput', '-K', filepath], 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1, failure_message)
+            admin_session.assert_icommand_fail('iadmin modresc demoResc rebalance', 'STDOUT_SINGLELINE', self.failure_message)
+            self.verify_new_failure_messages_in_log(1, failure_message)
+            self.run_mungefsctl('read')
+
+            admin_session.assert_icommand(['irm', '-f', filename])
+
+        os.unlink(filepath)
+
