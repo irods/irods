@@ -60,7 +60,6 @@
     "test_resource_types.Test_Resource_ReplicationToTwoCompound",
     "test_resource_types.Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive",
     "test_resource_types.Test_Resource_ReplicationWithinReplication",
-    "test_resource_types.Test_Resource_Replication_With_Retry",
     "test_resource_types.Test_Resource_RoundRobin",
     "test_resource_types.Test_Resource_RoundRobinWithinReplication",
     "test_resource_types.Test_Resource_Unixfilesystem",
