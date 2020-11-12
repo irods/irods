@@ -1,21 +1,21 @@
-/*** Copyright (c), The Unregents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* unregDataObj.c
- */
-
-#include "regReplica.h"
-
-#include "objMetaOpr.hpp"
-#include "rsFileStat.hpp"
-#include "miscServerFunct.hpp"
-#include "rsRegReplica.hpp"
-#include "rsFileChksum.hpp"
-#include "rsModDataObjMeta.hpp"
 #include "icatHighLevelRoutines.hpp"
+#include "miscServerFunct.hpp"
+#include "objMetaOpr.hpp"
+#include "regReplica.h"
+#include "rsFileChksum.hpp"
+#include "rsFileStat.hpp"
+#include "rsModDataObjMeta.hpp"
+#include "rsRegReplica.hpp"
 
 #include "irods_file_object.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_configuration_keywords.hpp"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica.hpp"
 
 #include "boost/lexical_cast.hpp"
 
@@ -82,33 +82,6 @@ namespace irods {
             return chksum;
         } // compute_checksum_for_resc
 
-        rodsLong_t get_file_size_from_filesystem(
-            rsComm_t*          _comm,
-            const std::string& _object_path,
-            const std::string& _resource_hierarchy,
-            const std::string& _file_path ) {
-            fileStatInp_t stat_inp{};
-            rstrcpy(stat_inp.objPath,  _object_path.c_str(),  sizeof(stat_inp.objPath));
-            rstrcpy(stat_inp.rescHier, _resource_hierarchy.c_str(), sizeof(stat_inp.rescHier));
-            rstrcpy(stat_inp.fileName, _file_path.c_str(), sizeof(stat_inp.fileName));
-            rodsStat_t *stat_out{};
-            const auto status_rsFileStat = rsFileStat(_comm, &stat_inp, &stat_out);
-            if(status_rsFileStat < 0) {
-                THROW(
-                    status_rsFileStat,
-                    boost::format("rsFileStat of objPath [%s] rescHier [%s] fileName [%s] failed with [%d]") %
-                    stat_inp.objPath %
-                    stat_inp.rescHier %
-                    stat_inp.fileName %
-                    status_rsFileStat);
-                return status_rsFileStat;
-            }
-
-            const auto size_in_vault = stat_out->st_size;
-            free(stat_out);
-            return size_in_vault;
-        } // get_file_size_from_filesystem
-
         void verify_and_update_replica(
             rsComm_t*     _comm,
             regReplica_t* _reg_inp) {
@@ -131,7 +104,11 @@ namespace irods {
             }
 
             if (nullptr == data_size_str) {
-                const auto dst_size = get_file_size_from_filesystem(_comm, dst_info->objPath, dst_info->rescHier, dst_info->filePath);
+                namespace fs = irods::experimental::filesystem;
+                namespace replica = irods::experimental::replica;
+
+                const auto dst_size = replica::get_replica_size_from_storage(
+                    *_comm, fs::path{dst_info->objPath}, dst_info->rescHier, dst_info->filePath);
                 if(UNKNOWN_FILE_SZ != dst_size && dst_size != src_info->dataSize) {
                     dst_info->dataSize = dst_size;
                     const auto dst_size_str = boost::lexical_cast<std::string>(dst_size);
