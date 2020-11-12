@@ -60,7 +60,6 @@
     "test_resource_types.Test_Resource_ReplicationToTwoCompound",
     "test_resource_types.Test_Resource_ReplicationToTwoCompoundResourcesWithPreferArchive",
     "test_resource_types.Test_Resource_ReplicationWithinReplication",
-    "test_resource_types.Test_Resource_Replication_With_Retry",
     "test_resource_types.Test_Resource_Unixfilesystem",
     "test_resource_types.Test_Resource_WeightedPassthru",
     "test_rule_engine_plugin_framework",
