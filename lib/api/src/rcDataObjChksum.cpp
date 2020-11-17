@@ -53,8 +53,8 @@
  *            already exists in iCAT. This keyWd has no value.
  *    \n CHKSUM_ALL_KW - checksum all replicas.
  *            This keyWd has no value.
- *    \n REPL_NUM_KW - The replica number of the replica to delete.
- *    \n RESC_NAME_KW - delete replica stored in this resource.
+ *    \n REPL_NUM_KW - The replica number of the replica to checksum.
+ *    \n RESC_NAME_KW - checksum replica stored in this resource.
  * \param[out] outChksum - a string containing the md5 checksum
  *             value.
  *
