@@ -1,3 +1,5 @@
+/// \file
+
 #include "irods_ms_plugin.hpp"
 #include "irods_re_structs.hpp"
 #include "msParam.h"
@@ -13,7 +15,7 @@ namespace
 {
     using log = irods::experimental::log;
 
-    auto msi_impl(msParam_t* _out_pid, ruleExecInfo_t* rei) -> int
+    auto msi_impl(msParam_t* _out_pid, ruleExecInfo_t* _rei) -> int
     {
         try {
             const auto pid_str = std::to_string(getpid());
@@ -48,15 +50,15 @@ auto plugin_factory() -> irods::ms_table_entry*
 #ifdef IRODS_FOR_DOXYGEN
 /// \brief Gets the pid of the agent which executes this microservice.
 ///
-/// \since 4.2.9
-///
-/// \param[out]    _out_pid     A place to write down the agent pid
-/// \param[in,out] _rei         A ::RuleExecInfo object that is automatically handled by the
-///                             rule engine plugin framework. Users must ignore this parameter.
+/// \param[out]    _out_pid A place to write down the agent pid.
+/// \param[in,out] _rei     A ::RuleExecInfo object that is automatically handled by the
+///                         rule engine plugin framework. Users must ignore this parameter.
 ///
 /// \return An integer.
-/// \retval 0 on success
-/// \retval Error code on failure
-auto msi_get_agent_pid(msParam_t* _out_pid, ruleExecInfo_t* rei) -> int;
+/// \retval 0        On success.
+/// \retval Non-zero On failure.
+///
+/// \since 4.2.9
+auto msi_get_agent_pid(msParam_t* _out_pid, ruleExecInfo_t* _rei) -> int;
 #endif // IRODS_FOR_DOXYGEN
 
