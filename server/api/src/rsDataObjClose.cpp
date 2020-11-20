@@ -597,31 +597,63 @@ namespace
     auto get_size_in_vault(RsComm& _comm, const int _fd) -> rodsLong_t
     {
         auto& l1desc = L1desc[_fd];
-        rodsLong_t size_in_vault = getSizeInVault(&_comm, l1desc.dataObjInfo);
 
-        // since we are not filtering out writes to archive resources, the
-        // archive plugins report UNKNOWN_FILE_SZ as their size since they may
-        // not be able to stat the file.  filter that out and trust the plugin
-        // in this instance
-        if (UNKNOWN_FILE_SZ == size_in_vault && l1desc.dataSize >= 0) {
-            return l1desc.dataSize;
+        try {
+            rodsLong_t size_in_vault = getSizeInVault(&_comm, l1desc.dataObjInfo);
+
+            irods::log(LOG_DEBUG, fmt::format(
+                "[{}:{}] - l1desc.bytesWritten:[{}],l1desc.dataSize:[{}],l1desc.dataObjInfo->dataSize:[{}],size_in_vault:[{}]",
+                __FUNCTION__, __LINE__, l1desc.bytesWritten, l1desc.dataSize, l1desc.dataObjInfo->dataSize, size_in_vault));
+
+            // since we are not filtering out writes to archive resources, the
+            // archive plugins report UNKNOWN_FILE_SZ as their size since they may
+            // not be able to stat the file.  filter that out and trust the plugin
+            // in this instance
+            if (UNKNOWN_FILE_SZ == size_in_vault && l1desc.dataSize >= 0) {
+                return l1desc.dataSize;
+            }
+
+            if (size_in_vault < 0 && UNKNOWN_FILE_SZ != size_in_vault) {
+                THROW((int)size_in_vault,
+                    fmt::format("{}: getSizeInVault error for {}, status = {}",
+                    __FUNCTION__, l1desc.dataObjInfo->objPath, size_in_vault));
+            }
+
+            // check for consistency of the write operation
+            if (size_in_vault != l1desc.dataSize && l1desc.dataSize > 0 &&
+                !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW)) {
+                THROW(SYS_COPY_LEN_ERR,
+                    fmt::format("{}: size in vault {} != target size {}",
+                    __FUNCTION__, size_in_vault, l1desc.dataSize));
+            }
+
+            return size_in_vault;
         }
+        catch (const irods::exception& e) {
+            l1desc.dataObjInfo->replStatus = STALE_REPLICA;
 
-        if (size_in_vault < 0 && UNKNOWN_FILE_SZ != size_in_vault) {
-            THROW((int)size_in_vault,
-                fmt::format("{}: getSizeInVault error for {}, status = {}",
-                __FUNCTION__, l1desc.dataObjInfo->objPath, size_in_vault));
+            keyValPair_t regParam{};
+            auto kvp = irods::experimental::make_key_value_proxy(regParam);
+
+            kvp[IN_PDMO_KW] = l1desc.dataObjInfo->rescHier;
+            kvp[REPL_STATUS_KW] = std::to_string(l1desc.dataObjInfo->replStatus);
+
+            if (getValByKey(&L1desc[_fd].dataObjInp->condInput, ADMIN_KW)) {
+                kvp[ADMIN_KW] = "";
+            }
+
+            modDataObjMeta_t inp{};
+            inp.dataObjInfo = l1desc.dataObjInfo;
+            inp.regParam = kvp.get();
+
+            if (const int ec = rsModDataObjMeta(&_comm, &inp); ec < 0) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "{} - rsModDataObjMeta failed [{}]",
+                    __FUNCTION__, ec));
+            }
+
+            throw;
         }
-
-        // check for consistency of the write operation
-        if (size_in_vault != l1desc.dataSize && l1desc.dataSize > 0 &&
-            !getValByKey(&l1desc.dataObjInp->condInput, NO_CHK_COPY_LEN_KW)) {
-            THROW(SYS_COPY_LEN_ERR,
-                fmt::format("{}: size in vault {} != target size {}",
-                __FUNCTION__, size_in_vault, l1desc.dataSize));
-        }
-
-        return size_in_vault;
     } // get_size_in_vault
 
     auto close_physical_file(RsComm& _comm, const int _fd) -> void
