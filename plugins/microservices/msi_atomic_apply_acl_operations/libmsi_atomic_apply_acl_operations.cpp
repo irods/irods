@@ -115,8 +115,6 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// }
 /// \endcode
 ///
-/// \since 4.2.9
-///
 /// \param[in]     _json_input  A JSON string containing the batch of ACL operations.
 /// \param[in,out] _json_output A JSON string containing the error information on failure.
 /// \param[in,out] _rei         A ::RuleExecInfo object that is automatically handled by the
@@ -125,6 +123,8 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-auto msi_atomic_apply_acl_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int
+///
+/// \since 4.2.9
+auto msi_atomic_apply_acl_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int;
 #endif // IRODS_FOR_DOXYGEN
 
