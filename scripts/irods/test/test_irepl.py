@@ -220,6 +220,53 @@ class Test_IRepl(session.make_sessions_mixin([('otherrods', 'rods')], [('alice',
             self.admin.assert_icommand(['iadmin', 'rmresc', resource_1])
             self.admin.assert_icommand(['iadmin', 'rmresc', resource_2])
 
+    def test_irepl_to_existing_replica_with_checksum__5263(self):
+        user0 = self.user_sessions[0]
+        resource_1 = 'resource1'
+        resource_1_vault = os.path.join(user0.local_session_dir, resource_1 + 'vault')
+        resource_2 = 'resource2'
+        resource_2_vault = os.path.join(user0.local_session_dir, resource_2 + 'vault')
+
+        try:
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', resource_1, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_1, resource_1_vault])],
+                'STDOUT', 'unixfilesystem')
+            self.admin.assert_icommand(
+                ['iadmin', 'mkresc', resource_2, 'unixfilesystem', ':'.join([test.settings.HOSTNAME_2, resource_2_vault])],
+                'STDOUT', 'unixfilesystem')
+
+            filename = 'test_irepl_to_existing_replica_with_checksum__5263'
+            physical_path_1 = os.path.join(user0.local_session_dir, filename + '_1')
+            lib.make_file(physical_path_1, 1024, contents='random')
+            logical_path = os.path.join(user0.session_collection, filename)
+
+            # Put data object to play with...
+            user0.assert_icommand(['iput', '-K', '-R', resource_1, physical_path_1, logical_path])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', 'sha2')
+
+            # Replicate to other resource...
+            user0.assert_icommand(['irepl', '-R', resource_2, logical_path])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT_MULTILINE', ['1 {}'.format(resource_2), 'sha2'])
+
+            physical_path_2 = os.path.join(user0.local_session_dir, filename + '_2')
+            lib.make_file(physical_path_2, 512, contents='random')
+
+            # Force overwrite the replica so that replica 0 is good and replica 1 is stale
+            user0.assert_icommand(['iput', '-f', '-R', resource_1, physical_path_2, logical_path])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['0', '&'])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['1', 'X'])
+
+            # Replicate to the other resource and ensure it was successful
+            user0.assert_icommand(['irepl', '-R', resource_2, logical_path])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['0', '&'])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT', ['1', '&'])
+            user0.assert_icommand(['ils', '-L', logical_path], 'STDOUT_MULTILINE', ['1 {}'.format(resource_2), 'sha2'])
+
+        finally:
+            user0.run_icommand(['irm', '-f', logical_path])
+            self.admin.assert_icommand(['iadmin', 'rmresc', resource_1])
+            self.admin.assert_icommand(['iadmin', 'rmresc', resource_2])
+
 @unittest.skip('this is an aspirational test suite')
 class test_irepl_repl_status(session.make_sessions_mixin([('otherrods', 'rods')], [('alice', 'apass')]), unittest.TestCase):
     repl_statuses = ['X', '&', '?']
