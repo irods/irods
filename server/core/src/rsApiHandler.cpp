@@ -1,10 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rsApiHandler.c - The server API Handler. handle RODS_API_REQ_T type
- * messages
- */
-
 #include "rsApiHandler.hpp"
 #include "modDataObjMeta.h"
 #include "rcMisc.h"

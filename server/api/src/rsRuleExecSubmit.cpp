@@ -51,7 +51,6 @@ namespace
 
         irods::experimental::key_value_proxy kvp{ruleExecSubmitInp->condInput};
         kvp[RULE_EXECUTION_CONTEXT_KW] = irods::to_json(rei_info->rei).dump().data();
-        rodsLog(LOG_NOTICE, "kvp[RULE_EXECUTION_CONTEXT_KW] = %s", kvp[RULE_EXECUTION_CONTEXT_KW].value().data());
 
         // Register the request.
         std::string svc_role;
