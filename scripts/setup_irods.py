@@ -61,7 +61,7 @@ from irods.exceptions import IrodsError, IrodsWarning
 import irods.log
 from irods.password_obfuscation import maximum_password_length
 
-def setup_server(irods_config, json_configuration_file=None, run_delay_server=None):
+def setup_server(irods_config, json_configuration_file=None):
     l = logging.getLogger(__name__)
 
     check_hostname()
@@ -118,8 +118,6 @@ def setup_server(irods_config, json_configuration_file=None, run_delay_server=No
         setup_server_config(irods_config)
         setup_client_environment(irods_config)
         default_resource_directory = get_and_create_default_vault(irods_config)
-
-    setup_run_delay_server_configuration_option(irods_config, run_delay_server)
 
     if irods_config.is_catalog:
         l.info(irods.lib.get_header('Setting up the database'))
@@ -264,25 +262,6 @@ def setup_service_account(irods_config, irods_user, irods_group):
 
     #owner of top-level directory changed, clear the cache
     irods_config.clear_cache()
-
-def setup_run_delay_server_configuration_option(irods_config, run_delay_server=None):
-    l = logging.getLogger(__name__)
-    l.debug('Setting up advanced_settings.run_delay_server configuration option ...')
-
-    # Determine if the rule execution (delay) server should be launched on startup.
-    if run_delay_server != None:
-        irods_config.server_config['advanced_settings']['run_delay_server'] = (run_delay_server.lower() in ['true', 'y', 'yes', '1'])
-    else:
-        role = irods_config.server_config['catalog_service_role'].lower()
-        irods_config.server_config['advanced_settings']['run_delay_server'] = (role == 'provider')
-
-    if irods_config.server_config['advanced_settings']['run_delay_server']:
-        l.debug('The server will launch the rule execution delay server on startup.')
-    else:
-        l.debug('The server will not launch the rule execution delay server on startup.')
-
-    l.debug('Updating configuration file ...')
-    irods.lib.update_json_file_from_dict(irods.paths.server_config_path(), irods_config.server_config)
 
 def setup_server_config(irods_config):
     l = logging.getLogger(__name__)
@@ -455,9 +434,7 @@ def main():
         irods_config.injected_environment['irodsReconnect'] = ''
 
     try:
-        setup_server(irods_config,
-                     json_configuration_file=options.json_configuration_file,
-                     run_delay_server=options.run_delay_server)
+        setup_server(irods_config, json_configuration_file=options.json_configuration_file)
     except IrodsError:
         l.error('Error encountered running setup_irods:\n', exc_info=True)
         l.info('Exiting...')
