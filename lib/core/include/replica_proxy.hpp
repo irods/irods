@@ -1,6 +1,8 @@
 #ifndef IRODS_REPLICA_PROXY_HPP
 #define IRODS_REPLICA_PROXY_HPP
 
+/// \file
+
 #include "filesystem.hpp"
 #include "irods_exception.hpp"
 #include "key_value_proxy.hpp"
