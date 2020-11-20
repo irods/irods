@@ -130,7 +130,7 @@ int open_destination_data_obj(
     dataObjInp_t& inp)
 {
     inp.oprType = COPY_DEST;
-    inp.openFlags = O_CREAT | O_RDWR;
+    inp.openFlags = O_CREAT | O_WRONLY | O_TRUNC;
 
     irods::file_object_ptr file_obj(new irods::file_object());
     std::string hier{};
