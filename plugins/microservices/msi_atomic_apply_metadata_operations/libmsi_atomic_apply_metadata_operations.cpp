@@ -135,8 +135,6 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// }
 /// \endcode
 ///
-/// \since 4.2.8
-///
 /// \param[in]     _json_input  A JSON string containing the batch of metadata operations.
 /// \param[in,out] _json_output A JSON string containing the error information on failure.
 /// \param[in,out] _rei         A ::RuleExecInfo object that is automatically handled by the
@@ -145,6 +143,8 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-auto msi_atomic_apply_metadata_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int
+///
+/// \since 4.2.8
+auto msi_atomic_apply_metadata_operations(msParam_t* _json_input, msParam_t* _json_output, ruleExecInfo_t* _rei) -> int;
 #endif // IRODS_FOR_DOXYGEN
 

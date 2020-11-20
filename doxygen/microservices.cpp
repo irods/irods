@@ -139,6 +139,7 @@
   - #msiModAVUMetadata - Modifies AVU metadata on a user, resource, data object, or collection
   - #msi_atomic_apply_acl_operations - Atomically modifies multiple ACLs on a single data object or collection
   - #msi_atomic_apply_metadata_operations - Atomically modifies multiple AVUs on a single user, resource, data object, or collection
+  - #msi_get_agent_pid - Gets the pid of the agent which executes this microservice
   - #msi_touch - Changes the mtime of a data object or collection
   - #msiExtractNaraMetadata - Extracts NARA style metadata from a local configuration file
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection

@@ -95,7 +95,6 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// }
 /// \endcode
 /// \endparblock
-///
 /// \param[in,out] _rei A ::RuleExecInfo object that is automatically handled
 ///                     by the rule engine plugin framework. Users must ignore
 ///                     this parameter.
@@ -133,6 +132,6 @@ auto plugin_factory() -> irods::ms_table_entry*
 /// \retval Non-zero On failure.
 ///
 /// \since 4.2.9
-auto msi_touch(msParam_t* _json_input, ruleExecInfo_t* _rei) -> int
+auto msi_touch(msParam_t* _json_input, ruleExecInfo_t* _rei) -> int;
 #endif // IRODS_FOR_DOXYGEN
 
