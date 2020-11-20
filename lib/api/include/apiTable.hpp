@@ -15,8 +15,6 @@
 #include "server_report.h"
 #include "zone_report.h"
 
-
-
 #if defined(CREATE_API_TABLE_FOR_SERVER) && !defined(CREATE_API_TABLE_FOR_CLIENT)
 #include "rsAuthCheck.hpp"
 #include "rsAuthPluginRequest.hpp"
@@ -162,8 +160,6 @@
 #else
 #error "exactly one of {CREATE_API_TABLE_FOR_SERVER, CREATE_API_TABLE_FOR_CLIENT} must be defined"
 #endif
-
-
 
 #define RS_AUTHENTICATE NULLPTR_FOR_CLIENT_TABLE(rsAuthenticate)
 #define RS_AUTH_CHECK NULLPTR_FOR_CLIENT_TABLE(rsAuthCheck)
@@ -742,7 +738,7 @@ static irods::apidef_t client_api_table_inp[] = {
         (funcPtr)CALL_MODACCESSCONTROLINP
     },
     {
-        RULE_EXEC_MOD_AN, RODS_API_VERSION, LOCAL_PRIV_USER_AUTH, LOCAL_PRIV_USER_AUTH,
+        RULE_EXEC_MOD_AN, RODS_API_VERSION, LOCAL_USER_AUTH, LOCAL_PRIV_USER_AUTH,
         "RULE_EXEC_MOD_INP_PI", 0, NULL, 0,
         boost::any(std::function<int(rsComm_t*,ruleExecModInp_t*)>(RS_RULE_EXEC_MOD)),
         "api_rule_exec_mod", irods::clearInStruct_noop,
