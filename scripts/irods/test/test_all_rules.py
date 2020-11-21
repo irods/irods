@@ -1057,3 +1057,15 @@ OUTPUT ruleExecOut
             # Show that even though no data object was created, the PEPs fired correctly.
             self.admin.assert_icommand(['imeta', 'ls', '-d', data_object], 'STDOUT', ['touch_pre_fired', 'touch_post_fired'])
 
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python', 'Skip for PREP and Topology Testing')
+    def test_msiExit_prints_user_provided_error_information_on_client_side__issue_4463(self):
+        rep_name = 'irods_rule_engine_plugin-irods_rule_language-instance'
+        error_code = '-808000'
+        error_msg = '#4463: This message should appear on the client-side!'
+        rule_text = 'msiExit("{0}", "{1}")'.format(error_code, error_msg)
+        stdout, stderr, ec = self.admin.run_icommand(['irule', '-r', rep_name, rule_text, 'null', 'ruleExecOut'])
+        self.assertNotEqual(ec, 0)
+        self.assertTrue(error_msg in stdout)
+        self.assertTrue(error_code + ' CAT_NO_ROWS_FOUND' in stderr)
+
