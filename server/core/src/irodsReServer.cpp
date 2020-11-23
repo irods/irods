@@ -29,6 +29,14 @@
 #include "json_serialization.hpp"
 #include "json_deserialization.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+
+#include <fmt/format.h>
+
+#include <json.hpp>
+
+#include <cstdlib>
 #include <cstring>
 #include <atomic>
 #include <chrono>
@@ -40,14 +48,6 @@
 #include <string_view>
 #include <fstream>
 
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/format.hpp>
-
-#include <fmt/format.h>
-
-#include <json.hpp>
-
 // clang-format off
 namespace ix = irods::experimental;
 
@@ -56,6 +56,15 @@ using json   = nlohmann::json;
 
 namespace {
     static std::atomic_bool re_server_terminated{};
+
+    void set_ips_display_name(const std::string_view _display_name)
+    {
+        // Setting this environment variable is required so that "ips" can display
+        // the command name alongside the connection information.
+        if (setenv(SP_OPTION, _display_name.data(), /* overwrite */ 1)) {
+            rodsLog(LOG_WARNING, "Could not set environment variable [spOption] for ips.");
+        }
+    }
 
     int init_log() {
         /* Handle option to log sql commands */
@@ -488,7 +497,10 @@ namespace {
     }
 } // anonymous namespace
 
-int main() {
+int main(int, char* _argv[])
+{
+    set_ips_display_name(boost::filesystem::path{_argv[0]}.filename().c_str());
+
     static std::condition_variable term_cv;
     static std::mutex term_m;
     const auto signal_exit_handler = [](int signal) {
@@ -571,3 +583,4 @@ int main() {
 
     return 0;
 }
+
