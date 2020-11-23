@@ -29,6 +29,14 @@
 #include "json_serialization.hpp"
 #include "json_deserialization.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+
+#include <fmt/format.h>
+
+#include <json.hpp>
+
+#include <cstdlib>
 #include <cstring>
 #include <atomic>
 #include <chrono>
@@ -39,14 +47,6 @@
 #include <string>
 #include <string_view>
 #include <fstream>
-
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/format.hpp>
-
-#include <fmt/format.h>
-
-#include <json.hpp>
 
 // clang-format off
 namespace ix = irods::experimental;
@@ -73,6 +73,15 @@ namespace {
 
         if (char hostname[HOST_NAME_MAX]{}; gethostname(hostname, sizeof(hostname)) == 0) {
             logger::set_server_host(hostname);
+        }
+    }
+
+    void set_ips_display_name(const std::string_view _display_name)
+    {
+        // Setting this environment variable is required so that "ips" can display
+        // the command name alongside the connection information.
+        if (setenv(SP_OPTION, _display_name.data(), /* overwrite */ 1)) {
+            logger::delay_server::warn("Could not set environment variable [spOption] for ips.");
         }
     }
 
@@ -474,7 +483,8 @@ namespace {
     }
 } // anonymous namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     bool enable_test_mode = false;
     bool write_to_stdout = false;
     int c{};
@@ -495,6 +505,8 @@ int main(int argc, char **argv) {
     init_logger(write_to_stdout, enable_test_mode);
 
     logger::delay_server::info("Initializing rule execution server ...");
+
+    set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
 
     static std::condition_variable term_cv;
     static std::mutex term_m;
@@ -574,3 +586,4 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
