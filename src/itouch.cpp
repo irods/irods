@@ -4,6 +4,9 @@
 #include <irods/touch.h>
 #include <irods/irods_exception.hpp>
 
+#include "utility.hpp"
+
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <fmt/format.h>
 #include <json.hpp>
@@ -24,6 +27,8 @@ auto canonical(const std::string_view _path, const rodsEnv& _env) -> std::option
 
 int main(int _argc, char* _argv[])
 {
+    utils::set_ips_display_name(boost::filesystem::path{_argv[0]}.filename().c_str());
+
     rodsEnv env{};
 
     if (getRodsEnv(&env) < 0) {
