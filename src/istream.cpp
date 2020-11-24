@@ -6,8 +6,12 @@
 #include "rodsPath.h"
 #include "irods_at_scope_exit.hpp"
 
+#include "utility.hpp"
+
+#include "boost/filesystem.hpp"
 #include "boost/program_options.hpp"
 
+#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -34,6 +38,8 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
 
 int main(int argc, char* argv[])
 {
+    utils::set_ips_display_name(boost::filesystem::path{argv[0]}.filename().c_str());
+
     po::options_description desc{""};
     desc.add_options()
         ("help,h", "")
