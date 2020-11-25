@@ -1,8 +1,4 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 /*
-
 This routine parses the command line, converting it into values in the
 rodsArguments_t structure.  This is used by all the RODS C client
 commands (the R commands), which helps ensure that we use common
@@ -178,6 +174,10 @@ parseCmdLineOpt( int argc, char **argv, const char *optString, int includeLong,
             }
             if ( strcmp( "--dryrun", argv[i] ) == 0 ) {
                 rodsArgs->dryrun = True;
+                argv[i] = "-Z";
+            }
+            if ( strcmp( "--no-compute", argv[i] ) == 0 ) {
+                rodsArgs->noCompute = True;
                 argv[i] = "-Z";
             }
             if ( strcmp( "--rlock", argv[i] ) == 0 ) {
