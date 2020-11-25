@@ -121,6 +121,7 @@ typedef struct {
     int retries;
     int retriesValue;
     int regRepl;
+    int noCompute;
 
     int parallel;
     int serial;
@@ -139,7 +140,6 @@ typedef struct {
     char* acl_string;
     int kv_pass;
     char* kv_pass_string;
-
 } rodsArguments_t;
 
 #ifdef __cplusplus

@@ -871,23 +871,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
             os.unlink(badpath)
         os.unlink(localpath)
 
-    def test_ichksum_replica_reporting__3499(self):
-        initial_file_contents = 'a'
-        filename = 'test_ichksum_replica_reporting__3499'
-        with open(filename, 'wb') as f:
-            f.write(initial_file_contents)
-        self.admin.assert_icommand(['iput', '-K', filename])
-        vault_session_path = self.admin.get_vault_session_path()
-        final_file_contents = 'b'
-        with open(os.path.join(vault_session_path, filename), 'wb') as f:
-            f.write(final_file_contents)
-        out, err, rc = self.admin.run_icommand(['ichksum', '-KarR', 'demoResc', self.admin.session_collection])
-        self.assertNotEqual(rc, 0)
-        self.assertTrue(filename in out, out)
-        self.assertTrue('replNum [0]' in out, out)
-        self.assertTrue('USER_CHKSUM_MISMATCH' in err, err)
-        os.unlink(filename)
-
     def test_irm_colloprstat__3572(self):
         collection_to_delete = 'collection_to_delete'
         self.admin.assert_icommand(['imkdir', collection_to_delete])
@@ -904,28 +887,6 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
                 count=0,
                 start_index=initial_size_of_server_log))
         os.unlink(filename)
-
-    def test_ichksum_file_size_verification__3537(self):
-        cfg = IrodsConfig()
-        if cfg.catalog_database_type == "postgres":
-            filename = 'test_ichksum_file_size_verification__3537'
-            file_size = 50
-            lib.make_file(filename, file_size)
-            self.admin.assert_icommand(['iput', '-K', filename])
-            self.admin.assert_icommand(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
-            self.admin.assert_icommand(['ichksum', '-K', '--verify', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
-            from .. import database_connect
-            with contextlib.closing(database_connect.get_database_connection(cfg)) as connection:
-                with contextlib.closing(connection.cursor()) as cursor:
-                    cursor.execute("update r_data_main set data_size = {0} where data_name = '{1}';".format(file_size-1, filename))
-                    cursor.commit()
-
-            self.admin.assert_icommand(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 0')
-            rc, _, _ = self.admin.assert_icommand(['ichksum', '-K', '--verify', filename], 'STDERR_SINGLELINE', 'USER_FILE_SIZE_MISMATCH')
-            self.assertNotEqual(rc, 0)
-            os.unlink(filename)
-        else:
-            print('skipping test_ichksum_file_size_verification__3537 due to unsupported database for this test.')
 
     def test_ichksum_admin_flag__3265(self):
         # Get files set up
@@ -947,16 +908,16 @@ class Test_ICommands_File_Operations(resource_suite.ResourceBase, unittest.TestC
         # Generate checksum as rodsuser with admin flag (fail)
         self.user0.assert_icommand(['ichksum', '-K', '-M', data_path1], 'STDERR_SINGLELINE', 'CAT_INSUFFICIENT_PRIVILEGE_LEVEL')
         # Generate checksum as rodsuser (owner; pass)
-        self.user0.assert_icommand(['ichksum', '-K', data_path1], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.user0.assert_icommand(['ichksum', data_path1], 'STDOUT_SINGLELINE', '    sha2:')
         # Verify checksum as admin (no permissions; fail)
         self.admin.assert_icommand(['ichksum', '-K', data_path1], 'STDERR_SINGLELINE', 'CAT_NO_ACCESS_PERMISSION')
         # Verify checksum as admin with admin flag (pass)
-        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path1], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path1])
 
         # Generate checksum as admin with admin flag (pass)
-        self.admin.assert_icommand(['ichksum', '-K', '-M', data_path2], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-M', data_path2], 'STDOUT_SINGLELINE', '    sha2:')
         # Verify checksum as rodsuser (pass)
-        self.user0.assert_icommand(['ichksum', '-K', data_path2], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.user0.assert_icommand(['ichksum', '-K', data_path2])
 
         os.unlink(filename1)
         os.unlink(filename2)

@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsBulkDataObjPut.c. See bulkDataObjReg.h for a description of
- * this API call.*/
-
 #include "apiHeaderAll.h"
 #include "objMetaOpr.hpp"
 #include "resource.hpp"

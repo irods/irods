@@ -104,6 +104,7 @@
 #define REG_REPL_KW                                 "regRepl"  /* register replica */
 #define AGE_KW                                      "age"  /* age of the file for itrim */
 #define DRYRUN_KW                                   "dryrun"  /* do a dry run */
+#define NO_COMPUTE_KW                               "no_compute"  /* do not compute anything (similar to dryrun) */
 #define ACL_COLLECTION_KW                           "aclCollection"  /* the collection from which
 * the ACL should be used */
 #define NO_CHK_COPY_LEN_KW                          "noChkCopyLen"  /* Don't check the len

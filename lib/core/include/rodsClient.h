@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* rodsClient.h - common header file for rods client
- */
-
 #ifndef RODS_CLIENT_H__
 #define RODS_CLIENT_H__
 
