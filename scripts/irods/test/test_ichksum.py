@@ -75,20 +75,6 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         new_chksum = lib.file_digest(full_path, 'sha256', encoding='base64')
         self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', new_chksum)
 
-    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing: requires Vault")
-    def test_ichksum_verify(self):
-        filename = 'test_ichksum_verify'
-        lib.make_file(filename, 1024, 'arbitrary')
-        file_chksum = lib.file_digest(filename, 'sha256', encoding='base64')
-        self.admin.assert_icommand(['iput', filename])
-        self.admin.assert_icommand(['ichksum', filename], 'STDOUT_SINGLELINE', file_chksum)
-        # Mess with file in vault
-        full_path = os.path.join(self.admin.get_vault_session_path(), filename)
-        lib.cat(full_path, 'XXXXX')
-        new_chksum = lib.file_digest(full_path, 'sha256', encoding='base64')
-        self.admin.assert_icommand_fail(['ichksum', '-K', filename], 'STDOUT_SINGLELINE', 'Failed checksum = 1')
-        self.admin.assert_icommand(['ichksum', '-K', filename], 'STDERR_SINGLELINE', 'USER_CHKSUM_MISMATCH')
-
     @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for topology testing")
     def test_ichksum_truncating_printed_filename__issue_3085(self):
         filename = 'issue_3085_012345678901234567890123456789.txt'
@@ -139,7 +125,6 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['irm', '-f', filename])
 
     def test_chksum_catalog_verify_not_exhausting_statements__issue_4732(self):
-
         Statement_Table_Size = 50
         filecount = Statement_Table_Size + 10
         dirname = 'ichksum_targets_4732'
@@ -168,3 +153,183 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
                 clean_exit = False
             shutil.rmtree(dirname, ignore_errors=True)
             self.assertTrue (clean_exit, '**** inadequate clean-up in test for #4732 ***')
+
+    def test_ichksum_reports_incompatible_params__issue_5252(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['ichksum', '-n', '0', '-R', 'demoResc', data_object], 'STDERR', ["the 'n' and 'R' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-a', '-n', '0', data_object], 'STDERR', ["the 'n' and 'a' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-a', '-R', 'demoResc', data_object], 'STDERR', ["the 'R' and 'a' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-K', '-f', data_object], 'STDERR', ["the 'K' and 'f' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-K', '-a', '-n', '0', data_object], 'STDERR', ["the 'n' and 'a' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-K', '-a', '-R', 'demoResc', data_object], 'STDERR', ["the 'R' and 'a' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '-K', '--silent', data_object], 'STDERR', ["the 'K' and 'silent' option cannot be used together"])
+        self.admin.assert_icommand(['ichksum', '--verify', '--silent', data_object], 'STDERR', ["the 'verify' and 'silent' option cannot be used together"])
+
+    def test_ichksum_reports_number_of_replicas_skipped__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+
+        # Show that ichksum reports about skipping replicas that are not good.
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '0'])
+        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['INFO: Number of replicas skipped: 1'])
+
+        # Show that ichksum reports information about non-good replicas when they exist.
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '1'])
+        out, _, ec = self.admin.run_icommand(['ichksum', '-K', data_object])
+        self.assertTrue(ec == 0 and 'INFO: Number of replicas' not in out)
+
+    def test_ichksum_reports_when_replicas_physical_size_does_not_match_size_in_catalog__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_SIZE', '1'])
+        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+
+        # Show that --verify is an alias for -K.
+        self.admin.assert_icommand(['ichksum', '--verify', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+
+        # Show that the error is printed when targeting a specific replica.
+        self.admin.assert_icommand(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Physical size does not match size in catalog for replica [0].'])
+
+    def test_ichksum_reports_when_replicas_are_missing_checksums__issue_5252(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDOUT', [data_object + '    sha2:'])
+        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+
+        # Show that --verify is an alias for -K.
+        self.admin.assert_icommand(['ichksum', '--verify', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+
+        # Show that the warning is printed when targeting a specific replica.
+        self.admin.assert_icommand(['ichksum', '-K', '-n1', data_object], 'STDOUT', ['WARNING: No checksum available for replica [1].'])
+
+    def test_ichksum_reports_when_replicas_computed_checksum_does_not_match_checksum_in_catalog__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', [os.path.basename(data_object) + '    sha2:'])
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_CHECKSUM', 'sha2:BAD_CHECKSUM'])
+        self.admin.assert_icommand(['ichksum', '-K', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
+
+        # Show that the error is printed when targeting a specific replica.
+        self.admin.assert_icommand(['ichksum', '-K', '-n0', data_object], 'STDOUT', ['ERROR: Computed checksum does not match what is in the catalog for replica [0].'])
+
+        # Show that when --no-compute is passed, verification mode will not verify if the checksum in the
+        # catalog is correct or not, regardless of whether the client is targeting one or all replicas.
+        self.admin.assert_icommand(['ichksum', '-K', '--no-compute', data_object])
+        self.admin.assert_icommand(['ichksum', '-K', '--no-compute', '-n0', data_object])
+
+    def test_ichksum_reports_when_replicas_do_not_share_identical_checksums__issue_5252(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+        
+        # Change the contents of replica 0.
+        # This will cause ichksum to report a warning.
+        gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}' and DATA_REPL_NUM = '0'".format(self.admin.session_collection, data_object)
+        out, _, ec = self.admin.run_icommand(['iquest', '%s', gql])
+        self.assertEqual(ec, 0)
+        out = out.strip()
+        self.assertGreater(len(out), 0)
+        with open(out, 'r+') as f:
+            f.write('test')
+
+        self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDOUT', ['WARNING: Data object has replicas with different checksums.'])
+
+    def test_ichksum_computes_checksum_for_highest_voted_replica_when_no_options_are_present__issue_5252(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+        self.admin.assert_icommand(['ichksum', data_object], 'STDOUT', [data_object + '    sha2:'])
+
+        # Show that only one of the two replicas has a checksum.
+        out1, _, ec1 = self.admin.run_icommand(['ichksum', '-K', '-n0', data_object])
+        self.assertTrue(ec1 == 0, 'Unexpected error')
+
+        out2, _, ec2 = self.admin.run_icommand(['ichksum', '-K', '-n1', data_object])
+        self.assertTrue(ec2 == 0, 'Unexpected error')
+
+        msg1 = 'WARNING: No checksum available for replica [0].'
+        msg2 = 'WARNING: No checksum available for replica [1].'
+        self.assertTrue((msg1 in out1 and msg2 not in out2) or (msg1 not in out1 and msg2 in out2))
+
+    def test_silent_option_is_supported__issue_5252(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+        self.admin.assert_icommand(['ichksum', '-a', '--silent', data_object])
+
+        # Verify that the data object's replicas have checksums.
+        gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.admin.session_collection, data_object)
+        self.admin.assert_icommand(['iquest', '%s', gql], 'STDOUT', ['sha2:'])
+
+    def test_recursive_option_is_supported__issue_5252(self):
+        coll_a = os.path.join(self.admin.session_collection, 'coll_a.5252')
+        self.admin.assert_icommand(['imkdir', coll_a])
+
+        coll_b = os.path.join(self.admin.session_collection, 'coll_b.5252')
+        self.admin.assert_icommand(['imkdir', coll_b])
+
+        # Create three data objects with one additional replica.
+        # Place one data object in each collection.
+        data_objects = [os.path.join(self.admin.session_collection, 'foo'),
+                        os.path.join(coll_a, 'bar'),
+                        os.path.join(coll_b, 'baz')]
+        for data_object in data_objects:
+            self.admin.assert_icommand(['istream', 'write', data_object], input='some special sauce!')
+            self.admin.assert_icommand(['irepl', '-R', self.testresc, data_object])
+
+        # Checksum all of the data objects (and replicas).
+        self.admin.assert_icommand(['ichksum', '-r', '-a', self.admin.session_collection], 'STDOUT', [
+            'C- ' + os.path.dirname(data_objects[0]),
+            'C- ' + os.path.dirname(data_objects[1]),
+            'C- ' + os.path.dirname(data_objects[2]),
+            '    ' + os.path.basename(data_objects[0]) + '    sha2:',
+            '    ' + os.path.basename(data_objects[1]) + '    sha2:',
+            '    ' + os.path.basename(data_objects[2]) + '    sha2:'
+        ])
+
+        # Show that using --silent produces no output when all replicas are in a good state.
+        self.admin.assert_icommand(['ichksum', '-r', '-a', '--silent', self.admin.session_collection])
+
+    def test_ichksum_ignores_replicas_that_are_not_marked_good_or_stale__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+
+        # Set the replica's status to an unknown value, in this test, 3.
+        # If the replica's status was set to intermediate (2), ichksum would return HIERARCHY_ERROR.
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '3'])
+
+        self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
+        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['SYS_REPLICA_INACCESSIBLE'])
+        self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['SYS_NO_GOOD_REPLICA'])
+
+    def test_ichksum_returns_immediately_if_processing_replicas_in_the_bundle_resource__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+
+        # Capture the replica's resource id.
+        gql = "select RESC_ID where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.admin.session_collection, os.path.basename(data_object))
+        original_resc_id, _, ec = self.admin.run_icommand(['iquest', '%s', gql])
+        self.assertEqual(ec, 0)
+
+        # Get the resource id of the bundle resource and update the replica's resource id column.
+        bundle_resc_id, _, ec = self.admin.run_icommand(['iquest', '%s', "select RESC_ID where RESC_NAME = 'bundleResc'"])
+        self.assertEqual(ec, 0)
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_RESC_ID', bundle_resc_id.strip()])
+
+        self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['SYS_CANT_CHKSUM_BUNDLED_DATA'])
+        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['SYS_CANT_CHKSUM_BUNDLED_DATA'])
+
+        # Restore the replica's original resource id.
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_RESC_ID', original_resc_id.strip()])
+
+    def test_ichksum_is_not_allowed_access_to_intermediate_replicas__issue_5252(self):
+        data_object = os.path.join(self.admin.session_collection, 'foo')
+        self.admin.assert_icommand(['istream', 'write', data_object], input='some data')
+        self.admin.assert_icommand(['iadmin', 'modrepl', 'logical_path', data_object, 'replica_number', '0', 'DATA_REPL_STATUS', '2'])
+        self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+        self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+        self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+

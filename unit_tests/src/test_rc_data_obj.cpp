@@ -1,6 +1,9 @@
 #include "catch.hpp"
 
 #include "client_connection.hpp"
+#include "dataObjChksum.h"
+#include "dataObjInpOut.h"
+#include "dstream.hpp"
 #include "filesystem.hpp"
 #include "irods_at_scope_exit.hpp"
 #include "irods_error_enum_matcher.hpp"
@@ -8,6 +11,8 @@
 #include "replica.hpp"
 #include "replica_proxy.hpp"
 #include "rodsClient.h"
+#include "rodsErrorTable.h"
+#include "transport/default_transport.hpp"
 
 #include "fmt/format.h"
 
@@ -356,3 +361,89 @@ TEST_CASE("open,read,write,close")
         std::cout << e.what();
     }
 }
+
+TEST_CASE("rxDataObjChksum")
+{
+    namespace ix = irods::experimental;
+    namespace io = irods::experimental::io;
+    namespace fs = irods::experimental::filesystem;
+
+    load_client_api_plugins();
+
+    ix::client_connection conn;
+    REQUIRE(conn);
+
+    rodsEnv env;
+    _getRodsEnv(env);
+
+    const auto sandbox = fs::path{env.rodsHome} / "unit_testing_sandbox";
+
+    if (!fs::client::exists(conn, sandbox)) {
+        REQUIRE(fs::client::create_collection(conn, sandbox));
+    }
+
+    irods::at_scope_exit remove_sandbox{[&conn, &sandbox] {
+        REQUIRE(fs::client::remove_all(conn, sandbox, fs::remove_options::no_trash));
+    }};
+
+    SECTION("incompatible parameters")
+    {
+        const auto data_object = sandbox / "data_object.txt";
+
+        {
+            io::client::native_transport tp{conn};
+            io::odstream{tp, data_object} << "some important data.";
+        }
+
+        DataObjInp input{};
+        std::strcpy(input.objPath, data_object.c_str());
+        ix::key_value_proxy kvp{input.condInput};
+
+        char* ignore_checksum{};
+
+        SECTION("replica number flag and resource name flag")
+        {
+            kvp[REPL_NUM_KW] = "0";
+            kvp[RESC_NAME_KW] = env.rodsDefResource;
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+
+        SECTION("all replicas flag and replica number flag")
+        {
+            kvp[CHKSUM_ALL_KW] = "";
+            kvp[REPL_NUM_KW] = "0";
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+
+        SECTION("all replicas flag and resource name flag")
+        {
+            kvp[CHKSUM_ALL_KW] = "";
+            kvp[RESC_NAME_KW] = env.rodsDefResource;
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+
+        SECTION("verification flag and force flag")
+        {
+            kvp[VERIFY_CHKSUM_KW] = "";
+            kvp[FORCE_CHKSUM_KW] = "";
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+
+        SECTION("verification flag, all flag, and replica number flag")
+        {
+            kvp[VERIFY_CHKSUM_KW] = "";
+            kvp[CHKSUM_ALL_KW] = "";
+            kvp[REPL_NUM_KW] = "0";
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+
+        SECTION("verification flag, all flag, and resource name flag")
+        {
+            kvp[VERIFY_CHKSUM_KW] = "";
+            kvp[CHKSUM_ALL_KW] = "";
+            kvp[RESC_NAME_KW] = env.rodsDefResource;
+            REQUIRE(rcDataObjChksum(static_cast<RcComm*>(conn), &input, &ignore_checksum) == USER_INCOMPATIBLE_PARAMS);
+        }
+    } // incompatible parameters
+}
+

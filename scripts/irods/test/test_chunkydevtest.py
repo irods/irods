@@ -62,7 +62,7 @@ class ChunkyDevTest(ResourceBase):
         # put and list basic file information
         self.admin.assert_icommand("ils -AL", 'STDOUT_SINGLELINE', "home")  # debug
         self.admin.assert_icommand("iput -K --wlock " + test_file + " " + irodshome + "/icmdtest/foo1")
-        self.admin.assert_icommand("ichksum -f " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "performed = 1")
+        self.admin.assert_icommand("ichksum -f " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "    sha2:")
         self.admin.assert_icommand("iput -kf " + test_file + " " + irodshome + "/icmdtest/foo1")
         self.admin.assert_icommand("ils " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', "foo1")
         self.admin.assert_icommand("ils -l " + irodshome + "/icmdtest/foo1", 'STDOUT_SINGLELINE', ["foo1", myssize])
@@ -642,7 +642,7 @@ class ChunkyDevTest(ResourceBase):
                                    irodshome + "/icmdtest1/foo1 " + irodshome + "/icmdtest1/foo2")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtest1/foo2 " + irodshome + "/icmdtest1/foo4")
         self.admin.assert_icommand("imv " + irodshome + "/icmdtest1/foo4 " + irodshome + "/icmdtest1/foo2")
-        self.admin.assert_icommand("ichksum -K " + irodshome + "/icmdtest1/foo2", 'STDOUT_SINGLELINE', "foo2")
+        self.admin.assert_icommand("ichksum -K " + irodshome + "/icmdtest1/foo2")
         self.admin.assert_icommand("iget -f -K " + irodshome + "/icmdtest1/foo2 " + dir_w)
         os.unlink(dir_w + "/foo2")
         self.admin.assert_icommand("irsync " + test_file + " i:" + irodshome + "/icmdtest1/foo1")
@@ -698,9 +698,8 @@ class ChunkyDevTest(ResourceBase):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
             os.unlink(rsfile)
-        self.admin.assert_icommand("iput -vbPKr --retries 10 --wlock -X " + rsfile + " --lfrestart " +
+        self.admin.assert_icommand("iput -vbPr --retries 10 --wlock -X " + rsfile + " --lfrestart " +
                                    lrsfile + " -N 2 " + myldir + " " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "New restartFile")
-        self.admin.assert_icommand("ichksum -rK " + irodshome + "/icmdtest/testy", 'STDOUT_SINGLELINE', "Total checksum performed")
         if os.path.isfile(lrsfile):
             os.unlink(lrsfile)
         if os.path.isfile(rsfile):
