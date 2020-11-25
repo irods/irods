@@ -20,6 +20,7 @@
     "test_imv",
     "test_ipasswd",
     "test_iphymv",
+    "test_iput",
     "test_iput_options",
     "test_ipwd",
     "test_iquest",
