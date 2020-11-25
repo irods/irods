@@ -97,12 +97,12 @@ class Test_Resource_RandomWithinReplication(ResourceSuite, ChunkyDevTest, unitte
             new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
 
         # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
-        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'sha2:' + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
 
         # forcibly re-calculate all checksums and ensure that original checksum was not changed
-        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT_SINGLELINE', 'WARNING: Data object has replicas with different checksums.')
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
 
@@ -884,9 +884,10 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand('ils -L ' + full_logical_path, 'STDOUT_SINGLELINE', filename)  # should be listed
         file_vault_full_path = os.path.join(self.admin.get_vault_session_path(), long_collection_name, filename)
         # method 1
-        self.admin.assert_icommand('ichksum -K ' + full_logical_path, 'STDOUT_MULTILINE',
-                                   ['Total checksum performed = 1, Failed checksum = 0',
-                                    'sha2:' + orig_digest])  # ichksum
+        out, err, ec = self.admin.run_icommand('ichksum -K ' + full_logical_path)
+        self.assertEqual(ec, 0)
+        self.assertEqual(len(out), 0)
+        self.assertEqual(len(err), 0)
         # method 2
         self.admin.assert_icommand("iquest \"select DATA_CHECKSUM where DATA_NAME = '%s'\"" % filename,
                                    'STDOUT_SINGLELINE', ['DATA_CHECKSUM = sha2:' + orig_digest])  # iquest
@@ -906,9 +907,7 @@ OUTPUT ruleExecOut
         self.admin.assert_icommand('iunreg ' + full_logical_path)
         self.admin.assert_icommand('ireg ' + file_vault_full_path + ' ' + full_logical_path)
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path, 'STDOUT_SINGLELINE', ['WARNING: checksum not available'])  # ifsck
-        self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT_MULTILINE',
-                                   ['Total checksum performed = 1, Failed checksum = 0',
-                                    'sha2:' + new_digest])
+        self.admin.assert_icommand('ichksum -f ' + full_logical_path, 'STDOUT', ['sha2:' + new_digest])
         self.admin.assert_icommand('ifsck -K ' + file_vault_full_path)  # ifsck
         # local cleanup
         os.remove(filepath)
@@ -1839,7 +1838,7 @@ class Test_Resource_Compound(ChunkyDevTest, ResourceSuite, unittest.TestCase):
         self.admin.assert_icommand(['itrim', '-n0', '-N1', filename], 'STDOUT_SINGLELINE', "files trimmed")
 
         # run ichksum on data object, which will replicate to cache
-        self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-f', filename], 'STDOUT_SINGLELINE', filename + '    sha2:')
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
 
         self.assertTrue(str(os.stat(phypath_for_data_obj).st_mtime) == original_archive_mtime, msg='Archive mtime changed after ichksum - not good!')
@@ -3699,12 +3698,12 @@ class Test_Resource_Replication(ChunkyDevTest, ResourceSuite, unittest.TestCase)
             new_checksum = hashlib.sha256(f.read()).digest().encode("base64").strip()
 
         # forcibly re-calculate corrupted checksum and ensure that original checksum was not overwritten
-        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-f', '-n0', filename], 'STDOUT', filename + '    sha2:' + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
 
         # forcibly re-calculate all checksums and ensure that original checksum was not changed
-        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT_SINGLELINE', 'Total checksum performed = 1, Failed checksum = 0')
+        self.admin.assert_icommand(['ichksum', '-f', '-a', filename], 'STDOUT', 'WARNING: Data object has replicas with different checksums.')
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + new_checksum)
         self.admin.assert_icommand(['ils', '-L', filename], 'STDOUT_SINGLELINE', "sha2:" + original_checksum)
 
@@ -3839,24 +3838,23 @@ OUTPUT ruleExecOut
         u3_time = os.path.getmtime(u3_path)
 
         print('u1_time: '+str(u1_time))
-        print('u2_time: '+str(u3_time))
-        print('u3_time: '+str(u2_time))
+        print('u2_time: '+str(u2_time))
+        print('u3_time: '+str(u3_time))
 
         time.sleep(1)
 
-        self.admin.assert_icommand("ichksum -f " + filename, 'STDOUT_SINGLELINE', 'checksum')
+        self.admin.assert_icommand("ichksum -f " + filename, 'STDOUT_SINGLELINE', '    sha2:')
 
         u1_time2 = os.path.getmtime(u1_path)
         u2_time2 = os.path.getmtime(u2_path)
         u3_time2 = os.path.getmtime(u3_path)
 
         print('u1_time2: '+str(u1_time2))
-        print('u2_time2: '+str(u3_time2))
-        print('u3_time2: '+str(u2_time2))
+        print('u2_time2: '+str(u2_time2))
+        print('u3_time2: '+str(u3_time2))
 
+        # Show that computing/updating checksums does not affect the physical object.
         assert(u1_time == u1_time2 and u2_time == u2_time2 and u3_time == u3_time2)
-
-
 
     def test_num_repl_policy__ticket_2851(self):
         self.admin.assert_icommand('iadmin modresc demoResc context "num_repl=2"')
