@@ -605,10 +605,7 @@ int dataObjCopy(rsComm_t* rsComm, int _destination_l1descInx)
     return status;
 } // dataObjCopy
 
-int unbunAndStageBunfileObj(
-    rsComm_t* rsComm,
-    char* bunfileObjPath,
-    char** outCacheRescName) {
+int unbunAndStageBunfileObj(rsComm_t* rsComm, const char* bunfileObjPath, char** outCacheRescName) {
 
     /* query the bundle dataObj */
     dataObjInp_t dataObjInp{};
