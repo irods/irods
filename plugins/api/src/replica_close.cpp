@@ -88,16 +88,16 @@ namespace
 
     auto update_replica_size_and_status(rsComm_t& _comm,
                                         const l1desc_t& _l1desc,
-                                        bool _send_notifications) -> int;
+                                        const bool _send_notifications) -> int;
 
     auto update_replica_size(rsComm_t& _comm,
                              const l1desc_t& _l1desc,
-                             bool _send_notifications) -> int;
+                             const bool _send_notifications) -> int;
 
     auto update_replica_status(rsComm_t& _comm,
                                const l1desc_t& _l1desc,
                                std::string_view _new_status,
-                               bool _send_notifications) -> int;
+                               const bool _send_notifications) -> int;
 
     auto free_l1_descriptor(int _l1desc_index) -> int;
 
@@ -197,7 +197,7 @@ namespace
         return fmt::format("{:011}", now.time_since_epoch().count());
     }
 
-    auto update_replica_size_and_status(rsComm_t& _comm, const l1desc_t& _l1desc, bool _send_notifications) -> int
+    auto update_replica_size_and_status(rsComm_t& _comm, const l1desc_t& _l1desc, const bool _send_notifications) -> int
     {
         const auto size_on_disk = get_file_size(_comm, _l1desc);
 
@@ -235,7 +235,7 @@ namespace
         return rsModDataObjMeta(&_comm, &input);
     }
 
-    auto update_replica_size(rsComm_t& _comm, const l1desc_t& _l1desc, bool _send_notifications) -> int
+    auto update_replica_size(rsComm_t& _comm, const l1desc_t& _l1desc, const bool _send_notifications) -> int
     {
         const auto size_on_disk = get_file_size(_comm, _l1desc);
 
@@ -281,7 +281,7 @@ namespace
     auto update_replica_status(rsComm_t& _comm,
                                const l1desc_t& _l1desc,
                                std::string_view _new_status,
-                               bool _send_notifications) -> int
+                               const bool _send_notifications) -> int
     {
         dataObjInfo_t info{};
         std::strncpy(info.objPath, _l1desc.dataObjInfo->objPath, MAX_NAME_LEN);

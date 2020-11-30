@@ -431,7 +431,7 @@ int dataObjUnlinkS(rsComm_t* rsComm,
     {
         std::string vault_path;
         if (const auto err = irods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path); !err.ok()) {
-            return SYS_INTERNAL_ERR;
+            return err.code();
         }
 
         bool skip_vault_path_check = false;

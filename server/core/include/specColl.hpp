@@ -24,11 +24,11 @@ extern "C" {
     int
     querySpecColl( rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut );
     int
-    queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath ); // JMC - backport 4680
+    queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, const char *objPath ); // JMC - backport 4680
     int
     queueSpecCollCacheWithObjStat( rodsObjStat_t *rodsObjStatOut );
     specCollCache_t *
-    matchSpecCollCache( char *objPath );
+    matchSpecCollCache(const char *objPath );
     int
     getSpecCollCache( rsComm_t *rsComm, char *objPath, int inCachOnly,
                       specCollCache_t **specCollCache );
