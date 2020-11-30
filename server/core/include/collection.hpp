@@ -29,7 +29,7 @@ rsQueryCollInColl( rsComm_t *rsComm, char *collection,
 int
 isCollEmpty( rsComm_t *rsComm, char *collection );
 int
-collStat( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+collStat( rsComm_t *rsComm, const dataObjInp_t *dataObjInp,
           rodsObjStat_t **rodsObjStatOut );
 int
 collStatAllKinds( rsComm_t *rsComm, dataObjInp_t *dataObjInp,

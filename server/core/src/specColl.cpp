@@ -81,7 +81,7 @@ querySpecColl( rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut ) {
  */
 
 int
-queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath ) { // JMC - backport 4680
+queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, const char *objPath ) { // JMC - backport 4680
     int status;
     int i;
     sqlResult_t *dataId;
@@ -154,12 +154,11 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
 
     for ( i = 0; i <= genQueryOut->rowCnt; i++ ) {
         int len;
-        char *tmpPtr;
 
         tmpCollection = &collection->value[collection->len * i];
 
         len = strlen( tmpCollection );
-        tmpPtr = objPath + len;
+        const char* tmpPtr = objPath + len;
 
         if ( *tmpPtr == '\0' || *tmpPtr == '/' ) {
             specCollCache_t * tmpSpecCollCache = ( specCollCache_t* )malloc( sizeof( specCollCache_t ) );
@@ -234,14 +233,14 @@ queueSpecCollCacheWithObjStat( rodsObjStat_t *rodsObjStatOut ) {
 }
 
 specCollCache_t *
-matchSpecCollCache( char *objPath ) {
+matchSpecCollCache(const char *objPath ) {
     specCollCache_t *tmpSpecCollCache = SpecCollCacheHead;
 
     while ( tmpSpecCollCache != NULL ) {
         int len = strlen( tmpSpecCollCache->specColl.collection );
         if ( strncmp( tmpSpecCollCache->specColl.collection, objPath, len )
                 == 0 ) {
-            char *tmpPtr = objPath + len;
+            const char *tmpPtr = objPath + len;
 
             if ( *tmpPtr == '\0' || *tmpPtr == '/' ) {
                 return tmpSpecCollCache;

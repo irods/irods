@@ -139,7 +139,7 @@ namespace irods {
                 }
             }
 
-            // optional checksum verification, should one exist 
+            // optional checksum verification, should one exist
             // on the source replica
             std::string dst_checksum;
             if(strlen(src_info->chksum) > 0) {
