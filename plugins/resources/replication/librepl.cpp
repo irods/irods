@@ -30,6 +30,7 @@
 #include "irods_random.hpp"
 #include "irods_exception.hpp"
 #include "rsGenQuery.hpp"
+#include "key_value_proxy.hpp"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -217,16 +218,34 @@ irods::error get_selected_hierarchy(
     irods::hierarchy_parser selected_parser{};
     bool resc_hier_in_keyword{};
     irods::file_object_ptr file_obj = boost::dynamic_pointer_cast<irods::file_object>(_ctx.fco());
-    if (file_obj->l1_desc_idx() > 0) {
-        const auto hier_str{getValByKey(&L1desc[file_obj->l1_desc_idx()].dataObjInp->condInput, RESC_HIER_STR_KW)};
-        if (!hier_str) {
-            return ERROR(SYS_INTERNAL_NULL_INPUT_ERR,
-                         (boost::format(
-                          "[%s] - No hierarchy string found in keywords for file object.") %
-                          __FUNCTION__).str().c_str());
+
+    if (!resc_hier_in_keyword) {
+        auto cond_input = irods::experimental::make_key_value_proxy((KeyValPair&)file_obj->cond_input());
+        if (cond_input.contains(SELECTED_HIERARCHY_KW)) {
+            const auto hier_str = cond_input.at(SELECTED_HIERARCHY_KW).value();
+            if (hier_str.empty()) {
+                return ERROR(SYS_INTERNAL_NULL_INPUT_ERR,
+                             (boost::format(
+                              "[%s] - No hierarchy string found in keywords for file object.") %
+                              __FUNCTION__).str().c_str());
+            }
+            selected_parser.set_string(hier_str.data());
+            resc_hier_in_keyword = selected_parser.resc_in_hier(name);
         }
-        selected_parser.set_string(hier_str);
-        resc_hier_in_keyword = selected_parser.resc_in_hier(name);
+    }
+
+    if (!resc_hier_in_keyword) {
+        if (file_obj->l1_desc_idx() > 0) {
+            const auto hier_str{getValByKey(&L1desc[file_obj->l1_desc_idx()].dataObjInp->condInput, RESC_HIER_STR_KW)};
+            if (!hier_str) {
+                return ERROR(SYS_INTERNAL_NULL_INPUT_ERR,
+                             (boost::format(
+                              "[%s] - No hierarchy string found in keywords for file object.") %
+                              __FUNCTION__).str().c_str());
+            }
+            selected_parser.set_string(hier_str);
+            resc_hier_in_keyword = selected_parser.resc_in_hier(name);
+        }
     }
 
     // Get resc hier from the file object directly if not in RESC_HIER_STR_KW
