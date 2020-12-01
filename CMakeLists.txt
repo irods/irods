@@ -807,6 +807,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/src/dataObjOpr.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/replica_access_table.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/fileOpr.cpp
+  ${CMAKE_SOURCE_DIR}/server/core/src/finalize_utilities.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/initServer.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_calling_functions.cpp
   ${CMAKE_SOURCE_DIR}/server/core/src/irods_api_number_validator.cpp

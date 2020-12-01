@@ -121,37 +121,42 @@ closeAllL1desc( rsComm_t *rsComm ) {
     return 0;
 }
 
-int
-freeL1desc( int l1descInx ) {
+int freeL1desc_struct(l1desc& _l1desc)
+{
+    if (_l1desc.dataObjInfo) {
+        freeDataObjInfo(_l1desc.dataObjInfo);
+        //freeAllDataObjInfo(_l1desc.dataObjInfo);
+    }
+
+    if (_l1desc.otherDataObjInfo) {
+        freeAllDataObjInfo(_l1desc.otherDataObjInfo);
+    }
+
+    if (_l1desc.replDataObjInfo) {
+        freeDataObjInfo(_l1desc.replDataObjInfo);
+        //freeAllDataObjInfo(_l1desc.replDataObjInfo);
+    }
+
+    if (_l1desc.dataObjInpReplFlag == 1 && _l1desc.dataObjInp) {
+        clearDataObjInp(_l1desc.dataObjInp);
+        free(_l1desc.dataObjInp);
+    }
+
+    _l1desc.replica_token.clear();
+
+    memset(&_l1desc, 0, sizeof(l1desc));
+
+    return 0;
+} // freeL1desc
+
+int freeL1desc(const int l1descInx) {
     if ( l1descInx < 3 || l1descInx >= NUM_L1_DESC ) {
         rodsLog( LOG_NOTICE, "freeL1desc: l1descInx %d out of range", l1descInx );
         return SYS_FILE_DESC_OUT_OF_RANGE;
     }
 
-    if ( L1desc[l1descInx].dataObjInfo != NULL ) {
-        freeDataObjInfo( L1desc[l1descInx].dataObjInfo );
-    }
-
-    if ( L1desc[l1descInx].otherDataObjInfo != NULL ) {
-        freeAllDataObjInfo( L1desc[l1descInx].otherDataObjInfo );
-    }
-
-    if ( L1desc[l1descInx].replDataObjInfo != NULL ) {
-        freeDataObjInfo( L1desc[l1descInx].replDataObjInfo );
-    }
-
-    if ( L1desc[l1descInx].dataObjInpReplFlag == 1 &&
-            L1desc[l1descInx].dataObjInp != NULL ) {
-        clearDataObjInp( L1desc[l1descInx].dataObjInp );
-        free( L1desc[l1descInx].dataObjInp );
-    }
-
-    L1desc[l1descInx].replica_token.clear();
-
-    memset( &L1desc[l1descInx], 0, sizeof( l1desc_t ) );
-
-    return 0;
-}
+    return freeL1desc_struct(L1desc[l1descInx]);
+} // freeL1desc
 
 int
 fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
