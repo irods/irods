@@ -13,6 +13,7 @@
 #include "irods_file_object.hpp"
 #include "irods_stacktrace.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "key_value_proxy.hpp"
 
 #include "boost/format.hpp"
 
@@ -300,22 +301,21 @@ int _call_file_modified_for_modification(
         if (getValByKey(regParam, ADMIN_KW)) {
             addKeyVal((keyValPair_t*)&file_obj->cond_input(), ADMIN_KW, "");
         }
-        const auto pdmo_kw{getValByKey(regParam, IN_PDMO_KW)};
-        if (pdmo_kw) {
+        if (const auto pdmo_kw = getValByKey(regParam, IN_PDMO_KW); pdmo_kw) {
             // TODO: log in_pdmo kw
             file_obj->in_pdmo(pdmo_kw);
         }
-        const auto open_type{getValByKey(regParam, OPEN_TYPE_KW)};
-        if (open_type) {
+        if (const auto open_type = getValByKey(regParam, OPEN_TYPE_KW); open_type) {
             addKeyVal((keyValPair_t*)&file_obj->cond_input(), OPEN_TYPE_KW, open_type);
         }
-        char* sync = getValByKey(regParam, SYNC_OBJ_KW );
-        if (sync) {
+        if (const char* sync = getValByKey(regParam, SYNC_OBJ_KW); sync) {
             addKeyVal((keyValPair_t*)&file_obj->cond_input(), SYNC_OBJ_KW, sync);
         }
-        const auto repl_status{getValByKey(regParam, REPL_STATUS_KW)};
-        if (repl_status) {
+        if (const auto repl_status = getValByKey(regParam, REPL_STATUS_KW); repl_status) {
             addKeyVal((keyValPair_t*)&file_obj->cond_input(), REPL_STATUS_KW, repl_status);
+        }
+        if (const char* selected_hier = getValByKey(regParam, SELECTED_HIERARCHY_KW); selected_hier) {
+            addKeyVal((keyValPair_t*)&file_obj->cond_input(), SELECTED_HIERARCHY_KW, selected_hier);
         }
         ret = fileModified(rsComm, file_obj);
         if (!ret.ok()) {
