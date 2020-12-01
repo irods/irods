@@ -483,6 +483,7 @@ set(
   ${CMAKE_SOURCE_DIR}/server/core/include/dataObjOpr.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/replica_access_table.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/fileOpr.hpp
+  ${CMAKE_SOURCE_DIR}/server/core/include/finalize_utilities.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/initServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irodsReServer.hpp
   ${CMAKE_SOURCE_DIR}/server/core/include/irods_api_calling_functions.hpp

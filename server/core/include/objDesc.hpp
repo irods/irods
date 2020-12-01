@@ -69,8 +69,9 @@ initL1Desc();
 int
 allocL1Desc();
 
-int
-freeL1Desc( int fileInx );
+int freeL1desc_struct(l1desc& _l1desc);
+
+int freeL1desc(const int l1descInx);
 
 int
 fillL1desc( int l1descInx, dataObjInp_t *dataObjInp,
@@ -88,8 +89,6 @@ int
 initDataObjInfoWithInp( dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp );
 int
 allocL1desc();
-int
-freeL1desc( int l1descInx );
 int
 closeAllL1desc( rsComm_t *rsComm );
 int
