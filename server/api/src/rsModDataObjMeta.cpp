@@ -289,8 +289,7 @@ int _call_file_modified_for_modification(
         }
 
         // Use temporary as file_object_factory overwrites dataObjInfo pointer
-        dataObjInfo_t* tmpDataObjInfo{};
-        auto ret{file_object_factory(rsComm, &dataObjInp, file_obj, &tmpDataObjInfo)};
+        auto ret{file_object_factory(rsComm, &dataObjInp, file_obj)};
         if (!ret.ok()) {
             irods::log(ret);
             return ret.code();
