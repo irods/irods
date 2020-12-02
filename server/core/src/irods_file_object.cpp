@@ -364,9 +364,11 @@ namespace irods {
 
         //delete head_ptr->rescInfo;
         //free( head_ptr );
-        //freeAllDataObjInfo( head_ptr );
         if (_data_obj_info) {
             *_data_obj_info = head_ptr;
+        }
+        else {
+            freeAllDataObjInfo( head_ptr );
         }
         return SUCCESS();
 
