@@ -127,3 +127,23 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         self.admin.assert_icommand(['istream', 'write', '--append', data_object], input='  This was appended!')
         self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box.  This was appended'])
 
+    def test_openmode_is_honored_when_replica_number_is_specified_during_writes__issue_5279(self):
+        data_object = 'data_object.test'
+
+        # Write a data object into iRODS.
+        contents = 'The fox jumped over the box.'
+        self.admin.assert_icommand(['istream', 'write', data_object], input=contents)
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', [contents])
+
+        # Show that using -n and --no-trunc are honored by istream. These flags prove that
+        # the openmode is being adjusted and honored by the server. If the openmode was not being
+        # passed to the underlying dstream object, then the replica would be truncated on open.
+        self.admin.assert_icommand(['istream', 'write', '-n0', '-o4', '--no-trunc', data_object], input='cat')
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box.'])
+
+        # Show that using -n and --append results in the openmode being updated and passed to
+        # the server correctly. This combination of options follows the same path as -n and --no-trunc.
+        msg = ' This was appended.'
+        self.admin.assert_icommand(['istream', 'write', '-n0', '--append', data_object], input=msg)
+        self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box.' + msg])
+
