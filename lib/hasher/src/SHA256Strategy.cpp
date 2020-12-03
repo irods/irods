@@ -1,17 +1,18 @@
 #include "SHA256Strategy.hpp"
 #include "checksum.hpp"
 
-#include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/sha.h>
 
 #include "base64.h"
 
 namespace irods {
+
+    const std::string SHA256_NAME( "sha256" );
 
     error
     SHA256Strategy::init( boost::any& _context ) const {

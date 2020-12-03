@@ -1,15 +1,16 @@
 #include "MD5Strategy.hpp"
 
-#include <string>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
-#include <string.h>
+#include <cstring>
 #include <openssl/md5.h>
 #include "irods_stacktrace.hpp"
 
 namespace irods {
+
+    const std::string MD5_NAME( "md5" );
 
     error
     MD5Strategy::init( boost::any& _context ) const {
