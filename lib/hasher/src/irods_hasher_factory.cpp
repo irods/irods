@@ -2,6 +2,9 @@
 #include "checksum.hpp"
 #include "MD5Strategy.hpp"
 #include "SHA256Strategy.hpp"
+#include "SHA512Strategy.hpp"
+#include "ADLER32Strategy.hpp"
+#include "SHA1Strategy.hpp"
 #include "rodsErrorTable.h"
 #include <sstream>
 #include <boost/unordered_map.hpp>
@@ -10,13 +13,19 @@ namespace irods {
 
     namespace {
         const SHA256Strategy _sha256;
+        const SHA512Strategy _sha512;
+        const ADLER32Strategy _adler32;
         const MD5Strategy _md5;
+        const SHA1Strategy _sha1;
 
         boost::unordered_map<const std::string, const HashStrategy*>
         make_map() {
             boost::unordered_map<const std::string, const HashStrategy*> map;
             map[ SHA256_NAME ] = &_sha256;
+            map[ SHA512_NAME ] = &_sha512;
             map[ MD5_NAME ] = &_md5;
+            map[ ADLER32_NAME ] = &_adler32;
+            map[ SHA1_NAME ] = &_sha1;
             return map;
         }
 
