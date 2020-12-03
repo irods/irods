@@ -1036,6 +1036,9 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/Hasher.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/MD5Strategy.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA256Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA512Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/ADLER32Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA1Strategy.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/checksum.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/irods_hasher_factory.cpp
   ${CMAKE_SOURCE_DIR}/lib/rbudp/src/QUANTAnet_rbudpBase_c.cpp
@@ -1206,6 +1209,9 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/Hasher.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/MD5Strategy.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA256Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA512Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/ADLER32Strategy.cpp
+  ${CMAKE_SOURCE_DIR}/lib/hasher/src/SHA1Strategy.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/checksum.cpp
   ${CMAKE_SOURCE_DIR}/lib/hasher/src/irods_hasher_factory.cpp
   )
