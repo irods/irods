@@ -1,17 +1,17 @@
-#ifndef _SHA256_STRATEGY_HPP_
-#define _SHA256_STRATEGY_HPP_
+#ifndef _ADLER32_STRATEGY_HPP_
+#define _ADLER32_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
 
 namespace irods {
-    extern const std::string SHA256_NAME;
-    class SHA256Strategy : public HashStrategy {
+    extern const std::string ADLER32_NAME;
+    class ADLER32Strategy : public HashStrategy {
         public:
-            SHA256Strategy() {};
-            virtual ~SHA256Strategy() {};
+            ADLER32Strategy() {};
+            virtual ~ADLER32Strategy() {};
 
-            virtual std::string name() const override {
-                return SHA256_NAME;
+            std::string name() const override {
+                return ADLER32_NAME;
             }
             error init( boost::any& context ) const override;
             error update( const std::string& data, boost::any& context ) const override;
@@ -21,4 +21,4 @@ namespace irods {
     };
 } // namespace irods
 
-#endif // _SHA256_STRATEGY_HPP_
+#endif // _ADLER32_STRATEGY_HPP_

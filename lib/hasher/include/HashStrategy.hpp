@@ -18,6 +18,6 @@ namespace irods {
             virtual error digest( std::string& messageDigest, boost::any& context ) const = 0;
             virtual bool isChecksum( const std::string& ) const = 0;
     };
-}; // namespace irods
+} // namespace irods
 
 #endif // _HASH_STRATEGY_HPP_
