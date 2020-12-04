@@ -558,20 +558,25 @@ namespace
             throw;
         }
 
-        if (PUT_OPR != l1desc.oprType || !l1desc.chksumFlag) {
-            // return success as the rest is put-specific...
-            return;
-        }
-
-        const std::string checksum = perform_checksum_operation_for_finalize(_comm, _fd);
-        if (checksum.empty()) {
-            return;
-        }
-
         auto replica = replica_proxy{*l1desc.dataObjInfo};
 
         auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(l1desc.openType)}});
-        reg_param[CHKSUM_KW] = checksum;
+
+        if (PUT_OPR == l1desc.oprType && l1desc.chksumFlag) {
+            const std::string checksum = perform_checksum_operation_for_finalize(_comm, _fd);
+            if (checksum.empty()) {
+                return;
+            }
+
+            reg_param[CHKSUM_KW] = checksum;
+        }
+
+        if (CREATE_TYPE == l1desc.openType) {
+            // TODO: need to restore replica status for OPEN_FOR_WRITE
+            // a newly created replica should be marked as good if no bytes were written
+            // as it is created in the intermediate state.
+            reg_param[REPL_STATUS_KW] = std::to_string(GOOD_REPLICA);
+        }
 
         modDataObjMeta_t mod_inp{};
         mod_inp.dataObjInfo = replica.get();
