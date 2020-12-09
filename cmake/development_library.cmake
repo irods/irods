@@ -28,6 +28,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/dispatch_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/entity.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/experimental_plugin_framework.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/future.hpp
@@ -100,6 +101,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/lifetime_manager.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mcollUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/metadata.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/microservice.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/miscUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mkdirUtil.h
