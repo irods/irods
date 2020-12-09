@@ -27,6 +27,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/connection_pool.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/cpUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/dstream.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/entity.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/fsckUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getRodsEnv.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/getUtil.h
@@ -97,6 +98,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/lifetime_manager.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mcollUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/metadata.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/microservice.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/miscUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/mkdirUtil.h

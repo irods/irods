@@ -6,19 +6,20 @@
 #include <map>
 
 #include "entity.hpp"
-#include "irods_query.hpp"
 
 #ifdef IRODS_METADATA_ENABLE_SERVER_SIDE_API
     #include "rsModAVUMetadata.hpp"
     using rxComm_t = rsComm_t;
     #define rxModAVUMetadata rsModAVUMetadata
     #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+    #define IRODS_QUERY_ENABLE_SERVER_SIDE_API
 #else
     #include "modAVUMetadata.h"
     using rxComm_t = rcComm_t;
     #define rxModAVUMetadata rcModAVUMetadata
 #endif
 
+#include "irods_query.hpp"
 #include "filesystem.hpp"
 #include "fmt/format.h"
 
@@ -55,6 +56,15 @@ namespace irods::experimental::metadata {
         }
 
         using entity_type = irods::experimental::entity::entity_type;
+
+        /// \brief Map which converts an entity type to a string representation
+        /// \since 4.2.9
+        const std::map<entity_type, std::string> type_to_string {
+            {entity_type::collection,  "collection"},
+            {entity_type::data_object, "data_object"},
+            {entity_type::user,        "user"},
+            {entity_type::resource,    "resource"}
+        };
 
         /// \brief Map which converts an entity type to a rxModAVUMetadata token
         /// \since 4.2.9
@@ -96,6 +106,14 @@ namespace irods::experimental::metadata {
 
         } // mod_avu_meta
 
+        template<typename M_T, typename T_T>
+        auto throw_if_invalid(const M_T& _m, const T_T& _t)
+        {
+            if(_m.find(_t) == _m.end()) {
+                THROW(SYS_INVALID_INPUT_PARAM, "token or entity not found");
+            }
+        }
+
     } // namespace
 
 
@@ -105,6 +123,7 @@ namespace irods::experimental::metadata {
     /// \since 4.2.9
     auto to_entity_type(const std::string& _t)
     {
+        throw_if_invalid(token_to_type, _t);
         return token_to_type.at(_t);
 
     } // to_entity_type
@@ -116,9 +135,22 @@ namespace irods::experimental::metadata {
     /// \since 4.2.9
     auto to_entity_token(entity_type _t)
     {
+        throw_if_invalid(type_to_token, _t);
         return type_to_token.at(_t);
 
     } // to_entity_token
+
+
+    /// \returns std::string
+    /// \retval A rxModAVUMetadata entity token string
+    /// \brief Converts an entity type enumeration to a string token
+    /// \since 4.2.9
+    auto to_entity_string(entity_type _t)
+    {
+        throw_if_invalid(type_to_string, _t);
+        return type_to_string.at(_t);
+
+    } // to_entity_string
 
 
     /// \brief Set a metadata attribute, value and unit for a given entity type
