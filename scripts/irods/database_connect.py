@@ -313,6 +313,7 @@ def create_database_tables(irods_config, cursor, default_resource_directory=None
     irods_table_names = irods_tables_in_database(irods_config, cursor)
     if irods_table_names:
         l.info('The following tables already exist in the database, table creation will be skipped:\n%s', pprint.pformat(irods_table_names))
+        return 'skipped'
     else:
         if irods_config.catalog_database_type == 'mysql':
             l.info('Defining mysql functions...')
