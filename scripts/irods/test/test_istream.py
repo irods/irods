@@ -2,6 +2,8 @@ from __future__ import print_function
 import os
 import sys
 import tempfile
+import socket
+import copy
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -146,4 +148,36 @@ class Test_istream(session.make_sessions_mixin([('otherrods', 'rods')], [('alice
         msg = ' This was appended.'
         self.admin.assert_icommand(['istream', 'write', '-n0', '--append', data_object], input=msg)
         self.admin.assert_icommand(['istream', 'read', data_object], 'STDOUT', ['The cat jumped over the box.' + msg])
+
+    def test_client_side_configured_default_resource_is_honored_on_writes__issue_5294(self):
+        resc_name = 'other_resc'
+        self.create_ufs_resource(resc_name)
+
+        old_env_config = copy.deepcopy(self.user.environment_file_contents)
+        self.user.environment_file_contents.update({'irods_default_resource': resc_name})
+
+        data_object = 'foo'
+
+        try:
+            # Write a data object into iRODS.
+            self.user.assert_icommand(['istream', 'write', data_object], input='some data')
+
+            # Show that the data object resides on the new resource.
+            gql = "select RESC_NAME where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.user.session_collection, data_object)
+            out, err, ec = self.user.run_icommand(['iquest', '%s', gql])
+            self.assertEqual(ec, 0)
+            self.assertEqual(resc_name, out.strip())
+            self.assertEqual(len(err), 0)
+        finally:
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.assert_icommand(['iadmin', 'rmresc', resc_name])
+            self.user.environment_file_contents = old_env_config
+
+    def create_ufs_resource(self, resource_name):
+        vault_name = resource_name + '_vault'
+        vault_directory = os.path.join(self.admin.local_session_dir, vault_name)
+        if not os.path.exists(vault_directory):
+            os.mkdir(vault_directory)
+        vault = socket.gethostname() + ':' + vault_directory
+        self.admin.assert_icommand(['iadmin', 'mkresc', resource_name, 'unixfilesystem', vault], 'STDOUT', [resource_name])
 
