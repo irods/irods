@@ -23,9 +23,9 @@ def setup_catalog(irods_config, default_resource_directory=None):
             connection.autocommit = False
         with contextlib.closing(connection.cursor()) as cursor:
             try:
-                database_connect.create_database_tables(irods_config, cursor)
-                database_connect.setup_database_values(irods_config, cursor, default_resource_directory=default_resource_directory)
-                l.debug('Committing database changes...')
+                if database_connect.create_database_tables(irods_config, cursor) != 'skipped':
+                    database_connect.setup_database_values(irods_config, cursor, default_resource_directory=default_resource_directory)
+                    l.debug('Committing database changes...')
                 cursor.commit()
             except:
                 l.debug('Rolling back database changes...')
