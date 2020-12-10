@@ -1,5 +1,5 @@
 #include "rodsClient.h"
-#include "connection_pool.hpp"
+#include "client_connection.hpp"
 #include "dstream.hpp"
 #include "transport/default_transport.hpp"
 #include "rcMisc.h"
@@ -31,7 +31,7 @@ constexpr auto all_bytes   = std::numeric_limits<int_type>::max();
 
 auto usage() -> void;
 auto check_input_arguments(const po::variables_map& vm) -> std::tuple<bool, int>;
-auto canonical(const std::string& _path, rodsEnv& _env) -> std::optional<std::string>;
+auto canonical(const std::string& path, rodsEnv& env) -> std::optional<std::string>;
 auto stream_bytes(std::istream& in, std::ostream& out, int_type count) -> int;
 auto read_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
 auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::default_transport& tp) -> int;
@@ -74,8 +74,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        irods::connection_pool conn_pool{1, env.rodsHost, env.rodsPort, env.rodsUserName, env.rodsZone, 600};
-        auto conn = conn_pool.get_connection();
+        irods::experimental::client_connection conn;
 
         irods::at_scope_exit print_errors_on_exit{[&conn] {
             printErrorStack(static_cast<rcComm_t*>(conn)->rError);
@@ -344,6 +343,9 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
     }
     else if (vm.count("replica")) {
         out.open(tp, path, io::replica_number{vm["replica"].as<int>()}, mode);
+    }
+    else if (std::strlen(env.rodsDefResource) > 0) {
+        out.open(tp, path, io::root_resource_name{env.rodsDefResource});
     }
     else {
         out.open(tp, path, mode);
