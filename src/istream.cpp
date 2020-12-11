@@ -345,7 +345,7 @@ auto write_data_object(rodsEnv& env, const po::variables_map& vm, io::client::de
         out.open(tp, path, io::replica_number{vm["replica"].as<int>()}, mode);
     }
     else if (std::strlen(env.rodsDefResource) > 0) {
-        out.open(tp, path, io::root_resource_name{env.rodsDefResource});
+        out.open(tp, path, io::root_resource_name{env.rodsDefResource}, mode);
     }
     else {
         out.open(tp, path, mode);
