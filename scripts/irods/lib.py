@@ -144,19 +144,50 @@ def indent(*text, **kwargs):
         ''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())])
             for lines in text])
 
-def get_pids_executing_binary_file(binary_file_path):
+def get_server_root_pid():
+    for p in psutil.process_iter():
+        if p.name() == 'irodsServer' and p.ppid() == 1:
+            return p.pid
+    return -1
+
+def get_server_root_pid_with_retry(max_retries=100):
+    root_pid = -1
+
+    for _ in range(max_retries):
+        root_pid = lib.get_server_root_pid()
+        if root_pid != -1:
+            break
+        time.sleep(1)
+
+    return root_pid
+
+def get_pids_executing_binary_file(binary_file_path, root_pid):
     def get_exe(process):
         if psutil.version_info >= (2,0):
             return process.exe()
         return process.exe
+
+    def is_descendant_of_root_process(process):
+        pid = process.ppid()
+        while pid != 1:
+            if pid == root_pid:
+                return True
+            pid = psutil.Process(pid).ppid()
+        return False
+
     abspath = os.path.abspath(binary_file_path)
     pids = []
-    for p in psutil.process_iter():
-        try:
-            if abspath == get_exe(p):
-                pids.append(p.pid)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
+
+    if root_pid != -1:
+        for p in psutil.process_iter():
+            try:
+                # Add the PID to the list if the process is the root process or
+                # a descendant of the root process.
+                if abspath == get_exe(p) and (p.pid == root_pid or is_descendant_of_root_process(p)):
+                    pids.append(p.pid)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+
     return pids
 
 def kill_pid(pid):

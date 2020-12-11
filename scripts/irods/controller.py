@@ -81,8 +81,8 @@ class IrodsController(object):
                     s.bind(('127.0.0.1', irods_port))
                 except socket.error:
                     six.reraise(IrodsError,
-                            IrodsError('Could not bind port {0}.'.format(irods_port)),
-                            sys.exc_info()[2])
+                                IrodsError('Could not bind port {0}.'.format(irods_port)),
+                                sys.exc_info()[2])
             l.debug('Socket %s bound and released successfully.', irods_port)
 
             if self.config.is_catalog:
@@ -95,16 +95,18 @@ class IrodsController(object):
                 cwd=self.config.server_bin_directory,
                 env=self.config.execution_environment)
 
+            root_pid = lib.get_server_root_pid_with_retry()
+            if root_pid == -1:
+                raise IrodsError('Could not retrieve server root PID.')
+
             try_count = 1
             max_retries = 100
             while True:
-                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s',
-                        irods_port, try_count)
-                with contextlib.closing(socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)) as s:
+                l.debug('Attempting to connect to iRODS server on port %s. Attempt #%s', irods_port, try_count)
+                with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
                     if s.connect_ex(('127.0.0.1', irods_port)) == 0:
                         l.debug('Successfully connected to port %s.', irods_port)
-                        if len(lib.get_pids_executing_binary_file(self.config.server_executable)) == 0:
+                        if len(lib.get_pids_executing_binary_file(self.config.server_executable, root_pid)) == 0:
                             raise IrodsError('iRODS port is bound, but server is not started.')
                         s.send(b'\x00\x00\x00\x33<MsgHeader_PI><type>HEARTBEAT</type></MsgHeader_PI>')
                         message = s.recv(256)
@@ -213,11 +215,16 @@ class IrodsController(object):
                 self.config.server_executable,
                 self.config.rule_engine_executable,
                 self.config.xmsg_server_executable]
+
         d = {}
-        for b in binaries:
-            pids = lib.get_pids_executing_binary_file(b)
-            if pids:
-                d[b] = pids
+        root_pid = lib.get_server_root_pid()
+
+        if root_pid != -1:
+            for b in binaries:
+                pids = lib.get_pids_executing_binary_file(b, root_pid)
+                if pids:
+                    d[b] = pids
+
         return d
 
 def format_binary_to_pids_dict(d):
@@ -253,3 +260,4 @@ def delete_cache_files_by_name(*filepaths):
             os.unlink(path)
         except (IOError, OSError):
             l.warning(lib.indent('Error deleting cache file: %s'), path)
+
