@@ -17,6 +17,7 @@
     "irods_metadata",
     "irods_parallel_transfer_engine",
     "irods_query_builder",
+    "irods_rc_data_obj",
     "irods_replica",
     "irods_replica_access_table",
     "irods_replica_open_and_close",

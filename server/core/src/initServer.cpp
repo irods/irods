@@ -10,13 +10,16 @@
 #include "rcMisc.h"
 #include "resource.hpp"
 #include "rodsConnect.h"
+#include "rsDataObjClose.hpp"
 #include "rsExecCmd.hpp"
 #include "rsGenQuery.hpp"
 #include "rsGlobalExtern.hpp"
 #include "rsIcatOpr.hpp"
 #include "rsLog.hpp"
+#include "rsModDataObjMeta.hpp"
 #include "sockComm.h"
 
+#include "finalize_utilities.hpp"
 #include "irods_configuration_parser.hpp"
 #include "irods_exception.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
@@ -25,7 +28,11 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_properties.hpp"
 #include "irods_threads.hpp"
+#include "key_value_proxy.hpp"
 #include "replica_state_table.hpp"
+
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica_proxy.hpp"
 
 #include <vector>
 #include <set>
@@ -40,6 +47,111 @@
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
 
+namespace
+{
+    auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
+    {
+        if (!std::string_view{_info.chksum}.empty()) {
+            _l1desc.chksumFlag = REG_CHKSUM;
+        }
+
+        char* checksum_string = nullptr;
+        irods::at_scope_exit free_checksum_string{[&checksum_string] { free(checksum_string); }};
+
+        auto destination_replica = irods::experimental::replica::make_replica_proxy(_info);
+
+        if (!_l1desc.chksumFlag) {
+            if (destination_replica.checksum().empty()) {
+                return {};
+            }
+            _l1desc.chksumFlag = VERIFY_CHKSUM;
+        }
+
+        if (VERIFY_CHKSUM == _l1desc.chksumFlag) {
+            if (!std::string_view{_l1desc.chksum}.empty()) {
+                return irods::verify_checksum(_comm, _info, _l1desc.chksum);
+            }
+
+            return {};
+        }
+
+        return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
+    } // calculate_checksum
+
+    void finalize_replica_opened_for_create_or_write(RsComm& _comm, l1desc& _l1desc)
+    {
+        auto opened_replica = irods::experimental::replica::make_replica_proxy(*_l1desc.dataObjInfo);
+
+        auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{ADMIN_KW, ""}});
+
+        //  - Check size in vault
+        try {
+            reg_param[DATA_SIZE_KW] = std::to_string(irods::get_size_in_vault(_comm, *opened_replica.get(), false, _l1desc.dataSize));
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
+        }
+
+        //  - Compute checksum if flag is present
+        try {
+            const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
+
+            if (cond_input.contains(CHKSUM_KW) && !cond_input.at(CHKSUM_KW).value().empty()) {
+                reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
+            }
+            else if (!opened_replica.checksum().empty()) {
+                const auto checksum = calculate_checksum(_comm, _l1desc, *opened_replica.get());
+                if (!checksum.empty()) {
+                    reg_param[CHKSUM_KW] = checksum;
+                }
+            }
+        }
+        catch (const irods::exception& e) {
+            irods::log(e);
+        }
+
+        //  - Update modify time to now
+        if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
+            reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
+        }
+
+        //  - Update replica status to stale
+        reg_param[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
+
+        //  - Stamp the replica in the catalog
+        modDataObjMeta_t mod_inp{};
+        mod_inp.dataObjInfo = opened_replica.get();
+        mod_inp.regParam = reg_param.get();
+        if (const int ec = rsModDataObjMeta(&_comm, &mod_inp); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed updating catalog", __FUNCTION__, __LINE__));
+        }
+    } // finalize_replica_opened_for_create_or_write
+
+    void close_all_l1_descriptors(RsComm& _comm)
+    {
+        for (int fd = 3; fd < NUM_L1_DESC; ++fd) {
+            auto& l1desc = L1desc[fd];
+            if (FD_INUSE != l1desc.inuseFlag || l1desc.l3descInx < 3) {
+                continue;
+            }
+
+            if (OPEN_FOR_READ_TYPE != l1desc.openType) {
+                finalize_replica_opened_for_create_or_write(_comm, l1desc);
+            }
+
+            // close physical file
+            try {
+                l3Close(&_comm, fd);
+            }
+            catch (const irods::exception& e) {
+                irods::log(e);
+            }
+
+            // free descriptor
+            freeL1desc(fd);
+        }
+    } // close_all_l1_descriptors
+} // anonymous namespace
 
 InformationRequiredToSafelyRenameProcess::InformationRequiredToSafelyRenameProcess(char**argv) {
     argv0 = argv[0];
@@ -534,19 +646,18 @@ cleanup() {
         irods::log(PASS(ret));
     }
 
+    if (INITIAL_DONE == InitialState) {
+        close_all_l1_descriptors(*ThisComm);
+
+        irods::replica_state_table::deinit();
+
+        disconnectAllSvrToSvrConn();
+    }
+
     if( irods::CFG_SERVICE_ROLE_PROVIDER == svc_role ) {
         disconnectRcat();
     }
 
-    if ( InitialState == INITIAL_DONE ) {
-        /* close all opened descriptors */
-        closeAllL1desc( ThisComm );
-
-        irods::replica_state_table::deinit();
-
-        /* close any opened server to server connection */
-        disconnectAllSvrToSvrConn();
-    }
     irods::re_plugin_globals->global_re_mgr.call_stop_operations();
 }
 
