@@ -236,6 +236,58 @@ TEST_CASE("open,read,write,close")
             CHECK(STALE_REPLICA == replica_info.replica_status());
         }
 
+        SECTION("create,no close,open for write,close")
+        {
+            // create,no close
+            {
+                irods::experimental::client_connection conn;
+                RcComm& comm = static_cast<RcComm&>(conn);
+
+                dataObjInp_t open_inp{};
+                std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+                open_inp.openFlags = O_CREAT | O_TRUNC | O_WRONLY;
+                const auto fd = rcDataObjOpen(&comm, &open_inp);
+                REQUIRE(fd > 2);
+                CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 0));
+
+                // disconnect without close
+            }
+
+            {
+                irods::experimental::client_connection conn;
+                RcComm& comm = static_cast<RcComm&>(conn);
+
+                // ensure all system metadata were updated properly
+                const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+                CHECK(replica_info.mtime() == replica_info.ctime());
+                CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+                CHECK(STALE_REPLICA == replica_info.replica_status());
+            }
+
+            // open for write, close
+            irods::experimental::client_connection conn;
+            RcComm& comm = static_cast<RcComm&>(conn);
+
+            dataObjInp_t open_inp{};
+            std::snprintf(open_inp.objPath, sizeof(open_inp.objPath), "%s", path_str.data());
+            open_inp.openFlags = O_WRONLY;
+            const auto fd = rcDataObjOpen(&comm, &open_inp);
+            REQUIRE(fd > 2);
+            CHECK(INTERMEDIATE_REPLICA == replica::replica_status(comm, target_object, 0));
+
+            std::this_thread::sleep_for(2s);
+
+            openedDataObjInp_t close_inp{};
+            close_inp.l1descInx = fd;
+            REQUIRE(rcDataObjClose(&comm, &close_inp) >= 0);
+
+            // ensure all system metadata were updated properly
+            const auto [replica_info, replica_lm] = replica::make_replica_proxy(comm, target_object, 0);
+            CHECK(replica_info.mtime() != replica_info.ctime());
+            CHECK(0 == static_cast<unsigned long>(replica_info.size()));
+            CHECK(STALE_REPLICA == replica_info.replica_status());
+        }
+
         SECTION("create,write,close")
         {
             irods::experimental::client_connection conn;

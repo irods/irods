@@ -20,14 +20,16 @@
 #include "rsFileClose.hpp"
 #include "rsFileStat.hpp"
 #include "rsModDataObjMeta.hpp"
-#include "irods_server_api_call.hpp"
-#include "irods_re_serialization.hpp"
-#include "irods_resource_backport.hpp"
 #include "irods_configuration_keywords.hpp"
-#include "irods_query.hpp"
 #include "irods_exception.hpp"
 #include "replica_access_table.hpp"
 #include "rodsLog.h"
+#include "irods_query.hpp"
+#include "irods_re_serialization.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_server_api_call.hpp"
+#include "replica_access_table.hpp"
+#include "replica_state_table.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
@@ -211,15 +213,29 @@ namespace
         std::strncpy(info.rescHier, _l1desc.dataObjInfo->rescHier, MAX_NAME_LEN);
 
         keyValPair_t reg_params{};
-        addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
 
+        if (CREATE_TYPE == _l1desc.openType) {
+            addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
+            addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
+        }
         // If the size of the replica has changed since opening it, then update the size.
-        if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
+        else if (_l1desc.dataObjInfo->dataSize != size_on_disk) {
             addKeyVal(&reg_params, DATA_SIZE_KW, std::to_string(size_on_disk).data());
             addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+            addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
         }
         // If the contents of the replica has changed, then update the last modified timestamp.
         else if (_l1desc.bytesWritten > 0) {
+            addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
+            addKeyVal(&reg_params, REPL_STATUS_KW, REPLICA_STATUS_GOOD);
+        }
+        // If nothing has been written, the status is restored from the replica state table
+        // so that the replica is not mistakenly marked as good when it is in fact stale.
+        else {
+            auto& rst = irods::replica_state_table::instance();
+            const auto previous_status = std::stoi(rst.get_property(_l1desc.dataObjInfo->objPath, _l1desc.dataObjInfo->replNum, "data_is_dirty"));
+
+            addKeyVal(&reg_params, REPL_STATUS_KW, std::to_string(previous_status).data());
             addKeyVal(&reg_params, DATA_MODIFY_KW, current_time_in_seconds().data());
         }
 
@@ -261,7 +277,7 @@ namespace
         }
         else {
             // Return immediately if nothing needs to be updated. Allowing the function
-            // to continue pass this point results in an SQL update error due to invalid
+            // to continue past this point results in an SQL update error due to invalid
             // SQL (i.e. no columns were specified for the update).
             return 0;
         }
@@ -341,6 +357,7 @@ namespace
             return BAD_INPUT_DESC_INDEX;
         }
 
+        auto& rst = irods::replica_state_table::instance();
         const auto& l1desc = L1desc[l1desc_index];
         const auto send_notifications = !json_input.contains("send_notifications") || json_input.at("send_notifications").get<bool>();
 
@@ -390,7 +407,24 @@ namespace
                     }
                 }
                 else if (update_status) {
-                    if (const auto ec = update_replica_status(*_comm, l1desc, REPLICA_STATUS_GOOD, send_notifications); ec != 0) {
+                    // Default to setting new status to good on the condition that things moved in an expected manner.
+                    int new_status = GOOD_REPLICA;
+
+                    const auto size_on_disk = get_file_size(*_comm, l1desc);
+
+                    if (size_on_disk < 0) {
+                        // Stale replica status on failure to verify size on disk.
+                        rodsLog(LOG_ERROR, "Failed to update the replica status in the catalog [error_code=%d].", ec);
+                        new_status = STALE_REPLICA;
+                    }
+                    else if (size_on_disk == l1desc.dataObjInfo->dataSize &&
+                             l1desc.bytesWritten <= 0 &&
+                             CREATE_TYPE != l1desc.openType) {
+                        // If nothing changed, the replica status should be restored to the original status.
+                        new_status = std::stoi(rst.get_property(l1desc.dataObjInfo->objPath, l1desc.dataObjInfo->replNum, "data_is_dirty"));
+                    }
+
+                    if (const auto ec = update_replica_status(*_comm, l1desc, std::to_string(new_status), send_notifications); ec != 0) {
                         rodsLog(LOG_ERROR, "Failed to update the replica status in the catalog [error_code=%d].", ec);
                         update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
                         return ec;
@@ -421,10 +455,16 @@ namespace
                 return ec;
             }
 
+            const std::string logical_path = l1desc.dataObjInfo->objPath;
+
             const auto ec = free_l1_descriptor(l1desc_index);
-            
+
             if (ec != 0) {
                 update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
+            }
+
+            if (rst.contains(logical_path)) {
+                rst.erase(logical_path);
             }
 
             return ec;
