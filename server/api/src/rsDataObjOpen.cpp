@@ -66,6 +66,7 @@
 #include "irods_at_scope_exit.hpp"
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
+#include "replica_state_table.hpp"
 #include "scoped_privileged_client.hpp"
 
 #include "boost/format.hpp"
@@ -852,7 +853,7 @@ namespace
                     __FUNCTION__, dataObjInp->objPath));
             }
 
-            auto [obj, lm] = data_object::duplicate_data_object(*info_head);
+            irods::replica_state_table::instance().insert(*info_head);
 
             // sort replica list based on some set of criteria
             const auto open_for_write = getWriteFlag(dataObjInp->openFlags);
