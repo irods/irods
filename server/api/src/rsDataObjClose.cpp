@@ -54,6 +54,7 @@
 #include "irods_at_scope_exit.hpp"
 #include "key_value_proxy.hpp"
 #include "replica_access_table.hpp"
+#include "replica_state_table.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
@@ -518,11 +519,6 @@ namespace
 
         auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{OPEN_TYPE_KW, std::to_string(l1desc.openType)}});
 
-        if (l1desc.openType == CREATE_TYPE) {
-            replica.replica_status(GOOD_REPLICA);
-            reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
-        }
-
         if (PUT_OPR == l1desc.oprType && l1desc.chksumFlag) {
             const std::string checksum = perform_checksum_operation_for_finalize(_comm, _fd);
             if (checksum.empty()) {
@@ -530,6 +526,17 @@ namespace
             }
 
             reg_param[CHKSUM_KW] = checksum;
+        }
+
+        if (l1desc.openType == CREATE_TYPE) {
+            replica.replica_status(GOOD_REPLICA);
+            reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
+        }
+        else if (l1desc.openType == OPEN_FOR_WRITE_TYPE) {
+            auto& rst = irods::replica_state_table::instance();
+            replica.replica_status(std::stoi(rst.get_property(replica.logical_path(), replica.replica_number(), "data_is_dirty")));
+            reg_param[REPL_STATUS_KW] = std::to_string(replica.replica_status());
+            reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
         }
 
         if (CREATE_TYPE == l1desc.openType) {
@@ -779,7 +786,14 @@ int rsDataObjClose(rsComm_t* rsComm, openedDataObjInp_t* dataObjCloseInp)
                 unlock_file_descriptor(rsComm, fd);
             }
 
+            const std::string logical_path = l1desc.dataObjInfo->objPath;
+
             freeL1desc(fd);
+
+            auto& rst = irods::replica_state_table::instance();
+            if (rst.contains(logical_path)) {
+                rst.erase(logical_path);
+            }
         }};
 
         close_physical_file(*rsComm, fd);
