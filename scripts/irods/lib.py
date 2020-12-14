@@ -148,14 +148,14 @@ def get_server_root_pid():
     for p in psutil.process_iter():
         if p.name() == 'irodsServer' and p.ppid() == 1:
             return p.pid
-    return -1
+    return 0
 
 def get_server_root_pid_with_retry(max_retries=100):
-    root_pid = -1
+    root_pid = 0
 
     for _ in range(max_retries):
         root_pid = lib.get_server_root_pid()
-        if root_pid != -1:
+        if root_pid > 0:
             break
         time.sleep(1)
 
@@ -167,26 +167,31 @@ def get_pids_executing_binary_file(binary_file_path, root_pid):
             return process.exe()
         return process.exe
 
-    def is_descendant_of_root_process(process):
-        pid = process.ppid()
-        while pid != 1:
-            if pid == root_pid:
-                return True
-            pid = psutil.Process(pid).ppid()
+    def is_descendant_of_root_server_process(process):
+        if root_pid > 0:
+            pid = process.ppid()
+            while pid != 1:
+                if pid == root_pid:
+                    return True
+                pid = psutil.Process(pid).ppid()
         return False
 
     abspath = os.path.abspath(binary_file_path)
     pids = []
 
-    if root_pid != -1:
-        for p in psutil.process_iter():
-            try:
-                # Add the PID to the list if the process is the root process or
-                # a descendant of the root process.
-                if abspath == get_exe(p) and (p.pid == root_pid or is_descendant_of_root_process(p)):
+    for p in psutil.process_iter():
+        try:
+            if abspath == get_exe(p):
+                # Add the PID to the list if any of the following is true:
+                # - The parent of the process is the init process (1). This will be true if the parent
+                #   exits before its children. The children will be adopted by the init process and have
+                #   a parent PID of 1.
+                # - The process' PID matches the root PID (grandpa).
+                # - The process is a descendant of the root server's PID (e.g. agent or agent factory).
+                if p.ppid() == 1 or p.pid == root_pid or is_descendant_of_root_server_process(p):
                     pids.append(p.pid)
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
 
     return pids
 

@@ -96,7 +96,7 @@ class IrodsController(object):
                 env=self.config.execution_environment)
 
             root_pid = lib.get_server_root_pid_with_retry()
-            if root_pid == -1:
+            if root_pid == 0:
                 raise IrodsError('Could not retrieve server root PID.')
 
             try_count = 1
@@ -217,13 +217,10 @@ class IrodsController(object):
                 self.config.xmsg_server_executable]
 
         d = {}
-        root_pid = lib.get_server_root_pid()
-
-        if root_pid != -1:
-            for b in binaries:
-                pids = lib.get_pids_executing_binary_file(b, root_pid)
-                if pids:
-                    d[b] = pids
+        for b in binaries:
+            pids = lib.get_pids_executing_binary_file(b, lib.get_server_root_pid())
+            if pids:
+                d[b] = pids
 
         return d
 
