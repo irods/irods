@@ -21,6 +21,76 @@ if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting unspecified CMAKE_BUILD_TYPE to '${CMAKE_BUILD_TYPE}'. This is the correct setting for normal builds.")
 endif()
 
+set(IRODS_BUILD_DOCS_DEFAULT ON)
+
+# Find help2man
+if (NOT DEFINED BUILD_DOCS OR BUILD_DOCS)
+  if (NOT DEFINED HELP2MAN)
+    set(HELP2MAN_SET_BY_CMAKE ON)
+  endif()
+  find_program(
+    HELP2MAN
+    NAMES help2man
+    DOC "help2man location"
+    )
+  if (DEFINED HELP2MAN)
+    message(STATUS "Found help2man: ${HELP2MAN}")
+    if (HELP2MAN_SET_BY_CMAKE)
+      # check version number, but only if find_program went fishing
+      execute_process(
+        COMMAND "${HELP2MAN}" --version
+        OUTPUT_VARIABLE HELP2MAN_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+      string(REGEX REPLACE "\n.*" "" HELP2MAN_VERSION "${HELP2MAN_VERSION}")
+      string(REGEX REPLACE "[^ ]+ +[^ ]+ +" "" HELP2MAN_VERSION "${HELP2MAN_VERSION}")
+      message(STATUS "Found help2man version ${HELP2MAN_VERSION}")
+      if (HELP2MAN_VERSION VERSION_LESS "1.37")
+        # don't cache unusable help2man
+        unset(HELP2MAN CACHE)
+        if (NOT DEFINED BUILD_DOCS)
+          set(IRODS_BUILD_DOCS_DEFAULT OFF)
+        else()
+          message(SEND_ERROR "help2man version 1.37 or later required, cannot build docs")
+        endif()
+      endif()
+    endif()
+  else()
+    if (NOT DEFINED BUILD_DOCS)
+      set(IRODS_BUILD_DOCS_DEFAULT OFF)
+    else()
+      message(SEND_ERROR "help2man not found, cannot build docs")
+    endif()
+  endif()
+endif()
+
+# Find gzip
+if (NOT DEFINED BUILD_DOCS OR BUILD_DOCS)
+  if (NOT DEFINED GZIP)
+    set(GZIP_SET_BY_CMAKE ON)
+  endif()
+  find_program(
+    GZIP
+    NAMES gzip pigz
+    DOC "gzip location"
+    )
+  if (DEFINED GZIP)
+    message(STATUS "Found gzip: ${GZIP}")
+  else()
+    if (NOT DEFINED BUILD_DOCS)
+      set(IRODS_BUILD_DOCS_DEFAULT OFF)
+    else()
+      message(SEND_ERROR "gzip not found, cannot build docs")
+    endif()
+  endif()
+endif()
+
+set(BUILD_DOCS ${IRODS_BUILD_DOCS_DEFAULT} CACHE BOOL "Build icommand documentation")
+if (BUILD_DOCS)
+  file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/man")
+  add_custom_target(docs ALL)
+endif()
+
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -137,17 +207,28 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
     continue()
   endif()
 
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz
-    DEPENDS ${EXECUTABLE}
-    COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_BINARY_DIR} ${EXECUTABLE} ${CMAKE_BINARY_DIR}/man
-    )
-  add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${EXECUTABLE} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz) #forces execution of custom_command
-  install(
-    FILES
-    ${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1.gz
-    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-    )
+  if (BUILD_DOCS)
+    set(EXECUTABLE_MANPAGE "${CMAKE_BINARY_DIR}/man/${EXECUTABLE}.1")
+    add_custom_command(
+      OUTPUT ${EXECUTABLE_MANPAGE}
+      DEPENDS ${EXECUTABLE}
+      COMMENT "generating manpage ${EXECUTABLE}.1"
+      COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:irods_client>:$ENV{LD_LIBRARY_PATH}" "${HELP2MAN}" -h -h -N -n "an iRODS iCommand" --version-string="iRODS-${IRODS_VERSION}" $<TARGET_FILE:${EXECUTABLE}> -o "${EXECUTABLE_MANPAGE}"
+      )
+    add_custom_command(
+      OUTPUT ${EXECUTABLE_MANPAGE}.gz
+      DEPENDS ${EXECUTABLE_MANPAGE}
+      COMMENT "gzipping manpage ${EXECUTABLE}.1"
+      COMMAND "${GZIP}" -f -k "${EXECUTABLE_MANPAGE}"
+      )
+    add_custom_target(${EXECUTABLE}-manpage DEPENDS ${EXECUTABLE_MANPAGE}.gz)
+    add_dependencies(docs ${EXECUTABLE}-manpage)
+    install(
+      FILES
+      ${EXECUTABLE_MANPAGE}.gz
+      DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+      )
+  endif()
 endforeach()
 
 set(
@@ -156,9 +237,10 @@ set(
   ilocate
   )
 foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
+  set(SCRIPT_SRC_PATH "${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}")
   install(
     FILES
-    ${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}
+    ${SCRIPT_SRC_PATH}
     DESTINATION ${CMAKE_INSTALL_BINDIR}
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
@@ -169,17 +251,28 @@ foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
     endif()
   endif()
 
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz
-    DEPENDS ${CMAKE_SOURCE_DIR}/bin/${IRODS_CLIENT_ICOMMANDS_SCRIPT}
-    COMMAND ${CMAKE_SOURCE_DIR}/packaging/make_man_page.sh ${IRODS_VERSION} ${CMAKE_SOURCE_DIR}/bin ${IRODS_CLIENT_ICOMMANDS_SCRIPT} ${CMAKE_BINARY_DIR}/man
-    )
-  add_custom_target(IRODS_ICOMMANDS_PHONY_TARGET_${IRODS_CLIENT_ICOMMANDS_SCRIPT} ALL DEPENDS ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz) #forces execution of custom_command
-  install(
-    FILES
-    ${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1.gz
-    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
-    )
+  if (BUILD_DOCS)
+    set(SCRIPT_MANPAGE "${CMAKE_BINARY_DIR}/man/${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1")
+    add_custom_command(
+      OUTPUT ${SCRIPT_MANPAGE}
+      DEPENDS ${SCRIPT_SRC_PATH}
+      COMMENT "generating manpage ${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1"
+      COMMAND "${CMAKE_COMMAND}" -E env "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:irods_client>:$ENV{LD_LIBRARY_PATH}" "${HELP2MAN}" -h -h -N -n "an iRODS iCommand" --version-string="iRODS-${IRODS_VERSION}" "${SCRIPT_SRC_PATH}" -o "${SCRIPT_MANPAGE}"
+      )
+    add_custom_command(
+      OUTPUT ${SCRIPT_MANPAGE}.gz
+      DEPENDS ${SCRIPT_MANPAGE}
+      COMMENT "gzipping manpage ${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1"
+      COMMAND "${GZIP}" -f -k "${SCRIPT_MANPAGE}"
+      )
+    add_custom_target(${IRODS_CLIENT_ICOMMANDS_SCRIPT}-manpage DEPENDS ${SCRIPT_MANPAGE}.gz)
+    add_dependencies(docs ${IRODS_CLIENT_ICOMMANDS_SCRIPT}-manpage)
+    install(
+      FILES
+      ${SCRIPT_MANPAGE}.gz
+      DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+      )
+  endif()
 endforeach()
 
 install(
