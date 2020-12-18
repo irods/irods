@@ -22,7 +22,7 @@ namespace irods
 
         auto index_of(const std::string_view _logical_path, const int _replica_number) -> int
         {
-            // NOTE: This function is not inherently thread-safe -- make sure to acquire the lock!
+            std::scoped_lock rst_lock{rst_mutex};
 
             int index = -1;
 
@@ -191,9 +191,10 @@ namespace irods
         const int _replica_number,
         const nlohmann::json& _updates) -> void
     {
+        const auto replica_index = index_of(_logical_path, _replica_number);
+
         std::scoped_lock rst_lock{rst_mutex};
 
-        const auto replica_index = index_of(_logical_path, _replica_number);
 
         auto& target_replica = replica_state_map.at(_logical_path.data()).at(replica_index).at("after");
 
