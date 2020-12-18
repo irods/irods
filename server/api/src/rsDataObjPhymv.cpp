@@ -26,9 +26,99 @@
 #include "irods_hierarchy_parser.hpp"
 #include "key_value_proxy.hpp"
 
-namespace {
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
 
-namespace ix = irods::experimental;
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "data_object_proxy.hpp"
+
+namespace
+{
+    using data_object_proxy = irods::experimental::data_object::data_object_proxy<DataObjInfo>;
+
+    // Takes a data_object_proxy and an input struct and determines the specified replica.
+    // If the resource hierarchy was provided, get replica information using that. If the
+    // replica number was provided, get replica information using that. Otherwise, returns nullptr.
+    DataObjInfo* get_replica_information_based_on_input_keyword(data_object_proxy& _obj, const DataObjInp& _inp)
+    {
+        auto cond_input = irods::experimental::make_key_value_proxy(_inp.condInput);
+
+        if (cond_input.contains(RESC_HIER_STR_KW)) {
+            const auto hier = cond_input.at(RESC_HIER_STR_KW).value();
+
+            const auto& replica = irods::experimental::data_object::find_replica(_obj, hier);
+
+            if (!replica) {
+                THROW(SYS_REPLICA_DOES_NOT_EXIST, fmt::format(
+                    "replica does not exist; path:[[}],hier:[{]]",
+                    _inp.objPath, hier));
+            }
+
+            return replica->get();
+        }
+        else if (cond_input.contains(REPL_NUM_KW)) {
+            const auto repl_num = std::stoi(cond_input.at(REPL_NUM_KW).value().data());
+
+            const auto& replica = irods::experimental::data_object::find_replica(_obj, repl_num);
+
+            if (!replica) {
+                THROW(SYS_REPLICA_DOES_NOT_EXIST, fmt::format(
+                    "replica does not exist; path:[[}],repl_num:[{]]",
+                    _inp.objPath, repl_num));
+            }
+
+            return replica->get();
+        }
+
+        return nullptr;
+    } // get_replica_information_based_on_input_keyword
+
+    void throw_if_no_write_permissions_on_source_replica(RsComm& _comm, const DataObjInp& _source_inp)
+    {
+        namespace fs = irods::experimental::filesystem;
+
+        auto [obj, obj_lm] = irods::experimental::data_object::make_data_object_proxy(_comm, fs::path{_source_inp.objPath});
+
+        auto* data_obj_info = get_replica_information_based_on_input_keyword(obj, _source_inp);
+        if (!data_obj_info) {
+            THROW(SYS_INTERNAL_ERR, "failed to get replica information");
+        }
+
+        std::string location;
+        if (const irods::error ret = irods::get_loc_for_hier_string(data_obj_info->rescHier, location); !ret.ok()) {
+            THROW(ret.code(), ret.result());
+        }
+
+        // test the source hier to determine if we have write access to the data
+        // stored.  if not then we cannot unlink that replica and should throw an
+        // error.
+        fileOpenInp_t open_inp{};
+        open_inp.mode = getDefFileMode();
+        open_inp.flags = O_WRONLY;
+        rstrcpy(open_inp.resc_name_, data_obj_info->rescName, MAX_NAME_LEN);
+        rstrcpy(open_inp.resc_hier_, data_obj_info->rescHier, MAX_NAME_LEN);
+        rstrcpy(open_inp.objPath, data_obj_info->objPath, MAX_NAME_LEN);
+        rstrcpy(open_inp.addr.hostAddr, location.c_str(), NAME_LEN);
+        rstrcpy(open_inp.fileName, data_obj_info->filePath, MAX_NAME_LEN);
+        rstrcpy(open_inp.in_pdmo, data_obj_info->in_pdmo, MAX_NAME_LEN);
+
+        // kv passthru
+        copyKeyVal(&data_obj_info->condInput, &open_inp.condInput);
+
+        const int l3_index = rsFileOpen(&_comm, &open_inp);
+        clearKeyVal(&open_inp.condInput);
+        if(l3_index < 0) {
+            const std::string msg = fmt::format("unable to open {} for unlink", data_obj_info->objPath);
+            addRErrorMsg(&_comm.rError, l3_index, msg.c_str());
+            THROW(l3_index, msg);
+        }
+
+        FileCloseInp close_inp{};
+        close_inp.fileInx = l3_index;
+        if (const int ec = rsFileClose(&_comm, &close_inp); ec < 0) {
+            THROW(ec, fmt::format("failed to close {}", data_obj_info->objPath));
+        }
+    } // throw_if_no_write_permissions_on_source_replica
 
 dataObjInp_t init_destination_replica_input(
     rsComm_t* rsComm,
@@ -151,7 +241,7 @@ int open_source_replica(
     rsComm_t* rsComm,
     dataObjInp_t& source_data_obj_inp) {
     source_data_obj_inp.oprType = PHYMV_SRC;
-    source_data_obj_inp.openFlags = O_RDWR;
+    source_data_obj_inp.openFlags = O_RDONLY;
     int source_l1descInx = rsDataObjOpen(rsComm, &source_data_obj_inp);
     if (source_l1descInx < 0) {
         return source_l1descInx;
@@ -164,7 +254,7 @@ int open_destination_replica(
     dataObjInp_t& destination_data_obj_inp,
     const int source_l1desc_inx)
 {
-    auto kvp = ix::make_key_value_proxy(destination_data_obj_inp.condInput);
+    auto kvp = irods::experimental::make_key_value_proxy(destination_data_obj_inp.condInput);
     kvp[REG_REPL_KW] = "";
     kvp[DATA_ID_KW] = std::to_string(L1desc[source_l1desc_inx].dataObjInfo->dataId);
     kvp[SOURCE_L1_DESC_KW] = std::to_string(source_l1desc_inx);
@@ -201,10 +291,10 @@ int replicate_data(
     // Copy data from source to destination
     int status = dataObjCopy(rsComm, destination_l1descInx);
     L1desc[destination_l1descInx].bytesWritten = L1desc[destination_l1descInx].dataObjInfo->dataSize;
-    L1desc[source_l1descInx].bytesWritten = 0;
     if (status < 0) {
         rodsLog(LOG_ERROR, "[%s] - dataObjCopy failed for [%s]",
             __FUNCTION__, destination_inp.objPath);
+        L1desc[destination_l1descInx].bytesWritten = status;
     }
     else {
         const int trim_status = dataObjUnlinkS(rsComm, &source_inp, L1desc[source_l1descInx].dataObjInfo);
@@ -225,9 +315,8 @@ int replicate_data(
     return status;
 } // replicate_data
 
-int move_replica(
-    rsComm_t* rsComm,
-    dataObjInp_t& dataObjInp) {
+int move_replica(rsComm_t* rsComm, dataObjInp_t& dataObjInp)
+{
     // Make sure the requested source and destination resources are valid
     dataObjInp_t destination_inp{};
     dataObjInp_t source_inp{};
@@ -238,8 +327,15 @@ int move_replica(
     destination_inp = init_destination_replica_input(rsComm, dataObjInp);
     source_inp = init_source_replica_input(rsComm, dataObjInp);
 
+    // Need to make sure the physical data of the source replica can be unlinked before
+    // beginning the phymv operation as it will be unlinked after the data movement has
+    // taken place. Failing to do so may result in unintentionally unregistered data in
+    // the resource vault.
+    throw_if_no_write_permissions_on_source_replica(*rsComm, source_inp);
+
     const char* dest_hier = getValByKey(&destination_inp.condInput, RESC_HIER_STR_KW);
     const char* source_hier = getValByKey(&source_inp.condInput, RESC_HIER_STR_KW);
+
     if (dest_hier && source_hier &&
         std::string{dest_hier} == source_hier) {
         return 0;
@@ -249,12 +345,9 @@ int move_replica(
 
 } // anonymous namespace
 
-int rsDataObjPhymv(
-    rsComm_t *rsComm,
-    dataObjInp_t *dataObjInp,
-    transferStat_t **transStat) {
-
-    if (!dataObjInp) {
+int rsDataObjPhymv(rsComm_t *rsComm, dataObjInp_t *dataObjInp, transferStat_t **transStat)
+{
+    if (!rsComm || !dataObjInp) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
@@ -281,6 +374,14 @@ int rsDataObjPhymv(
     catch (const irods::exception& _e) {
         irods::log(_e);
         return _e.code();
+    }
+    catch (const std::exception& e) {
+        irods::log(LOG_ERROR, fmt::format("[{}] - [{}]", __FUNCTION__, e.what()));
+        return SYS_LIBRARY_ERROR;
+    }
+    catch (...) {
+        irods::log(LOG_ERROR, fmt::format("[{}] - unknown error occurred", __FUNCTION__));
+        return SYS_UNKNOWN_ERROR;
     }
 } // rsDataObjPhymv
 

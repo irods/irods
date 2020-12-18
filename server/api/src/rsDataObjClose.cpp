@@ -339,6 +339,11 @@ namespace
         }
         if (PHYMV_DEST == l1desc.oprType) {
             reg_param[REPL_NUM_KW] = std::to_string(source_replica.replica_number());
+            // TODO: This is only valid if the source replica was good. Need to get source replica's
+            // previous status from the replica state table, assuming implementation of unlink does not
+            // remove the entry in the future. Using the source replica's current status is not valid
+            // because logical locking would put it into write lock.
+            reg_param[REPL_STATUS_KW] = std::to_string(GOOD_REPLICA);
         }
         if (cond_input.contains(CHKSUM_KW)) {
             reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
