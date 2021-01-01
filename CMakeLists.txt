@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
-include(${CMAKE_SOURCE_DIR}/cmake/RequireOutOfSourceBuild.cmake)
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake/Modules")
+include(RequireOutOfSourceBuild)
 
 option(IRODS_DISABLE_COMPILER_OPTIMIZATIONS "Disables compiler optimizations by setting -O0." OFF)
 
@@ -243,7 +244,6 @@ configure_file(
   @ONLY
   )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(GetGitRevisionDescription)
 get_git_head_revision(IRODS_GIT_REFSPEC IRODS_GIT_SHA1)
 configure_file(
