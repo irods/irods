@@ -1,0 +1,33 @@
+@headers@
+
+#ifndef @macro@
+# error "@macro@ not defined"
+#endif
+
+#ifdef __cplusplus
+# include <iostream>
+#else
+# include <stdio.h>
+# include <errno.h>
+#endif
+
+#define CMAKE_STRINGIFY(x) #x
+#define CMAKE_TOSTRING(x) CMAKE_STRINGIFY(x)
+
+#ifdef __CLASSIC_C__
+int main(argc, argv) int argc; char *argv[];
+#else
+int main(int argc, char *argv[])
+#endif
+{
+    #ifdef __cplusplus
+    std::cout << CMAKE_TOSTRING(@macro@) << std::flush;
+    #else
+    int result = 0;
+    result = fputs(CMAKE_TOSTRING(@macro@), stdout);
+    if (result < 0) return errno;
+    result = fflush(stdout);
+    if (result != 0) return errno;
+    #endif
+    return 0;
+}
