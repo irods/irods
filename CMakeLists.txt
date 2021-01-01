@@ -1569,6 +1569,15 @@ install(
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
 
+install(
+  FILES
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/RequireOutOfSourceBuild.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake.in
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules
+  COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
+  )
+
 foreach(DATABASE_PLUGIN postgres oracle mysql)
   string(TOUPPER ${DATABASE_PLUGIN} DATABASE_PLUGIN_UPPER)
   add_custom_target(
