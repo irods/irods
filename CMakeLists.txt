@@ -88,6 +88,8 @@ if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
     add_compile_options(-O0)
 endif()
 
+set(IRODS_CXX_STANDARD 17)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
   # Do not error on definition of implicit copy constructor for classes with a
   # user-declared copy assignment operator.
@@ -96,6 +98,37 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSIO
   # Do not error when overlapping comparisons always evaluate to false.
   # This is needed because the boost headers throw this warning.
   add_compile_options(-Wno-error=tautological-overlap-compare)
+endif()
+if (LIBCXX_VERSION VERSION_GREATER 10 AND IRODS_CXX_STANDARD EQUAL 17)
+  # C++17 deprecated the explicit template specialization std::allocator<void>
+  # and the two-argument version of std::allocator::allocate
+  # Starting with 11.0, libc++ enforces these deprecations, which causes
+  # warnings from the boost headers.
+  # Boost has removed references to the two-argument version of
+  # std::allocator::allocate in 1.75, which would solve the problem, but,
+  # while the template specification deprecation is not supposed to affect
+  # existing code, libc++ 11 causes warnings for references to
+  # std::allocator<void>. Maybe a future release of libc++ will fix this.
+  # Should we ever switch to C++20 (or newer), std::allocator<void> problem
+  # will go away, as the explicit template specialization is removed in C++20.
+  #
+  # In the meantime, we have a couple of options for dealing with this.
+  # 1. Define the preprocessor variable _LIBCPP_DISABLE_DEPRECATION_WARNINGS.
+  #    This will silence all deprecation warnings from libc++. References to
+  #    deprecated declarations from other sources will still cause a warning
+  #    and halt the build. This solution/workaround could potentially silence
+  #    valid warnings that would otherwise come from new code that *we*
+  #    introduce.
+  # 2. Pass the compiler option -Wno-error=deprecated-declarations.
+  #    This will prevent references to deprecated declarations from halting
+  #    the build. Warnings will not be silenced, but references to deprecated
+  #    declarations, even those outside of libc++, will not halt the build.
+  # Both of these options have their downsides, but given that option 2 is
+  # much greater in scope, affecting more than just libc++, option 1 will be
+  # chosen for the time being.
+  # For now, let's add the new define to IRODS_COMPILE_DEFINITIONS, so that
+  # projects down the chain pull it in as well.
+  set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS} _LIBCPP_DISABLE_DEPRECATION_WARNINGS)
 endif()
 
 include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include
@@ -112,10 +145,9 @@ if (NOT PAM_LIBRARY)
   endif()
 endif()
 
-set(IRODS_CXX_STANDARD 17)
-
 set(IRODS_PLATFORM_STRING linux_platform)
-set(IRODS_COMPILE_DEFINITIONS ${IRODS_PLATFORM_STRING} 
+set(IRODS_COMPILE_DEFINITIONS ${IRODS_COMPILE_DEFINITIONS}
+                              ${IRODS_PLATFORM_STRING}
                               _LARGEFILE_SOURCE
                               _FILE_OFFSET_BITS=64
                               _LARGE_FILES
