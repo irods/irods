@@ -57,8 +57,6 @@ else()
   set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/c++-analyzer)
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-
 set(IRODS_VERSION_MAJOR "4")
 set(IRODS_VERSION_MINOR "3")
 set(IRODS_VERSION_PATCH "0")
@@ -68,17 +66,23 @@ project(irods
   VERSION ${IRODS_VERSION}
   LANGUAGES C CXX)
 
+find_package(LibCXX 6 REQUIRED)
+set(CMAKE_CXX_STANDARD_LIBRARIES "${LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES}")
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${LIBCXX_INCLUDE_DIR})
+add_compile_options(-nostdinc++)
+link_libraries(-stdlib=libc++)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 include(${CMAKE_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH ${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib)
+set(CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++ -Wl,-z,defs -pthread")
-add_compile_options(-nostdinc++ -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs -pthread")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,defs -pthread")
+add_compile_options(-Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter)
 
 if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
     add_compile_options(-O0)
@@ -94,9 +98,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSIO
   add_compile_options(-Wno-error=tautological-overlap-compare)
 endif()
 
-link_libraries(c++abi)
-include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
-                    ${IRODS_EXTERNALS_FULLPATH_JSON}/include
+include_directories(${IRODS_EXTERNALS_FULLPATH_JSON}/include
                     ${IRODS_EXTERNALS_FULLPATH_SPDLOG}/include)
 
 find_package(Threads REQUIRED)
@@ -1615,6 +1617,9 @@ install(
   ${CMAKE_SOURCE_DIR}/cmake/Modules/RequireOutOfSourceBuild.cmake
   ${CMAKE_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake
   ${CMAKE_SOURCE_DIR}/cmake/Modules/GetGitRevisionDescription.cmake.in
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/CheckCPPMacroDefinition.cmake
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/CheckCPPMacroDefinition.c.in
+  ${CMAKE_SOURCE_DIR}/cmake/Modules/FindLibCXX.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/irods/cmake/Modules
   COMPONENT ${IRODS_PACKAGE_COMPONENT_DEVELOPMENT_NAME}
   )
