@@ -83,14 +83,15 @@ if (IRODS_DISABLE_COMPILER_OPTIMIZATIONS)
     add_compile_options(-O0)
 endif()
 
-# Stop clang 6 from whining about unrecognized warning flags
-add_compile_options(-Wno-unknown-warning-option)
-# Do not error on definition of implicit copy constructor for classes with a user-declared copy assignment operator.
-# This is needed because the boost headers throw this warning.
-add_compile_options(-Wno-error=deprecated-copy)
-# Do not error when overlapping comparisons always evaluate to false.
-# This is needed because the boost headers throw this warning.
-add_compile_options(-Wno-error=tautological-overlap-compare)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9)
+  # Do not error on definition of implicit copy constructor for classes with a
+  # user-declared copy assignment operator.
+  # This is needed because the boost headers throw this warning.
+  add_compile_options(-Wno-error=deprecated-copy)
+  # Do not error when overlapping comparisons always evaluate to false.
+  # This is needed because the boost headers throw this warning.
+  add_compile_options(-Wno-error=tautological-overlap-compare)
+endif()
 
 link_libraries(c++abi)
 include_directories(${IRODS_EXTERNALS_FULLPATH_CLANG}/include/c++/v1
