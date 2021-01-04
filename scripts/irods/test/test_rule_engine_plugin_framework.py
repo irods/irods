@@ -547,11 +547,11 @@ class Test_Plugin_Instance_CppDefault(ResourceBase, unittest.TestCase):
     def test_delay_rule(self):
         delay_rule = """
 {
-    "policy" : "irods_policy_enqueue_rule",
+    "policy_to_invoke" : "irods_policy_enqueue_rule",
     "delay_conditions" : "",
-    "payload" : {
-        "policy" : "irods_policy_execute_rule",
-        "payload" : {
+    "parameters" : {
+        "policy_to_invoke" : "irods_policy_execute_rule",
+        "parameters" : {
             "policy_to_invoke" : "create_flag_object",
             "parameters" : {
             },
@@ -569,7 +569,7 @@ OUTPUT ruleExecOut
 
         flag_file = self.admin.session_collection + '/flag_file'
         new_rule = """
-create_flag_object(*p, *c) {{
+create_flag_object(*p, *c, *o) {{
 msiDataObjCreate("{0}", "forceFlag=", *out)
 }}""".format(flag_file)
 
@@ -585,3 +585,55 @@ msiDataObjCreate("{0}", "forceFlag=", *out)
                 self.admin.assert_icommand(['irule', '-F', rule_file])
                 self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'irods_policy_execute_rule')
                 delay_assert(lambda: self.admin.assert_icommand(['ils', '-l', flag_file],  'STDOUT_SINGLELINE', 'flag_file'))
+
+
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Python REP and Topology Testing")
+    def test_delay_rule_already_scheduled(self):
+        self.admin.assert_icommand(['iqdel', '-a'])
+        delay_rule = """
+{
+    "policy_to_invoke" : "irods_policy_enqueue_rule",
+    "delay_conditions" : "",
+    "parameters" : {
+        "policy_to_invoke" : "irods_policy_execute_rule",
+        "parameters" : {
+            "policy_to_invoke" : "sleep_policy",
+            "parameters" : {
+            },
+            "configuration" : {
+            }
+        }
+    }
+}
+INPUT null
+OUTPUT ruleExecOut
+        """
+        rule_file = tempfile.NamedTemporaryFile(mode='wt', dir='/tmp', delete=False).name + '.r'
+        with open(rule_file, 'w') as f:
+            f.write(delay_rule)
+
+        flag_file = self.admin.session_collection + '/flag_file'
+        new_rule = """
+sleep_policy(*p, *c, *o) {{
+msiSleep("60", "0")
+}}"""
+
+        with temporary_core_file() as core:
+            core.add_rule(new_rule)
+
+            config = IrodsConfig()
+            with lib.file_backed_up(config.server_config_path):
+                config.server_config['advanced_settings']['rule_engine_server_sleep_time_in_seconds'] = 1
+                lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                IrodsController().restart()
+
+                self.admin.assert_icommand(['irule', '-F', rule_file])
+                self.admin.assert_icommand('iqstat', 'STDOUT_SINGLELINE', 'sleep_policy')
+
+                # expect only one instance of the rule queued
+                self.admin.assert_icommand(['irule', '-F', rule_file])
+                out, _, _ = self.admin.run_icommand(['iqstat'])
+                print(out)
+                lines = out.splitlines()
+                assert(len(lines) == 2)
