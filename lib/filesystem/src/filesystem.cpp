@@ -226,7 +226,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
             if (is_data_object(s)) {
                 dataObjInp_t input{};
-                memset(&input, 0, sizeof(input));
+                at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
 
                 input.oprType = _opts.unregister ? UNREG_OPR : 0;
 
@@ -245,6 +245,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
                 }
 
                 collInp_t input{};
+                at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
 
                 std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
 
@@ -395,6 +396,11 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         dataObjCopyInp_t input{};
 
+        at_scope_exit free_memory{[&input] {
+            clearKeyVal(&input.srcDataObjInp.condInput);
+            clearKeyVal(&input.destDataObjInp.condInput);
+        }};
+
         if (const auto s = status(_comm, _to); exists(s)) {
             if (equivalent(_comm, _from, _to)) {
                 throw filesystem_error{"paths cannot point to the same object", _from, _to, make_error_code(SAME_SRC_DEST_PATHS_ERR)};
@@ -487,6 +493,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
         collInp_t input{};
+        at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
         std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
         addKeyVal(&input.condInput, RECURSIVE_OPR__KW, "");
 
@@ -721,6 +728,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         const auto timestamp = fmt::format("{:011}", _new_time.time_since_epoch().count());
 
         collInp_t input{};
+        at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
         std::strncpy(input.collName, _p.c_str(), std::strlen(_p.c_str()));
         addKeyVal(&input.condInput, COLLECTION_MTIME_KW, timestamp.c_str());
 
