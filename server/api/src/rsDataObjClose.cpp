@@ -467,6 +467,9 @@ namespace
             reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
         }
 
+        // adding FILE_PATH_KW for decoupled naming in S3
+        reg_param[FILE_PATH_KW] = l1desc.dataObjInfo->filePath;
+
         modDataObjMeta_t mod_inp{};
         mod_inp.dataObjInfo = l1desc.dataObjInfo;
         mod_inp.regParam = reg_param.get();
