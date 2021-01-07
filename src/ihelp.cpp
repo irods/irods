@@ -1,20 +1,13 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- A simple program to provide intro help to the icommands
-*/
-
 #include "rodsClient.h"
 #include "parseCommandLine.h"
+
 #include <string>
 
 const char * const icmds[] = {
-    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp",
-    "ienv",
+    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "ienv",
     "ierror", "iexit", "ifsck", "iget", "igroupadmin",
-    "ihelp", "iinit", "ils", "ilsresc",
-    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv",
-    "ipasswd",
+    "ihelp", "iinit", "ilocate", "ils", "ilsresc",
+    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
     "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
     "iquest", "iquota", "ireg", "irepl", "irm", "irmdir", "irmtrash", "irsync", "irule",
     "iscan", "istream", "isysmeta", "iticket", "itrim", "iuserinfo", "izonereport"
@@ -41,6 +34,7 @@ printMainHelp() {
         "igroupadmin  - perform group-admin functions: mkuser, add/remove from group, etc.",
         "ihelp        - display a synopsis list of the iCommands.",
         "iinit        - initialize a session, so you don't need to retype your password.",
+        "ilocate      - searches the local zone for data objects.",
         "ils          - list Collections (directories) and Data Objects (files).",
         "ilsresc      - list iRODS resources.",
         "imcoll       - manage mounted collections and associated cache.",
