@@ -1,12 +1,6 @@
 #!/bin/bash
 # ilocate - simple script to emulate functionality of GNU's [m]locate command for iRODS
 # Authored by Scott Sinno, NASA NCCS, scott.s.sinno@nasa.gov
-#
-#Todo : 
-#	Add functionality for case-insensitive search, preferably by way of 
-# adding support for it in iquest.
-#					
-
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ]
 then
@@ -17,24 +11,33 @@ then
 	echo "wildcard (emulates the sql 'like' operand).  If you need to express"
 	echo "% as a literal, you must encapsulate the search pattern with quotes."
 	echo 
-	echo "Options are :"
+	echo "Options are:"
 	echo "-0  Separate output via NULL characters instead of newlines (like find -print0)" 
 	echo "-t  Also show objects in trash"
+	echo "-i  Use case-insensitive search"
         echo ""
         ienv -h | tail -n1 | sed s/ienv/ilocate/
 	exit 0
 fi
 
+case_insensitive=0
+
 iQuestQry ()  # $1 == query_column, $2 == inputstr
 {
-		sql_output=`iquest --no-page "%s/%s" "select COLL_NAME,DATA_NAME WHERE $1 $operand '$2'" 2> /dev/null`
-		if [ $? -eq 0 ]
-		then
-			echo "$sql_output" | grep -v "CAT_NO_ROWS_FOUND"
-			return 0
-		else
-			return 1
-		fi
+        if [ $case_insensitive -eq 0 ]; then
+		sql_output=`iquest --no-page "%s/%s" "select COLL_NAME, DATA_NAME WHERE $1 $operand '$2'" 2> /dev/null`
+        else
+                sql_arg=`echo "$2" | awk '{ print toupper($0) }'`
+                sql_output=`iquest uppercase --no-page "%s/%s" "select COLL_NAME, DATA_NAME WHERE $1 $operand '$sql_arg'" 2> /dev/null`
+        fi
+
+        if [ $? -eq 0 ]
+        then
+                echo "$sql_output" | grep -v "CAT_NO_ROWS_FOUND"
+                return 0
+        else
+                return 1
+        fi
 
 }
 
@@ -52,6 +55,9 @@ do
 #		"-i")
 #			like_operand="ilike"	
 #			;;
+ 		"-i")
+ 			case_insensitive=1
+ 			;;
 		*) 
 			echo "ERROR: Unknown option $1 passed.  Use 'ilocate -h' to view available options. "  
 			exit 2
