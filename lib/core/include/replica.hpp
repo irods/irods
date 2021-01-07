@@ -30,6 +30,7 @@
 #include "objInfo.h"
 #include "query_builder.hpp"
 #include "rcConnect.h"
+#include "rcMisc.h"
 
 #include "fmt/format.h"
 
@@ -301,6 +302,7 @@ namespace irods::experimental::replica
             std::snprintf(info.rescHier, sizeof(info.rescHier), "%s", _resource_hierarchy.data());
 
             keyValPair_t kvp{};
+            at_scope_exit free_memory{[&kvp] { clearKeyVal(&kvp); }};
             auto reg_params = make_key_value_proxy(kvp);
             reg_params[DATA_MODIFY_KW] = new_time.str();
 
@@ -568,6 +570,7 @@ namespace irods::experimental::replica
         detail::throw_if_replica_number_is_invalid(_replica_number);
 
         dataObjInp_t input{};
+        at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
         auto cond_input = make_key_value_proxy(input.condInput);
         cond_input[REPL_NUM_KW] = std::to_string(_replica_number);
 
@@ -584,6 +587,7 @@ namespace irods::experimental::replica
         detail::throw_if_replica_resource_name_is_invalid(_leaf_resource_name);
 
         dataObjInp_t input{};
+        at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
         auto cond_input = make_key_value_proxy(input.condInput);
         cond_input[LEAF_RESOURCE_NAME_KW] = _leaf_resource_name;
 
