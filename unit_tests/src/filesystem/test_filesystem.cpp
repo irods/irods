@@ -16,6 +16,7 @@
 
 #include "rodsClient.h"
 #include "dataObjRepl.h"
+#include "rcMisc.h"
 
 #include "client_connection.hpp"
 #include "connection_pool.hpp"
@@ -783,6 +784,7 @@ auto add_ufs_resource(const std::string_view _resc_name, const std::string_view 
 auto replicate_data_object(const std::string_view _path, const std::string_view _resc_name) -> void
 {
     dataObjInp_t repl_input{};
+    irods::at_scope_exit free_memory{[&repl_input] { clearKeyVal(&repl_input.condInput); }};
     std::strncpy(repl_input.objPath, _path.data(), _path.size());
     addKeyVal(&repl_input.condInput, DEST_RESC_NAME_KW, _resc_name.data());
 
