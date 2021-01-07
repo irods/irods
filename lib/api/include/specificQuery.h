@@ -5,7 +5,7 @@
 #include "objInfo.h"
 #include "rodsGenQuery.h"
 
-typedef struct {
+typedef struct SpecificQueryInp {
     char *sql;
     char *args[10];  // optional arguments (bind variables)
 
