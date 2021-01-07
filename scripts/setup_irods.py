@@ -131,7 +131,10 @@ def setup_server(irods_config, json_configuration_file=None):
 
     test_put(irods_config)
 
-    l.info(irods.lib.get_header('iRODS is installed and running'))
+    l.info(irods.lib.get_header('Stopping iRODS...'))
+    IrodsController(irods_config).stop()
+
+    l.info(irods.lib.get_header('iRODS is configured and ready to be started'))
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
@@ -151,7 +154,7 @@ def test_put(irods_config):
     l.info('Removing the test file from iRODS...')
     irods.lib.execute_command(['irm', '-f', test_file_name])
 
-    l.info('Success.')
+    l.info('Success')
 
 def check_hostname():
     l = logging.getLogger(__name__)
