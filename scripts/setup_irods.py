@@ -142,7 +142,10 @@ def setup_server(irods_config, json_configuration_file=None, test_mode=False):
             'iRODS will never touch these configuration files again.\n'
             'If you need to make adjustments, you must do so manually.'))
 
-    l.info(irods.lib.get_header('iRODS is installed and running'))
+    l.info(irods.lib.get_header('Stopping iRODS...'))
+    IrodsController(irods_config).stop()
+
+    l.info(irods.lib.get_header('iRODS is configured and ready to be started'))
 
 def test_put(irods_config):
     l = logging.getLogger(__name__)
@@ -151,7 +154,7 @@ def test_put(irods_config):
     if 0 != irods.lib.execute_command_permissive(irods.paths.test_put_get_executable())[2]:
         raise IrodsError('Post-install test failed. Please check your configuration.')
 
-    l.info('Success.')
+    l.info('Success')
 
 def check_hostname():
     l = logging.getLogger(__name__)
