@@ -49,13 +49,13 @@
 
 #include "rcMisc.h"
 #include "transport/transport.hpp"
+#include "irods_at_scope_exit.hpp"
 
 #include "json.hpp"
 
 #include <cstdlib>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace irods::experimental::io::NAMESPACE_IMPL
 {
@@ -324,6 +324,7 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             }
 
             dataObjInp_t input{};
+            at_scope_exit free_memory{[&input] { clearKeyVal(&input.condInput); }};
 
             input.createMode = 0600;
             input.openFlags = flags;
@@ -332,6 +333,12 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             _func(input);
 
             char* json_output{}; 
+            at_scope_exit free_json_output{[&json_output] {
+                if (json_output) {
+                    std::free(json_output);
+                }
+            }};
+
             const auto fd = rx_replica_open(comm_, &input, &json_output);
 
             if (fd < minimum_valid_file_descriptor) {
@@ -339,7 +346,6 @@ namespace irods::experimental::io::NAMESPACE_IMPL
             }
 
             fd_ = fd;
-            std::unique_ptr<char, void(*)(void*)> free_json_output{json_output, std::free};
 
             try {
                 const auto fd_info = nlohmann::json::parse(json_output);
