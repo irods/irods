@@ -10,7 +10,9 @@ else:
 from . import session
 from .. import test
 from .. import lib
+from .. import paths
 from ..configuration import IrodsConfig
+from ..controller import IrodsController
 
 class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unittest.TestCase):
 
@@ -158,4 +160,42 @@ class Test_Misc(session.make_sessions_mixin([('otherrods', 'rods')], []), unitte
             self.assertLess(datetime.now() - start, timedelta(seconds=5))
         finally:
             self.admin.assert_icommand(['iadmin', 'rmresc', resource])
+
+    @unittest.skipIf(plugin_name == 'irods_rule_engine_plugin-python' or test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_server_removes_leftover_temporary_rulebase_pid_files_on_startup__issue_5224(self):
+        # Create the rulebase file and three leftover rulebase PID files.
+        rulebase_filename = os.path.join(paths.config_directory(), 'leftover_rulebase.re')
+        pid_file_1 = rulebase_filename + '.101'
+        pid_file_2 = rulebase_filename + '.202'
+        pid_file_3 = rulebase_filename + '.303'
+        for fn in [rulebase_filename, pid_file_1, pid_file_2, pid_file_3]:
+            lib.make_file(fn, 1, 'arbitrary')
+
+        # Verify that the rulebase files exist.
+        for fn in [rulebase_filename, pid_file_1, pid_file_2, pid_file_3]:
+            self.assertTrue(os.path.isfile(fn))
+
+        # Add the rulebase to the rulebase list.
+        config = IrodsConfig()
+
+        with lib.file_backed_up(config.server_config_path):
+            found_nrep = False
+            for rep in config.server_config['plugin_configuration']['rule_engines']:
+                if rep['plugin_name'] == 'irods_rule_engine_plugin-irods_rule_language':
+                    found_nrep = True
+                    filename = os.path.basename(rulebase_filename)
+                    rep['plugin_specific_configuration']['re_rulebase_set'].append(os.path.splitext(filename)[0])
+                    lib.update_json_file_from_dict(config.server_config_path, config.server_config)
+                    break
+
+            # Make sure that the NREP was updated.
+            self.assertTrue(found_nrep)
+
+            # Restart the server. On startup, the PID files will be removed.
+            IrodsController().restart()
+
+            # Verify that the original rulebase file exists and that the PID files were removed.
+            self.assertTrue(os.path.isfile(rulebase_filename))
+            for fn in [pid_file_1, pid_file_2, pid_file_3]:
+                self.assertFalse(os.path.exists(fn))
 
