@@ -207,6 +207,23 @@ class Test_Catalog(ResourceBase, unittest.TestCase):
             os.unlink(file_with_spaces)
             os.unlink(otherfile)
 
+    def test_ilocate_supports_case_insensitive_search__issue_4761(self):
+        data_object = 'foo'
+        self.admin.assert_icommand(['istream', 'write', data_object], input='object 1')
+
+        data_object_upper = data_object.upper()
+        self.admin.assert_icommand(['istream', 'write', data_object_upper], input='object 2')
+
+        data_object_mixed = 'fOo'
+        self.admin.assert_icommand(['istream', 'write', data_object_mixed], input='object 3')
+
+        expected_output = [
+            os.path.join(self.admin.session_collection, data_object),
+            os.path.join(self.admin.session_collection, data_object_upper),
+            os.path.join(self.admin.session_collection, data_object_mixed)
+        ]
+        self.admin.assert_icommand(['ilocate', '-i', data_object], 'STDOUT', expected_output)
+
     ###################
     # iquest
     ###################
