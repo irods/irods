@@ -1,4 +1,6 @@
 #include "irods_at_scope_exit.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "irods_get_full_path_for_config_file.hpp"
 #include "rcMisc.h"
 #include "rodsErrorTable.h"
 #include "rodsServer.hpp"
@@ -36,6 +38,12 @@
 #include <boost/thread/condition.hpp>
 
 #include <fmt/format.h>
+#include <json.hpp>
+
+#include <fstream>
+#include <regex>
+#include <algorithm>
+#include <iterator>
 
 namespace ix = irods::experimental;
 
@@ -144,6 +152,69 @@ namespace
         snprintf( buf, num_hex_bytes + 1, "%s", ss.str().c_str() );
         return 0;
     }
+
+    void remove_leftover_rulebase_pid_files() noexcept
+    {
+        namespace fs = boost::filesystem;
+
+        try {
+            // Find the server configuration file.
+            std::string config_path;
+
+            if (const auto err = irods::get_full_path_for_config_file("server_config.json", config_path); !err.ok()) {
+                rodsLog(LOG_ERROR, "Could not locate server_config.json. Cannot remove leftover rulebase files.");
+                return;
+            }
+
+            // Load the server configuration file in as JSON.
+            nlohmann::json config;
+
+            if (std::ifstream in{config_path}; in) {
+                in >> config;
+            }
+            else {
+                rodsLog(LOG_ERROR, "Could not open server configuration file. Cannot remove leftover rulebase files.");
+                return;
+            }
+
+            // Find the NREP.
+            const auto& plugin_config = config.at(irods::CFG_PLUGIN_CONFIGURATION_KW);
+            const auto& rule_engines = plugin_config.at(irods::PLUGIN_TYPE_RULE_ENGINE);
+
+            const auto end = std::end(rule_engines);
+            const auto nrep = std::find_if(std::begin(rule_engines), end, [](const nlohmann::json& _object) {
+                return _object.at(irods::CFG_PLUGIN_NAME_KW).get<std::string>() == "irods_rule_engine_plugin-irods_rule_language";
+            });
+
+            // Get the rulebase set.
+            const auto& plugin_specific_config = nrep->at(irods::CFG_PLUGIN_SPECIFIC_CONFIGURATION_KW);
+            const auto& rulebase_set = plugin_specific_config.at(irods::CFG_RE_RULEBASE_SET_KW);
+
+            // Iterate over the list of rulebases and remove the leftover PID files.
+            for (const auto& rb : rulebase_set) {
+                // Create a pattern based on the rulebase's filename. The pattern will have the following format:
+                //
+                //    .+/<rulebase_name>\.re\.\d+
+                //
+                // Where <rulebase_name> is a placeholder for the target rulebase.
+                std::string pattern_string = ".+/";
+                pattern_string += rb.get<std::string>();
+                pattern_string += R"_(\.re\.\d+)_";
+
+                const std::regex pattern{pattern_string};
+
+                for (const auto& p : fs::directory_iterator{irods::get_irods_config_directory()}) {
+                    if (std::regex_match(p.path().c_str(), pattern)) {
+                        try {
+                            fs::remove(p);
+                        }
+                        catch (...) {}
+                    }
+                }
+            }
+        }
+        catch (...) {}
+    }
 } // anonymous namespace
 
 static void set_agent_spawner_process_name(const InformationRequiredToSafelyRenameProcess& info) {
@@ -201,8 +272,7 @@ int daemonize( char *logDir )
 #endif
 }
 
-int
-main( int argc, char **argv )
+int main(int argc, char** argv)
 {
     int c;
     int uFlag = 0;
@@ -281,6 +351,8 @@ main( int argc, char **argv )
 
     irods::experimental::replica_access_table::init();
     irods::at_scope_exit deinit_fd_table{[] { irods::experimental::replica_access_table::deinit(); }};
+
+    remove_leftover_rulebase_pid_files();
 
     /* start of irodsReServer has been moved to serverMain */
     signal( SIGTTIN, SIG_IGN );
