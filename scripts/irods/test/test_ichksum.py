@@ -7,6 +7,7 @@ else:
 
 import os
 import shutil
+import re
 
 from . import resource_suite
 from .. import lib
@@ -330,4 +331,48 @@ class Test_Ichksum(resource_suite.ResourceBase, unittest.TestCase):
         self.admin.assert_icommand(['ichksum', data_object], 'STDERR', ['HIERARCHY_ERROR'])
         self.admin.assert_icommand(['ichksum', '-n0', data_object], 'STDERR', ['HIERARCHY_ERROR'])
         self.admin.assert_icommand(['ichksum', '-a', data_object], 'STDERR', ['HIERARCHY_ERROR'])
+
+    def test_ichksum_groups_objects_appropriately_when_the_recursive_flag_is_set__issue_5285(self):
+        # Create a test collection. This avoids issues with data objects created by
+        # the base class appearing in the output.
+        root_col = os.path.join(self.admin.session_collection, 'issue_5285')
+        self.admin.assert_icommand(['imkdir', root_col])
+
+        # Add a new data object to the root test collection.
+        data_object_0 = 'foo'
+        self.admin.assert_icommand(['istream', 'write', os.path.join(root_col, data_object_0)], input='X')
+
+        # Create a new collection and add two data objects to it.
+        data_object_1 = 'bar'
+        data_object_2 = 'baz'
+        col_1 = os.path.join(root_col, 'col_1')
+        self.admin.assert_icommand(['imkdir', col_1])
+        self.admin.assert_icommand(['istream', 'write', os.path.join(col_1, data_object_1)], input='Y')
+        self.admin.assert_icommand(['istream', 'write', os.path.join(col_1, data_object_2)], input='Z')
+
+        # Create a third collection inside of the previously created collection and
+        # add one data object to it.
+        data_object_3 = 'goo'
+        col_2 = os.path.join(col_1, 'col_2')
+        self.admin.assert_icommand(['imkdir', col_2])
+        self.admin.assert_icommand(['istream', 'write', os.path.join(col_2, data_object_3)], input='W')
+
+        # Verify that the output is correct.
+        out, _, ec = self.admin.run_icommand(['ichksum', '-r', root_col])
+        self.assertEqual(ec, 0)
+        pattern = '''C- {0}:
+    {1}    sha2:.+
+C- {2}:
+    {3}    sha2:.+
+    {4}    sha2:.+
+C- {5}:
+    {6}    sha2:.+
+'''.format(root_col,
+           data_object_0,
+           col_1,
+           data_object_1,
+           data_object_2,
+           col_2,
+           data_object_3)
+        self.assertTrue(re.match(pattern, out))
 
