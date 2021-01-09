@@ -1,3 +1,4 @@
+#include "rcMisc.h"
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "miscUtil.h"
@@ -138,13 +139,12 @@ int chksumCollUtil(rcComm_t* conn,
 
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN];
-    collHandle_t collHandle;
+    collHandle_t collHandle{};
     collEnt_t collEnt;
     int queryFlags = 0;
 
     if ( rodsArgs->resource == True ) {
         queryFlags = INCLUDE_CONDINPUT_IN_QUERY;
-        bzero( &collHandle, sizeof( collHandle ) );
         replKeyVal( &dataObjInp->condInput, &collHandle.dataObjInp.condInput );
     }
 
@@ -154,7 +154,7 @@ int chksumCollUtil(rcComm_t* conn,
         return status;
     }
 
-    if (collHandle.rodsObjStat->specColl != nullptr &&
+    if (collHandle.rodsObjStat->specColl &&
         collHandle.rodsObjStat->specColl->collClass != LINKED_COLL)
     {
         /* no trim for mounted coll */
@@ -162,6 +162,12 @@ int chksumCollUtil(rcComm_t* conn,
         return 0;
     }
 
+    // Holds the number of collections seen during the first iteration of
+    // the collection.
+    int collections_left_to_handle = 0;
+
+    // Process all data objects directly under this collection first. Collections will
+    // be handled separately. This is required so that the output is clean and organized.
     while ( ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
         if ( collEnt.objType == DATA_OBJ_T ) {
             snprintf( srcChildPath, MAX_NAME_LEN, "%s/%s", collEnt.collName, collEnt.dataName );
@@ -176,24 +182,45 @@ int chksumCollUtil(rcComm_t* conn,
             }
         }
         else if ( collEnt.objType == COLL_OBJ_T ) {
-            dataObjInp_t childDataObjInp;
-            childDataObjInp = *dataObjInp;
-
-            if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
-                childDataObjInp.specColl = &collEnt.specColl;
-            }
-            else {
-                childDataObjInp.specColl = nullptr;
-            }
-
-            int status = chksumCollUtil( conn, collEnt.collName, myRodsEnv, rodsArgs, &childDataObjInp, collInp );
-            if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
-                return status;
-            }
+            ++collections_left_to_handle;
         }
     }
 
     rclCloseCollection( &collHandle );
+
+    // Process any collections seen during the first iteration.
+    if (collections_left_to_handle > 0) {
+        clearKeyVal(&collHandle.dataObjInp.condInput);
+        replKeyVal( &dataObjInp->condInput, &collHandle.dataObjInp.condInput );
+
+        // Re-open the collection and handle only the collections.
+        status = rclOpenCollection( conn, srcColl, queryFlags, &collHandle );
+        if ( status < 0 ) {
+            rodsLog( LOG_ERROR, "chksumCollUtil: rclOpenCollection of %s error. status = %d", srcColl, status );
+            return status;
+        }
+
+        while ( collections_left_to_handle > 0 && ( status = rclReadCollection( conn, &collHandle, &collEnt ) ) >= 0 ) {
+            if ( collEnt.objType == COLL_OBJ_T ) {
+                --collections_left_to_handle;
+
+                dataObjInp_t childDataObjInp;
+                childDataObjInp = *dataObjInp;
+
+                if ( collEnt.specColl.collClass != NO_SPEC_COLL ) {
+                    childDataObjInp.specColl = &collEnt.specColl;
+                }
+                else {
+                    childDataObjInp.specColl = nullptr;
+                }
+
+                int status = chksumCollUtil( conn, collEnt.collName, myRodsEnv, rodsArgs, &childDataObjInp, collInp );
+                if ( status < 0 && status != CAT_NO_ROWS_FOUND ) {
+                    return status;
+                }
+            }
+        }
+    }
 
     if ( savedStatus < 0 ) {
         return savedStatus;
