@@ -38,6 +38,12 @@ TEST_CASE("get_file_descriptor_info")
     const auto path = sandbox / "data_object.txt";
     char* json_output = nullptr;
 
+    irods::at_scope_exit free_memory{[&json_output] {
+        if (json_output) {
+            std::free(json_output);
+        }
+    }};
+
     // Guarantees that the stream is closed before clean up.
     {
         io::client::default_transport tp{conn};
