@@ -96,7 +96,6 @@ namespace
     namespace replica       = irods::experimental::replica;
     using replica_proxy     = irods::experimental::replica::replica_proxy<DataObjInfo>;
     using data_object_proxy = irods::experimental::data_object::data_object_proxy<DataObjInfo>;
-    using log               = irods::experimental::log;
     // clang-format on
 
     // Instructs how "update_replica_access_table" should update the
@@ -483,23 +482,26 @@ namespace
             update_replica_access_table(_comm, update_operation::create, l1_index, _inp);
         }
         catch (const irods::exception& e) {
-            log::api::error("Could not update replica access table for newly created data object. "
-                               "Closing data object and setting replica status to stale. "
-                               "[path={}, error_code={}, exception={}]",
-                               _inp.objPath, e.code(), e.what());
+            irods::log(LOG_ERROR, fmt::format(
+                       "Could not update replica access table for newly created data object. "
+                       "Closing data object and setting replica status to stale. "
+                       "[path={}, error_code={}, exception={}]",
+                       _inp.objPath, e.code(), e.what()));
 
             if (const auto ec = close_replica(_comm, l1_index); ec < 0) {
                 auto hier = ix::key_value_proxy{_inp.condInput}[RESC_HIER_STR_KW].value();
-                log::api::error("Failed to close replica [error_code={}, path={}, hierarchy={}]",
-                                   ec, _inp.objPath, hier);
+                irods::log(LOG_ERROR, fmt::format(
+                    "Failed to close replica [error_code={}, path={}, hierarchy={}]",
+                    ec, _inp.objPath, hier));
                 return ec;
             }
 
             if (const auto ec = change_replica_status(_comm, _inp, STALE_REPLICA); ec < 0) {
                 auto hier = ix::key_value_proxy{_inp.condInput}[RESC_HIER_STR_KW].value();
-                log::api::error("Failed to set the replica's replica status to stale "
-                                   "[error_code={}, path={}, hierarchy={}]",
-                                   ec, _inp.objPath, hier);
+                irods::log(LOG_ERROR, fmt::format(
+                    "Failed to set the replica's replica status to stale "
+                    "[error_code={}, path={}, hierarchy={}]",
+                    ec, _inp.objPath, hier));
                 return ec;
             }
 
