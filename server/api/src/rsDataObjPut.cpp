@@ -495,7 +495,7 @@ namespace
             }
         }
         catch (const irods::experimental::filesystem::filesystem_error& e) {
-            irods::experimental::log::api::error(e.what());
+            irods::log(LOG_ERROR, e.what());
             return e.code().value();
         }
 
