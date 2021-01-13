@@ -5,6 +5,7 @@
 
 #include "irods_server_api_call.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input, char** _json_output) -> int
@@ -22,6 +23,7 @@ auto rs_atomic_apply_metadata_operations(RsComm* _comm, const char* _json_input,
     const auto ec = irods::server_api_call(ATOMIC_APPLY_METADATA_OPERATIONS_APN, _comm, &input, &output);
 
     *_json_output = static_cast<char*>(output->buf);
+    std::free(output);
 
     return ec;
 }
