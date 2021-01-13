@@ -6,13 +6,10 @@
 
 #include "irods_server_api_call.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
-extern "C"
-auto rs_data_object_finalize(
-    rsComm_t* _comm,
-    const char* _json_input,
-    char** _json_output) -> int
+auto rs_data_object_finalize(RsComm* _comm, const char* _json_input, char** _json_output) -> int
 {
     if (!_json_input || !_json_output) {
         return SYS_INVALID_INPUT_PARAM;
@@ -27,6 +24,7 @@ auto rs_data_object_finalize(
     const auto ec = irods::server_api_call(DATA_OBJECT_FINALIZE_APN, _comm, &input, &output);
 
     *_json_output = static_cast<char*>(output->buf);
+    std::free(output);
 
     return ec;
 } // rs_data_object_finalize

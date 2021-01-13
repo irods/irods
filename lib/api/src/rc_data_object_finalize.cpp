@@ -4,6 +4,7 @@
 #include "procApiRequest.h"
 #include "rodsErrorTable.h"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rc_data_object_finalize(RcComm* _comm, const char* _json_input, char** _json_output) -> int
@@ -23,6 +24,7 @@ auto rc_data_object_finalize(RcComm* _comm, const char* _json_input, char** _jso
                                   reinterpret_cast<void**>(&output_buf), nullptr);
 
     *_json_output = static_cast<char*>(output_buf->buf);
+    std::free(output_buf);
 
     return ec;
 }

@@ -3,8 +3,9 @@
 
 /// \file
 
-#include "rcConnect.h"
 #include "rodsDef.h"
+
+struct RsComm;
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,7 +90,7 @@ extern "C" {
 /// \return An integer.
 /// \retval 0        On success.
 /// \retval non-zero On failure.
-auto rs_data_object_finalize(rsComm_t* _comm, const char* _json_input, char** _json_output) -> int;
+auto rs_data_object_finalize(RsComm* _comm, const char* _json_input, char** _json_output) -> int;
 
 #ifdef __cplusplus
 } // extern "C"
