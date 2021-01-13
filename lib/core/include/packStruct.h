@@ -10,8 +10,8 @@
 // boost includes
 #include "rodsDef.h"
 
-#define MAX_PI_LEN	1024	/* max pack instruct length */
-#define SEMI_COL_FLAG	0x2	/* got semi colon at end */
+#define MAX_PI_LEN      1024    /* max pack instruct length */
+#define SEMI_COL_FLAG   0x2     /* got semi colon at end */
 #define PACKED_OUT_ALLOC_SZ (16*1024) /* initial alloc size for packedOutput */
 #define SUB_STRUCT_ALLOC_SZ 1024 /* initial alloc size for unpacking sub
 struct */
@@ -19,15 +19,15 @@ struct */
 #define NULL_PTR_PACK_STR "%@#ANULLSTR$%"
 
 /* definition for the flag in packXmlTag() */
-#define START_TAG_FL	0
-#define END_TAG_FL	1
-#define LF_FL		2	/* line feed */
+#define START_TAG_FL    0
+#define END_TAG_FL      1
+#define LF_FL           2       /* line feed */
 
 /* indicate the end of packing table */
 
 #define PACK_TABLE_END_PI  "PACK_TABLE_END_PI"
 
-#define XML_TAG		"iRODSStruct"
+#define XML_TAG         "iRODSStruct"
 
 typedef struct {
     const char *name;
@@ -61,47 +61,47 @@ typedef enum {
 } packOpr_t;
 
 typedef struct {
-    char *name;       	/* the Name of the type */
+    char *name;         /* the Name of the type */
     packTypeInx_t  number;     /* the type number */
     int size;           /* size in bytes of this type */
 } packType_t;
 
-#define MAX_PACK_DIM	20
+#define MAX_PACK_DIM    20
 
 /* definition for pointerType */
-#define NON_POINTER	0
-#define A_POINTER	1
+#define NON_POINTER     0
+#define A_POINTER       1
 #define NO_FREE_POINTER 2
 #define NO_PACK_POINTER 3
 
 /* definition for packFlag */
-#define FREE_POINTER	0x1	/* free the pointer after packing */
+#define FREE_POINTER    0x1     /* free the pointer after packing */
 
 typedef struct packItem {
     packTypeInx_t typeInx;
-    char *name;
-    int pointerType;	/* see definition */
-    const void *pointer;	/* the value of a pointer */
-    int intValue;	/* for int type only */
-    char strValue[NAME_LEN];	/* for str type only */
-    int dim;		/* the dimension if it is an array */
-    int dimSize[MAX_PACK_DIM];	/* the size of each dimension */
-    int hintDim;		/* the Hint dimension */
-    int hintDimSize[MAX_PACK_DIM];	/* the size of each Hint dimension */
+    char *name;                     // The packing instruction
+    int pointerType;                // see definition
+    const void *pointer;            // the value of a pointer
+    int intValue;                   // for int type only
+    char strValue[NAME_LEN];        // for str type only
+    int dim;                        // the dimension if it is an array
+    int dimSize[MAX_PACK_DIM];      // the size of each dimension
+    int hintDim;                    // the Hint dimension
+    int hintDimSize[MAX_PACK_DIM];  // the size of each Hint dimension
     const struct packItem *parent;
     struct packItem *prev;
     struct packItem *next;
 } packItem_t;
 
-typedef struct {
+typedef struct BytesBufferArray {
     int numBuf;
-    bytesBuf_t *bBufArray;	/* pointer to an array of bytesBuf_t */
+    bytesBuf_t* bBufArray;  // pointer to an array of bytesBuf_t
 } bytesBufArray_t;
 
-typedef struct {
-    bytesBuf_t bBuf;
-    int bufSize;
-    bytesBufArray_t nopackBufArray;	/* bBuf for non packed buffer */
+typedef struct PackedOutput {
+    bytesBuf_t bBuf;                    // Buffer (length => occupied memory)
+    int bufSize;                        // Buffer capacity
+    bytesBufArray_t nopackBufArray;     // bBuf for non packed buffer
 } packedOutput_t;
 
 #ifdef __cplusplus
@@ -294,4 +294,4 @@ ovStrcpy( char *outStr, const char *inStr );
 #ifdef __cplusplus
 }
 #endif
-#endif	// PACK_STRUCT_H__
+#endif  // PACK_STRUCT_H__
