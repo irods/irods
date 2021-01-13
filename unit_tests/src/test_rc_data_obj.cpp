@@ -450,6 +450,7 @@ TEST_CASE("rxDataObjChksum")
         DataObjInp input{};
         std::strcpy(input.objPath, data_object.c_str());
         ix::key_value_proxy kvp{input.condInput};
+        irods::at_scope_exit free_memory{[&kvp] { kvp.clear(); }};
 
         char* ignore_checksum{};
 

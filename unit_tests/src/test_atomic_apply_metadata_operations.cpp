@@ -11,6 +11,7 @@
 
 #include "json.hpp"
 
+#include <cstdlib>
 #include <string>
 
 namespace fs = irods::experimental::filesystem;
@@ -108,6 +109,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -143,6 +145,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -162,6 +165,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
         REQUIRE(contains_error_information(json_error_string));
@@ -182,6 +186,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
         REQUIRE(contains_error_information(json_error_string));
@@ -203,6 +208,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
         REQUIRE(contains_error_information(json_error_string));
@@ -224,6 +230,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) != 0);
         REQUIRE(contains_error_information(json_error_string));
@@ -245,6 +252,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -277,6 +285,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -308,6 +317,7 @@ TEST_CASE("atomic_apply_metadata_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(conn_ptr, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -409,6 +419,7 @@ auto remove_all_metadata(rcComm_t& _conn, const rodsEnv& _env, const fs::path& _
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(&_conn, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -440,6 +451,7 @@ auto remove_all_metadata(rcComm_t& _conn, const rodsEnv& _env, const fs::path& _
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(&_conn, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -470,6 +482,7 @@ auto remove_all_metadata(rcComm_t& _conn, const rodsEnv& _env, const fs::path& _
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_metadata_operations(&_conn, json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
