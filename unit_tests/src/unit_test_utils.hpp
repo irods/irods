@@ -1,9 +1,11 @@
 #ifndef IRODS_UNIT_TEST_UTILS_HPP
 #define IRODS_UNIT_TEST_UTILS_HPP
 
+#include "rcMisc.h"
 #include "rodsClient.h"
 #include "dataObjRepl.h"
 #include "resource_administration.hpp"
+#include "irods_at_scope_exit.hpp"
 
 #include <unistd.h>
 
@@ -64,6 +66,7 @@ namespace unit_test_utils
                                       const std::string_view _resc_name) -> bool
     {
         dataObjInp_t repl_input{};
+        irods::at_scope_exit free_memory{[&repl_input] { clearKeyVal(&repl_input.condInput); }};
         std::strncpy(repl_input.objPath, _path.data(), _path.size());
         addKeyVal(&repl_input.condInput, DEST_RESC_NAME_KW, _resc_name.data());
 

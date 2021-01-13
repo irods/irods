@@ -10,6 +10,7 @@
 
 #include "json.hpp"
 
+#include <cstdlib>
 #include <string>
 #include <iostream>
 
@@ -87,6 +88,7 @@ TEST_CASE("atomic_apply_acl_operations")
             }.dump();
 
             char* json_error_string{};
+            irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
             REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) == 0);
             REQUIRE(json_error_string == "{}"s);
@@ -124,6 +126,7 @@ TEST_CASE("atomic_apply_acl_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) == 0);
         REQUIRE(json_error_string == "{}"s);
@@ -145,6 +148,7 @@ TEST_CASE("atomic_apply_acl_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) == OBJ_PATH_DOES_NOT_EXIST);
         REQUIRE(contains_error_information(json_error_string));
@@ -163,6 +167,7 @@ TEST_CASE("atomic_apply_acl_operations")
         }.dump();
 
         char* json_error_string{};
+        irods::at_scope_exit free_memory{[&json_error_string] { std::free(json_error_string); }};
 
         REQUIRE_FALSE(rc_atomic_apply_acl_operations(static_cast<rcComm_t*>(conn), json_input.c_str(), &json_error_string) == 0);
         REQUIRE(contains_error_information(json_error_string));

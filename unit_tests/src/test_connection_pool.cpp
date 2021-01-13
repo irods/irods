@@ -14,7 +14,7 @@ TEST_CASE("connection pool")
     {
         rcComm_t* released_conn_ptr = nullptr;
 
-        irods::at_scope_exit<std::function<void()>> at_scope_exit{[released_conn_ptr] {
+        irods::at_scope_exit at_scope_exit{[&released_conn_ptr] {
             REQUIRE(rcDisconnect(released_conn_ptr) == 0);
         }};
 
@@ -86,7 +86,7 @@ TEST_CASE("connection pool")
     {
         rcComm_t* released_conn_ptr = nullptr;
 
-        irods::at_scope_exit disconnect{[released_conn_ptr] {
+        irods::at_scope_exit disconnect{[&released_conn_ptr] {
             REQUIRE(rcDisconnect(released_conn_ptr) == 0);
         }};
 
