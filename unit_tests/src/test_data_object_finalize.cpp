@@ -19,6 +19,7 @@
 #include "json.hpp"
 #include "fmt/format.h"
 
+#include <cstdlib>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -128,6 +129,7 @@ TEST_CASE("finalize", "[finalize]")
             }
 
             char* error_string{};
+            irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
 
             REQUIRE(0 == rc_data_object_finalize(&comm, input.dump().c_str(), &error_string));
             REQUIRE("{}"s == error_string);
@@ -188,12 +190,16 @@ TEST_CASE("invalid inputs", "[invalid]")
 
     {
         char* error_string{};
+        irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
+
         REQUIRE_THAT(rc_data_object_finalize(static_cast<RcComm*>(comm), json{}.dump().c_str(), &error_string),
             equals_irods_error(SYS_INVALID_INPUT_PARAM));
     }
 
     {
         char* error_string{};
+        irods::at_scope_exit free_memory{[&error_string] { std::free(error_string); }};
+
         REQUIRE_THAT(rc_data_object_finalize(static_cast<RcComm*>(comm), "nope", &error_string),
             equals_irods_error(INPUT_ARG_NOT_WELL_FORMED_ERR));
     }
