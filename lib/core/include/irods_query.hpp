@@ -64,6 +64,22 @@ namespace irods {
         class query_impl_base
         {
         public:
+            query_impl_base(connection_type*   _comm,
+                            const uint32_t     _query_limit,
+                            const uint32_t     _row_offset,
+                            const std::string& _query_string)
+                : comm_{_comm}
+                , query_limit_{_query_limit}
+                , row_offset_{_row_offset}
+                , query_string_{_query_string}
+                , gen_output_{}
+            {
+            }
+
+            virtual ~query_impl_base() {
+                freeGenQueryOut(&this->gen_output_);
+            }
+
             size_t size() {
                 if(!gen_output_) {
                     return 0;
@@ -116,21 +132,8 @@ namespace irods {
             }
 
             virtual int fetch_page() = 0;
-            virtual void reset_for_page_boundary() = 0;
-            virtual ~query_impl_base() {
-            }
 
-            query_impl_base(connection_type*   _comm,
-                            const uint32_t     _query_limit,
-                            const uint32_t     _row_offset,
-                            const std::string& _query_string)
-                : comm_{_comm}
-                , query_limit_{_query_limit}
-                , row_offset_{_row_offset}
-                , query_string_{_query_string}
-                , gen_output_{}
-            {
-            }
+            virtual void reset_for_page_boundary() = 0;
 
         protected:
             connection_type* comm_;
@@ -186,7 +189,6 @@ namespace irods {
                     }
                 }
 
-                freeGenQueryOut(&this->gen_output_);
                 clearGenQueryInp(&gen_input_);
             }
 
@@ -245,16 +247,6 @@ namespace irods {
                         spec_input_.args[i] = const_cast<char*>((*_args)[i].data());
                     }
                 }
-
-                int spec_err = spec_query_fcn(
-                                   _comm,
-                                   &spec_input_,
-                                   &this->gen_output_);
-                if (spec_err < 0) {
-                    if (CAT_NO_ROWS_FOUND != spec_err) {
-                        THROW(spec_err, boost::format("query fill failed for [%s]") % _query_string);
-                    }
-                }
             } // ctor
 
             virtual ~spec_query_impl() {
@@ -275,7 +267,6 @@ namespace irods {
                     }
                 }
 
-                freeGenQueryOut(&this->gen_output_);
                 clearKeyVal(&spec_input_.condInput);
             }
 
