@@ -5,6 +5,7 @@
 
 #include "irods_server_api_call.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rs_get_file_descriptor_info(RsComm* _comm, const char* _json_input, char** _json_output) -> int
@@ -23,6 +24,7 @@ auto rs_get_file_descriptor_info(RsComm* _comm, const char* _json_input, char** 
 
     if (ec == 0) {
         *_json_output = static_cast<char*>(output->buf);
+        std::free(output);
     }
 
     return ec;
