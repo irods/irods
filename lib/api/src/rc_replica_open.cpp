@@ -4,6 +4,7 @@
 #include "procApiRequest.h"
 #include "rodsErrorTable.h"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rc_replica_open(RcComm* _comm, DataObjInp* _input, char** _json_output) -> int
@@ -20,6 +21,7 @@ auto rc_replica_open(RcComm* _comm, DataObjInp* _input, char** _json_output) -> 
 
     if (ec >= 3) {
         *_json_output = static_cast<char*>(output->buf);
+        std::free(output);
     }
 
     return ec;
