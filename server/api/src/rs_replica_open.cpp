@@ -5,6 +5,7 @@
 
 #include "irods_server_api_call.hpp"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rs_replica_open(RsComm* _comm, DataObjInp* _input, char** _json_output) -> int
@@ -19,6 +20,7 @@ auto rs_replica_open(RsComm* _comm, DataObjInp* _input, char** _json_output) -> 
 
     if (ec >= 3) {
         *_json_output = static_cast<char*>(output->buf);
+        std::free(output);
     }
 
     return ec;
