@@ -81,6 +81,8 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
             value_type entry{};
         };
 
+        auto close() -> void;
+
         std::shared_ptr<context> ctx_;
     };
 
