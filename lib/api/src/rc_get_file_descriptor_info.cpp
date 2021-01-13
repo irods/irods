@@ -4,6 +4,7 @@
 #include "procApiRequest.h"
 #include "rodsErrorTable.h"
 
+#include <cstdlib>
 #include <cstring>
 
 auto rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** _json_output) -> int
@@ -24,6 +25,7 @@ auto rc_get_file_descriptor_info(RcComm* _comm, const char* _json_input, char** 
 
     if (ec == 0) {
         *_json_output = static_cast<char*>(output_buf->buf);
+        std::free(output_buf);
     }
 
     return ec;
