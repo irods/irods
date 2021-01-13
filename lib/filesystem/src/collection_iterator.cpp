@@ -53,13 +53,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
     collection_iterator::~collection_iterator()
     {
-        if (ctx_.use_count() == 1) {
-#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-            rsCloseCollection(ctx_->comm, &ctx_->handle);
-#else
-            rclCloseCollection(&ctx_->handle);
-#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-        }
+        close();
     }
 
     auto collection_iterator::operator++() -> collection_iterator&
@@ -76,6 +70,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
         if (ec < 0) {
             if (ec == CAT_NO_ROWS_FOUND) {
+                close();
                 ctx_ = nullptr;
                 return *this;
             }
@@ -85,11 +80,7 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
 #ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
-        irods::at_scope_exit at_scope_exit{[e] {
-            if (e) {
-                std::free(e);
-            }
-        }};
+        irods::at_scope_exit free_collection_entry{[&e] { freeCollEnt(e); }};
 #endif
 
         auto& entry = ctx_->entry;
@@ -123,6 +114,17 @@ namespace irods::experimental::filesystem::NAMESPACE_IMPL
         }
 
         return *this;
+    }
+
+    auto collection_iterator::close() -> void
+    {
+        if (ctx_.use_count() == 1) {
+#ifdef IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+            rsCloseCollection(ctx_->comm, &ctx_->handle);
+#else
+            rclCloseCollection(&ctx_->handle);
+#endif // IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+        }
     }
 } // namespace irods::experimental::filesystem::NAMESPACE_IMPL
 
