@@ -1,13 +1,3 @@
-/**
-* @file  rcSpecificQuery.cpp
-*
-*/
-/*** Copyright (c), The Regents of the University of California            ***
-*** For more information please refer to files in the COPYRIGHT directory ***/
-
-/* See specificQuery.h for a description of this API call.*/
-
-
 #include "specificQuery.h"
 #include "procApiRequest.h"
 #include "apiNumber.h"
@@ -45,12 +35,8 @@
 * \sa none
 **/
 
-int
-rcSpecificQuery( rcComm_t *conn, specificQueryInp_t *specificQueryInp,
-                 genQueryOut_t **genQueryOut ) {
-    int status;
-    status = procApiRequest( conn, SPECIFIC_QUERY_AN,  specificQueryInp, NULL,
-                             ( void ** )genQueryOut, NULL );
-
-    return status;
+int rcSpecificQuery(rcComm_t* conn, specificQueryInp_t* specificQueryInp, genQueryOut_t** genQueryOut)
+{
+    return procApiRequest(conn, SPECIFIC_QUERY_AN, specificQueryInp, nullptr,
+                          reinterpret_cast<void**>(genQueryOut), nullptr);
 }
