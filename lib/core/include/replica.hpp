@@ -260,6 +260,11 @@ namespace irods::experimental::replica
             }
 
             char* checksum{};
+            at_scope_exit free_checksum{[&checksum] {
+                if (checksum) {
+                    std::free(checksum);
+                }
+            }};
 
             if constexpr (std::is_same_v<rxComm, rsComm_t>) {
                 if (const auto ec = rsDataObjChksum(&_comm, &_data_object_input, &checksum); ec < 0) {
