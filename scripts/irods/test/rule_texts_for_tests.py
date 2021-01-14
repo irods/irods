@@ -556,8 +556,17 @@ rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['tes
 test_msiDataObjWrite__3236 {
     msiTakeThreeArgumentsAndDoNothing(*arg1, *arg2, *arg3);
     writeLine("stdout", "AFTER arg1=*arg1 arg2=*arg2 arg3=*arg3");
-}                                                                                                   
+}
 INPUT *arg1="abc", *arg2="def", *arg3="ghi"
+OUTPUT ruleExecOut
+'''
+rule_texts['irods_rule_engine_plugin-irods_rule_language']['Test_Rulebase']['test_create_close__issue_5018'] = '''
+test_create_close__issue_5018 {{
+    msiDataObjCreate("{logical_path}", "destRescName=demoResc", *fd)
+    msiDataObjClose(*fd, *status)
+    writeLine("stdout", "created [{logical_path}]");
+}}
+INPUT null
 OUTPUT ruleExecOut
 '''
 
@@ -1147,3 +1156,13 @@ OUTPUT ruleExecOut
 #INPUT *arg1="abc", *arg2="def", *arg3="ghi"
 #OUTPUT ruleExecOut
 #'''
+rule_texts['irods_rule_engine_plugin-python']['Test_Rulebase']['test_create_close__issue_5018'] = '''
+def main(rule_args, callback, rei):
+    out_dict = callback.msiDataObjCreate('{logical_path}', 'destRescName=demoResc', 0)
+    fd = out_dict['arguments'][2]
+    out_dict = callback.msiDataObjClose(fd, 0)
+    callback.writeLine('stdout', 'created [{logical_path}]');
+
+INPUT null
+OUTPUT ruleExecOut
+'''
