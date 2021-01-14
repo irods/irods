@@ -361,6 +361,22 @@ OUTPUT ruleExecOut
                     msg='TEST_MARKER_test_acPreProcForExecCmd__3867',
                     start_index=initial_log_size))
 
+    @unittest.skipUnless(plugin_name == 'irods_rule_engine_plugin-irods_rule_language', 'only run for native rule language')
+    def test_create_close__issue_5018(self):
+        parameters = {}
+        logical_path = os.path.join(self.admin.session_collection, 'test_create_close__issue_5018')
+        parameters['logical_path'] = logical_path
+        rule_file = os.path.join(self.admin.local_session_dir, 'test_create_close__issue_5018.r')
+        rule_string = rule_texts[self.plugin_name][self.class_name][inspect.currentframe().f_code.co_name].format(**parameters)
+        with open(rule_file, 'w') as f:
+            f.write(rule_string)
+
+        self.admin.assert_icommand(['irule', '-F', rule_file], 'STDOUT', 'created [{}]'.format(logical_path))
+        os.unlink(rule_file)
+
+        self.admin.assert_icommand(['iadmin', 'ls', 'logical_path', logical_path, 'replica_number', '0'], 'STDOUT', 'DATA_REPL_STATUS: 1')
+
+
 @unittest.skipIf(test.settings.TOPOLOGY_FROM_RESOURCE_SERVER, 'Skip for topology testing from resource server: reads rods server log')
 class Test_Resource_Session_Vars__3024(ResourceBase, unittest.TestCase):
     plugin_name = IrodsConfig().default_rule_engine_plugin
