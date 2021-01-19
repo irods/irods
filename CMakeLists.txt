@@ -77,7 +77,19 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 include(${CMAKE_SOURCE_DIR}/cmake/InstallDirs.cmake)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
+# list(INSERT 0) is a non-op on empty lists, but we have to handle the case
+# in which the list is not empty.
+# If we were using CMake 15+, we could probably just use list(PREPEND)
+if (NOT CMAKE_INSTALL_RPATH)
+  set(CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
+else()
+  list(INSERT 0 CMAKE_INSTALL_RPATH "${LIBCXX_LIBRARY_DIR}")
+endif()
+if (NOT CMAKE_BUILD_RPATH)
+  set(CMAKE_BUILD_RPATH "${LIBCXX_LIBRARY_DIR}")
+else()
+  list(INSERT 0 CMAKE_BUILD_RPATH "${LIBCXX_LIBRARY_DIR}")
+endif()
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--export-dynamic -pthread") # export-dynamic so stacktrace entries from executables have function names
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-z,defs -pthread")
