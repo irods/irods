@@ -34,7 +34,7 @@ cmake_policy(SET CMP0054 NEW)
 # Helper function.  DO NOT CALL DIRECTLY.
 function(__check_cpp_macro_def_impl macro var language)
   if(NOT CMAKE_REQUIRED_QUIET)
-    message(STATUS "Check definition of ${langauge} preprocessor macro ${macro}")
+    message(STATUS "Check definition of ${language} preprocessor macro ${macro}")
   endif()
 
   # Include header files.
