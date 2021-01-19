@@ -36,6 +36,17 @@ The following cache variables may also be set:
 
 get_filename_component(__find_libcxx_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
+# We need to set some variables to manipulate find_library behavior
+set(PRE_CMAKE_FIND_LIBRARY_PREFIXES "${CMAKE_FIND_LIBRARY_PREFIXES}")
+set(PRE_CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES}")
+# These libraries always start with lib, even on platforms where libraries
+# usually do not.
+set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+# our externals package for libc++ might not have unversioned so symlinks
+list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_SHARED_LIBRARY_SUFFIX}.1")
+# we will need this later
+set(LIBCXX_CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES}")
+
 # Search in IRODS_EXTERNALS paths first.
 # This looks a bit weird because we want to prioritize CLANG_RUNTIME over
 # CLANG, but we don't want to use headers from CLANG_RUNTIME if we didn't find
@@ -48,7 +59,7 @@ get_filename_component(__find_libcxx_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 # specifying the compiler manually, they know enough to be able to specify
 # the libcxx variables theirself as well.
 if (DEFINED IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME)
-    find_library(LIBCXX_LIBRARY NAMES libc++ c++
+    find_library(LIBCXX_LIBRARY NAMES c++
         PATHS
         "${IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME}/lib"
         NO_DEFAULT_PATH)
@@ -68,8 +79,11 @@ if (DEFINED IRODS_EXTERNALS_FULLPATH_CLANG_RUNTIME)
         unset(_found_abs_libdir)
     endif()
 endif()
+# we only look for versioned libc++ soname in CLANG_RUNTIME dir
+# restore default value for CMAKE_FIND_LIBRARY_SUFFIXES
+set(CMAKE_FIND_LIBRARY_SUFFIXES "${PRE_CMAKE_FIND_LIBRARY_SUFFIXES}")
 if (DEFINED IRODS_EXTERNALS_FULLPATH_CLANG)
-    find_library(LIBCXX_LIBRARY NAMES libc++ c++
+    find_library(LIBCXX_LIBRARY NAMES c++
         PATHS
         "${IRODS_EXTERNALS_FULLPATH_CLANG}/lib"
         NO_DEFAULT_PATH)
@@ -89,7 +103,7 @@ if (DEFINED IRODS_EXTERNALS_FULLPATH_CLANG)
     endif()
 endif()
 unset(libcxx_found_in_irodsext_clangrt)
-find_library(LIBCXX_LIBRARY NAMES libc++ c++)
+find_library(LIBCXX_LIBRARY NAMES c++)
 find_path(LIBCXX_INCLUDE_DIR NAMES __config
     PATH_SUFFIXES
     "c++/v1")
@@ -104,7 +118,9 @@ if (NOT LIBCXX_LIBRARY STREQUAL LIBCXX_LIBRARY-NOTFOUND)
     # referenced in the final output files.
     # We only care about libc++abi if it lives next to libc++ or if it was
     # already specified. Otherwise, the linker will find it on its own.
-    find_library(LIBCXX_LIBCXXABI_LIBRARY NAMES libc++abi c++abi
+    # For this search, versioned sonames are candidates again
+    set(CMAKE_FIND_LIBRARY_SUFFIXES "${LIBCXX_CMAKE_FIND_LIBRARY_SUFFIXES}")
+    find_library(LIBCXX_LIBCXXABI_LIBRARY NAMES c++abi
         HINTS
         ${LIBCXX_LIBRARY_DIR}
         NO_DEFAULT_PATH)
@@ -118,6 +134,7 @@ if (NOT LIBCXX_LIBRARY STREQUAL LIBCXX_LIBRARY-NOTFOUND)
     # Get version number
     if (NOT LIBCXX_INCLUDE_DIR STREQUAL LIBCXX_INCLUDE_DIR-NOTFOUND)
         include(CheckCPPMacroDefinition)
+        # set some variables to manipulate CHECK_CPP_MACRO_DEFINITION behavior
         set(PRE_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
         set(PRE_CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES}")
         set(PRE_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
@@ -133,6 +150,7 @@ if (NOT LIBCXX_LIBRARY STREQUAL LIBCXX_LIBRARY-NOTFOUND)
         list(APPEND CMAKE_REQUIRED_CMAKE_FLAGS "-DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=${LIBCXX_INCLUDE_DIR}")
         list(APPEND CMAKE_REQUIRED_CMAKE_FLAGS "-DCMAKE_BUILD_RPATH=${LIBCXX_LIBRARY_DIR}")
         CHECK_CPP_MACRO_DEFINITION(_LIBCPP_VERSION LIBCXX_VERSION_INT LANGUAGE CXX)
+        # restore previous values
         set(CMAKE_REQUIRED_FLAGS "${PRE_CMAKE_REQUIRED_FLAGS}")
         set(CMAKE_REQUIRED_INCLUDES "${PRE_CMAKE_REQUIRED_INCLUDES}")
         set(CMAKE_REQUIRED_LIBRARIES "${PRE_CMAKE_REQUIRED_LIBRARIES}")
@@ -155,6 +173,13 @@ if (NOT LIBCXX_LIBRARY STREQUAL LIBCXX_LIBRARY-NOTFOUND)
         endif()
     endif()
 endif()
+
+# restore previous values
+set(CMAKE_FIND_LIBRARY_PREFIXES "${PRE_CMAKE_FIND_LIBRARY_PREFIXES}")
+set(CMAKE_FIND_LIBRARY_SUFFIXES "${PRE_CMAKE_FIND_LIBRARY_SUFFIXES}")
+unset(PRE_CMAKE_FIND_LIBRARY_PREFIXES)
+unset(PRE_CMAKE_FIND_LIBRARY_SUFFIXES)
+unset(LIBCXX_CMAKE_FIND_LIBRARY_SUFFIXES)
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibCXX
