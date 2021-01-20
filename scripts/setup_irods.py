@@ -431,11 +431,11 @@ def main():
         irods.log.register_tty_handler(sys.stdout, llevel, logging.WARNING)
 
     if options.server_log_level != None:
-        irods_config.injected_environment['spLogLevel'] = options.server_log_level
+        irods_config.injected_environment['spLogLevel'] = str(options.server_log_level)
     if options.sql_log_level != None:
-        irods_config.injected_environment['spLogSql'] = options.sql_log_level
+        irods_config.injected_environment['spLogSql'] = str(options.sql_log_level)
     if options.days_per_log != None:
-        irods_config.injected_environment['logfileInt'] = options.days_per_log
+        irods_config.injected_environment['logfileInt'] = str(options.days_per_log)
     if options.rule_engine_server_options != None:
         irods_config.injected_environment['reServerOption'] = options.rule_engine_server_options
     if options.server_reconnect_flag:
