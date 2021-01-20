@@ -1,10 +1,10 @@
 def add_options(parser):
     parser.add_option('-q', '--quiet',
-                      dest='verbose', action='store_false',
+                      dest='verbose', action='store_const', const=0,
                       help='Silence verbose output')
 
     parser.add_option('-v', '--verbose',
-                      dest='verbose', action='store_true', default=True,
+                      dest='verbose', action='count', default=0,
                       help='Enable verbose output')
 
     parser.add_option('--server-log-level',
