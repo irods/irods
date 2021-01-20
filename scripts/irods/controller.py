@@ -126,7 +126,8 @@ class IrodsController(object):
                     cmd.append('-t')
 
                 lib.execute_command(cmd,
-                                    foreground=True,
+                                    stdout=sys.stdout,
+                                    stderr=sys.stdout,
                                     cwd=self.config.server_bin_directory,
                                     env=self.config.execution_environment)
             else:
