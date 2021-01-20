@@ -96,8 +96,13 @@ def main():
     irods_config = IrodsConfig()
 
     irods.log.register_file_handler(irods_config.control_log_path)
-    if options.verbose:
-        irods.log.register_tty_handler(sys.stdout, logging.INFO, logging.WARNING)
+    if options.verbose > 0:
+        llevel = logging.NOTSET
+        if options.verbose == 1:
+            llevel = logging.INFO
+        elif options.verbose == 2:
+            llevel = logging.DEBUG
+        irods.log.register_tty_handler(sys.stdout, llevel, logging.WARNING)
 
     if options.server_log_level != None:
         irods_config.injected_environment['spLogLevel'] = str(options.server_log_level)
