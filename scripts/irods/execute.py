@@ -16,10 +16,8 @@ def indent(*text, **kwargs):
     if 'indentation' in kwargs:
         indentation = kwargs['indentation']
     else:
-        indentation='  '
-    return '\n'.join([
-        ''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())])
-            for lines in text])
+        indentation = '  '
+    return '\n'.join([''.join([indentation, '\n{0}'.format(indentation).join(lines.splitlines())]) for lines in text])
 
 def safe_shlex_split_for_2_6(args):
     if not isinstance(args, str) and isinstance(args, six.text_type):
@@ -28,7 +26,7 @@ def safe_shlex_split_for_2_6(args):
 
 def communicate_and_log(p, args, input=None):
     l = logging.getLogger(__name__)
-    out, err = [t.decode('utf_8') for t in p.communicate(input=(input.encode('ascii') if input is not None else None))]
+    out, err = [(None if t is None else t.decode('utf_8')) for t in p.communicate(input=(None if input is None else input.encode('ascii')))]
     message = ['Command %s returned with code %s.' % (args, p.returncode)]
     if input:
         message.append('stdin:\n%s' % indent(input))
@@ -49,10 +47,10 @@ def execute_command_nonblocking(args, stdout=subprocess.PIPE, stderr=subprocess.
     if 'env' in kwargs:
         kwargs_without_env = copy.copy(kwargs)
         kwargs_without_env['env'] = 'HIDDEN'
-    else :
+    else:
         kwargs_without_env = kwargs
     l.debug('Calling %s with options:\n%s', args, pprint.pformat(kwargs_without_env))
-    try :
+    try:
         return subprocess.Popen(args, **kwargs)
     except OSError as e:
         six.reraise(IrodsError,
@@ -80,51 +78,42 @@ def execute_command_timeout(args, timeout=10, **kwargs):
                 p.kill()
         except OSError:
             pass
-        raise IrodsError(
-            'The call {0} did not complete within'
-            ' {1} seconds.'.format(args, timeout))
+        raise IrodsError('The call {0} did not complete within {1} seconds.'.format(args, timeout))
 
-def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, foreground=False, **kwargs):
+def execute_command_permissive(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, **kwargs):
     if input is not None:
         if 'stdin' in kwargs and kwargs['stdin'] != subprocess.PIPE:
             raise IrodsError('\'input\' option is mutually exclusive with a \'stdin\' '
                     'option that is not equal to \'subprocess.PIPE\'.')
         kwargs['stdin'] = subprocess.PIPE
     p = execute_command_nonblocking(args, stdout=stdout, stderr=stderr, **kwargs)
+    out, err = communicate_and_log(p, args, input)
+    return (out, err, p.returncode)
 
-    if foreground == True:
-        while True:
-            line = p.stdout.readline()
-            if line == '' and p.poll() is not None:
-                break
-            sys.stdout.write(line)
-            sys.stdout.flush()
-        return (p.stdout, p.stderr, p.returncode)
-    else:
-        out, err = communicate_and_log(p, args, input)
-        return (out, err, p.returncode)
-
-def check_command_return(args, out, err, returncode, **kwargs):
+def check_command_return(args, out, err, returncode, input=None, **kwargs):
     if returncode is not None and returncode != 0:
         if 'env' in kwargs:
             kwargs_without_env = copy.copy(kwargs)
             kwargs_without_env['env'] = 'HIDDEN'
-        else :
+        else:
             kwargs_without_env = kwargs
+        deets = [
+            'Options passed to Popen:',
+            indent(*['{0}: {1}'.format(k, v) for k, v in kwargs_without_env.items()]),
+            'Return code: {0}'.format(returncode)]
+        if input:
+            deets.extend(['Standard input:', indent(input)])
+        if out:
+            deets.extend(['Standard output:', indent(out)])
+        if err:
+            deets.extend(['Error output:', indent(err)])
         raise IrodsError('\n'.join([
             'Call to open process with {0} returned an error:'.format(
                 args),
-            indent(
-                'Options passed to Popen:',
-                indent(*['{0}: {1}'.format(k, v) for k, v in kwargs_without_env.items()]),
-                'Return code: {0}'.format(returncode),
-                'Standard output:',
-                indent(out),
-                'Error output:',
-                indent(err))]))
+            indent(*deets)]))
 
-def execute_command(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs):
-    out, err, returncode = execute_command_permissive(args, stdout=stdout, stderr=stderr, **kwargs)
-    check_command_return(args, out, err, returncode, **kwargs)
+def execute_command(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, input=None, **kwargs):
+    out, err, returncode = execute_command_permissive(args, stdout=stdout, stderr=stderr, input=input, **kwargs)
+    check_command_return(args, out, err, returncode, input=input, **kwargs)
 
     return (out, err)
