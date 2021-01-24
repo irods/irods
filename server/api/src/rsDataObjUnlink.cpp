@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjUnlink.h for a description of this API call.*/
-
 #include "dataObjUnlink.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -59,32 +54,6 @@
 using logger = irods::experimental::log;
 
 namespace {
-
-auto is_data_object_in_vault(rsComm_t& comm,
-                             const boost::filesystem::path& logical_path,
-                             std::string_view resc_hier) -> std::tuple<int, bool>
-{
-    std::string vault_path;
-    if (const auto err = irods::get_vault_path_for_hier_string(resc_hier.data(), vault_path); !err.ok()) {
-        return {err.code(), false};
-    }
-
-    namespace fs = boost::filesystem;
-
-    std::string gql = "select DATA_PATH where COLL_NAME = '";
-    gql += logical_path.parent_path().c_str();
-    gql += "' and DATA_NAME = '";
-    gql += logical_path.filename().c_str();
-    gql += '\'';
-
-    std::string physical_path;
-    for (auto&& row : irods::query{&comm, gql}) {
-        physical_path = row[0];
-    }
-
-    // Return whether the vault path is the prefix of the physical path.
-    return {0, has_prefix(physical_path.data(), vault_path.data())};
-}
 
 int chkPreProcDeleteRule(
     rsComm_t* rsComm,
