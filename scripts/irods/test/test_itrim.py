@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import sys
+import shutil
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -89,4 +90,67 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
         lib.make_file(filename, 1)
         self.admin.assert_icommand(['iput', filename])
         self.admin.assert_icommand(['itrim', '-N2', data_object], 'STDOUT', 'Specifying a minimum number of replicas to keep is deprecated.')
+
+    @unittest.skipIf(test.settings.RUN_IN_TOPOLOGY, "Skip for Topology Testing")
+    def test_itrim_removes_in_vault_registered_replicas_from_disk__issue_5362(self):
+        resc_name = 'issue_5362_resc'
+        logical_path = os.path.join(self.admin.session_collection, 'issue_5362')
+
+        try:
+            # Create a resource.
+            hostname = IrodsConfig().client_environment['irods_host']
+            vault_path = '/tmp/issue_5362_vault'
+            os.mkdir(vault_path)
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'unixfilesystem', hostname + ':' + vault_path], 'STDOUT', ['unixfilesystem'])
+
+            # Create a tree of files.
+            dir_1 = os.path.join(vault_path, 'dir_1')
+            os.mkdir(dir_1)
+            file_1 = os.path.join(dir_1, 'file_1')
+            open(file_1, 'w').close()
+
+            dir_2 = os.path.join(vault_path, 'dir_2')
+            os.mkdir(dir_2)
+            file_2 = os.path.join(dir_2, 'file_2')
+            open(file_2, 'w').close()
+
+            # Register the tree into iRODS.
+            self.admin.assert_icommand(['ireg', '-C', '-R', resc_name, vault_path, logical_path])
+
+            # Show that the tree has been registered.
+            dir_1_logical_path = os.path.join(logical_path, 'dir_1')
+            self.admin.assert_icommand(['ils', '-Lr', logical_path], 'STDOUT', [
+                logical_path,
+                dir_1_logical_path,
+                os.path.join(logical_path, 'dir_1'),
+                '& file_1',
+                '& file_2',
+                file_1,
+                file_2
+            ])
+
+            # Replicate to demoResc.
+            data_object = os.path.join(logical_path, 'dir_1', 'file_1')
+            self.admin.assert_icommand(['irepl', '-R', 'demoResc', data_object])
+
+            # Show that the data object now has two replicas.
+            self.admin.assert_icommand(['ils', '-l', data_object], 'STDOUT', ['0 ' + resc_name, '1 demoResc'])
+
+            # Trim the original replica.
+            self.admin.assert_icommand(['itrim', '-N', '1', '-n', '0', data_object], 'STDOUT', ['files trimmed = 1'])
+
+            # Show that replica 0 has been unregistered from the catalog.
+            gql = "select DATA_REPL_NUM where COLL_NAME = '{0}' and DATA_NAME = 'file_1' and DATA_REPL_NUM = '0'".format(dir_1_logical_path)
+            self.admin.assert_icommand(['iquest', gql], 'STDOUT', ['CAT_NO_ROWS_FOUND'])
+
+            # Show that replica 1 still exists.
+            gql = "select DATA_REPL_NUM where COLL_NAME = '{0}' and DATA_NAME = 'file_1' and DATA_REPL_NUM = '1'".format(dir_1_logical_path)
+            self.admin.assert_icommand(['iquest', gql], 'STDOUT', ['DATA_REPL_NUM = 1'])
+
+            # Show that the original replica has been removed from the disk.
+            self.assertFalse(os.path.exists(file_1))
+        finally:
+            self.admin.run_icommand(['irm', '-rf', logical_path])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+            shutil.rmtree(vault_path)
 
