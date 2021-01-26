@@ -226,3 +226,15 @@ TEST_CASE("test getLastPathElement")
     }
 }
 
+TEST_CASE("has_prefix")
+{
+    REQUIRE(has_prefix("", "") == 0);
+    REQUIRE(has_prefix("/", "") == 0);
+    REQUIRE(has_prefix("", "/") == 0);
+    REQUIRE(has_prefix("a/b/c", "a/b") == 1);
+    REQUIRE(has_prefix("/a/b/c/d", "/") == 1);
+    REQUIRE(has_prefix("/a/b/c/d", "////") == 1);
+    REQUIRE(has_prefix("/a/b/c/d", "/a/b/c") == 1);
+    REQUIRE(has_prefix("/a/b/c/d", "/a/b/c////") == 1);
+}
+

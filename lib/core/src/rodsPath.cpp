@@ -1,9 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rodsPath - a number of string operations designed for secure string
- * copying.
- */
-
 #include "rodsPath.h"
 #include "miscUtil.h"
 #include "rcMisc.h"
@@ -582,7 +576,7 @@ int has_prefix(const char* path, const char* prefix)
     const fs::path parent = prefix;
     const fs::path child = path;
 
-    if (parent == child) {
+    if (parent.empty() || parent == child) {
         return false;
     }
 
@@ -590,6 +584,13 @@ int has_prefix(const char* path, const char* prefix)
     auto p_last = std::end(parent);
     auto c_iter = std::begin(child);
     auto c_last = std::end(child);
+
+    // Paths that end with a trailing slash will have an empty path element
+    // just before the end iterator. We ignore this empty path element by making
+    // the end iterator point to the empty path element.
+    if (auto tmp = std::prev(p_last); "" == *tmp) {
+        p_last = tmp;
+    }
 
     for (; p_iter != p_last && c_iter != c_last && *p_iter == *c_iter; ++p_iter, ++c_iter);
 
