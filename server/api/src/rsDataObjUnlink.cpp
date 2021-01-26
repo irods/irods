@@ -410,16 +410,11 @@ int dataObjUnlinkS(rsComm_t* rsComm,
     // then the server must not delete the replica. Instead, the replica must be unregistered
     // to avoid loss of data.
     {
-        std::string vault_path;
-        if (const auto err = irods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path); !err.ok()) {
-            return err.code();
-        }
-
         bool skip_vault_path_check = false;
-        irods::error err = irods::get_resource_property< bool >(
-        					   dataObjInfo->rescId,
-        					   irods::RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK, skip_vault_path_check );
-        if ( !err.ok() ) {
+        irods::error err = irods::get_resource_property<bool>(dataObjInfo->rescId,
+                                                              irods::RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK,
+                                                              skip_vault_path_check);
+        if (!err.ok()) {
             if (err.code() != KEY_NOT_FOUND) {
                 rodsLog(LOG_NOTICE, "lookup RESOURCE_SKIP_VAULT_PATH_CHECK_ON_UNLINK returned error status=%d msg=%s",
                         err.code(), err.result().c_str());
@@ -427,13 +422,21 @@ int dataObjUnlinkS(rsComm_t* rsComm,
             skip_vault_path_check = false;
         }
 
-        if (!skip_vault_path_check && !has_prefix(dataObjInfo->filePath, vault_path.data())) {
-            dataObjUnlinkInp->oprType = UNREG_OPR;
+        if (!skip_vault_path_check) {
+            std::string vault_path;
+            if (const auto err = irods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path); !err.ok()) {
+                return err.code();
+            }
 
-            logger::api::info("Replica is not in a vault. Unregistering replica and leaving it on "
-                              "disk as-is [data_object={}, physical_object={}].",
-                              dataObjUnlinkInp->objPath,
-                              dataObjInfo->filePath);
+            if (!has_prefix(dataObjInfo->filePath, vault_path.data())) {
+                dataObjUnlinkInp->oprType = UNREG_OPR;
+
+                logger::api::info("Replica is not in a vault. Unregistering replica and leaving it on "
+                                  "disk as-is [data_object={}, physical_object={}, vault_path={}].",
+                                  dataObjUnlinkInp->objPath,
+                                  dataObjInfo->filePath,
+                                  vault_path);
+            }
         }
     }
 

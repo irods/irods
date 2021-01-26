@@ -1,5 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef RODS_PATH_H__
 #define RODS_PATH_H__
 
@@ -79,16 +77,16 @@ void remove_trailing_path_separators(char* path);
 /// Returns whether \p path starts with \p prefix.
 ///
 /// \p path and \p prefix are expected to be null-terminated strings.
-/// The behavior is undefined if either string is not null-terminated.
+/// The behavior is undefined if either string is null or not null-terminated.
 ///
 /// \since 4.2.8
 ///
 /// \param[in] path   The path to search.
-/// \param[in] prefix The path to look for.
+/// \param[in] prefix The path to look for. Trailing slashes are ignored.
 ///
 /// \return An interger value.
 /// \retval non-zero If \p path starts with \p prefix.
-/// \retval 0        Otherwise.
+/// \retval 0        If \p path does not start with \p prefix or \p prefix is an empty string.
 int has_prefix(const char* path, const char* prefix);
 #ifdef __cplusplus
 }
