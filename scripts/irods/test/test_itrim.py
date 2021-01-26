@@ -101,7 +101,9 @@ class Test_Itrim(session.make_sessions_mixin([('otherrods', 'rods')], []), unitt
             hostname = IrodsConfig().client_environment['irods_host']
             vault_path = '/tmp/issue_5362_vault'
             os.mkdir(vault_path)
-            self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'unixfilesystem', hostname + ':' + vault_path], 'STDOUT', ['unixfilesystem'])
+            # The important part here is the trailing slash on the vault path. The trailing slash
+            # causes the server to think the replica is not in a vault.
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'unixfilesystem', hostname + ':' + vault_path + '/'], 'STDOUT', ['unixfilesystem'])
 
             # Create a tree of files.
             dir_1 = os.path.join(vault_path, 'dir_1')
