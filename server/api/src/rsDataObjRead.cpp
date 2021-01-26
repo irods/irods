@@ -1,8 +1,3 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */
-/* See dataObjRead.h for a description of this API call.*/
-
 #include "dataObjRead.h"
 #include "rodsLog.h"
 #include "objMetaOpr.hpp"
@@ -12,8 +7,6 @@
 #include "rsDataObjRead.hpp"
 #include "rsSubStructFileRead.hpp"
 #include "rsFileRead.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_hierarchy_parser.hpp"
 
@@ -123,7 +116,7 @@ l3Read( rsComm_t *rsComm, int l1descInx, int len,
         return rsSubStructFileRead( rsComm, &subStructFileReadInp, dataObjReadOutBBuf );
     }
 
-    if (0 == dataObjInfo->dataSize) {
+    if (0 == dataObjInfo->dataSize && !(L1desc[l1descInx].bytesWritten > 0)) {
         rodsLog(LOG_DEBUG, "[%s] - empty file - marking bytes buf len as 0", __FUNCTION__);
         dataObjReadOutBBuf->len = 0;
         return 0;

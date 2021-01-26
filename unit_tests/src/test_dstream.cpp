@@ -290,6 +290,19 @@ TEST_CASE("dstream", "[iostreams]")
         io::odstream out{tp, sandbox / "should_not_exist", io::replica_number{1}};
         REQUIRE_FALSE(out);
     }
+
+    SECTION("read previously written bytes using the same stream")
+    {
+        io::client::native_transport tp{conn};
+        io::dstream ds{tp, sandbox / "data_object.txt", std::ios::in | std::ios::out | std::ios::trunc};
+
+        ds.write("abcd", 4);
+        ds.seekp(-2, std::ios::seekdir::cur);
+
+        char buf[2]{};
+        ds.read(buf, 2);
+        REQUIRE(std::string_view(buf, 2) == "cd");
+    }
 }
 
 auto get_hostname() noexcept -> std::string
