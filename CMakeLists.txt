@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
+cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR) #CPACK_DEBIAN_<COMPONENT>_PACKAGE_NAME
 include(${CMAKE_SOURCE_DIR}/cmake/RequireOutOfSourceBuild.cmake)
 
 find_package(IRODS 4.3.0 EXACT REQUIRED CONFIG)
@@ -8,7 +8,9 @@ set(CMAKE_CXX_COMPILER ${IRODS_EXTERNALS_FULLPATH_CLANG}/bin/clang++)
 
 set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 
-project(icommands C CXX)
+project(icommands
+  VERSION "${IRODS_VERSION}"
+  LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
