@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import socket
+import tempfile
 
 if sys.version_info < (2, 7):
     import unittest2 as unittest
@@ -12,9 +13,7 @@ from .. import lib
 from . import session
 from .. import test
 
-
 SessionsMixin = session.make_sessions_mixin([('otherrods', 'apass')], [('alice', 'password'), ('anonymous', None)])
-
 
 class Test_Iticket(SessionsMixin, unittest.TestCase):
 
@@ -342,3 +341,63 @@ class Test_Iticket(SessionsMixin, unittest.TestCase):
         self.user.assert_icommand('ils -l ' + collection, 'STDERR')
         self.anon.assert_icommand('ils -l ' + collection, 'STDERR')
         self.ticket_get_on(parent_collection, data_obj)
+
+    def test_data_size_is_updated_after_overwriting_data_object_using_ticket__issue_4744(self):
+        ticket = 'ticket_issue_4744'
+
+        try:
+            resc_name = 'issue_4744_resc'
+            vault_path = tempfile.mkdtemp(suffix='_issue_4744')
+            self.admin.assert_icommand(['iadmin', 'mkresc', resc_name, 'unixfilesystem', lib.get_hostname() + ':' + vault_path], 'STDOUT', ['unixfilesystem'])
+
+            # Create a new data object.
+            data_object = 'issue_4744.txt'
+            self.user.assert_icommand(['istream', 'write', '-R', resc_name, data_object], input='foo123')
+            self.user.assert_icommand(['iquest', "select DATA_SIZE where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.user.session_collection, data_object)],
+                                      'STDOUT', ['DATA_SIZE = 6'])
+
+            # Create a ticket for writing to the data object.
+            self.user.assert_icommand(['iticket', 'create', 'write', data_object, ticket])
+
+            # Read the contents of the data object using the ticket and verify that the returned
+            # contents matches the expected sequence of bytes.
+            out, _, ec = self.user.run_icommand(['iget', '-t', ticket, data_object, '-'])
+            self.assertEqual(ec, 0)
+            self.assertEqual('666f6f313233', out.encode('hex'))
+
+            def overwrite_and_verify(data, data_hex_encoding):
+                # Create a new file. This will be used to overwrite the data object.
+                f = tempfile.NamedTemporaryFile(delete=False)
+                f.write(data)
+                f.close()
+
+                # Overwrite the data object with new data and verify that the size is what we expect.
+                self.user.assert_icommand(['iput', '-ft', ticket, '-R', resc_name, f.name, data_object])
+                self.user.assert_icommand(['iquest', "select DATA_SIZE where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.user.session_collection, data_object)],
+                                          'STDOUT', ['DATA_SIZE = ' + str(len(data))])
+
+                # Read the contents of the data object using the ticket and verify that the returned
+                # contents matches the expected sequence of bytes.
+                out, _, ec = self.user.run_icommand(['iget', '-t', ticket, data_object, '-'])
+                self.assertEqual(ec, 0)
+                self.assertEqual(data_hex_encoding, out.encode('hex'))
+
+                # Get the physical path of the replica and compare its contents to the expected hex encoding.
+                gql = "select DATA_PATH where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(self.user.session_collection, data_object)
+                out, _, ec = self.user.run_icommand(['iquest', '%s', gql])
+                self.assertEqual(ec, 0)
+                with open(out.strip(), 'r') as f:
+                    self.assertEqual(data_hex_encoding, f.read().encode('hex'))
+
+            # Overwrite the data object with a smaller file.
+            temp_file_contents = 'bar'
+            overwrite_and_verify(temp_file_contents, '626172')
+
+            # Overwrite the data object with a larger file.
+            temp_file_contents = 'barbar123'
+            overwrite_and_verify(temp_file_contents, '626172626172313233')
+        finally:
+            self.user.run_icommand(['iticket', 'delete', ticket])
+            self.user.run_icommand(['irm', '-f', data_object])
+            self.admin.run_icommand(['iadmin', 'rmresc', resc_name])
+
