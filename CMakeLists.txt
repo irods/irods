@@ -221,7 +221,7 @@ foreach(EXECUTABLE ${IRODS_CLIENT_ICOMMANDS_EXECUTABLES})
       OUTPUT ${EXECUTABLE_MANPAGE}.gz
       DEPENDS ${EXECUTABLE_MANPAGE}
       COMMENT "gzipping manpage ${EXECUTABLE}.1"
-      COMMAND "${GZIP}" -f -k "${EXECUTABLE_MANPAGE}"
+      COMMAND "${GZIP}" -f < "${EXECUTABLE_MANPAGE}" > "${EXECUTABLE_MANPAGE}.gz"
       )
     add_custom_target(${EXECUTABLE}-manpage DEPENDS ${EXECUTABLE_MANPAGE}.gz)
     add_dependencies(docs ${EXECUTABLE}-manpage)
@@ -265,7 +265,7 @@ foreach(IRODS_CLIENT_ICOMMANDS_SCRIPT ${IRODS_CLIENT_ICOMMANDS_SCRIPTS})
       OUTPUT ${SCRIPT_MANPAGE}.gz
       DEPENDS ${SCRIPT_MANPAGE}
       COMMENT "gzipping manpage ${IRODS_CLIENT_ICOMMANDS_SCRIPT}.1"
-      COMMAND "${GZIP}" -f -k "${SCRIPT_MANPAGE}"
+      COMMAND "${GZIP}" -f < "${SCRIPT_MANPAGE}" > "${SCRIPT_MANPAGE}.gz"
       )
     add_custom_target(${IRODS_CLIENT_ICOMMANDS_SCRIPT}-manpage DEPENDS ${SCRIPT_MANPAGE}.gz)
     add_dependencies(docs ${IRODS_CLIENT_ICOMMANDS_SCRIPT}-manpage)
