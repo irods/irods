@@ -15,21 +15,19 @@
 #include "rsStructFileExtAndReg.hpp"
 #include "rsBulkDataObjReg.hpp"
 #include "rsDataObjCreate.hpp"
-
 #include "irods_server_properties.hpp"
-
-// =-=-=-=-=-=-=-
 #include "irods_resource_backport.hpp"
 #include "irods_resource_redirect.hpp"
 #include "irods_random.hpp"
+#include "key_value_proxy.hpp"
 
-//#include "reFuncDefs.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/lexical_cast.hpp>
 
-using namespace boost::filesystem;
+#include <fmt/format.h>
 
+namespace fs = boost::filesystem;
 
 int
 _rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
@@ -141,81 +139,85 @@ rsBulkDataObjPut( rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 }
 
 int
-unbunBulkBuf(
-    rsComm_t* rsComm,
-    dataObjInp_t* dataObjInp,
-    bulkOprInp_t *bulkOprInp,
-    bytesBuf_t *bulkBBuf ) {
-    sqlResult_t *objPath, *offset;
-    char *tmpObjPath;
-    char *bufPtr;
-    int status, i;
-    genQueryOut_t *attriArray = &bulkOprInp->attriArray;
-    int intOffset[MAX_NUM_BULK_OPR_FILES];
-
-    if ( bulkOprInp == NULL ) {
+unbunBulkBuf(rsComm_t* rsComm,
+             dataObjInp_t* dataObjInp,
+             bulkOprInp_t* bulkOprInp,
+             bytesBuf_t* bulkBBuf)
+{
+    if (!bulkOprInp) {
         return USER__NULL_INPUT_ERR;
     }
 
-    if ( ( objPath = getSqlResultByInx( attriArray, COL_DATA_NAME ) ) == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed" );
+    genQueryOut_t* attriArray = &bulkOprInp->attriArray;
+
+    sqlResult_t* objPath;
+    if (!(objPath = getSqlResultByInx( attriArray, COL_DATA_NAME))) {
+        rodsLog(LOG_NOTICE, "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
 
-    if ( ( offset = getSqlResultByInx( attriArray, OFFSET_INX ) ) == NULL ) {
-        rodsLog( LOG_NOTICE,
-                 "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed" );
+    sqlResult_t* offset;
+    if (!(offset = getSqlResultByInx( attriArray, OFFSET_INX))) {
+        rodsLog(LOG_NOTICE, "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed");
         return UNMATCHED_KEY_OR_INDEX;
     }
-    if ( attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES ) {
-        rodsLog( LOG_NOTICE,
-                 "unbunBulkBuf: rowCnt %d too large",
-                 attriArray->rowCnt );
+
+    irods::experimental::key_value_proxy kvp{dataObjInp->condInput};
+
+    sqlResult_t* checksum{};
+    if (kvp.contains(VERIFY_CHKSUM_KW)) {
+        if (!(checksum = getSqlResultByInx(attriArray, COL_D_DATA_CHECKSUM))) {
+            rodsLog(LOG_NOTICE, "unbunBulkBuf: getSqlResultByInx for COL_D_DATA_CHECKSUM failed");
+            return UNMATCHED_KEY_OR_INDEX;
+        }
+    }
+
+    if (attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES) {
+        rodsLog(LOG_NOTICE, "unbunBulkBuf: rowCnt %d too large", attriArray->rowCnt);
         return SYS_REQUESTED_BUF_TOO_LARGE;
     }
 
-    for ( i = 0; i < attriArray->rowCnt; i++ ) {
-        intOffset[i] = atoi( &offset->value[offset->len * i] );
+    int intOffset[MAX_NUM_BULK_OPR_FILES];
+
+    for (int i = 0; i < attriArray->rowCnt; i++) {
+        intOffset[i] = atoi(&offset->value[offset->len * i]);
     }
 
-    addKeyVal( &dataObjInp->condInput, DATA_INCLUDED_KW, "" );
-    for ( i = 0; i < attriArray->rowCnt; i++ ) {
-        int size;
+    kvp[DATA_INCLUDED_KW] = "";
+
+    for (int i = 0; i < attriArray->rowCnt; ++i) {
         bytesBuf_t buffer;
-        tmpObjPath = &objPath->value[objPath->len * i];
-        if ( i == 0 ) {
-            bufPtr = ( char * )bulkBBuf->buf;
-            size = intOffset[0];
+        if (0 == i) {
+            buffer.buf = static_cast<char*>(bulkBBuf->buf);
+            buffer.len = intOffset[0];
         }
         else {
-            bufPtr = ( char * )bulkBBuf->buf + intOffset[i - 1];
-            size = intOffset[i] - intOffset[i - 1];
+            buffer.buf = static_cast<char*>(bulkBBuf->buf) + intOffset[i - 1];
+            buffer.len = intOffset[i] - intOffset[i - 1];
         }
-        buffer.buf = bufPtr;
-        buffer.len = size;
 
+        char* tmpObjPath = &objPath->value[objPath->len * i];
         std::string collString = tmpObjPath;
-        std::size_t last_slash = collString.find_last_of( '/' );
-        collString.erase( last_slash );
+        std::size_t last_slash = collString.find_last_of('/');
+        collString.erase(last_slash);
 
-        status = rsMkCollR( rsComm, "/", collString.c_str() );
-        if ( status < 0 ) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << ": Unable to make collection \"" << collString << "\"";
-            irods::log( LOG_ERROR, msg.str() );
-            return status;
+        if (const auto ec = rsMkCollR(rsComm, "/", collString.c_str()); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format("{}: Unable to make collection [{}].", __FUNCTION__, collString));
+            return ec;
         }
 
-        rstrcpy( dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN );
-        status = rsDataObjPut( rsComm, dataObjInp, &buffer, NULL );
-        if ( status < 0 ) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << ": Failed to put data into file \"" << tmpObjPath << "\"";
-            irods::log( LOG_NOTICE, msg.str() );
-            return status;
+        rstrcpy(dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN);
+
+        if (checksum) {
+            kvp[VERIFY_CHKSUM_KW] = &checksum->value[checksum->len * i];
+        }
+
+        if (const auto ec = rsDataObjPut(rsComm, dataObjInp, &buffer, nullptr); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format("{}: Failed to put data into file [{}].", __FUNCTION__, tmpObjPath));
+            return ec;
         }
     }
+
     return 0;
 }
 
@@ -342,7 +344,7 @@ createBunDirForBulkPut( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     do {
         snprintf( phyBunDir, MAX_NAME_LEN, "%s/%s.%u", dataObjInfo.filePath,
                   TMP_PHY_BUN_DIR, irods::getRandom<unsigned int>() );
-        path p( phyBunDir );
+        fs::path p( phyBunDir );
         if ( exists( p ) ) {
             status = 0;
         }
@@ -424,7 +426,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
     int st_mode;
     rodsLong_t st_size;
 
-    path srcDirPath( phyBunDir );
+    fs::path srcDirPath( phyBunDir );
     if ( !exists( srcDirPath ) || !is_directory( srcDirPath ) ) {
         rodsLog( LOG_ERROR,
                  "%s: opendir error for %s, errno = %d",
@@ -432,9 +434,9 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
         return UNIX_FILE_OPENDIR_ERR - errno;
     }
     bzero( &dataObjInp, sizeof( dataObjInp ) );
-    directory_iterator end_itr; // default construction yields past-the-end
-    for ( directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
-        path p = itr->path();
+    fs::directory_iterator end_itr; // default construction yields past-the-end
+    for ( fs::directory_iterator itr( srcDirPath ); itr != end_itr; ++itr ) {
+        fs::path p = itr->path();
         snprintf( subfilePath, MAX_NAME_LEN, "%s",
                   p.c_str() );
 
@@ -447,7 +449,7 @@ _bulkRegUnbunSubfiles( rsComm_t *rsComm, const char *_resc_name, const std::stri
             continue;
         }
 
-        path childPath = p.filename();
+        fs::path childPath = p.filename();
         snprintf( subObjPath, MAX_NAME_LEN, "%s/%s",
                   collection, childPath.c_str() );
         if ( is_directory( p ) ) {
@@ -525,7 +527,7 @@ bulkProcAndRegSubfile( rsComm_t *rsComm, const char *_resc_name, const std::stri
         return status;
     }
 
-    path p( dataObjInfo.filePath );
+    fs::path p( dataObjInfo.filePath );
     if ( exists( p ) ) {
         if ( is_directory( p ) ) {
             return SYS_PATH_IS_NOT_A_FILE;
