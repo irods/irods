@@ -223,6 +223,57 @@ class Test_iPut_Options(ResourceBase, unittest.TestCase):
         finally:
             shutil.rmtree(source_path, ignore_errors=True)
 
+    def test_verify_checksum_flag_is_honored_on_bulk_upload__issue_5288(self):
+        dir_name = tempfile.mkdtemp(prefix='issue_5288_')
+        files = [
+            {'name': os.path.join(dir_name, 'foo'), 'data': "abc"},
+            {'name': os.path.join(dir_name, 'bar'), 'data': "defghi"},
+            {'name': os.path.join(dir_name, 'baz'), 'data': "jklmnopqrs"}
+        ]
+        for info in files:
+            with open(info['name'], 'w') as f:
+                f.write(info['data'])
+
+        try:
+            coll_name = os.path.join(self.admin.session_collection, 'issue_5288.d')
+            self.admin.assert_icommand(['iput', '-rbK', dir_name, coll_name], 'STDOUT', [' '])
+
+            # Show that each data object in the new collection has a checksum.
+            for f in files:
+                filename = os.path.basename(f['name'])
+                gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(coll_name, filename)
+                print('Executing GenQuery: {0}'.format(gql))
+                out, _, _ = self.admin.run_icommand(['iquest', gql])
+                self.assertIn('sha2:', out, "'sha2:' should be in " + out)
+                self.assertGreater(len(out), 32)
+        finally:
+            shutil.rmtree(dir_name, ignore_errors=True)
+
+    def test_no_checksums_are_stored_when_the_verify_checksum_flag_is_not_passed_on_bulk_upload__issue_5288(self):
+        dir_name = tempfile.mkdtemp(prefix='issue_5288_')
+        files = [
+            {'name': os.path.join(dir_name, 'foo'), 'data': "abc"},
+            {'name': os.path.join(dir_name, 'bar'), 'data': "defghi"},
+            {'name': os.path.join(dir_name, 'baz'), 'data': "jklmnopqrs"}
+        ]
+        for info in files:
+            with open(info['name'], 'w') as f:
+                f.write(info['data'])
+
+        try:
+            coll_name = os.path.join(self.admin.session_collection, 'issue_5288.d')
+            self.admin.assert_icommand(['iput', '-rb', dir_name, coll_name], 'STDOUT', [' '])
+
+            # Show that each data object in the new collection does not have a checksum.
+            for f in files:
+                filename = os.path.basename(f['name'])
+                gql = "select DATA_CHECKSUM where COLL_NAME = '{0}' and DATA_NAME = '{1}'".format(coll_name, filename)
+                print('Executing GenQuery: {0}'.format(gql))
+                out, _, _ = self.admin.run_icommand(['iquest', gql])
+                self.assertNotIn('sha2:', out, "'sha2:' should not be in " + out)
+        finally:
+            shutil.rmtree(dir_name, ignore_errors=True)
+
 class Test_iPut_Options_Issue_3883(ResourceBase, unittest.TestCase):
 
     def setUp(self):
