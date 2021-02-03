@@ -18,5 +18,4 @@ set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
 set(IRODS_TEST_LINK_LIBRARIES irods_common
                               irods_client
                               irods_plugin_dependencies
-                              ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-                              c++abi)
+                              ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so)

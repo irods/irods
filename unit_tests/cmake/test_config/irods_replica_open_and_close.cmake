@@ -20,5 +20,4 @@ set(IRODS_TEST_LINK_LIBRARIES irods_common
                               irods_client
                               irods_plugin_dependencies
                               ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-                              ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so
-                              c++abi)
+                              ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so)
