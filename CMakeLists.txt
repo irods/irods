@@ -67,10 +67,15 @@ project(irods
   LANGUAGES C CXX)
 
 find_package(LibCXX 6 REQUIRED)
+
 set(CMAKE_CXX_STANDARD_LIBRARIES "${LIBCXX_CMAKE_CXX_STANDARD_LIBRARIES}")
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${LIBCXX_INCLUDE_DIR})
-add_compile_options(-nostdinc++)
-link_libraries(-stdlib=libc++)
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES "${LIBCXX_INCLUDE_DIR}")
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-nostdinc++>)
+if (CMAKE_VERSION VERSION_LESS "3.13.0")
+  string(PREPEND CMAKE_CXX_STANDARD_LIBRARIES "-stdlib=libc++ ")
+else()
+  add_link_options($<$<LINK_LANGUAGE:CXX>:-stdlib=libc++>)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
