@@ -14,5 +14,4 @@ set(IRODS_TEST_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/lib/api/include
                             ${IRODS_EXTERNALS_FULLPATH_JANSSON}/include)
  
 set(IRODS_TEST_LINK_LIBRARIES irods_server
-                              ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so
-                              c++abi)
+                              ${IRODS_EXTERNALS_FULLPATH_BOOST}/lib/libboost_system.so)

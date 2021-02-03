@@ -15,5 +15,4 @@ set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
  
 set(IRODS_TEST_LINK_LIBRARIES irods_common
                               irods_client
-                              c++abi
                               ${IRODS_EXTERNALS_FULLPATH_FMT}/lib/libfmt.so)

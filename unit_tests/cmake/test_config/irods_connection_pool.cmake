@@ -12,5 +12,4 @@ set(IRODS_TEST_INCLUDE_PATH ${CMAKE_BINARY_DIR}/lib/core/include
                             ${IRODS_EXTERNALS_FULLPATH_CATCH2}/include)
  
 set(IRODS_TEST_LINK_LIBRARIES irods_common
-                              irods_client
-                              c++abi)
+                              irods_client)
