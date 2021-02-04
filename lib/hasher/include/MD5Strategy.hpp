@@ -4,19 +4,19 @@
 #include "HashStrategy.hpp"
 
 namespace irods {
-    const std::string MD5_NAME( "md5" );
+    extern const std::string MD5_NAME;
     class MD5Strategy : public HashStrategy {
         public:
             MD5Strategy() {};
             virtual ~MD5Strategy() {};
 
-            virtual std::string name() const {
+            std::string name() const override {
                 return MD5_NAME;
             }
-            virtual error init( boost::any& context ) const;
-            virtual error update( const std::string&, boost::any& context ) const;
-            virtual error digest( std::string& messageDigest, boost::any& context ) const;
-            virtual bool isChecksum( const std::string& ) const;
+            error init( boost::any& context ) const override;
+            error update( const std::string&, boost::any& context ) const override;
+            error digest( std::string& messageDigest, boost::any& context ) const override;
+            bool isChecksum( const std::string& ) const override;
 
     };
 }; // namespace irods

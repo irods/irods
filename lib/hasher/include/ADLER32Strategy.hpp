@@ -2,23 +2,21 @@
 #define _ADLER32_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
-#include <string>
-#include <openssl/sha.h>
 
 namespace irods {
-    const std::string ADLER32_NAME( "adler32" );
+    extern const std::string ADLER32_NAME;
     class ADLER32Strategy : public HashStrategy {
         public:
             ADLER32Strategy() {};
             virtual ~ADLER32Strategy() {};
 
-            virtual std::string name() const {
+            std::string name() const override {
                 return ADLER32_NAME;
             }
-            virtual error init( boost::any& context ) const;
-            virtual error update( const std::string& data, boost::any& context ) const;
-            virtual error digest( std::string& messageDigest, boost::any& context ) const;
-            virtual bool isChecksum( const std::string& ) const;
+            error init( boost::any& context ) const override;
+            error update( const std::string& data, boost::any& context ) const override;
+            error digest( std::string& messageDigest, boost::any& context ) const override;
+            bool isChecksum( const std::string& ) const override;
 
     };
 }; // namespace irods

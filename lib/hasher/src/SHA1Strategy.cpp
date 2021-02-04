@@ -1,17 +1,18 @@
 #include "SHA1Strategy.hpp"
 #include "checksum.hpp"
 
-#include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/sha.h>
 
 #include "base64.h"
 
 namespace irods {
+
+    const std::string SHA1_NAME( "sha1" );
 
     error
     SHA1Strategy::init( boost::any& _context ) const {

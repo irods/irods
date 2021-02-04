@@ -2,23 +2,21 @@
 #define _SHA512_STRATEGY_HPP_
 
 #include "HashStrategy.hpp"
-#include <string>
-#include <openssl/sha.h>
 
 namespace irods {
-    const std::string SHA512_NAME( "sha512" );
+    extern const std::string SHA512_NAME;
     class SHA512Strategy : public HashStrategy {
         public:
             SHA512Strategy() {};
             virtual ~SHA512Strategy() {};
 
-            virtual std::string name() const {
+            std::string name() const override {
                 return SHA512_NAME;
             }
-            virtual error init( boost::any& context ) const;
-            virtual error update( const std::string& data, boost::any& context ) const;
-            virtual error digest( std::string& messageDigest, boost::any& context ) const;
-            virtual bool isChecksum( const std::string& ) const;
+            error init( boost::any& context ) const override;
+            error update( const std::string& data, boost::any& context ) const override;
+            error digest( std::string& messageDigest, boost::any& context ) const override;
+            bool isChecksum( const std::string& ) const override;
 
     };
 }; // namespace irods

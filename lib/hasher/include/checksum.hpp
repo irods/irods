@@ -5,9 +5,9 @@
 #ifndef CHECKSUM_HPP_
 #define CHECKSUM_HPP_
 
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
+#include <cstdio>
+#include <ctime>
+#include <cstring>
 #include "objInfo.h"
 
 #ifdef __cplusplus
@@ -15,8 +15,8 @@ extern "C" {
 #endif
 
 #define SHA256_CHKSUM_PREFIX "sha2:"
-#define SHA512_CHKSUM_PREFIX "sha-512:"
-#define ADLER32_CHKSUM_PREFIX "adler-32:"
+#define SHA512_CHKSUM_PREFIX "sha512:"
+#define ADLER32_CHKSUM_PREFIX "adler32:"
 #define SHA1_CHKSUM_PREFIX "sha1:"
 int verifyChksumLocFile( char *fileName, const char *myChksum, char *chksumStr );
 

@@ -1,17 +1,17 @@
 #include "ADLER32Strategy.hpp"
 #include "checksum.hpp"
 
-#include <string>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 #include <boost/algorithm/string/predicate.hpp>
-//#include <zlib.h>
 
 #include "base64.h"
 
 namespace irods {
+
+    const std::string ADLER32_NAME( "sha512" );
 
     struct adler32_parts {
         uint32_t a;
@@ -28,15 +28,15 @@ namespace irods {
 
         uint32_t a = parts.a, b = parts.b;
 
-		// Process each byte of the data in order
-		for (size_t index = 0; index < len; ++index)
-		{
-			a = (a + data[index]) % MOD_ADLER;
-			b = (b + a) % MOD_ADLER;
-		}
+        // Process each byte of the data in order
+        for (size_t index = 0; index < len; ++index)
+        {
+            a = (a + data[index]) % MOD_ADLER;
+            b = (b + a) % MOD_ADLER;
+        }
 
         return adler32_parts{a, b};
-	}
+    }
 
     static uint32_t adler32_final(const adler32_parts& parts) {
         return (parts.b << 16) | parts.a;
