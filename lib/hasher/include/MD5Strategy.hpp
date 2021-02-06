@@ -19,6 +19,6 @@ namespace irods {
             bool isChecksum( const std::string& ) const override;
 
     };
-}; // namespace irods
+} // namespace irods
 
 #endif // _MD5_STRATEGY_HPP_
