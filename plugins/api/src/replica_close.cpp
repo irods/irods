@@ -28,12 +28,13 @@
 #include "irods_resource_backport.hpp"
 #include "irods_server_api_call.hpp"
 #include "replica_access_table.hpp"
-#include "replica_state_table.hpp"
 
 #define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
 #include "filesystem.hpp"
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "replica.hpp"
+
+#include "replica_state_table.hpp"
 
 #include "fmt/format.h"
 #include "json.hpp"
@@ -385,11 +386,23 @@ namespace
 
             const auto is_write_operation = (O_RDONLY != (l1desc.dataObjInp->openFlags & O_ACCMODE));
 
+            const std::string logical_path = l1desc.dataObjInfo->objPath;
+
             // Allow updates to the replica's catalog information if the stream supports
             // write operations (i.e. the stream is opened in write-only or read-write mode).
             if (is_write_operation) {
                 const auto update_size = !json_input.contains("update_size") || json_input.at("update_size").get<bool>();
                 const auto update_status = !json_input.contains("update_status") || json_input.at("update_status").get<bool>();
+                const auto compute_checksum = json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>();
+                const auto update_catalog = update_size || update_status || compute_checksum || send_notifications;
+
+                const irods::at_scope_exit remove_from_rst{[&logical_path, &rst, &update_catalog]
+                    {
+                        if (update_catalog && rst.contains(logical_path)) {
+                            rst.erase(logical_path);
+                        }
+                    }
+                };
 
                 // Update the replica's information in the catalog if requested.
                 if (update_size && update_status) {
@@ -432,7 +445,7 @@ namespace
                 }
 
                 // [Re]compute a checksum for the replica if requested.
-                if (json_input.contains("compute_checksum") && json_input.at("compute_checksum").get<bool>()) {
+                if (compute_checksum) {
                     const auto& info = *l1desc.dataObjInfo;
                     constexpr const auto calculation = irods::experimental::replica::verification_calculation::always;
                     irods::experimental::replica::replica_checksum(*_comm, info.objPath, info.replNum, calculation);
@@ -455,16 +468,10 @@ namespace
                 return ec;
             }
 
-            const std::string logical_path = l1desc.dataObjInfo->objPath;
-
             const auto ec = free_l1_descriptor(l1desc_index);
 
             if (ec != 0) {
                 update_replica_status(*_comm, l1desc, REPLICA_STATUS_STALE, send_notifications);
-            }
-
-            if (rst.contains(logical_path)) {
-                rst.erase(logical_path);
             }
 
             return ec;
