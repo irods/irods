@@ -97,6 +97,7 @@ namespace irods::experimental::replica
         /// \throws irods::exception if the path does not refer to a data object
         ///
         /// \since 4.2.9
+        template<typename rxComm>
         inline auto throw_if_path_is_not_a_data_object(
             rxComm& _comm,
             const irods::experimental::filesystem::path& _logical_path) -> void
@@ -129,6 +130,7 @@ namespace irods::experimental::replica
         /// \throws irods::exception if the path does not refer to a data object or replica number is invalid
         ///
         /// \since 4.2.9
+        template<typename rxComm>
         inline auto throw_if_replica_logical_path_is_invalid(
             rxComm& _comm,
             const irods::experimental::filesystem::path& _logical_path) -> void

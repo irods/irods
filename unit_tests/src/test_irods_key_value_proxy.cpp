@@ -17,9 +17,9 @@ const std::string VAL2 = "val2";
 const std::string VAL3 = "val3";
 const std::string VAL4 = "val4";
 
-TEST_CASE("test_c_struct", "[keyValPair_t]")
+TEST_CASE("test_c_struct", "[KeyValPair]")
 {
-    keyValPair_t kvp{};
+    KeyValPair kvp{};
     addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());
     addKeyVal(&kvp, KEY2.c_str(), VAL2.c_str());
 
@@ -64,13 +64,13 @@ TEST_CASE("test_c_struct", "[keyValPair_t]")
     clearKeyVal(&kvp);
 } // test_c_struct
 
-TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][adapter][const]")
+TEST_CASE("test_proxy_with_existing_const_KeyValPair", "[KeyValPair][proxy][adapter][const]")
 {
-    keyValPair_t kvp{};
+    KeyValPair kvp{};
     addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());
     addKeyVal(&kvp, KEY2.c_str(), VAL2.c_str());
 
-    const keyValPair_t* kvpp{&kvp};
+    const KeyValPair* kvpp{&kvp};
 
     irods::experimental::key_value_proxy p{*kvpp};
 
@@ -79,14 +79,16 @@ TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][
         REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p.at(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY1));
 
         REQUIRE(p.contains(KEY2));
         REQUIRE(VAL2 == p.at(KEY2));
         REQUIRE(VAL2 == p[KEY2]);
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY2));
 
+        REQUIRE_FALSE(p.contains(KEY3));
         REQUIRE_THROWS(p.at(KEY3));
-        REQUIRE_THROWS(p[KEY3]);
-        REQUIRE(!p.contains(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(kvp, KEY3));
     }
 
     SECTION("test_iterator")
@@ -125,7 +127,7 @@ TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][
 
         auto [tmp, lm] = irods::experimental::make_key_value_proxy({{KEY4, VAL4}});
 
-        // auto -> const keyValPair_t*
+        // auto -> const KeyValPair*
         {
         auto k = p.get();
         static_assert(std::is_const_v<std::remove_reference_t<decltype(*k)>>);
@@ -133,10 +135,10 @@ TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][
 
         k = tmp.get();
         REQUIRE(getValByKey(k, KEY4.c_str()));
-        REQUIRE(!p.contains(KEY4));
+        REQUIRE_FALSE(p.contains(KEY4));
         }
 
-        // auto -> const keyValPair_t* const
+        // auto -> const KeyValPair* const
         {
         const auto k = p.get();
         static_assert(std::is_const_v<decltype(k)>);
@@ -146,7 +148,7 @@ TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][
         //k = tmp.get(); // should not compile - cannot change const pointer
         }
 
-        // auto -> const keyValPair_t* const&
+        // auto -> const KeyValPair* const&
         {
         const auto& k = p.get();
         static_assert(std::is_const_v<std::remove_reference_t<decltype(k)>>);
@@ -157,12 +159,13 @@ TEST_CASE("test_proxy_with_existing_const_keyValPair_t", "[keyValPair_t][proxy][
         }
     }
 
+    kvpp = nullptr;
     clearKeyVal(&kvp);
-} // test_proxy_with_existing_const_keyValPair_t
+} // test_proxy_with_existing_const_KeyValPair
 
-TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapter][const]")
+TEST_CASE("test_const_proxy_with_existing_KeyValPair", "[KeyValPair][proxy][adapter][const]")
 {
-    keyValPair_t kvp{};
+    KeyValPair kvp{};
     addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());
     addKeyVal(&kvp, KEY2.c_str(), VAL2.c_str());
 
@@ -173,14 +176,16 @@ TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][
         REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p.at(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY1));
 
         REQUIRE(p.contains(KEY2));
         REQUIRE(VAL2 == p.at(KEY2));
         REQUIRE(VAL2 == p[KEY2]);
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY2));
 
         REQUIRE_THROWS(p.at(KEY3));
-        REQUIRE_THROWS(p[KEY3].value());
-        REQUIRE(!p.contains(KEY3));
+        REQUIRE_FALSE(p.contains(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(kvp, KEY3));
     }
 
     // demonstrate modifications to struct outside of proxy are accessible via the the const proxy
@@ -220,7 +225,7 @@ TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][
 
         auto [tmp, lm] = irods::experimental::make_key_value_proxy({{KEY4, VAL4}});
 
-        // auto -> keyValPair_t*
+        // auto -> KeyValPair*
         {
         auto k = p.get();
         static_assert(!std::is_const_v<decltype(k)>);
@@ -233,10 +238,10 @@ TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][
 
         k = tmp.get();
         REQUIRE(getValByKey(k, KEY4.c_str()));
-        REQUIRE(!p.contains(KEY4));
+        REQUIRE_FALSE(p.contains(KEY4));
         }
 
-        // const auto -> keyValPair_t* const
+        // const auto -> KeyValPair* const
         {
         const auto k = p.get();
         static_assert(std::is_const_v<decltype(k)>);
@@ -251,7 +256,7 @@ TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][
         //k = tmp.get(); // should not compile - cannot change const pointer
         }
 
-        // const auto& -> keyValPair_t* const&
+        // const auto& -> KeyValPair* const&
         {
         const auto& k = p.get();
         static_assert(std::is_const_v<std::remove_reference_t<decltype(k)>>);
@@ -268,11 +273,11 @@ TEST_CASE("test_const_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][
     }
 
     clearKeyVal(&kvp);
-} // test_const_proxy_with_existing_keyValPair_t
+} // test_const_proxy_with_existing_KeyValPair
 
-TEST_CASE("test_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapter]")
+TEST_CASE("test_proxy_with_existing_KeyValPair", "[KeyValPair][proxy][adapter]")
 {
-    keyValPair_t kvp{};
+    KeyValPair kvp{};
     addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());
     addKeyVal(&kvp, KEY2.c_str(), VAL2.c_str());
 
@@ -283,28 +288,32 @@ TEST_CASE("test_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapte
         REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
         REQUIRE(VAL1 == p.at(KEY1));
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY1));
 
         REQUIRE(p.contains(KEY2));
         REQUIRE(VAL2 == p[KEY2]);
         REQUIRE(VAL2 == p.at(KEY2));
+        REQUIRE(irods::experimental::keyword_has_a_value(kvp, KEY2));
 
         // at() does not insert missing keys...
+        REQUIRE_FALSE(p.contains(KEY3));
         REQUIRE_THROWS(p.at(KEY3));
-        REQUIRE(!p.contains(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(kvp, KEY3));
 
         // ...but operator[] does
         REQUIRE(std::string{} == p[KEY3]);
         REQUIRE(p.contains(KEY3));
         REQUIRE(std::string{} == p.at(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(kvp, KEY3));
     }
 
     SECTION("proxy_erase")
     {
         p.erase(KEY2);
-        REQUIRE(!p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY2));
         REQUIRE(1 == p.size());
         p.erase(KEY1);
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
         p.erase(KEY3);
         REQUIRE(0 == p.size());
@@ -313,8 +322,8 @@ TEST_CASE("test_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapte
     SECTION("proxy_clear")
     {
         p.clear();
-        REQUIRE(!p.contains(KEY2));
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
     }
 
@@ -331,7 +340,7 @@ TEST_CASE("test_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapte
 
         {
         auto [iter, success] = p.insert({KEY2, VAL3});
-        REQUIRE(!success);
+        REQUIRE_FALSE(success);
         REQUIRE(VAL2 == p.at(KEY2));
         }
     }
@@ -346,9 +355,9 @@ TEST_CASE("test_proxy_with_existing_keyValPair_t", "[keyValPair_t][proxy][adapte
     }
 
     clearKeyVal(&kvp);
-} // test_proxy_with_existing_keyValPair_t
+} // test_proxy_with_existing_KeyValPair
 
-TEST_CASE("test_factory_no_list", "[keyValPair_t][proxy][fresh]")
+TEST_CASE("test_factory_no_list", "[KeyValPair][proxy][fresh]")
 {
     auto [p, kvp] = irods::experimental::make_key_value_proxy();
     p[KEY1] = VAL1;
@@ -356,25 +365,28 @@ TEST_CASE("test_factory_no_list", "[keyValPair_t][proxy][fresh]")
 
     SECTION("access")
     {
+        REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
         REQUIRE(VAL1 == p.at(KEY1));
-        REQUIRE(p.contains(KEY1));
+        REQUIRE(irods::experimental::keyword_has_a_value(*p.get(), KEY1));
 
+        REQUIRE(p.contains(KEY2));
         REQUIRE(VAL2 == p[KEY2]);
         REQUIRE(VAL2 == p.at(KEY2));
-        REQUIRE(p.contains(KEY2));
+        REQUIRE(irods::experimental::keyword_has_a_value(*p.get(), KEY2));
 
+        REQUIRE_FALSE(p.contains(KEY3));
         REQUIRE_THROWS(p.at(KEY3));
-        REQUIRE(!p.contains(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(*p.get(), KEY3));
     }
 
     SECTION("erase")
     {
         p.erase(KEY2);
-        REQUIRE(!p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY2));
         REQUIRE(1 == p.size());
         p.erase(KEY1);
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
         p.erase(KEY3);
         REQUIRE(0 == p.size());
@@ -383,8 +395,8 @@ TEST_CASE("test_factory_no_list", "[keyValPair_t][proxy][fresh]")
     SECTION("clear")
     {
         p.clear();
-        REQUIRE(!p.contains(KEY2));
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
     }
 
@@ -401,13 +413,13 @@ TEST_CASE("test_factory_no_list", "[keyValPair_t][proxy][fresh]")
 
         {
         auto [iter, success] = p.insert({KEY2, VAL3});
-        REQUIRE(!success);
+        REQUIRE_FALSE(success);
         REQUIRE(VAL2 == p.at(KEY2));
         }
     }
 } // test_factory_no_list
 
-TEST_CASE("test_factory_with_initializer_list", "[keyValPair_t][proxy][init]")
+TEST_CASE("test_factory_with_initializer_list", "[KeyValPair][proxy][init]")
 {
     auto [p, kvp] = irods::experimental::make_key_value_proxy({{KEY1, VAL1},
                                                                {KEY2, VAL2}});
@@ -417,22 +429,25 @@ TEST_CASE("test_factory_with_initializer_list", "[keyValPair_t][proxy][init]")
         REQUIRE(VAL1 == p[KEY1]);
         REQUIRE(VAL1 == p.at(KEY1));
         REQUIRE(p.contains(KEY1));
+        REQUIRE(irods::experimental::keyword_has_a_value(*p.get(), KEY1));
 
         REQUIRE(VAL2 == p[KEY2]);
         REQUIRE(VAL2 == p.at(KEY2));
         REQUIRE(p.contains(KEY2));
+        REQUIRE(irods::experimental::keyword_has_a_value(*p.get(), KEY2));
 
         REQUIRE_THROWS(p.at(KEY3));
-        REQUIRE(!p.contains(KEY3));
+        REQUIRE_FALSE(p.contains(KEY3));
+        REQUIRE_FALSE(irods::experimental::keyword_has_a_value(*p.get(), KEY3));
     }
 
     SECTION("erase")
     {
         p.erase(KEY2);
-        REQUIRE(!p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY2));
         REQUIRE(1 == p.size());
         p.erase(KEY1);
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
         p.erase(KEY3);
         REQUIRE(0 == p.size());
@@ -441,8 +456,8 @@ TEST_CASE("test_factory_with_initializer_list", "[keyValPair_t][proxy][init]")
     SECTION("clear")
     {
         p.clear();
-        REQUIRE(!p.contains(KEY2));
-        REQUIRE(!p.contains(KEY1));
+        REQUIRE_FALSE(p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY1));
         REQUIRE(0 == p.size());
     }
 
@@ -459,13 +474,13 @@ TEST_CASE("test_factory_with_initializer_list", "[keyValPair_t][proxy][init]")
 
         {
         auto [iter, success] = p.insert({KEY2, VAL3});
-        REQUIRE(!success);
+        REQUIRE_FALSE(success);
         REQUIRE(VAL2 == p.at(KEY2));
         }
 
         {
         p.erase(KEY2);
-        REQUIRE(!p.contains(KEY2));
+        REQUIRE_FALSE(p.contains(KEY2));
         auto [iter, insert] = p.insert_or_assign({KEY2, VAL2});
         REQUIRE(insert);
         REQUIRE(VAL2 == p.at(KEY2));
@@ -473,27 +488,27 @@ TEST_CASE("test_factory_with_initializer_list", "[keyValPair_t][proxy][init]")
 
         {
         auto [iter, insert] = p.insert_or_assign({KEY2, VAL3});
-        REQUIRE(!insert);
+        REQUIRE_FALSE(insert);
         REQUIRE(VAL3 == p.at(KEY2));
         }
     }
 } // test_factory_with_initializer_list
 
-TEST_CASE("test_factory_with_existing_kvp", "[keyValPair_t][proxy][init][factory]")
+TEST_CASE("test_factory_with_existing_kvp", "[KeyValPair][proxy][init][factory]")
 {
-    keyValPair_t str{};
+    KeyValPair str{};
     addKeyVal(&str, KEY1.c_str(), VAL1.c_str());
 
-    SECTION("keyValPair_t")
+    SECTION("KeyValPair")
     {
         auto p = irods::experimental::make_key_value_proxy(str);
         REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
     }
 
-    SECTION("const keyValPair_t")
+    SECTION("const KeyValPair")
     {
-        const keyValPair_t* kvpp{&str};
+        const KeyValPair* kvpp{&str};
         auto p = irods::experimental::make_key_value_proxy(*kvpp);
         REQUIRE(p.contains(KEY1));
         REQUIRE(VAL1 == p[KEY1]);
@@ -507,7 +522,7 @@ TEST_CASE("test_proxy_lifetime_manager_getters", "[lifetime_manager]")
     SECTION("lifetime_manager")
     {
         auto [p, m] = irods::experimental::make_key_value_proxy();
-        auto kvp = *m.get();
+        auto& kvp = *m.get();
         REQUIRE(0 == kvp.len);
         REQUIRE(nullptr == getValByKey(&kvp, KEY1.c_str()));
         addKeyVal(&kvp, KEY1.c_str(), VAL1.c_str());
@@ -526,10 +541,10 @@ TEST_CASE("test_proxy_lifetime_manager_getters", "[lifetime_manager]")
 
     SECTION("const struct")
     {
-        keyValPair_t str{};
+        KeyValPair str{};
         addKeyVal(&str, KEY1.c_str(), VAL1.c_str());
 
-        const keyValPair_t* kvpp{&str};
+        const KeyValPair* kvpp{&str};
 
         irods::experimental::key_value_proxy p{*kvpp};
         auto kvp = p.get();
@@ -542,4 +557,3 @@ TEST_CASE("test_proxy_lifetime_manager_getters", "[lifetime_manager]")
         clearKeyVal(&str);
     }
 } // test_proxy_lifetime_manager_getters
-
