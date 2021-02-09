@@ -14,6 +14,7 @@
 #include "irods_stacktrace.hpp"
 #include "irods_configuration_keywords.hpp"
 #include "key_value_proxy.hpp"
+#include "replica_state_table.hpp"
 
 #include "boost/format.hpp"
 
@@ -220,6 +221,12 @@ int _call_file_modified_for_modification(
 
     if ( regParam->len == 0 ) {
         return 0;
+    }
+
+    // The replica state table entry needs to be removed before triggering fileModified
+    auto& rst = irods::replica_state_table::instance();
+    if (rst.contains(dataObjInfo->objPath)) {
+        rst.erase(dataObjInfo->objPath);
     }
 
     if ( getValByKey( regParam, ALL_KW ) != NULL ) {

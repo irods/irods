@@ -310,6 +310,10 @@
 // at the time of resolution. This information is lost if the l1 descriptor goes away.
 #define SELECTED_HIERARCHY_KW                       "selected_hierarchy"
 
+// data_object_finalize checks for this keyword in order to determine whether a
+// fileModified notification should be sent to the resource plugins.
+#define FILE_MODIFIED_KW "file_modified"
+
 // clang-format on
 
 #endif  // RODS_KEYWD_DEF_H__
