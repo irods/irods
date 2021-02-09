@@ -13,6 +13,7 @@
 
 // =-=-=-=-=-=-=-
 // stl includes
+#include <optional>
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -66,6 +67,22 @@ namespace irods {
             // =-=-=-=-=-=-=-
             // accessor for rule engine variables
             virtual error get_re_vars( rule_engine_vars_t& );
+
+            /// \param[in] _hierarchy
+            ///
+            /// \returns reference to the replica in replicas_ with a resource hierarchy matching _hierarchy
+            /// \retval std::nullopt if a replica with resource hierarchy _hierarchy is not found in replicas_
+            ///
+            /// \since 4.2.9
+            auto get_replica(std::string_view _hierarchy) -> std::optional<std::reference_wrapper<physical_object>>;
+
+            /// \param[in] _replica_number
+            ///
+            /// \returns reference to the replica in replicas_ with a replica number matching _replica_number
+            /// \retval std::nullopt if a replica with replica number _replica_number is not found in replicas_
+            ///
+            /// \since 4.2.9
+            auto get_replica(const int _replica_number) -> std::optional<std::reference_wrapper<physical_object>>;
 
             // =-=-=-=-=-=-=-
             // Accessors
@@ -171,6 +188,14 @@ namespace irods {
                               dataObjInp_t*    _data_obj_inp,
                               file_object_ptr  _file_obj,
                               dataObjInfo_t**  _data_obj_info = nullptr);
+
+    /// \brief factory function which takes a data id and creates a file_object
+    ///
+    /// \param[in] _comm
+    /// \param[in] _data_id
+    ///
+    /// \since 4.2.9
+    auto file_object_factory(RsComm& _comm, const rodsLong_t _data_id) -> irods::file_object_ptr;
 
     /// \param[in] _obj File object to search
     /// \param[in] _hierarchy

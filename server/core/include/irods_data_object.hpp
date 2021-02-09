@@ -113,6 +113,9 @@ namespace irods {
             virtual void cond_input( const keyValPair_t& _cond_input ) {
                 replKeyVal( &_cond_input, &cond_input_ );
             }
+            virtual keyValPair_t& cond_input()	{
+                return cond_input_;
+            }
             virtual void resc_id( rodsLong_t _id ) {
                 resc_id_ = _id;
             }

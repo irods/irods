@@ -1,21 +1,20 @@
-// =-=-=-=-=-=-=-
-#include "irods_file_object.hpp"
-#include "irods_resource_manager.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_log.hpp"
-#include "irods_stacktrace.hpp"
-#include "irods_hierarchy_parser.hpp"
-#include "irods_resource_backport.hpp"
-
-// =-=-=-=-=-=-=-
-// irods includes
 #include "miscServerFunct.hpp"
 #include "dataObjOpr.hpp"
 #include "objDesc.hpp"
 
-// =-=-=-=-=-=-=-
-// boost includes
-#include <boost/asio/ip/host_name.hpp>
+#include "irods_file_object.hpp"
+#include "irods_hierarchy_parser.hpp"
+#include "irods_log.hpp"
+#include "irods_resource_backport.hpp"
+#include "irods_resource_manager.hpp"
+#include "irods_stacktrace.hpp"
+
+#define IRODS_FILESYSTEM_ENABLE_SERVER_SIDE_API
+#include "filesystem.hpp"
+
+#define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
+#include "replica_proxy.hpp"
+#include "data_object_proxy.hpp"
 
 namespace irods {
 // =-=-=-=-=-=-=-
@@ -266,6 +265,26 @@ namespace irods {
 
     } // get_re_vars
 
+    auto file_object::get_replica(const int _replica_number) -> std::optional<std::reference_wrapper<physical_object>>
+    {
+        auto itr = std::find_if(
+            std::begin(replicas_), std::end(replicas_),
+            [&_replica_number](const auto& _r) { return _replica_number == _r.repl_num(); }
+        );
+
+        return std::cend(replicas_) == itr ? std::nullopt : std::make_optional(std::ref(*itr));
+    } // get_replica
+
+    auto file_object::get_replica(std::string_view _hierarchy) -> std::optional<std::reference_wrapper<physical_object>>
+    {
+        auto itr = std::find_if(
+            std::begin(replicas_), std::end(replicas_),
+            [&_hierarchy](const auto& _r) { return _hierarchy == _r.resc_hier(); }
+        );
+
+        return std::cend(replicas_) == itr ? std::nullopt : std::make_optional(std::ref(*itr));
+    } // get_replica
+
 // =-=-=-=-=-=-=-
 // static factory to create file_object from dataObjInfo linked list
     error file_object_factory( rsComm_t*        _comm,
@@ -366,6 +385,25 @@ namespace irods {
         }
         return SUCCESS();
 
+    } // file_object_factory
+
+    auto file_object_factory(RsComm& _comm, const rodsLong_t _data_id) -> irods::file_object_ptr
+    {
+        namespace id = irods::experimental::data_object;
+
+        auto [data_obj, obj_lm] = id::make_data_object_proxy(_comm, _data_id);
+
+        irods::file_object_ptr obj{new irods::file_object{&_comm, data_obj.get()}};
+
+        std::vector<physical_object> objects;
+
+        for (const auto& r : data_obj.replicas()) {
+            objects.push_back(irods::physical_object{*r.get()});
+        }
+
+        obj->replicas( objects );
+
+        return obj;
     } // file_object_factory
 
     auto hierarchy_has_replica(const irods::file_object_ptr _obj, std::string_view _hierarchy) -> bool
