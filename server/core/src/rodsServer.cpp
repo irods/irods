@@ -1,5 +1,6 @@
 #include "irods_at_scope_exit.hpp"
 #include "irods_configuration_keywords.hpp"
+#include "irods_configuration_parser.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
 #include "rcMisc.h"
 #include "rodsErrorTable.h"
@@ -23,6 +24,9 @@
 #include "irods_random.hpp"
 #include "replica_access_table.hpp"
 #include "irods_logger.hpp"
+#include "hostname_cache.hpp"
+#include "dns_cache.hpp"
+#include "server_utilities.hpp"
 
 #include <pthread.h>
 #include <sys/socket.h>
@@ -46,7 +50,11 @@
 #include <algorithm>
 #include <iterator>
 
-namespace ix = irods::experimental;
+// clang-format off
+namespace ix   = irods::experimental;
+namespace hnc  = irods::experimental::net::hostname_cache;
+namespace dnsc = irods::experimental::net::dns_cache;
+// clang-format on
 
 using namespace boost::filesystem;
 
@@ -327,10 +335,30 @@ int main(int argc, char** argv)
 
     ix::log::server::info("Initializing server ...");
 
+    hnc::init("irods_hostname_cache", irods::get_hostname_cache_shared_memory_size());
+    irods::at_scope_exit deinit_hostname_cache{[] { hnc::deinit(); }};
+
+    dnsc::init("irods_dns_cache", irods::get_dns_cache_shared_memory_size());
+    irods::at_scope_exit deinit_dns_cache{[] { dnsc::deinit(); }};
+
     irods::experimental::replica_access_table::init();
     irods::at_scope_exit deinit_fd_table{[] { irods::experimental::replica_access_table::deinit(); }};
 
     remove_leftover_rulebase_pid_files();
+
+    irods::parse_and_store_hosts_configuration_file_as_json();
+
+    using key_path_t = irods::configuration_parser::key_path_t;
+
+    // Set the default value for evicting DNS cache entries.
+    irods::set_server_property(
+        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+        irods::get_dns_cache_eviction_age());
+
+    // Set the default value for evicting hostname cache entries.
+    irods::set_server_property(
+        key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+        irods::get_hostname_cache_eviction_age());
 
     /* start of irodsReServer has been moved to serverMain */
     signal( SIGTTIN, SIG_IGN );

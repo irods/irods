@@ -97,8 +97,6 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_tcp_object.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_threads.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/irods_virtual_path.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/query_builder.hpp
-  ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/key_value_proxy.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lifetime_manager.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/lsUtil.h
@@ -119,6 +117,8 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/include/phymvUtil.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/procApiRequest.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/putUtil.h
+  ${CMAKE_SOURCE_DIR}/lib/core/include/query_builder.hpp
+  ${CMAKE_SOURCE_DIR}/lib/core/include/query_processor.hpp
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcConnect.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcGlobalExtern.h
   ${CMAKE_SOURCE_DIR}/lib/core/include/rcMisc.h
