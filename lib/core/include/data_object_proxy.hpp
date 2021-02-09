@@ -10,6 +10,8 @@
 #include <string_view>
 #include <vector>
 
+struct DataObjInfo;
+
 namespace irods::experimental::data_object
 {
     /// \brief Presents a data object-level interface to a DataObjInfo legacy iRODS struct.
@@ -205,6 +207,11 @@ namespace irods::experimental::data_object
         } // fill_replica_list
     }; // data_object_proxy
 
+    /// \brief Helper type for data_object_proxy using a non-const DataObjInfo
+    ///
+    /// \since 4.2.9
+    using data_object_proxy_t = data_object_proxy<DataObjInfo>;
+
     /// \brief Wraps an existing doi_type with a proxy object.
     /// \param[in] _doi - Pre-existing doi_type which will be wrapped by the returned proxy.
     /// \return data_object_proxy
@@ -229,7 +236,7 @@ namespace irods::experimental::data_object
         /// \since 4.2.9
         template<typename rxComm>
         static auto make_data_object_proxy_impl(rxComm& _comm, const irods::experimental::replica::query_value_type& _query_results)
-            -> std::pair<data_object_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+            -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
         {
             namespace replica = irods::experimental::replica;
 
@@ -274,7 +281,7 @@ namespace irods::experimental::data_object
     /// \since 4.2.9
     template<typename rxComm>
     static auto make_data_object_proxy(rxComm& _comm, const irods::experimental::filesystem::path& _logical_path)
-        -> std::pair<data_object_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
     {
         namespace replica = irods::experimental::replica;
 
@@ -285,7 +292,7 @@ namespace irods::experimental::data_object
 
     template<typename rxComm>
     static auto make_data_object_proxy(rxComm& _comm, const rodsLong_t _data_id)
-        -> std::pair<data_object_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
     {
         namespace replica = irods::experimental::replica;
 
@@ -302,7 +309,7 @@ namespace irods::experimental::data_object
     ///
     /// \since 4.2.9
     static auto duplicate_data_object(const DataObjInfo& _obj)
-        -> std::pair<data_object_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
     {
         DataObjInfo* head{};
         DataObjInfo* prev{};
@@ -350,8 +357,8 @@ namespace irods::experimental::data_object
     /// \returns data_object_proxy and lifetime_manager for underlying struct
     ///
     /// \since 4.2.9
-    static auto duplicate_data_object(const data_object_proxy<DataObjInfo>& _obj)
-        -> std::pair<data_object_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    static auto duplicate_data_object(const data_object_proxy_t& _obj)
+        -> std::pair<data_object_proxy_t, lifetime_manager<DataObjInfo>>
     {
         if (!_obj) {
             THROW(USER__NULL_INPUT_ERR, "object information is null");
