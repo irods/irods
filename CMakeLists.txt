@@ -966,6 +966,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_stacktrace.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_string_tokenize.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_virtual_path.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/key_value_proxy.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/list.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/msParam.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/obf.cpp
