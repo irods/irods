@@ -1006,6 +1006,7 @@ target_link_libraries(
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
+  rt
   )
 target_include_directories(
   irods_common
@@ -1200,6 +1201,7 @@ target_link_libraries(
   ${OPENSSL_SSL_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
   ${CMAKE_DL_LIBS}
+  rt
   )
 target_include_directories(
   RodsAPIs

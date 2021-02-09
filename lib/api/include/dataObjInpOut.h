@@ -1,12 +1,3 @@
-/**
- * @file  dataObjInpOut.h
- *
- */
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-
 #ifndef DATA_OBJ_INP_OUT_H__
 #define DATA_OBJ_INP_OUT_H__
 
@@ -26,7 +17,7 @@
 #define pthread_attr_default NULL
 #endif  /* aix_platform */
 
-typedef struct {
+typedef struct PortList {
     int portNum;       /* the port number */
     int cookie;
     int sock;           /* The server's sock number. no meaning for client */

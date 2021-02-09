@@ -27,15 +27,14 @@
 #include "procLog.h"
 #include "initServer.hpp"
 #include "replica_access_table.hpp"
-
 #include "sockCommNetworkInterface.hpp"
 #include "sslSockComm.h"
-
+#include "server_utilities.hpp"
 #include "plugin_lifetime_manager.hpp"
 
-#include "sys/socket.h"
-#include "sys/un.h"
-#include "sys/wait.h"
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/wait.h>
 
 #include <memory>
 
@@ -379,6 +378,19 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
                 }
 
                 irods::server_properties::instance().capture();
+                irods::parse_and_store_hosts_configuration_file_as_json();
+
+                using key_path_t = irods::configuration_parser::key_path_t;
+
+                // Update the eviction age for DNS cache entries.
+                irods::set_server_property(
+                    key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_DNS_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                    irods::get_dns_cache_eviction_age());
+
+                // Update the eviction age for hostname cache entries.
+                irods::set_server_property(
+                    key_path_t{irods::CFG_ADVANCED_SETTINGS_KW, irods::CFG_HOSTNAME_CACHE_KW, irods::CFG_EVICTION_AGE_IN_SECONDS_KW},
+                    irods::get_hostname_cache_eviction_age());
 
                 log::agent::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_AGENT_KW));
                 log::legacy::set_level(log::get_level_from_config(irods::CFG_LOG_LEVEL_CATEGORY_LEGACY_KW));
@@ -576,7 +588,7 @@ runIrodsAgentFactory( sockaddr_un agent_addr ) {
     return status;
 }
 
-static void set_rule_engine_globals( rsComm_t* _comm )
+static void set_rule_engine_globals(rsComm_t* _comm)
 {
     irods::set_server_property<std::string>(irods::CLIENT_USER_NAME_KW, _comm->clientUser.userName);
     irods::set_server_property<std::string>(irods::CLIENT_USER_ZONE_KW, _comm->clientUser.rodsZone);
@@ -586,9 +598,9 @@ static void set_rule_engine_globals( rsComm_t* _comm )
     irods::set_server_property<int>(irods::PROXY_USER_PRIV_KW, _comm->clientUser.authInfo.authFlag);
 } // set_rule_engine_globals
 
-int agentMain( rsComm_t *rsComm )
+int agentMain(rsComm_t *rsComm)
 {
-    if ( !rsComm ) {
+    if (!rsComm) {
         return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 

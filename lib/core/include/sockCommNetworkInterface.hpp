@@ -1,5 +1,3 @@
-
-
 #ifndef SOCK_COMM_NETWORK_INTERFACE_HPP
 #define SOCK_COMM_NETWORK_INTERFACE_HPP
 
@@ -67,6 +65,4 @@ irods::error sendVersion(
     int );                          // shared cookie
 
 #endif // SOCK_COMM_NETWORK_INTERFACE_HPP
-
-
 

@@ -69,6 +69,12 @@ namespace irods
     extern const std::string CFG_RE_SERVER_SLEEP_TIME;
     extern const std::string CFG_RE_SERVER_EXEC_TIME;
 
+    extern const std::string CFG_DNS_CACHE_KW;
+    extern const std::string CFG_HOSTNAME_CACHE_KW;
+
+    extern const std::string CFG_SHARED_MEMORY_SIZE_IN_BYTES_KW;
+    extern const std::string CFG_EVICTION_AGE_IN_SECONDS_KW;
+
     // service_account_environment.json keywords
     extern const std::string CFG_IRODS_USER_NAME_KW;
     extern const std::string CFG_IRODS_HOST_KW;
@@ -158,6 +164,9 @@ namespace irods
 
     extern const std::string DEFAULT_RULE_ENGINE_PLUGIN_NAME_KW;
     extern const std::string DEFAULT_RULE_ENGINE_INSTANCE_NAME_KW;
+
+    // misc. keywords
+    extern const std::string HOSTS_CONFIG_JSON_OBJECT_KW;
 } // namespace irods
 
 #endif // CONFIGURATION_KEYWORDS_HPP
