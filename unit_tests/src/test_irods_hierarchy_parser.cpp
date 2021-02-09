@@ -25,11 +25,11 @@ TEST_CASE("test_hierarchy_parser", "[hierarchy]") {
         REQUIRE(str == p.str("e"));
         REQUIRE(str == p.str("f"));
     }
-    SECTION("resc_in_hier") {
-        REQUIRE(p.resc_in_hier("a"));
-        REQUIRE(p.resc_in_hier("e"));
-        REQUIRE(!p.resc_in_hier("b;c;d"));
-        REQUIRE(!p.resc_in_hier("f"));
+    SECTION("contains") {
+        REQUIRE(p.contains("a"));
+        REQUIRE(p.contains("e"));
+        REQUIRE(!p.contains("b;c;d"));
+        REQUIRE(!p.contains("f"));
     }
     SECTION("next") {
         REQUIRE("b" == p.next("a"));
@@ -57,6 +57,32 @@ TEST_CASE("test_hierarchy_parser", "[hierarchy]") {
         REQUIRE_THROWS_WITH(p.add_parent(irods::hierarchy_parser::delimiter()),
                             Catch::Contains(std::to_string(SYS_INVALID_INPUT_PARAM)));
     }
+    SECTION("remove_resource") {
+        // invalid inputs
+        CHECK_THROWS_WITH(irods::hierarchy_parser{"a"}.remove_resource("a"),
+                          Catch::Contains(std::to_string(SYS_NOT_ALLOWED)));
+        CHECK_THROWS_WITH(p.remove_resource(""),
+                          Catch::Contains(std::to_string(SYS_INVALID_INPUT_PARAM)));
+        CHECK_THROWS_WITH(p.remove_resource(irods::hierarchy_parser::delimiter()),
+                          Catch::Contains(std::to_string(SYS_INVALID_INPUT_PARAM)));
+        CHECK_THROWS_WITH(p.remove_resource("z"),
+                          Catch::Contains(std::to_string(CHILD_NOT_FOUND)));
+
+        // beginning resource
+        REQUIRE_NOTHROW(p.remove_resource("a"));
+        REQUIRE(!p.contains("a"));
+
+        // middle resource
+        REQUIRE_NOTHROW(p.remove_resource("c"));
+        REQUIRE(!p.contains("c"));
+        REQUIRE("d" == p.next("b"));
+
+        // end resource
+        REQUIRE_NOTHROW(p.remove_resource("e"));
+        REQUIRE(!p.contains("e"));
+        REQUIRE_THROWS_WITH(p.next("d"),
+                            Catch::Contains(std::to_string(NO_NEXT_RESC_FOUND)));
+    }
 }
 
 TEST_CASE("test_hierarchy_parser_standalone_resource", "[standalone]") {
@@ -72,9 +98,9 @@ TEST_CASE("test_hierarchy_parser_standalone_resource", "[standalone]") {
         REQUIRE(str == p.str("a"));
         REQUIRE(str == p.str("c"));
     }
-    SECTION("resc_in_hier") {
-        REQUIRE(p.resc_in_hier("a"));
-        REQUIRE(!p.resc_in_hier("b"));
+    SECTION("contains") {
+        REQUIRE(p.contains("a"));
+        REQUIRE(!p.contains("b"));
     }
     SECTION("next") {
         REQUIRE_THROWS_WITH(p.next("a"),

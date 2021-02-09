@@ -10,6 +10,7 @@
 #include "rsDataObjTrim.hpp"
 #include "rsModAVUMetadata.hpp"
 #include "rsModAccessControl.hpp"
+#include "rs_replica_close.hpp"
 
 #define IRODS_REPLICA_ENABLE_SERVER_SIDE_API
 #include "data_object_proxy.hpp"
@@ -17,6 +18,8 @@
 
 #include <string>
 #include <vector>
+
+#include "json.hpp"
 
 namespace irods
 {
@@ -160,7 +163,7 @@ namespace irods
     {
         auto replica = irods::experimental::replica::make_replica_proxy(_info);
 
-        dataObjInp_t inp{};
+        DataObjInp inp{};
         rstrcpy( inp.objPath, replica.logical_path().data(), MAX_NAME_LEN );
 
         auto cond_input = irods::experimental::key_value_proxy{inp.condInput};
@@ -248,4 +251,23 @@ namespace irods
 
         return rei.status;
     } // apply_static_pep
+
+    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd) -> int
+    {
+        nlohmann::json in_json;
+        in_json["fd"] = _fd;
+        in_json["send_notifications"] = false;
+        in_json["update_size"] = false;
+        in_json["update_status"] = false;
+
+        const int ec = rs_replica_close(&_comm, in_json.dump().data());
+
+        if (ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}] - error closing replica; ec:[{}]",
+                __FUNCTION__, ec));
+        }
+
+        return ec;
+    } // close_replica_without_catalog_update
 } // namespace irods

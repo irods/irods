@@ -359,11 +359,9 @@ namespace irods
         // perform an open operation if create is not specified ( thats all we have for now )
         if (irods::OPEN_OPERATION  == oper || irods::WRITE_OPERATION == oper || irods::UNLINK_OPERATION == oper ) {
             if (!fac_err.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " :: failed in file_object_factory";
-                irods::log(LOG_ERROR, msg.str());
-                THROW(fac_err.code(), msg.str());
+                THROW(fac_err.code(), fmt::format(
+                    "[{}:{}] - failed in file_object_factory:[{}]",
+                    __FUNCTION__, __LINE__, fac_err.result()));
             }
 
             // consider force flag - we need to consider the default

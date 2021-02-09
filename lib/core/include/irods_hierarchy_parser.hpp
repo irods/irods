@@ -3,8 +3,9 @@
 
 #include "irods_error.hpp"
 
-#include <vector>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace irods {
 
@@ -51,6 +52,17 @@ namespace irods {
             /// @brief Adds another level of hierarchy by adding the specified child resource
             error add_child( const std::string& _resc );
 
+            /// \brief Removes the resource with the specified name from the hierarchy
+            ///
+            /// \param[in] _resource_name Resource name to search for and erase
+            ///
+            /// \throws irods::exception if _resource_name is empty
+            /// \throws irods::exception if _resource_name is not in the resource hierarchy
+            /// \throws irods::exception if _resource_name is the only resource in the hierarchy
+            ///
+            /// \since 4.2.9
+            auto remove_resource(const std::string_view _resource_name) -> void;
+
             /// @brief Returns the first resource
             error first_resc( std::string& _ret_resc ) const;
 
@@ -84,7 +96,21 @@ namespace irods {
             /// @brief Returns the delimiter used for hierarchy strings.
             static const std::string& delimiter( void );
 
-            /// @brief Returns true if the specified resource is in the hierarchy.
+            /// \param[in] _resource_name Resource name to search for
+            ///
+            /// \retval true if the specified resource is in the hierarchy
+            /// \retval false if the specified resource is not in the hierarchy
+            ///
+            /// \since 4.2.9
+            bool contains(const std::string_view _resource_name) const;
+
+            /// \brief Returns true if the specified resource is in the hierarchy. \parblock
+            ///
+            /// Calls contains().
+            /// \endparblock
+            ///
+            /// \deprecated use contains() instead
+            //[[deprecated("use contains() instead")]]
             bool resc_in_hier( const std::string& _resc ) const;
 
         private:

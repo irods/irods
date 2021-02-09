@@ -111,6 +111,17 @@ namespace irods
 
     // TODO: ...remove this.
     auto purge_cache(RsComm& _comm, DataObjInfo& _info) -> int;
+
+    /// \brief Call rs_replica_close without touching the catalog
+    ///
+    /// \param[in/out] _comm
+    /// \param[in] _fd l1 descriptor index
+    ///
+    /// \returns int
+    /// \retval return code of rs_replica_close
+    ///
+    /// \since 4.2.9
+    auto close_replica_without_catalog_update(RsComm& _comm, const int _fd) -> int;
 } // namespace irods
 
 #endif // IRODS_FINALIZE_UTILITIES_HPP

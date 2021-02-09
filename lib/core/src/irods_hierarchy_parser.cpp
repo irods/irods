@@ -97,6 +97,24 @@ namespace irods {
         return SUCCESS();
     }
 
+    auto hierarchy_parser::remove_resource(const std::string_view _resource_name) -> void
+    {
+        if (_resource_name.empty() || _resource_name == hierarchy_parser::delimiter()) {
+            THROW(SYS_INVALID_INPUT_PARAM, "invalid resource name");
+        }
+
+        if (num_levels() < 2) {
+            THROW(SYS_NOT_ALLOWED, "cannot remove the last resource in the hierarchy");
+        }
+
+        auto it = std::find(resc_list_.begin(), resc_list_.end(), _resource_name);
+        if (resc_list_.end() == it) {
+            THROW(CHILD_NOT_FOUND, fmt::format("resource [{}] not in hierarchy.", _resource_name));
+        }
+
+        resc_list_.erase(it);
+    } // remove_resource
+
     void hierarchy_parser::add_parent(
         const std::string& _parent,
         const std::string& _child) {
@@ -231,9 +249,15 @@ namespace irods {
         return DELIM;
     }
 
-    bool hierarchy_parser::resc_in_hier(const std::string& _resc) const {
+    bool hierarchy_parser::contains(const std::string_view _resource_name) const {
         return std::any_of(resc_list_.begin(), resc_list_.end(),
-                [&](const std::string& _r) { return _r == _resc; });
-    }
+            [&_resource_name](const std::string_view _r) {
+                return _r == _resource_name;
+            });
+    } // contains
+
+    bool hierarchy_parser::resc_in_hier(const std::string& _resc) const {
+        return contains(_resc);
+    } // resc_in_hier
 
 }; // namespace irods
