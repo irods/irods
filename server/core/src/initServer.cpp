@@ -18,7 +18,9 @@
 #include "rsIcatOpr.hpp"
 #include "rsLog.hpp"
 #include "rsModDataObjMeta.hpp"
+#include "rs_replica_close.hpp"
 #include "sockComm.h"
+#include "objMetaOpr.hpp"
 
 #include "finalize_utilities.hpp"
 #include "irods_configuration_parser.hpp"
@@ -52,6 +54,8 @@ static int BrokenPipeCnt = 0;
 
 namespace
 {
+    namespace rst = irods::replica_state_table;
+
     auto calculate_checksum(RsComm& _comm, l1desc& _l1desc, DataObjInfo& _info) -> std::string
     {
         if (!std::string_view{_info.chksum}.empty()) {
@@ -81,31 +85,32 @@ namespace
         return irods::register_new_checksum(_comm, _info, _l1desc.chksum);
     } // calculate_checksum
 
-    void finalize_replica_opened_for_create_or_write(RsComm& _comm, l1desc& _l1desc)
+    auto finalize_replica_opened_for_create_or_write(RsComm& _comm, DataObjInfo& _info, l1desc& _l1desc) -> void
     {
-        auto opened_replica = irods::experimental::replica::make_replica_proxy(*_l1desc.dataObjInfo);
+        namespace ir = irods::experimental::replica;
 
-        auto [reg_param, lm] = irods::experimental::make_key_value_proxy({{ADMIN_KW, ""}});
+        auto replica = ir::make_replica_proxy(_info);
+
+        auto& rst = irods::replica_state_table::instance();
+        if (!rst.contains(replica.logical_path())) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - no entry found in replica state table for [{}]",
+                __FUNCTION__, __LINE__, replica.logical_path()));
+
+            return;
+        }
+
+        const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
 
         //  - Check size in vault
         try {
-            reg_param[DATA_SIZE_KW] = std::to_string(irods::get_size_in_vault(_comm, *opened_replica.get(), false, _l1desc.dataSize));
-        }
-        catch (const irods::exception& e) {
-            irods::log(e);
-        }
+            constexpr bool verify_size = false;
+            replica.size(irods::get_size_in_vault(_comm, *replica.get(), verify_size, _l1desc.dataSize));
 
-        //  - Compute checksum if flag is present
-        try {
-            const auto cond_input = irods::experimental::make_key_value_proxy(_l1desc.dataObjInp->condInput);
-
-            if (cond_input.contains(CHKSUM_KW) && !cond_input.at(CHKSUM_KW).value().empty()) {
-                reg_param[CHKSUM_KW] = cond_input.at(CHKSUM_KW);
-            }
-            else if (!opened_replica.checksum().empty()) {
-                const auto checksum = calculate_checksum(_comm, _l1desc, *opened_replica.get());
-                if (!checksum.empty()) {
-                    reg_param[CHKSUM_KW] = checksum;
+            //  - Compute checksum if flag is present
+            if (!cond_input.contains(CHKSUM_KW) && !replica.checksum().empty()) {
+                if (const auto checksum = calculate_checksum(_comm, _l1desc, *replica.get()); !checksum.empty()) {
+                    replica.checksum(checksum);
                 }
             }
         }
@@ -113,20 +118,22 @@ namespace
             irods::log(e);
         }
 
+        //  TODO?
         //  - Update modify time to now
-        if (OPEN_FOR_WRITE_TYPE == _l1desc.openType) {
-            reg_param[DATA_MODIFY_KW] = std::to_string((int)time(nullptr));
-        }
 
         //  - Update replica status to stale
-        reg_param[REPL_STATUS_KW] = std::to_string(STALE_REPLICA);
+        replica.replica_status(STALE_REPLICA);
 
-        //  - Stamp the replica in the catalog
-        modDataObjMeta_t mod_inp{};
-        mod_inp.dataObjInfo = opened_replica.get();
-        mod_inp.regParam = reg_param.get();
-        if (const int ec = rsModDataObjMeta(&_comm, &mod_inp); ec < 0) {
-            irods::log(LOG_ERROR, fmt::format("[{}:{}] - failed updating catalog", __FUNCTION__, __LINE__));
+        if (cond_input.contains(CHKSUM_KW)) {
+            replica.checksum(cond_input.at(CHKSUM_KW).value());
+        }
+
+        rst.update(replica.logical_path(), replica);
+
+        if (const int ec = rst.publish_to_catalog(_comm, replica.logical_path(), rst::trigger_file_modified::no); ec < 0) {
+            irods::log(LOG_ERROR, fmt::format(
+                "[{}:{}] - failed to publish to catalog:[{}]",
+                __FUNCTION__, __LINE__, ec));
         }
     } // finalize_replica_opened_for_create_or_write
 
@@ -138,20 +145,41 @@ namespace
                 continue;
             }
 
-            if (OPEN_FOR_READ_TYPE != l1desc.openType) {
-                finalize_replica_opened_for_create_or_write(_comm, l1desc);
+            if (!l1desc.dataObjInfo) {
+                irods::log(LOG_ERROR, fmt::format(
+                    "[{}:{}] - l1 descriptor [{}] has no data object info",
+                    __FUNCTION__, __LINE__, fd));
+
+                continue;
             }
 
-            // close physical file
             try {
-                l3Close(&_comm, fd);
+                auto [replica, replica_lm] = irods::experimental::replica::duplicate_replica(*l1desc.dataObjInfo);
+                struct l1desc fd_cache = irods::duplicate_l1_descriptor(l1desc);
+                const irods::at_scope_exit free_fd{[&fd_cache] { freeL1desc_struct(fd_cache); }};
+
+                // close the replica, free L1 descriptor
+                if (const int ec = irods::close_replica_without_catalog_update(_comm, fd); ec < 0) {
+                    irods::log(LOG_ERROR, fmt::format(
+                        "[{}:{}] - error closing replica; ec:[{}]",
+                        __FUNCTION__, __LINE__, ec));
+
+                    continue;
+                }
+
+                // Don't do anything for special collections - they do not enter intermediate state
+                if (replica.special_collection_info()) {
+                    continue;
+                }
+
+                // TODO: need to unlock read-locked replicas
+                if (OPEN_FOR_READ_TYPE != fd_cache.openType) {
+                    finalize_replica_opened_for_create_or_write(_comm, *replica.get(), fd_cache);
+                }
             }
             catch (const irods::exception& e) {
                 irods::log(e);
             }
-
-            // free descriptor
-            freeL1desc(fd);
         }
     } // close_all_l1_descriptors
 } // anonymous namespace
