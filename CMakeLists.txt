@@ -937,6 +937,7 @@ target_compile_options(irods_server PRIVATE -Wno-write-strings -Wno-ignored-qual
 set(
   IRODS_LIBIRODS_COMMON_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/dns_cache.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getRodsEnv.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hostname_cache.cpp
@@ -1099,6 +1100,7 @@ target_compile_options(irods_plugin_dependencies PRIVATE -Wno-write-strings)
 set(
   IRODS_LIB_CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/dns_cache.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getRodsEnv.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hostname_cache.cpp
