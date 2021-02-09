@@ -13,6 +13,8 @@
 
 #include <string_view>
 
+struct DataObjInfo;
+
 namespace irods::experimental::replica
 {
     /// \brief Presents a replica-level interface to a DataObjInfo legacy iRODS struct.
@@ -34,7 +36,7 @@ namespace irods::experimental::replica
     class replica_proxy
     {
     public:
-        // Aliases for various types used in data_object_proxy
+        // Aliases for various types used in replica_proxy
         using doi_type = I;
         using doi_pointer_type = doi_type*;
 
@@ -320,6 +322,11 @@ namespace irods::experimental::replica
         } // set_string_property
     }; // class replica_proxy
 
+    /// \brief Helper type for replica_proxy using a non-const DataObjInfo
+    ///
+    /// \since 4.2.9
+    using replica_proxy_t = replica_proxy<DataObjInfo>;
+
     namespace detail
     {
         static auto populate_struct_from_results(
@@ -385,7 +392,7 @@ namespace irods::experimental::replica
     /// \returns replica_proxy and lifetime_manager for managing a new DataObjInfo
     ///
     /// \since 4.2.9
-    static auto make_replica_proxy() -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    static auto make_replica_proxy() -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
         std::memset(doi, 0, sizeof(DataObjInfo));
@@ -408,7 +415,7 @@ namespace irods::experimental::replica
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
         const replica_number_type _replica_number)
-        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
         std::memset(doi, 0, sizeof(DataObjInfo));
@@ -436,7 +443,7 @@ namespace irods::experimental::replica
         rxComm& _comm,
         const irods::experimental::filesystem::path& _logical_path,
         const leaf_resource_name_type _leaf_resource_name)
-        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         DataObjInfo* doi = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
         std::memset(doi, 0, sizeof(DataObjInfo));
@@ -452,11 +459,11 @@ namespace irods::experimental::replica
     ///
     /// \param[in] _replica replica to duplicate
     ///
-    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    /// \returns replica_proxy and lifetime_manager for underlying struct
     ///
     /// \since 4.2.9
     static auto duplicate_replica(const DataObjInfo& _replica)
-        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         DataObjInfo* curr = static_cast<DataObjInfo*>(std::malloc(sizeof(DataObjInfo)));
         std::memset(curr, 0, sizeof(DataObjInfo));
@@ -485,11 +492,11 @@ namespace irods::experimental::replica
     ///
     /// \param[in] _replica replica to duplicate
     ///
-    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    /// \returns replica_proxy and lifetime_manager for underlying struct
     ///
     /// \since 4.2.9
-    static auto duplicate_replica(const replica_proxy<DataObjInfo> _replica)
-        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+    static auto duplicate_replica(const replica_proxy_t& _replica)
+        -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         return duplicate_replica(*_replica.get());
     } // duplicate_replica
@@ -524,11 +531,11 @@ namespace irods::experimental::replica
     /// \endcode
     /// \endparblock
     ///
-    /// \returns data_object_proxy and lifetime_manager for underlying struct
+    /// \returns replica_proxy and lifetime_manager for underlying struct
     ///
     /// \since 4.2.9
     static auto make_replica_proxy(std::string_view _logical_path, const nlohmann::json& _input)
-        -> std::pair<replica_proxy<DataObjInfo>, lifetime_manager<DataObjInfo>>
+        -> std::pair<replica_proxy_t, lifetime_manager<DataObjInfo>>
     {
         auto proxy_lm_pair = make_replica_proxy();
         auto& proxy = proxy_lm_pair.first;

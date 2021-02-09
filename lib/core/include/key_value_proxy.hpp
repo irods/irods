@@ -11,6 +11,8 @@
 #include <string>
 #include <string_view>
 
+struct KeyValPair;
+
 namespace irods::experimental {
     /// \brief Tag which indicates that a missing key will be inserted with an empty value.
     /// \since 4.2.9
@@ -18,9 +20,9 @@ namespace irods::experimental {
 
     /// \brief Presents a std::map-like interface to a keyValuePair_t legacy iRODS struct.
     ///
-    /// Holds a pointer to a keyValPair_t whose lifetime is managed outside of the proxy object.
+    /// Holds a pointer to a KeyValPair whose lifetime is managed outside of the proxy object.
     ///
-    /// The typical use case for this class is to wrap an existing keyValPair_t and manage
+    /// The typical use case for this class is to wrap an existing KeyValPair and manage
     /// it through the key_value_proxy. The iRODS C API uses this struct in many places and so
     /// the lifetime of the object may need to extend past the lifetime of the key_value_proxy.
     ///
@@ -29,7 +31,7 @@ namespace irods::experimental {
     template<
         typename K,
         typename = std::enable_if_t<
-            std::is_same_v<keyValPair_t, typename std::remove_const_t<K>>
+            std::is_same_v<KeyValPair, typename std::remove_const_t<K>>
         >
     >
     class key_value_proxy
@@ -539,9 +541,15 @@ namespace irods::experimental {
     template<typename kvp_type>
     using key_value_proxy_pair = std::pair<key_value_proxy<kvp_type>, lifetime_manager<kvp_type>>;
 
-    /// \brief Creates an empty keyValPair_t and wraps it with a proxy and lifetime_manager
+    template<typename kvp_type>
+    static auto make_key_value_proxy(kvp_type& kvp) -> key_value_proxy<kvp_type>
+    {
+        return std::move(key_value_proxy{kvp});
+    } // make_key_value_proxy
+
+    /// \brief Creates an empty KeyValPair and wraps it with a proxy and lifetime_manager
     ///
-    /// If no arguments are passed in, the keyValPair_t is initialized to empty.
+    /// If no arguments are passed in, the KeyValPair is initialized to empty.
     ///
     /// The lifetime_manager will free the allocated memory on destruction.
     ///
@@ -549,27 +557,21 @@ namespace irods::experimental {
     ///
     /// \usage auto [p, m] = make_key_value_proxy({{"key1", "val1"}, {"key2", "val2"}});
     ///
-    /// \return std::pair<key_value_proxy, lifetime_manager<keyValPair_t>>
+    /// \return std::pair<key_value_proxy, lifetime_manager<KeyValPair>>
     ///
     /// \since 4.2.8
-    static auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> key_value_proxy_pair<keyValPair_t>
-    {
-        keyValPair_t* cond_input = (keyValPair_t*)malloc(sizeof(keyValPair_t));
-        std::memset(cond_input, 0, sizeof(keyValPair_t));
-        key_value_proxy proxy{*cond_input};
-        for (const auto& kvp : _kvps) {
-            const auto& key = std::get<0>(kvp);
-            const auto& val = std::get<1>(kvp);
-            proxy[key] = val;
-        }
-        return {std::move(proxy), lifetime_manager{*cond_input}};
-    } // make_key_value_proxy
+    auto make_key_value_proxy(std::initializer_list<key_value_pair> _kvps = {}) -> key_value_proxy_pair<KeyValPair>;
 
-    template<typename kvp_type>
-    static auto make_key_value_proxy(kvp_type& kvp) -> key_value_proxy<kvp_type>
-    {
-        return std::move(key_value_proxy{kvp});
-    } // make_key_value_proxy
+    /// \brief Check for a keyword in a KeyValPair and whether it has a value
+    ///
+    /// \param[in] _kvp KeyValPair to search
+    /// \param[in] _keyword Keyword to search for
+    ///
+    /// \retval true If _kvp contains _keyword and is not empty
+    /// \retval false If _kvp does not contain _keyword or the value for _keyword is empty
+    ///
+    /// \since 4.2.9
+    auto keyword_has_a_value(const KeyValPair& _kvp, const std::string_view _keyword) -> bool;
 
 } // namespace irods::experimental
 
