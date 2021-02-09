@@ -975,6 +975,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcGlobal.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcMisc.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/region.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/rodsError.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsLog.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsPath.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/stringOpr.cpp
@@ -1141,6 +1142,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcMisc.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rcPortalOpr.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/region.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/rodsError.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsLog.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/rodsPath.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/stringOpr.cpp

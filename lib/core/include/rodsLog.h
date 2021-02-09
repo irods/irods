@@ -73,6 +73,8 @@ void rodsLogError( int level, int errCode, const char *formatStr, ... );
 int getRodsLogLevel();
 void generateLogTimestamp( char *ts, int tsLen );
 
+#define TRACE_LOG() rodsLog(LOG_NOTICE, "[%s:%d]", __FUNCTION__, __LINE__);
+
 #ifdef __cplusplus
 }
 #endif

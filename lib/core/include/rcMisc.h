@@ -35,8 +35,6 @@ int isPath(char* path);
 
 rodsLong_t getFileSize(char* path);
 
-int addRErrorMsg(rError_t* myError, int status, const char* msg);
-
 int freeBBuf(bytesBuf_t* myBBuf);
 
 int clearBBuf(bytesBuf_t* myBBuf);
@@ -337,9 +335,6 @@ int hasSymlinkInPartialPath(const char* myPath, int pos);
 int myWrite(int sock, void* buf, int len, int* bytesWritten);
 
 int myRead(int sock, void* buf, int len, int* bytesRead, struct timeval* tv);
-
-// Special status that supresses reError header printing
-static const int STDOUT_STATUS = 1000000;
 
 int getPathStMode(const char* p);
 
