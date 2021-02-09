@@ -939,6 +939,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getRodsEnv.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/hostname_cache.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_keywords.cpp
@@ -1100,6 +1101,7 @@ set(
   ${CMAKE_SOURCE_DIR}/lib/core/src/base64.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/getRodsEnv.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/hashtable.cpp
+  ${CMAKE_SOURCE_DIR}/lib/core/src/hostname_cache.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_buffer_encryption.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_children_parser.cpp
   ${CMAKE_SOURCE_DIR}/lib/core/src/irods_configuration_keywords.cpp
