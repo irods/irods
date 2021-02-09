@@ -1,8 +1,5 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "rcMisc.h"
 
-/* rcMisc.c - misc client routines
- */
 #ifndef windows_platform
     #include <sys/time.h>
     #include <sys/wait.h>
@@ -10,7 +7,6 @@
     #include "Unix2Nt.hpp"
 #endif
 
-#include "rcMisc.h"
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
@@ -23,8 +19,6 @@
 #include "putUtil.h"
 #include "sockComm.h"
 
-#include "json.hpp"
-
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
@@ -33,9 +27,9 @@
 #include <string_view>
 #include <map>
 #include <random>
+
 #include <openssl/md5.h>
 
-// =-=-=-=-=-=-=-
 #include "irods_virtual_path.hpp"
 #include "irods_hierarchy_parser.hpp"
 #include "irods_stacktrace.hpp"
@@ -44,15 +38,19 @@
 #include "irods_random.hpp"
 #include "irods_path_recursion.hpp"
 #include "irods_get_full_path_for_config_file.hpp"
+#include "dns_cache.hpp"
+#include "irods_configuration_keywords.hpp"
+#include "irods_server_properties.hpp"
 
-// =-=-=-=-=-=-=-
-// boost includes
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/format.hpp>
 #include <boost/generator_iterator.hpp>
+
+#include <fmt/format.h>
+#include <json.hpp>
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -4474,89 +4472,52 @@ hasSymlinkInPath( const char * myPath ) {
     return status;
 }
 
-
-static std::string stringify_addrinfo_hints(const struct addrinfo *_hints) {
-    std::string ret;
+static std::string stringify_addrinfo_hints(const struct addrinfo *_hints)
+{
     if (!_hints) {
-        ret = "null hint pointer";
-    } else {
-        std::stringstream stream;
-        stream << "ai_flags: [" << _hints->ai_flags << "] ai_family: [" << _hints->ai_family << "] ai_socktype: [" << _hints->ai_socktype << "] ai_protocol: [" << _hints->ai_protocol << "]";
-        ret = stream.str();
+        return "null hint pointer";
     }
-    return ret;
+
+    return fmt::format("ai_flags: [{}] ai_family: [{}] ai_socktype: [{}] ai_protocol: [{}]",
+                       _hints->ai_flags, _hints->ai_family, _hints->ai_socktype, _hints->ai_protocol);
 }
 
-auto resolve_hostname_from_hosts_config(const std::string& name_to_resolve) -> std::string
+int getaddrinfo_with_retry(const char *_node,
+                           const char *_service,
+                           const struct addrinfo *_hints,
+                           struct addrinfo **_res)
 {
-    using json = nlohmann::json;
-    static json hosts_config{};
-
-    std::string resolved_name{name_to_resolve};
-
-    try {
-        if(hosts_config.empty()) {
-            std::string cfg_file;
-            irods::error err = irods::get_full_path_for_config_file(HOST_CONFIG_FILE, cfg_file);
-            if(!err.ok()) {
-                return name_to_resolve;
-            }
-
-            hosts_config = json::parse(std::ifstream{cfg_file});
-        }
-
-        for(const auto& entry : hosts_config.at("host_entries")) {
-            const auto addresses = entry.at("addresses");
-            const std::string target_name{addresses.at(0).at("address")};
-
-            for( json::size_type i = 1; i < addresses.size(); ++i) {
-                const auto alias{addresses.at(i).at("address")};
-                if(alias == name_to_resolve) {
-                    resolved_name = target_name;
-                    break;
-                }
-            } // for alias
-        } // for entry
-    }
-    catch(const json::exception& e) {
-        rodsLog(
-            LOG_ERROR,
-            "%s :: caught exception: ",
-            __FUNCTION__,
-            e.what());
-    }
-    catch(...) {
-        rodsLog(
-            LOG_ERROR,
-            "%s :: caught unknown exception",
-            __FUNCTION__);
-    }
-
-    return resolved_name;
-
-} // resolve_hostname_from_hosts_config
-
-int
-getaddrinfo_with_retry(const char *_node, const char *_service, const struct addrinfo *_hints, struct addrinfo **_res) {
     // "_node" is the hostname to resolve.
     if (!_node || std::strlen(_node) == 0) {
         rodsLog(LOG_ERROR, "getaddrinfo_with_retry: hostname is null or empty");
         return USER_RODS_HOSTNAME_ERR;
     }
 
-    const auto hostname = resolve_hostname_from_hosts_config(_node);
+    std::string hostname;
+
+    if (CLIENT_PT != ::ProcessType) {
+        const auto& hosts_config = irods::get_server_property<nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
+        auto alias = resolve_hostname(_node, hosts_config, hostname_resolution_scheme::match_preferred);
+        hostname = alias ? std::move(*alias) : _node;
+    }
+    else {
+        hostname = _node;
+    }
 
     *_res = 0;
     const int max_retry = 300;
+
     for (int i=0; i<max_retry; ++i) {
         const int ret_getaddrinfo = getaddrinfo(hostname.c_str(), _service, _hints, _res);
-        if (   ret_getaddrinfo == EAI_AGAIN
-            || ret_getaddrinfo == EAI_NONAME
-            || ret_getaddrinfo == EAI_NODATA) { // retryable errors
 
+        if (ret_getaddrinfo == EAI_AGAIN  ||
+            ret_getaddrinfo == EAI_NONAME ||
+            ret_getaddrinfo == EAI_NODATA) // retryable errors
+        {
             struct timespec ts_requested;
             ts_requested.tv_sec = 0;
             ts_requested.tv_nsec = 100 * 1000 * 1000; // 100 milliseconds
+
             while (0 != nanosleep(&ts_requested, &ts_requested)) {
                 const int errno_copy = errno;
                 if (errno_copy != EINTR) {
@@ -4564,28 +4525,52 @@ getaddrinfo_with_retry(const char *_node, const char *_service, const struct add
                     return USER_RODS_HOSTNAME_ERR - errno_copy;
                 }
             }
-        } else if (ret_getaddrinfo != 0) { // non-retryable error
+        }
+        else if (ret_getaddrinfo != 0) { // non-retryable error
             if (ret_getaddrinfo == EAI_SYSTEM) {
                 const int errno_copy = errno;
                 std::string hint_str = stringify_addrinfo_hints(_hints);
-                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable system error [%d] [%s] [%d] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), errno_copy, hostname.c_str(), hint_str.c_str());
-            } else {
-                std::string hint_str = stringify_addrinfo_hints(_hints);
-                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable error [%d] [%s] [%s] [%s]", ret_getaddrinfo, gai_strerror(ret_getaddrinfo), hostname.c_str(), hint_str.c_str());
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable system error [%d] [%s] [%d] [%s] [%s]",
+                        ret_getaddrinfo, gai_strerror(ret_getaddrinfo), errno_copy, hostname.c_str(), hint_str.c_str());
             }
+            else {
+                std::string hint_str = stringify_addrinfo_hints(_hints);
+                rodsLog(LOG_ERROR, "getaddrinfo_with_retry: getaddrinfo non-recoverable error [%d] [%s] [%s] [%s]",
+                        ret_getaddrinfo, gai_strerror(ret_getaddrinfo), hostname.c_str(), hint_str.c_str());
+            }
+
             return USER_RODS_HOSTNAME_ERR;
-        } else {
+        }
+        else {
             return 0;
         }
+
         rodsLog(LOG_DEBUG, "getaddrinfo_with_retry retrying getaddrinfo. retry count [%d] hostname [%s]", i, hostname.c_str());
     }
+
     std::string hint_str = stringify_addrinfo_hints(_hints);
     rodsLog(LOG_ERROR, "getaddrinfo_with_retry address resolution timeout [%s] [%s]", hostname.c_str(), hint_str.c_str());
+
     return USER_RODS_HOSTNAME_ERR;
 }
 
+int get_canonical_name(const char *_hostname, char* _buf, size_t _len)
+{
+    namespace dnsc = irods::experimental::net::dns_cache;
 
-int get_canonical_name(const char *_hostname, char* _buf, size_t _len) {
+    std::string key = _hostname;
+    key += "_gcn";
+
+    if (CLIENT_PT != ::ProcessType) {
+        if (auto entry = dnsc::lookup(key); entry) {
+            rodsLog(LOG_DEBUG, "%s :: Returning cached addrinfo for hostname [hostname=%s].", __func__, _hostname);
+            snprintf(_buf, _len, "%s", entry->ai_canonname);
+            return 0;
+        }
+    }
+
+    rodsLog(LOG_NOTICE, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
+
     struct addrinfo hint;
     memset(&hint, 0, sizeof(hint));
     hint.ai_flags = AI_CANONNAME;
@@ -4594,12 +4579,39 @@ int get_canonical_name(const char *_hostname, char* _buf, size_t _len) {
     if (ret_getaddrinfo_with_retry ) {
         return ret_getaddrinfo_with_retry;
     }
+
     snprintf(_buf, _len, "%s", p_addrinfo->ai_canonname);
+
+    if (CLIENT_PT != ::ProcessType) {
+        const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+        const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
+
+        rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
+                __func__, _hostname, inserted, key.data(), age.count());
+    }
+
     freeaddrinfo(p_addrinfo);
+
     return 0;
 }
 
-int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out) {
+int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out)
+{
+    namespace dnsc = irods::experimental::net::dns_cache;
+
+    std::string key = _hostname;
+    key += "_liafh";
+
+    if (CLIENT_PT != ::ProcessType) {
+        if (auto entry = dnsc::lookup(key); entry) {
+            rodsLog(LOG_DEBUG, "%s :: Returning cached addrinfo for hostname [hostname=%s].", __func__, _hostname);
+            *_out = reinterpret_cast<struct sockaddr_in*>(entry->ai_addr)->sin_addr;
+            return 0;
+        }
+    }
+
+    rodsLog(LOG_NOTICE, "%s :: DNS cache miss for hostname [hostname=%s].", __func__, _hostname);
+
     struct addrinfo hint;
     memset(&hint, 0, sizeof(hint));
     hint.ai_family = AF_INET;
@@ -4608,11 +4620,21 @@ int load_in_addr_from_hostname(const char* _hostname, struct in_addr* _out) {
     if (ret_getaddrinfo_with_retry) {
         return ret_getaddrinfo_with_retry;
     }
+
     *_out = reinterpret_cast<struct sockaddr_in*>(p_addrinfo->ai_addr)->sin_addr;
+
+    if (CLIENT_PT != ::ProcessType) {
+        const std::chrono::seconds age{irods::get_dns_cache_eviction_age()};
+        const auto inserted = dnsc::insert_or_assign(key, *p_addrinfo, age);
+
+        rodsLog(LOG_DEBUG, "%s :: Added addrinfo to DNS cache [hostname=%s, inserted=%d, key=%s, age=%d].",
+                __func__, _hostname, inserted, key.data(), age.count());
+    }
+
     freeaddrinfo(p_addrinfo);
+
     return 0;
 }
-
 
 int
 myWrite( int sock, void *buf, int len,
@@ -4729,3 +4751,51 @@ myRead( int sock, void *buf, int len,
     }
     return len - toRead;
 }
+
+auto resolve_hostname(const std::string_view _hostname,
+                      const nlohmann::json& _hosts_config,
+                      hostname_resolution_scheme _scheme) -> std::optional<std::string>
+{
+    using json = nlohmann::json;
+
+    const auto host_entries = _hosts_config.at("host_entries");
+    const auto end = std::end(host_entries);
+
+    // Find the addresses object that contains the address, "_hostname".
+    const auto iter = std::find_if(std::begin(host_entries), end, [_hostname](const json& _entry) {
+        auto&& addresses = _entry.at("addresses");
+        const auto end = std::end(addresses);
+        return end != std::find_if(std::begin(addresses), end, [_hostname](const json& _address) {
+            return _hostname == _address.at("address").get<std::string>();
+        });
+    });
+
+    if (iter == end) {
+        return std::nullopt;
+    }
+
+    switch (_scheme) {
+        case hostname_resolution_scheme::match_preferred:
+            return iter->at("addresses").front().at("address").get<std::string>();
+
+        case hostname_resolution_scheme::match_longest: {
+            std::string longest;
+
+            for (auto&& address : iter->at("addresses")) {
+                if (auto tmp = address.at("address").get<std::string>(); tmp.size() > longest.size()) {
+                    longest = std::move(tmp);
+                }
+            }
+
+            return longest;
+        }
+
+        default:
+            if (CLIENT_PT != ::ProcessType) {
+                rodsLog(LOG_NOTICE, "%s :: Unknown hostname resolution scheme.", __func__);
+            }
+
+            return std::nullopt;
+    }
+}
+

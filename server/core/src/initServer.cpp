@@ -10,6 +10,7 @@
 #include "rcMisc.h"
 #include "resource.hpp"
 #include "rodsConnect.h"
+#include "rodsErrorTable.h"
 #include "rsDataObjClose.hpp"
 #include "rsExecCmd.hpp"
 #include "rsGenQuery.hpp"
@@ -43,6 +44,8 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
+
+#include <json.hpp>
 
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
@@ -735,101 +738,62 @@ rsPipeSignalHandler( int ) {
 }
 
 /// @brief parse the irodsHost file, creating address
-int initHostConfigByFile() {
-
-    // =-=-=-=-=-=-=-
-    // request fully qualified path to the config file
-    std::string cfg_file;
-    irods::error ret = irods::get_full_path_for_config_file(
-                           HOST_CONFIG_FILE,
-                           cfg_file );
-    if ( !ret.ok() ) {
-        rodsLog(
-            LOG_NOTICE,
-            "config file [%s] not found",
-            HOST_CONFIG_FILE );
-        return 0;
-    }
-
-    irods::configuration_parser cfg;
-    ret = cfg.load( cfg_file );
-    if ( !ret.ok() ) {
-        irods::log( PASS( ret ) );
-        return ret.code();
-    }
-
+int initHostConfigByFile()
+{
     try {
-        for ( const auto& el : cfg.get< const std::vector< boost::any > > ("host_entries") ) {
+        const auto& hosts_config = irods::get_server_property<nlohmann::json&>(irods::HOSTS_CONFIG_JSON_OBJECT_KW);
+
+        for (auto&& entry : hosts_config.at("host_entries")) {
             try {
-                const auto& host_entry = boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el);
-                const auto& address_type = boost::any_cast<const std::string&>(host_entry.at("address_type"));
-                const auto& addresses = boost::any_cast<const std::vector<boost::any>&>(host_entry.at("addresses"));
+                auto* svr_host = static_cast<rodsServerHost_t*>(std::malloc(sizeof(rodsServerHost_t)));
+                std::memset(svr_host, 0, sizeof(rodsServerHost_t));
 
-                rodsServerHost_t* svr_host = ( rodsServerHost_t* )malloc( sizeof( rodsServerHost_t ) );
-                memset( svr_host, 0, sizeof( rodsServerHost_t ) );
-
-                if ( "remote" == address_type ) {
+                if (const auto type = entry.at("address_type").get<std::string>(); "remote" == type) {
                     svr_host->localFlag = REMOTE_HOST;
                 }
-                else if ( "local" == address_type ) {
+                else if ("local" == type) {
                     svr_host->localFlag = LOCAL_HOST;
-
                 }
                 else {
-                    free( svr_host );
-                    rodsLog(
-                            LOG_ERROR,
-                            "unsupported address type [%s]",
-                            address_type.c_str() );
+                    std::free(svr_host);
+                    rodsLog(LOG_ERROR, "unsupported address type [%s]", type.data());
                     continue;
                 }
 
-                // local zone
                 svr_host->zoneInfo = ZoneInfoHead;
-                if ( queRodsServerHost(
-                            &HostConfigHead,
-                            svr_host ) < 0 ) {
-                    rodsLog(
-                            LOG_ERROR,
-                            "queRodsServerHost failed" );
+
+                if (queRodsServerHost(&HostConfigHead, svr_host) < 0) {
+                    rodsLog(LOG_ERROR, "queRodsServerHost failed");
                 }
 
-                for ( const auto& el : addresses ) {
+                for (auto&& address : entry.at("addresses")) {
                     try {
-                        if ( queHostName(
-                                    svr_host,
-                                    boost::any_cast<const std::string&>(
-                                        boost::any_cast<const std::unordered_map<std::string, boost::any>&>(el
-                                            ).at("address")
-                                        ).c_str(),
-                                    0 ) < 0 ) {
-                            rodsLog( LOG_ERROR, "queHostName failed" );
+                        if (queHostName(svr_host, address.at("address").get<std::string>().data(), 0) < 0) {
+                            rodsLog(LOG_ERROR, "queHostName failed");
                         }
-
-                    } catch ( const boost::bad_any_cast& e ) {
-                        irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
-                        continue;
-                    } catch ( const std::out_of_range& e ) {
-                        irods::log( ERROR( KEY_NOT_FOUND, e.what() ) );
                     }
-
-                } // for addr_idx
-            } catch ( const boost::bad_any_cast& e ) {
-                irods::log( ERROR( INVALID_ANY_CAST, e.what() ) );
-                continue;
-            } catch ( const std::out_of_range& e ) {
-                irods::log( ERROR( KEY_NOT_FOUND, e.what() ) );
+                    catch (const nlohmann::json::exception& e) {
+                        rodsLog(LOG_ERROR, "Could not process hosts_config.json address [address=%s, error_message=%s]",
+                                address.dump().data(), e.what());
+                    }
+                }
             }
-
-        } // for i
-    } catch ( const irods::exception& e ) {
-        irods::log( irods::error(e) );
+            catch (const nlohmann::json::exception& e) {
+                rodsLog(LOG_ERROR, "Could not process hosts_config.json entry [entry=%s, error_message=%s].",
+                        entry.dump().data(), e.what());
+            }
+        }
+    }
+    catch (const irods::exception& e) {
+        irods::log(irods::error(e));
         return e.code();
     }
-
+    catch (const std::exception& e) {
+        rodsLog(LOG_ERROR, "%s error.", __func__);
+        return SYS_INTERNAL_ERR;
+    }
 
     return 0;
-
 } // initHostConfigByFile
 
 int
