@@ -232,6 +232,7 @@ NEW_ERROR(SYS_UNKNOWN_ERROR,                           -165000)
 NEW_ERROR(SYS_NO_GOOD_REPLICA,                         -166000)
 NEW_ERROR(SYS_LIBRARY_ERROR,                           -167000)
 NEW_ERROR(SYS_REPLICA_INACCESSIBLE,                    -168000)
+NEW_ERROR(SYS_NOT_ALLOWED,                             -169000)
 
 /** @} */
 

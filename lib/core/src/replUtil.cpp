@@ -56,6 +56,11 @@ replUtil( rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
     }
 
     for ( int i = 0; i < rodsPathInp->numSrc; i++ ) {
+        if ( rodsPathInp->srcPath[i].objState == NOT_EXIST_ST ) {
+            // Just move to the next one -- the status was saved above
+            continue;
+        }
+
         int status = 0;
         if ( rodsPathInp->srcPath[i].objType == DATA_OBJ_T ) {
             rmKeyVal( &dataObjInp.condInput, TRANSLATED_PATH_KW );
